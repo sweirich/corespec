@@ -807,7 +807,7 @@ Next Obligation.
   auto_uniq_full.
   apply wildcard'.
   have: A3 = A2 by done. move => <-.
-  inversion H12.
+  inversion H13.
   by move: (get_tpg_correct' H21) => <-.
 Defined.
 Next Obligation. (* Fuel: aux obligation *)

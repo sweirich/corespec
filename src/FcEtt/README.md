@@ -5,8 +5,6 @@ It requires MathComp (v1.6), and the 8.6 branch of
 install.  The former comes from opam, the latter from Github.  For full
 installation instructions, see LIBRARIES.md.
 
-To build the paper, run `make` (equivalently `make all`).
-
 To build the Coq, run `make coq`.
 
 This work checks with Coq's native theory -- it includes no Axioms or other

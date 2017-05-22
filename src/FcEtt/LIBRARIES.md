@@ -14,13 +14,15 @@
 3. **To install `metalib`:**
 
   1. `git clone https://github.com/plclub/metalib.git` in the same directory as
-     `corespec` (so `corespec` and `metalib` are siblings).
-  2. `make`
+     `src` (so `src` and `metalib` are siblings).
+  2. `cd metalib`
+  3. `git checkout 8.6`
+  4. `make`
 
-4. **To install `lngen`:**
+4. **(OPTIONAL) To install `lngen`:**
 
   1. `git clone https://github.com/plclub/lngen.git` in the same directory as
-     `corespec` (so `corespec` and `lngen` are siblings).
+     `src` (so `src` and `lngen` are siblings).
   2. In the `lngen` directory, compile lngen
        `cabal sandbox init`
 	   `cabal install`

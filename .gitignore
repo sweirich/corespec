@@ -17,6 +17,7 @@
 *.v.d
 *.vio
 *.vo
+CoqSrc.mk
 .coq-native/
 .csdp.cache
 .lia.cache
@@ -28,3 +29,14 @@ lia.cache
 nia.cache
 nlia.cache
 nra.cache
+*.v-e
+*.aux
+*.bbl
+*.blg
+*.fdb_latexmk
+*.fls
+*.log
+*.out
+*-rules.tex
+src/lngen
+src/metalib
