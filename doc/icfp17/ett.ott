@@ -162,7 +162,7 @@ co, g {{ tex \gamma }} :: 'g_' ::= {{ com explicit coercions }}
    | \ c : g1 . g3 @ g4   ::   :: CAbsCong (+ bind c in g3 +)
      {{ tex \mathrm{\lambda}[[c]]\!:\![[g1]].[[g3]][[@]][[g4]] }}
 
-   | g ( g1 , g2 )        ::   :: CAppCong
+   | g [ g1 , g2 ]        ::   :: CAppCong
    | g @ ( g1 , g2 )      ::   :: CPiSnd
      {{ tex [[g]] [[@]] ([[g1]] \sim [[g2]]) }}
    | g1 |> g2             ::   :: Cast
@@ -1214,7 +1214,7 @@ G |- all rho x:A1 -> B1 : TYPE
 G |- all rho x:A1 -> B2 : TYPE
 G |- all rho x:A2 -> B3 : TYPE
 ---------------------------------------------------------- :: PiCong
-G ; D |- all rho x:g1 -> g2 : (all rho x:A1 -> B1) ~ (all rho x:A2 -> B3)
+G ; D |- (all rho x:g1 -> g2) : (all rho x:A1 -> B1) ~ (all rho x:A2 -> B3)
 
 G ; D |- g1 : A1 ~ A2
 G, x : A1 ; D |- g2 : b1 ~ (# b2 {{{x / x}}} #)
@@ -1236,14 +1236,14 @@ G |- a1 rho a2 : A
 G |- b1 rho b2 : B
 [ G ; dom G |- g3 : A ~ B ]
 -------------------------------------- :: AppCong
-G ; D |- g1 rho g2 : a1 rho a2 ~ b1 rho b2
+G ; D |- (g1 rho g2) : (a1 rho a2) ~ (b1 rho b2)
 
 
 G ; D |- g : all rho x:A1 -> B1 ~ all rho x:A2 -> B2
 --------------------------------------- :: PiFst
 G ; D |- piFst g : A1 ~ A2
 
-G ; D |- g1 : all rho x:A1 -> B1  ~ all rho x:A2 -> B2
+G ; D |- g1 : (all rho x:A1 -> B1)  ~ (all rho x:A2 -> B2)
 G ; D |- g2 : a1 ~ a2
 G |- a1 : A1
 G |- a2 : A2
@@ -1283,7 +1283,7 @@ G |- a1 [g2] : A
 G |- b1 [g3] : B
 [ G ; dom G |- g4 : A ~ B ]
 -------------------------------------- :: CAppCong
-G ; D |- g1 (g2, g3) : a1 [ g2 ]  ~ b1 [ g3 ]
+G ; D |- g1 [g2, g3] : a1 [ g2 ]  ~ b1 [ g3 ]
 
 
 G ; D |- g1 : (all c1:a~a':A. B1) ~ (all c2:b~b':B. B2)
@@ -1294,7 +1294,7 @@ G ; D |- g1 @ (g2, g3) : B1 { g2 / c1 } ~ B2 { g3 / c2 }
 
 
 G ; D |- g1 : a~a'
-G ; D |- g2 : a~a' :A == b~b' : B
+G ; D |- g2 : (a~a' :A) == (b~b' : B)
 --------------------------------------- :: Cast
 G ; D |- g1 |> g2 : b~b'
 
