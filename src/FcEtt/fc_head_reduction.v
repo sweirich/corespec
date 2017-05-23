@@ -107,7 +107,6 @@ Qed.
 
 
 (* A useful tactic *)
-(* TODO: should it stay here or move? *)
 Ltac resolve_open a :=
     let s := fresh in
     match goal with

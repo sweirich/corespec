@@ -282,6 +282,29 @@ Proof.
     }
 Qed.
 
+Lemma Path_dec : forall a, lc_tm a -> { T | Path T a } + { (forall T, not (Path T a)) }.
+Proof.
+  induction a; intros LC.
+  all: try solve [apply inleft; eauto].
+  all: try solve [apply inright; move => T h1; inversion h1].
+  - destruct IHa1 as [[T h0]|n].
+    { inversion LC. auto. }
+    apply inleft. eexists.
+    { inversion LC. eauto. }
+    apply inright. move => T h1. inversion h1.
+    subst. unfold not in n. eauto.
+  - destruct IHa as [[T h0]|n].
+    { inversion LC. auto. }
+    apply inleft. eexists.
+    { inversion LC. eauto. }
+    apply inright. intros T h; inversion h; subst; unfold not in n; eauto.
+  - destruct IHa as [[T h0]|n].
+    { inversion LC. eauto. }
+    apply inleft. exists T.
+    { inversion LC. eauto. }
+    apply inright. intros T h; inversion h; subst; unfold not in n; eauto.
+Qed.
+
 Lemma Value_AbsIrrel_inversion : forall A a,
     Value (a_Abs Irrel A a)
     -> lc_tm A /\ forall x, x `notin` fv_tm a -> CoercedValue (open_tm_wrt_tm a (a_Var_f x)).
@@ -356,6 +379,33 @@ Proof.
   auto.
 Qed.
 
+Lemma DataTy_Star_dec : forall A, lc_set_tm A -> { DataTy A a_Star } + { not (DataTy A a_Star) }.
+Proof.
+  intros A LC.
+  induction LC.
+  all: try solve [apply right; move => h; inversion h].
+  all: try solve [apply left; eauto].
+  + pick fresh x.
+    move: (H x) => [D | ND].
+    - left. pick fresh y and apply DT_Pi; eauto_lc.
+      rewrite (tm_subst_tm_tm_intro x); auto.
+      eapply DataTy_tm_subst_tm_tm; eauto_lc.
+    - right. move => h; inversion h; subst.
+      eapply ND.
+      pick fresh y.
+      rewrite (tm_subst_tm_tm_intro y); auto.
+      eapply DataTy_tm_subst_tm_tm; eauto_lc.
+  + pick fresh x.
+    move: (H x) => [D | ND].
+    - left. pick fresh y and apply DT_CPi; eauto_lc.
+      rewrite (co_subst_co_tm_intro x); auto.
+      eapply DataTy_co_subst_co_tm; eauto_lc.
+    - right. move => h; inversion h; subst.
+      eapply ND.
+      pick fresh y.
+      rewrite (co_subst_co_tm_intro y); auto.
+      eapply DataTy_co_subst_co_tm; eauto_lc.
+Qed.
 
 Lemma binds_dec_ax : forall x G, {A, B | binds x (Ax A B) G} + {(forall A B, ¬ binds x (Ax A B) G)}.
 Proof.
@@ -435,8 +485,8 @@ Unset Implicit Arguments.
 Program Fixpoint RhoCheck_erase_dec rho x a (_ : lc_tm a) : {RhoCheck rho x (erase_tm a)} + {¬ RhoCheck rho x (erase_tm a)} :=
   let a' := erase a in
   match rho with
-    | Rel   => yeah
-    | Irrel => not_in_dec x (fv_tm_tm_tm a') >--> yeah
+    | Rel => yeah
+    | Irrel =>  not_in_dec x (fv_tm_tm_tm a') >--> yeah
   end.
 
 Next Obligation.

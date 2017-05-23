@@ -39,6 +39,79 @@ Inductive multipar S D ( a : tm) : tm -> Prop :=
 
 Hint Constructors multipar.
 
+(*
+Inductive consistent : tm -> tm -> Prop :=
+| consistent_a_Star   : consistent a_Star a_Star
+| consistent_a_Pi     : forall rho A1 B1 A2 B2,
+    lc_tm A1 ->
+    lc_tm (a_Pi rho A1 B1) ->
+    lc_tm A2 ->
+    lc_tm (a_Pi rho A2 B2) ->
+    consistent (a_Pi rho A1 B1) (a_Pi rho A2 B2)
+| consistent_a_CPi    : forall phi1 A1 phi2 A2,
+    lc_constraint phi1 ->
+    lc_tm (a_CPi phi1 A1) ->
+    lc_constraint phi2 ->
+    lc_tm (a_CPi phi2 A2) ->
+    consistent (a_CPi phi1 A1) (a_CPi phi2 A2)
+| consistent_Path     : forall T p1 p2,
+    Path T p1 -> Path T p2 ->
+    consistent p1 p2
+| consistent_a_Const  : forall T, consistent (a_Const T)(a_Const T)
+| consistent_a_App    : forall p1 p2 b1 b2 rho,
+    lc_tm b1 -> lc_tm b2 ->
+    consistent p1 p2 ->
+    consistent (a_App p1 rho b1) (a_App p2 rho b2)
+| consistent_a_CApp    : forall p1 p2 b1 b2,
+    lc_co b1 -> lc_co b2 ->
+    consistent p1 p2 ->
+    consistent (a_CApp p1 b1) (a_CApp p2 b2)
+| consistent_a_Step_R : forall a b,
+    lc_tm a ->
+    not (value_type b) -> consistent a b
+| consistent_a_Step_L : forall a b,
+    lc_tm a ->
+    not (value_type b) -> consistent b a.
+Hint Constructors consistent.
+*)
+
+(*
+Inductive erased_tm : tm -> Prop :=
+| erased_a_Bullet :
+    (erased_tm a_Bullet)
+ | erased_a_Star :
+     (erased_tm a_Star)
+ | erased_a_Var_f : forall (x:tmvar),
+     (erased_tm (a_Var_f x))
+ | erased_a_Abs : forall L rho (b:tm),
+     ( forall x , x `notin` L -> erased_tm  ( open_tm_wrt_tm b (a_Var_f x) )  )  ->
+     (erased_tm (a_UAbs rho b))
+ | erased_a_App : forall rho (a b:tm),
+     (erased_tm a) ->
+     (erased_tm b) ->
+     (erased_tm (a_App a rho b))
+ | erased_a_Pi : forall L rho (A B:tm),
+     (erased_tm A) ->
+      ( forall x , x `notin` L -> erased_tm  ( open_tm_wrt_tm B (a_Var_f x) )  )  ->
+     (erased_tm (a_Pi rho A B))
+ | erased_a_CPi : forall L (A A1 A2: tm) (B:tm),
+     (erased_tm A1) ->  (erased_tm A2) -> (erased_tm A) ->
+      ( forall c , c `notin` L -> erased_tm  ( open_tm_wrt_co B (g_Var_f c) )  )  ->
+     (erased_tm (a_CPi (Eq A1 A2 A) B))
+ | erased_a_CAbs : forall L (A A1 A2:tm) (b:tm),
+      (forall c , c `notin` L -> erased_tm  ( open_tm_wrt_co b (g_Var_f c) )  )  ->
+     (erased_tm (a_UCAbs b))
+ | erased_a_CApp : forall (a:tm),
+     (erased_tm a) ->
+     (erased_tm (a_CApp a g_Triv))
+ | erased_a_Const : forall T,
+     erased_tm (a_Const T)
+ | erased_a_Fam : forall F,
+     erased_tm (a_Fam F)
+.
+
+Hint Constructors erased_tm.
+*)
 
 (* NOTE: we have a database 'erased' for proving that terms are erased. *)
 
@@ -116,7 +189,7 @@ Inductive erased_sort : sort -> Prop :=
 | erased_Tm : forall a, erased_tm a -> erased_sort (Tm a)
 | erased_Co : forall a b A, erased_tm a -> erased_tm b -> erased_tm A -> erased_sort (Co (Eq a b A)).
 
-(* Check Forall_forall FIXME:?? *)
+(* Check Forall_forall *)
 
 Definition erased_context : context -> Prop :=
   Forall (fun p => match p with (a,s) => erased_sort s end).
@@ -148,6 +221,7 @@ Hint Resolve subst_tm_erased subst_co_erased : erased.
 
 Lemma Par_lc1 : forall G D a a' , Par G D a a' -> lc_tm a.
   intros.  induction H; auto.
+  apply_lc_exists x; unfold not in *; rewrite_body.
 Qed.
 
 (* FIXME: find a good place for this tactic. *)
@@ -276,6 +350,12 @@ Proof.
     rewrite (co_subst_co_tm_intro x); auto;
     apply subst_co_erased; auto.
   - eauto with erased.
+  - (* Eta *)
+    eapply IHEp; auto.
+    pick fresh x;
+    erased_body x Eaa;
+    eta_eq x E.
+    rewrite E in Eaa; inversion Eaa; auto.
 Qed.
 
 Hint Resolve Par_erased_tm : erased.
@@ -322,6 +402,13 @@ Proof.
     move: (Typing_context_fv h0) => ?. split_hyp.
     simpl in *.
     fsetdec.
+  - Par_pick_fresh y; eauto.
+    have h1: y <> x by auto.
+    move: (H y ltac:(auto)) => h0.
+    apply (fun_cong (tm_subst_tm_tm b x)) in h0.
+    rewrite tm_subst_tm_tm_open_tm_wrt_tm in h0; auto.
+    simpl in h0.
+    destruct (@eq_dec tmvar _ y x); subst; try done.
 Qed.
 
 
@@ -344,6 +431,20 @@ Proof.
     end.
      move: (Typing_context_fv h0) => ?. split_hyp.
      fsetdec.
+  -
+    pick fresh y.
+    move: (H4 y ltac:(auto)) => h0.
+    move: (H2 y ltac:(auto)) => h1.
+    rewrite h1 in h0. inversion h0. subst.
+    eapply (Par_Eta (L \u singleton x)). eauto.
+    intros z Fr0.
+    move: (H2 z ltac:(auto)) => h2.
+    apply (fun_cong (tm_subst_tm_tm b x)) in h2.
+    rewrite tm_subst_tm_tm_open_tm_wrt_tm in h2.
+    simpl in h2.
+    destruct (@eq_dec tmvar _ z x); try done.
+    clear Fr. fsetdec.
+    eapply Par_lc1. eauto.
 Qed.
 
 
@@ -365,6 +466,12 @@ Proof.
     move: (Typing_context_fv  h0) => ?. split_hyp.
     simpl in *.
     fsetdec.
+  -
+    pick fresh y and apply Par_Eta; eauto.
+    move: (H y ltac:(auto)) => h1.
+    apply (fun_cong (co_subst_co_tm b x)) in h1.
+    rewrite co_subst_co_tm_open_tm_wrt_tm in h1.
+    simpl in h1. auto. auto.
 Qed.
 
 Lemma multipar_subst3 : forall S D b b' x, erased_tm b ->

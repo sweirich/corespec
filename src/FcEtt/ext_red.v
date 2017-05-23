@@ -93,6 +93,7 @@ Proof.
   eapply Beta_preservation; eauto.
 Qed.
 
+
 Lemma Par_fv_preservation: forall G D x a b, Par G D a b ->
                                         x `notin` fv_tm_tm_tm a ->
                                         x `notin` fv_tm_tm_tm b.
@@ -164,6 +165,22 @@ Proof.
     move: (Typing_context_fv H) => ?. split_hyp.
     simpl in *.
     fsetdec.
+  -
+    apply IHPar.
+    pick fresh y.
+    move: (H1 y ltac:(auto)) => h0.
+    apply (fun_cong fv_tm_tm_tm) in h0.
+    simpl in h0.
+    move: (@fv_tm_tm_tm_open_tm_wrt_tm_lower a (a_Var_f y) x) => h1.
+    move: (@fv_tm_tm_tm_open_tm_wrt_tm_upper a (a_Var_f y) x) => h2.
+    unfold not. intro IN.
+    assert (h3: x `in` (union (fv_tm_tm_tm b) (singleton y))). auto.
+    rewrite -h0 in h3.
+    apply h2 in h3.
+    simpl in h3.
+    destruct (AtomSetImpl.union_1 h3).
+    assert (x `notin` singleton y). auto. done.
+    done.
 Qed.
 
 
@@ -174,6 +191,13 @@ Proof.
 Qed.
 
 
+
+
+(*
+See: reduction_in_one_lc in ext_red_one.
+
+Lemma reduction_lc : forall a a', reduction_in_one a a' -> lc_tm a -> lc_tm a'.
+*)
 
 
 Lemma reduction_in_one_fv_preservation: forall x a b, reduction_in_one a b ->
@@ -244,7 +268,7 @@ Proof.
         eapply (E_Sym _ _ _ _ _ x0x2).
       * apply DefEq_regularity in x0x2. by inversion x0x2.
       * eauto.
-      * (* TODO: autoreg tactic (applies regularity automatically) *)
+      * (* TODO: autoreg. *)
         apply DefEq_regularity in H3.
         by inversion H3.
 
@@ -287,7 +311,8 @@ Proof.
         eapply (E_Sym _ _ _ _ _ x0x3).
       * apply DefEq_regularity in x0x3. by inversion x0x3.
       * eauto.
-      * apply DefEq_regularity in H3.
+      * (* TODO: autoreg. *)
+        apply DefEq_regularity in H3.
         by inversion H3.
 
 
@@ -317,6 +342,54 @@ Proof.
     by apply.
 Qed.
 
+(* ---- helper tactics for lemma below. -------------- *)
+
+(* Convert a goal of the form  Par (XX ++ G) dom(XX ++ G) a b ==> Par G D a b *)
+Ltac par_with_context_tail :=
+  match goal with
+  | _ : _ |- Par ([?s] ++ ?G ) (dom ([?s] ++ ?G)) ?a ?b =>
+    eapply context_Par_irrelevance with (G1 := G) (D1 := dom G); eauto
+  end.
+
+Ltac ind_hyp a k1 k2 :=
+  match goal with
+    [ H : ∀ a' : tm, Ctx ?G → Par ?G ?D a a' → Typing ?G a' ?A ∧ DefEq ?G empty a a' ?A,
+        H1 : Par ?G ?D a ?a',
+        H2 : Ctx ?G |- _ ] =>
+    move: (@H a' H2 H1) => [k1 k2]
+
+
+  end.
+
+Ltac ind_hyp_open x B k1 k2 :=
+  match goal with
+    [ H : forall x, x `notin` ?L -> forall a', Ctx ([(x, ?s)] ++ ?G) -> Par ([(x, ?s)] ++ ?G) ?D (open_tm_wrt_tm B (a_Var_f x)) a' -> ?P,
+        H1 : Ctx ?G,
+        H10 :  forall x : atom, x `notin` ?L0 → Par ?G ?D0 (open_tm_wrt_tm B (a_Var_f x)) (open_tm_wrt_tm ?B' (a_Var_f x))
+                          |- _ ] =>
+    move: (H x ltac:(auto) (open_tm_wrt_tm B' (a_Var_f x)) ltac:(auto)
+                (context_Par_irrelevance ([(x, s)] ++ G) (dom ([(x,s)] ++ G)) (H10 x ltac:(auto)))) => [k0 k1]
+      end.
+
+
+(*
+
+This lemma is not true in the presence of Eta-reduction in Par.
+Instead, we should prove preservation for the head_reduction relation that
+does not include eta.
+
+
+(* Extend to D insteadn of just dom G??? *)
+Lemma type_reduction_mutual:
+  (forall G a A,     Typing G a A    ->
+                forall a', Ctx G -> Par G (dom G) a a'-> Typing G a' A /\ DefEq G empty a a' A) /\
+  (forall G phi,     PropWff G phi   -> forall A B T, Ctx G -> phi = Eq A B T ->
+                                       (forall A' B' T', Par G (dom G) A A' -> Par G (dom G) B B' -> Par G (dom G) T T' ->
+                                                    PropWff G (Eq A' B' T') /\ Iso G empty phi (Eq A' B' T'))) /\
+  (forall G D p1 p2, Iso G D p1 p2   -> True) /\
+  (forall G D A B T, DefEq G D A B T -> True) /\
+  (forall G1,        Ctx G1 -> True).
+*)
 
 
 End  ext_red.

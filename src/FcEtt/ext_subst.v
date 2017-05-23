@@ -205,6 +205,7 @@ Ltac eapply_E_subst :=
           eapply E_App      |
           eapply E_IApp     |
           eapply E_CApp     |
+          eapply E_Const    |
           eapply E_IsoConv  |
           eapply E_AppCong  |
           eapply E_IAppCong |
@@ -280,6 +281,11 @@ Lemma tm_substitution_mutual :
       eauto.
   - (* conversion *)
     econstructor; try eapply DefEq_weaken_available; eauto.
+  - have h0: Typing nil A a_Star by eauto using toplevel_closed.
+    eapply tm_subst_fresh_2 with (x:=x )in h0; eauto.
+    erewrite h0. auto.
+  - have h0: Typing nil A a_Star.  eapply toplevel_to_const; eauto.
+    erewrite tm_subst_fresh_2; eauto.
   -
     have h0: Typing nil a A by eauto using toplevel_closed.
     eapply E_Fam with (a:= tm_subst_tm_tm a0 x a); eauto.
@@ -309,6 +315,44 @@ Lemma tm_substitution_mutual :
     eapply Beta_tm_subst; eauto with lc.
   - eapply E_EqConv; eauto 2.
     eapply DefEq_weaken_available; eauto.
+  - have h0: (y <> x) by eauto.
+    rewrite e; eauto.
+    simpl; destruct eq_dec; try done.
+  (* Left/Right.  Do not remove
+  - eapply E_LeftRel with (b := tm_subst_tm_tm a0 x b)
+                          (b':= tm_subst_tm_tm a0 x b'); eauto 2. eapply Path_tm_subst_tm_tm; eauto 2 with lc.
+    eapply Path_tm_subst_tm_tm; eauto 2 with lc.
+    autorewrite with open_subst; eauto 2 with lc.
+    autorewrite with open_subst; eauto 2 with lc.
+    eapply DefEq_weaken_available; eauto 2.
+
+  - eapply E_LeftIrrel with (b := tm_subst_tm_tm a0 x b)
+                          (b':= tm_subst_tm_tm a0 x b'); eauto 2. eapply Path_tm_subst_tm_tm; eauto 2 with lc.
+    eapply Path_tm_subst_tm_tm; eauto 2 with lc.
+    autorewrite with open_subst; eauto 2 with lc.
+    eapply H3; eauto.
+    autorewrite with open_subst; eauto 2 with lc.
+    eapply DefEq_weaken_available; eauto 2.
+  - eapply E_Right with (a := tm_subst_tm_tm a0 x a)
+                        (a':= tm_subst_tm_tm a0 x a'); eauto 2.
+    eapply Path_tm_subst_tm_tm; eauto 2 with lc.
+    eapply Path_tm_subst_tm_tm; eauto 2 with lc.
+    eapply H; eauto 2.
+    eapply H1; eauto 2.
+    autorewrite with open_subst; eauto 2 with lc.
+    autorewrite with open_subst; eauto 2 with lc.
+    eapply DefEq_weaken_available; eauto 2.
+  - eapply E_CLeft; eauto 2.
+    eapply Path_tm_subst_tm_tm; eauto 2 with lc.
+    eapply Path_tm_subst_tm_tm; eauto 2 with lc.
+    eapply H; eauto 2.
+    eapply H0; eauto 2.
+    eapply DefEq_weaken_available; eauto 2.
+    replace g_Triv with (tm_subst_tm_co a0 x g_Triv).
+    autorewrite with open_subst; eauto 2 with lc.
+    auto.
+
+  *)
   - destruct  F; try done.
   - induction F; try done.
     simpl; simpl in H2.
@@ -422,6 +466,12 @@ Proof.
   - eapply E_Conv; eauto 3.
     eapply DefEq_weaken_available; eauto 1.
     eapply_first_hyp; eauto 2.
+  - have h0: Typing nil A a_Star by eauto using toplevel_closed.
+    rewrite co_subst_co_tm_fresh_eq; auto.
+    move: (Typing_context_fv h0) => hyp. split_hyp. fsetdec.
+  - have h0: Typing nil A a_Star.  eapply toplevel_to_const; eauto.
+    rewrite co_subst_co_tm_fresh_eq; auto.
+    move: (Typing_context_fv h0) => hyp. split_hyp. fsetdec.
   -  have h0: Typing nil a A by eapply toplevel_closed; eauto.
     erewrite (tm_subst_co_fresh_1 _ h0); eauto.
   - apply (E_Wff _ _ _  (co_subst_co_tm g_Triv c A)); eauto 3.
@@ -478,7 +528,41 @@ Proof.
     eauto 2.
   - eapply E_IsoSnd; eauto 1.
     eapply H; eauto.
+  - rewrite e; eauto.
+  (* Left/Right. Do not remove.
+  - eapply E_LeftRel with (b := co_subst_co_tm g_Triv c b) (b':= co_subst_co_tm g_Triv c b'); eauto 2.
+    eapply Path_co_subst_co_tm; eauto 2 with lc.
+    eapply Path_co_subst_co_tm; eauto 2 with lc.
+    autorewrite with open_subst; eauto 2 with lc.
+    autorewrite with open_subst; eauto 2 with lc.
+    eapply DefEq_weaken_available; eauto 2.
 
+  - eapply E_LeftIrrel with (b := co_subst_co_tm g_Triv c b)
+                              (b':= co_subst_co_tm g_Triv c b'); eauto 2.
+    eapply Path_co_subst_co_tm; eauto 2 with lc.
+    eapply Path_co_subst_co_tm; eauto 2 with lc.
+    autorewrite with open_subst; eauto 2 with lc.
+    eapply H3; eauto.
+    autorewrite with open_subst; eauto 2 with lc.
+    eapply DefEq_weaken_available; eauto 2.
+  - eapply E_Right with (a := co_subst_co_tm g_Triv c a)
+                        (a':= co_subst_co_tm g_Triv c a'); eauto 2.
+    eapply Path_co_subst_co_tm; eauto 2 with lc.
+    eapply Path_co_subst_co_tm; eauto 2 with lc.
+    eapply H; eauto 2.
+    eapply H1; eauto 2.
+    autorewrite with open_subst; eauto 2 with lc.
+    autorewrite with open_subst; eauto 2 with lc.
+    eapply DefEq_weaken_available; eauto 2.
+  - eapply E_CLeft; eauto 2.
+    eapply Path_co_subst_co_tm; eauto 2 with lc.
+    eapply Path_co_subst_co_tm; eauto 2 with lc.
+    eapply H; eauto 2.
+    eapply H0; eauto 2.
+    eapply DefEq_weaken_available; eauto 2.
+    replace g_Triv with (co_subst_co_co g_Triv c g_Triv).
+    autorewrite with open_subst; eauto 2 with lc.
+    auto. *)
   - induction F; done.
   - induction F; try done.
     destruct a.

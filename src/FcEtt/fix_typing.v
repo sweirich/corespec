@@ -6,8 +6,6 @@ Set Bullet Behavior "Strict Subproofs".
 Set Implicit Arguments.
 
 
-(**** Toplevel signature with a fixpoint operator ****)
-
 (*
 
 This module proves the following results:
@@ -182,6 +180,10 @@ Proof.
   unfold toplevel, erase_sig.
   unfold an_toplevel.
   econstructor; eauto.
+(*  unfold toplevel, erase_sig.
+  pose (K := AxFix).
+  eapply binds_map with (f:= erase_csort) in K.
+  apply K. *)
   eapply FixTy_erase.
   eapply FixDef_FixTy_erase.
 Qed.

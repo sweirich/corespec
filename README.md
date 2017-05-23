@@ -1,6 +1,6 @@
 - [src](src/FcEtt) for Coq development.
 
-- [spec](spec/ott.ett) for Ott specification.
+- [spec](spec/ett.ott) for Ott specification.
 
-- [doc](doc/) for ICFP 17 paper "A Specification for Dependent Types in
-Haskell".
+- [doc](doc/icfp17) for ICFP 17 paper sources,
+  "A Specification for Dependent Types in Haskell".

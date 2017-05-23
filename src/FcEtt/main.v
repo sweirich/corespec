@@ -1,8 +1,6 @@
-(**** Master file ****)
-
-(** Combining all parametrized modules together
-    This serves both as an entry point for the proofs (combining all results),
-    and a simple sanity check. **)
+(* Combining all the parametrized modules together
+   This serves both as an entry point for the proofs (combining all results)
+   and a simple sanity check. *)
 
 Require Import FcEtt.ext_wf.
 Require Import FcEtt.ext_weak.

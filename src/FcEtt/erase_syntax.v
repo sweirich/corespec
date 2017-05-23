@@ -229,7 +229,7 @@ Lemma fv_tm_erase_tm : ∀ x (a : tm),
     x `notin` fv_tm a -> x `notin` fv_tm (erase a).
 Proof.
   move=> x.
-  (* TODO: should be done automatically (mutual induction tactic) *)
+  (* Todo: should be done automatically (mutual inducation tactic *)
   cut ((∀ a : tm, x `notin` fv_tm a -> x `notin` fv_tm (erase a)) /\
        (∀ a : brs, x `notin` fv_tm a -> x `notin` fv_tm (erase a)) /\
        (∀ a : co, x `notin` fv_tm a -> x `notin` fv_tm (erase a)) /\
@@ -243,7 +243,7 @@ Lemma fv_co_erase_tm : ∀ x (a : tm),
     x `notin` fv_co a -> x `notin` fv_co (erase a).
 Proof.
   move=> x.
-  (* TODO: should be done automatically (mutual induction tactic) *)
+  (* Todo: should be done automatically (mutual inducation tactic *)
   cut ((∀ a : tm, x `notin` fv_co a -> x `notin` fv_co (erase a)) /\
        (∀ a : brs, x `notin` fv_co a -> x `notin` fv_co (erase a)) /\
        (∀ a : co, x `notin` fv_co a -> x `notin` fv_co (erase a)) /\
@@ -310,7 +310,7 @@ Qed.
 
 
 
-(* ----- Preservation of erasure under substitution ---------- *)
+(* ----- preservation of erasure under substitution ---------- *)
 
 Theorem erase_subst_mutual a x :
   (∀ A B,       erase_tm A = erase_tm B ->
@@ -586,6 +586,11 @@ Qed.
 
 (* value_type *)
 
+Lemma path_erase : forall T p, Path T p -> Path T (erase p).
+Proof.
+  intros. induction H; simpl; eauto.
+  - destruct rho; simpl; autorewcs; eauto with lc.
+Qed.
 
 Lemma CoercedValueValue_erase:
   (forall v,  CoercedValue v -> Value (erase v)) /\
@@ -595,7 +600,7 @@ Proof. apply CoercedValue_Value_mutual; eauto.
   all: try destruct rho.
   all: try match goal with [H : lc_tm (?a ?b) |- _ ] =>
                            apply lc_tm_erase in H; simpl in * end.
-  all: simpl; autorewcs; eauto using lc_tm_erase, lc_constraint_erase.
+  all: simpl; autorewcs; eauto using path_erase, lc_tm_erase, lc_constraint_erase.
 
   all: try solve [econstructor; intros x Fr;
   replace (a_Var_f x) with (erase (a_Var_f x)); auto;
@@ -614,6 +619,10 @@ Proof.
   induction H2; simpl in *; lc_inversion c; subst; eauto with lc.
   econstructor; eauto with lc.
   econstructor; eauto with lc.
+  destruct rho; simpl; eauto using path_erase, lc_tm_erase.
+  eauto using path_erase, lc_tm_erase, Value_erase.
+  eauto using path_erase, lc_tm_erase, Value_erase.
+  eauto using path_erase, lc_tm_erase, Value_erase.
 Qed.
 
 (* ---------------------------------- *)
@@ -626,7 +635,9 @@ Lemma ann_rho_swap : forall rho x x0 a,
 Proof.
   intros rho x x0 a F1 F2 H0.
   inversion H0; subst; constructor.
-  + auto.
+  + auto. (*autorewcs. rewrite -open_tm_erase_tm. simpl.
+    autorewcshyp H. rewrite -open_tm_erase_tm in H. simpl in H.
+    eapply lc_swap with (x0 := x0) (x:= x); auto. *)
   + autorewcs. rewrite -open_tm_erase_tm. simpl.
     autorewcshyp H. rewrite -open_tm_erase_tm in H. simpl in H.
     eapply fv_swap with (x:=x); eauto.

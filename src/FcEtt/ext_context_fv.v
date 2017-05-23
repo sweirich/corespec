@@ -24,6 +24,22 @@ Ltac solve_binds :=
   end.
 
 
+(*
+Definition tm_context_fv_statement G a A (H: Typing G a A) :=
+
+Definition PropWff_context_fv_statement G phi (H : PropWff G phi) :=
+  fv_tm_tm_constraint phi [<=] dom G.
+Definition  Iso_context_fv_statement G D p1 p2 (H : Iso G D p1 p2) :=
+  fv_tm_tm_constraint p1 [<=] dom G /\
+  fv_tm_tm_constraint p2 [<=] dom G.
+Definition DefEq_context_fv_statement G D A B T (H : DefEq G D A B T) :=
+  fv_tm_tm_tm A [<=] dom G /\ fv_tm_tm_tm B [<=] dom G.
+Definition Ctx_context_fv_statement G (H : Ctx G) :=
+  forall x A, binds x (Tm A) G -> fv_tm_tm_tm A [<=] dom G.
+*)
+
+
+(* FIXME: ? *)
 Import AtomSetImpl.
 
 Lemma in_singleton_subset : forall x (G : context), x `in` dom G -> singleton x [<=] dom G.
@@ -181,10 +197,95 @@ Proof.
   (* all: try solve [ assert (c = y) by auto; subst; eapply binds_In; eauto ]. *)
   all: try solve [ destruct (H0 _ _ b0); simpl in *; eauto].
 
+  - (* exactly the same case as in fc version *)
+    eapply H. clear H0 H1 H2.
+    pick fresh x.
+    move: (e x ltac:(auto)) => h0.
+    have h1: y `in` fv_tm_tm_tm (open_tm_wrt_tm a (a_Var_f x)).
+    move: (fv_tm_tm_tm_open_tm_wrt_tm_lower a (a_Var_f x)) => h2.
+    fsetdec.
+    rewrite h0 in h1.
+    simpl in h1.
+    move: (AtomSetProperties.Dec.F.union_iff (fv_tm_tm_tm b) {{x}} y) => [h3 h4].
+    destruct (h3 h1). auto.
+    assert (x <> y). fsetdec. clear Fr.
+    fsetdec.
+  -  eapply H0. clear H H1 H2.
+    pick fresh x.
+    move: (e x ltac:(auto)) => h0.
+    have h1: y `in` fv_co_co_tm (open_tm_wrt_tm a (a_Var_f x)).
+    move: (fv_co_co_tm_open_tm_wrt_tm_lower a (a_Var_f x)) => h2.
+    fsetdec.
+    rewrite h0 in h1.
+    simpl in h1.
+    clear Fr.
+    fsetdec.
 Qed.
+(* Qed. (* Free variables are described by the context *) *)
 
 
 Definition Typing_context_fv  := first context_fv_mutual.
 Definition ProfWff_context_fv := second context_fv_mutual.
 Definition Iso_context_fv     := third context_fv_mutual.
 Definition DefEq_context_fv   := fourth context_fv_mutual.
+
+
+
+(*
+Lemma context_fv_mutual2 :
+  (forall G0 (b : tm) B H, @tm_context_fv_statement G0 b B H
+                                               fv_tm_tm_tm a [<=] dom G /\ fv_tm_tm_tm A [<=] dom G.
+  ) /\
+    (forall G0 phi H, @PropWff_context_fv_statement G0 phi H) /\
+    (forall G0 D p1 p2 H,   @Iso_context_fv_statement G0 D p1 p2 H) /\
+    (forall G0 D A B T H,   @DefEq_context_fv_statement G0 D A B T H) /\
+    (forall G H, @Ctx_context_fv_statement G H).
+Proof.
+  repeat split; intros.
+  all: try eapply (first context_fv_mutual _ _ _ H); eauto.
+  all: try eapply (second context_fv_mutual _ _ H); eauto.
+  all: try eapply (third context_fv_mutual _ _ _ _ H); eauto.
+  - eapply (first (fourth context_fv_mutual _ _ _ _ _ H)); eauto.
+  - eapply (third (fourth context_fv_mutual _ _ _ _ _ H)); eauto.
+  - unfold Ctx_context_fv_statement.
+    intros x A H0.
+    eapply ((fifth context_fv_mutual _ H)); eauto.
+Qed.
+
+Definition typing_context_fv := @first _ _ _ _ _ context_fv_mutual2.
+Definition ProfWff_context_fv := @second _ _ _ _ _ context_fv_mutual2.
+Definition iso_context_fv := @third _ _ _ _ _ context_fv_mutual2.
+Definition defeq_context_fv := @fourth _ _ _ _ _ context_fv_mutual2.
+
+Definition tm_context_fv_co_statement G a A (H: Typing G a A) :=
+  fv_co_co_tm a [<=] dom G /\ fv_co_co_tm A [<=] dom G.
+Definition PropWff_context_fv_co_statement G phi (H : PropWff G phi) :=
+  fv_co_co_constraint phi [<=] dom G.
+Definition  Iso_context_fv_co_statement G D p1 p2 (H : Iso G D p1 p2) :=
+  fv_co_co_constraint p1 [<=] dom G /\
+  fv_co_co_constraint p2 [<=] dom G.
+Definition DefEq_context_fv_co_statement G D A B T (H : DefEq G D A B T) :=
+  fv_co_co_tm A [<=] dom G /\ fv_co_co_tm B [<=] dom G.
+Definition Ctx_context_fv_co_statement G (H : Ctx G) := True.
+
+
+Lemma context_fv_co_mutual :
+    (forall G0 (b : tm) B H, @tm_context_fv_co_statement G0 b B H) /\
+    (forall G0 phi H, @PropWff_context_fv_co_statement G0 phi H) /\
+    (forall G0 D p1 p2 H,   @Iso_context_fv_co_statement G0 D p1 p2 H) /\
+    (forall G0 D A B T H,   @DefEq_context_fv_co_statement G0 D A B T H) /\
+    (forall G H, @Ctx_context_fv_co_statement G H).
+Proof.
+  repeat split; intros.
+  all: try eapply (first context_fv_mutual _ _ _ H); eauto.
+  all: try eapply (second context_fv_mutual _ _ H); eauto.
+  all: try eapply (third context_fv_mutual _ _ _ _ H); eauto.
+  - eapply (second (fourth context_fv_mutual _ _ _ _ _ H)); eauto.
+  - eapply (fourth (fourth context_fv_mutual _ _ _ _ _ H)); eauto.
+Qed.
+
+Definition typing_context_fv_co := @first _ _ _ _ _ context_fv_co_mutual.
+Definition ProfWff_context_fv_co := @second _ _ _ _ _ context_fv_co_mutual.
+Definition iso_context_fv_co := @third _ _ _ _ _ context_fv_co_mutual.
+Definition defeq_context_fv_co := @fourth _ _ _ _ _ context_fv_co_mutual.
+*)
