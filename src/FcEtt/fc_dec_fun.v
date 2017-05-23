@@ -2071,7 +2071,7 @@ Next Obligation.
   (* TODO: uniq should be discharged via typeclasses/CS *)
   move: (binds_unique _ _ _ _ _ H3 wildcard'0 uniq_an_toplevel).
   intro h0. inversion h0. subst.
-  move: (binds_to_type _ _ AnnSig_an_toplevel H3) => h1. done.
+  move: (binds_to_type H3) => h1. done.
 Defined.
 Next Obligation.
   subst.

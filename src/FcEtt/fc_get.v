@@ -245,15 +245,14 @@ Proof.
     - inversion HT. subst.
       Opaque an_toplevel.
       simpl.
-      destruct (binds_lookup _ F an_toplevel) as [[ [A0 | phi] P] | NB].
-      move: (binds_unique _ _ _ _ _ H2 P uniq_an_toplevel) => h0. inversion h0.
-      move: (binds_unique _ _ _ _ _ H2 P uniq_an_toplevel) => h0. inversion h0. auto.
+      destruct (binds_lookup _ F an_toplevel) as [[ [ A0 | A0 | phi] P] | NB];
+      try (move: (binds_unique _ _ _ _ _ H2 P uniq_an_toplevel) => h0; inversion h0).
+      auto.
       eapply NB in H2. done.
     - inversion HT. subst. Opaque an_toplevel.
       simpl.
-      destruct (binds_lookup _ T an_toplevel) as [ [ [A0 | phi] P] | NB].
-      move: (binds_unique _ _ _ _ _ H2 P uniq_an_toplevel) => h0. inversion h0. auto.
-      move: (binds_unique _ _ _ _ _ H2 P uniq_an_toplevel) => h0. inversion h0.
+      destruct (binds_lookup _ T an_toplevel) as [ [ [A0 | A0 | phi] P] | NB];
+      try (move: (binds_unique _ _ _ _ _ H2 P uniq_an_toplevel) => h0; inversion h0). auto.
       eapply NB in H2. done.
     - inversion HT. subst. simpl.
       remember (get_deq_n n G g) as GD. destruct GD as [A' B'].

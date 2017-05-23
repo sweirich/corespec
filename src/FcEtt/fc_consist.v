@@ -84,7 +84,7 @@ Lemma Paths_are_DataTy : forall T a,
 Proof.
   induction 1; intros.
   - inversion H0. subst.
-    eapply (binds_to_type _ _ AnnSig_an_toplevel); eauto.
+    eapply binds_to_type; eauto.
   - inversion H1. inversion H2. subst.
     move: (IHPath H8 _ _ H14) => h0.
     inversion h0. subst.
@@ -123,7 +123,7 @@ Proof.
   + inversion V.
     eapply (@Paths_have_value_types T (a_CApp a1 g)); eauto.
   + eapply DataTy_value_type.
-    eapply (binds_to_type _ _ AnnSig_an_toplevel); eauto.
+    eapply binds_to_type; eauto.
 Qed.
 
 

@@ -66,8 +66,9 @@ Inductive sort : Set :=  (*r binding classifier *)
  | Co (phi:constraint).
 
 Inductive sig_sort : Set :=  (*r signature classifier *)
- | Cs (A:tm)
- | Ax (a:tm) (A:tm).
+ | Dc (A:tm) (T:const) (*r Data constructor *)
+ | Cs (A:tm) (*r Type constructor *)
+ | Ax (a:tm) (A:tm) (*r Recursive def *).
 
 Definition context : Set := list ( atom * sort ).
 
@@ -215,12 +216,14 @@ end.
 
 Definition open_sig_sort_wrt_co_rec (k:nat) (g5:co) (sig_sort5:sig_sort) : sig_sort :=
   match sig_sort5 with
+  | (Dc A T) => Dc (open_tm_wrt_co_rec k g5 A) T
   | (Cs A) => Cs (open_tm_wrt_co_rec k g5 A)
   | (Ax a A) => Ax (open_tm_wrt_co_rec k g5 a) (open_tm_wrt_co_rec k g5 A)
 end.
 
 Definition open_sig_sort_wrt_tm_rec (k:nat) (a5:tm) (sig_sort5:sig_sort) : sig_sort :=
   match sig_sort5 with
+  | (Dc A T) => Dc (open_tm_wrt_tm_rec k a5 A) T
   | (Cs A) => Cs (open_tm_wrt_tm_rec k a5 A)
   | (Ax a A) => Ax (open_tm_wrt_tm_rec k a5 a) (open_tm_wrt_tm_rec k a5 A)
 end.
@@ -428,6 +431,9 @@ Inductive lc_sort : sort -> Prop :=    (* defn lc_sort *)
 
 (* defns LC_sig_sort *)
 Inductive lc_sig_sort : sig_sort -> Prop :=    (* defn lc_sig_sort *)
+ | lc_Dc : forall (A:tm) (T:const),
+     (lc_tm A) ->
+     (lc_sig_sort (Dc A T))
  | lc_Cs : forall (A:tm),
      (lc_tm A) ->
      (lc_sig_sort (Cs A))
@@ -436,35 +442,7 @@ Inductive lc_sig_sort : sig_sort -> Prop :=    (* defn lc_sig_sort *)
      (lc_tm A) ->
      (lc_sig_sort (Ax a A)).
 (** free variables *)
-Fixpoint fv_tm_tm_co (g_5:co) : vars :=
-  match g_5 with
-  | g_Triv => {}
-  | (g_Var_b nat) => {}
-  | (g_Var_f c) => {}
-  | (g_Beta a b) => (fv_tm_tm_tm a) \u (fv_tm_tm_tm b)
-  | (g_Refl a) => (fv_tm_tm_tm a)
-  | (g_Refl2 a b g) => (fv_tm_tm_tm a) \u (fv_tm_tm_tm b) \u (fv_tm_tm_co g)
-  | (g_Sym g) => (fv_tm_tm_co g)
-  | (g_Trans g1 g2) => (fv_tm_tm_co g1) \u (fv_tm_tm_co g2)
-  | (g_PiCong rho g1 g2) => (fv_tm_tm_co g1) \u (fv_tm_tm_co g2)
-  | (g_AbsCong rho g1 g2) => (fv_tm_tm_co g1) \u (fv_tm_tm_co g2)
-  | (g_AppCong g1 rho g2) => (fv_tm_tm_co g1) \u (fv_tm_tm_co g2)
-  | (g_PiFst g) => (fv_tm_tm_co g)
-  | (g_CPiFst g) => (fv_tm_tm_co g)
-  | (g_IsoSnd g) => (fv_tm_tm_co g)
-  | (g_PiSnd g1 g2) => (fv_tm_tm_co g1) \u (fv_tm_tm_co g2)
-  | (g_CPiCong g1 g3) => (fv_tm_tm_co g1) \u (fv_tm_tm_co g3)
-  | (g_CAbsCong g1 g3 g4) => (fv_tm_tm_co g1) \u (fv_tm_tm_co g3) \u (fv_tm_tm_co g4)
-  | (g_CAppCong g g1 g2) => (fv_tm_tm_co g) \u (fv_tm_tm_co g1) \u (fv_tm_tm_co g2)
-  | (g_CPiSnd g g1 g2) => (fv_tm_tm_co g) \u (fv_tm_tm_co g1) \u (fv_tm_tm_co g2)
-  | (g_Cast g1 g2) => (fv_tm_tm_co g1) \u (fv_tm_tm_co g2)
-  | (g_EqCong g1 A g2) => (fv_tm_tm_co g1) \u (fv_tm_tm_tm A) \u (fv_tm_tm_co g2)
-  | (g_IsoConv phi1 phi2 g) => (fv_tm_tm_constraint phi1) \u (fv_tm_tm_constraint phi2) \u (fv_tm_tm_co g)
-  | (g_Eta a) => (fv_tm_tm_tm a)
-  | (g_Left g g') => (fv_tm_tm_co g) \u (fv_tm_tm_co g')
-  | (g_Right g g') => (fv_tm_tm_co g) \u (fv_tm_tm_co g')
-end
-with fv_tm_tm_brs (brs_6:brs) : vars :=
+Fixpoint fv_tm_tm_brs (brs_6:brs) : vars :=
   match brs_6 with
   | br_None => {}
   | (br_One K a brs5) => (fv_tm_tm_tm a) \u (fv_tm_tm_brs brs5)
@@ -492,6 +470,34 @@ end
 with fv_tm_tm_constraint (phi5:constraint) : vars :=
   match phi5 with
   | (Eq a b A) => (fv_tm_tm_tm a) \u (fv_tm_tm_tm b) \u (fv_tm_tm_tm A)
+end
+with fv_tm_tm_co (g_5:co) : vars :=
+  match g_5 with
+  | g_Triv => {}
+  | (g_Var_b nat) => {}
+  | (g_Var_f c) => {}
+  | (g_Beta a b) => (fv_tm_tm_tm a) \u (fv_tm_tm_tm b)
+  | (g_Refl a) => (fv_tm_tm_tm a)
+  | (g_Refl2 a b g) => (fv_tm_tm_tm a) \u (fv_tm_tm_tm b) \u (fv_tm_tm_co g)
+  | (g_Sym g) => (fv_tm_tm_co g)
+  | (g_Trans g1 g2) => (fv_tm_tm_co g1) \u (fv_tm_tm_co g2)
+  | (g_PiCong rho g1 g2) => (fv_tm_tm_co g1) \u (fv_tm_tm_co g2)
+  | (g_AbsCong rho g1 g2) => (fv_tm_tm_co g1) \u (fv_tm_tm_co g2)
+  | (g_AppCong g1 rho g2) => (fv_tm_tm_co g1) \u (fv_tm_tm_co g2)
+  | (g_PiFst g) => (fv_tm_tm_co g)
+  | (g_CPiFst g) => (fv_tm_tm_co g)
+  | (g_IsoSnd g) => (fv_tm_tm_co g)
+  | (g_PiSnd g1 g2) => (fv_tm_tm_co g1) \u (fv_tm_tm_co g2)
+  | (g_CPiCong g1 g3) => (fv_tm_tm_co g1) \u (fv_tm_tm_co g3)
+  | (g_CAbsCong g1 g3 g4) => (fv_tm_tm_co g1) \u (fv_tm_tm_co g3) \u (fv_tm_tm_co g4)
+  | (g_CAppCong g g1 g2) => (fv_tm_tm_co g) \u (fv_tm_tm_co g1) \u (fv_tm_tm_co g2)
+  | (g_CPiSnd g g1 g2) => (fv_tm_tm_co g) \u (fv_tm_tm_co g1) \u (fv_tm_tm_co g2)
+  | (g_Cast g1 g2) => (fv_tm_tm_co g1) \u (fv_tm_tm_co g2)
+  | (g_EqCong g1 A g2) => (fv_tm_tm_co g1) \u (fv_tm_tm_tm A) \u (fv_tm_tm_co g2)
+  | (g_IsoConv phi1 phi2 g) => (fv_tm_tm_constraint phi1) \u (fv_tm_tm_constraint phi2) \u (fv_tm_tm_co g)
+  | (g_Eta a) => (fv_tm_tm_tm a)
+  | (g_Left g g') => (fv_tm_tm_co g) \u (fv_tm_tm_co g')
+  | (g_Right g g') => (fv_tm_tm_co g) \u (fv_tm_tm_co g')
 end.
 
 Fixpoint fv_co_co_co (g_5:co) : vars :=
@@ -552,18 +558,6 @@ with fv_co_co_constraint (phi5:constraint) : vars :=
   | (Eq a b A) => (fv_co_co_tm a) \u (fv_co_co_tm b) \u (fv_co_co_tm A)
 end.
 
-Definition fv_tm_tm_sig_sort (sig_sort5:sig_sort) : vars :=
-  match sig_sort5 with
-  | (Cs A) => (fv_tm_tm_tm A)
-  | (Ax a A) => (fv_tm_tm_tm a) \u (fv_tm_tm_tm A)
-end.
-
-Definition fv_co_co_sig_sort (sig_sort5:sig_sort) : vars :=
-  match sig_sort5 with
-  | (Cs A) => (fv_co_co_tm A)
-  | (Ax a A) => (fv_co_co_tm a) \u (fv_co_co_tm A)
-end.
-
 Definition fv_tm_tm_sort (sort5:sort) : vars :=
   match sort5 with
   | (Tm A) => (fv_tm_tm_tm A)
@@ -574,6 +568,20 @@ Definition fv_co_co_sort (sort5:sort) : vars :=
   match sort5 with
   | (Tm A) => (fv_co_co_tm A)
   | (Co phi) => (fv_co_co_constraint phi)
+end.
+
+Definition fv_tm_tm_sig_sort (sig_sort5:sig_sort) : vars :=
+  match sig_sort5 with
+  | (Dc A T) => (fv_tm_tm_tm A)
+  | (Cs A) => (fv_tm_tm_tm A)
+  | (Ax a A) => (fv_tm_tm_tm a) \u (fv_tm_tm_tm A)
+end.
+
+Definition fv_co_co_sig_sort (sig_sort5:sig_sort) : vars :=
+  match sig_sort5 with
+  | (Dc A T) => (fv_co_co_tm A)
+  | (Cs A) => (fv_co_co_tm A)
+  | (Ax a A) => (fv_co_co_tm a) \u (fv_co_co_tm A)
 end.
 
 (** substitutions *)
@@ -707,12 +715,14 @@ end.
 
 Definition tm_subst_tm_sig_sort (a5:tm) (x5:tmvar) (sig_sort5:sig_sort) : sig_sort :=
   match sig_sort5 with
+  | (Dc A T) => Dc (tm_subst_tm_tm a5 x5 A) T
   | (Cs A) => Cs (tm_subst_tm_tm a5 x5 A)
   | (Ax a A) => Ax (tm_subst_tm_tm a5 x5 a) (tm_subst_tm_tm a5 x5 A)
 end.
 
 Definition co_subst_co_sig_sort (g5:co) (c5:covar) (sig_sort5:sig_sort) : sig_sort :=
   match sig_sort5 with
+  | (Dc A T) => Dc (co_subst_co_tm g5 c5 A) T
   | (Cs A) => Cs (co_subst_co_tm g5 c5 A)
   | (Ax a A) => Ax (co_subst_co_tm g5 c5 a) (co_subst_co_tm g5 c5 A)
 end.
@@ -759,6 +769,7 @@ Definition erase_csort s :=
  match s with
  | Cs a   => Cs (erase_tm a)
  | Ax a A => Ax (erase_tm a) (erase_tm A)
+ | Dc a t => Dc (erase_tm a) t
 end.
 
 Definition erase_context G := map erase_sort G.
@@ -1250,6 +1261,13 @@ Inductive Sig : sig -> Prop :=    (* defn Sig *)
      Typing  nil  A a_Star ->
       ~ AtomSetImpl.In  T  (dom  S )  ->
      Sig  (( T ~ Cs A )++ S ) 
+ | Sig_ConsDc : forall (S:sig) (K:datacon) (A:tm) (T:const) (B:tm),
+     Sig S ->
+     DataTy A B ->
+     Typing  nil  A a_Star ->
+      ~ AtomSetImpl.In  K  (dom  S )  ->
+     Path T B ->
+     Sig  (( K ~ Dc A T )++ S ) 
  | Sig_ConsAx : forall (S:sig) (F:tyfam) (a A:tm),
      Sig S ->
      Typing  nil  A a_Star ->
@@ -1463,6 +1481,13 @@ with AnnSig : sig -> Prop :=    (* defn AnnSig *)
      DataTy A a_Star ->
       ~ AtomSetImpl.In  T  (dom  S )  ->
      AnnSig  (( T ~ Cs A )++ S ) 
+ | An_Sig_ConsDc : forall (S:sig) (K:datacon) (A:tm) (T:const) (B:tm),
+     AnnSig S ->
+     DataTy A B ->
+     AnnTyping  nil  A a_Star ->
+      ~ AtomSetImpl.In  K  (dom  S )  ->
+     Path T B ->
+     AnnSig  (( K ~ Dc A T )++ S ) 
  | An_Sig_ConsAx : forall (S:sig) (F:tyfam) (a A:tm),
      AnnSig S ->
      AnnTyping  nil  A a_Star ->

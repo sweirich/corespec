@@ -24,15 +24,25 @@ Qed.
 
 
 (* ------------------------------------------ *)
-Lemma toplevel_closed : forall F a A, binds F (Ax a A) toplevel ->
-                                 Typing nil a A.
+
+(* Tactics for working with 'binds' assumptions in the context. *)
+Ltac binds_case IHst :=
+  intros;
+  match goal with
+  | [ H : binds ?F ?s nil |- _ ] => inversion H
+  | [ H : binds ?F ?s ?G |- _  ] => inversion H;
+    [ (* bound here *)
+      match goal with [ H3 : (_,_) = (_,_) |- _ ] => inversion H3;
+      subst; try split; eauto end
+    | (* bound elsewhere *)
+      eapply IHst; eauto]
+  end.
+
+Lemma toplevel_closed : forall F a A, binds F (Ax a A) toplevel -> Typing nil a A.
 Proof.
   have st: Sig toplevel by apply Sig_toplevel.
   induction st.
-  - intros. inversion H.
-  - intros. inversion H2. inversion H3. eauto.
-  - intros. inversion H2. inversion H3. subst. auto.
-    eauto.
+  all: binds_case IHst.
 Qed.
 
 
@@ -40,12 +50,17 @@ Lemma toplevel_to_const : forall T A, binds T (Cs A) toplevel -> Typing nil A a_
 Proof.
   have st: Sig toplevel by apply Sig_toplevel.
   induction st.
-  - intros. inversion H.
-  - intros. inversion H2. inversion H3. subst. auto.
-    eapply IHst. eauto.
-  - intros. inversion H2. inversion H3.
-    eauto.
+  all: binds_case IHst.
 Qed.
+
+(*
+Lemma toplevel_to_datacon : forall K A T, binds K (Dc A T) toplevel -> Typing nil A a_Star /\ exists B, DataTy A B /\ Path T B.
+Proof.
+  have st: Sig toplevel by apply Sig_toplevel.
+  induction st.
+  all: binds_case IHst.
+Qed.
+*)
 
 
 Lemma an_toplevel_closed : forall F a A, binds F (Ax a A) an_toplevel ->
@@ -53,26 +68,28 @@ Lemma an_toplevel_closed : forall F a A, binds F (Ax a A) an_toplevel ->
 Proof.
   have st: AnnSig an_toplevel by apply AnnSig_an_toplevel.
   induction st.
-  - intros. inversion H.
-  - intros. inversion H2. inversion H3. eauto.
-  - intros. inversion H2. inversion H3. subst. eauto. eauto.
+  all: binds_case IHst.
 Qed.
 
 Lemma an_toplevel_to_const : forall T A, binds T (Cs A) an_toplevel -> AnnTyping nil A a_Star.
 Proof.
   have st: AnnSig an_toplevel by apply AnnSig_an_toplevel.
   induction st.
-  - intros. inversion H.
-  - intros. inversion H2. inversion H3. subst. auto.
-    eapply IHst. eauto.
-  - intros. inversion H2. inversion H3.
-    eauto.
+  all: binds_case IHst.
 Qed.
 
 
-Lemma binds_to_type : forall S T A, AnnSig S -> binds T (Cs A) S -> DataTy A a_Star.
-Proof. induction 1. intros. inversion H.
-       intros. destruct H3. inversion H3. subst. auto.
-       eauto.
-       intros. destruct H3. inversion H3. eauto.
+Lemma binds_to_type : forall T A, binds T (Cs A) an_toplevel -> DataTy A a_Star.
+Proof.
+  have st: AnnSig an_toplevel by apply AnnSig_an_toplevel.
+  induction st.
+  all: binds_case IHst.
+Qed.
+
+
+Lemma an_toplevel_to_datacon : forall K A T, binds K (Dc A T) an_toplevel -> AnnTyping nil A a_Star /\ exists B, DataTy A B /\ Path T B.
+Proof.
+  have st: AnnSig an_toplevel by apply AnnSig_an_toplevel.
+  induction st.
+  all: binds_case IHst.
 Qed.

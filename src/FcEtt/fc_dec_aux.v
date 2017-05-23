@@ -270,6 +270,11 @@ Proof.
     { destruct a.
     destruct (x == a). subst.
     destruct s.
+
+    eapply inright. intros C H.
+    apply binds_cons_1 in H. destruct H as [ [h0 h1]|b0].
+    inversion h1. apply n in b0. done.
+
     eapply inleft. exists A. auto.
 
     eapply inright. intros C H.
@@ -424,6 +429,10 @@ Proof.
     apply binds_cons_1 in H. destruct H as [ [h0 h1]|b0].
     inversion h1. apply n in b0. done.
 
+    eapply inright. intros A0 B H.
+    apply binds_cons_1 in H. destruct H as [ [h0 h1]|b0].
+    done. apply n in b0. done.
+
     eapply inleft. exists a0 A. auto.
 
     eapply inright. intros A0 B H.
@@ -459,12 +468,19 @@ Proof.
     move: uniq_toplevel => h0.
     destruct (binds_lookup _ F toplevel) as [ [ss b] | h1].
     destruct ss.
+
     { right; move=>h; inversion h.
       apply (binds_unique _ _ _ _ _ b H0) in h0. inversion h0. }
+
+    { right; move=>h; inversion h.
+      apply (binds_unique _ _ _ _ _ b H0) in h0. inversion h0. }
+
     destruct (tm_eq_dec a2 a).
     { subst. left. eauto. }
+
     { right; move=>h; inversion h.
       apply (binds_unique _ _ _ _ _ b H0) in h0. inversion h0. ok. }
+
     { right; move=>h; inversion h.
       unfold not in h1. eapply h1. eauto.
     }

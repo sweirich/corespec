@@ -138,11 +138,6 @@ Hint Resolve Typing_lc1 Typing_lc2 Iso_lc1 Iso_lc2 DefEq_lc1 DefEq_lc2 DefEq_lc3
 
 Lemma Toplevel_lc : forall c s, binds c s toplevel -> lc_sig_sort s.
 Proof. induction Sig_toplevel.
-       intros. inversion H.
-       intros. destruct H2. inversion H2. subst.
-       simpl in H0. eauto. eauto with lc.
-       eauto.
-       intros. destruct H2. inversion H2. subst.
-       eauto with lc.
-       eauto.
+       all: binds_case IHs.
+       all: eauto with lc.
 Qed.
