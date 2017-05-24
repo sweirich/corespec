@@ -20,6 +20,7 @@ Require Import FcEtt.erase_syntax.
 Require Export FcEtt.toplevel.
 Require Import FcEtt.ett_value.
 
+(** comment *) 
 Lemma Beta_lc1 : forall a a' , Beta a a' -> lc_tm a.
   intros.  induction H; auto.
   eapply Value_lc in H0. eauto.
