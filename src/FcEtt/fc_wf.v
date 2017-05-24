@@ -10,11 +10,6 @@ Require Import FcEtt.tactics.
 Require Import FcEtt.toplevel.
 
 
-(**** Well-formedness of Judgments in DC ****)
-
-(** E.g., local closure, context well-formedness, etc **)
-
-
 Set Bullet Behavior "Strict Subproofs".
 Set Implicit Arguments.
 

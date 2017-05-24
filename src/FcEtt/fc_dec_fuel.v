@@ -87,7 +87,7 @@ with fuel_iso : co -> Type :=
     fuel_iso (g_IsoConv phi1 phi2 g)
 
 
-  (* Trivial cases - immediate failure (deq constructors, not iso ones) *)
+  (* Trivial cases *)
   | FI_Triv :
     fuel_iso g_Triv
   | FI_Var_b : forall n0,
@@ -211,8 +211,6 @@ with fuel_deq : co -> Type :=
     fuel_iso g ->
     fuel_deq (g_IsoSnd g)
 
-
-  (* Trivial cases - immediate failure (iso constructors, bound vars, g_Triv, etc) *)
   | FD_Triv :
       fuel_deq g_Triv
   | FD_Var_b : forall n0,

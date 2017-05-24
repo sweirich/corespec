@@ -16,11 +16,8 @@ Set Bullet Behavior "Strict Subproofs".
 Set Implicit Arguments.
 
 (* TODO: this tactic is not so "automated" (e.g. has to link a_Pi to E_Pi),
-         but it is hard to make it more "searchy" without trying extensively
-         all the lemmas. We could probably work something out, though.
-         Could it be generated maybe?
-*)
-
+but it is hard to make it more
+         "searchy" without trying extensively all the lemmas. We could probably work something out, though *)
 (*
 Ltac E_pick_fresh x :=
   match goal with

@@ -10,17 +10,14 @@ Require Import FcEtt.erase_syntax.
 
 Require Export FcEtt.fc_wf.
 
-
-(**** Weakening Lemmas ****)
-
-
-(* TODO: can remove this parameter *)
+(* can remove this parameter *)
 Module fc_weak (wf : fc_wf_sig) <: fc_weak_sig.
 
 
 Set Bullet Behavior "Strict Subproofs".
 Set Implicit Arguments.
 
+(* Weakening *)
 
 (* ------------------------------------------------------------------- *)
 

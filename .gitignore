@@ -38,5 +38,5 @@ nra.cache
 *.log
 *.out
 *-rules.tex
-src/lngen
-src/metalib
+#*
+.#*

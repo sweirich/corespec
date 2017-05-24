@@ -14,7 +14,7 @@ Import wf subst.
 Set Bullet Behavior "Strict Subproofs".
 Set Implicit Arguments.
 
-(**** The typing relation for FC produces unique types. ****)
+(* The typing relation for FC produces unique types. *)
 
 Hint Resolve AnnCtx_uniq.
 Hint Rewrite tm_subst_tm_tm_var co_subst_co_co_var.
@@ -54,9 +54,9 @@ Ltac apply_ind_var c a :=
   specialize H8 with c; edestruct (H0 c); eauto
   end.
 
-(* For working with PiCong and AbsCong. Look for hypotheses that introduce new
+(* For working with PiCong and AbsCong. Look for hypothses that introduce new
    equations about the bodies of the terms. (Should be used after induction
-   hypothesis)  *)
+   hypothesis.  *)
 Ltac equate_bodies x :=
       match goal with
         H11 : ∀ x : atom,
@@ -107,6 +107,8 @@ Proof.
     eapply open_tm_wrt_co_inj; autotype.
   - apply_ind a1. done.
   - move: (binds_unique _ _ _ _ _ b H4 uniq_an_toplevel) => E. inversion E. auto.
+  - have E: (Ax a A = Ax a2 A2). eapply binds_unique; eauto using uniq_an_toplevel.
+    inversion E. auto.
   - autotype; apply_ind g1; apply_ind g2; autotype.
   - autotype; apply_ind g; autotype.
   - ann_invert_clear. apply_ind g. auto.
@@ -219,6 +221,25 @@ Proof.
     auto.
   - inversion H0. subst. apply H in H4.
     split_hyp. invert_syntactic_equality. auto.
+  - ann_invert_clear.
+    apply_ind b1. subst.
+    pick fresh x.
+    move: (H5 x ltac:(auto)) => h0.
+    rewrite -e in h0; auto.
+    apply open_tm_wrt_tm_inj in h0; auto.
+    subst. auto.
+    (* Left/Right
+  - ann_invert_clear.
+    apply_ind g1. invert_syntactic_equality. auto.
+    apply_ind g1. done.
+  - ann_invert_clear.
+    apply_ind g1. invert_syntactic_equality. auto.
+  - repeat ann_invert_clear;
+    apply_ind g1;
+    apply_ind g2.
+    done.
+    invert_syntactic_equality. auto.
+    *)
 Qed.
 
 
@@ -256,7 +277,7 @@ Ltac resolve_unique_nosubst  :=
       clear H2
   end.
 
-(* Coerced values and values are terminal *)
+(* Coerced values and values are terminal. *)
 Lemma no_reduction_mutual :
   (forall a, CoercedValue a -> forall G b, not (head_reduction G a b)) /\
   (forall a, Value a -> forall G b, not (head_reduction G a b)).

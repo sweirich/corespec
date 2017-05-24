@@ -93,7 +93,7 @@ Hint Rewrite <- co_subst_co_tm_open_tm_wrt_tm : open_subst.
 
 *)
 
-(* Apply a lc constructor for a term with binding. *)
+(* apply a lc constructor for a term with binding. *)
 Ltac apply_lc_exists x :=
   pick fresh x;
   ( apply lc_a_Abs_exists      with (x1 := x)
@@ -255,7 +255,6 @@ Ltac invert_syntactic_equality :=
   end.
 
 (* Invert an "interesting" assumption in the typing context *)
-(* TODO: tactics.v -> it should already be subsumed by another tactic (many not for all cases => extend) *)
 Ltac ann_invert_clear :=
   match goal with
   | H : AnnTyping _ a_Star _ |- _ => inversion H; subst; clear H
@@ -340,6 +339,7 @@ Ltac ext_induction CON :=
       pose CON :=  E_CPi        |
       pose CON :=  E_CAbs       |
       pose CON :=  E_CApp       |
+      pose CON :=  E_Const      |
       pose CON :=  E_Fam        |
       pose CON :=  E_Wff        |
       pose CON :=  E_PropCong   |
@@ -363,6 +363,11 @@ Ltac ext_induction CON :=
       pose CON :=  E_Cast       |
       pose CON :=  E_EqConv     |
       pose CON :=  E_IsoSnd     |
+      pose CON :=  E_EtaRel     |
+(*      pose CON :=  E_LeftRel    |
+      pose CON :=  E_LeftIrrel  |
+      pose CON :=  E_Right      |
+      pose CON :=  E_CLeft      | *)
       pose CON :=  E_Empty      |
       pose CON :=  E_ConsTm     |
       pose CON :=  E_ConsCo     ].
@@ -379,6 +384,7 @@ Ltac ann_induction CON :=
       pose CON :=  An_CPi        |
       pose CON :=  An_CAbs       |
       pose CON :=  An_CApp       |
+      pose CON :=  An_Const      |
       pose CON :=  An_Fam        |
       pose CON :=  An_Wff        |
       pose CON :=  An_PropCong   |
@@ -402,6 +408,10 @@ Ltac ann_induction CON :=
       pose CON :=  An_CPiSnd     |
       pose CON :=  An_Cast       |
       pose CON :=  An_IsoSnd     |
+      pose CON :=  An_Eta        |
+(*      pose CON :=  An_Left       |
+      pose CON :=  An_Right      |
+      pose CON :=  An_CLeft      | *)
       pose CON :=  An_Empty      |
       pose CON :=  An_ConsTm     |
       pose CON :=  An_ConsCo     ].
@@ -481,8 +491,6 @@ Hint Resolve lc_body_tm_wrt_tm lc_body_tm_wrt_co. (* binds_cons_1 *)
 
 
 (* ---------------------------------------- *)
-
-(* TODO: fix or remove the following? *)
 
 (*
 
@@ -650,6 +658,7 @@ Ltac E_pick_fresh x :=
                | a_Pi _ _ _ => E_PiCong
                | a_UAbs Rel _ => match s2 with
                                 | a_UAbs _ _ => E_AbsCong
+                                | _ => E_EtaRel
                                 end
                | a_UAbs _ _ => E_AbsCong
                | a_CPi _ _  => E_CPiCong
@@ -666,6 +675,7 @@ Ltac Par_pick_fresh x :=
             | a_Pi _ _ _ => Par_Pi
             | a_UAbs _ _ =>  match s2 with
                                 | a_UAbs _ _ => Par_Abs
+                                | _ => Par_Eta
                                 end
             | a_CPi _ _  => Par_CPi
             | a_CAbs _ _ => Par_CAbs
@@ -690,6 +700,7 @@ Ltac An_pick_fresh x :=
     | g_AbsCong _ _ _  => An_AbsCong
     | g_CPiCong  _ _   => An_CPiCong
     | g_CAbsCong _ _ _ => An_CAbsCong
+    | g_Eta _          => An_Eta
                end in
   pick fresh x and apply ctor.
 

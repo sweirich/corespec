@@ -31,7 +31,7 @@ Qed.
 
 (* ------------------------------------------------------------ *)
 
-(* Tactics for substitution proofs. *)
+(* tactics for substitution proofs. *)
 
 Ltac subst_helper x x0 b0 :=
   replace (a_Var_f x) with (tm_subst_tm_tm b0 x0 (a_Var_f x));
@@ -45,8 +45,8 @@ Ltac subst_helper x x0 b0 :=
   eauto using tm_subst_tm_tm_lc_tm.
 
 (* Most of the substitution cases below are about
-   showing that the term is locally closed after the substiution.
-   This tactic takes care of that argument.
+showing that the term is locally closed after the substiution.
+This tactic takes care of that argument.
 *)
 
 Ltac lc_subst_case x0 b0  :=
@@ -141,8 +141,6 @@ Proof.
   all: try solve [(have: False by eapply no_Value_reduction; eauto); done].
 
   all: try ((have: False by eapply (@no_Value_reduction (a_UCAbs b)); eauto); done).
-
-  (* TODO: guard the number of subgoals (2)? *)
 
   - pick fresh x.
     move: (H2 x ltac:(auto)) => h7.

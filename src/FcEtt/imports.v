@@ -8,17 +8,15 @@ Require Export LibLNgen.
 
 Require Export FcEtt.ett_ott.
 
-(* SSReflect *)
+(* SSR *)
 
 Require Export mathcomp.ssreflect.ssreflect.
 Close Scope boolean_if_scope.
 Global Open Scope general_if_scope.
-(* From mathcomp Require Export ssrfun ssrmatching. *)
 
-
-
-(**** Global imports and settings ****)
-
+(*
+From mathcomp Require Export ssrfun ssrmatching.
+*)
 
 
 Global Set Implicit Arguments.

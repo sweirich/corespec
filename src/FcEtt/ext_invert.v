@@ -69,6 +69,29 @@ Proof.
 Qed.
 
 
+Lemma invert_a_Const : forall G T A,
+    Typing G (a_Const T) A ->
+    exists B, DataTy B a_Star /\ DefEq G (dom G) A B  a_Star
+         /\ binds T (Cs B) toplevel.
+Proof.
+  intros G T A H.
+  remember (a_Const T) as a.
+  generalize dependent T. induction H; intros U EQ; inversion EQ.
+  - subst.
+    move: (IHTyping1 U eq_refl) => [B0 h]. split_hyp.
+    exists B0.
+    repeat split; eauto.
+  - subst.
+    exists A. repeat split; auto.
+    induction H0.
+    + inversion H0.
+    + inversion H0.
+    + eapply E_Refl.
+      move: (Typing_weakening H1 G nil nil ltac:(auto)) => h0.
+      simpl_env in h0. auto.
+Qed.
+
+
 Lemma invert_a_Fam : forall G F A,
     Typing G (a_Fam F) A ->
     exists a B, DefEq G (dom G) A B a_Star /\
@@ -181,6 +204,8 @@ Proof.
     rewrite (co_subst_co_tm_intro c); auto.
     un_subst_tm.
     eapply Typing_co_subst; eauto.
+  - eapply Typing_weakening with (F:=nil)(G := nil) in H1.
+    simpl_env in H1. eauto. auto. simpl_env. auto.
   - eapply Typing_weakening with (F:=nil)(G := nil) in H1.
     simpl_env in H1. eauto. auto. simpl_env. auto.
 Qed.
@@ -626,6 +651,22 @@ Proof.
     rewrite <- (same_dom H2).
     apply H0; auto.
     eapply context_DefEq_weaken_available; eauto.
+(*  - intros.
+    eapply E_LeftRel with (b:=b)(b':=b'); eauto 2.
+    erewrite <- same_dom; eauto 2.
+    eauto using context_DefEq_weaken_available.
+  - intros.
+    eapply E_LeftIrrel with (b:=b)(b':=b'); eauto 2.
+    erewrite <- same_dom; eauto 2.
+    eauto using context_DefEq_weaken_available.
+  - intros.
+    eapply E_Right with (a:=a)(a':=a'); eauto 2.
+    erewrite <- same_dom; eauto 2.
+    eauto using context_DefEq_weaken_available.
+  - intros.
+    eapply E_CLeft; eauto 2.
+    erewrite <- same_dom; eauto 2.
+    eauto using context_DefEq_weaken_available. *)
   - intros G x A c H t H0 n G2 D x0 A0 H1 H2 H3.
     inversion H3; subst.
     + inversion H4; subst.
@@ -882,6 +923,18 @@ Proof.
     inversion H; subst.
     split; auto.
     Unshelve. exact (dom G). exact (dom G). exact (dom G). exact (dom G). exact (dom G).
+  - intros. split; auto.
+    have h0: Ctx G by eauto.
+    move: (Typing_regularity t) => h1.
+    move: (invert_a_Pi h1) => [DE [[L1 h2] h3]].
+    pick fresh x.
+    eapply (@E_Abs_exists x); try econstructor; eauto;
+    rewrite e; eauto.
+    eapply E_App; eauto 4.
+    eapply Typing_weakening with (F:=nil); simpl; eauto 4.
+    econstructor; eauto.
+    econstructor; eauto using Typing_lc1.
+(*    econstructor; eauto using Typing_lc1. *)
 Qed.
 
 Lemma DefEq_regularity :
@@ -1054,7 +1107,7 @@ Proof.
 Qed.
 
 
-(* Could also be an exists form *)
+(* could also be an exists form *)
 Lemma E_Pi2 : forall L G rho A B,
     (∀ x : atom, x `notin` L → Typing ([(x, Tm A)] ++ G) (open_tm_wrt_tm B (a_Var_f x)) a_Star) ->
     Typing G (a_Pi rho A B) a_Star.
