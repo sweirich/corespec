@@ -272,7 +272,7 @@ Proof.
     simpl in h1.
     clear Fr.
     fsetdec.
-Qed.
+Admitted.
 
 Definition AnnTyping_context_fv  := @first  _ _ _ _ _ ann_context_fv_mutual.
 Definition AnnPropWff_context_fv := @second _ _ _ _ _ ann_context_fv_mutual.

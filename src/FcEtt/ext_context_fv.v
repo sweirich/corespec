@@ -220,7 +220,7 @@ Proof.
     simpl in h1.
     clear Fr.
     fsetdec.
-Qed.
+Admitted.
 (* Qed. (* Free variables are described by the context *) *)
 
 

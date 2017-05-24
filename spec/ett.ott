@@ -794,6 +794,12 @@ a = b + x
 G ; D |- \+ x. a => b'
 
 
+G ; D |- b => b'
+a = b - []
+----------------------------- :: EtaIrrel
+G ; D |- \- x. a => b'
+
+
 defn
 G ; D |- a =>* b ::   :: MultiPar :: 'MP_'
 {{ tex [[|-]] [[a]] [[=>*]] [[b]] }}
@@ -1122,10 +1128,10 @@ G ; D |= \+ x. a == b : all + x:A -> B
 
 %% TODO: Future extensions, more Eta rules
 
-% G |= b : all - x:A -> B
-% a = b - []
-% ------------------------------------------ :: EtaIrrel
-% G ; D |= \- x. a == b : all - x:A -> B
+G |= b : all - x:A -> B
+a = b - []
+------------------------------------------ :: EtaIrrel
+G ; D |= \- x. a == b : all - x:A -> B
 
 % G |= b : all c:phi. B
 % a = b [o]
@@ -1524,10 +1530,10 @@ G ; D |- g : (a~a' : A) == (b~b' : B)
 G ; D |- isoSnd g : A ~ B
 
 
-G |- b : all + x:A -> B
-a = b + x
+G |- b : all rho x:A -> B
+a = b rho x
 --------------------------------------------------- :: Eta
-G ; D |- eta b : (\+ x:A. a) ~ b
+G ; D |- eta b : (\rho x:A. a) ~ b
 
 
 % G |- b : all rho x:A -> B

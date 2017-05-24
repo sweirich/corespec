@@ -1014,6 +1014,10 @@ Inductive Par : context -> available_props -> tm -> tm -> Prop :=    (* defn Par
      Par G D b b' ->
       ( forall x , x \notin  L  ->  (  ( open_tm_wrt_tm a (a_Var_f x) )   =  (a_App b Rel (a_Var_f x)) )  )  ->
      Par G D (a_UAbs Rel a) b'
+ | Par_EtaIrrel : forall (L:vars) (G:context) (D:available_props) (a b' b:tm),
+     Par G D b b' ->
+      ( forall x , x \notin  L  ->  (  ( open_tm_wrt_tm a (a_Var_f x) )   =  (a_App b Irrel a_Bullet) )  )  ->
+     Par G D (a_UAbs Irrel a) b'
 with MultiPar : context -> available_props -> tm -> tm -> Prop :=    (* defn MultiPar *)
  | MP_Refl : forall (G:context) (D:available_props) (a:tm),
      lc_tm a ->
@@ -1226,6 +1230,10 @@ with DefEq : context -> available_props -> tm -> tm -> tm -> Prop :=    (* defn 
      Typing G b (a_Pi Rel A B) ->
       ( forall x , x \notin  L  ->  (  ( open_tm_wrt_tm a (a_Var_f x) )   =  (a_App b Rel (a_Var_f x)) )  )  ->
      DefEq G D (a_UAbs Rel a) b (a_Pi Rel A B)
+ | E_EtaIrrel : forall (L:vars) (G:context) (D:available_props) (a b A B:tm),
+     Typing G b (a_Pi Irrel A B) ->
+      ( forall x , x \notin  L  ->  (  ( open_tm_wrt_tm a (a_Var_f x) )   =  (a_App b Irrel a_Bullet) )  )  ->
+     DefEq G D (a_UAbs Irrel a) b (a_Pi Irrel A B)
 with Ctx : context -> Prop :=    (* defn Ctx *)
  | E_Empty : 
      Ctx  nil 
@@ -1437,10 +1445,10 @@ with AnnDefEq : context -> available_props -> co -> tm -> tm -> Prop :=    (* de
  | An_IsoSnd : forall (G:context) (D:available_props) (g:co) (A B a a' b b':tm),
      AnnIso G D g  ( (Eq a a' A) )   ( (Eq b b' B) )  ->
      AnnDefEq G D (g_IsoSnd g) A B
- | An_Eta : forall (L:vars) (G:context) (D:available_props) (b A a B:tm),
-     AnnTyping G b (a_Pi Rel A B) ->
-      ( forall x , x \notin  L  ->  (  ( open_tm_wrt_tm a (a_Var_f x) )   =  (a_App b Rel (a_Var_f x)) )  )  ->
-     AnnDefEq G D (g_Eta b)  ( (a_Abs Rel A a) )  b
+ | An_Eta : forall (L:vars) (G:context) (D:available_props) (b:tm) (rho:relflag) (A a B:tm),
+     AnnTyping G b (a_Pi rho A B) ->
+      ( forall x , x \notin  L  ->  (  ( open_tm_wrt_tm a (a_Var_f x) )   =  (a_App b rho (a_Var_f x)) )  )  ->
+     AnnDefEq G D (g_Eta b)  ( (a_Abs rho A a) )  b
 with AnnCtx : context -> Prop :=    (* defn AnnCtx *)
  | An_Empty : 
      AnnCtx  nil 
