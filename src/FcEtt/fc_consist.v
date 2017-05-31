@@ -79,22 +79,27 @@ Proof.
 Qed.
 
 
+
 Lemma Paths_are_DataTy : forall T a,
-    Path T a -> Value a -> forall G A, AnnTyping G a A -> DataTy A a_Star.
+    Path T a -> Value a -> forall G A, AnnTyping G a A -> exists B, DataTy A B.
 Proof.
   induction 1; intros.
   - inversion H0. subst.
-    eapply binds_to_type; eauto.
+    move: (an_toplevel_to_const H3) => [h0 [B [DT P]]].
+    exists B. auto.
   - inversion H1. inversion H2. subst.
-    move: (IHPath H8 _ _ H14) => h0.
-    inversion h0. subst.
+    move: (IHPath H8 _ _ H14) => [ B0 h0 ].
+    inversion h0; subst.
+    exists B0.
     pick fresh x.
     rewrite (tm_subst_tm_tm_intro x); eauto with lngen.
+    inversion H3.
   - inversion H1. inversion H2. subst.
-    move: (IHPath H7 _ _ H11) => h0.
+    move: (IHPath H7 _ _ H11) => [B0 h0].
     inversion h0. subst.
     pick fresh x.
     rewrite (co_subst_co_tm_intro x); eauto with lngen.
+    inversion H3.
   - inversion H1.
 Qed.
 
@@ -103,8 +108,8 @@ Qed.
 Lemma Paths_have_value_types : forall T a,
     Path T a -> Value a -> forall G A, AnnTyping G a A -> value_type A.
 Proof. intros.
+       move: (Paths_are_DataTy H H0 H1) => [B DT].
        eapply DataTy_value_type; eauto.
-       eapply Paths_are_DataTy; eauto.
 Qed.
 
 Lemma values_have_value_types :
@@ -122,9 +127,10 @@ Proof.
     eapply (@Paths_have_value_types T (a_App b rho a0)); eauto.
   + inversion V.
     eapply (@Paths_have_value_types T (a_CApp a1 g)); eauto.
-  + eapply DataTy_value_type.
-    eapply binds_to_type; eauto.
+  + move: (an_toplevel_to_const H1) => [h1 [B [DT P]]].
+    eapply DataTy_value_type; eauto.
 Qed.
+
 
 
 (* --------- Paths infect the cannonical forms lemmas for functions --------- *)
@@ -162,8 +168,8 @@ Proof.
   destruct C; destruct rho0; try destruct rho1; simpl in H; inversion H.
   - exists C1. exists C2. subst. auto.
   - subst. exists C1. exists C2. auto.
-  - inversion VT.
-  - inversion VT.
+  - inversion VT. inversion H9.
+  - inversion VT. inversion H9.
   - inversion H0.
   - assert False.
     apply AnnDefEq_lc in DE. split_hyp.
@@ -186,8 +192,8 @@ Proof.
   intros G phi B C g AN VT DE.
   move: (AnnDefEq_consistent DE AN) => K;  simpl in K.
   inversion K.
-  destruct C; try destruct rho; simpl in H; inversion H;
-  try solve [inversion VT; inversion H1].
+  destruct C; try destruct rho; simpl in H; inversion H.
+  all: try solve [inversion VT; inversion H8].
   - subst. exists phi0. exists C.  auto.
   - inversion H0.
   - assert False.
@@ -299,6 +305,7 @@ Proof.
     + destruct H5. right. eexists. eapply An_CAppLeft. eauto. eauto.
   - left. eauto.
   - right. exists a. eauto.
+(*  - left. eauto. *)
 Qed.
 
 

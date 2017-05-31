@@ -250,6 +250,10 @@ Ltac invert_syntactic_equality :=
     inversion H; subst; clear H
   | [ H : a_CPi _ _ = a_CPi _ _ |- _ ] =>
     inversion H; subst; clear H
+  | [ H : a_Case _ _ = a_Case _ _ |- _ ] =>
+    inversion H; subst; clear H
+  | [ H : br_One _ _ _ = br_One _ _ _ |- _ ] =>
+    inversion H; subst; clear H
   | [ H : Eq _ _ _ = Eq _ _ _ |- _ ] =>
     inversion H; subst; clear H
   end.
@@ -321,6 +325,15 @@ Scheme CoercedValue_ind' := Induction for CoercedValue Sort Prop
                             with Value_ind' := Induction for Value Sort Prop.
 Combined Scheme CoercedValue_Value_mutual from CoercedValue_ind', Value_ind'.
 
+Scheme erased_tm'  := Induction for erased_tm Sort Prop
+  with erased_brs' := Induction for erased_brs Sort Prop.
+Combined Scheme erased_tm_erased_brs_mutual from erased_tm', erased_brs'.
+
+Scheme Par_tm'  := Induction for Par Sort Prop
+  with Par_brs' := Induction for Par_brs Sort Prop.
+Combined Scheme Par_tm_Par_brs_mutual from Par_tm', Par_brs'.
+
+
 (* --------------------------------------------------- *)
 
 (* Apply the mutual induction hypothesis and add a marker to the
@@ -341,6 +354,7 @@ Ltac ext_induction CON :=
       pose CON :=  E_CApp       |
       pose CON :=  E_Const      |
       pose CON :=  E_Fam        |
+(*      pose CON :=  E_DataCon    | *)
       pose CON :=  E_Wff        |
       pose CON :=  E_PropCong   |
       pose CON :=  E_IsoConv    |
@@ -386,6 +400,7 @@ Ltac ann_induction CON :=
       pose CON :=  An_CApp       |
       pose CON :=  An_Const      |
       pose CON :=  An_Fam        |
+(*      pose CON :=  An_DataCon    | *)
       pose CON :=  An_Wff        |
       pose CON :=  An_PropCong   |
       pose CON :=  An_CPiFst     |
@@ -479,7 +494,7 @@ Ltac lc_solve :=
   lc_inversion c; auto;
   try rewrite_body;
   try apply_lc_body;
-  eauto with lc.
+  eauto 3 with lc.
 
 (* without these two lines, ext_consist.v fails. *)
 Hint Resolve lc_a_Pi_exists

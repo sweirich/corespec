@@ -18,22 +18,31 @@ Require Import FcEtt.toplevel.
    -- all components are locally closed in any judgement
   *)
 
-Lemma Path_lc : forall T a, Path T a -> lc_tm a.
+Lemma Path_lc : forall b a, Path b a -> lc_tm a.
 Proof. induction 1; eauto. Qed.
 
-Hint Resolve Path_lc : lc.
+(* Hint Resolve Path_lc : lc.  *)
 
 
-Lemma DataTy_lc : forall A, DataTy A a_Star -> lc_tm A.
+Lemma DataTy_lc1 : forall A B, DataTy A B -> lc_tm A.
+Proof.
+  intros. induction H; eauto.
+  eapply Path_lc; eauto.
+Qed.
+
+Hint Resolve DataTy_lc1 : lc.
+
+Lemma DataTy_lc2 : forall A B, DataTy A B -> lc_tm B.
 Proof.
   intros. induction H; lc_solve.
+  all: pick fresh x; eauto.
 Qed.
-Hint Resolve DataTy_lc : lc.
+Hint Resolve DataTy_lc2 : lc.
 
 Lemma CoercedValue_Value_lc_mutual: (forall A, CoercedValue A -> lc_tm A) /\
                                     (forall A, Value A -> lc_tm A).
 Proof.
-  apply CoercedValue_Value_mutual; eauto with lc.
+  apply CoercedValue_Value_mutual; eauto 3 with lc.
 Qed.
 
 Lemma Value_lc : forall A, Value A -> lc_tm A.
@@ -138,6 +147,7 @@ Hint Resolve Typing_lc1 Typing_lc2 Iso_lc1 Iso_lc2 DefEq_lc1 DefEq_lc2 DefEq_lc3
 
 Lemma Toplevel_lc : forall c s, binds c s toplevel -> lc_sig_sort s.
 Proof. induction Sig_toplevel.
-       all: binds_case IHs.
-       all: eauto with lc.
+       all: binds_case.
+       all: eauto 3 with lc.
+       all: constructor; eauto 3 with lc.
 Qed.

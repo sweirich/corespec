@@ -121,11 +121,6 @@ Proof.
     destruct (H0 t2_2). subst.
     left. auto.
     all: right; intro h; inversion h; done. }
-  { intros K t2.
-    destruct t2.
-    all : try solve [right; done].
-    edestruct (eq_atom_dec K K0). subst. left. auto. right.
-    intro H. inversion H. done. }
   { intros.
     destruct t2.
     all : try solve [right; done].
@@ -258,35 +253,6 @@ Qed.
 
 
 
-Lemma binds_dec_cs : forall x G, {C | binds x (Cs  C) G} + {(forall C, ¬ binds x (Cs  C) G)}.
-Proof.
-  intros x G.
-  induction G.
-  - eapply inright.
-    intros C I. inversion I.
-  - destruct IHG.
-    { eapply inleft.
-    destruct s. exists x0. destruct a. auto. }
-    { destruct a.
-    destruct (x == a). subst.
-    destruct s.
-
-    eapply inright. intros C H.
-    apply binds_cons_1 in H. destruct H as [ [h0 h1]|b0].
-    inversion h1. apply n in b0. done.
-
-    eapply inleft. exists A. auto.
-
-    eapply inright. intros C H.
-    apply binds_cons_1 in H. destruct H as [ [h0 h1]|b0].
-    inversion h1. apply n in b0. done.
-
-    eapply inright. intros C H.
-    apply binds_cons_1 in H. destruct H as [ [h0 h1]|b0].
-    done. apply n in b0. done.
-    }
-Qed.
-
 Lemma Path_dec : forall a, lc_tm a -> { T | Path T a } + { (forall T, not (Path T a)) }.
 Proof.
   induction a; intros LC.
@@ -384,32 +350,47 @@ Proof.
   auto.
 Qed.
 
-Lemma DataTy_Star_dec : forall A, lc_set_tm A -> { DataTy A a_Star } + { not (DataTy A a_Star) }.
+Lemma DataTy_dec : forall A, lc_set_tm A ->
+                        { B | DataTy A B } + { (forall B, not (DataTy A B)) }.
 Proof.
   intros A LC.
   induction LC.
-  all: try solve [apply right; move => h; inversion h].
-  all: try solve [apply left; eauto].
+  all: try solve [left; eauto].
+  all: try solve [right; move => B h; inversion h; inversion H0].
+  + destruct (Path_dec (lc_tm_of_lc_set_tm a1 LC1)) as [ [T P] | NP ];
+    destruct (Value_dec (lc_tm_of_lc_set_tm a1 LC1)) as [ V | NV ].
+    left. exists (a_Const T). econstructor; eauto using lc_tm_of_lc_set_tm.
+    right; move => B h0; inversion h0; inversion H0; try done.
+    all: right; move => B h0; inversion h0; inversion H0; eapply NP; eauto.
+
   + pick fresh x.
-    move: (H x) => [D | ND].
-    - left. pick fresh y and apply DT_Pi; eauto_lc.
+    move: (H x) => [[B D] | ND].
+    - left. exists B. pick fresh y and apply DT_Pi; eauto_lc.
       rewrite (tm_subst_tm_tm_intro x); auto.
       eapply DataTy_tm_subst_tm_tm; eauto_lc.
-    - right. move => h; inversion h; subst.
+    - right. move => B h; inversion h; subst.
       eapply ND.
       pick fresh y.
       rewrite (tm_subst_tm_tm_intro y); auto.
       eapply DataTy_tm_subst_tm_tm; eauto_lc.
+      inversion H0.
   + pick fresh x.
-    move: (H x) => [D | ND].
-    - left. pick fresh y and apply DT_CPi; eauto_lc.
+    move: (H x) => [[B D] | ND].
+    - left. exists B. pick fresh y and apply DT_CPi; eauto_lc.
       rewrite (co_subst_co_tm_intro x); auto.
       eapply DataTy_co_subst_co_tm; eauto_lc.
-    - right. move => h; inversion h; subst.
+    - right. move => B h; inversion h; subst.
       eapply ND.
       pick fresh y.
       rewrite (co_subst_co_tm_intro y); auto.
       eapply DataTy_co_subst_co_tm; eauto_lc.
+      inversion H0.
+  + destruct (Path_dec (lc_tm_of_lc_set_tm a1 LC)) as [ [T P] | NP ];
+    destruct (Value_dec (lc_tm_of_lc_set_tm a1 LC)) as [ V | NV ].
+    left. exists (a_Const T). econstructor; eauto_lc.
+    right; move => B h0; inversion h0; inversion H0; try done.
+    all: right; move => B h0; inversion h0; inversion H0; eapply NP; eauto.
+
 Qed.
 
 Lemma binds_dec_ax : forall x G, {A, B | binds x (Ax A B) G} + {(forall A B, ¬ binds x (Ax A B) G)}.
@@ -429,10 +410,6 @@ Proof.
     apply binds_cons_1 in H. destruct H as [ [h0 h1]|b0].
     inversion h1. apply n in b0. done.
 
-    eapply inright. intros A0 B H.
-    apply binds_cons_1 in H. destruct H as [ [h0 h1]|b0].
-    done. apply n in b0. done.
-
     eapply inleft. exists a0 A. auto.
 
     eapply inright. intros A0 B H.
@@ -440,6 +417,35 @@ Proof.
     done. apply n in b0. done.
     }
 Qed.
+
+
+
+Lemma binds_dec_cs : forall x G, {A, B | binds x (Cs A B) G} + {(forall A B, ¬ binds x (Cs A B) G)}.
+Proof.
+  intros x G.
+  induction G.
+  - eapply inright.
+    intros A B I. inversion I.
+  - destruct IHG.
+    { eapply inleft.
+    destruct s. exists x0 y. destruct a. auto. }
+    { destruct a.
+    destruct (x == a). subst.
+    destruct s.
+
+    eapply inleft. exists A b. auto.
+
+    eapply inright. intros A0 B H.
+    apply binds_cons_1 in H. destruct H as [ [h0 h1]|b0].
+    done. apply n in b0. done.
+
+    eapply inright. intros A0 B H.
+    apply binds_cons_1 in H. destruct H as [ [h0 h1]|b0].
+    done. apply n in b0. done.
+
+    }
+Qed.
+
 
 
 Definition rho_eq_dec : forall rho rho' : relflag, {rho = rho'} + {rho <> rho'}.
@@ -468,9 +474,6 @@ Proof.
     move: uniq_toplevel => h0.
     destruct (binds_lookup _ F toplevel) as [ [ss b] | h1].
     destruct ss.
-
-    { right; move=>h; inversion h.
-      apply (binds_unique _ _ _ _ _ b H0) in h0. inversion h0. }
 
     { right; move=>h; inversion h.
       apply (binds_unique _ _ _ _ _ b H0) in h0. inversion h0. }

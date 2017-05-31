@@ -133,7 +133,6 @@ Proof.
         inversion h0; subst.
         -- inversion h0; subst; clear h0.
            apply Rho_Rel; auto.
-(*           apply tm_subst_tm_tm_lc_tm; auto. *)
         -- apply Rho_IrrRel; auto.
            inversion h0; subst; clear h0.
            apply tm_subst_tm_tm_fresh; auto.
@@ -149,7 +148,6 @@ Proof.
         inversion h0; subst.
         -- inversion h0; subst; clear h0.
            apply Rho_Rel; auto.
-(*           apply tm_subst_tm_tm_lc_tm; auto. *)
         -- apply Rho_IrrRel; auto.
            inversion h0; subst; clear h0.
            apply tm_subst_tm_tm_fresh; auto.

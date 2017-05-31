@@ -106,7 +106,7 @@ Proof.
     apply_ind_var c a.
     eapply open_tm_wrt_co_inj; autotype.
   - apply_ind a1. done.
-  - move: (binds_unique _ _ _ _ _ b H4 uniq_an_toplevel) => E. inversion E. auto.
+  - move: (binds_unique _ _ _ _ _ b0 H4 uniq_an_toplevel) => E. inversion E. auto.
   - have E: (Ax a A = Ax a2 A2). eapply binds_unique; eauto using uniq_an_toplevel.
     inversion E. auto.
   - autotype; apply_ind g1; apply_ind g2; autotype.
@@ -329,6 +329,17 @@ Proof.
     apply h1 in h7.
     apply open_tm_wrt_tm_inj in h7; eauto. rewrite h7. auto.
   - resolve_binds_unique. auto.
+Qed.
+
+
+Lemma Path_unique : forall a b1 b2, Path b1 a -> Path b2 a -> b1 = b2.
+Proof. induction 1; intro h; inversion h; subst; auto. Qed.
+
+Lemma DataTy_unique : forall a b1 b2, DataTy a b1 -> DataTy a b2 -> b1 = b2.
+  induction 1; intro h; inversion h; subst; auto.
+  all: try solve [match goal with [H0 : Path ?T ?a |- _] => inversion H0 end].
+  all: try solve [pick fresh x; eapply H1; eauto].
+  f_equal. eapply Path_unique; eauto.
 Qed.
 
 End fc_unique.

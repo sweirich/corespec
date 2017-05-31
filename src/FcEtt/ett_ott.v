@@ -2,7 +2,6 @@ Require Import Metalib.Metatheory.
 (** syntax *)
 Definition tmvar := var. (*r variables *)
 Definition covar := var. (*r coercion variables *)
-Definition datacon := atom.
 Definition const := atom.
 Definition tyfam := atom.
 Definition index := nat. (*r indices *)
@@ -29,11 +28,10 @@ with tm : Set :=  (*r types and kinds *)
  | a_UCAbs (b:tm)
  | a_CApp (a:tm) (g:co)
  | a_Bullet : tm
- | a_DataCon (K:datacon)
  | a_Case (a:tm) (brs5:brs)
 with brs : Set :=  (*r case branches *)
  | br_None : brs
- | br_One (K:datacon) (a:tm) (brs5:brs)
+ | br_One (K:const) (a:tm) (brs5:brs)
 with co : Set :=  (*r explicit coercions *)
  | g_Triv : co
  | g_Var_b (_:nat)
@@ -65,14 +63,13 @@ Inductive sort : Set :=  (*r binding classifier *)
  | Tm (A:tm)
  | Co (phi:constraint).
 
-Inductive sig_sort : Set :=  (*r signature classifier *)
- | Dc (A:tm) (T:const) (*r Data constructor *)
- | Cs (A:tm) (*r Type constructor *)
- | Ax (a:tm) (A:tm) (*r Recursive def *).
-
 Definition context : Set := list ( atom * sort ).
 
 Definition available_props : Type := atoms.
+
+Inductive sig_sort : Set :=  (*r signature classifier *)
+ | Cs (A:tm) (b:tm) (*r Type/Data constructor *)
+ | Ax (a:tm) (A:tm) (*r Recursive def *).
 
 Definition sig : Set := list (atom * sig_sort).
 
@@ -137,7 +134,6 @@ with open_tm_wrt_co_rec (k:nat) (g5:co) (a5:tm) {struct a5}: tm :=
   | (a_UCAbs b) => a_UCAbs (open_tm_wrt_co_rec (S k) g5 b)
   | (a_CApp a g) => a_CApp (open_tm_wrt_co_rec k g5 a) (open_co_wrt_co_rec k g5 g)
   | a_Bullet => a_Bullet 
-  | (a_DataCon K) => a_DataCon K
   | (a_Case a brs5) => a_Case (open_tm_wrt_co_rec k g5 a) (open_brs_wrt_co_rec k g5 brs5)
 end
 with open_constraint_wrt_co_rec (k:nat) (g5:co) (phi5:constraint) : constraint :=
@@ -200,7 +196,6 @@ with open_tm_wrt_tm_rec (k:nat) (a5:tm) (a_6:tm) {struct a_6}: tm :=
   | (a_UCAbs b) => a_UCAbs (open_tm_wrt_tm_rec k a5 b)
   | (a_CApp a g) => a_CApp (open_tm_wrt_tm_rec k a5 a) (open_co_wrt_tm_rec k a5 g)
   | a_Bullet => a_Bullet 
-  | (a_DataCon K) => a_DataCon K
   | (a_Case a brs5) => a_Case (open_tm_wrt_tm_rec k a5 a) (open_brs_wrt_tm_rec k a5 brs5)
 end
 with open_constraint_wrt_tm_rec (k:nat) (a5:tm) (phi5:constraint) : constraint :=
@@ -216,15 +211,13 @@ end.
 
 Definition open_sig_sort_wrt_co_rec (k:nat) (g5:co) (sig_sort5:sig_sort) : sig_sort :=
   match sig_sort5 with
-  | (Dc A T) => Dc (open_tm_wrt_co_rec k g5 A) T
-  | (Cs A) => Cs (open_tm_wrt_co_rec k g5 A)
+  | (Cs A b) => Cs (open_tm_wrt_co_rec k g5 A) (open_tm_wrt_co_rec k g5 b)
   | (Ax a A) => Ax (open_tm_wrt_co_rec k g5 a) (open_tm_wrt_co_rec k g5 A)
 end.
 
 Definition open_sig_sort_wrt_tm_rec (k:nat) (a5:tm) (sig_sort5:sig_sort) : sig_sort :=
   match sig_sort5 with
-  | (Dc A T) => Dc (open_tm_wrt_tm_rec k a5 A) T
-  | (Cs A) => Cs (open_tm_wrt_tm_rec k a5 A)
+  | (Cs A b) => Cs (open_tm_wrt_tm_rec k a5 A) (open_tm_wrt_tm_rec k a5 b)
   | (Ax a A) => Ax (open_tm_wrt_tm_rec k a5 a) (open_tm_wrt_tm_rec k a5 A)
 end.
 
@@ -358,7 +351,7 @@ Inductive lc_co : co -> Prop :=    (* defn lc_co *)
 with lc_brs : brs -> Prop :=    (* defn lc_brs *)
  | lc_br_None : 
      (lc_brs br_None)
- | lc_br_One : forall (K:datacon) (a:tm) (brs5:brs),
+ | lc_br_One : forall (K:const) (a:tm) (brs5:brs),
      (lc_tm a) ->
      (lc_brs brs5) ->
      (lc_brs (br_One K a brs5))
@@ -407,8 +400,6 @@ with lc_tm : tm -> Prop :=    (* defn lc_tm *)
      (lc_tm (a_CApp a g))
  | lc_a_Bullet : 
      (lc_tm a_Bullet)
- | lc_a_DataCon : forall (K:datacon),
-     (lc_tm (a_DataCon K))
  | lc_a_Case : forall (a:tm) (brs5:brs),
      (lc_tm a) ->
      (lc_brs brs5) ->
@@ -431,47 +422,16 @@ Inductive lc_sort : sort -> Prop :=    (* defn lc_sort *)
 
 (* defns LC_sig_sort *)
 Inductive lc_sig_sort : sig_sort -> Prop :=    (* defn lc_sig_sort *)
- | lc_Dc : forall (A:tm) (T:const),
+ | lc_Cs : forall (A b:tm),
      (lc_tm A) ->
-     (lc_sig_sort (Dc A T))
- | lc_Cs : forall (A:tm),
-     (lc_tm A) ->
-     (lc_sig_sort (Cs A))
+     (lc_tm b) ->
+     (lc_sig_sort (Cs A b))
  | lc_Ax : forall (a A:tm),
      (lc_tm a) ->
      (lc_tm A) ->
      (lc_sig_sort (Ax a A)).
 (** free variables *)
-Fixpoint fv_tm_tm_brs (brs_6:brs) : vars :=
-  match brs_6 with
-  | br_None => {}
-  | (br_One K a brs5) => (fv_tm_tm_tm a) \u (fv_tm_tm_brs brs5)
-end
-with fv_tm_tm_tm (a5:tm) : vars :=
-  match a5 with
-  | a_Star => {}
-  | (a_Var_b nat) => {}
-  | (a_Var_f x) => {{x}}
-  | (a_Abs rho A b) => (fv_tm_tm_tm A) \u (fv_tm_tm_tm b)
-  | (a_UAbs rho b) => (fv_tm_tm_tm b)
-  | (a_App a rho b) => (fv_tm_tm_tm a) \u (fv_tm_tm_tm b)
-  | (a_Fam F) => {}
-  | (a_Const T) => {}
-  | (a_Pi rho A B) => (fv_tm_tm_tm A) \u (fv_tm_tm_tm B)
-  | (a_Conv a g) => (fv_tm_tm_tm a) \u (fv_tm_tm_co g)
-  | (a_CPi phi B) => (fv_tm_tm_constraint phi) \u (fv_tm_tm_tm B)
-  | (a_CAbs phi b) => (fv_tm_tm_constraint phi) \u (fv_tm_tm_tm b)
-  | (a_UCAbs b) => (fv_tm_tm_tm b)
-  | (a_CApp a g) => (fv_tm_tm_tm a) \u (fv_tm_tm_co g)
-  | a_Bullet => {}
-  | (a_DataCon K) => {}
-  | (a_Case a brs5) => (fv_tm_tm_tm a) \u (fv_tm_tm_brs brs5)
-end
-with fv_tm_tm_constraint (phi5:constraint) : vars :=
-  match phi5 with
-  | (Eq a b A) => (fv_tm_tm_tm a) \u (fv_tm_tm_tm b) \u (fv_tm_tm_tm A)
-end
-with fv_tm_tm_co (g_5:co) : vars :=
+Fixpoint fv_tm_tm_co (g_5:co) : vars :=
   match g_5 with
   | g_Triv => {}
   | (g_Var_b nat) => {}
@@ -498,6 +458,34 @@ with fv_tm_tm_co (g_5:co) : vars :=
   | (g_Eta a) => (fv_tm_tm_tm a)
   | (g_Left g g') => (fv_tm_tm_co g) \u (fv_tm_tm_co g')
   | (g_Right g g') => (fv_tm_tm_co g) \u (fv_tm_tm_co g')
+end
+with fv_tm_tm_brs (brs_6:brs) : vars :=
+  match brs_6 with
+  | br_None => {}
+  | (br_One K a brs5) => (fv_tm_tm_tm a) \u (fv_tm_tm_brs brs5)
+end
+with fv_tm_tm_tm (a5:tm) : vars :=
+  match a5 with
+  | a_Star => {}
+  | (a_Var_b nat) => {}
+  | (a_Var_f x) => {{x}}
+  | (a_Abs rho A b) => (fv_tm_tm_tm A) \u (fv_tm_tm_tm b)
+  | (a_UAbs rho b) => (fv_tm_tm_tm b)
+  | (a_App a rho b) => (fv_tm_tm_tm a) \u (fv_tm_tm_tm b)
+  | (a_Fam F) => {}
+  | (a_Const T) => {}
+  | (a_Pi rho A B) => (fv_tm_tm_tm A) \u (fv_tm_tm_tm B)
+  | (a_Conv a g) => (fv_tm_tm_tm a) \u (fv_tm_tm_co g)
+  | (a_CPi phi B) => (fv_tm_tm_constraint phi) \u (fv_tm_tm_tm B)
+  | (a_CAbs phi b) => (fv_tm_tm_constraint phi) \u (fv_tm_tm_tm b)
+  | (a_UCAbs b) => (fv_tm_tm_tm b)
+  | (a_CApp a g) => (fv_tm_tm_tm a) \u (fv_tm_tm_co g)
+  | a_Bullet => {}
+  | (a_Case a brs5) => (fv_tm_tm_tm a) \u (fv_tm_tm_brs brs5)
+end
+with fv_tm_tm_constraint (phi5:constraint) : vars :=
+  match phi5 with
+  | (Eq a b A) => (fv_tm_tm_tm a) \u (fv_tm_tm_tm b) \u (fv_tm_tm_tm A)
 end.
 
 Fixpoint fv_co_co_co (g_5:co) : vars :=
@@ -550,7 +538,6 @@ with fv_co_co_tm (a5:tm) : vars :=
   | (a_UCAbs b) => (fv_co_co_tm b)
   | (a_CApp a g) => (fv_co_co_tm a) \u (fv_co_co_co g)
   | a_Bullet => {}
-  | (a_DataCon K) => {}
   | (a_Case a brs5) => (fv_co_co_tm a) \u (fv_co_co_brs brs5)
 end
 with fv_co_co_constraint (phi5:constraint) : vars :=
@@ -572,15 +559,13 @@ end.
 
 Definition fv_tm_tm_sig_sort (sig_sort5:sig_sort) : vars :=
   match sig_sort5 with
-  | (Dc A T) => (fv_tm_tm_tm A)
-  | (Cs A) => (fv_tm_tm_tm A)
+  | (Cs A b) => (fv_tm_tm_tm A) \u (fv_tm_tm_tm b)
   | (Ax a A) => (fv_tm_tm_tm a) \u (fv_tm_tm_tm A)
 end.
 
 Definition fv_co_co_sig_sort (sig_sort5:sig_sort) : vars :=
   match sig_sort5 with
-  | (Dc A T) => (fv_co_co_tm A)
-  | (Cs A) => (fv_co_co_tm A)
+  | (Cs A b) => (fv_co_co_tm A) \u (fv_co_co_tm b)
   | (Ax a A) => (fv_co_co_tm a) \u (fv_co_co_tm A)
 end.
 
@@ -635,7 +620,6 @@ with tm_subst_tm_tm (a5:tm) (x5:tmvar) (a_6:tm) {struct a_6} : tm :=
   | (a_UCAbs b) => a_UCAbs (tm_subst_tm_tm a5 x5 b)
   | (a_CApp a g) => a_CApp (tm_subst_tm_tm a5 x5 a) (tm_subst_tm_co a5 x5 g)
   | a_Bullet => a_Bullet 
-  | (a_DataCon K) => a_DataCon K
   | (a_Case a brs5) => a_Case (tm_subst_tm_tm a5 x5 a) (tm_subst_tm_brs a5 x5 brs5)
 end
 with tm_subst_tm_constraint (a5:tm) (x5:tmvar) (phi5:constraint) {struct phi5} : constraint :=
@@ -693,7 +677,6 @@ with co_subst_co_tm (g5:co) (c5:covar) (a5:tm) {struct a5} : tm :=
   | (a_UCAbs b) => a_UCAbs (co_subst_co_tm g5 c5 b)
   | (a_CApp a g) => a_CApp (co_subst_co_tm g5 c5 a) (co_subst_co_co g5 c5 g)
   | a_Bullet => a_Bullet 
-  | (a_DataCon K) => a_DataCon K
   | (a_Case a brs5) => a_Case (co_subst_co_tm g5 c5 a) (co_subst_co_brs g5 c5 brs5)
 end
 with co_subst_co_constraint (g5:co) (c5:covar) (phi5:constraint) {struct phi5} : constraint :=
@@ -715,17 +698,16 @@ end.
 
 Definition tm_subst_tm_sig_sort (a5:tm) (x5:tmvar) (sig_sort5:sig_sort) : sig_sort :=
   match sig_sort5 with
-  | (Dc A T) => Dc (tm_subst_tm_tm a5 x5 A) T
-  | (Cs A) => Cs (tm_subst_tm_tm a5 x5 A)
+  | (Cs A b) => Cs (tm_subst_tm_tm a5 x5 A) (tm_subst_tm_tm a5 x5 b)
   | (Ax a A) => Ax (tm_subst_tm_tm a5 x5 a) (tm_subst_tm_tm a5 x5 A)
 end.
 
 Definition co_subst_co_sig_sort (g5:co) (c5:covar) (sig_sort5:sig_sort) : sig_sort :=
   match sig_sort5 with
-  | (Dc A T) => Dc (co_subst_co_tm g5 c5 A) T
-  | (Cs A) => Cs (co_subst_co_tm g5 c5 A)
+  | (Cs A b) => Cs (co_subst_co_tm g5 c5 A) (co_subst_co_tm g5 c5 b)
   | (Ax a A) => Ax (co_subst_co_tm g5 c5 a) (co_subst_co_tm g5 c5 A)
 end.
+
 
 Fixpoint erase_tm (a : tm) : tm :=
    match a with
@@ -744,8 +726,8 @@ Fixpoint erase_tm (a : tm) : tm :=
    | a_CAbs phi b => a_UCAbs (erase_tm b)
    | a_UCAbs b => a_UCAbs (erase_tm b)
    | a_CApp a g => a_CApp (erase_tm a) g_Triv
-   | a_DataCon K => a_Star  (* a_DataCon K *)
-   | a_Case a brs => a_Star (* a_Case (erase_tm a) (erase_brs brs) *)
+(*   | a_DataCon K => a_DataCon K *)
+   | a_Case a brs => a_Case (erase_tm a) (erase_brs brs)
    | a_Bullet => a_Bullet
    end
 with erase_brs (x : brs) : brs :=
@@ -767,13 +749,19 @@ end.
 
 Definition erase_csort s :=
  match s with
- | Cs a   => Cs (erase_tm a)
  | Ax a A => Ax (erase_tm a) (erase_tm A)
- | Dc a t => Dc (erase_tm a) t
+ | Cs a t => Cs (erase_tm a) t
 end.
 
 Definition erase_context G := map erase_sort G.
 Definition erase_sig S := map erase_csort S.
+
+Fixpoint dom_br b :=
+ match b with
+ | br_None => nil
+ | br_One K _ b' => K :: dom_br b'
+ end.
+
 
 (* -------------- A specific signature with Fix ------------ *)
 Definition Fix : atom.
@@ -802,13 +790,18 @@ Definition toplevel : sig := erase_sig an_toplevel.
 (** definitions *)
 
 (* defns JSyn *)
-Inductive Path : const -> tm -> Prop :=    (* defn Path *)
+Inductive Constr : tm -> Prop :=    (* defn Constr *)
+ | C_Star : 
+     Constr a_Star
+ | C_Const : forall (T:const),
+     Constr (a_Const T)
+with Path : const -> tm -> Prop :=    (* defn Path *)
  | Path_Const : forall (T:const),
      Path T (a_Const T)
- | Path_App : forall (T:const) (a:tm) (rho:relflag) (b:tm),
-     lc_tm b ->
+ | Path_App : forall (T:const) (a:tm) (rho:relflag) (b':tm),
+     lc_tm b' ->
      Path T a ->
-     Path T  ( (a_App a rho b) ) 
+     Path T  ( (a_App a rho b') ) 
  | Path_CApp : forall (T:const) (a:tm) (g:co),
      lc_co g ->
      Path T a ->
@@ -861,11 +854,11 @@ with Value : tm -> Prop :=    (* defn Value *)
      Value (a_UCAbs a)
  | Value_Const : forall (T:const),
      Value (a_Const T)
- | Value_App : forall (a:tm) (rho:relflag) (b:tm) (T:const),
-     lc_tm b ->
+ | Value_App : forall (a:tm) (rho:relflag) (b':tm) (T:const),
+     lc_tm b' ->
      Path T a ->
      Value a ->
-     Value  ( (a_App a rho b) ) 
+     Value  ( (a_App a rho b') ) 
  | Value_CApp : forall (a:tm) (g:co) (T:const),
      lc_co g ->
      Path T a ->
@@ -882,24 +875,13 @@ with value_type : tm -> Prop :=    (* defn value_type *)
      lc_constraint phi ->
      lc_tm (a_CPi phi B) ->
      value_type (a_CPi phi B)
- | value_type_Const : forall (T:const),
-     value_type (a_Const T)
- | value_type_App : forall (a:tm) (rho:relflag) (b:tm) (T:const),
-     lc_tm b ->
-     Path T a ->
-     Value a ->
-     value_type  ( (a_App a rho b) ) 
- | value_type_CApp : forall (a:tm) (g:co) (T:const),
-     lc_co g ->
-     Path T a ->
-     Value a ->
-     value_type  ( (a_CApp a g) ) 
+ | value_type_Path : forall (A:tm) (T:const),
+     Path T A ->
+     Value A ->
+     value_type A
 with DataTy : tm -> tm -> Prop :=    (* defn DataTy *)
  | DT_Star : 
      DataTy a_Star a_Star
- | DT_Path : forall (A:tm) (T:const),
-     Path T A ->
-     DataTy A A
  | DT_Pi : forall (L:vars) (rho:relflag) (A B b:tm),
      lc_tm A ->
       ( forall x , x \notin  L  -> DataTy  ( open_tm_wrt_tm B (a_Var_f x) )  b )  ->
@@ -907,7 +889,11 @@ with DataTy : tm -> tm -> Prop :=    (* defn DataTy *)
  | DT_CPi : forall (L:vars) (phi:constraint) (B b:tm),
      lc_constraint phi ->
       ( forall c , c \notin  L  -> DataTy  ( open_tm_wrt_co B (g_Var_f c) )  b )  ->
-     DataTy  ( (a_CPi phi B) )  b.
+     DataTy  ( (a_CPi phi B) )  b
+ | DT_Path : forall (A:tm) (T:const),
+     Path T A ->
+     Value A ->
+     DataTy A (a_Const T).
 
 (* defns Jconsistent *)
 Inductive consistent : tm -> tm -> Prop :=    (* defn consistent *)
@@ -972,7 +958,29 @@ Inductive erased_tm : tm -> Prop :=    (* defn erased_tm *)
  | erased_a_Const : forall (T:const),
      erased_tm (a_Const T)
  | erased_a_Fam : forall (F:tyfam),
-     erased_tm (a_Fam F).
+     erased_tm (a_Fam F)
+ | erased_a_Case : forall (a:tm) (brs5:brs),
+     erased_tm a ->
+     erased_brs brs5 ->
+     erased_tm  ( (a_Case a brs5) ) 
+with erased_brs : brs -> Prop :=    (* defn erased_brs *)
+ | erased_a_none : 
+     erased_brs br_None
+ | erased_a_some : forall (K:const) (a:tm) (brs5:brs),
+     erased_tm a ->
+     erased_brs brs5 ->
+     erased_brs  ( (br_One K a brs5) ) .
+
+(* defns Jin *)
+Inductive in_brs : const -> tm -> brs -> Prop :=    (* defn in_brs *)
+ | in_brshere : forall (K:const) (a:tm) (brs5:brs),
+      True  ->
+      True  ->
+     in_brs K a  ( (br_One K a brs5) ) 
+ | in_brsthere : forall (K:const) (a:tm) (K1:const) (a1:tm) (brs5:brs),
+      True  ->
+     in_brs K a brs5 ->
+     in_brs K a  ( (br_One K1 a1 brs5) ) .
 
 (* defns JChk *)
 Inductive RhoCheck : relflag -> tmvar -> tm -> Prop :=    (* defn RhoCheck *)
@@ -1025,7 +1033,20 @@ Inductive Par : context -> available_props -> tm -> tm -> Prop :=    (* defn Par
      Par G D b b' ->
       ( forall x , x \notin  L  ->  (  ( open_tm_wrt_tm a (a_Var_f x) )   =  (a_App b Rel (a_Var_f x)) )  )  ->
      Par G D (a_UAbs Rel a) b'
-with MultiPar : context -> available_props -> tm -> tm -> Prop :=    (* defn MultiPar *)
+ | Par_Case : forall (G:context) (D:available_props) (a:tm) (brs5:brs) (a':tm) (brs':brs),
+     Par G D a a' ->
+     Par_brs G D brs5 brs' ->
+     Par G D (a_Case a brs5) (a_Case a' brs')
+with Par_brs : context -> available_props -> brs -> brs -> Prop :=    (* defn Par_brs *)
+ | Par_brs_None : forall (G:context) (D:available_props),
+     Par_brs G D br_None br_None
+ | Par_brs_One : forall (G:context) (D:available_props) (K:const) (a:tm) (brs5:brs) (a':tm) (brs':brs),
+     Par G D a a' ->
+     Par_brs G D brs5 brs' ->
+     Par_brs G D (br_One K a brs5) (br_One K a' brs').
+
+(* defns Jmulti *)
+Inductive MultiPar : context -> available_props -> tm -> tm -> Prop :=    (* defn MultiPar *)
  | MP_Refl : forall (G:context) (D:available_props) (a:tm),
      lc_tm a ->
      MultiPar G D a a
@@ -1130,9 +1151,9 @@ with Typing : context -> tm -> tm -> Prop :=    (* defn Typing *)
      Typing G a1 (a_CPi  ( (Eq a b A) )  B1) ->
      DefEq G  (dom  G )  a b A ->
      Typing G (a_CApp a1 g_Triv)  (open_tm_wrt_co  B1   g_Triv ) 
- | E_Const : forall (G:context) (T:const) (A:tm),
+ | E_Const : forall (G:context) (T:const) (A a:tm),
      Ctx G ->
-      binds  T  (Cs  A )   toplevel   ->
+      binds  T  (Cs  A a )   toplevel   ->
       ( Typing  nil  A a_Star )  ->
      Typing G (a_Const T) A
  | E_Fam : forall (G:context) (F:tyfam) (A a:tm),
@@ -1255,19 +1276,13 @@ with Ctx : context -> Prop :=    (* defn Ctx *)
 Inductive Sig : sig -> Prop :=    (* defn Sig *)
  | Sig_Empty : 
      Sig  nil 
- | Sig_ConsCs : forall (S:sig) (T:const) (A:tm),
+ | Sig_ConsCs : forall (S:sig) (K:const) (A b:tm),
      Sig S ->
-     DataTy A a_Star ->
-     Typing  nil  A a_Star ->
-      ~ AtomSetImpl.In  T  (dom  S )  ->
-     Sig  (( T ~ Cs A )++ S ) 
- | Sig_ConsDc : forall (S:sig) (K:datacon) (A:tm) (T:const) (B:tm),
-     Sig S ->
-     DataTy A B ->
+     Constr b ->
+     DataTy A b ->
      Typing  nil  A a_Star ->
       ~ AtomSetImpl.In  K  (dom  S )  ->
-     Path T B ->
-     Sig  (( K ~ Dc A T )++ S ) 
+     Sig  (( K ~ Cs A b )++ S ) 
  | Sig_ConsAx : forall (S:sig) (F:tyfam) (a A:tm),
      Sig S ->
      Typing  nil  A a_Star ->
@@ -1320,9 +1335,9 @@ with AnnTyping : context -> tm -> tm -> Prop :=    (* defn AnnTyping *)
      AnnTyping G a1 (a_CPi (Eq a b A1) B) ->
      AnnDefEq G  (dom  G )  g a b ->
      AnnTyping G (a_CApp a1 g)  (open_tm_wrt_co  B   g ) 
- | An_Const : forall (G:context) (T:const) (A:tm),
+ | An_Const : forall (G:context) (T:const) (A b:tm),
      AnnCtx G ->
-      binds  T  (Cs  A )   an_toplevel   ->
+      binds  T  (Cs  A b )   an_toplevel   ->
       ( AnnTyping  nil  A a_Star )  ->
      AnnTyping G (a_Const T) A
  | An_Fam : forall (G:context) (F:tyfam) (A a:tm),
@@ -1475,19 +1490,13 @@ with AnnCtx : context -> Prop :=    (* defn AnnCtx *)
 with AnnSig : sig -> Prop :=    (* defn AnnSig *)
  | An_Sig_Empty : 
      AnnSig  nil 
- | An_Sig_ConsCs : forall (S:sig) (T:const) (A:tm),
+ | An_Sig_ConsCs : forall (S:sig) (K:const) (A b:tm),
      AnnSig S ->
+     Constr b ->
      AnnTyping  nil  A a_Star ->
-     DataTy A a_Star ->
-      ~ AtomSetImpl.In  T  (dom  S )  ->
-     AnnSig  (( T ~ Cs A )++ S ) 
- | An_Sig_ConsDc : forall (S:sig) (K:datacon) (A:tm) (T:const) (B:tm),
-     AnnSig S ->
-     DataTy A B ->
-     AnnTyping  nil  A a_Star ->
+     DataTy A b ->
       ~ AtomSetImpl.In  K  (dom  S )  ->
-     Path T B ->
-     AnnSig  (( K ~ Dc A T )++ S ) 
+     AnnSig  (( K ~ Cs A b )++ S ) 
  | An_Sig_ConsAx : forall (S:sig) (F:tyfam) (a A:tm),
      AnnSig S ->
      AnnTyping  nil  A a_Star ->
@@ -1545,6 +1554,6 @@ Inductive head_reduction : context -> tm -> tm -> Prop :=    (* defn head_reduct
 
 
 (** infrastructure *)
-Hint Constructors Path CoercedValue Value value_type DataTy consistent erased_tm RhoCheck Par MultiPar joins Beta reduction_in_one reduction PropWff Typing Iso DefEq Ctx Sig AnnPropWff AnnTyping AnnIso AnnDefEq AnnCtx AnnSig head_reduction lc_co lc_brs lc_tm lc_constraint lc_sort lc_sig_sort.
+Hint Constructors Constr Path CoercedValue Value value_type DataTy consistent erased_tm erased_brs in_brs RhoCheck Par Par_brs MultiPar joins Beta reduction_in_one reduction PropWff Typing Iso DefEq Ctx Sig AnnPropWff AnnTyping AnnIso AnnDefEq AnnCtx AnnSig head_reduction lc_co lc_brs lc_tm lc_constraint lc_sort lc_sig_sort.
 
 

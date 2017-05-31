@@ -68,7 +68,7 @@ Proof.
   repeat split; eauto using Typing_Ctx.
 Qed.
 
-
+(*
 Lemma invert_a_Const : forall G T A,
     Typing G (a_Const T) A ->
     exists B, DataTy B a_Star /\ DefEq G (dom G) A B  a_Star
@@ -89,7 +89,7 @@ Proof.
     + eapply E_Refl.
       move: (Typing_weakening H1 G nil nil ltac:(auto)) => h0.
       simpl_env in h0. auto.
-Qed.
+Qed. *)
 
 
 Lemma invert_a_Fam : forall G F A,
@@ -208,6 +208,8 @@ Proof.
     simpl_env in H1. eauto. auto. simpl_env. auto.
   - eapply Typing_weakening with (F:=nil)(G := nil) in H1.
     simpl_env in H1. eauto. auto. simpl_env. auto.
+(*  - eapply Typing_weakening with (F:=nil)(G := nil) in H1.
+    simpl_env in H1. eauto. auto. simpl_env. auto. *)
 Qed.
 
 (* --------------------------------------------------- *)
@@ -388,6 +390,19 @@ Proof.
     simpl; eauto.
 Qed.
 
+Lemma invert_a_Const : forall G K A,
+    Typing G (a_Const K) A ->
+    exists B T, binds K (Cs B T) toplevel /\ DefEq G (dom G) A B a_Star.
+Proof.
+  intros G K A H. dependent induction H.
+  - destruct (IHTyping1 K eq_refl) as (B0 & T & b & de).
+    exists B0, T. split. auto.
+    eapply E_Trans. eauto. eauto.
+  - exists A, a. split. auto.
+    eapply E_Refl.
+    apply Typing_weakening  with (F:=nil)(E:=G)(G:=nil) in H1; simpl_env; auto.
+    simpl_env in H1. auto.
+Qed.
 
 (* --------------------------------------------------- *)
 
@@ -1215,6 +1230,15 @@ Proof.
   eapply Typing_regularity. eauto.
 Qed.
 
+
+Lemma E_Const2 :  ∀ (G : context) K (A : tm) a,
+       Ctx G → binds K (Cs A a) toplevel → Typing G (a_Const K) A.
+Proof.
+  intros.
+  eapply E_Const; eauto.
+  move: (toplevel_to_const H0) => [h0 [b h2]].
+  eauto.
+Qed.
 
 Lemma E_Wff2 : ∀ (G : context) (a b A : tm), Typing G a A → Typing G b A → PropWff G (Eq a b A).
 Proof.

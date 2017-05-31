@@ -94,35 +94,35 @@ Proof.
 Qed.
 
 
-Lemma Par_fv_preservation: forall G D x a b, Par G D a b ->
-                                        x `notin` fv_tm_tm_tm a ->
-                                        x `notin` fv_tm_tm_tm b.
+Lemma Par_fv_preservation_mutual: forall x,
+  (forall G D a b, Par G D a b ->
+              x `notin` fv_tm_tm_tm a ->  x `notin` fv_tm_tm_tm b) /\
+  (forall G D a b, Par_brs G D a b ->
+               x `notin` fv_tm_tm_brs a ->  x `notin` fv_tm_tm_brs b).
 Proof.
-  intros.
-  induction H; eauto 2; simpl.
-  all: simpl in H0.
-  all: try solve [move => h0; apply AtomSetFacts.union_iff in h0; case: h0 => h0; eauto; apply IHreduction_in_one; auto].
-  - simpl in *.
-    have: x `notin` fv_tm_tm_tm (open_tm_wrt_tm a' b') => h0.
+  intros x. eapply Par_tm_Par_brs_mutual; intros; eauto 2; simpl in *; auto.
+  (* move: (@AtomSetFacts.union_iff  (fv_tm_tm_tm a) (fv_tm_tm_tm b) x) => [h0 h1]. *)
+  (* match goal with [H1 : ?x `notin` union ?a ?b |- _ ] => move: (@AtomSetFacts.union_iff a b x) => [h0 h1] end.
+  all: try solve [move => h0; apply AtomSetFacts.union_iff in h0; case: h0 => h0; eauto; apply IHreduction_in_one; auto]. *)
+  - have: x `notin` fv_tm_tm_tm (open_tm_wrt_tm a' b') => h0.
     apply fv_tm_tm_tm_open_tm_wrt_tm_upper in h0.
     apply AtomSetFacts.union_iff in h0.
     case:h0; eauto => h0.
     fsetdec_fast.
     fsetdec_fast.
     auto.
-  - auto.
   - have: x `notin` fv_tm_tm_tm (open_tm_wrt_co a' g_Triv) => h0.
     apply fv_tm_tm_tm_open_tm_wrt_co_upper in h0.
     apply AtomSetFacts.union_iff in h0.
     case:h0; eauto => h0.
     fsetdec.
     auto.
-  - auto.
   - pick fresh x0.
-    assert (Fl : x0 `notin` L). auto.
+(*    assert (Fl : x0 `notin` L). auto. *)
     assert (Fa : x `notin` fv_tm_tm_tm (open_tm_wrt_tm a (a_Var_f x0))).
     rewrite fv_tm_tm_tm_open_tm_wrt_tm_upper. auto.
-    move: (H1 x0 Fl Fa) => h0.
+    match goal with [H1 : forall x1, x1 `notin` ?L -> x `notin` ?L1 -> _ |- _ ] =>
+                    move: (H1 x0 ltac:(auto) Fa) => h0 end.
     rewrite fv_tm_tm_tm_open_tm_wrt_tm_lower. eauto.
   - pick fresh x0.
     have na': x `notin` fv_tm_tm_tm A'. eauto.
@@ -139,7 +139,8 @@ Proof.
     case:h0; eauto => h0.
     simpl in h0.
     fsetdec.
-    have K:= H1 c0 ltac:(auto) h0.
+    match goal with [H1 : forall c, c `notin` ?L -> x `notin` ?L1 -> _ |- _ ] =>
+                    move: (H1 c0 ltac:(auto) h0) => K end.
     move => h1.
     apply K. auto.
     apply fv_tm_tm_tm_open_tm_wrt_co_lower; auto.
@@ -161,14 +162,13 @@ Proof.
     case: h1 => h1; eauto.
     fsetdec.
     fsetdec.
-  - apply toplevel_closed in H.
-    move: (Typing_context_fv H) => ?. split_hyp.
+  - apply toplevel_closed in b.
+    move: (Typing_context_fv b) => ?. split_hyp.
     simpl in *.
     fsetdec.
-  -
-    apply IHPar.
+  - apply H.
     pick fresh y.
-    move: (H1 y ltac:(auto)) => h0.
+    move: (e y ltac:(auto)) => h0.
     apply (fun_cong fv_tm_tm_tm) in h0.
     simpl in h0.
     move: (@fv_tm_tm_tm_open_tm_wrt_tm_lower a (a_Var_f y) x) => h1.
@@ -182,6 +182,10 @@ Proof.
     assert (x `notin` singleton y). auto. done.
     done.
 Qed.
+
+Lemma Par_fv_preservation: forall x G D a b, Par G D a b ->
+                x `notin` fv_tm_tm_tm a ->  x `notin` fv_tm_tm_tm b.
+Proof. intros. eapply Par_fv_preservation_mutual; eauto. Qed.
 
 
 Lemma reduction_in_Par : forall a a', reduction_in_one a a' -> forall G D, Par G D a a'.

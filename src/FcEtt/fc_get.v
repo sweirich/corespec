@@ -61,7 +61,7 @@ match n with
     end
   | a_Const T =>
      match binds_lookup _ T an_toplevel with
-    | inl (exist (Cs A) _) => A
+    | inl (exist (Cs A _) _) => A
     | _ => a_Star
     end
   | _ => a_Star
@@ -245,13 +245,13 @@ Proof.
     - inversion HT. subst.
       Opaque an_toplevel.
       simpl.
-      destruct (binds_lookup _ F an_toplevel) as [[ [ A0 | A0 | phi] P] | NB];
+      destruct (binds_lookup _ F an_toplevel) as [[ [ A0 | phi] P] | NB];
       try (move: (binds_unique _ _ _ _ _ H2 P uniq_an_toplevel) => h0; inversion h0).
       auto.
       eapply NB in H2. done.
     - inversion HT. subst. Opaque an_toplevel.
       simpl.
-      destruct (binds_lookup _ T an_toplevel) as [ [ [A0 | A0 | phi] P] | NB];
+      destruct (binds_lookup _ T an_toplevel) as [ [ [ A0 | phi] P] | NB];
       try (move: (binds_unique _ _ _ _ _ H2 P uniq_an_toplevel) => h0; inversion h0). auto.
       eapply NB in H2. done.
     - inversion HT. subst. simpl.
@@ -490,7 +490,8 @@ Proof.
       rewrite tm_subst_tm_tm_fresh_eq; auto.
       destruct (AnnDefEq_context_fv DE) as (_ & _ & _ & _ & h4 & _).
       fsetdec.
-   (* - inversion DE; simpl in *; subst.
+   (* Left/Right
+      - inversion DE; simpl in *; subst.
       + move: (H n ltac:(omega)) => [h0 [h1 h2]].
         remember (get_deq_n n G g1) as GG1. destruct GG1.
         move: (h1  _ _ g1 _ _ _ _ ltac:(omega) H8 ltac:(eauto)) => [ EQ1 EQ2 ].
@@ -819,12 +820,6 @@ assert (AnnTyping ([(c,Co phi2)] ++ G)
     autorewrite with lngen; auto.
   apply (@AnnTyping_co_swap c y) in T4; autorewrite with lngen; eauto.
 
-  (*
-  rewrite (co_subst_co_tm_spec _ _ c); auto.
-  rewrite (co_subst_co_tm_intro y); auto. *)
-
-
-  (* move: (ann_ctx_wff_PropWff T1) => t1. *)
   move: (AnnPropWff_weakening T1 [(c,Co phi1)] nil G eq_refl) => t2. simpl_env in t2.
   move: (AnnPropWff_weakening T2 [(c,Co phi2)] nil G eq_refl) => t3. simpl_env in t3.
   move: (AnnPropWff_weakening T1 [(c,Co phi1)] nil G eq_refl) => t4. simpl_env in t4.

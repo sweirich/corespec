@@ -46,7 +46,7 @@ Axiom Toplevel_lc : forall c s, binds c s toplevel -> lc_sig_sort s.
 
 Axiom Path_lc : forall T a, Path T a -> lc_tm a.
 
-Axiom DataTy_lc : forall A, DataTy A a_Star -> lc_tm A.
+Axiom DataTy_lc1 : forall A B, DataTy A B -> lc_tm A.
 
 Axiom Value_lc : forall A, Value A -> lc_tm A.
 
@@ -240,10 +240,12 @@ Module Type ext_invert_sig.
 
 Axiom binds_to_Typing: forall G T A, Ctx G -> binds T (Tm A) G -> Typing G A a_Star.
 
+(*
 Axiom invert_a_Const : forall G T A,
     Typing G (a_Const T) A ->
     exists B, DataTy B a_Star /\ DefEq G (dom G) A B  a_Star
          /\ binds T (Cs B) toplevel.
+*)
 
 Axiom invert_a_Pi: forall G rho A0 A B0,
     Typing G (a_Pi rho A0 B0) A ->
@@ -305,6 +307,12 @@ Axiom invert_a_Fam : forall G F A,
     Typing G (a_Fam F) A ->
     exists a B, DefEq G (dom G) A B a_Star /\
            binds F (Ax a B) toplevel /\ Typing nil B a_Star.
+
+
+Axiom invert_a_Const : forall G K A,
+    Typing G (a_Const K) A ->
+    exists B T, binds K (Cs B T) toplevel /\ DefEq G (dom G) A B a_Star.
+
 
 (* ---------- context conversion -------------- *)
 (* Terms still type check even after varying the context *)
@@ -418,6 +426,16 @@ Axiom E_CAbsCong2
         c `notin` L
         → DefEq ([(c, Co phi1)] ++ G) D (open_tm_wrt_co a (g_Var_f c)) (open_tm_wrt_co b (g_Var_f c))
                 (open_tm_wrt_co B (g_Var_f c))) → DefEq G D (a_UCAbs a) (a_UCAbs b) (a_CPi phi1 B).
+
+Axiom E_Fam2: ∀ (G : context) (F : tyfam) (A a : tm),
+       Ctx G
+       → binds F (Ax a A) toplevel → Typing G (a_Fam F) A.
+
+Axiom E_Const2 :  ∀ (G : context) K (A : tm) a,
+       Ctx G → binds K (Cs A a) toplevel → Typing G (a_Const K) A.
+
+Axiom E_Wff2 : ∀ (G : context) (a b A : tm), Typing G a A → Typing G b A → PropWff G (Eq a b A).
+
 
 End ext_invert_sig.
 
@@ -889,5 +907,10 @@ Axiom AnnIso_unique  :
 Axiom AnnDefEq_unique    :
   forall G D g a b,
       AnnDefEq G D g a b -> forall {a1 b1}, AnnDefEq G D g a1 b1 -> a = a1 /\ b = b1.
+
+
+Axiom Path_unique : forall a b1 b2, Path b1 a -> Path b2 a -> b1 = b2.
+
+Axiom DataTy_unique : forall a b1 b2, DataTy a b1 -> DataTy a b2 -> b1 = b2.
 
 End fc_unique_sig.

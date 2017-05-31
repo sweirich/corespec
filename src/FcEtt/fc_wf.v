@@ -9,6 +9,7 @@ Require Import FcEtt.tactics.
 
 Require Import FcEtt.toplevel.
 
+Require Import FcEtt.ext_wf.
 
 Set Bullet Behavior "Strict Subproofs".
 Set Implicit Arguments.

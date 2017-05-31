@@ -219,10 +219,9 @@ Qed.
 Lemma preservation : forall G a A, AnnTyping G a A -> forall a', head_reduction G a a' -> AnnTyping G a' A.
 Proof.
   intros G a A H. induction H.
-  - intros. inversion H0.
-  - intros. inversion H1.
-  - intros. inversion H2; subst.
-  - intros. inversion H3. subst.
+  (* cases that don't actually step, or that follow directly by induction. *)
+  all: intros; match goal with [ H : head_reduction ?G ?a ?b |- _ ] => inversion H; subst; eauto end.
+  - (* under irrelevant pi *)
     pick fresh x and apply An_Abs; eauto 3.
     have RC: RhoCheck Irrel x (erase_tm (open_tm_wrt_tm a (a_Var_f x))); eauto.
     inversion RC. subst.
@@ -233,59 +232,48 @@ Proof.
     constructor.
     eapply Par_fv_preservation; eauto.
     eapply head_reduction_erased; eauto.
-  - (* application case *)
-    intros. inversion H1; subst.
-    + eauto.
-    + inversion H. subst.
-      pick fresh x.
-      rewrite (tm_subst_tm_tm_intro x); auto.
-      rewrite (tm_subst_tm_tm_intro x B); auto.
-      eapply AnnTyping_tm_subst; eauto.
-    + (* Push case *)
-      inversion H. subst. resolve_unique_subst.
-      move: (AnnDefEq_regularity H7)  => [C1 [C2 [g' hyps]]]. split_hyp.
-      invert_syntactic_equality.
-      inversion H2. inversion H6. subst.
-      eapply An_Conv; eauto.
-      eapply An_PiSnd; eauto.
-      eapply An_EraseEq; eauto.
-      eapply AnnTyping_tm_subst_nondep; eauto.
-  - intros. inversion H2; subst.
-    + eauto.
-    + inversion H. subst.
-      econstructor; eauto 2.
-      eapply An_Trans with (a1 := A); eauto 2 using AnnTyping_regularity.
-      eapply An_Refl; eauto with ctx_wff.
-  - intros. inversion H2.
-  - intros. inversion H2.
-  - intros. inversion H1; subst.
-    + eauto.
-    + inversion H; subst.
-      pick fresh c.
-      rewrite (co_subst_co_tm_intro c); auto.
-      rewrite (co_subst_co_tm_intro c B); auto.
-      eapply AnnTyping_co_subst; eauto.
-    + (* CPush case *)
-      inversion H. subst. resolve_unique_subst.
-      move: (AnnDefEq_regularity H5)  => [C1 [C2 [g' hyps]]]. split_hyp.
-      invert_syntactic_equality.
-      inversion H2. inversion H7. subst. destruct phi1.
-      eapply An_Conv; eauto.
-      eapply AnnTyping_co_subst_nondep; eauto.
-  - move=> a' hr.
-    inversion hr.
-  - move=> a' hr.
-    inversion hr. subst.
-
+  - (* AppAbs case *)
+    inversion H. subst.
+    pick fresh x.
+    rewrite (tm_subst_tm_tm_intro x); auto.
+    rewrite (tm_subst_tm_tm_intro x B); auto.
+    eapply AnnTyping_tm_subst; eauto.
+  - (* Push case *)
+    inversion H. subst. resolve_unique_subst.
+    move: (AnnDefEq_regularity H7)  => [C1 [C2 [g' hyps]]]. split_hyp.
+    invert_syntactic_equality.
+    inversion H2. inversion H6. subst.
+    eapply An_Conv; eauto.
+    eapply An_PiSnd; eauto.
+    eapply An_EraseEq; eauto.
+    eapply AnnTyping_tm_subst_nondep; eauto.
+  - (* Conv push *)
+    inversion H. subst.
+    econstructor; eauto 2.
+    eapply An_Trans with (a1 := A); eauto 2 using AnnTyping_regularity.
+    eapply An_Refl; eauto with ctx_wff.
+  - (* CAppCAbs *)
+    inversion H; subst.
+    pick fresh c.
+    rewrite (co_subst_co_tm_intro c); auto.
+    rewrite (co_subst_co_tm_intro c B); auto.
+    eapply AnnTyping_co_subst; eauto.
+  - (* CPush case *)
+    inversion H. subst. resolve_unique_subst.
+    move: (AnnDefEq_regularity H5)  => [C1 [C2 [g' hyps]]]. split_hyp.
+    invert_syntactic_equality.
+    inversion H2. inversion H7. subst. destruct phi1.
+    eapply An_Conv; eauto.
+    eapply AnnTyping_co_subst_nondep; eauto.
+  - (* Unfolding Axioms *)
     assert (Ax a A = Ax a' A0).
     { eapply binds_unique; eauto. apply uniq_an_toplevel. }
-    inversion H2. subst. clear H2. clear H0.
-    apply an_toplevel_closed in H4.
-    eapply AnnTyping_weakening with (F:=nil)(G:=nil)(E:=G) in H4; eauto.
-    simpl in H4.
-    rewrite app_nil_r in H4.
-    auto.
-    rewrite app_nil_r. simpl. auto.
+    inversion H3. subst.
+    match goal with [ b : binds F (Ax a' A0) an_toplevel |- _ ] => move: H5 => h end.
+    apply an_toplevel_closed in h.
+    eapply AnnTyping_weakening with (F:=nil)(G:=nil)(E:=G) in h; eauto.
+    simpl_env in h. auto.
+    simpl_env. auto.
 Qed. (* preservation *)
 
 

@@ -39,79 +39,6 @@ Inductive multipar S D ( a : tm) : tm -> Prop :=
 
 Hint Constructors multipar.
 
-(*
-Inductive consistent : tm -> tm -> Prop :=
-| consistent_a_Star   : consistent a_Star a_Star
-| consistent_a_Pi     : forall rho A1 B1 A2 B2,
-    lc_tm A1 ->
-    lc_tm (a_Pi rho A1 B1) ->
-    lc_tm A2 ->
-    lc_tm (a_Pi rho A2 B2) ->
-    consistent (a_Pi rho A1 B1) (a_Pi rho A2 B2)
-| consistent_a_CPi    : forall phi1 A1 phi2 A2,
-    lc_constraint phi1 ->
-    lc_tm (a_CPi phi1 A1) ->
-    lc_constraint phi2 ->
-    lc_tm (a_CPi phi2 A2) ->
-    consistent (a_CPi phi1 A1) (a_CPi phi2 A2)
-| consistent_Path     : forall T p1 p2,
-    Path T p1 -> Path T p2 ->
-    consistent p1 p2
-| consistent_a_Const  : forall T, consistent (a_Const T)(a_Const T)
-| consistent_a_App    : forall p1 p2 b1 b2 rho,
-    lc_tm b1 -> lc_tm b2 ->
-    consistent p1 p2 ->
-    consistent (a_App p1 rho b1) (a_App p2 rho b2)
-| consistent_a_CApp    : forall p1 p2 b1 b2,
-    lc_co b1 -> lc_co b2 ->
-    consistent p1 p2 ->
-    consistent (a_CApp p1 b1) (a_CApp p2 b2)
-| consistent_a_Step_R : forall a b,
-    lc_tm a ->
-    not (value_type b) -> consistent a b
-| consistent_a_Step_L : forall a b,
-    lc_tm a ->
-    not (value_type b) -> consistent b a.
-Hint Constructors consistent.
-*)
-
-(*
-Inductive erased_tm : tm -> Prop :=
-| erased_a_Bullet :
-    (erased_tm a_Bullet)
- | erased_a_Star :
-     (erased_tm a_Star)
- | erased_a_Var_f : forall (x:tmvar),
-     (erased_tm (a_Var_f x))
- | erased_a_Abs : forall L rho (b:tm),
-     ( forall x , x `notin` L -> erased_tm  ( open_tm_wrt_tm b (a_Var_f x) )  )  ->
-     (erased_tm (a_UAbs rho b))
- | erased_a_App : forall rho (a b:tm),
-     (erased_tm a) ->
-     (erased_tm b) ->
-     (erased_tm (a_App a rho b))
- | erased_a_Pi : forall L rho (A B:tm),
-     (erased_tm A) ->
-      ( forall x , x `notin` L -> erased_tm  ( open_tm_wrt_tm B (a_Var_f x) )  )  ->
-     (erased_tm (a_Pi rho A B))
- | erased_a_CPi : forall L (A A1 A2: tm) (B:tm),
-     (erased_tm A1) ->  (erased_tm A2) -> (erased_tm A) ->
-      ( forall c , c `notin` L -> erased_tm  ( open_tm_wrt_co B (g_Var_f c) )  )  ->
-     (erased_tm (a_CPi (Eq A1 A2 A) B))
- | erased_a_CAbs : forall L (A A1 A2:tm) (b:tm),
-      (forall c , c `notin` L -> erased_tm  ( open_tm_wrt_co b (g_Var_f c) )  )  ->
-     (erased_tm (a_UCAbs b))
- | erased_a_CApp : forall (a:tm),
-     (erased_tm a) ->
-     (erased_tm (a_CApp a g_Triv))
- | erased_a_Const : forall T,
-     erased_tm (a_Const T)
- | erased_a_Fam : forall F,
-     erased_tm (a_Fam F)
-.
-
-Hint Constructors erased_tm.
-*)
 
 (* NOTE: we have a database 'erased' for proving that terms are erased. *)
 
@@ -143,6 +70,10 @@ Ltac erased_inversion :=
     inversion H; subst; clear H
   | [H : erased_tm (a_CApp _ _)|- _ ] =>
     inversion H; subst; clear H
+  | [H : erased_tm (a_Case _ _) |- _ ] =>
+    inversion H; subst; clear H
+  | [H : erased_brs (br_One _ _ _ ) |- _ ] =>
+    inversion H; subst; clear H
 end.
 
 Ltac erased_case :=
@@ -159,7 +90,7 @@ Ltac erased_case :=
 
 Lemma erased_tm_erase_mutual :
   (forall a, lc_tm a -> erased_tm (erase a))
-  /\ (forall a, lc_brs a -> True)
+  /\ (forall a, lc_brs a -> erased_brs (erase a))
   /\ (forall a, lc_co a -> True)
   /\ (forall phi, lc_constraint phi -> forall a b A, phi = (Eq a b A) ->
                                          erased_tm (erase a) /\ erased_tm (erase b)
@@ -172,7 +103,7 @@ Proof.
 
   - destruct phi. destruct (H _ _ _ eq_refl) as (h0 & h1 & h2). simpl.
     erased_case.
-  - inversion H2. subst. tauto.
+  - invert_syntactic_equality. auto.
 Qed.
 
 Lemma erased_tm_erase : forall a, lc_tm a -> erased_tm (erase a).
@@ -189,8 +120,6 @@ Inductive erased_sort : sort -> Prop :=
 | erased_Tm : forall a, erased_tm a -> erased_sort (Tm a)
 | erased_Co : forall a b A, erased_tm a -> erased_tm b -> erased_tm A -> erased_sort (Co (Eq a b A)).
 
-(* Check Forall_forall *)
-
 Definition erased_context : context -> Prop :=
   Forall (fun p => match p with (a,s) => erased_sort s end).
 
@@ -198,31 +127,127 @@ Definition joins S D a b := exists c, erased_context S /\ erased_tm a /\ erased_
                                multipar S D a c /\ multipar S D b c.
 
 
+Lemma erased_lc_mutual : (forall a, erased_tm a -> lc_tm a) /\ (forall a, erased_brs a -> lc_brs a).
+  eapply erased_tm_erased_brs_mutual; intros; auto.
+Qed.
+
 Lemma erased_lc : forall a, erased_tm a -> lc_tm a.
-intros; induction H; auto.
+  eapply erased_lc_mutual.
 Qed.
 
 Hint Resolve erased_lc : lc.
 
-Lemma subst_tm_erased : forall x b, erased_tm b -> forall a , erased_tm a -> erased_tm (tm_subst_tm_tm b x a).
+Lemma subst_tm_erased_mutual : forall x b, erased_tm b ->
+  (forall a , erased_tm  a -> erased_tm  (tm_subst_tm_tm b x a)) /\
+  (forall a , erased_brs a -> erased_brs (tm_subst_tm_brs b x a)).
 Proof.
-  intros x b Eb a Ea. induction Ea; simpl; intros; eauto 2.
+  intros x b Eb. eapply erased_tm_erased_brs_mutual; intros; simpl; eauto 2.
   all: try solve [erased_pick_fresh x0; autorewrite with subst_open_var; eauto using erased_lc].
   destruct eq_dec; eauto.
 Qed.
 
-Lemma subst_co_erased : forall c g a , lc_co g -> erased_tm a -> erased_tm (co_subst_co_tm g c a).
+Lemma subst_tm_erased :  forall x b, erased_tm b ->
+  (forall a , erased_tm  a -> erased_tm  (tm_subst_tm_tm b x a)).
 Proof.
-  induction 2; simpl; intros; eauto 2.
+  intros x b H. eapply subst_tm_erased_mutual. auto.
+Qed.
+
+
+Lemma subst_co_erased_mutual : forall c g, lc_co g ->
+   (forall a, erased_tm  a -> erased_tm  (co_subst_co_tm g c a)) /\
+   (forall a, erased_brs a -> erased_brs (co_subst_co_brs g c a)).
+Proof.
+  intros x b Eb. eapply erased_tm_erased_brs_mutual; intros; simpl; eauto 2.
   all: try solve [erased_pick_fresh x0; autorewrite with subst_open_var; eauto using erased_lc].
 Qed.
 
+Lemma subst_co_erased : forall c g a , lc_co g -> erased_tm a -> erased_tm (co_subst_co_tm g c a).
+Proof.
+  intros c g a H. eapply subst_co_erased_mutual. auto.
+Qed.
+
+
 Hint Resolve subst_tm_erased subst_co_erased : erased.
 
-Lemma Par_lc1 : forall G D a a' , Par G D a a' -> lc_tm a.
-  intros.  induction H; auto.
-  apply_lc_exists x; unfold not in *; rewrite_body.
+(*
+
+Fixpoint append_brs (b1 : brs) (b2 : brs) : brs :=
+  match b1 with
+  | br_None => b2
+  | br_One K a b1' => br_One K a (append_brs b1' b2)
+  end.
+
+Lemma append_brs_br_None : forall b, append_brs b br_None = b.
+induction b; simpl; auto.
+rewrite IHb.  auto.
 Qed.
+
+Lemma in_append : forall b1 b2 x a, in_brs x a b2 -> in_brs x a (append_brs b1 b2).
+Proof.
+  induction b1.
+  intros. simpl. auto.
+  intros. simpl. econstructor; eauto.
+Qed.
+
+(* A tactic for proofs about brs. *)
+Ltac brs_induction b :=
+  rewrite- {1}[b] append_brs_br_None;
+  generalize br_None;
+  induction b as [|K a b Ihb b0 H];
+  intros; eauto;
+  simpl in H;
+  move: (H K a (in_brshere K a (append_brs b b0) I I));
+  move: (Ihb b0 (fun K0 a0 H0 => H K0 a0 (in_brsthere K0 a0 K a (append_brs b b0) I H0))).
+
+Lemma in_brs_lc : forall b, (forall K a, in_brs K a b -> lc_tm a) -> lc_brs b.
+Proof.
+  move => b;
+  brs_induction b => h1 h2.
+  auto.
+Qed.
+
+Lemma dom_in_brs :
+  forall a K b1, in_brs K a b1 ->  forall b2, dom_br b1 = dom_br b2 -> exists a0, in_brs K a0 b2.
+Proof.
+  intros.
+  dependent induction H; destruct b2; inversion H1.
+  exists a0. auto.
+  destruct (IHin_brs b2 H4) as [a0' IN].
+  exists a0'. eauto.
+Qed.
+
+Check sym_eq.
+Check eq_sym.
+
+Ltac apply_dom_in_brs :=
+  match goal with [H3 : in_brs _ _ ?b , H0 : dom_br ?b = dom_br _ |- _ ] =>
+                  move: (dom_in_brs H3 _ H0)
+ | [H3 : in_brs _ _ ?b , H0 : dom_br _ = dom_br ?b |- _ ] =>
+                  move: (dom_in_brs H3 _ (eq_sym H0))
+  end.
+
+Lemma in_brs_erased : forall b, (forall K a, in_brs K a b -> erased_tm a) -> erased_brs b.
+Proof.
+  move => b;
+  brs_induction b => h1 h2.
+  auto.
+Qed.
+
+Ltac induction_in_brs P :=
+  induction P;
+  intros;
+   match goal with
+   | [H : in_brs _ _ br_None |- _ ] => inversion H
+   | [H : in_brs _ _ (br_One _ _ _) |- _ ] => inversion H; subst; eauto
+  end.
+
+
+Lemma erased_in_brs : forall b, erased_brs b -> (forall K a, in_brs K a b -> erased_tm a).
+Proof. move => b P; induction_in_brs P.
+Qed.
+
+*)
+
 
 (* FIXME: find a good place for this tactic. *)
 (* cannot move this to ett_ind.v because need Toplevel_lc ??? *)
@@ -232,13 +257,32 @@ Ltac lc_toplevel_inversion :=
     apply Toplevel_lc in b; inversion b; auto
 end.
 
-Lemma Par_lc2 : forall G D a a' , Par G D a a' -> lc_tm a'.
+
+Lemma Par_lc1_mutual :  (forall G D a a' , Par G D a a' -> lc_tm a) /\
+(forall G D br br', Par_brs G D br br' -> lc_brs br).
 Proof.
-  intros.  induction H; auto.
+  apply Par_tm_Par_brs_mutual; auto.
+  intros.
+  apply_lc_exists x; unfold not in *; rewrite_body.
+Qed.
+
+Lemma Par_lc1 : forall G D a a' , Par G D a a' -> lc_tm a.
+  apply Par_lc1_mutual.
+Qed.
+
+
+Lemma Par_lc2_mutual :  (forall G D a a' , Par G D a a' -> lc_tm a') /\
+(forall G D br br', Par_brs G D br br' -> lc_brs br').
+Proof.
+  apply Par_tm_Par_brs_mutual; intros; auto.
   - lc_solve.
   - lc_solve.
   - lc_toplevel_inversion.
 Qed.
+
+Lemma Par_lc2 : forall G D a a' , Par G D a a' -> lc_tm a'.
+Proof. apply Par_lc2_mutual. Qed.
+
 
 Hint Resolve Par_lc1 Par_lc2 : lc.
 
@@ -335,43 +379,56 @@ Ltac eta_eq y EQ :=
    move: (H y ltac:(auto)) =>  EQ
 end.
 
-
-Lemma Par_erased_tm : forall G D a a', Par G D a a' -> erased_tm a -> erased_tm a'.
+Lemma Par_erased_tm_mutual :
+  (forall G D a a', Par G D a a' -> erased_tm a -> erased_tm a') /\
+  (forall G D a a', Par_brs G D a a' -> erased_brs a -> erased_brs a').
 Proof.
-  intros G D a a' Ep Ea.  induction Ep; inversion Ea; subst; eauto 2.
+  eapply Par_tm_Par_brs_mutual; eauto; intros; erased_inversion; eauto 2.
   all: try solve [ erased_pick_fresh x; auto ].
   all: eauto.
-  - move: (IHEp1 ltac:(auto)); inversion 1;
+  - move: (H ltac:(auto)); inversion 1;
     pick fresh x;
     rewrite (tm_subst_tm_tm_intro x); auto;
     apply subst_tm_erased; auto.
-  - move: (IHEp ltac:(auto)); inversion 1;
+  - move: (H ltac:(auto)); inversion 1;
     pick fresh x;
     rewrite (co_subst_co_tm_intro x); auto;
     apply subst_co_erased; auto.
   - eauto with erased.
   - (* Eta *)
-    eapply IHEp; auto.
+    eapply H; auto.
     pick fresh x;
     erased_body x Eaa;
     eta_eq x E.
     rewrite E in Eaa; inversion Eaa; auto.
 Qed.
 
+Lemma Par_erased_tm : forall G D a a', Par G D a a' -> erased_tm a -> erased_tm a'.
+Proof. apply Par_erased_tm_mutual. Qed.
+
 Hint Resolve Par_erased_tm : erased.
 
 (* ------------------------------------------------------------- *)
 
-Lemma subst1 : forall b S D a a' x, Par S D a a' -> erased_tm b ->
-                           Par S D (tm_subst_tm_tm a x b) (tm_subst_tm_tm a' x b).
+
+Lemma subst1_mutual : forall x S D a a', Par S D a a' ->
+  (forall b, erased_tm b    -> Par S D (tm_subst_tm_tm a x b) (tm_subst_tm_tm a' x b)) /\
+  (forall br, erased_brs br -> Par_brs S D (tm_subst_tm_brs a x br) (tm_subst_tm_brs a' x br)).
 Proof.
-  intros b S D a a' x PAR ET. induction ET; intros; simpl; auto.
+  intros x S D a a' PAR.
+  apply erased_tm_erased_brs_mutual; intros; simpl; auto.
+  all: try destruct (x0 == x); auto.
   all: try solve [Par_pick_fresh y;
-                  autorewrite with subst_open_var; eauto with lc].
-  destruct (x0 == x); auto.
+                  autorewrite with subst_open_var; eauto 3 with lc].
   Unshelve.
   all: eauto.
 Qed.
+
+Lemma subst1 : forall b S D a a' x, Par S D a a' -> erased_tm b ->
+                               Par S D (tm_subst_tm_tm a x b) (tm_subst_tm_tm a' x b).
+Proof.
+intros. eapply subst1_mutual; eauto. Qed.
+
 
 Lemma open1 : forall b S D a a' L, Par S D a a'
   -> (forall x, x `notin` L -> erased_tm (open_tm_wrt_tm b (a_Var_f x)))
@@ -385,11 +442,12 @@ Proof.
 Qed.
 
 
-Lemma subst2 : forall S D b x, lc_tm b ->
-  forall a a', Par S D a a' -> Par S D (tm_subst_tm_tm b x a) (tm_subst_tm_tm b x a').
+Lemma subst2_mutual : forall b x, lc_tm b ->
+  (forall S D a a', Par S D a a' -> Par S D (tm_subst_tm_tm b x a) (tm_subst_tm_tm b x a')) /\
+  (forall S D a a', Par_brs S D a a' -> Par_brs S D (tm_subst_tm_brs b x a) (tm_subst_tm_brs b x a')).
 Proof.
-  intros S D b x EB a a' PAR.
-  induction PAR; simpl.
+  intros b x EB.
+  eapply Par_tm_Par_brs_mutual; simpl; intros.
   all: eauto using tm_subst_tm_tm_lc_tm.
   all: autorewrite with subst_open; auto.
   all: try solve [Par_pick_fresh y; autorewrite with subst_open_var; eauto].
@@ -404,24 +462,29 @@ Proof.
     fsetdec.
   - Par_pick_fresh y; eauto.
     have h1: y <> x by auto.
-    move: (H y ltac:(auto)) => h0.
+    move: (e y ltac:(auto)) => h0.
     apply (fun_cong (tm_subst_tm_tm b x)) in h0.
     rewrite tm_subst_tm_tm_open_tm_wrt_tm in h0; auto.
     simpl in h0.
     destruct (@eq_dec tmvar _ y x); subst; try done.
 Qed.
 
+Lemma subst2 : forall S D b x, lc_tm b ->
+  forall a a', Par S D a a' -> Par S D (tm_subst_tm_tm b x a) (tm_subst_tm_tm b x a').
+Proof. intros. eapply subst2_mutual; eauto. Qed.
 
-Lemma subst3 : forall S D b b' x,
-    Par S D b b' ->
-    forall a a', erased_tm a -> Par S D a a' ->
-    Par S D (tm_subst_tm_tm b x a) (tm_subst_tm_tm b' x a').
+Lemma subst3_mutual : forall b b' x,
+    (forall S D a a', Par S D a a' -> Par S D b b' -> erased_tm a ->
+             Par S D (tm_subst_tm_tm b x a) (tm_subst_tm_tm b' x a')) /\
+    (forall S D a a', Par_brs S D a a' -> Par S D b b' -> erased_brs a ->
+             Par_brs S D (tm_subst_tm_brs b x a) (tm_subst_tm_brs b' x a')).
 Proof.
-  intros.
-  dependent induction H1; simpl; eauto 2; erased_inversion; eauto 4.
+  intros b b' x.
+  apply Par_tm_Par_brs_mutual; intros; simpl; eauto 2; erased_inversion; eauto 4.
   all: try solve [ Par_pick_fresh y;
               autorewrite with subst_open_var; eauto 3 with lc ].
   all: try solve [ autorewrite with subst_open; eauto 4 with lc ].
+
   - apply subst1; auto.
   - eapply Par_Axiom; eauto.
     rewrite tm_subst_tm_tm_fresh_eq. eauto.
@@ -431,29 +494,44 @@ Proof.
     end.
      move: (Typing_context_fv h0) => ?. split_hyp.
      fsetdec.
-  -
-    pick fresh y.
-    move: (H4 y ltac:(auto)) => h0.
-    move: (H2 y ltac:(auto)) => h1.
+  - pick fresh y.
+
+    match goal with [H4 : forall x, x `notin` L0 -> _ |- _ ] =>
+                    move: (H4 y ltac:(auto)) => h0 end.
+    match goal with [H2 : forall x, x `notin` L -> _ |- _ ] =>
+                    move: (H2 y ltac:(auto)) => h1 end.
     rewrite h1 in h0. inversion h0. subst.
     eapply (Par_Eta (L \u singleton x)). eauto.
     intros z Fr0.
-    move: (H2 z ltac:(auto)) => h2.
+    match goal with [H2 : forall x, x `notin` L -> _ |- _ ] =>
+                    move: (H2 z ltac:(auto)) => h2 end.
     apply (fun_cong (tm_subst_tm_tm b x)) in h2.
     rewrite tm_subst_tm_tm_open_tm_wrt_tm in h2.
     simpl in h2.
     destruct (@eq_dec tmvar _ z x); try done.
     clear Fr. fsetdec.
     eapply Par_lc1. eauto.
+    Unshelve. all: eauto.
+Qed.
+
+Lemma subst3 : forall S D b b' x,
+    Par S D b b' ->
+    forall a a', erased_tm a -> Par S D a a' ->
+    Par S D (tm_subst_tm_tm b x a) (tm_subst_tm_tm b' x a').
+Proof.
+  intros. apply subst3_mutual; eauto.
 Qed.
 
 
-Lemma subst4 : forall S D b x, lc_co b ->
-    forall a a', Par S D a a' ->
-    Par S D (co_subst_co_tm b x a) (co_subst_co_tm b x a').
+Lemma subst4_mutual : forall b x, lc_co b ->
+    (forall S D a a', Par S D a a' ->
+    Par S D (co_subst_co_tm b x a) (co_subst_co_tm b x a')) /\
+    (forall S D a a', Par_brs S D a a' ->
+    Par_brs S D (co_subst_co_brs b x a) (co_subst_co_brs b x a')).
+
 Proof.
-  intros S D b x EB a a' PAR.
-  induction PAR; simpl; auto.
+  intros b x EB.
+  apply Par_tm_Par_brs_mutual; intros; simpl; auto.
   all: try solve [ Par_pick_fresh y;
               autorewrite with subst_open_var; eauto 3 with lc ].
   all: try solve [ autorewrite with subst_open; eauto 4 with lc ].
@@ -468,11 +546,20 @@ Proof.
     fsetdec.
   -
     pick fresh y and apply Par_Eta; eauto.
-    move: (H y ltac:(auto)) => h1.
+    match goal with [H : forall x, x `notin` L -> _ |- _ ] =>
+                    move: (H y ltac:(auto)) => h1 end.
     apply (fun_cong (co_subst_co_tm b x)) in h1.
     rewrite co_subst_co_tm_open_tm_wrt_tm in h1.
     simpl in h1. auto. auto.
 Qed.
+
+Lemma subst4 : forall S D b x, lc_co b ->
+    forall a a', Par S D a a' ->
+    Par S D (co_subst_co_tm b x a) (co_subst_co_tm b x a').
+Proof.
+  intros. apply subst4_mutual; eauto.
+Qed.
+
 
 Lemma multipar_subst3 : forall S D b b' x, erased_tm b ->
     multipar S D b b' ->
@@ -829,11 +916,19 @@ Proof.
   eauto.
 Qed.
 
+
+Lemma context_Par_irrelevance_mutual:
+  (forall G1 D1 a a',
+      Par G1 D1 a a' -> forall G2 D2, Par G2 D2 a a' ) /\
+  (forall G1 D1 a a',
+      Par_brs G1 D1 a a' -> forall G2 D2, Par_brs G2 D2 a a').
+Proof.
+  eapply Par_tm_Par_brs_mutual;intros; eauto.
+Qed.
 Lemma context_Par_irrelevance: forall G1 G2 D1 D2 a a',
                                              Par G1 D1 a a' -> Par G2 D2 a a'.
 Proof.
-  intros G1 G2 D1 D2 a a' H.
-  induction H; eauto.
+  intros; eapply context_Par_irrelevance_mutual; eauto.
 Qed.
 
 
@@ -846,20 +941,23 @@ Qed.
 
 (* -------------------- weakening stuff for Par ---------------------- *)
 
-Lemma Par_weaken_available :
-  forall G D a b, Par G D a b -> forall D', D [<=] D' -> Par G D' a b.
+Lemma Par_weaken_available_mutual :
+  (forall G D a b, Par G D a b -> forall D', D [<=] D' -> Par G D' a b) /\
+  (forall G D a b, Par_brs G D a b -> forall D', D [<=] D' -> Par_brs G D' a b).
 Proof.
-  intros. induction H; eauto 4; try done.
+  eapply Par_tm_Par_brs_mutual;intros; eauto 4; try done.
   - econstructor; eauto 2.
 Qed.
 
-Lemma Par_respects_atoms:
-  forall G D a b, Par G D a b -> forall D', D [=] D' -> Par G D' a b.
+Lemma Par_weaken_available :
+  forall G D a b, Par G D a b -> forall D', D [<=] D' -> Par G D' a b.
 Proof.
-  intros; induction H.
-  all: pre; subst; eauto 5.
-  - econstructor; eauto 2.
+  intros. eapply Par_weaken_available_mutual; eauto.
 Qed.
+
+(*
+These are unused in the rest of the development, so I haven't updated them to include
+Par_brs.
 
 Lemma Par_availability_independence: forall G D1 D2 a b, Par G D1 a b -> Par G D2 a b.
 Proof.
@@ -881,3 +979,4 @@ Proof.
   all: first [Par_pick_fresh c;
        try auto_rew_env; apply_first_hyp; try simpl_env | idtac]; eauto 3.
 Qed.
+*)

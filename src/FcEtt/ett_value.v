@@ -37,33 +37,6 @@ Proof.
   induction 1; intros P; inversion P; auto.
 Qed.
 
-(* DataTy *)
-
-Lemma DataTy_tm_subst_tm_tm : forall b x A,
-    DataTy A a_Star -> lc_tm b -> DataTy (tm_subst_tm_tm b x A) a_Star.
-Proof.
-  intros. dependent induction H; simpl; eauto.
-  - pick fresh y and apply DT_Pi.
-    eauto with lngen.
-    autorewrite with subst_open_var; eauto.
-  - pick fresh y and apply DT_CPi.
-    eauto with lngen.
-    autorewrite with subst_open_var; eauto.
-Qed.
-
-Lemma DataTy_co_subst_co_tm : forall b x A,
-    DataTy A a_Star -> lc_co b -> DataTy (co_subst_co_tm b x A) a_Star.
-Proof.
-  intros. dependent induction H; simpl; eauto.
-  - pick fresh y and apply DT_Pi.
-    eauto with lngen.
-    autorewrite with subst_open_var; eauto.
-  - pick fresh y and apply DT_CPi.
-    eauto with lngen.
-    autorewrite with subst_open_var; eauto.
-Qed.
-
-Hint Resolve DataTy_tm_subst_tm_tm DataTy_co_subst_co_tm : lngen.
 
 (* ------------------------------------------- *)
 
@@ -278,8 +251,44 @@ Qed.
 
   (* ------------------------------------------ *)
 
-Lemma DataTy_value_type : forall A, DataTy A a_Star -> value_type A.
+
+Lemma DataTy_value_type : forall A B, DataTy A B -> value_type A.
 Proof.
-  intros A H.
+  intros A B H.
   dependent induction H; eauto with lc.
 Qed.
+
+(* DataTy *)
+
+Lemma DataTy_tm_subst_tm_tm : forall b x A B,
+    DataTy A B -> lc_tm b -> DataTy (tm_subst_tm_tm b x A) B.
+Proof.
+  intros. dependent induction H; simpl; eauto.
+  - pick fresh y and apply DT_Pi.
+    eauto with lngen.
+    autorewrite with subst_open_var; eauto.
+  - pick fresh y and apply DT_CPi.
+    eauto with lngen.
+    autorewrite with subst_open_var; eauto.
+  - eapply DT_Path; eauto.
+    eapply Path_tm_subst_tm_tm; eauto.
+    eapply Value_tm_subst_tm_tm; eauto.
+Qed.
+
+Lemma DataTy_co_subst_co_tm : forall b x A B,
+    DataTy A B -> lc_co b -> DataTy (co_subst_co_tm b x A) B.
+Proof.
+  intros. dependent induction H; simpl; eauto.
+  - pick fresh y and apply DT_Pi.
+    eauto with lngen.
+    autorewrite with subst_open_var; eauto.
+  - pick fresh y and apply DT_CPi.
+    eauto with lngen.
+    autorewrite with subst_open_var; eauto.
+  - eapply DT_Path; eauto.
+    eapply Path_co_subst_co_tm; eauto.
+    eapply Value_co_subst_co_tm; eauto.
+Qed.
+
+
+Hint Resolve DataTy_tm_subst_tm_tm DataTy_co_subst_co_tm : lngen.

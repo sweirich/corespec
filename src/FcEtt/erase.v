@@ -132,7 +132,7 @@ Proof.
   - simpl. eapply E_Const; eauto.
     unfold toplevel.
     unfold erase_sig.
-    replace (Cs (erase_tm A)) with (erase_csort (Cs A)). eapply binds_map. auto. auto.
+    replace (Cs (erase_tm A) b) with (erase_csort (Cs A b)). eapply binds_map. auto. auto.
   - simpl. eapply E_Fam; eauto.
     unfold toplevel.
     unfold erase_sig.
@@ -875,12 +875,6 @@ Proof.
   assert (K : AnnTyping G0 AB0 a_Star). eapply AnnTyping_regularity; eauto.
   destruct (erase_pi F2 K) as [PA [PB [EAB [EPA [EPB TYB]]]]].
   inversion TYB. subst.
-(*  remember (g_Refl2 AB0 (a_Pi PA PB) (g_Refl a_Star)) as g.
-  assert (AnnDefEq G0 empty g AB0 (a_Pi PA PB)).
-  { rewrite Heqg. eapply An_EraseEq. eauto. eauto. eauto. eauto. }
-  remember (a_Conv a0 (g_Refl2 AB0 (a_Pi PA PB) (g_Refl a_Star))) as a0'.
-  assert (ATA' : AnnTyping G0 a0' (a_Pi PA PB)).
-  { rewrite Heqa0'. eapply An_Conv. eauto. eauto. eauto. } *)
   assert (N : AnnTyping G0 A0 a_Star). eapply AnnTyping_regularity; eauto.
   destruct (erasure_cvt Ty2 EAB) as [a0' [g ATA']]; eauto.
   destruct (erasure_cvt Ty3 (symmetry EPA)) as [b0' [g' ATB']]; eauto.
@@ -1074,7 +1068,7 @@ Proof.
 - exists (a_Const T).
   destruct (H0 nil eq_refl) as (a0 & A0 & E1 & E2 & Ty). auto. clear H0.
   unfold toplevel in b. unfold erase_sig in b.
-  destruct (@binds_map_3 _ _ T (Cs A) erase_csort an_toplevel b).
+  destruct (@binds_map_3 _ _ T (Cs A a) erase_csort an_toplevel b).
   split_hyp. destruct x; simpl in H0; inversion H0.
   subst.
   exists A1.  simpl.
@@ -1087,9 +1081,7 @@ Proof.
   destruct (@binds_map_3 _ _ F (Ax a A) erase_csort an_toplevel b).
   split_hyp. destruct x; inversion H3.
   exists (a_Fam F). exists A1. repeat split; auto.
-  eapply An_Fam; eauto.
-  eapply AnnTyping_regularity.
-  eapply an_toplevel_closed. eauto.
+  eapply An_Fam2; eauto.
 - destruct (H G0 H2 H3) as [a0 [A0 [E1 [E2 Ty]]]]. clear H.
   destruct (H0 G0 H2 H3) as [b0 [A1 [E3 [E4 TyB]]]]. clear H0.
   clear H1.
@@ -1410,13 +1402,6 @@ Proof.
   destruct (H0 G0 H3 H4) as (A1' & S1 & EA1 & ES & AT). clear H0.
   subst.
   destruct (erasure_a_Star AT ES) as (A1 & EA5 & AT1).
-  (*
-  destruct (AnnDefEq_invert_a_Star DE AT ES) as (A1 & A2 & gg & EA5 & EA6 & H & AT1 & AT2).
-  rewrite -EA5.
-  rewrite -EA6.
-  rewrite -EA5 in H0.
-  clear dependent A1'. clear dependent A2'. clear dependent S.
-  *)
   pick fresh x1.
   assert (FrL : x1 `notin` L). auto.
   destruct (H x1 FrL ([(x1,Tm A1)] ++ G0)) as (g2 & b1' & b2' & B' & EB1 & EB2 & S & DEB & TB & TB2); auto. simpl. autorewcs. congruence.

@@ -14,6 +14,9 @@ Require Import FcEtt.toplevel.
 
 Require Import FcEtt.fc_get.
 Require Import FcEtt.fc_context_fv.
+Require Import FcEtt.fc_unique.
+
+
 
 
 Module fc_dec_fun (wf : fc_wf_sig) (weak : fc_weak_sig) (subst : fc_subst_sig) (unique: fc_unique_sig).
@@ -239,7 +242,6 @@ Program Fixpoint AnnTyping_dec (G : context) (t : tm) (fuel : fuel_tpg t) (H : A
       << a_Star >>
 
     | FT_Abs rho a A fa fA =>
-      (* (∀ x : atom, ¬ x `in` L → Typing ([(x, Tm A)] ++ G) (open_tm_wrt_tm a (a_Var_f x)) (open_tm_wrt_tm B (a_Var_f x))) *)
       let (x, p) := atom_fresh (dom G \u fv_tm_tm_tm a) in
       KA <- AnnTyping_dec G A fA _;
       tm_eq_dec KA a_Star >--->
@@ -262,7 +264,6 @@ Program Fixpoint AnnTyping_dec (G : context) (t : tm) (fuel : fuel_tpg t) (H : A
       A <- AnnTyping_dec G a fa _;
       A' & B <- AnnDefEq_dec G (dom G) g fg _;
       let K := get_tpg G B in
-  (*  K <- AnnTyping_dec G B _ _;  *)
       tm_eq_dec K a_Star >--->
       tm_eq_dec A A' >--->
       << B >>
@@ -279,9 +280,8 @@ Program Fixpoint AnnTyping_dec (G : context) (t : tm) (fuel : fuel_tpg t) (H : A
       end
 
     | FT_Const T =>
-      K <- binds_dec_cs T an_toplevel;
-      (@DataTy_Star_dec K) _ >--->
-      << K >>
+      A & T1 <- binds_dec_cs T an_toplevel;
+      << A >>
 
     | FT_CPi phi B fB fphi =>
       AnnPropWff_dec G phi fphi _ >--->
@@ -303,8 +303,6 @@ Program Fixpoint AnnTyping_dec (G : context) (t : tm) (fuel : fuel_tpg t) (H : A
 
 
     | FT_Var_b _ => !!
-  (*  | a_FamApp _ _ => !! *)
-    | FT_DataCon _ => !!
     | FT_Case _ _ => !!
 
     | FT_Fam F =>
@@ -374,7 +372,7 @@ with AnnDefEq_dec (G: context) (S : available_props) (g : co) (fuel : fuel_deq g
       let B2  := close_tm_wrt_tm x B2x in
       let B3x := tm_subst_tm_tm (a_Conv (a_Var_f x) (g_Sym g1)) x B2x in
       let B3  := close_tm_wrt_tm x B3x in
-      (* let B3 := close_tm_wrt_tm x (tm_subst_tm_tm (a_Conv (a_Var_f x) (g_Sym g1)) x B2x) in *)
+
       tm_eq_dec (get_tpg ([(x, Tm A1)] ++ G) B1x) a_Star >--->
       tm_eq_dec (get_tpg ([(x, Tm A1)] ++ G) B2x) a_Star >--->
       tm_eq_dec (get_tpg ([(x, Tm A2)] ++ G) B3x) a_Star >--->
@@ -391,11 +389,10 @@ with AnnDefEq_dec (G: context) (S : available_props) (g : co) (fuel : fuel_deq g
       let B2 := close_tm_wrt_tm x B2x in
       let B3x := tm_subst_tm_tm (a_Conv (a_Var_f x) (g_Sym g1)) x B2x in
       let B3  := close_tm_wrt_tm x B3x in
-      (* let B3 := close_tm_wrt_tm x (open_tm_wrt_tm B2 (a_Conv (a_Var_f x) (g_Sym g1))) in *)
-      (* let B3 := close_tm_wrt_tm x (tm_subst_tm_tm (a_Conv (a_Var_f x) (g_Sym g1)) x B2x) in *)
+
       RhoCheck_erase_dec rho x B1x _ >--->
       RhoCheck_erase_dec rho x B3x _ >--->
-      (* B <- AnnTyping_dec G (a_Abs rho A1 B2) _ _; *)
+
       << a_Abs rho A1 B1, a_Abs rho A2 B3 >>
 
 
@@ -501,8 +498,7 @@ with AnnDefEq_dec (G: context) (S : available_props) (g : co) (fuel : fuel_deq g
     | FD_PiSnd g1 g2 fg1 fg2 =>
         T1 & T2 <- AnnDefEq_dec G S g1 fg1 _;
         a1 & a2 <- AnnDefEq_dec G S g2 fg2 _;
-     (* A1 <- AnnTyping_dec G a1 _ _;
-        A2 <- AnnTyping_dec G a2 _ _; *)
+
         let A1 := get_tpg G a1 in
         let A2 := get_tpg G a2 in
         match T1 with
@@ -1780,9 +1776,9 @@ Next Obligation.
 Next Obligation.
   hacky.
 Defined.
-Next Obligation.
+(* Next Obligation.
   hacky.
-Defined.
+Defined. *)
 Next Obligation.
   cleanup'.
   autoreg.
@@ -2062,23 +2058,10 @@ Next Obligation.
   hacky.
 Defined.
 Next Obligation.
-  move: (an_toplevel_to_const wildcard') => AT.
-  move: (AnnTyping_lc AT) => [lc1 lc2].
-  eapply lc_set_tm_of_lc_tm. eauto.
-Defined.
-Next Obligation.
-  inversion 1.
-  (* TODO: uniq should be discharged via typeclasses/CS *)
-  move: (binds_unique _ _ _ _ _ H3 wildcard'0 uniq_an_toplevel).
-  intro h0. inversion h0. subst.
-  move: (binds_to_type H3) => h1. done.
-Defined.
-Next Obligation.
   subst.
   apply: An_Const; eauto.
   eapply an_toplevel_to_const; eauto.
 Defined.
-
 
 (* An_CPi *)
 Next Obligation.

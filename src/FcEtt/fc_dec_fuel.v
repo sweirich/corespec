@@ -47,6 +47,8 @@ Inductive fuel_tpg : tm -> Type :=
     fuel_tpg (a_Const T)
  | FT_Fam : forall (F:tyfam),
     fuel_tpg (a_Fam F)
+(* | FT_DataCon : forall K,
+     fuel_tpg (a_DataCon K) *)
 
  (* No typing rule for these cases --- they immediately fail. *)
  | FT_Var_b : forall n0,
@@ -55,8 +57,6 @@ Inductive fuel_tpg : tm -> Type :=
      fuel_tpg (a_UAbs rho a)
  | FT_UCAbs : forall a,
      fuel_tpg (a_UCAbs a)
- | FT_DataCon : forall K,
-     fuel_tpg (a_DataCon K)
  | FT_Case : forall a brs5,
      fuel_tpg (a_Case a brs5)
  | FT_Bullet :

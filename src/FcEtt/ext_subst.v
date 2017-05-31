@@ -283,7 +283,7 @@ Lemma tm_substitution_mutual :
     econstructor; try eapply DefEq_weaken_available; eauto.
   - have h0: Typing nil A a_Star by eauto using toplevel_closed.
     eapply tm_subst_fresh_2 with (x:=x )in h0; eauto.
-    erewrite h0. auto.
+    erewrite h0. eauto.
   - have h0: Typing nil A a_Star.  eapply toplevel_to_const; eauto.
     erewrite tm_subst_fresh_2; eauto.
   -
@@ -292,6 +292,10 @@ Lemma tm_substitution_mutual :
     erewrite (tm_subst_fresh_2 _ h0); auto.
     erewrite (tm_subst_fresh_1 _ h0); auto.
     erewrite (tm_subst_fresh_1 _ h0); auto.
+(*  - move: (toplevel_to_datacon b) => [h0 [B [h1 h2]]].
+    eapply E_DataCon; eauto.
+    erewrite (tm_subst_fresh_2 _ h0); eauto.
+    erewrite (tm_subst_fresh_2 _ h0); auto. *)
   - destruct (c == x).
     + subst.
       apply binds_mid_eq in b0; auto; try done.
@@ -312,7 +316,7 @@ Lemma tm_substitution_mutual :
          -- move: (Typing_context_fv H10) => ?. split_hyp. auto.
          -- move: (Typing_context_fv H9) => ?. split_hyp. auto.
   - eapply E_Beta; eauto.
-    eapply Beta_tm_subst; eauto with lc.
+    eapply Beta_tm_subst; eauto 3 with lc.
   - eapply E_EqConv; eauto 2.
     eapply DefEq_weaken_available; eauto.
   - have h0: (y <> x) by eauto.
@@ -467,13 +471,16 @@ Proof.
     eapply DefEq_weaken_available; eauto 1.
     eapply_first_hyp; eauto 2.
   - have h0: Typing nil A a_Star by eauto using toplevel_closed.
-    rewrite co_subst_co_tm_fresh_eq; auto.
+    rewrite co_subst_co_tm_fresh_eq; eauto.
     move: (Typing_context_fv h0) => hyp. split_hyp. fsetdec.
   - have h0: Typing nil A a_Star.  eapply toplevel_to_const; eauto.
     rewrite co_subst_co_tm_fresh_eq; auto.
     move: (Typing_context_fv h0) => hyp. split_hyp. fsetdec.
-  -  have h0: Typing nil a A by eapply toplevel_closed; eauto.
+  - have h0: Typing nil a A by eapply toplevel_closed; eauto.
     erewrite (tm_subst_co_fresh_1 _ h0); eauto.
+(*  - move: (toplevel_to_datacon b) => [h0 [B [h1 h2]]].
+    rewrite co_subst_co_tm_fresh_eq; eauto.
+    move: (Typing_context_fv h0) => hyp. split_hyp. fsetdec. *)
   - apply (E_Wff _ _ _  (co_subst_co_tm g_Triv c A)); eauto 3.
   - apply E_PropCong; eauto 3.
   - eapply E_CPiFst; eauto 3.

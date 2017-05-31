@@ -160,48 +160,6 @@ Proof.
 Qed.
 
 
-(*
-Lemma erase_abs : forall AB0 rho B, erase AB0 = (a_UAbs rho B) ->
-  exists A1 B0, erase AB0 = erase (a_Abs rho A1 B0) /\ erase B0 = B.
-Proof.
-  induction AB0;
-    move=> rho' B H;
-            try destruct rho;
-    simpl in H;
-    inversion H;
-    eauto.
-Qed.
-*)
-(*
-Lemma erase_capp :
-  forall AB0 A C G, erase AB0 = (a_CApp A g_Triv) -> AnnTyping G AB0 C ->
-  exists A1 g0 g D, erase AB0 = erase (a_CApp A1 g0) /\ erase A1 = A /\
-          AnnTyping G (a_CApp A1 g0) D /\ AnnDefEq G (dom G) g C D.
-Proof.
-  induction AB0;
-    move=> A C G H;
-    simpl in H;
-    inversion H;
-    eauto.
-  - intros T.
-    inversion T. subst.
-    destruct (IHAB0 _  _ _ H H3) as [A1 [g0 [g1 [D [E1 [E3 [T1 DE]]]]]]].
-    simpl in E1. inversion E1. subst.
-    pose K := AnnTyping_regularity T. clearbody K.
-    pose K2 := AnnTyping_regularity T1. clearbody K2.
-    pose K3 := AnnTyping_regularity H3. clearbody K3.
-    assert (AnnCtx G). eauto.
-    exists A1, g0. eexists. eexists.
-    repeat split. simpl. eauto. eauto. eapply An_Trans with (a1 := A0).
-    eapply An_Sym; eauto. eauto. eauto. eauto.
-    eapply An_Refl. eauto.
-   -  intros T.
-    pose K := AnnTyping_regularity T.
-    eexists. eexists. eexists. eexists.
-    repeat split. eauto.  eauto.
-Qed.
-*)
-
 (* -------------------------------------------------------------- *)
 
 
@@ -459,8 +417,6 @@ Proof.
    eapply AnnTyping_weakening with (F:=nil); simpl; eauto.
    econstructor; eauto.
    econstructor; eauto.
-(*   rewrite e; eauto.
-   econstructor. eapply lc_erase. eauto using AnnTyping_lc1. *)
    eapply An_Refl. eauto.
  (* Left/Right
  -  exists (a_Pi rho A B), (a_Pi rho A' B'), g2. repeat split; eauto 1.
@@ -513,9 +469,9 @@ Qed.
 (* ---------------------------------------------- *)
 
 
-Lemma erase_a_Const : forall G0 a0 A0 A1 T,
+Lemma erase_a_Const : forall G0 a0 A0 A1 a T,
        erase a0 = a_Const T ->
-       binds T (Cs A1) an_toplevel ->
+       binds T (Cs A1 a) an_toplevel ->
        AnnTyping G0 a0 A0   ->
        exists g, AnnDefEq G0 (dom G0) g A0 A1.
    Proof.

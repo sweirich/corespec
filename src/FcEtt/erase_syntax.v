@@ -337,7 +337,7 @@ Proof.
     (* cast *)
     | g IHg A IHA | g IHg e IHe | e IH | e IHe g IHg
     | (* bullet *)
-    | con | e IH Bs IHBs
+    | e IH Bs IHBs
     (* brs *)
     | (* br_None *)
     | con e IHe Bs IHBs
@@ -355,7 +355,7 @@ Proof.
                  | e' IHe' g'
                  | g' A' IHA' | g' e' IHe' | e' IH' | e' IHe' g'
                  | (* bullet *)
-                 | con' | e' IH' Bs'
+                 | e' IH' Bs'
                  ]
        | |- brs        → _ =>
          case => [ | con' e' Bs' ]
@@ -414,7 +414,7 @@ Proof.
     (* cast was solved auto *)
     | g IHg A IHA | g IHg e IHe | e IH | e IHe g IHg
     | (* bullet *)
-    | con | e IH Bs IHBs
+    | e IH Bs IHBs
     (* brs *)
     | (* br_None *)
     | con e IHe Bs IHBs
@@ -432,7 +432,7 @@ Proof.
                  | e' IHe' g'
                  | g' A' IHA' | g' e' IHe' | e' IH' | e' IHe' g'
                  | (* bullet *)
-                 | con' | e' IH' Bs'
+                 | e' IH' Bs'
                  ]
        | |- brs        → _ =>
          case => [ | con' e' Bs' ]
@@ -619,9 +619,6 @@ Proof.
   induction H2; simpl in *; lc_inversion c; subst; eauto with lc.
   econstructor; eauto with lc.
   econstructor; eauto with lc.
-  destruct rho; simpl; eauto using path_erase, lc_tm_erase.
-  eauto using path_erase, lc_tm_erase, Value_erase.
-  eauto using path_erase, lc_tm_erase, Value_erase.
   eauto using path_erase, lc_tm_erase, Value_erase.
 Qed.
 

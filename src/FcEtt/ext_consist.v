@@ -143,6 +143,8 @@ Ltac invert_equality :=
   Ltac invert_erased :=
     match goal with
     | [ H : erased_tm ?a |- _ ] => inversion H; subst; clear H
+    | [ H : erased_brs ?a |- _ ] => inversion H; subst; clear H
+
     end.
 
   (* Find prove that the result of Par is erased, and then invert that *)
@@ -155,8 +157,8 @@ Ltac invert_equality :=
         end.
 
 
-        (*    If we know that (a ^ x) == (App b rho x), replace
-             (a ^ b0) with (App b rho b0)
+  (*    If we know that (a ^ x) == (App b rho x), replace
+             (a ^ b0) with   (App b rho b0)
             The tactic only succeeds if there is only 1 equality in
             the context.
        *)
@@ -196,61 +198,49 @@ Ltac invert_lc :=
     | [ H : lc_tm ?a |- _ ] => inversion H; subst; clear H
   end.
 
-  Ltac use_size_induction a ac Par1 Par2 :=
+ Ltac use_size_induction a ac Par1 Par2 :=
+  let h0 := fresh in
   match goal with
   | [   IH : forall y: nat, ?T,
         H2 : Good ?G ?D,
         H3 : erased_tm a,
-        H : Par ?G ?D a ?b0,
+        H  : Par ?G ?D a ?b0,
         H4 : Par ?G ?D a ?b1 |- _ ] =>
-      move: (@IH (size_tm a) ltac:(omega) a ltac:(auto) _ _ _ H2 H3 H _ H4) => [ ac [Par1 Par2]]
+      move: (@IH (size_tm a) ltac:(omega)) => [h0 _];
+      move: (h0 a ltac:(auto) _ _ _ H2 H3 H _ H4) => [ ac [Par1 Par2]]; clear h0
+  | [   IH : forall y: nat, ?T,
+        H2 : Good ?G ?D,
+        H3 : erased_brs a,
+        H  : Par_brs ?G ?D a ?b0,
+        H4 : Par_brs ?G ?D a ?b1 |- _ ] =>
+      move: (@IH (size_brs a) ltac:(omega)) => [_ h0];
+      move: (h0 a ltac:(auto) _ _ _ H2 H3 H _ H4) => [ ac [Par1 Par2]]; clear h0
   end.
 
 
-  Ltac use_size_induction_open a0 x ac Par1 Par2 :=
-      let h0 := fresh in
-      let h1 := fresh in
-      let h2 := fresh in
-      let EQ1 := fresh in
-      let EQ2 := fresh in
-      match goal with
-        | [  H : ∀ x : atom,
-              x `notin` ?L
-              → Par ?S ?D (?open_tm_wrt_tm a0 (?a_Var_f x)) ?b,
-             H4: ∀ x : atom,
-                 x `notin` ?L0
-                 → Par ?S ?D (?open_tm_wrt_tm a0 (?a_Var_f x)) ?c,
-             H1 : ∀ x : atom, x `notin` ?L1 →
-    erased_tm (?open_tm_wrt_tm a0 (?a_Var_f x)) |- _ ] =>
-    move: (H x ltac:(auto)) => h0; clear H;
-    move: (H4 x ltac:(auto)) => h1; clear H4;
-                               move: (H1 x ltac:(auto)) => h2; clear H1;
-    move: (size_tm_open_tm_wrt_tm_var a0 x) => EQ1;
-    move: (size_tm_open_tm_wrt_co_var a0 x) => EQ2;
-
-    use_size_induction (open_tm_wrt_tm a0 (a_Var_f x)) ac Par1 Par2;
-    clear h0; clear h1; clear h2; clear EQ1; clear EQ2
+ Ltac use_size_induction_open a0 x ac Par1 Par2 :=
+   let h0 := fresh in
+   let h1 := fresh in
+   let h2 := fresh in
+   let EQ1 := fresh in
+   let EQ2 := fresh in
+   match goal with
+   | [  H : ∀ x : atom,
+         x `notin` ?L
+         → Par ?S ?D (?open_tm_wrt_tm a0 (?a_Var_f x)) ?b,
+          H4: ∀ x : atom,
+            x `notin` ?L0
+            → Par ?S ?D (?open_tm_wrt_tm a0 (?a_Var_f x)) ?c,
+          H1 : ∀ x : atom, x `notin` ?L1 →
+     erased_tm (?open_tm_wrt_tm a0 (?a_Var_f x)) |- _ ] =>
+     move: (H x ltac:(auto)) => h0; clear H;
+     move: (H4 x ltac:(auto)) => h1; clear H4;
+     move: (H1 x ltac:(auto)) => h2; clear H1;
+     move: (size_tm_open_tm_wrt_tm_var a0 x) => EQ1;
+     move: (size_tm_open_tm_wrt_co_var a0 x) => EQ2;
+     use_size_induction (open_tm_wrt_tm a0 (a_Var_f x)) ac Par1 Par2;
+     clear h0; clear h1; clear h2; clear EQ1; clear EQ2
     end.
-
-(*
-Ltac use_induction a ac Par1 Par2 :=
-  match goal with
-  | [ IHPar1 : Good ?G ?D -> erased_tm a → ∀ a2 : tm, Par ?G ?D ?a a2 → ?T ,
-        H2 : Good ?G ?D,
-        H3 : erased_tm a,
-        H4 : Par ?G ?D a ?b |- _ ] =>
-    destruct (IHPar1 H2 H3 _ H4) as [ac [Par1 Par2]]
-  end.
-
-Ltac use_induction_on a b ac Par1 Par2 :=
-  match goal with
-  | [ IHPar1 : Good ?G ?D -> erased_tm a → ∀ a2 : tm, Par ?G ?D ?a a2 → ?T ,
-        H2 : Good ?G ?D,
-        H3 : erased_tm a,
-        H4 : Par ?G ?D a b |- _ ] =>
-    destruct (IHPar1 H2 H3 _ H4) as [ac [Par1 Par2]]
-  end.
-*)
 
 Ltac par_erased_open x J Par4 :=
   let K := fresh in
@@ -294,16 +284,22 @@ Ltac par_erased_open x J Par4 :=
       end.
 
 
-Lemma confluence_size : forall n a, size_tm a <= n ->  forall S D a1, Good S D -> erased_tm a -> Par S D a a1 -> forall a2, Par S D a a2 -> exists b, Par S D a1 b /\ Par S D a2 b.
+Lemma confluence_size : forall n,
+  (forall a, size_tm a <= n  ->  forall S D a1, Good S D -> erased_tm a -> Par S D a a1 -> forall a2, Par S D a a2 -> exists b, Par S D a1 b /\ Par S D a2 b) /\
+  (forall a, size_brs a <= n ->  forall S D a1, Good S D -> erased_brs a -> Par_brs S D a a1 -> forall a2, Par_brs S D a a2 ->
+                                                                                       exists b, Par_brs S D a1 b /\ Par_brs S D a2 b).
 Proof.
   pose confluence_size_def n :=
-      forall a, size_tm a <= n ->  forall S D a1, Good S D -> erased_tm a -> Par S D a a1 -> forall a2, Par S D a a2 -> exists b, Par S D a1 b /\ Par S D a2 b.
+   (forall a, size_tm a <= n ->  forall S D a1, Good S D -> erased_tm a -> Par S D a a1 -> forall a2, Par S D a a2 -> exists b, Par S D a1 b /\ Par S D a2 b) /\
+   (forall a, size_brs a <= n ->  forall S D a1, Good S D -> erased_brs a -> Par_brs S D a a1 -> forall a2, Par_brs S D a a2 ->
+                                                                                        exists b, Par_brs S D a1 b /\ Par_brs S D a2 b).
+
   intro n. fold (confluence_size_def n).  eapply (well_founded_induction_type lt_wf).
   clear n. intros n IH. unfold confluence_size_def in *. clear confluence_size_def.
-  intros a SZ S D a1 Gs Ea P1 a2 P2.
+  split; intros a SZ S D a1 Gs Ea P1 a2 P2;
   inversion P1; inversion P2; subst.
   all: try solve [invert_equality].
-  (* 37 subgoals *)
+  (* 42 subgoals *)
 
   all: try_refl_left.
   all: try_refl_right.
@@ -312,6 +308,7 @@ Proof.
   all: invert_erased; inversion Gs.
 
   - (* two betas *)
+
     use_size_induction a0 ac Par1 Par2.
     use_size_induction b bc Par3 Par4.
     destruct (Par_Abs_inversion Par1) as [[a'' [EQ h0]]| [ax [X1 X2]]]; subst;
@@ -397,7 +394,7 @@ Proof.
         [ h : lc_tm (a_UCAbs ?a')|- _] => inversion h; clear h; subst
       end.
       move: (co_subst_co_tm_lc_tm _ g_Triv c ltac:(eauto) lc_g_Triv) => Kip.
-      repeat rewrite co_subst_co_tm_open_tm_wrt_co in Kip; eauto with lc.
+      repeat rewrite co_subst_co_tm_open_tm_wrt_co in Kip; eauto 3 with lc.
     + match goal with
       | H : open_tm_wrt_co ?a ?g = ?b |- _ => rewrite H; clear H
       end.
@@ -506,7 +503,7 @@ Proof.
       rewrite size_tm_open_tm_wrt_tm_var in h4.
       assert (size_tm b <= size_tm a0). omega.
       use_size_induction b bb Par1 Par2.
-      move: (@Par_fv_preservation _ _ x _ _ H8 ltac:(eauto)) => h5.
+      move: (@Par_fv_preservation _ _ _ _ _ H8 ltac:(eauto)) => h5.
       exists bb.
       split.
       pick fresh y and apply Par_Eta. eapply Par2.
@@ -562,7 +559,7 @@ Proof.
           H10 : open_tm_wrt_tm a'0 ?b' = open_tm_wrt_tm ?a' (a_Var_f x)
           |- _ ] =>
         inversion H11; subst;
-          move: (@Par_fv_preservation S D x _ _ H8 ltac:(auto)) => h2; simpl in h2; eauto;
+          move: (@Par_fv_preservation x S D _ _ H8 ltac:(auto)) => h2; simpl in h2; eauto;
           apply open_tm_wrt_tm_inj in H10; auto; subst; clear H11
       end.
       match goal with
@@ -593,7 +590,7 @@ Proof.
       rewrite size_tm_open_tm_wrt_tm_var in h4.
       assert (size_tm b <= size_tm a0). omega.
       use_size_induction b bb Par1 Par2.
-      move: (@Par_fv_preservation _ _ x _ _ H8 ltac:(eauto)) => h5.
+      move: (@Par_fv_preservation x _ _ _ _ H8 ltac:(eauto)) => h5.
       exists bb.
       split.
       eauto.
@@ -616,6 +613,16 @@ Proof.
     end.
     use_size_induction b ac Par1 Par2.
     exists ac. auto.
+  - (* case / case *)
+    use_size_induction a0 aa0 Par1 Par2.
+    use_size_induction brs5 bb Par3 Par4.
+    exists (a_Case aa0 bb). split; eauto.
+  - (* none/none *)
+    exists br_None. split; auto.
+  - (* one / one *)
+    use_size_induction a0 aa0 Par1 Par2.
+    use_size_induction brs5 bb Par3 Par4.
+    exists (br_One K aa0 bb). split; auto.
 Qed.
 
 Lemma confluence : forall S D a a1, Good S D -> erased_tm a -> Par S D a a1 -> forall a2, Par S D a a2 -> exists b, Par S D a1 b /\ Par S D a2 b.
@@ -725,99 +732,99 @@ Qed.
 
 
 
-    Lemma Par_Path_consistent_App : forall T G D a1 a2 rho b1 b2,
-        Path_consistent T (a_App a1 rho a2) (a_App b1 rho b2) ->
-        Par G D (a_App a1 rho a2) ( a_App b1 rho b2) ->
-        Par G D a1 b1.
-    Proof.
-      intros. inversion H. subst.
-      inversion H0; subst.
-      - lc_inversion c. auto.
-      - move: (Par_Path_consistent H5 (Path_consistent_Path1 H9) ltac: (eauto with erased)) => h0.
-        inversion h0.
-      - auto.
-    Qed.
+Lemma Par_Path_consistent_App : forall T G D a1 a2 rho b1 b2,
+    Path_consistent T (a_App a1 rho a2) (a_App b1 rho b2) ->
+    Par G D (a_App a1 rho a2) ( a_App b1 rho b2) ->
+    Par G D a1 b1.
+Proof.
+  intros. inversion H. subst.
+  inversion H0; subst.
+  - lc_inversion c. auto.
+  - move: (Par_Path_consistent H5 (Path_consistent_Path1 H9) ltac: (eauto with erased)) => h0.
+    inversion h0.
+  - auto.
+Qed.
 
-    Lemma Par_Path_consistent_CApp : forall T G D a1 b1,
-        Path_consistent T (a_CApp a1 g_Triv) (a_CApp b1 g_Triv) ->
-        Par G D (a_CApp a1 g_Triv) (a_CApp b1 g_Triv) ->
-        Par G D a1 b1.
-    Proof.
-      intros. inversion H. subst.
-      inversion H0; subst.
-      - lc_inversion c. auto.
-      - move: (Par_Path_consistent H6 (Path_consistent_Path1 H4) ltac: (eauto with erased)) => h0.
-        inversion h0.
-      - auto.
-    Qed.
+Lemma Par_Path_consistent_CApp : forall T G D a1 b1,
+    Path_consistent T (a_CApp a1 g_Triv) (a_CApp b1 g_Triv) ->
+    Par G D (a_CApp a1 g_Triv) (a_CApp b1 g_Triv) ->
+    Par G D a1 b1.
+Proof.
+  intros. inversion H. subst.
+  inversion H0; subst.
+  - lc_inversion c. auto.
+  - move: (Par_Path_consistent H6 (Path_consistent_Path1 H4) ltac: (eauto with erased)) => h0.
+    inversion h0.
+  - auto.
+Qed.
 
-    Lemma Par_Path_consistent_App2 : forall T G D a1 a2 rho b1 b2,
-        Path_consistent T (a_App a1 rho a2) (a_App b1 rho b2) ->
-        Par G D (a_App a1 rho a2) ( a_App b1 rho b2) ->
-        Par G D a2 b2.
-    Proof.
-      intros. inversion H. subst.
-      inversion H0; subst.
-      - lc_inversion c. auto.
-      - move: (Par_Path_consistent H5 (Path_consistent_Path1 H9) ltac: (eauto with erased)) => h0.
-        inversion h0.
-      - auto.
-    Qed.
+Lemma Par_Path_consistent_App2 : forall T G D a1 a2 rho b1 b2,
+    Path_consistent T (a_App a1 rho a2) (a_App b1 rho b2) ->
+    Par G D (a_App a1 rho a2) ( a_App b1 rho b2) ->
+    Par G D a2 b2.
+Proof.
+  intros. inversion H. subst.
+  inversion H0; subst.
+  - lc_inversion c. auto.
+  - move: (Par_Path_consistent H5 (Path_consistent_Path1 H9) ltac: (eauto with erased)) => h0.
+    inversion h0.
+  - auto.
+Qed.
 
 
-    Lemma multipar_Path_consistent_App : forall G D rho a1 a2 b1 b2 T,
-      multipar G D (a_App a1 rho a2) (a_App b1 rho b2) ->
-      Path_consistent T (a_App a1 rho a2) (a_App b1 rho b2) ->
-      multipar G D a1 b1.
-    Proof.
-      intros.
-      dependent induction H.
-      - eauto.
-      - move: (Par_Path_consistent H (Path_consistent_Path1 H1) ltac:(eauto 2 with erased)) => h0.
-        inversion h0. subst.
-        move: (Par_Path_consistent_App h0 H) => h1.
-        eapply mp_step with (b:= b0). auto.
-        eapply IHmultipar; eauto 2.
-        eapply Path_consistent_Trans with (b := a_App a1 rho a2).
-        eapply Path_consistent_Sym; auto.
-        auto.
-    Qed.
+Lemma multipar_Path_consistent_App : forall G D rho a1 a2 b1 b2 T,
+    multipar G D (a_App a1 rho a2) (a_App b1 rho b2) ->
+    Path_consistent T (a_App a1 rho a2) (a_App b1 rho b2) ->
+    multipar G D a1 b1.
+Proof.
+  intros.
+  dependent induction H.
+  - eauto.
+  - move: (Par_Path_consistent H (Path_consistent_Path1 H1) ltac:(eauto 2 with erased)) => h0.
+    inversion h0. subst.
+    move: (Par_Path_consistent_App h0 H) => h1.
+    eapply mp_step with (b:= b0). auto.
+    eapply IHmultipar; eauto 2.
+    eapply Path_consistent_Trans with (b := a_App a1 rho a2).
+    eapply Path_consistent_Sym; auto.
+    auto.
+Qed.
 
-     Lemma multipar_Path_consistent_App2 : forall G D rho a1 a2 b1 b2 T,
-      multipar G D (a_App a1 rho a2) (a_App b1 rho b2) ->
-      Path_consistent T (a_App a1 rho a2) (a_App b1 rho b2) ->
-      multipar G D a2 b2.
-    Proof.
-      intros.
-      dependent induction H.
-      - eauto.
-      - move: (Par_Path_consistent H (Path_consistent_Path1 H1) ltac:(eauto 2 with erased)) => h0.
-        inversion h0. subst.
-        move: (Par_Path_consistent_App2 h0 H) => h1.
-        eapply mp_step with (b:= b3). auto.
-        eapply IHmultipar; eauto 2.
-        eapply Path_consistent_Trans with (b := a_App a1 rho a2).
-        eapply Path_consistent_Sym; auto.
-        auto.
-    Qed.
+Lemma multipar_Path_consistent_App2 : forall G D rho a1 a2 b1 b2 T,
+    multipar G D (a_App a1 rho a2) (a_App b1 rho b2) ->
+    Path_consistent T (a_App a1 rho a2) (a_App b1 rho b2) ->
+    multipar G D a2 b2.
+Proof.
+  intros.
+  dependent induction H.
+  - eauto.
+  - move: (Par_Path_consistent H (Path_consistent_Path1 H1) ltac:(eauto 2 with erased)) => h0.
+    inversion h0. subst.
+    move: (Par_Path_consistent_App2 h0 H) => h1.
+    eapply mp_step with (b:= b3). auto.
+    eapply IHmultipar; eauto 2.
+    eapply Path_consistent_Trans with (b := a_App a1 rho a2).
+    eapply Path_consistent_Sym; auto.
+    auto.
+Qed.
 
-    Lemma multipar_Path_consistent_CApp : forall G D a1 b1 T,
-      multipar G D (a_CApp a1 g_Triv) (a_CApp b1 g_Triv) ->
-      Path_consistent T (a_CApp a1 g_Triv) (a_CApp b1 g_Triv) ->
-      multipar G D a1 b1.
-    Proof.
-      intros.
-      dependent induction H.
-      - eauto.
-      - move: (Par_Path_consistent H (Path_consistent_Path1 H1) ltac:(eauto 2 with erased)) => h0.
-        inversion h0. subst.
-        move: (Par_Path_consistent_CApp h0 H) => h1.
-        eapply mp_step with (b:= b0). auto.
-        eapply IHmultipar; eauto 2.
-        eapply Path_consistent_Trans with (b := a_CApp a1 g_Triv).
-        eapply Path_consistent_Sym; auto.
-        auto.
-    Qed.
+Lemma multipar_Path_consistent_CApp : forall G D a1 b1 T,
+    multipar G D (a_CApp a1 g_Triv) (a_CApp b1 g_Triv) ->
+    Path_consistent T (a_CApp a1 g_Triv) (a_CApp b1 g_Triv) ->
+    multipar G D a1 b1.
+Proof.
+  intros.
+  dependent induction H.
+  - eauto.
+  - move: (Par_Path_consistent H (Path_consistent_Path1 H1) ltac:(eauto 2 with erased)) => h0.
+    inversion h0. subst.
+    move: (Par_Path_consistent_CApp h0 H) => h1.
+    eapply mp_step with (b:= b0). auto.
+    eapply IHmultipar; eauto 2.
+    eapply Path_consistent_Trans with (b := a_CApp a1 g_Triv).
+    eapply Path_consistent_Sym; auto.
+    auto.
+Qed.
 
 
 
@@ -845,7 +852,6 @@ Lemma multipar_Const : forall S D T b,
 Proof.
   intros S D T b H. dependent induction H; eauto using Par_Const.
 Qed.
-
 
 Lemma multipar_Pi : forall S D rho A B, multipar S D A B -> forall A1 A2,
       A = a_Pi rho A1 A2 -> exists B1 B2, B = (a_Pi rho B1 B2).
@@ -922,8 +928,8 @@ Qed.
 
 (* Proof that joinability implies consistency. *)
 
-Ltac step_left := apply consistent_a_Step_R; [auto |intro N; inversion N; inversion H0]; fail.
-Ltac step_right := apply consistent_a_Step_L; [auto | intro N; inversion N; inversion H0]; fail.
+Ltac step_left := apply consistent_a_Step_R; [auto |intro N; inversion N; inversion H]; fail.
+Ltac step_right := apply consistent_a_Step_L; [auto | intro N; inversion N; inversion H]; fail.
 
 (* look for a multipar involvong a head form and apply the appropriate lemma for that
    head form. Note: for paths, the lemma has already been applied so we only need
@@ -939,6 +945,8 @@ Ltac multipar_step SIDE EQ :=
       as (B1' & B2' & C1' & C2' &  EQ)
   | [ SIDE : multipar _ _ (a_Const ?T) _ |- _ ] =>
     apply multipar_Const in SIDE; auto; rename SIDE into EQ
+(*  | [ SIDE : multipar _ _ (a_DataCon ?T) _ |- _ ] =>
+    apply multipar_DataCon in SIDE; auto; rename SIDE into EQ *)
   | [ SIDE : Path_consistent _ _ _ |- _ ] =>
     rename SIDE into EQ
   end.
@@ -952,7 +960,8 @@ Proof.
   all: move: (erased_lc Ea) => lc_a.
   all: move: (erased_lc Eb) => lc_b.
   destruct a; try step_right; destruct b; try step_left; auto.
-  (* 35 subgoals *)
+
+  (* 63 subgoals *)
   all: repeat
          let T  := fresh in
          let h0 := fresh in
@@ -986,7 +995,7 @@ Proof.
              move: (Path_consistent_Path2 H2) => h1;
     have EQ3: (T1 = T2); eauto using Path_unique; subst; eauto
   end.
-  - rewrite EQ1 in EQ2; inversion EQ2. eauto.
+  all: try solve [rewrite EQ1 in EQ2; inversion EQ2; eauto].
 
   - destruct (multipar_Pi MSL eq_refl) as (B1 & B2 & EQ).
     destruct (multipar_Pi MSR eq_refl) as (B1' & B2' & EQ').
@@ -1916,6 +1925,23 @@ Ltac impossible_defeq :=
   end.
 
 
+(*
+Lemma Path_Value_value_type : forall T B, Path T B -> forall G, Typing G B a_Star -> value_type B.
+Proof.
+  intros T B H. induction H; intros; eauto.
+  - destruct (invert_a_DataCon H) as [A0 [T h1]]. split_hyp.
+    move: (toplevel_to_datacon H0) => [h2 [A1 h3]]. split_hyp.
+    apply consistent_defeq in H1; eauto.
+    apply join_consistent in H1.
+    inversion H1; subst. try solve [inversion H2].
+    + inversion H2.
+    + inversion H1.
+  econstructor; eauto; inversion IHPath; eauto.
+  econstructor; eauto; inversion IHPath; eauto.
+Admitted.
+*)
+
+
 Lemma canonical_forms_Star : forall G a, irrelevant G (dom G) a ->
     Typing G a a_Star -> Value a -> value_type a.
 Proof.
@@ -1934,9 +1960,8 @@ Proof.
     impossible_defeq.
   - eauto.
   - eauto.
+  - eauto.
 Qed.
-
-
 
 Lemma DefEq_Star: forall A G D, Good G D -> value_type A -> DefEq G D A a_Star a_Star -> A = a_Star.
 Proof.
@@ -2001,7 +2026,25 @@ Proof.
 Qed.
 
 
-
+Lemma canonical_forms_Data : forall G a A T, irrelevant G (dom G) a ->
+    Typing G a A -> DataTy (a_Const T) A -> Value a -> exists b, Path b a.
+Proof.
+  intros G a A T IR H.
+  induction H; intros DT V; inversion DT.
+  all: try solve [inversion V].
+  all: try solve [match goal with [ H : Path _ _ |- _ ] => inversion H end].
+  - inversion V. subst.
+    exists T1. eauto.
+  - inversion V. subst. exists T1. eauto.
+  - subst.
+    have vtA: value_type A. admit.
+    apply consistent_defeq in H0.
+    unfold joins in H0.
+    destruct H0 as [C [EG [EA [EB [MP1 MP2]]]]].
+    inversion H2.
+    have DT2: DataTy (a_Const T) A. admit.
+    eapply IHTyping1; eauto.
+Admitted.
 
 (* helper tactic for progress lemma below. Dispatches goals of the form
    "irrelevant G a " by inversion on IR, a similar assumption in the context *)
