@@ -104,25 +104,6 @@ Ltac try_refl :=
         exists b; assert (lc_tm b); try eapply Par_lc2; eauto; try split; eauto; fail
       end.
 
-(*
-Ltac invert_syntactic_equality :=
-  match goal with
-      | [ H : a_UAbs _ _ = a_UAbs _ _ |- _ ] =>
-        inversion H; subst; clear H
-      | [ H : a_Pi _ _ _ = a_Pi _ _ _ |- _ ] =>
-        inversion H; subst; clear H
-      | [ H : a_UCAbs _ = a_UCAbs _ |- _ ] =>
-        inversion H; subst; clear H
-      | [ H : a_App _ _ _ = _ _ _ |- _ ] =>
-        inversion H; subst; clear H
-      | [ H : a_CApp _ _  = a_CApp _ _ |- _ ] =>
-        inversion H; subst; clear H
-      | [ H : a_Fam _ = a_Fam _ |- _ ] =>
-        inversion H; subst; clear H
-      | [ H : a_CPi _ _ = a_CPi _ _ |- _ ] =>
-        inversion H; subst; clear H
-  end.
-*)
 Ltac invert_equality :=
   match goal with
   | [ H : _ = _ |- _ ] =>
@@ -1861,7 +1842,9 @@ Proof.
   intros. dependent induction H; by apply: IHTyping1.
 Qed.
 
-
+Ltac only_annotated :=
+  try solve [assert False; [eapply no_aAbs; eauto 2|idtac]; done];
+  try solve [assert False; [eapply no_aCAbs; eauto 2|idtac]; done].
 
 Lemma Good_nil : forall D, Good nil D.
 Proof.
@@ -1945,22 +1928,17 @@ Admitted.
 Lemma canonical_forms_Star : forall G a, irrelevant G (dom G) a ->
     Typing G a a_Star -> Value a -> value_type a.
 Proof.
-  intros G a IR H V. induction V; auto.
-  - subst. assert False. eapply no_aAbs. eauto 2. done.
+  intros G a IR H V. induction V; eauto.
+  all: only_annotated.
   - subst. apply invert_a_UAbs in H; eauto.
     destruct H as [A1 [B2 [H _]]].
     impossible_defeq.
   - subst. apply invert_a_UAbs in H; eauto.
     destruct H as (A1 & A2 & DE & TA1 & TA2).
     impossible_defeq.
-  - subst. assert False. eapply  no_aAbs. eauto 2. done.
-  - subst.  assert False. eapply no_aCAbs. eauto 2. done.
   - subst. apply invert_a_UCAbs in H; eauto.
     destruct H as [a0 [b [T [B1 [_ [H _]]]]]].
     impossible_defeq.
-  - eauto.
-  - eauto.
-  - eauto.
 Qed.
 
 Lemma DefEq_Star: forall A G D, Good G D -> value_type A -> DefEq G D A a_Star a_Star -> A = a_Star.
@@ -1978,6 +1956,7 @@ Lemma canonical_forms_Pi : forall G rho a A B, irrelevant G (dom G) a ->
 Proof.
   intros G rho a A B IR H H0.
   inversion H0; subst; eauto.
+  all: only_annotated.
   - apply invert_a_Star in H; eauto.
     impossible_defeq.
   - eapply invert_a_Pi in H; eauto.
@@ -1986,15 +1965,12 @@ Proof.
   - eapply invert_a_CPi in H; eauto.
     destruct H as [H _].
     impossible_defeq.
-  - assert False. eapply no_aAbs. eauto 2. done.
   - eapply invert_a_UAbs in H; eauto.
     destruct H as (A1 & A2 & H & _); eauto.
     impossible_defeq.
   - eapply invert_a_UAbs in H; eauto.
     destruct H as (A1 & B1 & H & _); eauto.
     impossible_defeq.
-  - assert False. eapply no_aAbs. eauto 2. done.
-  - assert False. eapply no_aCAbs. eauto 2. done.
   - eapply invert_a_UCAbs in H; eauto.
     destruct H as [a [b [T [B1 [_ [H _]]]]]]; eauto.
     impossible_defeq.
@@ -2006,6 +1982,7 @@ Lemma canonical_forms_CPi : forall G a phi B, irrelevant G (dom G) a ->
 Proof.
   intros G a phi B IR H H0.
   inversion H0; subst; eauto.
+  all: only_annotated.
   - apply invert_a_Star in H; eauto.
     impossible_defeq.
   - eapply invert_a_Pi in H; eauto.
@@ -2014,37 +1991,51 @@ Proof.
   - eapply invert_a_CPi in H; eauto.
     destruct H as [H _].
     impossible_defeq.
-  - assert False. eapply no_aAbs. eauto 2. done.
   - eapply invert_a_UAbs in H; eauto.
     destruct H as [A1 [A2 [H _]]]; eauto.
     impossible_defeq.
   - eapply invert_a_UAbs in H; eauto.
     destruct H as [A1 [A2 [H _]]]; eauto.
     impossible_defeq.
-  - assert False. eapply no_aAbs. eauto 2. done.
-  - assert False. eapply no_aCAbs. eauto 2. done.
 Qed.
 
+Ltac impossible_PathEq :=
+  let c:=fresh in
+  match goal with [H : DefEq ?G ?D ?A ?B ?C |- _ ] =>
+    destruct (DefEq_lc H) as (? & ? & ?); lc_inversion c;
+    apply consistent_defeq in H; eauto;
+    apply join_consistent in H; eauto;
+    have VT: value_type A; eauto;
+    have VT2 : value_type B; eauto;
+    inversion H; subst; try done; try solve [inversion PA];
+    try solve [impossible_Path] end.
 
 Lemma canonical_forms_Data : forall G a A T, irrelevant G (dom G) a ->
-    Typing G a A -> DataTy (a_Const T) A -> Value a -> exists b, Path b a.
+    Typing G a A -> Path T A -> value_type A -> Value a -> exists K, Path K a.
 Proof.
-  intros G a A T IR H.
-  induction H; intros DT V; inversion DT.
-  all: try solve [inversion V].
-  all: try solve [match goal with [ H : Path _ _ |- _ ] => inversion H end].
-  - inversion V. subst.
-    exists T1. eauto.
-  - inversion V. subst. exists T1. eauto.
-  - subst.
-    have vtA: value_type A. admit.
-    apply consistent_defeq in H0.
-    unfold joins in H0.
-    destruct H0 as [C [EG [EA [EB [MP1 MP2]]]]].
-    inversion H2.
-    have DT2: DataTy (a_Const T) A. admit.
-    eapply IHTyping1; eauto.
-Admitted.
+  intros G a A T IR H PA VTA V.
+  inversion V; subst; eauto.
+  all: only_annotated.
+  all: inversion IR.
+  - apply invert_a_Star in H; eauto.
+    impossible_PathEq.
+  - apply invert_a_Pi in H; eauto.
+    destruct H as [H _].
+    impossible_PathEq.
+  - eapply invert_a_CPi in H; eauto.
+    destruct H as [H _].
+    impossible_PathEq.
+  - eapply invert_a_UAbs in H; eauto.
+    destruct H as [A1 [A2 [H _]]]; eauto.
+    impossible_PathEq.
+  - eapply invert_a_UAbs in H; eauto.
+    destruct H as [A1 [A2 [H _]]]; eauto.
+    impossible_PathEq.
+  - eapply invert_a_UCAbs in H; eauto.
+    destruct H as [a [b [T0 [B1 [_ [H _]]]]]]; eauto.
+    impossible_PathEq.
+Qed.
+
 
 (* helper tactic for progress lemma below. Dispatches goals of the form
    "irrelevant G a " by inversion on IR, a similar assumption in the context *)
