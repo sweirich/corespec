@@ -477,7 +477,26 @@ Definition toplevel : sig := erase_sig an_toplevel.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% "Syntactic" definitions
 
+defns
+JSubRole :: '' ::=
 
+defn
+R1 <= R2  ::  :: SubRole :: ''
+{{ com Subroling judgement }}
+{{ tex [[R1]] \leq [[R2]] }}
+by
+
+------------ :: NomRep
+Nom <= Rep
+
+
+------------ :: Refl
+R <= R
+
+R1 <= R2
+R2 <= R3
+--------- :: Trans
+R1 <= R3
 
 defns
 JValue :: '' ::=
