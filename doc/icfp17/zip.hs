@@ -25,3 +25,6 @@ example = 'G' :> 'H' :> 'C' :> Nil
 zip :: forall n a b. Vec a n -> Vec b n -> Vec (a,b) n
 zip Nil Nil = Nil
 zip (x :> xs) (y :> ys) = (x,y) :> zip xs ys
+
+main :: IO ()
+main = return ()

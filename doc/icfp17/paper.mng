@@ -622,14 +622,14 @@ Figure~\ref{fig:judgments}.
 \[
 \begin{array}{llcl}
 \mathit{terms,\ types} & a, b, A, B   & ::=&  [[TYPE]] \alt [[x]] \alt [[F]] \alt
-                                   [[\rho x.b]] \alt [[a rho b]] \alt
+                                   [[\rho x.a]] \alt [[a rho b]] \alt
                                            \Box \\
                        &            &\alt& [[all rho x:A -> B]] \alt
                                            [[ /\c . a ]]
-                                     \alt [[ a [g] ]] \alt [[ all c:phi. A ]] \\
+                                     \alt [[ a [o] ]]  \alt [[ all c:phi. A ]] \\
 \mathit{propositions}  &[[phi]]     & ::=& [[ a ~ b : A]] \\
 \mathit{relevance}     &[[rho]]     & ::=& [[ + ]] \alt [[ - ]] \\
-\mathit{coercions}     &[[g]]       & ::=& \bullet \\
+% \mathit{coercions}     &[[g]]       & ::=& \bullet \\
 \\
 \mathit{values}        &[[v]]       & ::=& [[\+ x. a]] \alt [[\- x.v]] \alt
                                            [[ /\c. a ]]
@@ -650,7 +650,7 @@ Figure~\ref{fig:judgments}.
 
 The syntax of \fimp, the implicit language, is shown in
 Figure~\ref{fig:implicit-syntax}. This language, inspired by pure type
-systems~\cite{barendregt-lambda-cube}, uses a shared syntax for terms and types. The
+systems~\cite{barendregt-lambda-cube}, uses a \emph{shared syntax} for terms and types. The
 language includes
 \begin{itemize}
 \item a single sort ($[[TYPE]]$) for classifying types,
@@ -660,22 +660,23 @@ language includes
   types ($[[all -x:A -> B]]$), and
   instantiation form ($[[a - [] ]]$),
 \item coercion abstractions ($[[/\c.a]]$), their types
-  ($[[all c:phi. B]]$), and instantiation form ($[[a [o] ]]$),
+  ($[[all c:phi. A]]$), and instantiation form ($[[a [o] ]]$),
 \item and top-level recursive definitions ($[[F]]$).
 \end{itemize}
 
-In this syntax, term and type variables, $[[x]]$, are bound in the bodies of
-functions and their types. Similarly, coercion variables, $[[c]]$, are bound in
-the bodies of coercion abstractions and their types.  (Technically, irrelevant
-variables and coercion variables are prevented by the typing rules from
-actually appearing in the bodies of their respective abstractions.)  We use
-the same syntax for relevant and irrelevant functions, marking which one we
-mean with a relevance annotation $[[rho]]$.  We sometimes omit relevance
-annotations $[[rho]]$ from applications $[[a rho b]]$ when they are clear from
-context. We also write nondependent relevant function types $[[all +x:A -> B]]$ as
-$[[A -> B]]$, when $[[x]]$ does not appear free in $[[B]]$, and write
-nondependent coercion abstraction types $[[all c:phi.A]]$ as $[[phi => A]]$,
-when $[[c]]$ does not appear free in $[[A]]$.
+In this syntax, $[[x]]$ can be used for both term and type variables. These
+variables are bound in the bodies of functions and their types. Similarly,
+coercion variables, $[[c]]$, are bound in the bodies of coercion abstractions
+and their types.  (Technically, irrelevant variables and coercion variables
+are prevented by the typing rules from actually appearing in the bodies of
+their respective abstractions.)  We use the same syntax for relevant and
+irrelevant functions, marking which one we mean with a relevance annotation
+$[[rho]]$.  We sometimes omit relevance annotations $[[rho]]$ from
+applications $[[a rho b]]$ when they are clear from context. We also write
+nondependent relevant function types $[[all +x:A -> B]]$ as $[[A -> B]]$, when
+$[[x]]$ does not appear free in $[[B]]$, and write nondependent coercion
+abstraction types $[[all c:phi.A]]$ as $[[phi => A]]$, when $[[c]]$ does not
+appear free in $[[A]]$.
 
 \subsection{Evaluation}
 
@@ -754,34 +755,34 @@ termination in many dependently-typed languages.
 
 The next five rules describe relevant and irrelevant abstractions.  \fimp
 includes irrelevant abstractions to support \emph{parametric}
-polymorphism---irrelevant arguments are not present in the term.  Lambda
-expressions (and their types) are marked by a relevance flag, $[[rho]]$,
+polymorphism---irrelevant arguments are not present in terms though they
+may appear in an abstraction's (dependent) type.
+Abstractions (and their types) are marked by a relevance flag, $[[rho]]$,
 indicating whether the type-or-term argument may be used in the body of the
 abstraction ($[[+]]$) or must be parametric ($[[-]]$). This usage is checked
-in \rref{E-Abs} by the disjunction $[[rho => check x in a]]$. If the argument
-must be parametric, then it cannot appear anywhere in the body of the
-expression.  This approach to irrelevant abstractions is directly inspired by
+in \rref{E-Abs} by the disjunction $[[rho => check x in a]]$.
+% If the argument must be parametric, then it cannot appear anywhere in the body of the
+%expression.
+This approach to irrelevant abstractions is directly inspired by
 ICC~\cite{Miquel:ICC}.  Irrelevant applications mark missing arguments with
 $\Box$. This is the only place where the typing rules allow the $\Box$ term.
 
-The next rule, \rref{E-Conv}, is conversion. This
-type system assigns types up to definitional equality, defined by the judgment
-$[[G ; D |= a == b : A ]]$ shown in Figure~\ref{fig:defeq}. This judgment
-is indexed by $[[D]]$, a set of \emph{available variables}. For technical
-reasons that we return to in Section~\ref{sec:ext_consist}, we must
-restrict the coercion assumptions that are available in proofs of
-definitional equality to those in this set.
-When definitional equality is used in the typing
-judgment, as it is in \rref{E-Conv}, all in-scope coercion
-variables are available. We use the notation $[[dom G]]$ for the
-set of all coercion variables in the domain of $[[G]]$.
+The next rule, \rref{E-Conv}, is conversion. This type system assigns types up
+to definitional equality, defined by the judgment $[[G ; D |= a == b : A ]]$
+shown in Figure~\ref{fig:defeq}. This judgment is indexed by $[[D]]$, a set of
+\emph{available variables}. For technical reasons that we return to in
+Section~\ref{sec:ext_consist}, we must restrict the coercion assumptions that
+are available in proofs of definitional equality to those in this set.  When
+definitional equality is used in the typing judgment, as it is in
+\rref{E-Conv}, all in-scope coercion variables are available. Therefore, the
+$[[D]]$ in this premise is marked by the notation $[[dom G]]$, which refers to
+the set of all coercion variables in the domain of $[[G]]$.
 
-This language is parameterized by a set of \emph{recursive definitions}
-$[[F]]$, specified by some toplevel signature $[[toplevel]]$.  All of our
-judgements (\ref{fig:judgments}) are implicitly parameterized by this
-signature. Furthermore, all of the results of this paper contain an implicit
-assumption that this signature is well-formed according to the rules of the
-$[[|= S]]$ judgement.
+The next rule, \rref{E-Fam}, checks the occurrence of identifiers $[[F]]$ with
+\emph{recursive definitions}. These definitions are specified by some toplevel
+signature $[[toplevel]]$. Our proofs about System D do not depend on the
+actual contents of this signature as long as it is well-formed according to
+the rules of $[[|= S]]$ judgement.
 
 For concreteness, our Coq development defines $[[toplevel]]$ to be a signature
 containing only a standard, polymorphic recursive fixpoint operator $[[Fix]]$.
@@ -794,22 +795,20 @@ is well-formed.
   : [[ :concrete: all - x : TYPE -> ( x -> x ) -> x ]] \]
 \end{lemma}
 
-However, outside of the proof of well-formedness, our Coq development treats
-the definition of $[[toplevel]]$ opaquely.  This means that alternative
-definitions for $[[toplevel]]$ can be supplied, as long as they are
-well-formed.  For example, recursive definitions could be defined
+However, because our Coq development treats the definition of $[[toplevel]]$
+opaquely, alternative definitions for $[[toplevel]]$ can be supplied, as long
+as they are well-formed.  For example, recursive definitions could be defined
 directly as part of this top-level signature. Furthermore, because there is no
 inherent ordering on signatures, these recursive definitions may be mutually
 defined and may be inductive-recursive~\cite{induction-recursion}.
 
 To support GADTs this language includes \emph{coercion abstractions}, written
 $[[/\c.a]]$.  This term provides the ability for an expression $[[a]]$ to be
-parameterized over a type equality assumption $[[c]]$, which is evidence
-proving an equality proposition $[[phi]]$.  The assumed equality is stored in the
-context during type checking and is made available to definitional equality.
-In \fimp, coercion assumptions are discharged in \rref{E-CApp}
-by $\bullet$, a trivial proof
-that marks the provability of an assumed equality.
+parameterized over an equality assumption $[[c]]$, which is evidence proving
+an equality proposition $[[phi]]$.  The assumed equality is stored in the
+context during type checking and can be used by definitional equality.  In
+\fimp, coercion assumptions are discharged in \rref{E-CApp} by $\bullet$, a
+trivial proof that marks the provability of an assumed equality.
 
 Propositions $\phi$, written $[[a ~ b:A]]$, are statements of equality between
 terms/types. The two terms $[[a]]$ and $[[b]]$ must have the same type $[[A]]$
@@ -886,10 +885,13 @@ extensional type theory because our equality propositions are not the same as
 ``propositional equality'' found in other type theories---equality
 propositions are kept separate from types. Coercion abstraction is not the
 same as normal abstraction, and can only be justified by equality
-derivations, not by arbitrary terms. This means that all equality assumptions
-must eventually be justified by some derivation of definitional equality, not
-by computation.  Because we cannot use a term to justify an assumed equality,
+derivations, not by arbitrary terms.
+% This means that all equality assumptions
+% must eventually be justified by some derivation of definitional equality, not
+% by computation.
+Because we cannot use a term to justify an assumed equality,
 this language remains type sound in the presence of nontermination.
+\scw{mention hypothetical judgement?}
 
 \subsection{Equality propositions are not types}
 \label{sec:props-not-types}
@@ -909,8 +911,8 @@ definitional equality judgment to an equivalent equality proposition
 (\rref{E-Cast}).
 
 Two propositions are equal when their corresponding terms are equal
-(\rref{E-PropCong}) or when their corresponding types are equal
-(\rref{E-IsoConv}). Furthermore, if two coercion abstraction types are
+at the same type (\rref{E-PropCong}) or when their corresponding types are equal
+with the same terms (\rref{E-IsoConv}). Furthermore, if two coercion abstraction types are
 equivalent then the injectivity of these types means that we can extract an
 equivalence of the propositions (\rref{E-CPiFst}).  Although the type system
 does not explicitly include rules for reflexivity, symmetry and transitivity,
@@ -1005,40 +1007,24 @@ conflicting heads.
 
 We show consistency in two steps, using the auxiliary relations
 \emph{parallel reduction} and \emph{joinability}.
-
-Parallel reduction, written $[[G ; D |- a => b]]$, is not part of the
-specification of \fimp.  For reasons of space,
-\ifextended  this relation appears only in Appendix~\ref{app:parallel}\else
-this relation does not appear in this
-work\fi. This relation is a strongly confluent, but not necessarily
-terminating, rewrite relation on terms.
-
-\begin{theorem}[Confluence\ifsource\footnote{\url{ext_consist.v: confluence}}\fi]
-If $[[ G ; D |- a => a1]]$ and
-$[[ G ; D |-  a => a2]]$ then there exists $[[b]]$, such that
-$[[ G ;D |- a1 => b]]$ and $[[G ; D |-  a2 => b]]$.
-\end{theorem}
+Our consistency proof thus first shows that that definitionally equal types
+are joinable and then that joinable types are consistent.
 
 Two types are joinable when they reduce to some common term using any number
-of steps of parallel reduction. Our consistency proof thus first shows that
-joinable types are consistent and then that definitionally equal types are
-joinable.
+of steps of parallel reduction. Parallel reduction, written
+$[[G ; D |- a => b]]$, is not part of the specification of \fimp.  For reasons
+of space, \ifextended this relation appears only in
+Appendix~\ref{app:parallel}\else this relation does not appear in this
+work\fi.
 
 \begin{defn}[Joinable\ifsource\footnote{\url{ett.ott:join}}\fi]
 Two types are joinable, written $[[G ; D |- a1 <=> a2]]$, when there exists
 some $[[b]]$ such that $[[G ; D |- a1 =>* b]]$ and $[[G ; D |- a2 =>* b]]$.
 \end{defn}
 
-\begin{theorem}[Joinability implies
-  consistency\ifsource\footnote{\url{ext_consist.v:join_consistent}}\fi]
-\label{lem:joins_consistent}
-If $[[G ; D  |- A <=> B]]$ then $[[consistent A B]]$.
-\end{theorem}
-
-Only \emph{some} definitionally equal types are joinable. Because our
-consistency proof is based on parallel reduction, and because parallel
-reduction ignores assumed equality propositions, we state our result only for
-equality derivations with no available coercion assumptions.
+Only \emph{some} definitionally equal types are joinable. Because parallel
+reduction ignores assumed equality propositions, the next result holds only
+for equality derivations with no available coercion assumptions.
 
 \begin{theorem}[Equality implies
   Joinability\ifsource\footnote{\url{ext_consist.v:consistent_defeq}}\fi]
@@ -1046,11 +1032,31 @@ equality derivations with no available coercion assumptions.
 If $[[G ; emptyD |= a == b : A]]$ then $[[G ; emptyD |- a <=> b]]$
 \end{theorem}
 
-
 This restriction in the lemma is necessary because the type system does not
 rule out clearly bogus assumptions, such as $[[Int ~ Bool : TYPE]]$. As a
 result, we cannot prove that only consistent types are definitionally equal in
 a context that makes such an assumption available.
+
+For the second part (joinability implies consistency), we observe that head
+forms are preserved by parallel reduction. This fact holds because parallel
+reduction is (strongly) confluent.
+
+\begin{theorem}[Confluence\ifsource\footnote{\url{ext_consist.v:
+      confluence}}\fi]
+  If $[[ G ; D |- a => a1]]$ and $[[ G ; D |- a => a2]]$ then there exists
+  $[[b]]$, such that $[[ G ;D |- a1 => b]]$ and $[[G ; D |- a2 => b]]$.
+\end{theorem}
+
+\begin{theorem}[Joinability implies
+  consistency\ifsource\footnote{\url{ext_consist.v:join_consistent}}\fi]
+\label{lem:joins_consistent}
+If $[[G ; D  |- A <=> B]]$ then $[[consistent A B]]$.
+\end{theorem}
+
+\begin{corollary}[Consistency]
+\label{lem:consistency}
+If $[[G ; emptyD |= a == b : A]]$ then $[[consistent A B]]$.
+\end{corollary}
 
 A consequence of our joinability-based proof of consistency is that there
 are some equalities that may be safe but we cannot allow the type system to
@@ -1082,7 +1088,7 @@ If $[[G1, x : A ++ G2 |= b : B]]$ and $[[G1 ; D |= a1 == a2 : A]]$ then
 $[[G1 ++ (G2 {a1/x}) ; D  |= b {a1 /x} == b {a2 / x} : B {a1 /x}]]$.
 \end{lemma}
 
-Indeed, \citet{eisenberg:phd} could not prove this property about his language
+\citet{eisenberg:phd} could not prove this property about his language
 because his treatment of coercion variables in the rule was too
 restrictive. However, this result is provable in our system because our
 restriction via available sets precisely characterizes what it means to
@@ -1342,14 +1348,13 @@ There is also a fourth option---not enforcing any relationship between $[[A]]$
 and $[[B]]$ to hold. However, we cannot choose this option
 and still connect to the typed equality of \fimp.
 
-At first glance, the first option might seem the closest to \fimp. After all, in that
-language, the two terms must type check with exactly the same type.  However,
-given that D includes implicit coercion, that choice is overly
+At first glance, the first option might seem the closest to \fimp. After all,
+in that language, the two terms must type check with exactly the same type.
+However, given that D includes implicit coercion, that choice is overly
 restrictive---the two terms will also type check with definitionally equal
-types too. The second option relaxes that restriction, but the third is the
-closest to D.
+types too. Therefore, the third option is the closest to D.
 
-Therefore, our system admits the following property of the coercion judgment.
+Asa result, our system admits the following property of the coercion judgment.
 
 \begin{lemma}[Coercion regularity\ifsource\footnote{\url{fc_invert.v:AnnDefEq_regularity}}\fi]
 \label{lem:coercion-reg}
@@ -1778,8 +1783,8 @@ representation of terms and variable binding.  Some of the proofs regarding
 substitution and free variables were automatically generated from our language
 definition via the LNgen tool~\cite{aydemir:lngen}. Our total development
 includes our 1,400 line Ott specification, about 17,000 nonblank lines of Coq
-code, plus another 9,000 lines generated by Ott and LNgen.  \scw{TODO: update
-  line count. Doesn't include lngen proofs.}
+proofs, plus another 13,000 lines of Coq generated by Ott and LNgen.  \scw{TODO: update
+  line count.}
 
 \subsection{Decidability proof}
 
