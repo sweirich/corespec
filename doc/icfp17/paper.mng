@@ -296,10 +296,23 @@ data Nat :: Type where        data Vec :: Type -> Nat -> Type where
 This distinction between compiletime and runtime computation is both subtle
 and awkward. For example, if we want to compute one of these promoted natural
 numbers to use as the index of a vector, we must define a type-level function,
-called a \emph{type family} in GHC~\cite{chak1}.
-Regular Haskell functions are not applicable to type-level data.
-Indeed, programmers must duplicate their definitions if they would like them
-to be available at both compiletime and runtime.
+called a \emph{type family} in GHC~\cite{chak1}. For example, the type family
+\verb|Plus|, defined below, may only be applied to promoted natural numbers.
+
+\begin{Verbatim}[xleftmargin=.5in]
+type One = S O -- type abbreviation
+
+type family Plus (x :: Nat) (y :: Nat) :: Nat where
+   Plus O y     = y
+   Plus (S x) y = S (Plus x y)
+
+example :: Vec Char (Plus One (Plus One One))
+example = 'G' :> 'H' :> 'C' :> Nil
+\end{Verbatim}
+
+Regular Haskell functions are not applicable to type-level data.  As a
+result, programmers must duplicate their definitions if they would like them
+to be available at both compile time and runtime.
 
 However, Dependent Haskell makes no such distinctions. Instead,
 \verb|Vec| may be written exactly as above---but the meaning is that elements
@@ -331,9 +344,8 @@ FC itself is based on an explicitly typed variant of System
 F~\cite{girard-systemf,reynolds-systemf} with \emph{type equality
   coercions}. These coercions provide evidence for type equalities, necessary
 to support (potentially unbounded) type-level
-computation~\cite{peyton-jones:open-type-functions} and GADTs. The presence of
-explicit types and type equality evidence means that FC has a decidable,
-syntax-directed type checking algorithm.
+computation~\cite{peyton-jones:open-type-functions} and GADTs. Their inclusion
+means that FC has a decidable, syntax-directed type checking algorithm.
 
 \textbf{This paper defines the semantics of Dependent Haskell by developing a
   dependently typed replacement for FC, called System DC.}  This version
@@ -345,13 +357,13 @@ Haskell with dependent types while still supporting existing Haskell programs.
 The key idea that makes this work is the observation that we can replace FC in
 a backwards compatible way as long as the dependently-typed core language
 supports \emph{irrelevant
-  quantification}~\cite{Miquel:ICC,pfenning:irrelevance,icc-star}.  Haskell is
-an efficient language because (among many other optimizations) GHC erases type
-arguments during compilation. Even though we conflate types and terms in DC,
-we must retain the ability to perform this erasure. Therefore, DC disentangles
-the notion of ``type'' from that of ``erasable component''. Irrelevant
+  quantification}~\cite{Miquel:ICC,pfenning:irrelevance,icc-star}.  Irrelevant
 quantification marks all terms (whether they are types or not) as erasable as
 long as they can be safely removed without changing the behavior of a program.
+Haskell is an efficient language because (among many other optimizations) GHC
+erases type arguments during compilation. Even though we conflate types and
+terms in DC, we must retain the ability to perform this erasure. Therefore, DC
+disentangles the notion of ``type'' from that of ``erasable component''.
 
 Our design of \fc is strongly based on two recent dissertations that combine
 type equality coercions and irrelevant quantification in dependently-typed
@@ -373,41 +385,43 @@ is a Curry-style language, similar to implicit System F, in that it does not
 support decidable type checking\footnote{We use the words type checking and
   type inference interchangeably---they are equivalent in this setting and
   both problems are undecidable~\cite{pfenning:undecidable,wells:f-undec}.}.
-However, \fimp is otherwise equivalent to DC; we show that these languages
-type related programs and that those related programs have the same runtime
-behavior. In particular, any program in \fc can be erased to a well-typed
-program in \fimp, and for any typing derivation in \fimp, there exists a
-well-typed program in \fc that erases to it (see Section~\ref{sec:fc}).
+However, \fimp is otherwise equivalent to DC; any program in \fc can be erased
+to a well-typed program in \fimp, and for any typing derivation in \fimp,
+there exists a well-typed program in \fc that erases to it
+(Section~\ref{sec:fc}).
 
-The design of D exchanges decidable type checking for a simpler specification,
-as we show in Sections~\ref{sec:implicit-language} and~\ref{sec:fc}.  This
-simplicity is due to the fact that \fimp does not need to do as much
-bookkeeping as \fc; only computationally relevant information appears in D
-terms. As a result, the proofs of key metatheoretic properties, such as the
-consistency of definitional equality, can be simplified. Furthermore, we can
-also avoid some complications in reasoning about DC by appealing to analogous
-results about D.
+D has many advantages over explicitly-typed DC.
+\begin{itemize}
+\item First, the design of D exchanges decidable type checking for a simpler
+  specification, as we show in Sections~\ref{sec:implicit-language}
+  and~\ref{sec:fc}.  This simplicity is due to the fact that \fimp does not
+  need to do as much bookkeeping as \fc; only computationally relevant
+  information appears in D terms. As a result, the proofs of key metatheoretic
+  properties, such as the consistency of definitional equality, can be
+  simplified. Furthermore, we can also avoid some complications in reasoning
+  about DC by appealing to analogous results about D.
 
-It is also the case that D is more canonical than DC. There are many ways to
+\item It is also the case that D is more canonical than DC. There are many ways to
 annotate terms in support of decidable type checking. There are accordingly
 many variants of DC that we can prove equivalent (through erasure) to D. We
 propose one such variant in this paper based on what we think will work best
 in the GHC implementation. However, we discuss alternatives in
 Section~\ref{sec:variations}.
 
-Finally, D itself serves as an inspiration for type inference in the source
+\item Finally, D itself serves as an inspiration for type inference in the source
 language. Although type checking is undecidable, it serves as an ``ideal'' that
 clever inference algorithms can approximate. This process has already happened
 for the System FC-based core language: some GHC extensions augment Damas-Milner
 type inference~\cite{damas:principal} with features of System F, such as first-class
 polymorphism~\cite{peyton-jones:practical,vytiniotis:fph} and visible type
 applications~\cite{type-app}.
+\end{itemize}
 
 Our final contribution is a \textbf{mechanization of all of the metatheory of
   this paper} using the Coq proof assistant~\cite{coq}. \ifanonymous These
 proofs are available to reviewers as supplementary material. \fi \ifsource
 These proofs are available
-online.\footnote{\url{https://github.com/sweirich/corespec}}\fi This
+online.\footnote{\url{https://github.com/sweirich/corespec}}\fi  This
 contribution is significant because these proofs require a careful analysis of
 the allowable interactions between dependent types, coercion abstraction,
 nontermination and irrelevance. This combination is hard to get right and at
@@ -425,7 +439,7 @@ with dependent types~\cite{nokinds,gundry:phd,eisenberg:phd} and with existing
 dependently-typed languages. The most significant difference between Dependent
 Haskell and many other languages, such as Coq, Agda and Idris, is that the
 Haskell type system does not require expressions to terminate. As a result,
-the Dependent Haskell terms cannot be used as proofs of propositions encoded
+the Dependent Haskell expressions cannot be used as proofs of propositions encoded
 as types; indeed, all types are inhabited (by $\bot$) in Haskell. As a result,
 the important result for this paper is \emph{type
   soundness}~\cite{Wright:1994}, the fact that well typed terms
@@ -433,7 +447,7 @@ do not get stuck. In contrast, terminating dependent type theories support the
 property of \emph{logical consistency}, which shows that the type system
 includes uninhabited types. In this paper, our proof of type soundness also
 requires a property called consistency, but it is not the same property as
-logical consistency above. In this context, consistency means that
+logical consistency above. In this paper, consistency means that
 definitional equality (in \fimp) and explicit coercion proofs (in \fc) cannot
 equate two types with different head forms (see
 Section~\ref{sec:ext_consist}).
@@ -444,7 +458,7 @@ Section~\ref{sec:ext_consist}).
 One purpose of GHC's explicitly-typed core language is to give a semantics to Haskell programs
 in a manner that is independent of type inference. This division is important:
 it allows language designers to experiment with various type inference
-algorithms, while still preserving the semantics of their program. It also
+algorithms, while still preserving the semantics of Haskell programs. It also
 inspires Haskell source language extensions with features that do not admit
 effective type inference, through the use of type annotations.
 
@@ -472,8 +486,9 @@ zip (x :> xs) (y :> ys) = (x, y) :> zip xs ys
 The type of \verb|zip| is dependent because the first argument (a natural
 number) appears later in the type. For efficiency, we also do not want this
 argument around at runtime, so we mark it as erasable by using the
-``\verb|forall n|'' quantifier. The similarity between this code and current
-Haskell is intentional. In fact, this program already compiles with GHC 8.0.
+``\verb|forall n|'' quantifier. %The similarity between this code and current
+%Haskell is intentional.
+Not that this program already compiles with GHC 8.0.
 However, the meaning of this program is different here---remember that
 \verb|n| is an invisible and irrelevant \emph{term} argument in Dependent Haskell,
 not a promoted datatype.
@@ -503,19 +518,26 @@ data Vec (a :: Type) (n :: Nat) :: Type where
 \noindent
 The core language version of \verb|zip|, shown below, uses the binder
 \verb|\-| to abstract irrelevant arguments and the binder \verb|/\| to
-abstract coercions. Each branch of a case quantifies over the
-corresponding arguments to the data constructor according to the types above,
-including the coercions \verb|(n ~ 0)| and \verb|(n ~ S m)|.
+abstract coercions. The core language does not include nested pattern
+matching, so the case analysis of each list must be done separately.  Each
+case expression includes two branches, one for each data constructor
+(\verb|Nil| and \verb|(:>)|).  Each branch then quantifes over the arguments
+to the matched data constructor, including coercions. For example, \verb|(:>)|
+above takes four arguments, the implicit length \verb|m|, the coercion
+\verb|(n ~ S m)|, the head of the vector (of type \verb|a|) and the tail of
+the vector (of type \verb|Vec a m|).
 
 \begin{Verbatim}[xleftmargin=.5in]
 zip = \-n:Nat. \-a:Type. \-b:Type. \xs:Vec a n. \ys:Vec a n. case xs of
    Nil -> /\c1:(n ~ 0). case ys of
-      Nil -> /\c2:(n ~ 0). Nil [a][n][c1]
-      (:>) -> \-m:Nat. /\c2:(n ~ S m). \y:b. \ys:Vec b m. absurd [sym c1; c2]
-   (:>) -> \m:Nat. /\c1:(n ~ S m). \x:a. \xs:Vec a m. case ys of
-      Nil -> /\c2:(n ~ 0). absurd [sym c1; c2]
-      (:>) -> \-m:Nat. /\c2:(n ~ S m). \y:b. \ys:Vec b m.
-          (:>) [a][n][m][c1] ((,) [a][b] x y) (zip [m][a][b] xs ys)
+        Nil -> /\c2:(n ~ 0). Nil [a][n][c1]
+        (:>) -> \-m:Nat. /\c2:(n ~ S m). \y:b. \ys:Vec b m.
+            absurd [sym c1; c2]
+   (:>) -> \m1:Nat. /\c1:(n ~ S m1). \x:a. \xs:Vec a m1. case ys of
+        Nil -> /\c2:(n ~ 0). absurd [sym c1; c2]
+       (:>) -> \-m2:Nat. /\c2:(n ~ S m2). \y:b. \ys:Vec b m2.
+            (:>) [a][n][m1][c1] ((,) [a][b] x y)
+                 (zip [m1][a][b] xs (ys |> Vec b (nth 2 [sym c2; c1]))
 \end{Verbatim}
 
 The core language \verb|zip| function must provide all arguments to data
@@ -523,10 +545,10 @@ constructors and functions, even those that are inferred in the source
 language. Arguments that are not relevant to computation are marked with
 square brackets. These arguments include the datatype parameters (\verb|n| and
 \verb|a|) as well as explicit proofs for the equality constraints (\verb|c1|).
-This example also shows how the elaborator compiles away nested pattern
-matching and requires cases for every data constructor. The impossible cases
-are marked with explicit proofs of contradiction, in this case that
-\verb|(O ~ S m)|.
+The impossible cases in this example are marked with explicit proofs of
+contradiction, in this case that \verb|(O ~ S m)|. Finally, in the recursive
+call, the type of \verb|ys| must be coerced from \verb|Vec b m2| to
+\verb |Vec b m1| using an explicit proof that these two types are equal.
 
 Although the explicit arguments and coercions simplify type checking, they
 obscure the meaning of terms like \verb|zip|.  Furthermore, there are many
@@ -537,16 +559,16 @@ replaced with \verb|Nil [a][n][c2]| instead, because both \verb|c1| and
 \verb|c2| are proofs of the same equality. Making
 this change should not affect the definition of \verb|zip|.
 
-The same program in \fimp includes no annotations.
+In fact, the same program in \fimp includes no annotations.
 
 \begin{Verbatim}[xleftmargin=.5in]
 zip = \-n. \-a. \-b. \xs. \ys. case xs of
    Nil -> /\c1. case ys of
       Nil -> /\c2. Nil [][][]
       (:>) -> \-m. /\c2. \y. \ys. absurd []
-   (:>) -> \m. /\c1. \x. \xs. case ys of
+   (:>) -> \m1. /\c1. \x. \xs. case ys of
       Nil -> /\c2. absurd []
-      (:>) -> \-m. /\c2. \y. \ys.
+      (:>) -> \-m2. /\c2. \y. \ys.
           (:>) [][][][] ((,) [][] x y) (zip [][][] xs ys)
 \end{Verbatim}
 
@@ -1754,9 +1776,10 @@ generate both the typeset rules in this paper and the Coq definitions that
 were the basis of our proofs. Our formalization uses a locally nameless
 representation of terms and variable binding.  Some of the proofs regarding
 substitution and free variables were automatically generated from our language
-definition via the LNgen tool~\cite{aydemir:lngen}. Our total development is
-about 20,000 lines of code, plus another 13,000 lines generated by Ott and
-LNgen.  \scw{TODO: update line count}
+definition via the LNgen tool~\cite{aydemir:lngen}. Our total development
+includes our 1,400 line Ott specification, about 17,000 nonblank lines of Coq
+code, plus another 9,000 lines generated by Ott and LNgen.  \scw{TODO: update
+  line count. Doesn't include lngen proofs.}
 
 \subsection{Decidability proof}
 
@@ -2074,7 +2097,7 @@ dependently-typed languages from scratch.
 
 The Cayenne Language~\cite{cayenne} was an early prototype in this area. This
 language was a full-spectrum dependently-typed language, inspired by
-functional programming. It was implemented as a new typechecker over an
+Haskell. It was implemented as a new typechecker over an
 existing Haskell implementation, but unlike Dependent Haskell was not intended
 to be backwards compatible with Haskell. Furthermore, with this architecture,
 dependent types are only available at the source level---the implementation
