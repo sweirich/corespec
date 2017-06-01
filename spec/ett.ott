@@ -30,13 +30,17 @@ indexvar index, i ::=
 
 grammar
 
+role, R :: '' ::= {{ com Role }}
+   | Nom  ::    :: Nominal
+   | Rep  ::    :: Representational
+
 relflag, rho {{ tex \rho }} :: '' ::= {{ com relevance flag }}
    | +             ::   :: Rel
    | -             ::   :: Irrel
 
 constraint, phi {{ tex \phi }} :: '' ::= {{ com props }}
-   | a ~ b : A        ::   :: Eq
-     {{ tex [[a]] [[~]]_{[[A]]} [[b]] }}
+   | a ~ b : A / R   ::   :: Eq
+     {{ tex [[a]] [[~]]_{[[A]]/[[R]]} [[b]] }}
    | ( phi )          :: S :: Paren
      {{ coq ([[phi]]) }}
    | phi { b / x }    :: S :: Subst
@@ -57,8 +61,8 @@ tm, a, b, v, w, A, B :: 'a_' ::= {{ com types and kinds }}
      {{ tex [[a]]\ [[b]]^{[[rho]]}  }}
    | F                  ::   :: Fam
    | T                  ::   :: Const
-   | all rho x : A -> B ::   :: Pi (+ bind x in B +)
-     {{ tex \mathrm{\Pi}^[[rho]][[x]]\!:\![[A]][[->]][[B]] }}
+   | all rho x : A / R -> B ::   :: Pi (+ bind x in B +)
+     {{ tex \mathrm{\Pi}^[[rho]][[x]]\!:\![[A]]/[[R]][[->]][[B]] }}
    | a |> g             ::   :: Conv
    | all c : phi . B    ::   :: CPi (+ bind c in B +)
      {{ tex [[all]][[c]]\!:\![[phi]].[[B]] }}
@@ -120,8 +124,8 @@ tm, a, b, v, w, A, B :: 'a_' ::= {{ com types and kinds }}
    | \ x : A . a      :: S :: RelAbs
      {{ coq (a_Abs Rel [[A]] [[a]]) }}
      {{ tex \lambda [[x]]\!:\![[A]].[[a]] }}
-   | all x : A -> B   :: S :: RelPi
-     {{ coq (a_Pi  Rel [[A]] [[B]]) }}
+   | all x : A / R -> B   :: S :: RelPi
+     {{ coq (a_Pi  Rel [[A]] [[R]] [[B]]) }}
 
 %% Currently unused
 brs :: 'br_' ::=    {{ com case branches }}
@@ -241,7 +245,7 @@ context, G {{ tex \Gamma }} :: 'ctx_' ::= {{ com contexts }}
                                           {{ coq list ( atom * sort ) }}
    | empty           ::    :: Empty   {{ coq nil }}
 
-   | G , x : A       ::    :: ConsTm  {{ coq (([[x]]~ Tm [[A]]) ++ [[G]]) }}
+   | G , x : A / R   ::    :: ConsTm  {{ coq (([[x]]~ Tm [[A]][[R]]) ++ [[G]]) }}
    | G , c : phi     ::    :: ConsCo  {{ coq (([[c]]~ Co [[phi]]) ++ [[G]]) }}
    | G { b / x }     :: M  :: SubstA  {{ coq (open_context_wrt_tm [[x G]][[b]] }}
    | G { g / c }     :: M  :: SubstG  {{ coq (open_context_wrt_co [[c G]][[g]]  }}
@@ -250,6 +254,7 @@ context, G {{ tex \Gamma }} :: 'ctx_' ::= {{ com contexts }}
    | | G |           :: M  :: Erase   {{ coq (erase_context [[G]]) }}
    | ( G )           :: M  :: Paren   {{ coq ([[G]]) }}
    | (# G #)         :: M  :: SecretParen {{ coq [[G]] }} {{ tex [[G]] }}
+
 
 available_props, D {{ tex \Delta }} :: 'D_' ::= {{ coq atoms }} {{ coq-universe Type }}
    | emptyD          ::    :: Empty   {{ coq AtomSetImpl.empty }} {{ tex \varnothing }}
@@ -335,8 +340,8 @@ terminals :: 'terminals_' ::=
 
 formula :: 'formula_' ::=
   | judgement                ::   :: judgement
-  | x : A in G               ::   :: inG
-    {{ coq binds [[x]] (Tm [[A]]) [[G]] }}
+  | x : A / R in G               ::   :: inG
+    {{ coq binds [[x]] (Tm [[A]][[R]]) [[G]] }}
 
   | c : phi  in G         ::   :: inGP
     {{ coq binds [[c]] (Co [[phi]]) [[G]] }}
@@ -344,8 +349,8 @@ formula :: 'formula_' ::=
   | T : A in S             ::   :: inGF
     {{ coq binds [[T]] (Cs [[A]]) [[S]] }}
 
-  | F ~ a : A in S             ::   :: inGFam
-    {{ coq binds [[F]] (Ax [[a]][[A]]) [[S]] }}
+  | F ~ a : A / R in S             ::   :: inGFam
+    {{ coq binds [[F]] (Ax [[a]][[A]][[R]]) [[S]] }}
 
   | K : T G in S               ::   :: inSD
     {{ coq binds [[K]] ([[T]],[[G]]) [[S]] }}
@@ -500,7 +505,7 @@ by
 Value TYPE
 
 -------------------------- :: Pi
-Value all rho x : A -> B
+Value all rho x : A / R -> B
 
 -------------------- :: CPi
 Value all c : phi. B
@@ -517,7 +522,7 @@ Value \ - x. a
 
 CoercedValue a
 -------------------- :: AbsIrrel
-Value \ - x:A. a
+Value \ - x:A / R . a
 
 --------------------- :: CAbs
 Value /\c:phi.a
@@ -535,7 +540,7 @@ by
 ValueType TYPE
 
 -------------------------- :: Pi
-ValueType all rho x : A -> B
+ValueType all rho x : A / R -> B
 
 -------------------- :: CPi
 ValueType all c : phi. B
@@ -556,7 +561,7 @@ by
 consistent TYPE TYPE
 
 ------------------------ :: Pi
-consistent (all rho x1:A1 -> B1) (all rho x2:A2 -> B2)
+consistent (all rho x1:A1 / R -> B1) (all rho x2:A2 / R -> B2)
 
 ------------------------ :: CPi
 consistent (all c1:phi1. A1) (all c2 :phi2. A2)
@@ -598,14 +603,14 @@ erased_tm (a rho b)
 erased_tm A
 erased_tm B
 ------------------------- :: Pi
-erased_tm (all rho x:A -> B)
+erased_tm (all rho x:A / R -> B)
 
 erased_tm a
 erased_tm b
 erased_tm A
 erased_tm B
 ---------------------------------- :: CPi
-erased_tm (all c:a ~ b : A. B)
+erased_tm (all c:a ~ b : A / R. B)
 
 erased_tm b
 --------------- :: CAbs
@@ -804,76 +809,82 @@ G |= phi ok ::    :: PropWff :: 'E_'
 {{ com Prop wellformedness }}
 by
 
-G |= a : A
-G |= b : A
-[ G |= A : TYPE ]
+G |= a : A / R
+G |= b : A / R
+[ G |= A : TYPE / R ]
 ---------------------------  :: Wff
-G |= a ~ b : A  ok
+G |= a ~ b : A / R  ok
 
 defn
 
-G |= a : A ::   :: Typing :: 'E_'
+G |= a : A / R ::   :: Typing :: 'E_'
 {{ com typing }}
 by
 
-|= G
-------------  :: Star
-G |= TYPE : TYPE
+R1 <= R2
+G |= a : A / R1
+----------------- :: SubRole
+G |= a : A / R2
 
 |= G
-x:A in G
+---------------------  :: Star
+G |= TYPE : TYPE / R
+
+|= G
+x:A / R in G
 ------------------ :: Var
-G |= x : A
+G |= x : A / R
 
 %% 2nd premise is redundant, but convenient for IH
-G, x:A |= B : TYPE
-[ G |= A : TYPE ]
------------------------------------- :: Pi
-G |= all rho x:A -> B : TYPE
+G, x:A / R |= B : TYPE / R
+[ G |= A : TYPE / R ]
+----------------------------------------- :: Pi
+G |= all rho x:A / R -> B : TYPE / R
 
-G, x:A |= a : B
+G, x:A / R  |= a : B / R'
 [ G |= A : TYPE ]
 rho => check x in a
+R <= R'
 ---------------------------------- :: Abs
-G |= \ rho x . a : all rho x:A -> B
+G |= \ rho x . a : ( all rho x:A / R -> B ) / R'
 
-G |= b : all+ x : A -> B
-G |= a : A
+G |= b : all+ x : A / R -> B / R'
+G |= a : A / R
 ------------------------------------- :: App
-G |= b + a : B { a / x }
+G |= b + a : B { a / x } / R'
 
-G |= b : all - x : A -> B
-G |= a : A
+G |= b : all - x : A / R -> B / R'
+G |= a : A / R
 ------------------------------------- :: IApp
-G |= b - [] : B { a / x }
+G |= b - [] : B { a / x } / R'
 
 
-G |= a : A
-G ; dom G |= A == B : TYPE
-[ G |= B : TYPE ]
+G |= a : A / R
+G ; dom G |= A == B : TYPE / R
+[ G |= B : TYPE / R ]
 ----------------------------- :: Conv
-G |= a : B
+G |= a : B / R
 
-G, c : phi |= B : TYPE
+G, c : phi |= B : TYPE / R
 [ G |= phi ok ]
 -------------------------------- :: CPi
-G |= all c:phi. B : TYPE
+G |= all c:phi. B : TYPE / R
 
-G, c:phi |= a : B
+G, c:phi |= a : B / R
 [ G |= phi ok ]
 ------------------------------------------------- :: CAbs
-G |= /\ c . a : all c:phi. B
+G |= /\ c . a : all c:phi. B / R
 
-G |= a1 : all c : (a ~ b : A) . B1
-G ; dom G |= a == b : A
+G |= a1 : all c : (a ~ b : A / R) . B1 / R'
+G ; dom G |= a == b : A / R
 ------------------------------------------- :: CApp
-G |= a1 [ o ] : B1 { o / c }
+G |= a1 [ o ] : B1 { o / c } / R'
 
 |= G
-F ~ a : A in toplevel
-[ empty |= A : TYPE ]
+F ~ a : A / R in toplevel
+[ empty |= A : TYPE / R ]
 ------------------ :: Fam
-G |= F : A
+G |= F : A / R
 
 
 defn
@@ -881,53 +892,53 @@ G ; D |= phi1 == phi2  ::    :: Iso :: 'E_'
 {{ com prop equality }}
 by
 
-G ; D |= A1 == A2 : A
-G ; D |= B1 == B2 : A
----------------------------------------- :: PropCong
-G ; D |= A1 ~ B1 : A == A2 ~ B2 : A
+G ; D |= A1 == A2 : A / R
+G ; D |= B1 == B2 : A / R
+--------------------------------------------- :: PropCong
+G ; D |= A1 ~ B1 : A / R == A2 ~ B2 : A / R
 
-G ; D |= A == B : TYPE
-G |= A1 ~ A2 : A ok
-G |= A1 ~ A2 : B ok
------------------------------------------ :: IsoConv
-G ; D |= A1 ~ A2 : A == A1 ~ A2 : B
+G ; D |= A == B : TYPE / R
+G |= A1 ~ A2 : A / R ok
+G |= A1 ~ A2 : B / R ok
+-------------------------------------------- :: IsoConv
+G ; D |= A1 ~ A2 : A / R == A1 ~ A2 : B / R
 
-G ; D |= all c:phi1. B1 == all c:phi2. B2 : TYPE
-------------------------------------------------- :: CPiFst
+G ; D |= all c:phi1. B1 == all c:phi2. B2 : TYPE / R
+----------------------------------------------------- :: CPiFst
 G ; D |=  phi1 == phi2
 
 
 defn
 
-G ; D |= a == b : A ::     :: DefEq :: 'E_'
+G ; D |= a == b : A / R ::     :: DefEq :: 'E_'
 {{ com definitional equality }}
 by
 
 |= G
-c: (a ~ b : A) in G
+c: (a ~ b : A / R ) in G
 c in D
 -------------------- :: Assn
-G ; D |= a == b : A
+G ; D |= a == b : A / R
 
-G |= a : A
--------------------- :: Refl
-G ; D |= a == a : A
+G |= a : A / R
+------------------------ :: Refl
+G ; D |= a == a : A / R
 
-G ; D |= b == a : A
--------------------- :: Sym
-G ; D |= a == b : A
+G ; D |= b == a : A / R
+------------------------ :: Sym
+G ; D |= a == b : A / R
 
-G ; D |= a == a1 : A
-G ; D |= a1 == b : A
+G ; D |= a == a1 : A / R
+G ; D |= a1 == b : A / R
 ------------------------------------- :: Trans
-G ; D |= a == b : A
+G ; D |= a == b : A / R
 
 
-G |= a1 : B
-[G |= a2 : B]
+G |= a1 : B / R
+[G |= a2 : B / R ]
 |= a1 > a2
 --------------------------------  :: Beta
-G ; D |= a1 == a2 : B
+G ; D |= a1 == a2 : B / R
 
 %% Rules related to functions
 
@@ -1023,10 +1034,10 @@ by
 |= empty
 
 |= G
-G |= A : TYPE
+G |= A : TYPE / R
 x notin dom G
 --------------------- :: ConsTm
-|= G, x : A
+|= G, x : A / R
 
 |= G
 G |= phi ok

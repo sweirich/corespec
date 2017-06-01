@@ -1,0 +1,24 @@
+\documentclass{article}
+
+\usepackage{ottalt}
+\usepackage{mathpartir}
+\usepackage{supertabular}
+\usepackage{color}
+\usepackage{amsmath}
+\usepackage{amssymb}
+
+
+
+%% Show admissible premises in rules
+%% This should be false in main body of text and true in the appendix.
+\newif\ifadmissible
+\newcommand\suppress[1]{\ifadmissible{[#1]}\else{}\fi}
+\inputott{ett-rules}
+
+
+\admissibletrue
+\begin{document}
+
+\ottdefnss
+
+\end{document}
