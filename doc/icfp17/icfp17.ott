@@ -8,12 +8,23 @@ defns
 
 
 defn
+  G |-- a ~ g b ok  ::   :: wffalt :: 'AltAn_'
+{{ tex [[G]] \vdash [[a]] [[~]]_{[[g]]} [[b]] [[ok]] }}
+by
+
+G |- a : A
+G |- b : B
+G ; dom G |- g : A ~ B
+------------------ :: Wff
+G |-- a ~g b ok
+
+defn
    Good G D ::   :: GoodDefn :: ''
 by
 
 defn G |== a : A ::   :: alternative :: 'EA_'
  {{ com alternative rules for comparison }}
- {{ tex [[G]] \models [[a]] : [[A]] }}
+ {{ tex [[G]] \vDash [[a]] : [[A]] }}
 by
 
 G |= A : TYPE
@@ -55,8 +66,8 @@ G |-- a : A
 ------------------ :: Conv
 G |-- a : B
 
-defn G ; D |-- g : a ~ b :: :: altande :: 'AltAn_' {{ tex [[G]] ; [[D]]
-  \vdash [[g]] : [[a]] \sim [[b]] }}
+defn G ; D |-- g : a ~ b :: :: altande :: 'AltAn_'
+{{ tex [[G]] ; [[D]] \vdash [[g]] : [[a]] \sim [[b]] }}
 
  by
 G ; D |- g1 : a1 ~ b1

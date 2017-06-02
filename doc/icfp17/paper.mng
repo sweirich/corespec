@@ -521,7 +521,7 @@ The core language version of \verb|zip|, shown below, uses the binder
 abstract coercions. The core language does not include nested pattern
 matching, so the case analysis of each list must be done separately.  Each
 case expression includes two branches, one for each data constructor
-(\verb|Nil| and \verb|(:>)|).  Each branch then quantifes over the arguments
+(\verb|Nil| and \verb|(:>)|).  Each branch then quantifies over the arguments
 to the matched data constructor, including coercions. For example, \verb|(:>)|
 above takes four arguments, the implicit length \verb|m|, the coercion
 \verb|(n ~ S m)|, the head of the vector (of type \verb|a|) and the tail of
@@ -1053,7 +1053,7 @@ reduction is (strongly) confluent.
 If $[[G ; D  |- A <=> B]]$ then $[[consistent A B]]$.
 \end{theorem}
 
-\begin{corollary}[Consistency]
+\begin{corollary}[Consistency for \fimp]
 \label{lem:consistency}
 If $[[G ; emptyD |= a == b : A]]$ then $[[consistent A B]]$.
 \end{corollary}
@@ -1249,21 +1249,17 @@ equality that the \fc type checker is only required to verify. We describe this
 judgment in the next subsection.
 
 Other rules of the type system also add annotations to make type checking
-syntax directed.  For example, consider the typing rules for abstractions (\rref{An-Abs}) and
-applications (\rref{An-App}).
-We have two new annotations in these two rules. Abstractions include the types
-of bound variables and irrelevant applications use their actual arguments
-instead of using $\Box$. As a positive result of this change, we need only one rule for
-typing applications, not two as applications must always include their
-arguments, even when those arguments are irrelevant. Furthermore, because terms now include
-irrelevant variables in these annotations, irrelevant abstractions
-check relevance against the body \emph{after erasure}, following
-ICC*~\cite{icc-star}.
-
-Similarly, coercion abstraction and instantiation require annotations
-for the abstracted proposition and the evidence that the equality is
-satisfied. See \rref{An-CAbs,An-CApp}.
-All other rules of the typing judgment are the same as \fimp.
+syntax directed.  For example, consider the typing rules for abstractions
+(\rref{An-Abs}) and applications (\rref{An-App}).  We have two new annotations
+in these two rules. Abstractions include the types of bound variables and
+irrelevant applications use their actual arguments instead of using $\Box$. As
+a positive result of this change, we now need only one rule for typing
+applications. Furthermore, because terms now include irrelevant variables in
+annotations, irrelevant abstractions check relevance against the body
+\emph{after erasure}, following ICC*~\cite{icc-star}.  Similarly, coercion
+abstraction (\rref{An-CAbs}) and instantiation (\rref{An-CApp}) require
+annotations for the abstracted proposition and the evidence that it is
+satisfied. All other rules of the typing judgment are the same as \fimp.
 
 % \scw{This lemma is important but out of place. We had to work to make sure
 %   that it is true.
@@ -1337,8 +1333,7 @@ can always recover them directly from the context and the terms.
 Furthermore, we have flexibility in the relationship between the types of the
 terms in the coercion judgment. Suppose we have $[[G ;D |- g : a ~ b]]$ and $[[G |- a : A]]$ and
 $[[G |- b : B]]$. Then there are three possible ways we could have designed
-the judgment with respect to the types $[[A]]$ and $[[B]]$.  The judgment could
-require
+the system. We could require
 \begin{enumerate}
 \item that $[[A]] = [[B]]$, i.e. that the types must be $\alpha-$equivalent, or
 \item that $[[|A|]] = [[|B|]]$, i.e. that the types must be equal up to erasure, or
@@ -1354,7 +1349,7 @@ However, given that D includes implicit coercion, that choice is overly
 restrictive---the two terms will also type check with definitionally equal
 types too. Therefore, the third option is the closest to D.
 
-Asa result, our system admits the following property of the coercion judgment.
+As a result, our system admits the following property of the coercion judgment.
 
 \begin{lemma}[Coercion regularity\ifsource\footnote{\url{fc_invert.v:AnnDefEq_regularity}}\fi]
 \label{lem:coercion-reg}
@@ -1419,10 +1414,10 @@ coercions. This rule will equate them as long as their types are coercible.
 $[[\+x:Bool.x]]$ that are erasure equivalent but do not have coercible types.)
 
 Because coercions do not appear in \fimp, they should never play a role in
-equality. As a result, we have a form of ``propositional irrelevance'' for coercions.
+equality. As a result, we have a form of ``propositional irrelevance'' for them.
 Therefore, we never need to show that two coercions $[[g1]]$ and $[[g2]]$
 that appear in terms are equal to each other---see for example \rref{An-CApp}.
-Furthermore, \Rref{An-EraseEq} provides \emph{coherence} for our
+Furthermore, \rref{An-EraseEq} provides \emph{coherence} for our
 language---uses of coercion proofs (i.e. $[[a |> g]]$) do not interfere with
 equality. Prior work also include similar reasoning~\cite{nokinds,gundry:phd},
 but only allowed one coercion proof to be eliminated at a time.  In contrast,
@@ -1430,44 +1425,6 @@ when viewed through the comparison with reflexivity in the implicit language,
 we can derive a much more efficient way of stating coherence. Proofs using
 this rule may be significantly smaller than in the prior system.
 
-\subsection{Coercion props and coercion abstraction}
-
-\fc uses the same syntax for equality props ($[[a~b:A]]$) as \fimp, where
-$[[A]]$ is the type of the term $[[a]]$. The $[[A]]$ annotation is not
-actually needed
-for decidable type checking in \fc as that type can easily be recovered from
-$[[a]]$. However, we include this annotation in the prop to simplify the
-definition of the erasure operation, shown in definition ~\ref{defn:erasure}.
-
-When are props ($[[a~b:A]]$) well formed in \fc? To make this question
-decidable, we place stronger restrictions on the types of $[[a]]$ and $[[b]]$
-in equality propositions than we do in the coercion judgment. In the latter case, we
-know that a derivation of $[[G;D |- g : a ~ b]]$ means that there must exist
-some coercion between the types of the two terms. This coercion is not stored
-in the proof $[[g]]$ itself, but it can be recovered via Lemma
-~\ref{lem:coercion-reg}.
-
-In contrast, to support decidable typechecking, the \fc typing rules require
-two terms in a prop to have \emph{erasure equivalent} types.
-\[
-\drule[width=3in]{An-Wff}
-\]
-Given $[[a]]$, $[[b]]$ and $[[A]]$, we can easily access the type of $[[b]]$
-and determine whether $[[A]]$ and $[[B]]$ are equal after erasure. However, we
-cannot necessarily determine whether there exists some coercion that equates
-$[[A]]$ and $[[B]]$, as definitional equality is undecidable.
-
-This stronger restriction for props is not problematic. Even with this
-restriction we can annotate all valid derivations in \fimp. In the case that
-the types are not erasure-equivalent in some proposition in a derivation, we
-can always use a cast to make the two terms have erasure-equivalent types. In
-other words, if we want to form a proposition that $[[a]] :[[A]]$ and
-$[[b]] : [[B]]$ are equal, where we have some $[[g]]:[[A ~ B : TYPE]]$, we can
-use the proposition $[[(a |> g) ~ b : B]]$.
-
-Alternatively, we could weaken this restriction by annotating $[[g]]$ in DC
-equality propositions (in addition to $[[A]]$). However, we see no need for
-this modification.
 
 \subsection{Preservation and Progress for \fc}
 \label{sec:fc-metatheory}
@@ -1516,7 +1473,7 @@ $[[G1 ; D |- g : a1 ~ a2]]$ then there exists a $[[g']]$ such that
 $[[G1 ++ (G2 {a1/x}) ; D  |- g' :  b {a1 /x} ~ b {a2 / x}]]$.
 \end{lemma}
 
-\begin{lemma}[Consistency\ifsource\footnote{\url{fc_consist.v: AnnDefEq_consistent}}\fi]
+\begin{lemma}[Consistency for \fc\ifsource\footnote{\url{fc_consist.v: AnnDefEq_consistent}}\fi]
 If $[[G ; emptyD |- g : a ~ b]]$ then $[[consistent |a| |b|]]$.
 \end{lemma}
 
@@ -1545,7 +1502,7 @@ $[[a']]$ such that $[[G |- a ~>h a']]$.
 
 Consistency lets us prove an analogous annotation theorem for \fc
 reduction; as we can use it to argue that coercions cannot block reduction.
-In otherwords, given any reduction in \fimp, it can be simulated by a sequence of
+In other words, given any reduction in \fimp, it can be simulated by a sequence of
 \fc reductions.
 \begin{lemma}[\fc reduction
   annotation\ifsource\footnote{\url{fc_consist.v:reduction_annotation}}\fi]
@@ -1563,6 +1520,42 @@ then there exists some $[[a0']]$ such that $[[|a0'|]]=[[a']]$ and
 We have mentioned some of the factors underlying our designs of D and DC in the
 prior sections. Here, we discuss some of these design choices in more detail.
 
+\subsection{Prop well-formedness and annotation}
+
+In \fimp, well-formed equality props ($[[a~b:A]]$) require that $[[a]]$ and
+$[[b]]$ have the same type $[[A]]$ (see \rref{E-Wff}). The direct analogue for that
+rule in \fc is the following:
+
+\[
+\drule[width=3in]{AltAn-Wff}
+\]
+
+However, DC actually places stronger restrictions on the type of $[[A]]$ and
+$[[B]]$: instead of allowing a coercion between them, \rref{An-Wff} requires
+them to be erasure equivalent.
+
+We designed \rref{An-Wff} this way so that \fc can use the same syntax for
+equality props as \fimp. Given $[[a]]$, $[[b]]$ and $[[A]]$, we can easily
+access the type of $[[b]]$ and determine whether $[[A]]$ and $[[B]]$ are equal
+after erasure. However, we cannot necessarily determine whether there exists
+some coercion that equates $[[A]]$ and $[[B]]$. Therefore, to allow the more
+flexible rule above, we would need to annotate props in \fc with the coercion
+$[[g]]$.
+
+The $[[A]]$ annotation is not actually needed for decidable type checking in
+\fc as that type can easily be recovered from $[[a]]$. However, we include
+this annotation in the prop to simplify the definition of the erasure
+operation, shown in definition ~\ref{defn:erasure}.
+
+This stronger restriction for props is not problematic. Even with this
+restriction we can annotate all valid derivations in \fimp. In the case that
+the types are not erasure-equivalent in some proposition in a derivation, we
+can always use a cast to make the two terms have erasure-equivalent types. In
+other words, if we want to form a proposition that $[[a]] :[[A]]$ and
+$[[b]] : [[B]]$ are equal, where we have some $[[g]]:[[A ~ B : TYPE]]$, we can
+use the proposition $[[(a |> g) ~ b : B]]$.
+
+
 \subsection{Heterogeneous vs. homogeneous equality}
 \label{sec:homogeneous}
 
@@ -1573,34 +1566,36 @@ proposition to be well-formed. Because $[[A]]$ and $[[B]]$ are required to be
 equal, this relation is almost always written as a three-place relation.  In contrast,
 a \emph{heterogeneous} equality proposition is a four place relation
 $a : A \sim b : B$, where the types of the equated terms may be
-unrelated. A heterogeneous equality proposition is usually
-provable only when $[[A]]$ and $[[B]]$ are equal
-types~\cite{mcbride:jmeq}. However, some settings do allow terms with unequal
-types to be equated~\cite{pii13kimmel,casinghino:combining-proofs-programs}.
+unrelated~\cite{mcbride:jmeq}.
+% A heterogeneous equality proposition is usually
+% provable only when $[[A]]$ and $[[B]]$ are equal
+% types~\cite{mcbride:jmeq}. However, some settings do allow terms with unequal
+% types to be equated~\cite{pii13kimmel,casinghino:combining-proofs-programs}.
 
-In the implicit language D, equality propositions are clearly homogeneous. But what about the
-annotated language? The only equality defined for this language is
-$\alpha$-equivalence. There is no conversion rule. As a result, it may seem
-like we have neither homogeneous equality nor heterogeneous equality, as
-we require the two types to be related, but not with the ``definitional
-equality'' of that language. However, we claim that because DC is an
-annotation of D, the semantics of the equality proposition in DC is the same
-as that in D. So we use the terminology ``homogeneous equality'' to refer to
-equality propositions in both languages.
+In the implicit language \fimp, equality propositions are clearly
+homogeneous. But what about the annotated language? The only equality defined
+for this language is $\alpha$-equivalence. There is no conversion rule. As a
+result, technically we have neither homogeneous equality nor
+heterogeneous equality, as we require the two types to be related, but not
+with the ``definitional equality'' of that language. However, we claim that
+because DC is an annotation of D, the semantics of the equality proposition in
+DC is the same as that in D. So we use the terminology ``homogeneous
+equality'' to refer to equality propositions in both languages.
 
-Homogeneous equality is a natural fit for \fimp. In this language we are required to include the
-type of the terms in the judgment so we can know at what type they should be
-compared. To have heterogeneous equality in that context, we would need two
-different types in equality propositions, i.e. they would be $(a : A \sim b : B)$.
-We would also need a rule that allows us to extract equalities between $[[A]]$
-and $[[B]]$.
-\[
-\drule[width=3in]{EA-Kind}
-\]
+Homogeneous equality is a natural fit for \fimp. In this language we are
+required to include the type of the terms in the judgment so we can know at
+what type they should be compared.
+% To have heterogeneous equality in that context, we would need two
+% different types in equality propositions, i.e. they would be $(a : A \sim b : B)$.
+% We would also need a rule that allows us to extract equalities between $[[A]]$
+% and $[[B]]$.
+% \[
+% \drule[width=3in]{EA-Kind}
+% \]
 Once we had set up D with homogeneous equality, we were inspired to make it
-also compatible with DC.
+work with DC.
 
-In contrast, prior work uses heterogeneous
+In contrast, prior work on similarly annotated languages uses heterogeneous
 equality~\cite{nokinds,gundry:phd,eisenberg:phd}. As a result, these languages
 also include a ``$\mathsf{kind}$ coercion'' which extracts a proof of type
 equality from a proof of term equality. This kind coercion complicates the
@@ -1635,14 +1630,14 @@ reason was to design compositional rules for type coercions, such as
 work shows that we can have compositional congruence rules in the presence of
 homogeneous equality.
 
-Another goal was to simplify the implementation of type inference in GHC 8.0
-which must emit constraints between types and their kinds. A heterogeneous
-equality represents both of these at once, whereas two constraints are
-required with homogeneous equality.  However, in terms of constraint
-generation in GHC, it turns out that generating two propositions was simpler
-anyways. GHC's solver uses a set of equalities on type variables as a
-substitution. For this induced substitution to be type-correct, each equality
-in the set must be homogeneous.
+% Another goal was to simplify the implementation of type inference in GHC 8.0
+% which must emit constraints between types and their kinds. A heterogeneous
+% equality represents both of these at once, whereas two constraints are
+% required with homogeneous equality.  However, in terms of constraint
+% generation in GHC, it turns out that generating two propositions was simpler
+% anyways. GHC's solver uses a set of equalities on type variables as a
+% substitution. For this induced substitution to be type-correct, each equality
+% in the set must be homogeneous.
 
 % Thus, GHC homogenizes the equalities (by adding a coercion on one side)
 % before adding them to the set. If the kinds are not already equal, then it
@@ -1663,50 +1658,46 @@ in the set must be homogeneous.
 \subsection{Can we erase more?}
 \label{sec:erase-irrelevant}
 
-Irrelevant abstractions do not completely disappear from our implicit
-calculus.  Even though evaluation continues under irrelevant abstractions, their
-\emph{locations} are marked in \fimp.  In contrast,
-a Curry-style presentations of System F would allow generalization
-at any point.
+\fimp differs from some Curry-style presentations of irrelevant quantification
+by marking the locations of irrelevant abstractions and
+applications~\cite{Miquel:ICC}.  We could imagine replacing our rules for
+irrelevant argument introduction and elimination with the following
+alternatives, which allow generalization and instantiation at any point in the
+derivation.
 
-We could imagine replacing our rules for irrelevant argument introduction and
-elimination with the following alternatives, as is the case in
-ICC~\cite{Miquel:ICC}.
-\[
-\drule[width=3in]{EA-IrrelAbs}
-\]
-\[
-\drule[width=3in]{EA-IrrelApp}
-\]
+\begin{center}
+$\drule[width=3in]{EA-IrrelAbs}\qquad$
+$\drule[width=3in]{EA-IrrelApp}$
+\end{center}
+
 Adding these rules does not require us to change the annotated language
 \fc. Instead, we would only need to modify the erasure operation to completely
 remove such abstractions and applications.
-Furthermore, this modification would strengthen the equational theory of the
-language.
 
-However, this change complicates the metareasoning of
-\fimp as $\Pi^-$ quantifiers can appear anywhere in a derivation. For example,
-the inversion lemma \ref{lem:invert_a_Pi} would allow the type $[[A]]$ to be
-headed by any number of implicit binders before the explicit one.
-This seems possible, but intricate, so we decided to forgo this extension for
-a simpler system. We may revisit this decision in future work.
+However, this change complicates the metareasoning of \fimp as $\Pi^-$
+quantifiers can appear anywhere in a derivation. For example, the inversion
+lemma \ref{lem:invert_a_Pi} would allow the type $[[A]]$ to be headed by any
+number of implicit binders before the explicit one.  This seems possible, but
+intricate, so we decided to forgo this extension for a simpler system. We may
+revisit this decision in future work.
 
 On the other hand, while we can contemplate this change for irrelevant
 quantification, we definitely cannot make an analogous change for coercion
-abstraction while preserving type safety. In particular, coercion abstractions
-can assume bogus equalities (like one between $[[Int]]$ and $[[Bool]]$) and
-these equalities can be used to type check a stuck program.
-Precisely because of the possible of hypothetical bogus
-equalities, we must suspend computation at coercion abstractions.
+abstraction because it would violate type safety. In particular, coercion
+abstractions can assume bogus equalities (like one between $[[Int]]$ and
+$[[Bool]]$) and these equalities can be used to type check a stuck program.
+% Precisely because of the possibility of hypothetical bogus equalities, we must
+% suspend computation at coercion abstractions.
 
 Previous work by \citet{cretin:phd} and \citet{Cretin@lics2014} introduced a
 calculus built around \emph{consistent} coercion abstraction. Their mechanism
 allows implicit abstraction over coercions, provided those coercions are shown
 instantiable. However, unlike the coercion abstraction used here, consistent
-coercion abstraction cannot be used to implement GADTs. Furthermore, GHC is
-careful during type inference to only introduce coercion abstraction at points
-where computation is already suspended, such as in the branches of case
-analysis.
+coercion abstraction cannot be used to implement GADTs.
+% Furthermore, GHC is
+% careful during type inference to only introduce coercion abstraction at points
+% where computation is already suspended, such as in the branches of case
+% analysis.
 
 \subsection{Variations on the annotated language}
 \label{sec:variations}
@@ -1736,12 +1727,13 @@ Second, note that we have made no efforts to compress the annotations required
 by \fc. It is likely that there are versions of the language that can omit
 some of these annotations. In particular, \emph{bidirectional type
   checking}~\cite{pierce:lti} often requires fewer annotations for terms in
-normal form.  Here, the balance is between code size and simplicity. GHC's
-optimizer must manipulate these typed terms; having simpler rules about where
-annotations are required makes this job easier. On the other hand, there are
-known situations where type annotations cause a significant blow up in code
-size, so it is worth exploring other
-options, such as rules proposed by ~\citet{scrap-your-type-applications}.
+normal form. Here, the balance is between code size (from a bidirectional
+system) and simplicity (from \fc). GHC's optimizer must manipulate these typed
+terms; having simpler rules about where annotations are required makes this
+job easier. On the other hand, there are known situations where type
+annotations cause a significant blow up in code size, so it is worth exploring
+other options, such as rules proposed by
+~\citet{scrap-your-type-applications}.
 
 % \item Variants (1) or (2) as described in Section~\ref{sec:fc-defeq}. We were
 %   fairly lax in our judgment for definitional equality in allowing the equated
@@ -1790,15 +1782,15 @@ proofs, plus another 13,000 lines of Coq generated by Ott and LNgen.  \scw{TODO:
 
 Most of our Coq development follows standard practice of proofs by induction
 over derivations represented with Coq inductive datatypes. Our proof that
-typechecking \fc is decidable required a different style of argument. In other
+type checking \fc is decidable required a different style of argument. In other
 words, we essentially implemented a type checker for \fc as a
 dependently-typed functional program in Coq; this function returns not only
 whether the input term type checks, but also a justification of its answer.
 If the term type checks, the checking function returns its type as well as a
 derivation for that type. Alternatively, if the term does not type check, then
-the checker returns a proof that there is no derivation, for any type.  We
-used Coq's \texttt{Program} feature to separate the computation of the type
-checker from the proof that it returns the correct result~\cite{sozeau:phd}.
+the checking function returns a proof that there is no derivation, for any type.  We
+used Coq's \texttt{Program} feature to separate the definition of the type
+checking function from the proof that it returns the correct result~\cite{sozeau:phd}.
 \ifsource\footnote{\url{fc_dec_fun:AnnTyping_dec}}\fi We took advantage of
 notations so that the definition of type checker more closely resembles a
 functional program.  This style of proof is convenient because the computation
@@ -1814,20 +1806,21 @@ required for type checking,\ifsource\footnote{\url{fc_dec_fun.v:fuel_tpg}}\fi
 and then showed that we could calculate that fuel from the size of the
 term~\cite{bove/capretta:general_rec}.\ifsource\footnote{\url{fc_dec.v:fuel_at}}\fi
 
-Proving termination was complicated for two reasons.  First, the style of
-defining the inference rules so that the typing context is checked in the
-leaves of the typing derivation (see, for example, \rref{An-Var,An-Star})
-means that termination metric is not a linear function of the size of the
-input term. Instead of following the rules exactly, we programmed the type
-checker to ensure the validity of the context whenever new assumptions were
-added.  Second, some typing premises in the rules are merely to access the
-types of subterms that are already known to be correct. To simplify the
-termination argument, we replaced these recursive calls to the typechecker
-with calls to an auxiliary function that calculates the type of an annotated
-term, assuming that the term has already been
-checked.\ifsource\footnote{\url{fc_get.v:get_tpg}}\fi Interestingly, these changes not only made the type
-checker more efficient and the termination argument more straightforward, but
-they also occasionally simplified the correctness argument.
+Proving termination was complicated for two reasons.  First, the running time
+of the algorithm that results from a syntax-directed reading of the \fc typing
+rules is not a linear function of the size of the input term. This is because
+these rules check the typing context in every leaf of the typing derivation
+(\rref{An-Var,An-Star,An-Fam}). Instead of following the rules exactly, we
+programmed the type checker to ensure the validity of the context whenever new
+assumptions were added and proved that this was equivalent.  Second, some
+typing premises in the rules are merely to access the types of subterms that
+are already known to be correct. To simplify the termination argument, we
+replaced these recursive calls to the typechecker with calls to an auxiliary
+function that calculates the type of an annotated term, assuming that the term
+has already been checked.\ifsource\footnote{\url{fc_get.v:get_tpg}}\fi
+Interestingly, these changes not only made the type checker more efficient and
+the termination argument more straightforward, but they also occasionally
+simplified the correctness argument.
 
 % After trying to use a classic, extrinsic proof style
 % (by mutual induction on the syntax), it became clear that this workflow
@@ -1990,12 +1983,13 @@ Other more minor technical improvements include:
 \item This system includes a signature for general recursive definitions
   (Section~\ref{sec:fimp-typing}), following Gundry. In contrast,
   Eisenberg only includes a $\mathsf{fix}$ term and Weirich et al.
-  reuses coercion assumptions for recursive definitions.  This latter approach
-  causes difficulty in a full-spectrum calculus.  For example, whether a term
-  is a value depends on whether there is some recursive definition for it in
-  the context. In contrast, our definition of parallel reduction automatically
-  unfolds recursive definitions, but ignores all other coercion
-  assumptions.
+  reuses coercion assumptions for recursive definitions.
+  % This latter approach
+  % causes difficulty in a full-spectrum calculus.  For example, whether a term
+  % is a value depends on whether there is some recursive definition for it in
+  % the context. In contrast, our definition of parallel reduction automatically
+  % unfolds recursive definitions, but ignores all other coercion
+  % assumptions.
 \item This system includes a separate definition of equality for propositions
   (unlike all prior work). As a result, it includes injectivity only where needed
   (Section~\ref{sec:props-not-types}).
@@ -2039,13 +2033,13 @@ type checking. However, their system is much less expressive: it lacks
 implicit quantification and any sort of propositional equality for first-class
 coercions.
 
-Many dependent type systems support irrelevant arguments. The specific
-treatment in this paper is derived in \fimp from \citet{Miquel:ICC} and in \fc
-from \citet{icc-star}. We chose this formalism because of the necessary
-machinery (free variable checks) need only appear in the rules involving
-irrelevant abstractions. However, this is not the only mechanism for enforcing
-irrelevance; we could have alternatively used the context to mark variables
-that are restricted to appear only in irrelevant
+In addition, many dependent type systems support irrelevant arguments. The
+specific treatment in this paper is derived in \fimp from \citet{Miquel:ICC}
+and in \fc from \citet{icc-star}. We chose this formalism because of the
+necessary machinery (free variable checks) need only appear in the rules
+involving irrelevant abstractions. However, this is not the only mechanism for
+enforcing irrelevance; we could have alternatively used the context to mark
+variables that are restricted to appear only in irrelevant
 locations~\cite{pfenning:irrelevance,brady:thesis,gundry:phd,eisenberg:phd}.
 
 \subsection{Intensional type theory}
@@ -2106,7 +2100,7 @@ Haskell. It was implemented as a new typechecker over an
 existing Haskell implementation, but unlike Dependent Haskell was not intended
 to be backwards compatible with Haskell. Furthermore, with this architecture,
 dependent types are only available at the source level---the implementation
-did not use a strongly typed core language for optimization. The type system
+did not use a strongly typed core language for optimization. In addition, the type system
 of Cayenne was derived from intensional type theory, so differs from that of D
 and DC. In particular, in Cayenne the kind $[[TYPE]]$ is stratified into a
 universe hierarchy. This ensures (a) type-level computation terminates
@@ -2116,10 +2110,10 @@ runtime. No other irrelevant arguments can be erased.
 More recent languages, based on intensional type theory, include
 Epigram~\cite{epigram}, Agda~\cite{norell-thesis}, and Idris~\cite{Idris}. Of
 these, Idris is the most advanced current language designed for practical
-dependently-typed programming. Because these languages are based on a
-different foundational type theory, their type systems differ from Dependent
+dependently-typed programming. Because these languages are based on
+intensional type theory, their type systems differ from Dependent
 Haskell, as mentioned above. On the other hand, as practical tools for
-programming with dependent types, these tools do support erasure of irrelevant
+programming with dependent types, they do support erasure of irrelevant
 information.
 
 \section{Conclusions and Future Work}
@@ -2128,8 +2122,8 @@ information.
 This paper presents two strongly coupled versions of a full-spectrum core
 calculus for dependent types including nontermination, irrelevant arguments
 and first class equality coercions. Although these calculi were designed with
-GHC in mind, we find the approach exciting in its own right as a new approach
-to dependently-typed programming.
+GHC in mind, we find this new approach to dependently-typed programming
+exciting in its own right.
 
 In future work, we plan to extend these calculi with more features of GHC,
 including recursive datatypes and pattern matching, and type system support
@@ -2164,7 +2158,8 @@ can add higher-inductive types to GHC.
   %% \grantnum[<url>]{<sponsorID>}{<number>} should be used to
   %% acknowledge financial support and will be used by metadata
   %% extraction tools.
-  Thanks to Simon Peyton Jones, Adam Gundry and Iavor Diatchki for feedback
+  Thanks to Simon Peyton Jones, Adam Gundry, Iavor Diatchki and Pritam
+  Choudhury for feedback
   and suggestions.
   This material is based upon work supported by the
   \grantsponsor{GS100000001}{National Science
