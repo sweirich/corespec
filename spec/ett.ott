@@ -636,6 +636,20 @@ Value A
 ----------- :: Path
 DataTy A T
 
+defn
+PathApply a b ::   :: PathApply :: 'PA_'
+by
+
+---------------------- :: Const
+PathApply T a1 = a1
+
+PathApply a a1 = a2
+---------------------------------------- :: App
+PathApply (a rho b) a1 = a2 rho b
+
+PathApply a a1 = a2
+---------------------------------------- :: CApp
+PathApply (a [g]) a1 = a2 [g]
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Definitions for consistency proof
@@ -844,13 +858,13 @@ a = b + x
 ----------------------------- :: Eta
 G ; D |- \+ x. a => b'
 
-% G ; D |- a => a'
-% Path K a'
-% G ; D |- brs => brs'
-% K => a1 in brs'
-% ------------------------------------------------------- :: Match
-% G ; D |- match a with brs => match a' with brs'
-
+G ; D |- a => a'
+Path K a'
+G ; D |- brs => brs'
+K => a1 in brs'
+PathApply a' a1 = a2
+------------------------------------------------------- :: Match
+G ; D |- match a with brs => a2
 
 G ; D |- a => a'
 % UGH need a new judgement
