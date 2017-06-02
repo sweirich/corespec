@@ -299,7 +299,7 @@ numbers to use as the index of a vector, we must define a type-level function,
 called a \emph{type family} in GHC~\cite{chak1}.
 Regular Haskell functions are not applicable to type-level data.
 Indeed, programmers must duplicate their definitions if they would like them
-to be available at both compile-time and runtime.
+to be available at both compiletime and runtime.
 
 However, Dependent Haskell makes no such distinctions. Instead,
 \verb|Vec| may be written exactly as above---but the meaning is that elements
@@ -381,7 +381,7 @@ well-typed program in \fc that erases to it (see Section~\ref{sec:fc}).
 
 The design of D exchanges decidable type checking for a simpler specification,
 as we show in Sections~\ref{sec:implicit-language} and~\ref{sec:fc}.  This
-simplicity is due to that fact that \fimp does not need to do as much
+simplicity is due to the fact that \fimp does not need to do as much
 bookkeeping as \fc; only computationally relevant information appears in D
 terms. As a result, the proofs of key metatheoretic properties, such as the
 consistency of definitional equality, can be simplified. Furthermore, we can
@@ -432,7 +432,7 @@ the important result for this paper is \emph{type
 do not get stuck. In contrast, terminating dependent type theories support the
 property of \emph{logical consistency}, which shows that the type system
 includes uninhabited types. In this paper, our proof of type soundness also
-requires a property called consistency, but it not the same property as
+requires a property called consistency, but it is not the same property as
 logical consistency above. In this context, consistency means that
 definitional equality (in \fimp) and explicit coercion proofs (in \fc) cannot
 equate two types with different head forms (see
@@ -478,7 +478,7 @@ However, the meaning of this program is different here---remember that
 \verb|n| is an invisible and irrelevant \emph{term} argument in Dependent Haskell,
 not a promoted datatype.
 
-The \verb|zip| function type-checks because in the first branch \verb|n| is
+The \verb|zip| function type checks because in the first branch \verb|n| is
 equal to zero, so \verb|Nil| has a type equal to \verb|Vec a n|. In the second
 branch, when \verb|n| is equal to \verb|S m|, then the result of the recursive
 call has type \verb|Vec a m|, so the result type of the branch is
@@ -772,13 +772,13 @@ is well-formed.
   : [[ :concrete: all - x : TYPE -> ( x -> x ) -> x ]] \]
 \end{lemma}
 
-However, outside of the proof of wellformedness, our Coq development treats
-the definition of $[[toplevel]]$ opaquely.  This means that alternatively
-definition for $[[toplevel]]$ can be supplied, as long as they are
-well-formed.  For example, recursive definitions could be directly defined
-directly as part of thid top-level signature. Furthermore, because there is no
+However, outside of the proof of well-formedness, our Coq development treats
+the definition of $[[toplevel]]$ opaquely.  This means that alternative
+definitions for $[[toplevel]]$ can be supplied, as long as they are
+well-formed.  For example, recursive definitions could be defined
+directly as part of this top-level signature. Furthermore, because there is no
 inherent ordering on signatures, these recursive definitions may be mutually
-defined and may be induction-recursive~\cite{induction-recursion}.
+defined and may be inductive-recursive~\cite{induction-recursion}.
 
 To support GADTs this language includes \emph{coercion abstractions}, written
 $[[/\c.a]]$.  This term provides the ability for an expression $[[a]]$ to be
@@ -1152,7 +1152,7 @@ about the typing judgment below, but analogues hold for the first six judgment
 forms shown in Figure~\ref{fig:judgments}.
 
 First, typing is decidable in \fc, and annotations nail down all sources of
-ambiguity in the typing relation, making type-checking fully syntax directed.
+ambiguity in the typing relation, making type checking fully syntax directed.
 
 \begin{lemma}[Decidable typing\ifsource\footnote{\url{fc_dec.v:FC_typechecking_decidable}}\fi]
   Given $[[G]]$ and $[[a]]$, it is decidable whether there exists some $[[A]]$
@@ -1367,10 +1367,10 @@ The congruence rule for coercion abstraction types, \rref{An-CPiCong} is
 similarly asymmetric. This rule motivates the inclusion of \rref{An-IsoSym},
 a symmetry coercion between props. As in \fimp, this rule (like reflexivity and transitivity) is derivable
 from the analogous rules for type equality. However, we need to refer to
-symmetry coercions in \rref{An-CPiCong,An-CAbsCong} so it is convenient to
+symmetry coercions in \rref{An-CPiCong,An-CAbsCong}, so it is convenient to
 have syntax for it available. Note that this rule is somewhat different from
 prior work because we lack injectivity for
-equated types in propositions. However, this version is more parallel to rules
+equated types in propositions. However, this version is more parallel to
 \rref{An-PiCong,An-AbsCong}.
 
 There is also a subtle issue related to \rref{An-CAbsCong}, the congruence rule for
@@ -1391,10 +1391,10 @@ coercions. This rule will equate them as long as their types are coercible.
 (Remember that we do not want to equate terms such as $[[\+x:Int.x]]$ and
 $[[\+x:Bool.x]]$ that are erasure equivalent but do not have coercible types.)
 
-Because coercions are do not appear in \fimp, they should never play a role in
+Because coercions do not appear in \fimp, they should never play a role in
 equality. As a result, we have a form of ``propositional irrelevance'' for coercions.
 Therefore, we never need to show that two coercions $[[g1]]$ and $[[g2]]$
-that appear in terms are equal to eachother---see for example \rref{An-CApp}.
+that appear in terms are equal to each other---see for example \rref{An-CApp}.
 Furthermore, \Rref{An-EraseEq} provides \emph{coherence} for our
 language---uses of coercion proofs (i.e. $[[a |> g]]$) do not interfere with
 equality. Prior work also include similar reasoning~\cite{nokinds,gundry:phd},
@@ -1764,7 +1764,7 @@ Most of our Coq development follows standard practice of proofs by induction
 over derivations represented with Coq inductive datatypes. Our proof that
 typechecking \fc is decidable required a different style of argument. In other
 words, we essentially implemented a type checker for \fc as a
-dependently-typed functional program Coq; this function returns not only
+dependently-typed functional program in Coq; this function returns not only
 whether the input term type checks, but also a justification of its answer.
 If the term type checks, the checking function returns its type as well as a
 derivation for that type. Alternatively, if the term does not type check, then
@@ -1806,7 +1806,7 @@ they also occasionally simplified the correctness argument.
 % was not suited for that kind of proofs. We switched to a more dependently-typed
 % (intrinsic)
 % style, as advocated for instance by Adam Chlipala:
-% we wrote the various type checking functions\footnote{Type-checking,
+% we wrote the various type checking functions\footnote{Type checking,
 % proposition-checking, isomorphism-checking, context-wellformedness checking,
 % proposition-wellformedness checking} so that they returned a \emph{justified}
 % answer. For instance, the type checking function doesn't merely return a
@@ -1821,7 +1821,7 @@ they also occasionally simplified the correctness argument.
 % of the burden associated with usual intrinsic proofs; in particular, we can leave
 % proof placeholders and take care of the corresponding proofs \emph{after} the
 % definition of the functions. This is
-% further enhanced by the use of notations, making the type-checking code decently
+% further enhanced by the use of notations, making the type checking code decently
 % readable and very similar to what one would write in an actual (simple) compiler.
 
 % Finally, an important challenge happened with the proof of termination - as
@@ -1829,7 +1829,7 @@ they also occasionally simplified the correctness argument.
 % is not obviously terminating, we first used a natural number as "fuel";
 % but proving the existence, for any term (and coercion, etc), of a natural number
 % large enough, proved really difficult. This forced us, throughout this entire process
-% to rewrite the type-checkers from a very "rule-like" style - where we implement
+% to rewrite the type checkers from a very "rule-like" style - where we implement
 % exactly (and explicitly) the rules of the system - to a much more natural style - which doesn't
 % \emph{obviously} decides the same type system. The latter is much closer to what
 % would be implemented in a compiler; most prominently, we do not need to check the validity
@@ -2097,11 +2097,11 @@ information.
 \section{Conclusions and Future Work}
 \label{sec:extensions}
 
-This paper presents two strongly coupled versions of a full-spectrum core calculus for
-dependent types including nontermination, irrelevant arguments and first class
-equality coercions. Although these calculi were designed with GHC in mind, we
-find their approach exciting in its own right as a new approach to
-dependently-typed programming.
+This paper presents two strongly coupled versions of a full-spectrum core
+calculus for dependent types including nontermination, irrelevant arguments
+and first class equality coercions. Although these calculi were designed with
+GHC in mind, we find the approach exciting in its own right as a new approach
+to dependently-typed programming.
 
 In future work, we plan to extend these calculi with more features of GHC,
 including recursive datatypes and pattern matching, and type system support
