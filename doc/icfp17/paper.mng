@@ -2069,13 +2069,12 @@ theories:
 
 \item \emph{Syntactic type theory.}  Type theories are often extended through
   the use of axioms. For example, adding the law of the excluded middle
-  produces a classical type theory, whereas adding the univalence axiom leads
-  to homotopy type theory. We include axioms for type constructor
+  produces a classical type theory. We include axioms for type constructor
   injectivity, which is sometimes referred to as ``syntactic'' type
-  theory. However, syntactic, classical and homotopy type theories are known
-  to be mutually inconsistent: type theories used as logical foundations must
-  choose only one of these extensions. Historically, syntactic type theories
-  have not been as well studied as classical and homotopy type theories.
+  theory. However, syntactic type theories are known to be inconsistent with
+  classical type theory, as well as other
+  extensions~\cite{hur2010,miquel2010}. As a result, they have not been as
+  well studied.
 
 \item \emph{Separation between terms and coercions.} Because the term language
   may not terminate, \fc coercions come from a separate, consistent language
