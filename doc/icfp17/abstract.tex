@@ -7,6 +7,7 @@ explicitly-typed analogue, suitable for implementation in GHC. All of our
 results---chiefly, type safety, along with theorems that relate these two
 languages---have been formalized using the Coq proof assistant. Because our
 work is backwards compatible with Haskell, our type safety proof holds in the
-presence of nonterminating computation. As a result, unlike other
-full-spectrum dependently-typed languages, such as Coq, Agda or Idris,
-Haskell's term language does not correspond to a consistent logic.
+presence of nonterminating computation. However, unlike other full-spectrum
+dependently-typed languages, such as Coq, Agda or Idris, because of this
+nontermination, Haskell's term language does not correspond to a consistent
+logic.

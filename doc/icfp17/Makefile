@@ -24,7 +24,7 @@ ett-rules.tex: $(OTTFILES)
           -tex_wrap false \
           -tex_show_meta false
 
-%.pdf : paper.tex
+%.pdf : paper.tex abstract.tex Makefile
 	latexmk -bibtex -pdf paper.tex
 
 paperclean:
