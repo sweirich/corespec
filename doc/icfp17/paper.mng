@@ -421,7 +421,8 @@ Our final contribution is a \textbf{mechanization of all of the metatheory of
   this paper} using the Coq proof assistant~\cite{coq}. \ifanonymous These
 proofs are available to reviewers as supplementary material. \fi \ifsource
 These proofs are available
-online.\footnote{\url{https://github.com/sweirich/corespec}}\fi  This
+online.\footnote{At \url{https://github.com/sweirich/corespec} and in the ACM
+  digital library.}\fi  This
 contribution is significant because these proofs require a careful analysis of
 the allowable interactions between dependent types, coercion abstraction,
 nontermination and irrelevance. This combination is hard to get right and at
@@ -548,7 +549,7 @@ square brackets. These arguments include the datatype parameters (\verb|n| and
 The impossible cases in this example are marked with explicit proofs of
 contradiction, in this case that \verb|(O ~ S m)|. Finally, in the recursive
 call, the type of \verb|ys| must be coerced from \verb|Vec b m2| to
-\verb |Vec b m1| using an explicit proof that these two types are equal.
+\verb|Vec b m1| using an explicit proof that these two types are equal.
 
 Although the explicit arguments and coercions simplify type checking, they
 obscure the meaning of terms like \verb|zip|.  Furthermore, there are many
