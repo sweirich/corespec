@@ -31,8 +31,8 @@ indexvar index, i ::=
 grammar
 
 role, R :: '' ::= {{ com Role }}
-   | Nom  ::    :: Nominal
-   | Rep  ::    :: Representational
+   | Nom  ::    :: Nom
+   | Rep  ::    :: Rep
 
 relflag, rho {{ tex \rho }} :: '' ::= {{ com relevance flag }}
    | +             ::   :: Rel
@@ -233,10 +233,10 @@ grammar
 
 sig_sort :: '' ::= {{ com signature classifier }}
    | Cs A            ::    :: Cs
-   | Ax a A          ::    :: Ax
+   | Ax a A R        ::    :: Ax
 
 sort :: '' ::= {{ com binding classifier }}
-   | Tm A             ::   :: Tm
+   | Tm A R           ::   :: Tm
    | Co phi           ::   :: Co
 
 
@@ -413,13 +413,13 @@ Fixpoint erase_tm (a : tm) : tm :=
    | a_Star    => a_Star
    | a_Var_b n => a_Var_b n
    | a_Var_f x => a_Var_f x
-   | a_Abs rho A b => a_UAbs rho (erase_tm b)
+   | a_Abs rho A R b => a_UAbs rho (erase_tm b)
    | a_UAbs rho b => a_UAbs rho (erase_tm b)
    | a_App a Rel b => a_App (erase_tm a) Rel (erase_tm b)
    | a_App a Irrel b => a_App (erase_tm a) Irrel a_Bullet
    | a_Const T => a_Const T
    | a_Fam F => a_Fam F
-   | a_Pi rho A B => a_Pi rho (erase_tm A) (erase_tm B)
+   | a_Pi rho A R B => a_Pi rho (erase_tm A) R (erase_tm B)
    | a_Conv a _ => erase_tm a
    | a_CPi phi B => a_CPi (erase_constraint phi) (erase_tm B)
    | a_CAbs phi b => a_UCAbs (erase_tm b)
@@ -436,12 +436,12 @@ with erase_brs (x : brs) : brs :=
    end
 with erase_constraint (phi : constraint) : constraint :=
    match phi with
-   | Eq A B A1 => Eq (erase_tm A) (erase_tm B) (erase_tm A1)
+   | Eq A B A1 R => Eq (erase_tm A) (erase_tm B) (erase_tm A1) R
    end.
 
 Definition erase_sort s :=
  match s with
- | Tm a => Tm (erase_tm a)
+ | Tm a R => Tm (erase_tm a) R
  | Co p => Co (erase_constraint p)
 end.
 
@@ -449,7 +449,7 @@ end.
 Definition erase_csort s :=
  match s with
  | Cs a   => Cs (erase_tm a)
- | Ax a A => Ax (erase_tm a) (erase_tm A)
+ | Ax a A R => Ax (erase_tm a) (erase_tm A) R
 end.
 
 Definition erase_context G := map erase_sort G.
@@ -462,18 +462,18 @@ Definition Fix : atom.
 Qed.
 
 Definition FixDef : tm :=
-  (a_Abs Irrel a_Star
-         (a_Abs Rel (a_Pi Rel (a_Var_b 0) (a_Var_b 1))
+  (a_Abs Irrel a_Star Rep
+         (a_Abs Rel (a_Pi Rel (a_Var_b 0) Rep (a_Var_b 1)) Rep
                 (a_App (a_Var_b 0) Rel
                        (a_App (a_App (a_Fam Fix) Irrel (a_Var_b 1)) Rel (a_Var_b 0))))).
 
 Definition FixTy : tm :=
-  a_Pi Irrel a_Star
-       (a_Pi Rel (a_Pi Rel (a_Var_b 0) (a_Var_b 1))
+  a_Pi Irrel a_Star Rep
+       (a_Pi Rel (a_Pi Rel (a_Var_b 0) Rep (a_Var_b 1)) Rep
              (a_Var_b 1)).
 
 
-Definition an_toplevel : sig := Fix ~ Ax FixDef FixTy.
+Definition an_toplevel : sig := Fix ~ Ax FixDef FixTy Nom.
 
 Definition toplevel : sig := erase_sig an_toplevel.
 
