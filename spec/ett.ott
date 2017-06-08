@@ -85,7 +85,7 @@ tm, a, b, v, w, A, B :: 'a_' ::= {{ com types and kinds }}
    %% this is a hack for when a substitution {x/x} is necessary for the
    %% locally nameless backend to generate the correct code, but we don't
    %% want this substitution to show in the tex output
-   
+
    | a {{{ b / x }}}  :: S :: SecretSubst
      {{ coq (open_tm_wrt_tm [[x a]] [[b]]) }}
      {{ tex [[a]] }}
@@ -462,14 +462,14 @@ Definition Fix : atom.
 Qed.
 
 Definition FixDef : tm :=
-  (a_Abs Irrel a_Star Rep
-         (a_Abs Rel (a_Pi Rel (a_Var_b 0) Rep (a_Var_b 1)) Rep
+  (a_Abs Irrel a_Star Nom
+         (a_Abs Rel (a_Pi Rel (a_Var_b 0) Nom (a_Var_b 1)) Nom
                 (a_App (a_Var_b 0) Rel
                        (a_App (a_App (a_Fam Fix) Irrel (a_Var_b 1)) Rel (a_Var_b 0))))).
 
 Definition FixTy : tm :=
-  a_Pi Irrel a_Star Rep
-       (a_Pi Rel (a_Pi Rel (a_Var_b 0) Rep (a_Var_b 1)) Rep
+  a_Pi Irrel a_Star Nom
+       (a_Pi Rel (a_Pi Rel (a_Var_b 0) Nom (a_Var_b 1)) Nom
              (a_Var_b 1)).
 
 

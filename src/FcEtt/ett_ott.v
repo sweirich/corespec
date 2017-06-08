@@ -775,14 +775,14 @@ Definition Fix : atom.
 Qed.
 
 Definition FixDef : tm :=
-  (a_Abs Irrel a_Star Rep
-         (a_Abs Rel (a_Pi Rel (a_Var_b 0) Rep (a_Var_b 1)) Rep
+  (a_Abs Irrel a_Star Nom
+         (a_Abs Rel (a_Pi Rel (a_Var_b 0) Nom (a_Var_b 1)) Nom
                 (a_App (a_Var_b 0) Rel
                        (a_App (a_App (a_Fam Fix) Irrel (a_Var_b 1)) Rel (a_Var_b 0))))).
 
 Definition FixTy : tm :=
-  a_Pi Irrel a_Star Rep
-       (a_Pi Rel (a_Pi Rel (a_Var_b 0) Rep (a_Var_b 1)) Rep
+  a_Pi Irrel a_Star Nom
+       (a_Pi Rel (a_Pi Rel (a_Var_b 0) Nom (a_Var_b 1)) Nom
              (a_Var_b 1)).
 
 
