@@ -9,6 +9,12 @@ metavar tmvar, x, y, f, m, n ::=
   {{ com variables }}
   {{ lex alphanum }}
 
+
+metavar dimvar, i, j ::=
+  {{ repr-locally-nameless }}
+  {{ com dimension variables }}
+  {{ lex alphanum }}
+
 metavar covar, c ::=
   {{ repr-locally-nameless }}
   {{ com coercion variables }}
@@ -22,8 +28,8 @@ metavar const, T, K ::= {{ coq atom }}
 metavar tyfam, F ::= {{ coq atom }}
   {{ lex Alphanum }}
 
-indexvar index, i ::=
-  {{ tex \mathit{[[index]]} }} {{ com indices }} {{ coq nat }}
+% indexvar index, i ::=
+%   {{ tex \mathit{[[index]]} }} {{ com indices }} {{ coq nat }}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% GRAMMAR
@@ -124,6 +130,21 @@ tm, a, b, v, w, A, B :: 'a_' ::= {{ com types and kinds }}
      {{ tex \lambda [[x]]\!:\![[A]].[[a]] }}
    | all x : A -> B   :: S :: RelPi
      {{ coq (a_Pi  Rel [[A]] [[B]]) }}
+
+
+endpoint, e :: 'endp_' ::= {{ com endpoints }}
+  | ez                      ::   :: 0                      {{ tex 0 }} % TODO OTHER REPR?
+  | eo                      ::   :: 1                      {{ tex 1 }}
+
+
+dtm, d :: 'dtm_' ::= {{ com dimension terms }}
+  | i                       ::   :: Var
+
+  | e                       ::   :: Endpoint
+
+  | 1 - r                   ::   :: Inv
+
+
 
 %% Currently unused: replace with
 brs  :: 'br_' ::=    {{ com case branches }}
