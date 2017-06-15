@@ -43,7 +43,7 @@ Proof.
     econstructor; eauto.
     instantiate (1 := L \u singleton x) => x0 h0.
     rewrite tm_subst_tm_tm_open_tm_wrt_tm_var; auto.
-  - intros L A a l c H b x H0.
+  - intros L A R a l c H b x H0.
     econstructor; eauto.
     apply tm_subst_tm_tm_lc_tm; auto.
     instantiate (1 := L \u singleton x) => x0 h0.
@@ -78,11 +78,11 @@ Proof.
   eapply Value_tm_subst_tm_tm; auto.
 Qed.
 
-Lemma Value_AbsIrrel_exists : ∀ x (A a : tm),
+Lemma Value_AbsIrrel_exists : ∀ x (A a : tm) R,
     x `notin` fv_tm a
     -> lc_tm A
     → (CoercedValue (open_tm_wrt_tm a (a_Var_f x)))
-    → Value (a_Abs Irrel A a).
+    → Value (a_Abs Irrel A R a).
 Proof.
   intros.
   eapply (Value_AbsIrrel ({{x}})); eauto.

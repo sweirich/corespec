@@ -22,9 +22,9 @@ Hint Rewrite tm_subst_tm_tm_var co_subst_co_co_var.
 (* Automatically apply the IH of typing_unique on the specified tm/coercion *)
 Ltac apply_ind a :=
   match goal with
-  | H : (forall A2 : tm, AnnTyping ?G a A2 -> ?B = A2), Y : AnnTyping ?G a ?C |- _  =>
+  | H : (forall (A2 : tm), AnnTyping ?G a A2 ?R -> ?B = A2), Y : AnnTyping ?G a ?C ?R |- _  =>
     apply H in Y; inversion Y
-  | H : forall A B, AnnDefEq ?G ?D a A B -> ?A1 = A /\ ?B1 = B, Y : AnnDefEq ?G ?D a ?A2 ?B2 |- _ =>
+  | H : forall A B, AnnDefEq ?G ?D a A B ?R -> ?A1 = A /\ ?B1 = B, Y : AnnDefEq ?G ?D a ?A2 ?B2 ?R |- _ =>
     apply H in Y; split_hyp; subst
   | H : ∀ q1 q2 : constraint, AnnIso ?G ?D a q1 q2 → ?phi1 = q1 ∧ ?phi2 = q2,
     Y : AnnIso ?G ?D a ?q1 ?q2 |- _ =>
@@ -37,19 +37,19 @@ Ltac apply_ind_var c a :=
       match goal with
         | H7 : ∀ c : atom,
             ¬ c `in` ?L0
-                   → AnnTyping ?G (open_tm_wrt_co a (g_Var_f c)) ?B,
+                   → AnnTyping ?G (open_tm_wrt_co a (g_Var_f c)) ?B ?R,
           H0 : ∀ c : atom,
             ¬ c `in` ?L
              → ∀ A2 : tm,
-          AnnTyping ?G (open_tm_wrt_co a (g_Var_f c)) A2 → ?C = A2 |- _ =>
+          AnnTyping ?G (open_tm_wrt_co a (g_Var_f c)) A2 ?R → ?C = A2 |- _ =>
   specialize H7 with c; apply H0 in H7; eauto
        | H8 : ∀ x : atom,
        ¬ x `in` ?L0
-       → AnnDefEq ?G ?D (open_co_wrt_tm a (a_Var_f x)) ?B0 ?B5,
+       → AnnDefEq ?G ?D (open_co_wrt_tm a (a_Var_f x)) ?B0 ?B5 ?R,
         H0 : ∀ x : atom,
        ¬ x `in` ?L
        → ∀ a1 b1 : tm,
-         AnnDefEq ?G ?D (open_co_wrt_tm a (a_Var_f x)) a1 b1
+         AnnDefEq ?G ?D (open_co_wrt_tm a (a_Var_f x)) a1 b1 ?R
          → ?B1 = a1 ∧ ?B2  = b1 |- _ =>
   specialize H8 with c; edestruct (H0 c); eauto
   end.
@@ -86,29 +86,29 @@ Ltac resolve_binds_unique :=
 
 
 Lemma unique_mutual :
-  (forall G a A1, AnnTyping G a A1 -> forall {A2}, AnnTyping G a A2 -> A1 = A2) /\
+  (forall G a A1 R, AnnTyping G a A1 R -> forall {A2}, AnnTyping G a A2 R -> A1 = A2) /\
   (forall G phi, AnnPropWff G phi -> True) /\
   (forall G D g p1 p2, AnnIso G D g p1 p2 -> forall {q1 q2}, AnnIso G D g q1 q2 -> p1 = q1 /\ p2 = q2) /\
-  (forall G D g a b, AnnDefEq G D g a b -> forall {a1 b1}, AnnDefEq G D g a1 b1 -> a = a1 /\ b = b1) /\
+  (forall G D g a b R, AnnDefEq G D g a b R -> forall {a1 b1}, AnnDefEq G D g a1 b1 R -> a = a1 /\ b = b1) /\
   (forall G, AnnCtx G -> True).
 Proof.
-  apply ann_typing_wff_iso_defeq_mutual.
+  apply ann_typing_wff_iso_defeq_mutual. 
   all: intros. all: try inversion H1; subst; try solve [try inversion H0; subst; basic_solve'; subst].
   - autotype.
   - autotype. f_equal.
     pick fresh x.
-    eapply open_tm_wrt_tm_inj with (x1 := x); auto.
-  - apply_ind b. done.
+    eapply open_tm_wrt_tm_inj with (x1 := x); auto. 
+  - apply_ind b. done. 
   - autotype.
     apply_ind a. firstorder.
   - f_equal.
     pick fresh c.
     apply_ind_var c a.
-    eapply open_tm_wrt_co_inj; autotype.
+    eapply open_tm_wrt_co_inj; autotype. 
   - apply_ind a1. done.
   - move: (binds_unique _ _ _ _ _ b H4 uniq_an_toplevel) => E. inversion E. auto.
   - autotype; apply_ind g1; apply_ind g2; autotype.
-  - autotype; apply_ind g; autotype.
+  - autotype. apply_ind g. autotype. 
   - ann_invert_clear. apply_ind g. auto.
   - repeat ann_invert_clear. apply_ind g. auto.
   - ann_invert_clear.
@@ -129,7 +129,7 @@ Proof.
     all: fsetdec_fast.
 
   - (* abs_cong *) (* FIXME: could be prettier *)
-    inversion H4.
+    inversion H4. subst.
     apply_ind g1.
     pick fresh x.
     have xL : x `notin` L by fsetdec.
@@ -144,14 +144,14 @@ Proof.
     erewrite (H10 x xL0).
     erewrite (e x xL).
     congruence.
-    all: try fsetdec_fast.
+    all: try fsetdec_fast. 
   - repeat ann_invert_clear.
     apply_ind g1.
     apply_ind g2.
-    auto.
+    auto. admit.
   - repeat ann_invert_clear.
-    apply_ind g.
-    split; congruence.
+    apply_ind g. admit. (*
+    split; congruence. *)
   - repeat ann_invert_clear.
     (* apply_ind seems to have a problem on this one *)
     move: (H0 _ _ H7) => [-> ->].

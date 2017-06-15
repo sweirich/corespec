@@ -54,7 +54,7 @@ Proof.
   - move: (toplevel_closed H) => h.
     simpl.
     rewrite tm_subst_tm_tm_fresh_eq. eauto.
-    move: (first context_fv_mutual _ _ _ h) => Fr. simpl in Fr.
+    move: (first context_fv_mutual _ _ _ _ h) => Fr. simpl in Fr.
     fsetdec.
 Qed.
 
@@ -75,6 +75,6 @@ Proof.
   - move: (toplevel_closed H) => h.
     simpl.
     rewrite co_subst_co_tm_fresh_eq. eauto.
-    move: (first context_fv_mutual _ _ _ h) => Fr. simpl in Fr.
+    move: (first context_fv_mutual _ _ _ _ h) => Fr. simpl in Fr.
     fsetdec.
 Qed.

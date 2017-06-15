@@ -56,6 +56,7 @@ Ltac find_eq_rew_clear :=
     | [ eq : forall t1 t2 t3 t4,       _ = _ |- _ ] => rewrite_and_clear eq
     | [ eq : forall t1 t2 t3 t4 t5,    _ = _ |- _ ] => rewrite_and_clear eq
     | [ eq : forall t1 t2 t3 t4 t5 t6, _ = _ |- _ ] => rewrite_and_clear eq
+
   end.
 
 
@@ -164,7 +165,7 @@ Ltac find_invertible_hyps :=
 
     (* Key step: invert typing hyps *)
     (* TODO: do we want to keep the original hyp - wrap - or clear it? *)
-    | [ H : AnnTyping _ (_ _) _ |- _ ] => inversion H; wrap_hyp H
+    | [ H : AnnTyping _ (_ _) _ _ |- _ ] => inversion H; wrap_hyp H
 
   (* TODO: rhochecks, deq as well *)
   (* TODO *)
@@ -304,7 +305,6 @@ Ltac autotype :=
     | [ |- ?C _ _ _ _ _ _ _ _ _ _ _ _   = ?C _ _ _ _ _ _ _ _ _ _ _ _   ] => prove_eq_same_head
     | [ |- ?C _ _ _ _ _ _ _ _ _ _ _ _ _ = ?C _ _ _ _ _ _ _ _ _ _ _ _ _ ] => prove_eq_same_head
 
-
     | _ => try done; basic_solve; fail 0
 
 
@@ -313,8 +313,8 @@ Ltac autotype :=
 
     (* FIXME: need to backtrack if that doesn't work *)
     (* FIXME: have a "pre" or so *)
-    | [ |- AnnTyping _   (_ _) _   ] => econstructor; pcess_hyps
-    | [ |- AnnDefEq  _ _ (_ _) _ _ ] => econstructor; pcess_hyps
+    | [ |- AnnTyping _   (_ _) _ _  ] => econstructor; pcess_hyps
+    | [ |- AnnDefEq  _ _ (_ _) _ _ _ ] => econstructor; pcess_hyps
     | [ |- AnnIso    _ _ (_ _) _ _ ] => econstructor; pcess_hyps
   end.
 

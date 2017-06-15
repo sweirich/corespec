@@ -49,7 +49,7 @@ Ltac erased_pick_fresh x :=
     [ |- erased_tm ?s ] =>
     let v := match s with
              | a_UAbs _ _  => erased_a_Abs
-             | a_Pi _ _ _  => erased_a_Pi
+             | a_Pi _ _ _ _ => erased_a_Pi
              | a_CPi _ _   => erased_a_CPi
              | a_UCAbs _   => erased_a_CAbs
              end
@@ -62,7 +62,7 @@ Ltac erased_inversion :=
     inversion H; subst; clear H
   | [H : erased_tm (a_App _ _ _)|- _ ] =>
     inversion H; subst; clear H
-  | [H : erased_tm (a_Pi _ _ _)|- _ ] =>
+  | [H : erased_tm (a_Pi _ _ _ _)|- _ ] =>
     inversion H; subst; clear H
   | [H : erased_tm (a_CPi _ _)|- _ ] =>
     inversion H; subst; clear H
@@ -88,7 +88,7 @@ Lemma erased_tm_erase_mutual :
   (forall a, lc_tm a -> erased_tm (erase a))
   /\ (forall a, lc_brs a -> True)
   /\ (forall a, lc_co a -> True)
-  /\ (forall phi, lc_constraint phi -> forall a b A, phi = (Eq a b A) ->
+  /\ (forall phi, lc_constraint phi -> forall a b A R, phi = (Eq a b A R) ->
                                          erased_tm (erase a) /\ erased_tm (erase b)
                                          /\ erased_tm (erase A)).
 
@@ -96,8 +96,7 @@ Proof.
   apply lc_tm_lc_brs_lc_co_lc_constraint_mutind; intros; simpl; eauto.
   all: try solve [ try (destruct rho); simpl; eauto].
   all: try solve [erased_case].
-
-  - destruct phi. destruct (H _ _ _ eq_refl) as (h0 & h1 & h2). simpl.
+  - destruct phi. destruct (H _ _ _ _ eq_refl) as (h0 & h1 & h2). simpl.
     erased_case.
   - inversion H2. subst. tauto.
 Qed.
@@ -113,8 +112,8 @@ Hint Resolve erased_tm_erase : erased.
 
 
 Inductive erased_sort : sort -> Prop :=
-| erased_Tm : forall a, erased_tm a -> erased_sort (Tm a)
-| erased_Co : forall a b A, erased_tm a -> erased_tm b -> erased_tm A -> erased_sort (Co (Eq a b A)).
+| erased_Tm : forall a R, erased_tm a -> erased_sort (Tm a R)
+| erased_Co : forall a b A R, erased_tm a -> erased_tm b -> erased_tm A -> erased_sort (Co (Eq a b A R)).
 
 (* Check Forall_forall FIXME:?? *)
 
@@ -133,7 +132,7 @@ Hint Resolve erased_lc : lc.
 
 Lemma subst_tm_erased : forall x b, erased_tm b -> forall a , erased_tm a -> erased_tm (tm_subst_tm_tm b x a).
 Proof.
-  intros x b Eb a Ea. induction Ea; simpl; intros; eauto 2.
+  intros x b Eb a Ea. induction Ea; simpl; intros; eauto 2. 
   all: try solve [erased_pick_fresh x0; autorewrite with subst_open_var; eauto using erased_lc].
   destruct eq_dec; eauto.
 Qed.
@@ -169,22 +168,23 @@ Qed.
 Hint Resolve Par_lc1 Par_lc2 : lc.
 
 Lemma typing_erased_mutual:
-    (forall G b A, Typing G b A -> erased_tm b) /\
+    (forall G b A R, Typing G b A R -> erased_tm b) /\
     (forall G0 phi (H : PropWff G0 phi),
-        forall A B T, phi = Eq A B T -> erased_tm A /\ erased_tm B /\ erased_tm T) /\
+        forall A B T R, phi = Eq A B T R -> erased_tm A /\ erased_tm B /\ erased_tm T) /\
      (forall G0 D p1 p2 (H : Iso G0 D p1 p2), True ) /\
-     (forall G0 D A B T (H : DefEq G0 D A B T), True) /\
+     (forall G0 D A B T R (H : DefEq G0 D A B T R), True) /\
      (forall G0 (H : Ctx G0), True).
 Proof.
   apply typing_wff_iso_defeq_mutual; intros; repeat split; split_hyp; subst; simpl; auto.
   all : try solve [inversion H2; subst; auto].
   all : try solve [econstructor; eauto].
   - destruct phi.
-    apply (@erased_a_CPi L); try solve [apply (H0 a b A); auto]; auto.
+    apply (@erased_a_CPi L); try solve [apply (H0 a b A); auto]; auto;
+    pose H2 := H0 a b A R0 eq_refl; inversion H2 as [H21 [H22 H23]]; assumption.
 Qed.
 
 
-Lemma Typing_erased: forall G b A, Typing G b A -> erased_tm b.
+Lemma Typing_erased: forall G b A R, Typing G b A R -> erased_tm b.
 Proof.
   apply typing_erased_mutual.
 Qed.
@@ -192,10 +192,10 @@ Qed.
 Hint Resolve Typing_erased : erased.
 
 Lemma typing_erased_type_mutual:
-    (forall G b A, Typing G b A -> erased_tm A) /\
+    (forall G b A R, Typing G b A R -> erased_tm A) /\
     (forall G0 phi (H : PropWff G0 phi), True) /\
      (forall G0 D p1 p2 (H : Iso G0 D p1 p2), True ) /\
-     (forall G0 D A B T (H : DefEq G0 D A B T), True) /\
+     (forall G0 D A B T R (H : DefEq G0 D A B T R), True) /\
      (forall G0 (H : Ctx G0), erased_context G0).
 Proof.
   apply typing_wff_iso_defeq_mutual; intros; repeat split; split_hyp; subst; simpl; auto.
@@ -222,18 +222,18 @@ Proof.
     eapply Forall_forall in H; eauto. simpl in H. auto.
 Qed.
 
-Lemma Typing_erased_type : forall G b A, Typing G b A -> erased_tm A.
+Lemma Typing_erased_type : forall G b A R, Typing G b A R -> erased_tm A.
 Proof. apply typing_erased_type_mutual. Qed.
 
 Hint Resolve Typing_erased_type : erased.
 
-Lemma toplevel_erased1 : forall F a A, binds F (Ax a A) toplevel -> erased_tm a.
+Lemma toplevel_erased1 : forall F a A R, binds F (Ax a A R) toplevel -> erased_tm a.
 Proof.
   intros.
   move: (toplevel_closed H) => h0.
   eauto with erased.
 Qed.
-Lemma toplevel_erased2 : forall F a A, binds F (Ax a A) toplevel -> erased_tm A.
+Lemma toplevel_erased2 : forall F a A R, binds F (Ax a A R) toplevel -> erased_tm A.
 Proof.
   intros.
   move: (toplevel_closed H) => h0.
@@ -274,7 +274,7 @@ Proof.
   - move: (IHEp ltac:(auto)); inversion 1;
     pick fresh x;
     rewrite (co_subst_co_tm_intro x); auto;
-    apply subst_co_erased; auto.
+    apply subst_co_erased; auto. 
   - eauto with erased.
 Qed.
 
@@ -343,7 +343,7 @@ Proof.
       move:  (toplevel_closed H) => h0
     end.
      move: (Typing_context_fv h0) => ?. split_hyp.
-     fsetdec.
+     fsetdec. 
 Qed.
 
 
@@ -415,12 +415,12 @@ Qed.
 Hint Resolve erased_tm_open_tm_wrt_tm : erased.
 
 
-Lemma Par_Pi_exists: ∀ x (G : context) D rho (A B A' B' : tm),
+Lemma Par_Pi_exists: ∀ x (G : context) D rho (A B A' B' : tm) R,
     x `notin` fv_tm_tm_tm B -> Par G D A A'
     → Par G D (open_tm_wrt_tm B (a_Var_f x)) B'
-    → Par G D (a_Pi rho A B) (a_Pi rho A' (close_tm_wrt_tm x B')).
+    → Par G D (a_Pi rho A R B) (a_Pi rho A' R (close_tm_wrt_tm x B')).
 Proof.
-  intros x G D rho A B A' B' H H0 H1.
+  intros x G D rho A B A' B' R H H0 H1. 
   apply (Par_Pi (fv_tm_tm_tm B)); eauto.
   intros x0 h0.
   rewrite -tm_subst_tm_tm_spec.
@@ -428,13 +428,13 @@ Proof.
   apply subst2; auto.
 Qed.
 
-Lemma Par_CPi_exists:  ∀ c (G : context) D (A B a A' B' a' T T': tm),
+Lemma Par_CPi_exists:  ∀ c (G : context) D (A B a A' B' a' T T': tm) R,
        c `notin` fv_co_co_tm a -> Par G D A A'
        → Par G D B B' -> Par G D T T'
          → Par G D (open_tm_wrt_co a (g_Var_f c)) (a')
-         → Par G D (a_CPi (Eq A B T) a) (a_CPi (Eq A' B' T') (close_tm_wrt_co c a')).
+         → Par G D (a_CPi (Eq A B T R) a) (a_CPi (Eq A' B' T' R) (close_tm_wrt_co c a')).
 Proof.
-  intros c G D A B a A' B' a' T T' H H0 H1 h0 H2.
+  intros c G D A B a A' B' a' T T' R H H0 H1 h0 H2.
   apply (Par_CPi (singleton c)); auto.
   intros c0 H3.
   rewrite -co_subst_co_tm_spec.
@@ -491,16 +491,16 @@ Proof.
   eauto.
 Qed.
 
-Lemma multipar_Pi_exists: ∀ x (G : context) D rho (A B A' B' : tm),
-       lc_tm (a_Pi rho A B) -> x `notin` fv_tm_tm_tm B -> multipar G D A A'
+Lemma multipar_Pi_exists: ∀ x (G : context) D rho (A B A' B' : tm) R,
+       lc_tm (a_Pi rho A R B) -> x `notin` fv_tm_tm_tm B -> multipar G D A A'
        → multipar G D (open_tm_wrt_tm B (a_Var_f x)) B'
-       → multipar G D (a_Pi rho A B) (a_Pi rho A' (close_tm_wrt_tm x B')).
+       → multipar G D (a_Pi rho A R B) (a_Pi rho A' R (close_tm_wrt_tm x B')).
 Proof.
-  intros x G D rho A B A' B' lc e H H0.
+  intros x G D rho A B A' B' R lc e H H0.
   dependent induction H; eauto.
   - dependent induction H0; eauto.
       by rewrite close_tm_wrt_tm_open_tm_wrt_tm; auto.
-    apply (@mp_step _ _ _ (a_Pi rho a (close_tm_wrt_tm x b))); auto.
+    apply (@mp_step _ _ _ (a_Pi rho a R (close_tm_wrt_tm x b))); auto.
     + inversion lc; subst; clear lc.
       apply (Par_Pi (singleton x)); auto.
       intros x0 H1.
@@ -517,7 +517,7 @@ Proof.
       * rewrite fv_tm_tm_tm_close_tm_wrt_tm_rec.
         fsetdec.
       * rewrite open_tm_wrt_tm_close_tm_wrt_tm; auto.
-  - apply (@mp_step _ _ _ (a_Pi rho b B)); auto.
+  - apply (@mp_step _ _ _ (a_Pi rho b R B)); auto.
      + apply (Par_Pi (singleton x)); auto.
        intros x0 H2.
        inversion lc; subst; clear lc; auto.
@@ -527,11 +527,11 @@ Proof.
        apply Par_lc2 in H; auto.
 Qed.
 
-Lemma multipar_Pi_A_proj: ∀ (G : context) D rho (A B A' B' : tm),
-    lc_tm A -> multipar G D (a_Pi rho A B) (a_Pi rho A' B')
+Lemma multipar_Pi_A_proj: ∀ (G : context) D rho (A B A' B' : tm) R,
+    lc_tm A -> multipar G D (a_Pi rho A R B) (a_Pi rho A' R B')
     -> multipar G D A A'.
 Proof.
-  intros G D rho A B A' B' h0 h1.
+  intros G D rho A B A' B' R h0 h1.
   dependent induction h1; eauto.
   inversion H; subst.
   eapply IHh1; eauto.
@@ -540,28 +540,28 @@ Proof.
   eapply Par_lc2; eauto 1.
 Qed.
 
-Lemma multipar_Pi_B_proj: ∀ (G : context) D rho (A B A' B' : tm),
-    multipar G D (a_Pi rho A B) (a_Pi rho A' B')
+Lemma multipar_Pi_B_proj: ∀ (G : context) D rho (A B A' B' : tm) R,
+    multipar G D (a_Pi rho A R B) (a_Pi rho A' R B')
     → (exists L, forall x, x `notin` L -> multipar G D (open_tm_wrt_tm B (a_Var_f x)) (open_tm_wrt_tm B' (a_Var_f x))).
 Proof.
-  intros G D rho A B A' B' h1.
+  intros G D rho A B A' B' R h1.
   dependent induction h1; eauto.
   Unshelve.
   inversion H; subst.
   eapply IHh1; eauto.
-  destruct (IHh1 rho A'0 B'0 A' B') as [L0 h0]; auto.
+  destruct (IHh1 rho A'0 B'0 A' B' R) as [L0 h0]; auto.
   exists (L \u L0); eauto.
   apply (fv_tm_tm_tm A').
 Qed.
 
 
-Lemma multipar_CPi_exists:  ∀ c (G : context) D (A B a T A' B' a' T': tm),
-       lc_tm (a_CPi (Eq A B T) a) -> c `notin` fv_co_co_tm a -> multipar G D A A'
+Lemma multipar_CPi_exists:  ∀ c (G : context) D (A B a T A' B' a' T': tm) R,
+       lc_tm (a_CPi (Eq A B T R) a) -> c `notin` fv_co_co_tm a -> multipar G D A A'
        → multipar G D B B' -> multipar G D T T'
          → multipar G D (open_tm_wrt_co a (g_Var_f c)) a'
-         → multipar G D (a_CPi (Eq A B T) a) (a_CPi (Eq A' B' T') (close_tm_wrt_co c a')).
+         → multipar G D (a_CPi (Eq A B T R) a) (a_CPi (Eq A' B' T' R) (close_tm_wrt_co c a')).
 Proof.
-  intros c G D A B a T A' B' a' T' lc e H H0 H2 H1.
+  intros c G D A B a T A' B' a' T' R lc e H H0 H2 H1.
   dependent induction H; eauto 1.
   - dependent induction H0; eauto 1.
     + dependent induction H1; eauto 1.
@@ -569,12 +569,12 @@ Proof.
         rewrite close_tm_wrt_co_open_tm_wrt_co; auto.
         inversion lc; subst.
         inversion H3; subst.
-        apply mp_step with (b:= (a_CPi (Eq a0 a1 b) a)); eauto.
+        apply mp_step with (b:= (a_CPi (Eq a0 a1 b R) a)); eauto.
         apply IHmultipar; auto.
         apply (lc_a_CPi_exists c); auto.
         constructor; eauto.
         eapply Par_lc2; eauto.
-      * eapply mp_step with (b:= (a_CPi (Eq a0 a1 T) (close_tm_wrt_co c b))); eauto.
+      * eapply mp_step with (b:= (a_CPi (Eq a0 a1 T R) (close_tm_wrt_co c b))); eauto.
         -- inversion lc; subst; clear lc.
            inversion H4; subst; clear H4.
            apply (Par_CPi (singleton c)); auto.
@@ -592,7 +592,7 @@ Proof.
            ++ rewrite fv_co_co_tm_close_tm_wrt_co_rec.
               fsetdec.
            ++ rewrite open_tm_wrt_co_close_tm_wrt_co; auto.
-      + eapply mp_step with (b:= (a_CPi (Eq a0 b T) a)); eauto.
+      + eapply mp_step with (b:= (a_CPi (Eq a0 b T R) a)); eauto.
         -- inversion lc; subst; clear lc.
            inversion H5; subst; clear H5.
            apply (Par_CPi (singleton c)); auto.
@@ -602,7 +602,7 @@ Proof.
            inversion H5; subst.
            constructor; eauto.
            eapply Par_lc2; eauto.
-  - apply mp_step with (b:= (a_CPi (Eq b B T) a)); auto.
+  - apply mp_step with (b:= (a_CPi (Eq b B T R) a)); auto.
     inversion lc; subst.
     inversion H6; subst.
       by apply (Par_CPi (singleton c)); auto.
@@ -616,35 +616,35 @@ Proof.
      Unshelve. apply (fv_co_co_tm a).
 Qed.
 
-Lemma multipar_CPi_B_proj:  ∀ (G : context) D (A B a A' B' a' T T': tm),
-    multipar G D (a_CPi (Eq A B T) a) (a_CPi (Eq A' B' T') a')
+Lemma multipar_CPi_B_proj:  ∀ (G : context) D (A B a A' B' a' T T': tm) R,
+    multipar G D (a_CPi (Eq A B T R) a) (a_CPi (Eq A' B' T' R) a')
   → (exists L, forall c, c `notin` L -> multipar G D (open_tm_wrt_co a (g_Var_f c)) (open_tm_wrt_co a' (g_Var_f c))).
 Proof.
-  intros G D A B a A' B' a' T T' h1.
+  intros G D A B a A' B' a' T T' R h1.
   dependent induction h1; eauto.
   Unshelve.
   inversion H; subst.
   eapply IHh1; eauto.
-  destruct (IHh1 A'0 B'0 a'0 A' B' a' A1' T') as [L0 h0]; auto.
+  destruct (IHh1 A'0 B'0 a'0 A' B' a' A1' T' R) as [L0 h0]; auto.
   exists (L \u L0); eauto.
   apply (fv_tm_tm_tm A').
 Qed.
 
-Lemma multipar_CPi_phi_proj:  ∀ (G : context) D (A B a A' B' a' T T': tm),
-    multipar G D (a_CPi (Eq A B T) a) (a_CPi (Eq A' B' T') a')
+Lemma multipar_CPi_phi_proj:  ∀ (G : context) D (A B a A' B' a' T T': tm) R,
+    multipar G D (a_CPi (Eq A B T R) a) (a_CPi (Eq A' B' T' R) a')
     -> (multipar G D A A'/\ multipar G D B B' /\ multipar G D T T').
 Proof.
-  intros G D A B a A' B' a' T T' H.
+  intros G D A B a A' B' a' T T' R H.
   dependent induction H; eauto.
   inversion H; subst.
   eapply IHmultipar; eauto.
   repeat split; eauto.
   apply mp_step with (b := A'0); auto.
-  destruct (IHmultipar A'0 B'0 a'0 A' B' a' A1' T'); auto.
-  destruct (IHmultipar A'0 B'0 a'0 A' B' a' A1' T'); auto.
+  destruct (IHmultipar A'0 B'0 a'0 A' B' a' A1' T' R); auto.
+  destruct (IHmultipar A'0 B'0 a'0 A' B' a' A1' T' R); auto.
   apply mp_step with (b:= B'0); auto.
   apply H2.
-  destruct (IHmultipar A'0 B'0 a'0 A' B' a' A1' T'); auto.
+  destruct (IHmultipar A'0 B'0 a'0 A' B' a' A1' T' R); auto.
   apply mp_step with (b:= A1'); auto.
   apply H2.
 Qed.

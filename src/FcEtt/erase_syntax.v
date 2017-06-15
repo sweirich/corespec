@@ -331,9 +331,9 @@ Proof.
     (* tm *)
     [ (* star *)
     | i | y
-    | rho ty IHty body IHbody | rho e IH | e1 IH1 rho e2 IH2
+    | rho ty IHty R body IHbody | rho e IH | e1 IH1 rho e2 IH2
     | f | k
-    | rho A1 IH1 A2 IH2
+    | rho A1 IH1 R1 A2 IH2
     (* cast *)
     | g IHg A IHA | g IHg e IHe | e IH | e IHe g IHg
     | (* bullet *)
@@ -349,9 +349,9 @@ Proof.
        | |- tm         → _ =>
          elim =>  [ (* star *)
                  | i' | y'
-                 | rho' ty' IHty' body' IHbody' | rho' e' IH' | e1' IH1' rho' e2' IH2'
+                 | rho' ty' IHty' R' body' IHbody' | rho' e' IH' | e1' IH1' rho' e2' IH2'
                  | f' | k'
-                 | rho' A1' IH1' A2' IH2'
+                 | rho' A1' IH1' R' A2' IH2'
                  | e' IHe' g'
                  | g' A' IHA' | g' e' IHe' | e' IH' | e' IHe' g'
                  | (* bullet *)
@@ -408,9 +408,9 @@ Proof.
     (* tm *)
     [ (* star *)
     | i | y
-    | rho ty IHty body IHbody | rho e IH | e1 IH1 rho e2 IH2
+    | rho ty IHty R body IHbody | rho e IH | e1 IH1 rho e2 IH2
     | f | k
-    | rho A1 IH1 A2 IH2
+    | rho A1 IH1 R1 A2 IH2
     (* cast was solved auto *)
     | g IHg A IHA | g IHg e IHe | e IH | e IHe g IHg
     | (* bullet *)
@@ -426,9 +426,9 @@ Proof.
        | |- tm         → _ =>
          elim => [ (* star *)
                  | i' | y'
-                 | rho' ty' IHty' body' IHbody' | rho' e' IH' | e1' IH1' rho' e2' IH2'
+                 | rho' ty' IHty' R' body' IHbody' | rho' e' IH' | e1' IH1' rho' e2' IH2'
                  | f' | k'
-                 | rho' A1' IH1' A2' IH2'
+                 | rho' A1' IH1' R' A2' IH2'
                  | e' IHe' g'
                  | g' A' IHA' | g' e' IHe' | e' IH' | e' IHe' g'
                  | (* bullet *)
@@ -612,8 +612,7 @@ Lemma value_type_erase: forall a, value_type a -> value_type (erase a).
 Proof.
   intros a H2.
   induction H2; simpl in *; lc_inversion c; subst; eauto with lc.
-  econstructor; eauto with lc.
-  econstructor; eauto with lc.
+  all : econstructor; eauto with lc.
 Qed.
 
 (* ---------------------------------- *)

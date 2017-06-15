@@ -142,13 +142,13 @@ Ltac lc_inversion c :=
   (* simple inversions *)
   | [ H : lc_constraint (_ _) |- _ ] =>
     inversion H; clear H
-  | [ H : lc_tm (a_Abs _ _ _) |- _ ] =>
+  | [ H : lc_tm (a_Abs _ _ _ _) |- _ ] =>
     inversion H; clear H
   | [ H : lc_tm (a_UAbs _ _) |- _ ] =>
     inversion H; clear H
   | [ H : lc_tm (a_App _ _ _) |- _ ] =>
     inversion H; clear H
-  | [ H : lc_tm (a_Pi _ _ _) |- _ ] =>
+  | [ H : lc_tm (a_Pi _ _ _ _) |- _ ] =>
     inversion H; clear H
   | [ H : lc_tm (a_Conv _ _) |- _ ] =>
     inversion H; clear H
@@ -228,11 +228,11 @@ Ltac invert_syntactic_equality :=
   repeat match goal with
   | [ H : a_Var_f _  = a_Var_f _ |- _ ] =>
     inversion H; subst; clear H
-  | [ H : a_Abs _ _ = a_Abs _ _ |- _ ] =>
+  | [ H : a_Abs _ _ _ = a_Abs _ _ _ |- _ ] =>
     inversion H; subst; clear H
   | [ H : a_UAbs _ _ = a_UAbs _ _ |- _ ] =>
     inversion H; subst; clear H
-  | [ H : a_Pi _ _ _ = a_Pi _ _ _ |- _ ] =>
+  | [ H : a_Pi _ _ _ _ = a_Pi _ _ _ _ |- _ ] =>
     inversion H; subst; clear H
   | [ H : a_App _ _ _ = a_App _ _ _ |- _ ] =>
     inversion H; subst; clear H
@@ -250,19 +250,19 @@ Ltac invert_syntactic_equality :=
     inversion H; subst; clear H
   | [ H : a_CPi _ _ = a_CPi _ _ |- _ ] =>
     inversion H; subst; clear H
-  | [ H : Eq _ _ _ = Eq _ _ _ |- _ ] =>
+  | [ H : Eq _ _ _ _ = Eq _ _ _ _ |- _ ] =>
     inversion H; subst; clear H
-  end.
+  end. 
 
 (* Invert an "interesting" assumption in the typing context *)
 (* TODO: tactics.v -> it should already be subsumed by another tactic (many not for all cases => extend) *)
 Ltac ann_invert_clear :=
   match goal with
-  | H : AnnTyping _ a_Star _ |- _ => inversion H; subst; clear H
-  | H : AnnTyping _ (_ _) _ |- _ =>  inversion H; subst; clear H
+  | H : AnnTyping _ a_Star _ _ |- _ => inversion H; subst; clear H
+  | H : AnnTyping _ (_ _) _ _ |- _ =>  inversion H; subst; clear H
   | H : AnnPropWff _ _ |- _ => inversion H; subst; clear H
   | H : AnnIso _ _ (_ _) _ _ |- _ => inversion H; subst; clear H
-  | H : AnnDefEq _ _ (_ _) _ _  |- _ => inversion H; subst; clear H
+  | H : AnnDefEq _ _ (_ _) _ _ _ |- _ => inversion H; subst; clear H
   | H : AnnCtx ([(_,_)] ++ _) |- _ => inversion H; subst; clear H
   | H : AnnCtx (_ :: _) |- _ => inversion H; subst; clear H
   end.
@@ -636,18 +636,18 @@ Ltac auto_rew_env :=
 
 Ltac E_pick_fresh x :=
   match goal with
-    | [ |- Typing _ ?shape _ ] =>
+    | [ |- Typing _ ?shape _ _] =>
       let v := match shape with
-            | a_Pi _ _ _ => E_Pi
+            | a_Pi _ _ _ _ => E_Pi
             | a_UAbs _ _ => E_Abs
             | a_CPi _ _  => E_CPi
             | a_CAbs _ _ => E_CAbs
             | a_UCAbs _  => E_CAbs
            end
       in pick fresh x and apply v
-    | [ |- DefEq _ _ ?shape ?s2 _ ] =>
+    | [ |- DefEq _ _ ?shape ?s2 _ _] =>
       let v := match shape with
-               | a_Pi _ _ _ => E_PiCong
+               | a_Pi _ _ _ _ => E_PiCong
                | a_UAbs Rel _ => match s2 with
                                 | a_UAbs _ _ => E_AbsCong
                                 end
@@ -663,7 +663,7 @@ Ltac Par_pick_fresh x :=
   match goal with
     | [ |- Par _ _ ?shape ?s2 ] =>
       let v := match shape with
-            | a_Pi _ _ _ => Par_Pi
+            | a_Pi _ _ _ _ => Par_Pi
             | a_UAbs _ _ =>  match s2 with
                                 | a_UAbs _ _ => Par_Abs
                                 end
@@ -678,12 +678,12 @@ Ltac Par_pick_fresh x :=
 
 Ltac An_pick_fresh x :=
   let shape := match goal with
-                 | [ |- AnnTyping _   ?shape _    ] => shape
-                 | [ |- AnnDefEq  _ _ ?shape _  _ ] => shape
+                 | [ |- AnnTyping _   ?shape _ _   ] => shape
+                 | [ |- AnnDefEq  _ _ ?shape _  _  _] => shape
                end in
   let ctor  := match shape with
-    | a_Pi     _ _ _ => An_Pi
-    | a_Abs    _ _ _ => An_Abs
+    | a_Pi     _ _ _ _ => An_Pi
+    | a_Abs    _ _ _ _ => An_Abs
     | a_CPi      _ _ => An_CPi
     | a_CAbs     _ _ => An_CAbs
     | g_PiCong _ _ _ => An_PiCong
