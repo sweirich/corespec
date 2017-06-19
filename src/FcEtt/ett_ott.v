@@ -721,6 +721,14 @@ Definition co_subst_co_sig_sort (g5:co) (c5:covar) (sig_sort5:sig_sort) : sig_so
   | (Ax a A R) => Ax (co_subst_co_tm g5 c5 a) (co_subst_co_tm g5 c5 A) R
 end.
 
+
+Definition min (r1 : role) (r2 : role) : role :=
+  match r1 , r2 with
+  | Nom, _ => Nom
+  | _  , Nom => Nom
+  | Rep, Rep => Rep
+  end.
+
 Fixpoint erase_tm (a : tm) : tm :=
    match a with
    | a_Star    => a_Star
@@ -1141,16 +1149,12 @@ with DefEq : context -> available_props -> tm -> tm -> tm -> role -> Prop :=    
      DefEq G D a1 b1  ( (a_Pi Irrel A R B) )  R' ->
      Typing G a A R ->
      DefEq G D (a_App a1 Irrel a_Bullet) (a_App b1 Irrel a_Bullet)  (  (open_tm_wrt_tm  B   a )  )  R'
- | E_PiFst : forall (G:context) (D:available_props) (A1 A2:tm) (R3:role) (rho:relflag) (R1:role) (B1:tm) (R2:role) (B2:tm) (R':role),
+ | E_PiFst : forall (G:context) (D:available_props) (A1 A2:tm) (R1 R2:role) (rho:relflag) (B1 B2:tm) (R':role),
      DefEq G D (a_Pi rho A1 R1 B1) (a_Pi rho A2 R2 B2) a_Star R' ->
-     SubRole R3 R1 ->
-     SubRole R3 R2 ->
-     DefEq G D A1 A2 a_Star R3
- | E_PiSnd : forall (G:context) (D:available_props) (B1 a1 B2 a2:tm) (R':role) (rho:relflag) (A1:tm) (R1:role) (A2:tm) (R2 R:role),
+     DefEq G D A1 A2 a_Star  (min  R1 R2 ) 
+ | E_PiSnd : forall (G:context) (D:available_props) (B1 a1 B2 a2:tm) (R':role) (rho:relflag) (A1:tm) (R1:role) (A2:tm) (R2:role),
      DefEq G D (a_Pi rho A1 R1 B1) (a_Pi rho A2 R2 B2) a_Star R' ->
-     DefEq G D a1 a2 A1 R ->
-     SubRole R R1 ->
-     SubRole R R2 ->
+     DefEq G D a1 a2 A1  (min  R1 R2 )  ->
      DefEq G D  (open_tm_wrt_tm  B1   a1 )   (open_tm_wrt_tm  B2   a2 )  a_Star R'
  | E_CPiCong : forall (L:vars) (G:context) (D:available_props) (phi1:constraint) (A:tm) (phi2:constraint) (B:tm) (R:role),
      Iso G D phi1 phi2 ->

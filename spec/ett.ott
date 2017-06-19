@@ -33,6 +33,10 @@ grammar
 role, R :: '' ::= {{ com Role }}
    | Nom  ::    :: Nom
    | Rep  ::    :: Rep
+   | min R1 R2  :: S :: Min
+     {{ coq (min [[R1]][[R2]]) }}
+     {{ tex [[R1]] \cap [[R2]] }}
+
 
 relflag, rho {{ tex \rho }} :: '' ::= {{ com relevance flag }}
    | +             ::   :: Rel
@@ -408,6 +412,14 @@ formula, Fm {{tex \psi}} :: 'formula_' ::=
 %% Coq Definitions necessary to specify the semantics
 
 embed {{ coq
+
+Definition min (r1 : role) (r2 : role) : role :=
+  match r1 , r2 with
+  | Nom, _ => Nom
+  | _  , Nom => Nom
+  | Rep, Rep => Rep
+  end.
+
 Fixpoint erase_tm (a : tm) : tm :=
    match a with
    | a_Star    => a_Star
@@ -1002,15 +1014,11 @@ G ; D |= a1 - [] == b1 - [] : (B { a / x })/R'
 
 
 G ; D |= all rho x:A1/R1 -> B1 == all rho x:A2/R2 -> B2 : TYPE/R'
-R3 <= R1
-R3 <= R2
 ------------------------------------------------- :: PiFst
-G ; D |=  A1 == A2 : TYPE/R3
+G ; D |=  A1 == A2 : TYPE/ min R1 R2
 
 G ; D |= all rho x:A1/R1 -> B1 == all rho x:A2/R2 -> B2 : TYPE/R'
-G ; D |= a1 == a2 : A1/R
-R <= R1
-R <= R2
+G ; D |= a1 == a2 : A1/ min R1 R2
 ------------------------------------------- :: PiSnd
 G ; D |=  B1 {a1 /x}  == B2 {a2/x} : TYPE/R'
 
