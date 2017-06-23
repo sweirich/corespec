@@ -25,8 +25,14 @@
 \ifanonymous
 \documentclass[acmlarge,anonymous]{acmart}\settopmatter{printfolios=true}
 \else
-\documentclass[acmsmall]{acmart}\settopmatter{}
+\documentclass[format=acmsmall, review=false, screen=true]{acmart}\settopmatter{}
 \acmJournal{PACMPL}
+\acmBadgeR[http://icfp17.sigplan.org/track/icfp-2017-Artifacts]{artifact_evaluated-reusable.png}
+\acmBadgeL[http://icfp17.sigplan.org/track/icfp-2017-Artifacts]{artifact_available.png}
+\setcopyright{rightsretained}
+\acmJournal{PACMPL}
+\acmYear{2017} \acmVolume{1} \acmNumber{1} \acmArticle{31} \acmMonth{1}
+\acmDOI{http://dx.doi.org/10.1145/3110275}
 \fi\fi
 
 \ifpublic
@@ -194,7 +200,7 @@
   \city{}
   \state{}
   \postcode{}
-  \country{}
+  \country{USA}
 }
 \email{voizard@seas.upenn.edu}
 
