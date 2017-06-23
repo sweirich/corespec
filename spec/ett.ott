@@ -1062,10 +1062,8 @@ G ; dom G |= A == B : TYPE/R2
 G ; D |= a == b : B/R2
 
 G ; D |= a ~ b : A/R == a' ~ b' : A'/R'
-R <= R0
-R' <= R0
 -------------------------------------- :: IsoSnd
-G ; D |= A == A' : TYPE/R0
+G ; D |= A == A' : TYPE/min R R'
 
 
 
