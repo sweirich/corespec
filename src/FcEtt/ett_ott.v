@@ -1185,11 +1185,9 @@ with DefEq : context -> available_props -> tm -> tm -> tm -> role -> Prop :=    
      DefEq G  (dom  G )  A B a_Star R2 ->
       ( SubRole R1 R2 )  ->
      DefEq G D a b B R2
- | E_IsoSnd : forall (G:context) (D:available_props) (A A':tm) (R0:role) (a b:tm) (R:role) (a' b':tm) (R':role),
+ | E_IsoSnd : forall (G:context) (D:available_props) (A A':tm) (a b:tm) (R:role) (a' b':tm) (R':role),
      Iso G D (Eq a b A R) (Eq a' b' A' R') ->
-     SubRole R R0 ->
-     SubRole R' R0 ->
-     DefEq G D A A' a_Star R0
+     DefEq G D A A' a_Star (min R R')
 with Ctx : context -> Prop :=    (* defn Ctx *)
  | E_Empty : 
      Ctx  nil 

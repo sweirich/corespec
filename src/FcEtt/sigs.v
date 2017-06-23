@@ -246,11 +246,11 @@ Axiom binds_to_Typing: forall G T A R, Ctx G -> binds T (Tm A R) G -> Typing G A
 
 Axiom invert_a_Pi: forall G rho A0 A B0 R R',
     Typing G (a_Pi rho A0 R B0) A R' ->
-    DefEq G (dom G) A a_Star a_Star Nom /\ (exists L, forall x, x `notin` L -> Typing ([(x, Tm A0 R)] ++ G) (open_tm_wrt_tm B0 (a_Var_f x)) a_Star R') /\ Typing G A0 a_Star R.
+    DefEq G (dom G) A a_Star a_Star Rep /\ (exists L, forall x, x `notin` L -> Typing ([(x, Tm A0 R)] ++ G) (open_tm_wrt_tm B0 (a_Var_f x)) a_Star R') /\ Typing G A0 a_Star R.
 
 Axiom invert_a_CPi: forall G phi A B0 R,
     Typing G (a_CPi phi B0) A R ->
-      DefEq G (dom G) A a_Star a_Star Nom /\ (exists L, forall c, c `notin` L -> Typing ([(c, Co phi)] ++ G) (open_tm_wrt_co B0 (g_Var_f c) ) a_Star R)  /\ PropWff G phi.
+      DefEq G (dom G) A a_Star a_Star Rep /\ (exists L, forall c, c `notin` L -> Typing ([(c, Co phi)] ++ G) (open_tm_wrt_co B0 (g_Var_f c) ) a_Star R)  /\ PropWff G phi.
 
 Axiom invert_a_App_Rel : forall G a b C R,
     Typing G (a_App a Rel b) C R ->
@@ -296,14 +296,15 @@ Axiom invert_a_UCAbs: forall G A R b0,
                                   (open_tm_wrt_co B1 (g_Var_f c)) a_Star R).
 
 Axiom invert_a_Var :
-  forall G x A R, Typing G (a_Var_f x) A R -> exists A' R', binds x (Tm A' R') G /\ DefEq G (dom G) A A' a_Star R' /\ SubRole R R'.
+  forall G x A R, Typing G (a_Var_f x) A R -> exists A' R', binds x (Tm A' R') G /\ DefEq G (dom G) A A' a_Star R /\ SubRole R' R.
 
 Axiom invert_a_Star: forall A G R, Typing G a_Star A R -> DefEq G (dom G) A a_Star a_Star R.
 
 Axiom invert_a_Fam : forall G F A R,
     Typing G (a_Fam F) A R ->
-    exists a B, DefEq G (dom G) A B a_Star R /\
-           binds F (Ax a B R) toplevel /\ Typing nil B a_Star R.
+    exists a B R', DefEq G (dom G) A B a_Star R /\
+           binds F (Ax a B R') toplevel /\ Typing nil B a_Star R
+                                        /\ SubRole R' R.
 
 (* ---------- context conversion -------------- *)
 (* Terms still type check even after varying the context *)
