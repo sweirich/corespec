@@ -130,35 +130,13 @@
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\makeatletter\if@ACM@journal\makeatother
-%% Journal information (used by PACMPL format)
-%% Supplied to authors by publisher for camera-ready submission
-\acmJournal{PACMPL}
-\acmVolume{1}
-\acmNumber{1}
-\acmArticle{1}
-\acmYear{2017}
-\acmMonth{1}
-\acmDOI{10.1145/nnnnnnn.nnnnnnn}
-\startPage{1}
-\else\makeatother
-%% Conference information (used by SIGPLAN proceedings format)
-%% Supplied to authors by publisher for camera-ready submission
-\acmConference[PL'17]{ACM SIGPLAN Conference on Programming Languages}{January 01--03, 2017}{New York, NY, USA}
-\acmYear{2017}
-\acmISBN{978-x-xxxx-xxxx-x/YY/MM}
-\acmDOI{10.1145/nnnnnnn.nnnnnnn}
-\startPage{1}
-\fi
-
 %% Copyright information
 %% Supplied to authors (based on authors' rights management selection;
 %% see authors.acm.org) by publisher for camera-ready submission
 %\setcopyright{none}             %% For review submission
 %\setcopyright{acmcopyright}
-\setcopyright{acmlicensed}
+%\setcopyright{acmlicensed}
 %\setcopyright{rightsretained}
-\copyrightyear{2017}           %% If different from \acmYear
 
 
 %% Bibliography style
@@ -831,7 +809,7 @@ that types and propositions do not need to be checked when they are added to
 the context (as in in \rref{E-Pi,E-Abs,E-CPi,E-CAbs}).
 
 
-\subsection{Definitional equality}
+\subsection{Definitional Equality}
 \begin{figure}
 \drules[E]{$[[G;D|= a == b :A]]$}{Definitional equality}
 {Beta,Refl,Sym,Trans,PiCong,AbsCong,AppCong,IAppCong,CPiCong,CAbsCong,CAppCong,Assn,PiFst,PiSnd,CPiSnd,IsoSnd}
@@ -900,7 +878,7 @@ Because we cannot use a term to justify an assumed equality,
 this language remains type sound in the presence of nontermination.
 \scw{mention hypothetical judgement?}
 
-\subsection{Equality propositions are not types}
+\subsection{Equality Propositions Are Not Types}
 \label{sec:props-not-types}
 Our languages firmly distinguish between types (which are all inhabited by
 terms) and equality propositions (which may or may not be provable using the rules in
@@ -949,7 +927,7 @@ Section~\ref{sec:extensions}).
 %The available set for $[[A]] [[==]] [[B]]$ is different in the two versions. And, we
 %cannot weaken the available set in IsoConv because of IsoSnd.}
 
-\section{Type soundness for System  \fimp}
+\section{Type Soundness for System  \fimp}
 \label{sec:d-properties}
 
 The previous section completely specifies the operational and static semantics
@@ -1001,7 +979,7 @@ from the other rules of the type system in an empty context.  However, because
 we would like preservation to hold even when coercion assumptions are
 available, we add these injectivity rules to the type system.
 
-\subsection{Progress and consistency}
+\subsection{Progress and Consistency}
 \label{sec:ext_consist}
 \label{sec:d-progress}
 
@@ -1216,7 +1194,7 @@ that $[[G0 |- a0 : A0]]$ where $[[|a0|]] = [[a]]$ and
 $[[|A0|]] = [[A]]$.
 \end{lemma}
 
-\subsection{The design of \fc}
+\subsection{The Design of \fc}
 
 \begin{figure}
 \begin{drulepar}[An]{$[[G |- a : A]]$}{Typing}
@@ -1276,7 +1254,7 @@ satisfied. All other rules of the typing judgment are the same as \fimp.
 % }
 
 
-\subsection{Explicit equality proofs}
+\subsection{Explicit Equality Proofs}
 \label{sec:fc-defeq}
 
 %% Differences from implicit system:
@@ -1527,7 +1505,7 @@ then there exists some $[[a0']]$ such that $[[|a0'|]]=[[a']]$ and
 We have mentioned some of the factors underlying our designs of D and DC in the
 prior sections. Here, we discuss some of these design choices in more detail.
 
-\subsection{Prop well-formedness and annotation}
+\subsection{Prop Well-formedness and Annotation}
 
 In \fimp, well-formed equality props ($[[a~b:A]]$) require that $[[a]]$ and
 $[[b]]$ have the same type $[[A]]$ (see \rref{E-Wff}). The direct analogue for that
@@ -1563,7 +1541,7 @@ $[[b]] : [[B]]$ are equal, where we have some $[[g]]:[[A ~ B : TYPE]]$, we can
 use the proposition $[[(a |> g) ~ b : B]]$.
 
 
-\subsection{Heterogeneous vs. homogeneous equality}
+\subsection{Heterogeneous vs. Homogeneous Equality}
 \label{sec:homogeneous}
 
 A \emph{homogeneous} equality proposition is a four-place relation
@@ -1662,7 +1640,7 @@ homogeneous equality.
 % coercion. Instead the most lenient rule we can allow is to require that the
 % two types be erasure equivalent.
 
-\subsection{Can we erase more?}
+\subsection{Can We Erase More?}
 \label{sec:erase-irrelevant}
 
 \fimp differs from some Curry-style presentations of irrelevant quantification
@@ -1706,7 +1684,7 @@ coercion abstraction cannot be used to implement GADTs.
 % where computation is already suspended, such as in the branches of case
 % analysis.
 
-\subsection{Variations on the annotated language}
+\subsection{Variations on the Annotated Language}
 \label{sec:variations}
 
 The annotated language, \fc, that we have developed in this paper is only
@@ -1785,7 +1763,7 @@ includes our 1,400 line Ott specification, about 17,000 nonblank lines of Coq
 proofs, plus another 13,000 lines of Coq generated by Ott and LNgen.  \scw{TODO: update
   line count.}
 
-\subsection{Decidability proof}
+\subsection{Decidability Proof}
 
 Most of our Coq development follows standard practice of proofs by induction
 over derivations represented with Coq inductive datatypes. Our proof that
@@ -1868,7 +1846,7 @@ simplified the correctness argument.
 % distant from the rules, made the proof way easier for termination matters, but also
 % sometimes easier in correctness-related parts as well.
 
-\subsection{Why mechanize?}
+\subsection{Why Mechanize?}
 \label{sec:oops}
 
 Producing this proof took significant effort, much more than if we had produced
@@ -1957,7 +1935,7 @@ of a design change throughout the development.
 \section{Related Work}
 \label{sec:related}
 
-\subsection{Prior versions of FC with dependency}
+\subsection{Prior Versions of FC with Dependency}
 \label{sec:fc-diff}
 The most closely related works to this paper are ~\citet{nokinds}, Gundry's
 dissertation~\citeyearpar{gundry:phd} and Eisenberg's
@@ -2005,7 +1983,7 @@ Other more minor technical improvements include:
   also used by Gundry (Section \ref{sec:fc-defeq}).
 \end{itemize}
 
-\subsection{Other related calculi}
+\subsection{Other Related Calculi}
 \newcommand\seppp{\ensuremath{\mathrm{Sep^3}}\xspace}
 
 \citet{geuvers:lf} and \citet{vanDoorn} develop variants of pure type
@@ -2049,7 +2027,7 @@ enforcing irrelevance; we could have alternatively used the context to mark
 variables that are restricted to appear only in irrelevant
 locations~\cite{pfenning:irrelevance,brady:thesis,gundry:phd,eisenberg:phd}.
 
-\subsection{Intensional type theory}
+\subsection{Intensional Type Theory}
 The dependent type theory that we develop here is different in many ways from
 existing type theories, such as the ones that underlie other dependently-typed
 languages such as Epigram, Agda, Idris, or Coq. These languages are founded on
@@ -2093,7 +2071,7 @@ theories:
   without an elimination form.
 \end{itemize}
 
-\subsection{Other programming languages with dependent types}
+\subsection{Other Programming Languages with Dependent Types}
 
 Our goal is to extend a mature, existing functional programming language with
 dependent types, in a way that is compatible with existing programs.  However,
