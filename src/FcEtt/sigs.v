@@ -254,22 +254,23 @@ Axiom invert_a_CPi: forall G phi A B0 R,
 
 Axiom invert_a_App_Rel : forall G a b C R,
     Typing G (a_App a Rel b) C R ->
-    exists A B R', Typing G a (a_Pi Rel A R' B) R /\
-           Typing G b A R' /\
-           DefEq G (dom G) C (open_tm_wrt_tm B b) a_Star R /\ SubRole R' R.
+    exists A B R1 R2, Typing G a (a_Pi Rel A R1 B) R2 /\
+           Typing G b A R1 /\
+           DefEq G (dom G) C (open_tm_wrt_tm B b) a_Star R /\ SubRole R2 R.
 
 Axiom invert_a_App_Irrel : forall G a b C R,
     Typing G (a_App a Irrel b) C R ->
-    exists A B b0 R', Typing G a (a_Pi Irrel A R' B) R /\
-              Typing G b0 A R' /\
-              DefEq G (dom G) C (open_tm_wrt_tm B b0) a_Star R /\ SubRole R' R.
+    exists A B b0 R1 R2, Typing G a (a_Pi Irrel A R1 B) R2 /\
+              Typing G b0 A R1 /\
+              DefEq G (dom G) C (open_tm_wrt_tm B b0) a_Star R /\ SubRole R2 R.
 
 Axiom invert_a_CApp : forall G a g A R,
     Typing G (a_CApp a g) A R ->
     g = g_Triv /\
-    exists a1 b1 A1 R' B, Typing G a (a_CPi (Eq a1 b1 A1 R') B) R /\
-             DefEq G (dom G) a1 b1 A1 R' /\
-             DefEq G (dom G) A (open_tm_wrt_co B g_Triv) a_Star R.
+    exists a1 b1 A1 R1 B R2, Typing G a (a_CPi (Eq a1 b1 A1 R1) B) R2 /\
+             DefEq G (dom G) a1 b1 A1 R1 /\
+             DefEq G (dom G) A (open_tm_wrt_co B g_Triv) a_Star R /\
+             SubRole R2 R.
 
 Axiom invert_a_UAbs:
   forall G rho A R b0,
@@ -286,14 +287,15 @@ Axiom invert_a_UAbs:
 
 Axiom invert_a_UCAbs: forall G A R b0,
     Typing G (a_UCAbs b0) A R ->
-    exists a b T R' B1, PropWff G (Eq a b T R')
+    exists a b T R' B1 R'', PropWff G (Eq a b T R')
                 /\ DefEq G (dom G) A (a_CPi (Eq a b T R') B1) a_Star R /\
                 (exists L, forall c, c `notin` L ->
                            Typing ([(c, Co (Eq a b T R'))] ++ G)
                                   (open_tm_wrt_co b0 (g_Var_f c))
-                                  (open_tm_wrt_co B1 (g_Var_f c)) R /\
+                                  (open_tm_wrt_co B1 (g_Var_f c)) R'' /\
                            Typing ([(c, Co (Eq a b T R'))] ++ G)
-                                  (open_tm_wrt_co B1 (g_Var_f c)) a_Star R).
+                                  (open_tm_wrt_co B1 (g_Var_f c)) a_Star R'')
+                 /\ SubRole R'' R.
 
 Axiom invert_a_Var :
   forall G x A R, Typing G (a_Var_f x) A R -> exists A' R', binds x (Tm A' R') G /\ DefEq G (dom G) A A' a_Star R /\ SubRole R' R.
@@ -378,15 +380,15 @@ Axiom E_CPiCong2  : ∀ (L : atoms) (G : context) (D : available_props) (phi1 : 
                       (open_tm_wrt_co B (g_Var_f c)) a_Star R)
     → DefEq G D (a_CPi phi1 A) (a_CPi phi2 B) a_Star R.
 
-Axiom E_Pi2 : forall L G rho A B R R',
-    (∀ x : atom, x `notin` L → Typing ([(x, Tm A R)] ++ G) (open_tm_wrt_tm B (a_Var_f x)) a_Star R') ->
-    SubRole R R' ->
-    Typing G (a_Pi rho A R B) a_Star R'.
+Axiom E_Pi2 : forall L G rho A B R,
+    (∀ x : atom, x `notin` L → Typing ([(x, Tm A R)] ++ G) (open_tm_wrt_tm B (a_Var_f x)) a_Star R) ->
+    Typing G (a_Pi rho A R B) a_Star R.
 
 Axiom E_Abs2 : ∀ (L : atoms) (G : context) (rho : relflag) (a A B : tm) R R',
     (∀ x : atom,
         x `notin` L → Typing ([(x, Tm A R)] ++ G) (open_tm_wrt_tm a (a_Var_f x)) (open_tm_wrt_tm B (a_Var_f x)) R')
     → (∀ x : atom, x `notin` L → RhoCheck rho x (open_tm_wrt_tm a (a_Var_f x)))
+    -> SubRole R R'
     → Typing G (a_UAbs rho a) (a_Pi rho A R B) R'.
 
 Axiom E_Conv2 : ∀ (G : context) (a B A : tm) R,
@@ -410,6 +412,7 @@ Axiom E_AbsCong2
             (open_tm_wrt_tm B (a_Var_f x)) R')
        → (∀ x : atom, x `notin` L → RhoCheck rho x (open_tm_wrt_tm b1 (a_Var_f x)))
        → (∀ x : atom, x `notin` L → RhoCheck rho x (open_tm_wrt_tm b2 (a_Var_f x)))
+       -> SubRole R R'
        → DefEq G D (a_UAbs rho b1) (a_UAbs rho b2) (a_Pi rho A1 R B) R'.
 
 Axiom E_CAbsCong2

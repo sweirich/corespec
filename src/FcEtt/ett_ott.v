@@ -729,6 +729,13 @@ Definition min (r1 : role) (r2 : role) : role :=
   | Rep, Rep => Rep
   end.
 
+Definition max (r1 : role) (r2 : role) : role :=
+  match r1 , r2 with
+  | Rep, _   => Rep
+  | _  , Rep => Rep
+  | Nom, Nom => Nom
+  end.
+
 Fixpoint erase_tm (a : tm) : tm :=
    match a with
    | a_Star    => a_Star
@@ -1127,13 +1134,13 @@ with DefEq : context -> available_props -> tm -> tm -> tm -> role -> Prop :=    
       ( Typing G a2 B R )  ->
      Beta a1 a2 ->
      DefEq G D a1 a2 B R
- | E_PiCong : forall (L:vars) (G:context) (D:available_props) (rho:relflag) (A1:tm) (R:role) (B1 A2 B2:tm),
+ | E_PiCong : forall (L:vars) (G:context) (D:available_props) (rho:relflag) (A1:tm) (R:role) (B1 A2 B2:tm) (R' : role),
      DefEq G D A1 A2 a_Star R ->
-      ( forall x , x \notin  L  -> DefEq  (( x ~ Tm  A1 R ) ++  G )  D  ( open_tm_wrt_tm B1 (a_Var_f x) )   ( open_tm_wrt_tm B2 (a_Var_f x) )  a_Star R )  ->
+      ( forall x , x \notin  L  -> DefEq  (( x ~ Tm  A1 R ) ++  G )  D  ( open_tm_wrt_tm B1 (a_Var_f x) )   ( open_tm_wrt_tm B2 (a_Var_f x) )  a_Star R' )  ->
       ( Typing G A1 a_Star R )  ->
-      ( Typing G (a_Pi rho A1 R B1) a_Star R )  ->
-      ( Typing G (a_Pi rho A2 R B2) a_Star R )  ->
-     DefEq G D  ( (a_Pi rho A1 R B1) )   ( (a_Pi rho A2 R B2) )  a_Star R
+      ( Typing G (a_Pi rho A1 R B1) a_Star R' )  ->
+      ( Typing G (a_Pi rho A2 R B2) a_Star R' )  ->
+     DefEq G D  ( (a_Pi rho A1 R B1) )   ( (a_Pi rho A2 R B2) )  a_Star R'
  | E_AbsCong : forall (L:vars) (G:context) (D:available_props) (rho:relflag) (b1 b2 A1:tm) (R:role) (B:tm) (R':role),
       ( forall x , x \notin  L  -> DefEq  (( x ~ Tm  A1 R ) ++  G )  D  ( open_tm_wrt_tm b1 (a_Var_f x) )   ( open_tm_wrt_tm b2 (a_Var_f x) )   ( open_tm_wrt_tm B (a_Var_f x) )  R' )  ->
       ( Typing G A1 a_Star R )  ->
@@ -1149,12 +1156,12 @@ with DefEq : context -> available_props -> tm -> tm -> tm -> role -> Prop :=    
      DefEq G D a1 b1  ( (a_Pi Irrel A R B) )  R' ->
      Typing G a A R ->
      DefEq G D (a_App a1 Irrel a_Bullet) (a_App b1 Irrel a_Bullet)  (  (open_tm_wrt_tm  B   a )  )  R'
- | E_PiFst : forall (G:context) (D:available_props) (A1 A2:tm) (R1 R2:role) (rho:relflag) (B1 B2:tm) (R':role),
-     DefEq G D (a_Pi rho A1 R1 B1) (a_Pi rho A2 R2 B2) a_Star R' ->
-     DefEq G D A1 A2 a_Star  (min  R1 R2 ) 
- | E_PiSnd : forall (G:context) (D:available_props) (B1 a1 B2 a2:tm) (R':role) (rho:relflag) (A1:tm) (R1:role) (A2:tm) (R2:role),
-     DefEq G D (a_Pi rho A1 R1 B1) (a_Pi rho A2 R2 B2) a_Star R' ->
-     DefEq G D a1 a2 A1  (min  R1 R2 )  ->
+ | E_PiFst : forall (G:context) (D:available_props) (A1 A2:tm) (R:role) (rho:relflag) (B1 B2:tm) (R':role),
+     DefEq G D (a_Pi rho A1 R B1) (a_Pi rho A2 R B2) a_Star R' ->
+     DefEq G D A1 A2 a_Star  R 
+ | E_PiSnd : forall (G:context) (D:available_props) (B1 a1 B2 a2:tm) (R':role) (rho:relflag) (A1:tm) (R:role) (A2:tm),
+     DefEq G D (a_Pi rho A1 R B1) (a_Pi rho A2 R B2) a_Star R' ->
+     DefEq G D a1 a2 A1  R  ->
      DefEq G D  (open_tm_wrt_tm  B1   a1 )   (open_tm_wrt_tm  B2   a2 )  a_Star R'
  | E_CPiCong : forall (L:vars) (G:context) (D:available_props) (phi1:constraint) (A:tm) (phi2:constraint) (B:tm) (R:role),
      Iso G D phi1 phi2 ->
@@ -1185,9 +1192,9 @@ with DefEq : context -> available_props -> tm -> tm -> tm -> role -> Prop :=    
      DefEq G  (dom  G )  A B a_Star R2 ->
       ( SubRole R1 R2 )  ->
      DefEq G D a b B R2
- | E_IsoSnd : forall (G:context) (D:available_props) (A A':tm) (a b:tm) (R:role) (a' b':tm) (R':role),
-     Iso G D (Eq a b A R) (Eq a' b' A' R') ->
-     DefEq G D A A' a_Star (min R R')
+ | E_IsoSnd : forall (G:context) (D:available_props) (A A':tm) (a b:tm) (R:role) (a' b':tm),
+     Iso G D (Eq a b A R) (Eq a' b' A' R) ->
+     DefEq G D A A' a_Star R
 with Ctx : context -> Prop :=    (* defn Ctx *)
  | E_Empty : 
      Ctx  nil 
