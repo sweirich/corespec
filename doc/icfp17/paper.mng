@@ -25,14 +25,25 @@
 \ifanonymous
 \documentclass[acmlarge,anonymous]{acmart}\settopmatter{printfolios=true}
 \else
-\documentclass[format=acmsmall, review=false, screen=true]{acmart}\settopmatter{}
+\ifextended
+\documentclass[format=acmsmall,screen=true,review=false]{acmart}
+\settopmatter{printfolios=true,printacmref=false,printccs=false}
+\setcopyright{none}
+\acmYear{2017} \acmVolume{1} \acmNumber{1} \acmArticle{31} \acmMonth{1}
+\acmDOI{10.1145/3110275}
 \acmJournal{PACMPL}
 \acmBadgeR[http://icfp17.sigplan.org/track/icfp-2017-Artifacts]{artifact_evaluated-reusable.png}
 \acmBadgeL[http://icfp17.sigplan.org/track/icfp-2017-Artifacts]{artifact_available.png}
+\else
+\documentclass[format=acmsmall, review=false,
+screen=true]{acmart}\settopmatter{}
 \setcopyright{rightsretained}
 \acmJournal{PACMPL}
+\acmBadgeR[http://icfp17.sigplan.org/track/icfp-2017-Artifacts]{artifact_evaluated-reusable.png}
+\acmBadgeL[http://icfp17.sigplan.org/track/icfp-2017-Artifacts]{artifact_available.png}
+\acmJournal{PACMPL}
 \acmYear{2017} \acmVolume{1} \acmNumber{1} \acmArticle{31} \acmMonth{1}
-\acmDOI{http://dx.doi.org/10.1145/3110275}
+\acmDOI{10.1145/3110275}
 \fi\fi
 
 \ifpublic
@@ -150,7 +161,7 @@
 \begin{document}
 
 \ifextended
-\title{A Specification for Dependent Types in Haskell (Extended version)}
+\title{A Specification for Dependent Types in Haskell (Technical Appendix)}
 \else
 \title{A Specification for Dependent Types in Haskell}
 \fi
@@ -209,9 +220,20 @@
 \email{rae@cs.brynmawr.edu}
 
 
+\ifextended
+\begin{abstract}
+This is a technical appendix for:
+
+Stephanie Weirich, Antoine Voizard, Pedro Henrique Azevedo de Amorim, and
+Richard Eisenberg. 2017. A Specification for Dependent Types in Haskell.
+Proc. ACM Program. Lang. 1, 1, Article 31 (January
+2017). \url{https://doi.org/10.1145/3110275}
+\end{abstract}
+\else
 \begin{abstract}
 \input{abstract}
 \end{abstract}
+\fi
 
 
 %% 2012 ACM Computing Classification System (CSS) concepts
@@ -253,6 +275,8 @@
 %% Our running head is too long for acmsmall
 \renewcommand{\shortauthors}{Weirich, Voizard, Azevedo de Amorim, and Eisenberg}
 
+\ifextended
+\else
 \section{Introduction}
 
 Our goal is to design \emph{Dependent Haskell}, an extension of the Glasgow
@@ -2157,10 +2181,10 @@ can add higher-inductive types to GHC.
 
 \newpage
 \bibliography{weirich,rae,proposal}
-
-\newpage
+\fi
 
 \ifextended
+\newpage
 \appendix
 
 \admissibletrue
