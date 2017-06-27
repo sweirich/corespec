@@ -29,7 +29,7 @@
 \documentclass[format=acmsmall,screen=true,review=false]{acmart}
 \settopmatter{printfolios=true,printacmref=false,printccs=false}
 \setcopyright{none}
-\acmYear{2017} \acmVolume{1} \acmNumber{1} \acmArticle{31} \acmMonth{1}
+\acmYear{2017} \acmVolume{1} \acmNumber{1} \acmArticle{31} \acmMonth{9}
 \acmDOI{10.1145/3110275}
 \acmJournal{PACMPL}
 \acmBadgeR[http://icfp17.sigplan.org/track/icfp-2017-Artifacts]{artifact_evaluated-reusable.png}
@@ -42,7 +42,7 @@ screen=true]{acmart}\settopmatter{}
 \acmBadgeR[http://icfp17.sigplan.org/track/icfp-2017-Artifacts]{artifact_evaluated-reusable.png}
 \acmBadgeL[http://icfp17.sigplan.org/track/icfp-2017-Artifacts]{artifact_available.png}
 \acmJournal{PACMPL}
-\acmYear{2017} \acmVolume{1} \acmNumber{1} \acmArticle{31} \acmMonth{1}
+\acmYear{2017} \acmVolume{1} \acmNumber{1} \acmArticle{31} \acmMonth{9}
 \acmDOI{10.1145/3110275}
 \fi\fi
 
@@ -226,8 +226,8 @@ This is a technical appendix for:
 
 Stephanie Weirich, Antoine Voizard, Pedro Henrique Azevedo de Amorim, and
 Richard Eisenberg. 2017. A Specification for Dependent Types in Haskell.
-Proc. ACM Program. Lang. 1, 1, Article 31 (January
-2017). \url{https://doi.org/10.1145/3110275}
+Proc. ACM Program. Lang. 1, 1, Article 31 (September 2017).
+\url{https://doi.org/10.1145/3110275}
 \end{abstract}
 \else
 \begin{abstract}
