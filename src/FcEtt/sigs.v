@@ -220,10 +220,12 @@ Axiom Typing_swap : forall x1 x G a A B R1 R2,
              (open_tm_wrt_tm B (a_Var_f x)) R2.
 
 
-Axiom E_Pi_exists : forall x (G : context) (rho : relflag) (A B : tm) R,
+Axiom E_Pi_exists : forall x (G : context) (rho : relflag) (A B : tm) R R',
       x `notin` dom G \u fv_tm_tm_tm B
       -> Typing ([(x, Tm A R)] ++ G) (open_tm_wrt_tm B (a_Var_f x)) a_Star R
-      -> Typing G A a_Star R -> Typing G (a_Pi rho A R B) a_Star R.
+      -> Typing G A a_Star R
+      -> SubRole R R'
+      -> Typing G (a_Pi rho A R B) a_Star R'.
 
 Axiom E_Abs_exists :  forall x (G : context) (rho : relflag) (a A B : tm) R R',
     x `notin` fv_tm_tm_tm a \u fv_tm_tm_tm B
@@ -246,7 +248,10 @@ Axiom binds_to_Typing: forall G T A R, Ctx G -> binds T (Tm A R) G -> Typing G A
 
 Axiom invert_a_Pi: forall G rho A0 A B0 R R',
     Typing G (a_Pi rho A0 R B0) A R' ->
-    DefEq G (dom G) A a_Star a_Star Rep /\ (exists L, forall x, x `notin` L -> Typing ([(x, Tm A0 R)] ++ G) (open_tm_wrt_tm B0 (a_Var_f x)) a_Star R') /\ Typing G A0 a_Star R.
+    DefEq G (dom G) A a_Star a_Star Rep /\ 
+      (exists L, forall x, x `notin` L -> 
+        Typing ([(x, Tm A0 R)] ++ G) (open_tm_wrt_tm B0 (a_Var_f x)) a_Star R') 
+          /\ Typing G A0 a_Star R /\ SubRole R R'.
 
 Axiom invert_a_CPi: forall G phi A B0 R,
     Typing G (a_CPi phi B0) A R ->
@@ -362,13 +367,14 @@ Axiom iso_cong : forall G D A A' B B' T T' R, DefEq G D A A' T R -> DefEq G D B 
 
 
 
-Axiom E_PiCong2 :  ∀ (L : atoms) (G : context) (D : available_props) rho (A1 B1 A2 B2 : tm) R,
+Axiom E_PiCong2 :  ∀ (L : atoms) (G : context) (D : available_props) rho (A1 B1 A2 B2 : tm) R R',
     DefEq G D A1 A2 a_Star R
     → (∀ x : atom,
           x `notin` L
           → DefEq ([(x, Tm A1 R)] ++ G) D (open_tm_wrt_tm B1 (a_Var_f x))
-                  (open_tm_wrt_tm B2 (a_Var_f x)) a_Star R) 
-    → DefEq G D (a_Pi rho A1 R B1) (a_Pi rho A2 R B2) a_Star R.
+                  (open_tm_wrt_tm B2 (a_Var_f x)) a_Star R')
+    -> SubRole R R'
+    → DefEq G D (a_Pi rho A1 R B1) (a_Pi rho A2 R B2) a_Star R'.
 
 
 Axiom E_CPiCong2  : ∀ (L : atoms) (G : context) (D : available_props) (phi1 : constraint)
@@ -380,9 +386,10 @@ Axiom E_CPiCong2  : ∀ (L : atoms) (G : context) (D : available_props) (phi1 : 
                       (open_tm_wrt_co B (g_Var_f c)) a_Star R)
     → DefEq G D (a_CPi phi1 A) (a_CPi phi2 B) a_Star R.
 
-Axiom E_Pi2 : forall L G rho A B R,
-    (∀ x : atom, x `notin` L → Typing ([(x, Tm A R)] ++ G) (open_tm_wrt_tm B (a_Var_f x)) a_Star R) ->
-    Typing G (a_Pi rho A R B) a_Star R.
+Axiom E_Pi2 : forall L G rho A B R R',
+    (∀ x : atom, x `notin` L → Typing ([(x, Tm A R)] ++ G) (open_tm_wrt_tm B (a_Var_f x)) a_Star R') ->
+    SubRole R R' ->
+    Typing G (a_Pi rho A R B) a_Star R'.
 
 Axiom E_Abs2 : ∀ (L : atoms) (G : context) (rho : relflag) (a A B : tm) R R',
     (∀ x : atom,

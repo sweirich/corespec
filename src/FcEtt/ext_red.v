@@ -25,24 +25,24 @@ Export red_one.
 Set Bullet Behavior "Strict Subproofs".
 Set Implicit Arguments.
 
-Lemma Beta_preservation : forall a b, Beta a b -> forall G A, Typing G a A -> Typing G b A.
+Lemma Beta_preservation : forall a b, Beta a b -> forall G A R, Typing G a A R -> Typing G b A R.
 Proof.
-  intros a b B. destruct B; intros G A0 TH.
+  intros a b B. destruct B; intros G A0 R' TH.
   - have CT: Ctx G by eauto.
-    have RA: Typing G A0 a_Star by eauto using Typing_regularity.
+    have RA: Typing G A0 a_Star R' by eauto using Typing_regularity.
     destruct rho.
-    + destruct (invert_a_App_Rel TH) as (A & B & TB & Tb & DE).
-      destruct (invert_a_UAbs TB) as (A1 & B1 & DE2 & [L TB1] & TA1).
+    + destruct (invert_a_App_Rel TH) as (A & B & R1 & R2 & TB & Tb & DE & SR1).
+      destruct (invert_a_UAbs TB) as (A1 & B1 & R3 & DE2 & [L TB1] & TA1 & SR2).
       eapply E_Conv with (A := (open_tm_wrt_tm B1 b)); eauto 2.
       pick fresh x.
       move: (TB1 x ltac:(auto)) =>  [T1 [T2 RC]].
       rewrite (tm_subst_tm_tm_intro x v); eauto.
       rewrite (tm_subst_tm_tm_intro x B1); eauto.
-      eapply Typing_tm_subst with (A:=A1); eauto 2.
-      eapply E_Conv with (A := A); eauto 2 using E_PiFst.
-      eapply E_Trans with (a1:= open_tm_wrt_tm B b); eauto using E_PiSnd, E_Refl, E_Sym.
-    + destruct (invert_a_App_Irrel TH) as (A & B & b0 & Tb & Tb2 & DE).
-      destruct (invert_a_UAbs Tb) as (A1 & B1 & DE2 & [L TB1] & TA1).
+      eapply Typing_tm_subst with (A:=A1); eauto 2. admit. admit. (*
+      eapply E_Conv with (A := A1); eauto 2 using E_PiFst.
+      eapply E_Trans with (a1:= open_tm_wrt_tm B b); eauto using E_PiSnd, E_Refl, E_Sym. *)
+    + admit. (*destruct (invert_a_App_Irrel TH) as (A & B & b0 & R1 & Tb & Tb2 & DE & SR1).
+      destruct (invert_a_UAbs Tb) as (A1 & B1 & R2 & DE2 & [L TB1] & TA1 & SR2).
       eapply E_Conv with (A := (open_tm_wrt_tm B1 b0)); eauto 2.
       pick fresh x.
       move: (TB1 x ltac:(auto)) =>  [T1 [T2 RC]].
@@ -55,14 +55,14 @@ Proof.
       eapply E_Conv with (A:=A); eauto using E_PiFst.
       eapply E_Sym.
       eapply E_Trans with (a1 := open_tm_wrt_tm B b0). auto.
-      eapply E_PiSnd; eauto using E_Refl.
+      eapply E_PiSnd; eauto using E_Refl. *)
    - have CT: Ctx G by eauto.
-     have RA: Typing G A0 a_Star by eauto using Typing_regularity.
-     destruct (invert_a_CApp TH) as (eq & a1 & b1 & A1 & B1 & h0 & h1 & h2).
-     destruct (invert_a_UCAbs h0) as (a2 & b2 & A2 & B2 & h3 & h4 & [L h5]).
+     have RA: Typing G A0 a_Star R' by eauto using Typing_regularity.
+     destruct (invert_a_CApp TH) as (eq & a1 & b1 & A1 & R1 & B1 & R2 & h0 & h1 & h2 & h3).
+     destruct (invert_a_UCAbs h0) as (a2 & b2 & A2 & R3 & B2 & R4 & h4 & h5 & [L h6] & h7).
      pick fresh c.
-     move: (h5 c ltac:(auto)) => [T1 T2].
-     have? : DefEq G (dom G) a2 b2 A2. eauto using E_CPiFst, E_Cast.
+     move: (h6 c ltac:(auto)) => [T1 T2].
+     have? : DefEq G (dom G) a2 b2 A2 R3. eauto using E_CPiFst, E_Cast.
 
      eapply E_Conv with (A:= (open_tm_wrt_co B2 g_Triv)); eauto 2.
      rewrite (co_subst_co_tm_intro c a'); eauto.
@@ -71,23 +71,24 @@ Proof.
      eapply E_Sym.
      eapply E_Trans with (a1 := open_tm_wrt_co B1 g_Triv). auto.
      eapply E_CPiSnd; eauto 2.
-   - destruct (invert_a_Fam TH) as (b & B & h0 & h1 & h2).
-     assert (Ax a A = Ax b B). eapply binds_unique; eauto using uniq_toplevel.
+   - destruct (invert_a_Fam TH) as (b & B & R1 & h0 & h1 & h2 & h3).
+     assert (Ax a A R = Ax b B R1). eapply binds_unique; eauto using uniq_toplevel.
      inversion H0. subst.
      eapply E_Conv with (A := B).
      eapply toplevel_closed in h1.
      eapply Typing_weakening with (F:=nil)(G:=nil)(E:=G) in h1.
-     simpl_env in h1.
-     auto. auto. simpl_env.
-     eauto.
+     simpl_env in h1. eauto.
+     auto. simpl_env. eauto.
      eapply E_Sym. eauto.
-     move: (DefEq_regularity h0) => h3.
-     inversion h3.
-     auto.
-Qed.
+     move: (DefEq_regularity h0) => h4.
+     inversion h4.
+     auto. 
+     Unshelve. exact (dom G). exact (dom G).
+Admitted.
 
-Lemma E_Beta2 :  ∀ (G : context) (D : available_props) (a1 a2 B : tm),
-       Typing G a1 B → Beta a1 a2 → DefEq G D a1 a2 B.
+
+Lemma E_Beta2 :  ∀ (G : context) (D : available_props) (a1 a2 B : tm) R,
+       Typing G a1 B R → Beta a1 a2 → DefEq G D a1 a2 B R.
 Proof.
   intros; eapply E_Beta; eauto.
   eapply Beta_preservation; eauto.
@@ -193,12 +194,12 @@ Proof.
   - inversion RC.  eauto using reduction_in_one_fv_preservation.
 Qed.
 
-Lemma reduction_preservation : forall a a', reduction_in_one a a' -> forall G A, Typing G a A -> Typing G a' A.
+Lemma reduction_preservation : forall a a', reduction_in_one a a' -> forall G A R, Typing G a A R -> Typing G a' A R.
 Proof.
   (* TODO: clean and make more robust *)
   move=> a a' r.
   induction r.
-  all: move=> G A_ tpga.
+  all: move=> G A_ R' tpga.
   - depind tpga; try eauto.
     + eapply E_Abs with (L := L `union` L0); try eassumption.
       all: move=> x xLL0.
@@ -210,8 +211,8 @@ Proof.
     + apply invert_a_App_Rel in tpga.
       pcess_hyps.
       apply invert_a_UAbs in H1. pcess_hyps.
-      autofresh. pcess_hyps.
-      move: (E_PiFst _ _ _ _ _ _ _ H1) => xx1.
+      autofresh. pcess_hyps. admit. (*
+      move: (E_PiFst _ _ _ _ _ _ _ _ _ H1) => xx1.
       eapply E_Conv; try eapply (E_Sym _ _ _ _ _ H3).
       rewrite  (tm_subst_tm_tm_intro x4); try fsetdec_fast.
       rewrite (tm_subst_tm_tm_intro x4 x0); try fsetdec_fast.
@@ -246,9 +247,9 @@ Proof.
       * eauto.
       * (* TODO: autoreg tactic (applies regularity automatically) *)
         apply DefEq_regularity in H3.
-        by inversion H3.
+        by inversion H3. *)
 
-    + apply invert_a_App_Irrel in tpga.
+    + admit. (* apply invert_a_App_Irrel in tpga.
       pcess_hyps.
       apply invert_a_UAbs in H1; pcess_hyps.
       autofresh. pcess_hyps. inversion H7.
@@ -288,20 +289,21 @@ Proof.
       * apply DefEq_regularity in x0x3. by inversion x0x3.
       * eauto.
       * apply DefEq_regularity in H3.
-        by inversion H3.
+        by inversion H3. *)
 
 
   - apply invert_a_CApp in tpga; pcess_hyps.
     apply invert_a_UCAbs in H1; pcess_hyps.
     eapply E_Conv; try eapply (E_Sym _ _ _ _ _ H2). (* TODO: declare E_Sym's (and others') arguments implicit *)
     autofresh; pcess_hyps.
-    move: (E_CPiFst _ _ _ _ _ _ H1) => iso.
-    move: (E_Cast _ _ _ _ _ _ _ _ H2 iso) => x34.
-    move: (E_CPiSnd _ _ _ _ _ _ _ _ _ _ H1 H2 x34) => x26.
-    eapply E_Conv; try eapply (E_Sym _ _ _ _ _ x26).
+    move: (E_CPiFst _ _ _ _ _ _ _ H1) => iso.
+    move: (E_Cast _ _ _ _ _ _ _ _ _ _ H2 iso) => x34.
+    move: (E_CPiSnd _ _ _ _ _ _ _ _ _ _ _ _ _ H1 H2 x34) => x26.
+    pose (x27 := E_Sub _ _ _ _ _ _ _ x26 H4).
+    eapply E_Conv; try eapply (E_Sym _ _ _ _ _ _ x27).
     all: try (apply DefEq_regularity in H3; inversion H3; done).
-    rewrite  (co_subst_co_tm_intro x8); try fsetdec_fast.
-    rewrite (co_subst_co_tm_intro x8 x6); try fsetdec_fast.
+    rewrite  (co_subst_co_tm_intro x12); try fsetdec_fast.
+    rewrite (co_subst_co_tm_intro x12 x9); try fsetdec_fast.
     eapply Typing_co_subst.
     all: eauto.
 
@@ -309,13 +311,13 @@ Proof.
     move: (binds_unique _ _ _ _ _ H H1 uniq_toplevel). inversion 1. subst x0 x.
     apply toplevel_closed in H.
     eapply E_Sym in H0.
-    move: (DefEq_regularity H0) => reg; inversion reg.
-    eapply Typing_Ctx in H7.
+    move: (DefEq_regularity H0) => reg; inversion reg. subst.
+    eapply Typing_Ctx in H9.
     eapply E_Conv; eauto.
     move: (Typing_weakening H G nil nil eq_refl).
-    rewrite app_nil_l app_nil_r.
-    by apply.
-Qed.
+    rewrite app_nil_l app_nil_r. intros.
+    eapply E_SubRole with (R1 := x1); auto.
+Admitted.
 
 
 
