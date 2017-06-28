@@ -872,10 +872,11 @@ x:A / R in G
 G |= x : A / R
 
 %% 2nd premise is redundant, but convenient for IH
-G, x:A / R |= B : TYPE / R
+G, x:A / R |= B : TYPE / R'
 [ G |= A : TYPE / R ]
+R <= R'
 ----------------------------------------- :: Pi
-G |= all rho x:A / R -> B : TYPE / R
+G |= all rho x:A / R -> B : TYPE / R'
 
 G, x:A / R  |= a : B / R'
 [ G |= A : TYPE / R ]
@@ -983,14 +984,14 @@ G ; D |= a1 == a2 : B / R
 %% Rules related to functions
 
 G ; D |=  A1 == A2 : TYPE/R
-G, x:A1/R; D |= B1 == B2 : TYPE/R
+G, x:A1/R; D |= B1 == B2 : TYPE/R'
 %% this needed by weakening IH
 [G |= A1 : TYPE/R]
 %% these two needed by regularity
-[G |= all rho x:A1/R -> B1 : TYPE/R]
-[G |= all rho x:A2/R -> B2 : TYPE/R]
+[G |= all rho x:A1/R -> B1 : TYPE/R']
+[G |= all rho x:A2/R -> B2 : TYPE/R']
 ---------------------------------------------------------- :: PiCong
-G ; D |= (all rho x:A1/R -> B1) == (all rho x:A2/R -> B2) : TYPE/R
+G ; D |= (all rho x:A1/R -> B1) == (all rho x:A2/R -> B2) : TYPE/R'
 
 
 G, x:A1/R ; D |= b1 == b2 : B/R'
@@ -1013,12 +1014,12 @@ G |= a : A/R
 G ; D |= a1 - [] == b1 - [] : (B { a / x })/R'
 
 
-G ; D |= all rho x:A1/R1 -> B1 == all rho x:A2/R2 -> B2 : TYPE/R'
+G ; D |= all rho x:A1/R -> B1 == all rho x:A2/R -> B2 : TYPE/R'
 ------------------------------------------------- :: PiFst
-G ; D |=  A1 == A2 : TYPE/ min R1 R2
+G ; D |=  A1 == A2 : TYPE/ R
 
-G ; D |= all rho x:A1/R1 -> B1 == all rho x:A2/R2 -> B2 : TYPE/R'
-G ; D |= a1 == a2 : A1/ min R1 R2
+G ; D |= all rho x:A1/R -> B1 == all rho x:A2/R -> B2 : TYPE/R'
+G ; D |= a1 == a2 : A1/R
 ------------------------------------------- :: PiSnd
 G ; D |=  B1 {a1 /x}  == B2 {a2/x} : TYPE/R'
 
@@ -1061,9 +1062,9 @@ G ; dom G |= A == B : TYPE/R2
 -------------------------------------- :: EqConv
 G ; D |= a == b : B/R2
 
-G ; D |= a ~ b : A/R == a' ~ b' : A'/R'
+G ; D |= a ~ b : A/R == a' ~ b' : A'/R
 -------------------------------------- :: IsoSnd
-G ; D |= A == A' : TYPE/min R R'
+G ; D |= A == A' : TYPE/R
 
 
 
