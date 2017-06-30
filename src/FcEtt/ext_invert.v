@@ -825,7 +825,7 @@ Proof.
       destruct eq_dec; try congruence.
       rewrite tm_subst_tm_tm_fresh_eq in K; auto.
     + apply invert_a_Pi in H2; eauto.
-      destruct H2 as [_ [[L h0] hi1]].
+      destruct H2 as [_ [[L h0] [hi1 hi2]]].
       pick_fresh x.
       have: x `notin` L; auto => h1.
       apply (E_Conv _ _ A2) in H1; auto.

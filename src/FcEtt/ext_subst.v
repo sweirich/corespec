@@ -583,16 +583,18 @@ Qed.
 (* -------------------- *)
 
 
-Lemma E_Pi_exists : forall x (G : context) (rho : relflag) (A B : tm) R,
+Lemma E_Pi_exists : forall x (G : context) (rho : relflag) (A B : tm) R R',
       x `notin` dom G \u fv_tm_tm_tm B
       -> Typing ([(x, Tm A R)] ++ G) (open_tm_wrt_tm B (a_Var_f x)) a_Star R
-      -> Typing G A a_Star R -> Typing G (a_Pi rho A R B) a_Star R.
+      -> Typing G A a_Star R
+      -> SubRole R R'
+      -> Typing G (a_Pi rho A R B) a_Star R'.
 Proof.
   intros.
   pick fresh y and apply E_Pi.
   replace a_Star with (open_tm_wrt_tm a_Star (a_Var_f y)); auto.
   eapply Typing_swap; eauto.
-  auto.
+  auto. auto.
 Qed.
 
 

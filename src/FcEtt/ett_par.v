@@ -616,35 +616,35 @@ Proof.
      Unshelve. apply (fv_co_co_tm a).
 Qed.
 
-Lemma multipar_CPi_B_proj:  ∀ (G : context) D (A B a A' B' a' T T': tm) R,
-    multipar G D (a_CPi (Eq A B T R) a) (a_CPi (Eq A' B' T' R) a')
+Lemma multipar_CPi_B_proj:  ∀ (G : context) D (A B a A' B' a' T T': tm) R R',
+    multipar G D (a_CPi (Eq A B T R) a) (a_CPi (Eq A' B' T' R') a')
   → (exists L, forall c, c `notin` L -> multipar G D (open_tm_wrt_co a (g_Var_f c)) (open_tm_wrt_co a' (g_Var_f c))).
 Proof.
-  intros G D A B a A' B' a' T T' R h1.
+  intros G D A B a A' B' a' T T' R R' h1.
   dependent induction h1; eauto.
   Unshelve.
   inversion H; subst.
   eapply IHh1; eauto.
-  destruct (IHh1 A'0 B'0 a'0 A' B' a' A1' T' R) as [L0 h0]; auto.
+  destruct (IHh1 A'0 B'0 a'0 A' B' a' A1' T' R R') as [L0 h0]; auto.
   exists (L \u L0); eauto.
   apply (fv_tm_tm_tm A').
 Qed.
 
-Lemma multipar_CPi_phi_proj:  ∀ (G : context) D (A B a A' B' a' T T': tm) R,
-    multipar G D (a_CPi (Eq A B T R) a) (a_CPi (Eq A' B' T' R) a')
+Lemma multipar_CPi_phi_proj:  ∀ (G : context) D (A B a A' B' a' T T': tm) R R',
+    multipar G D (a_CPi (Eq A B T R) a) (a_CPi (Eq A' B' T' R') a')
     -> (multipar G D A A'/\ multipar G D B B' /\ multipar G D T T').
 Proof.
-  intros G D A B a A' B' a' T T' R H.
+  intros G D A B a A' B' a' T T' R R' H.
   dependent induction H; eauto.
   inversion H; subst.
   eapply IHmultipar; eauto.
   repeat split; eauto.
   apply mp_step with (b := A'0); auto.
-  destruct (IHmultipar A'0 B'0 a'0 A' B' a' A1' T' R); auto.
-  destruct (IHmultipar A'0 B'0 a'0 A' B' a' A1' T' R); auto.
+  destruct (IHmultipar A'0 B'0 a'0 A' B' a' A1' T' R R'); auto.
+  destruct (IHmultipar A'0 B'0 a'0 A' B' a' A1' T' R R'); auto.
   apply mp_step with (b:= B'0); auto.
   apply H2.
-  destruct (IHmultipar A'0 B'0 a'0 A' B' a' A1' T' R); auto.
+  destruct (IHmultipar A'0 B'0 a'0 A' B' a' A1' T' R R'); auto.
   apply mp_step with (b:= A1'); auto.
   apply H2.
 Qed.

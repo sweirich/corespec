@@ -127,7 +127,7 @@ Qed.
 (* The reduction relation is deterministic *)
 Lemma reduction_in_one_deterministic :
   forall a a1, reduction_in_one a a1 -> forall a2, reduction_in_one a a2 -> a1 = a2.
-Proof. 
+Proof.
   intros a a1 H.
   induction H; intros a2 h0.
   all: inversion h0; subst.
@@ -149,7 +149,7 @@ Proof.
     move: (H0 x ltac:(auto)) => h1.
     apply h1 in h7.
     apply open_tm_wrt_tm_inj in h7; eauto. rewrite h7. auto.
-  - have: (Ax a A R = Ax a2 A0 R0). eapply binds_unique; eauto using uniq_toplevel.
+  - have: (Ax a A = Ax a2 A0). eapply binds_unique; eauto using uniq_toplevel.
     move => h; inversion h; done.
 Qed.
 

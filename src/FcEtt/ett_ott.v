@@ -1134,6 +1134,7 @@ with DefEq : context -> available_props -> tm -> tm -> tm -> role -> Prop :=    
       ( Typing G A1 a_Star R )  ->
       ( Typing G (a_Pi rho A1 R B1) a_Star R' )  ->
       ( Typing G (a_Pi rho A2 R B2) a_Star R' )  ->
+      ( SubRole R R' )  ->
      DefEq G D  ( (a_Pi rho A1 R B1) )   ( (a_Pi rho A2 R B2) )  a_Star R'
  | E_AbsCong : forall (L:vars) (G:context) (D:available_props) (rho:relflag) (b1 b2 A1:tm) (R:role) (B:tm) (R':role),
       ( forall x , x \notin  L  -> DefEq  (( x ~ Tm  A1 R ) ++  G )  D  ( open_tm_wrt_tm b1 (a_Var_f x) )   ( open_tm_wrt_tm b2 (a_Var_f x) )   ( open_tm_wrt_tm B (a_Var_f x) )  R' )  ->
