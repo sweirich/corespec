@@ -990,6 +990,7 @@ G, x:A1/R; D |= B1 == B2 : TYPE/R'
 %% these two needed by regularity
 [G |= all rho x:A1/R -> B1 : TYPE/R']
 [G |= all rho x:A2/R -> B2 : TYPE/R']
+[ R <= R' ]
 ---------------------------------------------------------- :: PiCong
 G ; D |= (all rho x:A1/R -> B1) == (all rho x:A2/R -> B2) : TYPE/R'
 
