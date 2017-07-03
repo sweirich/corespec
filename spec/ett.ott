@@ -155,37 +155,37 @@ brs  :: 'br_' ::=    {{ com case branches }}
    | ( brs )          :: S :: Paren  {{ coq ([[brs]]) }}
 
 co, g {{ tex \gamma }} :: 'g_' ::= {{ com explicit coercions }}
-   | o                    ::   :: Triv
-   | c                    ::   :: Var
-   | red a b              ::   :: Beta
+  | o                    ::   :: Triv
+  | c                    ::   :: Var
+  | red a b              ::   :: Beta
 
-   | refl a               ::   :: Refl
-   | refl2 a b g          ::   :: Refl2
+% | refl a               ::   :: Refl
+  | refl2 a b g          ::   :: Refl2
      {{ tex ([[a]]\mathrel{|\!\!=\!\!|}_{[[g]]}[[b]]) }}
-   | sym g                ::   :: Sym
-   | g1 ; g2              ::   :: Trans
+% | sym g                ::   :: Sym
+  | g1 ; g2              ::   :: Trans
 
-   | all rho x : g1 -> g2 ::   :: PiCong (+ bind x in g2 +)
-     {{ tex \mathrm{\Pi}^[[rho]][[x]]\!:\![[g1]].[[g2]] }}
+%  | all rho x : g1 -> g2 ::   :: PiCong (+ bind x in g2 +)
+%    {{ tex \mathrm{\Pi}^[[rho]][[x]]\!:\![[g1]].[[g2]] }}
 
-   | \ rho x : g1 . g2    ::   :: AbsCong (+ bind x in g2 +)
-     {{ tex \mathrm{\lambda}^[[rho]][[x]]\!:\![[g1]].[[g2]] }}
+%  | \ rho x : g1 . g2    ::   :: AbsCong (+ bind x in g2 +)
+%    {{ tex \mathrm{\lambda}^[[rho]][[x]]\!:\![[g1]].[[g2]] }}
 
-   | g1 rho g2            ::   :: AppCong
-     {{ tex [[g1]]\ [[g2]]^[[rho]] }}
+%  | g1 rho g2            ::   :: AppCong
+%    {{ tex [[g1]]\ [[g2]]^[[rho]] }}
 
    | piFst g              ::   :: PiFst
    | cpiFst g             ::   :: CPiFst
-   | isoSnd g            ::   :: IsoSnd
+   | isoSnd g             ::   :: IsoSnd
    | g1 @ g2              ::   :: PiSnd
 
-   | all c : g1 . g3      ::   :: CPiCong (+ bind c in g3 +)
-     {{ tex [[all]][[c]]\!:\![[g1]].[[g3]] }}
+%  | all c : g1 . g3      ::   :: CPiCong (+ bind c in g3 +)
+%    {{ tex [[all]][[c]]\!:\![[g1]].[[g3]] }}
 
-   | \ c : g1 . g3 @ g4   ::   :: CAbsCong (+ bind c in g3 +)
-     {{ tex \mathrm{\lambda}[[c]]\!:\![[g1]].[[g3]][[@]][[g4]] }}
+%  | \ c : g1 . g3 @ g4   ::   :: CAbsCong (+ bind c in g3 +)
+%    {{ tex \mathrm{\lambda}[[c]]\!:\![[g1]].[[g3]][[@]][[g4]] }}
 
-   | g ( g1 , g2 )        ::   :: CAppCong
+%  | g ( g1 , g2 )        ::   :: CAppCong
    | g @ ( g1 , g2 )      ::   :: CPiSnd
      {{ tex [[g]] [[@]] ([[g1]] \sim [[g2]]) }}
    | g1 |> g2             ::   :: Cast
