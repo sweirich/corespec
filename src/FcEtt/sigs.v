@@ -360,7 +360,10 @@ Axiom refl_iso: forall G D phi, PropWff G phi -> Iso G D phi phi.
 
 Axiom sym_iso: forall G D phi1 phi2, Iso G D phi1 phi2 -> Iso G D phi2 phi1.
 
-Axiom trans_iso : forall G D phi1 phi2 phi3, Iso G D phi1 phi2 -> Iso G D phi2 phi3 -> Iso G D phi1 phi3.
+Axiom trans_iso : forall G D a0 b0 A a1 b1 B a2 b2 C R,
+    Iso G D (Eq a0 b0 A R) (Eq a1 b1 B R) -> 
+    Iso G D (Eq a1 b1 B R) (Eq a2 b2 C R) -> 
+    Iso G D (Eq a0 b0 A R) (Eq a2 b2 C R).
 
 Axiom iso_cong : forall G D A A' B B' T T' R, DefEq G D A A' T R -> DefEq G D B B' T R -> DefEq G D T T' a_Star R ->
                      Iso G D (Eq A B T R) (Eq A' B' T' R).
@@ -377,14 +380,14 @@ Axiom E_PiCong2 :  ∀ (L : atoms) (G : context) (D : available_props) rho (A1 B
     → DefEq G D (a_Pi rho A1 R B1) (a_Pi rho A2 R B2) a_Star R'.
 
 
-Axiom E_CPiCong2  : ∀ (L : atoms) (G : context) (D : available_props) (phi1 : constraint)
-                      (A : tm) (phi2 : constraint) (B : tm) R,
-    Iso G D phi1 phi2
+Axiom E_CPiCong2  : ∀ (L : atoms) (G : context) (D : available_props) a0 b0 T0
+                      (A : tm) a1 b1 T1 (B : tm) R R',
+    Iso G D (Eq a0 b0 T0 R) (Eq a1 b1 T1 R)
     → (∀ c : atom,
           c `notin` L
-              → DefEq ([(c, Co phi1)] ++ G) D (open_tm_wrt_co A (g_Var_f c))
-                      (open_tm_wrt_co B (g_Var_f c)) a_Star R)
-    → DefEq G D (a_CPi phi1 A) (a_CPi phi2 B) a_Star R.
+              → DefEq ([(c, Co (Eq a0 b0 T0 R))] ++ G) D (open_tm_wrt_co A (g_Var_f c))
+                      (open_tm_wrt_co B (g_Var_f c)) a_Star R')
+    → DefEq G D (a_CPi (Eq a0 b0 T0 R) A) (a_CPi (Eq a1 b1 T1 R) B) a_Star R'.
 
 Axiom E_Pi2 : forall L G rho A B R R',
     (∀ x : atom, x `notin` L → Typing ([(x, Tm A R)] ++ G) (open_tm_wrt_tm B (a_Var_f x)) a_Star R') ->

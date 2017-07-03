@@ -59,10 +59,10 @@ Ltac E_pick_fresh x :=
 
 (* Can replace set with an equivalent *)
 Lemma respects_atoms_eq_mutual :
-  (forall G a A,     Typing  G a A       -> True) /\
+  (forall G a A R,     Typing  G a A R       -> True) /\
   (forall G phi,     PropWff G phi       -> True) /\
   (forall G D p1 p2, Iso G D p1 p2 -> forall D', D [=] D' -> Iso G D' p1 p2) /\
-  (forall G D A B T,   DefEq G D A B T  -> forall D', D [=] D' -> DefEq G D' A B T) /\
+  (forall G D A B T R,   DefEq G D A B T R -> forall D', D [=] D' -> DefEq G D' A B T R) /\
   (forall G,           Ctx G           -> True).
 Proof.
   ext_induction CON; intros; subst; eauto 2.
@@ -111,12 +111,12 @@ Ltac binds_cons :=
 
 
 Lemma strengthen_available_noncovar:
-  (forall G1  a A,    Typing G1 a A -> True) /\
+  (forall G1  a A R,    Typing G1 a A R -> True) /\
   (forall G1  phi,    PropWff G1 phi -> True) /\
   (forall G1 D p1 p2, Iso G1 D p1 p2 -> forall x, not (exists phi, binds x (Co phi) G1) ->
                  Iso G1 (remove x D) p1 p2) /\
-  (forall G1 D A B A1,DefEq G1 D A B A1 ->  forall x, not (exists phi, binds x (Co phi) G1) ->
-                 DefEq G1 (remove x D) A B A1) /\
+  (forall G1 D A B A1 R, DefEq G1 D A B A1 R ->  forall x, not (exists phi, binds x (Co phi) G1) ->
+                 DefEq G1 (remove x D) A B A1 R) /\
   (forall G1 ,        Ctx G1 -> True).
 Proof.
   eapply typing_wff_iso_defeq_mutual; eauto 3; try done.
@@ -132,15 +132,15 @@ Proof.
 Qed.  (* strengthen_available_nocovar *)
 
 Lemma DefEq_strengthen_available_tmvar :
-  forall G D g A B, DefEq G D g A B ->  forall x A', binds x (Tm A') G ->
+  forall G D g A B R, DefEq G D g A B R ->  forall x A' R', binds x (Tm A' R') G ->
                     forall D', D' [=] remove x D ->
-                    DefEq G D' g A B.
+                    DefEq G D' g A B R.
 Proof.
   intros. eapply respects_atoms_eq_mutual.
   eapply (fourth strengthen_available_noncovar). eauto.
   unfold not.
   intros b. destruct b as [phi b].
-  assert (Tm A' = Co phi). eapply binds_unique; eauto.
+  assert (Tm A' R' = Co phi). eapply binds_unique; eauto.
   inversion H2.
   fsetdec.
 Qed.
@@ -148,10 +148,10 @@ Qed.
 (* ----- *)
 
 Lemma weaken_available_mutual:
-  (forall G1  a A,   Typing G1 a A -> True) /\
+  (forall G1  a A R,   Typing G1 a A R -> True) /\
   (forall G1  phi,   PropWff G1 phi -> True) /\
   (forall G1 D p1 p2, Iso G1 D p1 p2 -> forall D', D [<=] D' -> Iso G1 D' p1 p2) /\
-  (forall G1 D A B T,   DefEq G1 D A B T -> forall D', D [<=] D' -> DefEq G1 D' A B T) /\
+  (forall G1 D A B T R,   DefEq G1 D A B T R -> forall D', D [<=] D' -> DefEq G1 D' A B T R) /\
   (forall G1 ,       Ctx G1 -> True).
 Proof.
   ext_induction CON.
@@ -165,12 +165,12 @@ Proof.
 Qed.
 
 Lemma remove_available_mutual:
-  (forall G1  a A,   Typing G1 a A -> True) /\
+  (forall G1  a A R,   Typing G1 a A R -> True) /\
   (forall G1  phi,   PropWff G1 phi -> True) /\
   (forall G1 D p1 p2, Iso G1 D p1 p2 ->
                    Iso G1 (AtomSetImpl.inter D (dom G1)) p1 p2) /\
-  (forall G1 D A B T,   DefEq G1 D A B T ->
-                   DefEq G1 (AtomSetImpl.inter D (dom G1)) A B T) /\
+  (forall G1 D A B T R,   DefEq G1 D A B T R ->
+                   DefEq G1 (AtomSetImpl.inter D (dom G1)) A B T R) /\
   (forall G1 ,       Ctx G1 -> True).
 Proof.
   ext_induction CON.
@@ -181,7 +181,7 @@ Proof.
   all: eapply (CON (L \u dom G \u D)); auto;
     intros;
     eapply (fourth respects_atoms_eq_mutual);
-    [match goal with [H0 : forall x, x `notin` ?L -> DefEq _ (AtomSetImpl.inter _ _) _ _ _ |- _ ] => eapply H0 end; auto|
+    [match goal with [H0 : forall x, x `notin` ?L -> DefEq _ (AtomSetImpl.inter _ _) _ _ _ _ |- _ ] => eapply H0 end; auto|
     auto; simpl; fsetdec].
 Qed.
 
@@ -202,7 +202,7 @@ Qed.
 *)
 
 Lemma DefEq_weaken_available :
-  forall G D A B T, DefEq G D A B T -> DefEq G (dom G) A B T.
+  forall G D A B T R, DefEq G D A B T R -> DefEq G (dom G) A B T R.
 Proof.
   intros.
   remember (AtomSetImpl.inter D (dom G)) as D'.
@@ -225,15 +225,15 @@ Hint Resolve DefEq_weaken_available Iso_weaken_available.
 
 
 Lemma typing_weakening_mutual:
-  (forall G0 a A,     Typing G0 a A ->
-     forall E F G, (G0 = F ++ G) -> Ctx (F ++ E ++ G) -> Typing (F ++ E ++ G) a A) /\
-  (forall G0 phi,     PropWff G0 phi ->
+  (forall G0 a A R,   Typing G0 a A R ->
+     forall E F G, (G0 = F ++ G) -> Ctx (F ++ E ++ G) -> Typing (F ++ E ++ G) a A R) /\
+  (forall G0 phi,   PropWff G0 phi ->
      forall E F G, (G0 = F ++ G) -> Ctx (F ++ E ++ G) -> PropWff (F ++ E ++ G) phi) /\
   (forall G0 D p1 p2, Iso G0 D p1 p2 ->
      forall E F G, (G0 = F ++ G) -> Ctx (F ++ E ++ G) -> Iso (F ++ E ++ G) D p1 p2) /\
-  (forall G0 D A B T, DefEq G0 D A B T ->
-     forall E F G, (G0 = F ++ G) -> Ctx (F ++ E ++ G) -> DefEq (F ++ E ++ G) D A B T) /\
-  (forall G0,         Ctx G0 ->
+  (forall G0 D A B T R,   DefEq G0 D A B T R ->
+     forall E F G, (G0 = F ++ G) -> Ctx (F ++ E ++ G) -> DefEq (F ++ E ++ G) D A B T R) /\
+  (forall G0,       Ctx G0 ->
      forall E F G, (G0 = F ++ G) -> Ctx (F ++ E ++ G) -> Ctx (F ++ E ++ G)).
 Proof.
   ext_induction CON.

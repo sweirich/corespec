@@ -330,7 +330,8 @@ Combined Scheme CoercedValue_Value_mutual from CoercedValue_ind', Value_ind'.
 
 Ltac ext_induction CON :=
     apply typing_wff_iso_defeq_mutual;
-    [ pose CON :=  E_Star       |
+    [ pose CON :=  E_SubRole    |
+      pose CON :=  E_Star       |
       pose CON :=  E_Var        |
       pose CON :=  E_Pi         |
       pose CON :=  E_Abs        |
@@ -349,6 +350,7 @@ Ltac ext_induction CON :=
       pose CON :=  E_Refl       |
       pose CON :=  E_Sym        |
       pose CON :=  E_Trans      |
+      pose CON :=  E_Sub        |
       pose CON :=  E_Beta       |
       pose CON :=  E_PiCong     |
       pose CON :=  E_AbsCong    |

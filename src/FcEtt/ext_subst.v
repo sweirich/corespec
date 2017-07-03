@@ -187,10 +187,12 @@ Qed.
 *)
 Ltac rewrite_subst_context :=
   match goal with
-  | [ |- context [([(?y, ?C (_ _ _ ?T) ?R)] ++ map ?sub ?F ++ ?G0)] ] =>
-    rewrite_env (map sub ((y ~ (C T R)) ++ F) ++ G0)
   | [ |- context [([(?y, ?C (_ _ _ ?T))] ++ map ?sub ?F ++ ?G0)] ] =>
     rewrite_env (map sub ((y ~ (C T)) ++ F) ++ G0)
+  | [ |- context [([(?y, ?C (_ _ _ ?T) ?R)] ++ map ?sub ?F ++ ?G0)] ] =>
+    rewrite_env (map sub ((y ~ (C T R)) ++ F) ++ G0)
+  | [ |- context [([(?y, ?C (?D (_ _ _ ?a) (_ _ _ ?b) (_ _ _ ?T) ?R))] ++ map ?sub ?F ++ ?G0)] ] =>
+    rewrite_env (map sub ((y ~ (C (D a b T R))) ++ F) ++ G0)
   end.
 
 (*
@@ -245,8 +247,9 @@ Lemma tm_substitution_mutual :
                  forall F x, G0 = (F ++ (x ~ (Tm A R')) ++ G) ->
                         Ctx (map (tm_subst_tm_sort a x) F ++ G)).
 Proof. eapply typing_wff_iso_defeq_mutual;
-    intros; subst; simpl. 
-  all: try first [ E_pick_fresh y; autorewrite with subst_open_var; eauto 2 with lc;
+    intros; subst; simpl.
+  all: try first [ E_pick_fresh y;
+                   autorewrite with subst_open_var; eauto 2 with lc;
                    try rewrite_subst_context; eauto 3 |
                    autorewrite with subst_open; eauto 2 with lc ].
   all: try solve [econstructor; simpl in *; eauto 2].
@@ -468,7 +471,7 @@ Proof.
         split_hyp;
         unfold "[<=]" in *; eauto.
   - eauto.
-  - eauto. 
+  - eauto.
   - eapply E_Trans; eauto 2.
   - eapply E_Sub. eapply H. auto. assumption. assumption.
   - eapply E_Beta; eauto 2.

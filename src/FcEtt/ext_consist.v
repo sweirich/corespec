@@ -1213,15 +1213,13 @@ Proof.
     + multipar_subst_open x.
     + multipar_subst_open x.
   - (* cpi-cong *)
-    intros L G D phi1 A phi2 B R H hi0 H1 IHDefEq H2 _ _ t _ _ GOOD .
-    destruct phi1.
-    destruct phi2.
+    intros L G D a1 b1 A1 R A a2 b2 A2 B R' H hi0 H1 IHDefEq H2 _ _ t _ _ GOOD .
     pick_fresh c.
     match goal with
-      | [ H : Iso G D (Eq a b A0 R0) (Eq a0 b0 A1 R1) |- _ ] =>
-        destruct (hi0 GOOD a b A0 a0 b0 A1 R0 R1) as [hi1 [hi2 hi3]]; auto
+      | [ H : Iso G D (Eq a1 b1 A1 R) (Eq a2 b2 A2 R) |- _ ] =>
+        destruct (hi0 GOOD a1 b1 A1 a2 b2 A2 R R) as [hi1 [hi2 hi3]]; auto
     end.
-    have EC : erased_sort (Co (Eq a b A0 R0)).
+    have EC : erased_sort (Co (Eq a1 b1 A1 R)).
     { inversion H2. apply erased_Co; eapply Typing_erased; eauto. }
     destruct (IHDefEq c) as [Ac h1]; eauto.
     + apply Good_NoAssn; auto.
@@ -1231,7 +1229,7 @@ Proof.
       destruct hi2 as [Bco h1'].
       destruct hi3 as [Tco h2'].
       split_hyp.
-      exists (a_CPi (Eq Aco Bco Tco R0) (close_tm_wrt_co c Ac)); eauto.
+      exists (a_CPi (Eq Aco Bco Tco R) (close_tm_wrt_co c Ac)); eauto.
       repeat split; eauto 1.
       * apply (@erased_a_CPi (L \u D)); eauto.
         intros c0 Hi5.
@@ -1253,7 +1251,7 @@ Proof.
               [contradiction| auto]
         end]. *)
         multipar_CPi c.
-      * admit. (* multipar_CPi c. *)
+      * multipar_CPi c.
   - intros L G D a b phi1 B R hi0 IHDefEq H1 _ GOOD.
     destruct phi1.
     pick_fresh c.
@@ -1351,7 +1349,7 @@ Proof.
     destruct (H H0 a b A a' b' A' R R); auto.
     destruct H2; auto.
     Unshelve. all: auto.
-Admitted.
+Qed.
 
 Lemma consist_Pi_rEq : forall T1 T2, consistent T1 T2 ->
                forall rho A1 A2 R1 R2 B1 B2,

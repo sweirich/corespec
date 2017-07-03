@@ -852,11 +852,11 @@ Proof.
         apply Factor_Eqcontext_co; eauto 2.
         apply refl_context_defeq; eauto.
         all: apply refl_iso; eauto.
-      * apply (E_CPiCong (L \u (dom G))); auto.
+      * destruct phi1. apply (E_CPiCong (L \u (dom G))); auto.
         -- apply refl_iso; auto.
         -- intros c H3.
            apply E_Refl; eauto.
-           eapply (@context_DefEq_typing ([(c, Co phi1)] ++ G)); eauto.
+           eapply (@context_DefEq_typing ([(c, Co (Eq a0 b0 A R0))] ++ G)); eauto.
            eapply Typing_regularity; eauto 2.
            apply H; eauto 4.
            apply Factor_Eqcontext_co; eauto 4.
@@ -864,7 +864,7 @@ Proof.
            all: apply refl_iso; eauto 4.
         -- apply (E_CPi (L \u dom G)); eauto.
            intros c H3.
-           eapply (@context_DefEq_typing ([(c, Co phi1)] ++ G)); eauto.
+           eapply (@context_DefEq_typing ([(c, Co (Eq a0 b0 A R0))] ++ G)); eauto.
            eapply Typing_regularity; eauto 2.
            apply H; eauto.
            apply Factor_Eqcontext_co; eauto 4.
@@ -958,10 +958,12 @@ Proof.
 Qed.
 
 
-Lemma trans_iso : forall G D phi1 phi2 phi3,
-    Iso G D phi1 phi2 -> Iso G D phi2 phi3 -> Iso G D phi1 phi3.
+Lemma trans_iso : forall G D a0 b0 A a1 b1 B a2 b2 C R,
+    Iso G D (Eq a0 b0 A R) (Eq a1 b1 B R) -> 
+    Iso G D (Eq a1 b1 B R) (Eq a2 b2 C R) -> 
+    Iso G D (Eq a0 b0 A R) (Eq a2 b2 C R).
 Proof.
-  intros G D phi1 phi2 phi3 H1 H2.
+  intros G D a0 b0 A a1 b1 B a2 b2 C R H1 H2.
   destruct (Iso_regularity H1) as (WFF1 & WFF2).
   inversion WFF1. inversion WFF2. subst.
   destruct (Iso_regularity H2) as (WFF3 & WFF4).
@@ -969,7 +971,7 @@ Proof.
 
   have CTX: Ctx G by eauto 2.
 
-  have DE1: DefEq G D (a_CPi (Eq a b A R) a_Star) (a_CPi (Eq a0 b0 A0 R0) a_Star) a_Star R.
+  have DE1: DefEq G D (a_CPi (Eq a0 b0 A R) a_Star) (a_CPi (Eq a1 b1 B R) a_Star) a_Star R.
   { pick fresh x and apply E_CPiCong; eauto 2.
     unfold open_tm_wrt_co. simpl.
     constructor. constructor. constructor; auto.
@@ -983,7 +985,7 @@ Proof.
     constructor. constructor; auto.
   }
 
-  have DE2: DefEq G D (a_CPi (Eq a0 b0 A0 R0) a_Star) (a_CPi (Eq a2 b2 A2 R2) a_Star) a_Star R.
+  have DE2: DefEq G D (a_CPi (Eq a1 b1 B R) a_Star) (a_CPi (Eq a2 b2 C R) a_Star) a_Star R.
   { pick fresh x and apply E_CPiCong; eauto 2.
     unfold open_tm_wrt_co. simpl.
     constructor. constructor. constructor; auto.
@@ -1023,7 +1025,7 @@ Lemma iso_cong : forall G D A A' B B' T T' R,
       eapply E_IsoConv; eauto 2.
       have IB: Iso G D (Eq B B' T R) (Eq B B' T' R).
       eapply E_IsoConv; eauto 2.
-      eapply trans_iso with (phi2 := Eq A B T' R).
+      eapply trans_iso with (a1 := A) (b1 := B) (B := T').
       eapply E_IsoConv; eauto.
       eapply E_PropCong; eauto 2.
     Qed.
@@ -1062,27 +1064,27 @@ Proof.
   eapply E_PiCong; eauto 1.
 Qed.
 
-Lemma E_CPiCong2  : ∀ (L : atoms) (G : context) (D : available_props) (phi1 : constraint)
-                      (A : tm) (phi2 : constraint) (B : tm) R,
-    Iso G D phi1 phi2
+Lemma E_CPiCong2  : ∀ (L : atoms) (G : context) (D : available_props) a0 b0 T0
+                      (A : tm) a1 b1 T1 (B : tm) R R',
+    Iso G D (Eq a0 b0 T0 R) (Eq a1 b1 T1 R)
     → (∀ c : atom,
           c `notin` L
-              → DefEq ([(c, Co phi1)] ++ G) D (open_tm_wrt_co A (g_Var_f c))
-                      (open_tm_wrt_co B (g_Var_f c)) a_Star R)
-    → DefEq G D (a_CPi phi1 A) (a_CPi phi2 B) a_Star R.
+              → DefEq ([(c, Co (Eq a0 b0 T0 R))] ++ G) D (open_tm_wrt_co A (g_Var_f c))
+                      (open_tm_wrt_co B (g_Var_f c)) a_Star R')
+    → DefEq G D (a_CPi (Eq a0 b0 T0 R) A) (a_CPi (Eq a1 b1 T1 R) B) a_Star R'.
 Proof.
   intros.
   move: (Iso_regularity H) => [h0 h1].
   inversion h0. inversion h1. subst.
-  assert (Typing G (a_CPi (Eq a b A0 R0) A) a_Star R).
+  assert (Typing G (a_CPi (Eq a0 b0 T0 R) A) a_Star R').
   { eapply (E_CPi L); eauto 1. intros x Fr.
     move: (DefEq_regularity (H0 x Fr)) => WFF2.
     inversion WFF2. subst. eauto 1. }
-  assert (Typing G (a_CPi (Eq a0 b0 A1 R1) B) a_Star R).
+  assert (Typing G (a_CPi (Eq a1 b1 T1 R) B) a_Star R').
   { eapply (E_CPi L); eauto 1. intros x Fr.
     move: (DefEq_regularity (H0 x Fr)) => WFF2.
     inversion WFF2. subst.
-    have CTX: Ctx (x ~ Co (Eq a b A0 R0) ++ G) by eauto.
+    have CTX: Ctx (x ~ Co (Eq a0 b0 T0 R) ++ G) by eauto.
     inversion CTX. subst.
     eapply context_DefEq_typing; eauto 1.
     econstructor; eauto 1.
