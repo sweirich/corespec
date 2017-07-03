@@ -44,6 +44,7 @@ screen=true]{acmart}\settopmatter{}
 \acmJournal{PACMPL}
 \acmYear{2017} \acmVolume{1} \acmNumber{1} \acmArticle{31} \acmMonth{9}
 \acmDOI{10.1145/3110275}
+\acmPrice{}
 \fi\fi
 
 \ifpublic
