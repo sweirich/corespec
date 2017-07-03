@@ -1260,13 +1260,13 @@
 
 
 \newcommand{\ottdruleEXXCPiCong}[1]{\ottdrule[#1]{%
-\ottpremise{\Gamma  \ottsym{;}  \Delta  \vDash  \phi_{{\mathrm{1}}}  \equiv  \phi_{{\mathrm{2}}}}%
-\ottpremise{\Gamma  \ottsym{,}  \ottmv{c}  \ottsym{:}  \phi_{{\mathrm{1}}}  \ottsym{;}  \Delta  \vDash  \ottnt{A}  \equiv  \ottnt{B}  \ottsym{:}   \star   \ottsym{/}  \ottnt{R}}%
-\ottpremise{ \suppress{ \Gamma  \vDash  \phi_{{\mathrm{1}}} \, \ \mathsf{ok} } }%
-\ottpremise{ \suppress{ \Gamma  \vDash   \forall \ottmv{c} \!:\! \phi_{{\mathrm{1}}} . \ottnt{A}   \ottsym{:}   \star   \ottsym{/}  \ottnt{R} } }%
-\ottpremise{ \suppress{ \Gamma  \vDash   \forall \ottmv{c} \!:\! \phi_{{\mathrm{2}}} . \ottnt{B}   \ottsym{:}   \star   \ottsym{/}  \ottnt{R} } }%
+\ottpremise{\Gamma  \ottsym{;}  \Delta  \vDash   \ottnt{a_{{\mathrm{1}}}}   \sim _{ \ottnt{A_{{\mathrm{1}}}} / \ottnt{R} }  \ottnt{b_{{\mathrm{1}}}}   \equiv   \ottnt{a_{{\mathrm{2}}}}   \sim _{ \ottnt{A_{{\mathrm{2}}}} / \ottnt{R} }  \ottnt{b_{{\mathrm{2}}}} }%
+\ottpremise{\Gamma  \ottsym{,}  \ottmv{c}  \ottsym{:}   \ottnt{a_{{\mathrm{1}}}}   \sim _{ \ottnt{A_{{\mathrm{1}}}} / \ottnt{R} }  \ottnt{b_{{\mathrm{1}}}}   \ottsym{;}  \Delta  \vDash  \ottnt{A}  \equiv  \ottnt{B}  \ottsym{:}   \star   \ottsym{/}  \ottnt{R'}}%
+\ottpremise{ \suppress{ \Gamma  \vDash   \ottnt{a_{{\mathrm{1}}}}   \sim _{ \ottnt{A_{{\mathrm{1}}}} / \ottnt{R} }  \ottnt{b_{{\mathrm{1}}}}  \, \ \mathsf{ok} } }%
+\ottpremise{ \suppress{ \Gamma  \vDash   \forall \ottmv{c} \!:\!  \ottnt{a_{{\mathrm{1}}}}   \sim _{ \ottnt{A_{{\mathrm{1}}}} / \ottnt{R} }  \ottnt{b_{{\mathrm{1}}}}  . \ottnt{A}   \ottsym{:}   \star   \ottsym{/}  \ottnt{R'} } }%
+\ottpremise{ \suppress{ \Gamma  \vDash   \forall \ottmv{c} \!:\!  \ottnt{a_{{\mathrm{2}}}}   \sim _{ \ottnt{A_{{\mathrm{2}}}} / \ottnt{R} }  \ottnt{b_{{\mathrm{2}}}}  . \ottnt{B}   \ottsym{:}   \star   \ottsym{/}  \ottnt{R'} } }%
 }{
-\Gamma  \ottsym{;}  \Delta  \vDash   \forall \ottmv{c} \!:\! \phi_{{\mathrm{1}}} . \ottnt{A}   \equiv   \forall \ottmv{c} \!:\! \phi_{{\mathrm{2}}} . \ottnt{B}   \ottsym{:}   \star   \ottsym{/}  \ottnt{R}}{%
+\Gamma  \ottsym{;}  \Delta  \vDash   \forall \ottmv{c} \!:\!  \ottnt{a_{{\mathrm{1}}}}   \sim _{ \ottnt{A_{{\mathrm{1}}}} / \ottnt{R} }  \ottnt{b_{{\mathrm{1}}}}  . \ottnt{A}   \equiv   \forall \ottmv{c} \!:\!  \ottnt{a_{{\mathrm{2}}}}   \sim _{ \ottnt{A_{{\mathrm{2}}}} / \ottnt{R} }  \ottnt{b_{{\mathrm{2}}}}  . \ottnt{B}   \ottsym{:}   \star   \ottsym{/}  \ottnt{R'}}{%
 {\ottdrulename{E\_CPiCong}}{}%
 }}
 

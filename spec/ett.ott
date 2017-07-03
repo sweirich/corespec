@@ -70,6 +70,7 @@ tm, a, b, v, w, A, B :: 'a_' ::= {{ com types and kinds }}
    | a |> g             ::   :: Conv
    | all c : phi . B    ::   :: CPi (+ bind c in B +)
      {{ tex [[all]][[c]]\!:\![[phi]].[[B]] }}
+   
    | /\ c : phi . b     ::   :: CAbs (+ bind c in b +)
      {{ tex [[/\]][[c]]\!:\![[phi]].[[b]] }}
    | /\ c  . b          ::   :: UCAbs (+ bind c in b +)
@@ -252,6 +253,7 @@ context, G {{ tex \Gamma }} :: 'ctx_' ::= {{ com contexts }}
 
    | G , x : A / R   ::    :: ConsTm  {{ coq (([[x]]~ Tm [[A]][[R]]) ++ [[G]]) }}
    | G , c : phi     ::    :: ConsCo  {{ coq (([[c]]~ Co [[phi]]) ++ [[G]]) }}
+   
    | G { b / x }     :: M  :: SubstA  {{ coq (open_context_wrt_tm [[x G]][[b]] }}
    | G { g / c }     :: M  :: SubstG  {{ coq (open_context_wrt_co [[c G]][[g]]  }}
    | G ++ G'         :: M  :: Append  {{ coq ([[G]] ++ [[G']]) }}
@@ -1026,13 +1028,13 @@ G ; D |=  B1 {a1 /x}  == B2 {a2/x} : TYPE/R'
 
 %% Rules related to Coercion Abstraction
 
-G ; D |= phi1 == phi2
-G, c: phi1 ; D |= A == B : TYPE/R
-[G |= phi1 ok]
-[G |= all c:phi1. A : TYPE/R]
-[G |= all c:phi2. B : TYPE/R]
---------------------------------------------------------- :: CPiCong
-G ; D |= all c:phi1. A  == all c:phi2. B : TYPE/R
+G ; D |= a1 ~ b1 : A1/R == a2 ~ b2 : A2/R
+G, c: a1 ~ b1 : A1/R ; D |= A == B : TYPE/R'
+[G |= a1 ~ b1 : A1/R ok]
+[G |= all c: a1 ~ b1 : A1/R. A : TYPE/R']
+[G |= all c: a2 ~ b2 : A2/R. B : TYPE/R']
+--------------------------------------------------------------------- :: CPiCong
+G ; D |= all c: a1 ~ b1 : A1/R . A  == all c: a2 ~ b2 : A2/R . B : TYPE/R'
 
 G, c: phi1 ; D |= a == b : B/R
 [ G |= phi1 ok ]

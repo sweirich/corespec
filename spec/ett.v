@@ -1149,13 +1149,13 @@ with DefEq : context -> available_props -> tm -> tm -> tm -> role -> Prop :=    
      DefEq G D (a_Pi rho A1 R B1) (a_Pi rho A2 R B2) a_Star R' ->
      DefEq G D a1 a2 A1 R ->
      DefEq G D  (open_tm_wrt_tm  B1   a1 )   (open_tm_wrt_tm  B2   a2 )  a_Star R'
- | E_CPiCong : forall (L:vars) (G:context) (D:available_props) (phi1:constraint) (A:tm) (phi2:constraint) (B:tm) (R:role),
-     Iso G D phi1 phi2 ->
-      ( forall c , c \notin  L  -> DefEq  (( c ~ Co  phi1 ) ++  G )  D  ( open_tm_wrt_co A (g_Var_f c) )   ( open_tm_wrt_co B (g_Var_f c) )  a_Star R )  ->
-      ( PropWff G phi1 )  ->
-      ( Typing G (a_CPi phi1 A) a_Star R )  ->
-      ( Typing G (a_CPi phi2 B) a_Star R )  ->
-     DefEq G D (a_CPi phi1 A) (a_CPi phi2 B) a_Star R
+ | E_CPiCong : forall (L:vars) (G:context) (D:available_props) (a1 b1 A1:tm) (R:role) (A a2 b2 A2 B:tm) (R':role),
+     Iso G D (Eq a1 b1 A1 R) (Eq a2 b2 A2 R) ->
+      ( forall c , c \notin  L  -> DefEq  (( c ~ Co  (Eq a1 b1 A1 R) ) ++  G )  D  ( open_tm_wrt_co A (g_Var_f c) )   ( open_tm_wrt_co B (g_Var_f c) )  a_Star R' )  ->
+      ( PropWff G (Eq a1 b1 A1 R) )  ->
+      ( Typing G (a_CPi (Eq a1 b1 A1 R) A) a_Star R' )  ->
+      ( Typing G (a_CPi (Eq a2 b2 A2 R) B) a_Star R' )  ->
+     DefEq G D (a_CPi (Eq a1 b1 A1 R) A) (a_CPi (Eq a2 b2 A2 R) B) a_Star R'
  | E_CAbsCong : forall (L:vars) (G:context) (D:available_props) (a b:tm) (phi1:constraint) (B:tm) (R:role),
       ( forall c , c \notin  L  -> DefEq  (( c ~ Co  phi1 ) ++  G )  D  ( open_tm_wrt_co a (g_Var_f c) )   ( open_tm_wrt_co b (g_Var_f c) )   ( open_tm_wrt_co B (g_Var_f c) )  R )  ->
       ( PropWff G phi1 )  ->
