@@ -82,9 +82,12 @@ tm, a, b, v, w, A, B :: 'a_' ::= {{ com types and kinds }}
    | match a with brs ::   :: Case
 
 
-   %% standard substitution, using open
-   | a { b / x }      :: S :: Subst
-     {{ coq (open_tm_wrt_tm [[x a]] [[b]]) }}
+  %% standard substitution, using open
+  | a { b / x }      :: S :: Subst
+    {{ coq (open_tm_wrt_tm [[x a]] [[b]]) }}
+
+  | a { d / i }      :: S :: DSubst
+    {{ coq (open_tm_wrt_dtm [[i a]] [[r]]) }}
 
    %% this is a hack for when a substitution {x/x} is necessary for the
    %% locally nameless backend to generate the correct code, but we don't
@@ -157,6 +160,10 @@ brs  :: 'br_' ::=    {{ com case branches }}
 co, g {{ tex \gamma }} :: 'g_' ::= {{ com explicit coercions }}
   | o                    ::   :: Triv
   | c                    ::   :: Var
+
+  | \ i . a              ::   :: DAbs
+     {{ tex \mathrm{\delta}[[i]].[[a]] }}
+
   | red a b              ::   :: Beta
 
 % | refl a               ::   :: Refl
@@ -264,9 +271,11 @@ context, G {{ tex \Gamma }} :: 'ctx_' ::= {{ com contexts }}
                                           {{ coq list ( atom * sort ) }}
    | empty           ::    :: Empty   {{ coq nil }}
 
-   | G , x : A       ::    :: ConsTm  {{ coq (([[x]]~ Tm [[A]]) ++ [[G]]) }}
-   | G , c : phi     ::    :: ConsCo  {{ coq (([[c]]~ Co [[phi]]) ++ [[G]]) }}
-   | G { b / x }     :: M  :: SubstA  {{ coq (open_context_wrt_tm [[x G]][[b]] }}
+   | G , x : A       ::    :: ConsTm  {{ coq (([[x]]~ Tm [[A]]  ) ++ [[G]])     }}
+   | G , i : II      ::    :: ConsDim {{ coq (([[i]]~ Dim       ) ++ [[G]])     }}
+   | G , c : phi     ::    :: ConsCo  {{ coq (([[c]]~ Co [[phi]]) ++ [[G]])     }}
+
+   | G { b / x }     :: M  :: SubstA  {{ coq (open_context_wrt_tm [[x G]][[b]]  }}
    | G { g / c }     :: M  :: SubstG  {{ coq (open_context_wrt_co [[c G]][[g]]  }}
    | G ++ G'         :: M  :: Append  {{ coq ([[G]] ++ [[G']]) }}
      {{ tex [[G]], [[G']] }}
@@ -355,6 +364,8 @@ terminals :: 'terminals_' ::=
   | |-=               ::   :: turneq     {{ tex \vdash_{=} }}
   | refl2             ::   :: refl2      {{ tex \mathbf{refl_2}  }}
   | ++                ::   :: concat     {{ tex \mathop{++} }}
+  | II                ::   :: priminter {{ tex \mathbb{I}        }}
+
 
 formula :: 'formula_' ::=
   | judgement                ::   :: judgement
@@ -1532,9 +1543,10 @@ c in D
 ------------------- :: Assn
 G ; D |- c : a ~ b
 
-G |- a : A
------------------------------ :: Refl
-G ; D |- refl a : a ~ a
+G |- A : TYPE
+G, i : II |- a : A
+----------------------------- :: DimAbs
+G ; D |- \i. a : a{ez/i} ~ a{eo/i}
 
 G |- a : A
 G |- b : B
@@ -1543,13 +1555,6 @@ G ; dom G |- g : A ~ B
 ----------------------------- :: EraseEq
 G ; D |- refl2 a b g : a ~ b
 
-
-G |- b : B
-G |- a : A
-[ G ; dom G |- g1 : B ~ A ]
-G ; D |- g : b ~ a
--------------------------- :: Sym
-G ; D |- sym g : a ~ b
 
 G ; D |- g1 : a ~ a1
 G ; D |- g2 : a1 ~ b
@@ -1567,43 +1572,10 @@ G |- a2 : B1
 G ; D |- red a1 a2 : a1 ~ a2
 
 
-%% Note: need to include {x/x} to emphasize that x is free in B2 for
-%% the locally nameless backend.
-G ; D |- g1 : A1 ~ A2
-G, x : A1 ; D |- g2 : B1 ~ (# B2 {{{ x / x }}} #)
-B3 = B2 { x |> sym g1 / x }
-G |- all rho x:A1 -> B1 : TYPE
-G |- all rho x:A2 -> B3 : TYPE
-G |- (all rho x:A1 -> B2) : TYPE
----------------------------------------------------------- :: PiCong
-G ; D |- all rho x:g1 -> g2 : (all rho x:A1 -> B1) ~ (all rho x:A2 -> B3)
-
-G ; D |- g1 : A1 ~ A2
-G, x : A1 ; D |- g2 : b1 ~ (# b2 {{{x / x}}} #)
-b3 = b2 { x |> sym g1 / x }
-[ G |- A1 : TYPE ]
-G |- A2 : TYPE
-rho => check x in | b1 |
-rho => check x in | b3 |
-[G |- (\ rho x:A1. b2) : B]
------------------------------------------------------------------- :: AbsCong
-G ; D |- (\rho x:g1. g2) : (\ rho x:A1. b1) ~ (\ rho x :A2. b3)
-
-% really want heterogenous equality here.
-%% NOTE: we know that G |- g3 : A ~ B  must hold (b/c reg), but adding it as
-%% an extra assumption for the erasure proof.
-G ; D |- g1 : a1 ~ b1
-G ; D |- g2 : a2 ~ b2
-G |- a1 rho a2 : A
-G |- b1 rho b2 : B
-[ G ; dom G |- g3 : A ~ B ]
--------------------------------------- :: AppCong
-G ; D |- g1 rho g2 : a1 rho a2 ~ b1 rho b2
-
-
 G ; D |- g : all rho x:A1 -> B1 ~ all rho x:A2 -> B2
 --------------------------------------- :: PiFst
 G ; D |- piFst g : A1 ~ A2
+
 
 G ; D |- g1 : all rho x:A1 -> B1  ~ all rho x:A2 -> B2
 G ; D |- g2 : a1 ~ a2
@@ -1611,41 +1583,6 @@ G |- a1 : A1
 G |- a2 : A2
 --------------------------------------- :: PiSnd
 G ; D |- g1 @ g2 : (# B1 {a1 /x} #) ~ (# B2 {a2/x} #)
-
-
-G ; D |- g1 : phi1 == phi2
-G, c:phi1 ; D |- g3 : B1 ~ (# B2 {{{c/c}}} #)
-B3 = B2 { c |> sym g1 / c }
-G |- all c:phi1 . B1 : TYPE
-[G |- all c:phi2 . B3 : TYPE]
-G |- all c:phi1 . B2 : TYPE
------------------------------------------------------ :: CPiCong
-G ; D |- (all c: g1. g3) : (all c:phi1. B1) ~ (all c:phi2. B3)
-
-
-G ; D |- g1 : phi1 == phi2
-G, c:phi1 ; D |- g3 : a1 ~ (# a2{{{c/c}}} #)
-a3 = a2 { c |> sym g1 / c }
-%% To know that the two types are equal, we need to know
-%% that the range types can be shown identical without using
-%% the assumption c:phi1. This is a stronger property than
-%% regularity implies.
-G |- (/\ c:phi1. a1) : all c:phi1. B1
-G |- (/\ c:phi2. a3) : all c:phi2. B2
-G |- (/\ c:phi1. a2) : B
-G ; dom G |- g4 : all c:phi1. B1 ~ all c:phi2. B2
----------------------------------------------------------------- :: CAbsCong
-G ; D |- (\ c: g1. g3 @ g4) : (/\ c:phi1. a1) ~ (/\ c:phi2. a3)
-
-
-G ; D |- g1 : a1 ~ b1
-G ; dom G |- g2 : a2 ~ b2
-G ; dom G |- g3 : a3 ~ b3
-G |- a1 [g2] : A
-G |- b1 [g3] : B
-[ G ; dom G |- g4 : A ~ B ]
--------------------------------------- :: CAppCong
-G ; D |- g1 (g2, g3) : a1 [ g2 ]  ~ b1 [ g3 ]
 
 
 G ; D |- g1 : (all c1:a~a':A. B1) ~ (all c2:b~b':B. B2)
