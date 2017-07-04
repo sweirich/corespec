@@ -59,10 +59,10 @@ tm, a, b, v, w, A, B :: 'a_' ::= {{ com types and kinds }}
    | x                  ::   :: Var
    | \ rho x : A / R . b    ::   :: Abs (+ bind x in b +)
      {{ tex \mathrm{\lambda}^[[rho]][[x]]\!:\![[A]]/[[R]].[[b]] }}
-   | \ rho x . b        ::   :: UAbs (+ bind x in b +)
-     {{ tex \mathrm{\lambda}^[[rho]][[x]].[[b]] }}
-   | a rho b            ::   :: App
-     {{ tex [[a]]\ [[b]]^{[[rho]]}  }}
+   | \ rho R x . b        ::   :: UAbs (+ bind x in b +)
+     {{ tex \mathrm{\lambda}^{[[R]],[[rho]]}[[x]].[[b]] }}
+   | a rho R b            ::   :: App
+     {{ tex [[a]]\ [[b]]^{[[R]],[[rho]]}  }}
    | F                  ::   :: Fam
    | T                  ::   :: Const
    | all rho x : A / R -> B ::   :: Pi (+ bind x in B +)
@@ -124,9 +124,9 @@ tm, a, b, v, w, A, B :: 'a_' ::= {{ com types and kinds }}
    | phi => A         :: S :: CArrow {{ coq (a_CPi [[phi]] [[A]]) }}
    | a b              :: S :: RelApp
      {{ coq (a_App [[a]] Rel [[b]]) }}
-   | \ x . a          :: S :: RelUAbs
-     {{ coq (a_UAbs Rel [[a]]) }}
-     {{ tex \lambda [[x]].[[a]] }}
+   | \ x R . a          :: S :: RelUAbs
+     {{ coq (a_UAbs Rel [[R]] [[a]]) }}
+     {{ tex \lambda^{[[R]]} [[x]].[[a]] }}
    | \ x : A / R . a      :: S :: RelAbs
      {{ coq (a_Abs Rel [[A]] [[R]] [[a]]) }}
      {{ tex \lambda [[x]]\!:\![[A]].[[a]] }}
@@ -152,14 +152,14 @@ co, g {{ tex \gamma }} :: 'g_' ::= {{ com explicit coercions }}
    | sym g                ::   :: Sym
    | g1 ; g2              ::   :: Trans
 
-   | all rho x : g1 -> g2 ::   :: PiCong (+ bind x in g2 +)
-     {{ tex \mathrm{\Pi}^[[rho]][[x]]\!:\![[g1]].[[g2]] }}
+   | all rho R x : g1 -> g2 ::   :: PiCong (+ bind x in g2 +)
+     {{ tex \mathrm{\Pi}^{[[R]],[[rho]]}[[x]]\!:\![[g1]].[[g2]] }}
 
-   | \ rho x : g1 . g2    ::   :: AbsCong (+ bind x in g2 +)
-     {{ tex \mathrm{\lambda}^[[rho]][[x]]\!:\![[g1]].[[g2]] }}
+   | \ rho R x : g1 . g2    ::   :: AbsCong (+ bind x in g2 +)
+     {{ tex \mathrm{\lambda}^{[[R]],[[rho]]}[[x]]\!:\![[g1]].[[g2]] }}
 
-   | g1 rho g2            ::   :: AppCong
-     {{ tex [[g1]]\ [[g2]]^[[rho]] }}
+   | g1 rho R g2            ::   :: AppCong
+     {{ tex [[g1]]\ [[g2]]^{[[R]],[[rho]]} }}
 
    | piFst g              ::   :: PiFst
    | cpiFst g             ::   :: CPiFst
@@ -176,8 +176,8 @@ co, g {{ tex \gamma }} :: 'g_' ::= {{ com explicit coercions }}
    | g @ ( g1 , g2 )      ::   :: CPiSnd
      {{ tex [[g]] [[@]] ([[g1]] \sim [[g2]]) }}
    | g1 |> g2             ::   :: Cast
-   | g1 ~ A / R  g2       ::   :: EqCong
-     {{ tex [[g1]] [[~]]_{[[A]]/[[R]]} [[g2]] }}
+   | g1 ~ A  g2       ::   :: EqCong
+     {{ tex [[g1]] [[~]]_{[[A]]} [[g2]] }}
    | conv phi1 phi2 g     ::   :: IsoConv
      {{ tex [[conv]]\ [[phi1]]\sim_[[g]] [[phi2]] }}
 
@@ -427,10 +427,10 @@ Fixpoint erase_tm (a : tm) : tm :=
    | a_Star    => a_Star
    | a_Var_b n => a_Var_b n
    | a_Var_f x => a_Var_f x
-   | a_Abs rho A R b => a_UAbs rho (erase_tm b)
-   | a_UAbs rho b => a_UAbs rho (erase_tm b)
-   | a_App a Rel b => a_App (erase_tm a) Rel (erase_tm b)
-   | a_App a Irrel b => a_App (erase_tm a) Irrel a_Bullet
+   | a_Abs rho A R b => a_UAbs rho R (erase_tm b)
+   | a_UAbs rho R b => a_UAbs rho R (erase_tm b)
+   | a_App a Rel R b => a_App (erase_tm a) Rel R (erase_tm b)
+   | a_App a Irrel R b => a_App (erase_tm a) Irrel R a_Bullet
    | a_Const T => a_Const T
    | a_Fam F => a_Fam F
    | a_Pi rho A R B => a_Pi rho (erase_tm A) R (erase_tm B)
@@ -478,8 +478,8 @@ Qed.
 Definition FixDef : tm :=
   (a_Abs Irrel a_Star Nom
          (a_Abs Rel (a_Pi Rel (a_Var_b 0) Nom (a_Var_b 1)) Nom
-                (a_App (a_Var_b 0) Rel
-                       (a_App (a_App (a_Fam Fix) Irrel (a_Var_b 1)) Rel (a_Var_b 0))))).
+                (a_App (a_Var_b 0) Rel Nom
+                       (a_App (a_App (a_Fam Fix) Irrel Nom (a_Var_b 1)) Rel Nom (a_Var_b 0))))).
 
 Definition FixTy : tm :=
   a_Pi Irrel a_Star Nom
@@ -552,11 +552,11 @@ Value all c : phi. B
 Value \ + x:A/R. a
 
 --------------------- :: UAbsRel
-Value \ + x. a
+Value \ + R x. a
 
 Value a
 --------------------- :: UAbsIrrel
-Value \ - x. a
+Value \ - R x. a
 
 CoercedValue a
 -------------------- :: AbsIrrel
@@ -630,13 +630,13 @@ erased_tm x
 
 erased_tm a
 -------------------- :: Abs
-erased_tm (\rho x.a)
+erased_tm (\rho R x.a)
 
 %% Note, this is not quite right, but it is ok.
 erased_tm a
 erased_tm b
 ----------------- :: App
-erased_tm (a rho b)
+erased_tm (a rho R b)
 
 erased_tm A
 erased_tm B
@@ -696,15 +696,15 @@ by
 G ; D |- a => a
 
 
-G ; D |- a => (\rho x.a')
+G ; D |- a => (\rho R x.a')
 G ; D |- b => b'
 ---------------------------- :: Beta
-G ; D |- a rho b => a' { b' / x }
+G ; D |- a rho R b => a' { b' / x }
 
 G ; D |- a => a'
 G ; D |- b => b'
 -------------------------- :: App
-G ; D |- a rho b => a' rho b'
+G ; D |- a rho R b => a' rho R b'
 
 G ; D |- a => (/\c .a')
 ----------------------- :: CBeta
@@ -716,7 +716,7 @@ G ; D |- a [o] => a' [o]
 
 G ; D |- a => a'
 -------------------------------- :: Abs
-G ; D |- \ rho x. a => \ rho x. a'
+G ; D |- \ rho R x. a => \ rho R x. a'
 
 G ; D |- A => A'
 G ; D |- B => B'
@@ -777,9 +777,9 @@ defn
 {{ com primitive reductions on erased terms }}
 by
 
-Value (\rho x. v)
+Value (\rho R x. v)
 ------------------------------------ :: AppAbs
-|= (\rho x.v) rho b > v { b / x }
+|= (\rho R x.v) rho R b > v { b / x }
 
 
 ------------------------------- :: CAppCAbs
@@ -798,20 +798,20 @@ by
 
 |= a ~> a'
 -------------------------  :: AbsTerm
-|= \- x.a ~> \- x.a'
+|= \- R x.a ~> \- R x.a'
 
 |= a ~> a'
 -------------------------  :: AppLeft
-|= a rho b ~> a' rho b
+|= a rho R b ~> a' rho R b
 
 |= a  ~> a'
 -----------------------------   :: CAppLeft
 |= a [o]  ~> a' [o]
 
 
-Value (\rho x. v)
+Value (\rho R x. v)
 ----------------------------------  :: AppAbs
-|= (\rho x.v) rho a ~> v { a / x}
+|= (\rho R x.v) rho R a ~> v { a / x}
 
 --------------------------------  :: CAppCAbs
 |= (/\c .b) [o] ~> b { o / c}
@@ -885,17 +885,17 @@ G, x:A / R  |= a : B / R'
 rho => check x in a
 R <= R'
 ---------------------------------- :: Abs
-G |= \ rho x . a : ( all rho x:A / R -> B ) / R'
+G |= \ rho R x . a : ( all rho x:A / R -> B ) / R'
 
 G |= b : all+ x : A / R -> B / R'
 G |= a : A / R
 ------------------------------------- :: App
-G |= b + a : B { a / x } / R'
+G |= b + R a : B { a / x } / R'
 
 G |= b : all - x : A / R -> B / R'
 G |= a : A / R
 ------------------------------------- :: IApp
-G |= b - [] : B { a / x } / R'
+G |= b - R [] : B { a / x } / R'
 
 
 G |= a : A / R
@@ -1003,18 +1003,18 @@ G, x:A1/R ; D |= b1 == b2 : B/R'
 rho => check x in b1
 rho => check x in b2
 -------------------------------------------------------------- :: AbsCong
-G ; D |=  (\ rho x. b1) == (\ rho x. b2) : (all rho x:A1/R -> B)/R'
+G ; D |=  (\ rho R x. b1) == (\ rho R x. b2) : (all rho x:A1/R -> B)/R'
 
 G ; D |= a1 == b1 : (all + x:A/R -> B)/R'
 G ; D |= a2 == b2 : A/R
 -------------------------------------- :: AppCong
-G ; D |= a1 + a2 == b1 + b2 : (B { a2 / x })/R'
+G ; D |= a1 + R a2 == b1 + R b2 : (B { a2 / x })/R'
 
 
 G ; D |= a1 == b1 : (all - x:A/R -> B)/R'
 G |= a : A/R
 ------------------------------------------ :: IAppCong
-G ; D |= a1 - [] == b1 - [] : (B { a / x })/R'
+G ; D |= a1 - R [] == b1 - R [] : (B { a / x })/R'
 
 
 G ; D |= all rho x:A1/R -> B1 == all rho x:A2/R -> B2 : TYPE/R'
@@ -1158,7 +1158,7 @@ G |- \ rho x : A/R. a : (all rho x:A/R -> B)/R'
 G |- b : (all rho x:A/R -> B)/R'
 G |- a : A/R
 ------------------------------------- :: App
-G |- b rho a : (B { a / x })/R'
+G |- b rho R a : (B { a / x })/R'
 
 G |- a : A/R
 G ; dom G |- g : A ~ B : R
@@ -1198,7 +1198,7 @@ G ; D |- g2 : B1 ~ B2 : R
 G |- A1 ~ B1 : A/R ok
 G |- A2 ~ B2 : A/R ok
 ------------------------------------------------------------ :: PropCong
-G ; D |- (g1 ~A/R g2) : (A1 ~ B1 : A/R) == (A2 ~ B2 : A/R)
+G ; D |- (g1 ~A g2) : (A1 ~ B1 : A/R) == (A2 ~ B2 : A/R)
 
 G ; D |- g : all c:phi1. A2 ~ all c:phi2. B2 : R
 --------------------------------------- :: CPiFst
@@ -1267,14 +1267,15 @@ G ; D |- red a1 a2 : a1 ~ a2 : R
 %% Note: need to include {x/x} to emphasize that x is free in B2 for
 %% the locally nameless backend.
 %% Need all three assns, so that we know A1, A2, B1, B2, B3 all have kind TYPE
-G ; D |- g1 : A1 ~ A2 : R
-G, x : A1/R ; D |- g2 : B1 ~ (# B2 {{{ x / x }}} #) : R
+G ; D |- g1 : A1 ~ A2 : R'
+G, x : A1/R ; D |- g2 : B1 ~ (# B2 {{{ x / x }}} #) : R'
 B3 = B2 { x |> sym g1 / x }
-G |- all rho x:A1/R -> B1 : TYPE/R
-G |- all rho x:A1/R -> B2 : TYPE/R
-G |- all rho x:A2/R -> B3 : TYPE/R
+G |- all rho x:A1/R -> B1 : TYPE/R'
+G |- all rho x:A1/R -> B2 : TYPE/R'
+G |- all rho x:A2/R -> B3 : TYPE/R'
+[R <= R']
 ---------------------------------------------------------- :: PiCong
-G ; D |- all rho x:g1 -> g2 : (all rho x:A1/R -> B1) ~ (all rho x:A2/R -> B3) : R
+G ; D |- all rho R x:g1 -> g2 : (all rho x:A1/R -> B1) ~ (all rho x:A2/R -> B3) : R'
 
 G ; D |- g1 : A1 ~ A2 : R
 G, x : A1/R ; D |- g2 : b1 ~ (# b2 {{{x / x}}} #) : R'
@@ -1286,60 +1287,55 @@ rho => check x in | b3 |
 [G |- (\ rho x:A1/R. b2) : B/R']
 [R <= R' ]
 ------------------------------------------------------------------ :: AbsCong
-G ; D |- (\rho x:g1. g2) : (\ rho x:A1/R. b1) ~ (\ rho x :A2/R. b3) : R'
+G ; D |- (\rho R x:g1. g2) : (\ rho x:A1/R. b1) ~ (\ rho x :A2/R. b3) : R'
 
 % really want heterogenous equality here.
 %% NOTE: we know that G |- g3 : A ~ B  must hold (b/c reg), but adding it as
 %% an extra assumption for the erasure proof.
 G ; D |- g1 : a1 ~ b1 : R'
 G ; D |- g2 : a2 ~ b2 : R
-G |- a1 rho a2 : A/R'
-G |- b1 rho b2 : B/R'
+G |- a1 rho R a2 : A/R'
+G |- b1 rho R b2 : B/R'
 [ G ; dom G |- g3 : A ~ B : R' ]
-[ R <= R' ]
 -------------------------------------- :: AppCong
-G ; D |- g1 rho g2 : a1 rho a2 ~ b1 rho b2 : R'
+G ; D |- g1 rho R g2 : a1 rho R a2 ~ b1 rho R b2 : R'
 
 
-G ; D |- g : all rho x:A1/R1 -> B1 ~ all rho x:A2/R2 -> B2 : R
-R3 <= R1
-R3 <= R2
+G ; D |- g : all rho x:A1/R -> B1 ~ all rho x:A2/R -> B2 : R'
 --------------------------------------- :: PiFst
-G ; D |- piFst g : A1 ~ A2 : R3
+G ; D |- piFst g : A1 ~ A2 : R
 
-G ; D |- g1 : all rho x:A1/R1 -> B1  ~ all rho x:A2/R2 -> B2 : R'
+G ; D |- g1 : all rho x:A1/R -> B1  ~ all rho x:A2/R -> B2 : R'
 G ; D |- g2 : a1 ~ a2 : R
 G |- a1 : A1/R
 G |- a2 : A2/R
-R <= R1
-R <= R2
 --------------------------------------- :: PiSnd
 G ; D |- g1 @ g2 : (# B1 {a1 /x} #) ~ (# B2 {a2/x} #) : R'
 
 
-G ; D |- g1 : phi1 == phi2
-G, c:phi1 ; D |- g3 : B1 ~ (# B2 {{{c/c}}} #) : R
+G ; D |- g1 : a1 ~ b1 : A1/R == a2 ~ b2 : A2/R
+G, c:a1 ~ b1 : A1/R ; D |- g3 : B1 ~ (# B2 {{{c/c}}} #) : R'
 B3 = B2 { c |> sym g1 / c }
-G |- all c:phi1 . B1 : TYPE/R
-[G |- all c:phi2 . B3 : TYPE/R]
-G |- all c:phi1 . B2 : TYPE/R
+G |- all c:a1 ~ b1 : A1/R . B1 : TYPE/R'
+[G |- all c:a2 ~ b2 : A2/R . B3 : TYPE/R']
+G |- all c:a1 ~ b1 : A1/R . B2 : TYPE/R'
 ----------------------------------------------------- :: CPiCong
-G ; D |- (all c: g1. g3) : (all c:phi1. B1) ~ (all c:phi2. B3) : R
+G ; D |- (all c: g1. g3) : (all c:a1 ~ b1 : A1/R. B1) ~ (all c:a2 ~ b2 : A2/R. B3) : R
 
 
-G ; D |- g1 : phi1 == phi2
-G, c:phi1 ; D |- g3 : a1 ~ (# a2{{{c/c}}} #) : R
+G ; D |- g1 : b0 ~ b1 : A1/R == b2 ~ b3 : A2/R
+G, c:b0 ~ b1 : A1/R ; D |- g3 : a1 ~ (# a2{{{c/c}}} #) : R'
 a3 = a2 { c |> sym g1 / c }
 %% To know that the two types are equal, we need to know
 %% that the range types can be shown identical without using
 %% the assumption c:phi1. This is a stronger property than
 %% regularity implies.
-G |- (/\ c:phi1. a1) : all c:phi1. B1/R
-G |- (/\ c:phi1. a2) : B/R
-G |- (/\ c:phi2. a3) : all c:phi2. B2/R
-G ; dom G |- g4 : all c:phi1. B1 ~ all c:phi2. B2 : R
+G |- (/\ c:b0 ~ b1 : A1/R. a1) : all c:b0 ~ b1 : A1/R. B1/R'
+G |- (/\ c:b0 ~ b1 : A1/R. a2) : B/R'
+G |- (/\ c:b2 ~ b3 : A2/R. a3) : all c:b2 ~ b3 : A2/R. B2/R'
+G ; dom G |- g4 : all c:b0 ~ b1 : A1/R. B1 ~ all c:phi2. B2 : R'
 ---------------------------------------------------------------- :: CAbsCong
-G ; D |- (\ c: g1. g3 @ g4) : (/\ c:phi1. a1) ~ (/\ c:phi2. a3) : R
+G ; D |- (\ c: g1. g3 @ g4) : (/\ c:b0 ~ b1 : A1/R. a1) ~ (/\ c:b2 ~ b3 : A2/R. a3) : R'
 
 
 G ; D |- g1 : a1 ~ b1 : R
@@ -1365,11 +1361,9 @@ G ; D |- g2 : a~a' :A/R1 == b~b' : B/R2
 G ; D |- g1 |> g2 : b~b' : R2
 
 
-G ; D |- g : (a~a' : A/R1) == (b~b' : B/R2)
-R1 <= R0
-R2 <= R0
+G ; D |- g : (a~a' : A/R) == (b~b' : B/R)
 ---------------------------------- :: IsoSnd
-G ; D |- isoSnd g : A ~ B : R0
+G ; D |- isoSnd g : A ~ B : R
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -1424,11 +1418,11 @@ by
 
 G |- a ~>h a'
 -------------------------  :: AppLeft
-G |- a rho b ~>h a' rho b
+G |- a rho R b ~>h a' rho R b
 
 Value (\rho x:A/R.w)
 -----------------------------------------  :: AppAbs
-G |- (\rho x:A/R.w) rho a ~>h w { a / x}
+G |- (\rho x:A/R.w) rho R a ~>h w { a / x}
 
 
 G |- a  ~>h a'
@@ -1476,15 +1470,15 @@ G |- (v |> g1) |> g2 ~>h v |> (g1 ; g2)
 
 
 Value v
-G ; dom G |- g : all rho x1: A1/R1 -> B1 ~ all rho x2: A2/R2 -> B2 : R
+G ; dom G |- g : all rho x1: A1/R -> B1 ~ all rho x2: A2/R -> B2 : R'
 b' = b |> sym (piFst g)
 g' = g @ refl2 b' b (piFst g)
 ---------------------------------------------------------- :: Push
-G |- (v |> g) rho b ~>h (v rho b') |> g'
+G |- (v |> g) rho R b ~>h (v rho R b') |> g'
 
 
 Value v
-G ; dom G |- g : all c1:phi1. A1 ~ all c2:phi2. A2 : R
+G ; dom G |- g : all c1:a1 ~ b1 : B1/R. A1 ~ all c2:a2 ~ b2 : B2/R. A2 : R'
 g1' = g1 |> sym (cpiFst g)
 g' = g @ ( g1' , g1 )
 -------------------------------------------------------- :: CPush

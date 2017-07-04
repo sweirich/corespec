@@ -23,8 +23,8 @@ with tm : Set :=  (*r types and kinds *)
  | a_Var_b (_:nat)
  | a_Var_f (x:tmvar)
  | a_Abs (rho:relflag) (A:tm) (R:role) (b:tm)
- | a_UAbs (rho:relflag) (b:tm)
- | a_App (a:tm) (rho:relflag) (b:tm)
+ | a_UAbs (rho:relflag) (R:role) (b:tm)
+ | a_App (a:tm) (rho:relflag) (R:role) (b:tm)
  | a_Fam (F:tyfam)
  | a_Const (T:const)
  | a_Pi (rho:relflag) (A:tm) (R:role) (B:tm)
@@ -48,9 +48,9 @@ with co : Set :=  (*r explicit coercions *)
  | g_Refl2 (a:tm) (b:tm) (g:co)
  | g_Sym (g:co)
  | g_Trans (g1:co) (g2:co)
- | g_PiCong (rho:relflag) (g1:co) (g2:co)
- | g_AbsCong (rho:relflag) (g1:co) (g2:co)
- | g_AppCong (g1:co) (rho:relflag) (g2:co)
+ | g_PiCong (rho:relflag) (R:role) (g1:co) (g2:co)
+ | g_AbsCong (rho:relflag) (R:role) (g1:co) (g2:co)
+ | g_AppCong (g1:co) (rho:relflag) (R:role) (g2:co)
  | g_PiFst (g:co)
  | g_CPiFst (g:co)
  | g_IsoSnd (g:co)
@@ -60,7 +60,7 @@ with co : Set :=  (*r explicit coercions *)
  | g_CAppCong (g:co) (g1:co) (g2:co)
  | g_CPiSnd (g:co) (g1:co) (g2:co)
  | g_Cast (g1:co) (g2:co)
- | g_EqCong (g1:co) (A:tm) (R:role) (g2:co)
+ | g_EqCong (g1:co) (A:tm) (g2:co)
  | g_IsoConv (phi1:constraint) (phi2:constraint) (g:co)
  | g_Eta (a:tm)
  | g_Left (g:co) (g':co)
@@ -96,9 +96,9 @@ Fixpoint open_co_wrt_co_rec (k:nat) (g_5:co) (g__6:co) {struct g__6}: co :=
   | (g_Refl2 a b g) => g_Refl2 (open_tm_wrt_co_rec k g_5 a) (open_tm_wrt_co_rec k g_5 b) (open_co_wrt_co_rec k g_5 g)
   | (g_Sym g) => g_Sym (open_co_wrt_co_rec k g_5 g)
   | (g_Trans g1 g2) => g_Trans (open_co_wrt_co_rec k g_5 g1) (open_co_wrt_co_rec k g_5 g2)
-  | (g_PiCong rho g1 g2) => g_PiCong rho (open_co_wrt_co_rec k g_5 g1) (open_co_wrt_co_rec k g_5 g2)
-  | (g_AbsCong rho g1 g2) => g_AbsCong rho (open_co_wrt_co_rec k g_5 g1) (open_co_wrt_co_rec k g_5 g2)
-  | (g_AppCong g1 rho g2) => g_AppCong (open_co_wrt_co_rec k g_5 g1) rho (open_co_wrt_co_rec k g_5 g2)
+  | (g_PiCong rho R g1 g2) => g_PiCong rho R (open_co_wrt_co_rec k g_5 g1) (open_co_wrt_co_rec k g_5 g2)
+  | (g_AbsCong rho R g1 g2) => g_AbsCong rho R (open_co_wrt_co_rec k g_5 g1) (open_co_wrt_co_rec k g_5 g2)
+  | (g_AppCong g1 rho R g2) => g_AppCong (open_co_wrt_co_rec k g_5 g1) rho R (open_co_wrt_co_rec k g_5 g2)
   | (g_PiFst g) => g_PiFst (open_co_wrt_co_rec k g_5 g)
   | (g_CPiFst g) => g_CPiFst (open_co_wrt_co_rec k g_5 g)
   | (g_IsoSnd g) => g_IsoSnd (open_co_wrt_co_rec k g_5 g)
@@ -108,7 +108,7 @@ Fixpoint open_co_wrt_co_rec (k:nat) (g_5:co) (g__6:co) {struct g__6}: co :=
   | (g_CAppCong g g1 g2) => g_CAppCong (open_co_wrt_co_rec k g_5 g) (open_co_wrt_co_rec k g_5 g1) (open_co_wrt_co_rec k g_5 g2)
   | (g_CPiSnd g g1 g2) => g_CPiSnd (open_co_wrt_co_rec k g_5 g) (open_co_wrt_co_rec k g_5 g1) (open_co_wrt_co_rec k g_5 g2)
   | (g_Cast g1 g2) => g_Cast (open_co_wrt_co_rec k g_5 g1) (open_co_wrt_co_rec k g_5 g2)
-  | (g_EqCong g1 A R g2) => g_EqCong (open_co_wrt_co_rec k g_5 g1) (open_tm_wrt_co_rec k g_5 A) R (open_co_wrt_co_rec k g_5 g2)
+  | (g_EqCong g1 A g2) => g_EqCong (open_co_wrt_co_rec k g_5 g1) (open_tm_wrt_co_rec k g_5 A) (open_co_wrt_co_rec k g_5 g2)
   | (g_IsoConv phi1 phi2 g) => g_IsoConv (open_constraint_wrt_co_rec k g_5 phi1) (open_constraint_wrt_co_rec k g_5 phi2) (open_co_wrt_co_rec k g_5 g)
   | (g_Eta a) => g_Eta (open_tm_wrt_co_rec k g_5 a)
   | (g_Left g g') => g_Left (open_co_wrt_co_rec k g_5 g) (open_co_wrt_co_rec k g_5 g')
@@ -125,8 +125,8 @@ with open_tm_wrt_co_rec (k:nat) (g5:co) (a5:tm) {struct a5}: tm :=
   | (a_Var_b nat) => a_Var_b nat
   | (a_Var_f x) => a_Var_f x
   | (a_Abs rho A R b) => a_Abs rho (open_tm_wrt_co_rec k g5 A) R (open_tm_wrt_co_rec k g5 b)
-  | (a_UAbs rho b) => a_UAbs rho (open_tm_wrt_co_rec k g5 b)
-  | (a_App a rho b) => a_App (open_tm_wrt_co_rec k g5 a) rho (open_tm_wrt_co_rec k g5 b)
+  | (a_UAbs rho R b) => a_UAbs rho R (open_tm_wrt_co_rec k g5 b)
+  | (a_App a rho R b) => a_App (open_tm_wrt_co_rec k g5 a) rho R (open_tm_wrt_co_rec k g5 b)
   | (a_Fam F) => a_Fam F
   | (a_Const T) => a_Const T
   | (a_Pi rho A R B) => a_Pi rho (open_tm_wrt_co_rec k g5 A) R (open_tm_wrt_co_rec k g5 B)
@@ -154,9 +154,9 @@ Fixpoint open_co_wrt_tm_rec (k:nat) (a5:tm) (g_5:co) {struct g_5}: co :=
   | (g_Refl2 a b g) => g_Refl2 (open_tm_wrt_tm_rec k a5 a) (open_tm_wrt_tm_rec k a5 b) (open_co_wrt_tm_rec k a5 g)
   | (g_Sym g) => g_Sym (open_co_wrt_tm_rec k a5 g)
   | (g_Trans g1 g2) => g_Trans (open_co_wrt_tm_rec k a5 g1) (open_co_wrt_tm_rec k a5 g2)
-  | (g_PiCong rho g1 g2) => g_PiCong rho (open_co_wrt_tm_rec k a5 g1) (open_co_wrt_tm_rec (S k) a5 g2)
-  | (g_AbsCong rho g1 g2) => g_AbsCong rho (open_co_wrt_tm_rec k a5 g1) (open_co_wrt_tm_rec (S k) a5 g2)
-  | (g_AppCong g1 rho g2) => g_AppCong (open_co_wrt_tm_rec k a5 g1) rho (open_co_wrt_tm_rec k a5 g2)
+  | (g_PiCong rho R g1 g2) => g_PiCong rho R (open_co_wrt_tm_rec k a5 g1) (open_co_wrt_tm_rec (S k) a5 g2)
+  | (g_AbsCong rho R g1 g2) => g_AbsCong rho R (open_co_wrt_tm_rec k a5 g1) (open_co_wrt_tm_rec (S k) a5 g2)
+  | (g_AppCong g1 rho R g2) => g_AppCong (open_co_wrt_tm_rec k a5 g1) rho R (open_co_wrt_tm_rec k a5 g2)
   | (g_PiFst g) => g_PiFst (open_co_wrt_tm_rec k a5 g)
   | (g_CPiFst g) => g_CPiFst (open_co_wrt_tm_rec k a5 g)
   | (g_IsoSnd g) => g_IsoSnd (open_co_wrt_tm_rec k a5 g)
@@ -166,7 +166,7 @@ Fixpoint open_co_wrt_tm_rec (k:nat) (a5:tm) (g_5:co) {struct g_5}: co :=
   | (g_CAppCong g g1 g2) => g_CAppCong (open_co_wrt_tm_rec k a5 g) (open_co_wrt_tm_rec k a5 g1) (open_co_wrt_tm_rec k a5 g2)
   | (g_CPiSnd g g1 g2) => g_CPiSnd (open_co_wrt_tm_rec k a5 g) (open_co_wrt_tm_rec k a5 g1) (open_co_wrt_tm_rec k a5 g2)
   | (g_Cast g1 g2) => g_Cast (open_co_wrt_tm_rec k a5 g1) (open_co_wrt_tm_rec k a5 g2)
-  | (g_EqCong g1 A R g2) => g_EqCong (open_co_wrt_tm_rec k a5 g1) (open_tm_wrt_tm_rec k a5 A) R (open_co_wrt_tm_rec k a5 g2)
+  | (g_EqCong g1 A g2) => g_EqCong (open_co_wrt_tm_rec k a5 g1) (open_tm_wrt_tm_rec k a5 A) (open_co_wrt_tm_rec k a5 g2)
   | (g_IsoConv phi1 phi2 g) => g_IsoConv (open_constraint_wrt_tm_rec k a5 phi1) (open_constraint_wrt_tm_rec k a5 phi2) (open_co_wrt_tm_rec k a5 g)
   | (g_Eta a) => g_Eta (open_tm_wrt_tm_rec k a5 a)
   | (g_Left g g') => g_Left (open_co_wrt_tm_rec k a5 g) (open_co_wrt_tm_rec k a5 g')
@@ -183,8 +183,8 @@ with open_tm_wrt_tm_rec (k:nat) (a5:tm) (a_6:tm) {struct a_6}: tm :=
   | (a_Var_b nat) => if (k === nat) then a5 else (a_Var_b nat)
   | (a_Var_f x) => a_Var_f x
   | (a_Abs rho A R b) => a_Abs rho (open_tm_wrt_tm_rec k a5 A) R (open_tm_wrt_tm_rec (S k) a5 b)
-  | (a_UAbs rho b) => a_UAbs rho (open_tm_wrt_tm_rec (S k) a5 b)
-  | (a_App a rho b) => a_App (open_tm_wrt_tm_rec k a5 a) rho (open_tm_wrt_tm_rec k a5 b)
+  | (a_UAbs rho R b) => a_UAbs rho R (open_tm_wrt_tm_rec (S k) a5 b)
+  | (a_App a rho R b) => a_App (open_tm_wrt_tm_rec k a5 a) rho R (open_tm_wrt_tm_rec k a5 b)
   | (a_Fam F) => a_Fam F
   | (a_Const T) => a_Const T
   | (a_Pi rho A R B) => a_Pi rho (open_tm_wrt_tm_rec k a5 A) R (open_tm_wrt_tm_rec (S k) a5 B)
@@ -278,18 +278,18 @@ Inductive lc_co : co -> Prop :=    (* defn lc_co *)
      (lc_co g1) ->
      (lc_co g2) ->
      (lc_co (g_Trans g1 g2))
- | lc_g_PiCong : forall (L:vars) (rho:relflag) (g1 g2:co),
+ | lc_g_PiCong : forall (L:vars) (rho:relflag) (R:role) (g1 g2:co),
      (lc_co g1) ->
       ( forall x , x \notin  L  -> lc_co  ( open_co_wrt_tm g2 (a_Var_f x) )  )  ->
-     (lc_co (g_PiCong rho g1 g2))
- | lc_g_AbsCong : forall (L:vars) (rho:relflag) (g1 g2:co),
+     (lc_co (g_PiCong rho R g1 g2))
+ | lc_g_AbsCong : forall (L:vars) (rho:relflag) (R:role) (g1 g2:co),
      (lc_co g1) ->
       ( forall x , x \notin  L  -> lc_co  ( open_co_wrt_tm g2 (a_Var_f x) )  )  ->
-     (lc_co (g_AbsCong rho g1 g2))
- | lc_g_AppCong : forall (g1:co) (rho:relflag) (g2:co),
+     (lc_co (g_AbsCong rho R g1 g2))
+ | lc_g_AppCong : forall (g1:co) (rho:relflag) (R:role) (g2:co),
      (lc_co g1) ->
      (lc_co g2) ->
-     (lc_co (g_AppCong g1 rho g2))
+     (lc_co (g_AppCong g1 rho R g2))
  | lc_g_PiFst : forall (g:co),
      (lc_co g) ->
      (lc_co (g_PiFst g))
@@ -326,11 +326,11 @@ Inductive lc_co : co -> Prop :=    (* defn lc_co *)
      (lc_co g1) ->
      (lc_co g2) ->
      (lc_co (g_Cast g1 g2))
- | lc_g_EqCong : forall (g1:co) (A:tm) (R:role) (g2:co),
+ | lc_g_EqCong : forall (g1:co) (A:tm) (g2:co),
      (lc_co g1) ->
      (lc_tm A) ->
      (lc_co g2) ->
-     (lc_co (g_EqCong g1 A R g2))
+     (lc_co (g_EqCong g1 A g2))
  | lc_g_IsoConv : forall (phi1 phi2:constraint) (g:co),
      (lc_constraint phi1) ->
      (lc_constraint phi2) ->
@@ -363,13 +363,13 @@ with lc_tm : tm -> Prop :=    (* defn lc_tm *)
      (lc_tm A) ->
       ( forall x , x \notin  L  -> lc_tm  ( open_tm_wrt_tm b (a_Var_f x) )  )  ->
      (lc_tm (a_Abs rho A R b))
- | lc_a_UAbs : forall (L:vars) (rho:relflag) (b:tm),
+ | lc_a_UAbs : forall (L:vars) (rho:relflag) (R:role) (b:tm),
       ( forall x , x \notin  L  -> lc_tm  ( open_tm_wrt_tm b (a_Var_f x) )  )  ->
-     (lc_tm (a_UAbs rho b))
- | lc_a_App : forall (a:tm) (rho:relflag) (b:tm),
+     (lc_tm (a_UAbs rho R b))
+ | lc_a_App : forall (a:tm) (rho:relflag) (R:role) (b:tm),
      (lc_tm a) ->
      (lc_tm b) ->
-     (lc_tm (a_App a rho b))
+     (lc_tm (a_App a rho R b))
  | lc_a_Fam : forall (F:tyfam),
      (lc_tm (a_Fam F))
  | lc_a_Const : forall (T:const),
@@ -441,9 +441,9 @@ Fixpoint fv_tm_tm_co (g_5:co) : vars :=
   | (g_Refl2 a b g) => (fv_tm_tm_tm a) \u (fv_tm_tm_tm b) \u (fv_tm_tm_co g)
   | (g_Sym g) => (fv_tm_tm_co g)
   | (g_Trans g1 g2) => (fv_tm_tm_co g1) \u (fv_tm_tm_co g2)
-  | (g_PiCong rho g1 g2) => (fv_tm_tm_co g1) \u (fv_tm_tm_co g2)
-  | (g_AbsCong rho g1 g2) => (fv_tm_tm_co g1) \u (fv_tm_tm_co g2)
-  | (g_AppCong g1 rho g2) => (fv_tm_tm_co g1) \u (fv_tm_tm_co g2)
+  | (g_PiCong rho R g1 g2) => (fv_tm_tm_co g1) \u (fv_tm_tm_co g2)
+  | (g_AbsCong rho R g1 g2) => (fv_tm_tm_co g1) \u (fv_tm_tm_co g2)
+  | (g_AppCong g1 rho R g2) => (fv_tm_tm_co g1) \u (fv_tm_tm_co g2)
   | (g_PiFst g) => (fv_tm_tm_co g)
   | (g_CPiFst g) => (fv_tm_tm_co g)
   | (g_IsoSnd g) => (fv_tm_tm_co g)
@@ -453,7 +453,7 @@ Fixpoint fv_tm_tm_co (g_5:co) : vars :=
   | (g_CAppCong g g1 g2) => (fv_tm_tm_co g) \u (fv_tm_tm_co g1) \u (fv_tm_tm_co g2)
   | (g_CPiSnd g g1 g2) => (fv_tm_tm_co g) \u (fv_tm_tm_co g1) \u (fv_tm_tm_co g2)
   | (g_Cast g1 g2) => (fv_tm_tm_co g1) \u (fv_tm_tm_co g2)
-  | (g_EqCong g1 A R g2) => (fv_tm_tm_co g1) \u (fv_tm_tm_tm A) \u (fv_tm_tm_co g2)
+  | (g_EqCong g1 A g2) => (fv_tm_tm_co g1) \u (fv_tm_tm_tm A) \u (fv_tm_tm_co g2)
   | (g_IsoConv phi1 phi2 g) => (fv_tm_tm_constraint phi1) \u (fv_tm_tm_constraint phi2) \u (fv_tm_tm_co g)
   | (g_Eta a) => (fv_tm_tm_tm a)
   | (g_Left g g') => (fv_tm_tm_co g) \u (fv_tm_tm_co g')
@@ -470,8 +470,8 @@ with fv_tm_tm_tm (a5:tm) : vars :=
   | (a_Var_b nat) => {}
   | (a_Var_f x) => {{x}}
   | (a_Abs rho A R b) => (fv_tm_tm_tm A) \u (fv_tm_tm_tm b)
-  | (a_UAbs rho b) => (fv_tm_tm_tm b)
-  | (a_App a rho b) => (fv_tm_tm_tm a) \u (fv_tm_tm_tm b)
+  | (a_UAbs rho R b) => (fv_tm_tm_tm b)
+  | (a_App a rho R b) => (fv_tm_tm_tm a) \u (fv_tm_tm_tm b)
   | (a_Fam F) => {}
   | (a_Const T) => {}
   | (a_Pi rho A R B) => (fv_tm_tm_tm A) \u (fv_tm_tm_tm B)
@@ -499,9 +499,9 @@ Fixpoint fv_co_co_co (g_5:co) : vars :=
   | (g_Refl2 a b g) => (fv_co_co_tm a) \u (fv_co_co_tm b) \u (fv_co_co_co g)
   | (g_Sym g) => (fv_co_co_co g)
   | (g_Trans g1 g2) => (fv_co_co_co g1) \u (fv_co_co_co g2)
-  | (g_PiCong rho g1 g2) => (fv_co_co_co g1) \u (fv_co_co_co g2)
-  | (g_AbsCong rho g1 g2) => (fv_co_co_co g1) \u (fv_co_co_co g2)
-  | (g_AppCong g1 rho g2) => (fv_co_co_co g1) \u (fv_co_co_co g2)
+  | (g_PiCong rho R g1 g2) => (fv_co_co_co g1) \u (fv_co_co_co g2)
+  | (g_AbsCong rho R g1 g2) => (fv_co_co_co g1) \u (fv_co_co_co g2)
+  | (g_AppCong g1 rho R g2) => (fv_co_co_co g1) \u (fv_co_co_co g2)
   | (g_PiFst g) => (fv_co_co_co g)
   | (g_CPiFst g) => (fv_co_co_co g)
   | (g_IsoSnd g) => (fv_co_co_co g)
@@ -511,7 +511,7 @@ Fixpoint fv_co_co_co (g_5:co) : vars :=
   | (g_CAppCong g g1 g2) => (fv_co_co_co g) \u (fv_co_co_co g1) \u (fv_co_co_co g2)
   | (g_CPiSnd g g1 g2) => (fv_co_co_co g) \u (fv_co_co_co g1) \u (fv_co_co_co g2)
   | (g_Cast g1 g2) => (fv_co_co_co g1) \u (fv_co_co_co g2)
-  | (g_EqCong g1 A R g2) => (fv_co_co_co g1) \u (fv_co_co_tm A) \u (fv_co_co_co g2)
+  | (g_EqCong g1 A g2) => (fv_co_co_co g1) \u (fv_co_co_tm A) \u (fv_co_co_co g2)
   | (g_IsoConv phi1 phi2 g) => (fv_co_co_constraint phi1) \u (fv_co_co_constraint phi2) \u (fv_co_co_co g)
   | (g_Eta a) => (fv_co_co_tm a)
   | (g_Left g g') => (fv_co_co_co g) \u (fv_co_co_co g')
@@ -528,8 +528,8 @@ with fv_co_co_tm (a5:tm) : vars :=
   | (a_Var_b nat) => {}
   | (a_Var_f x) => {}
   | (a_Abs rho A R b) => (fv_co_co_tm A) \u (fv_co_co_tm b)
-  | (a_UAbs rho b) => (fv_co_co_tm b)
-  | (a_App a rho b) => (fv_co_co_tm a) \u (fv_co_co_tm b)
+  | (a_UAbs rho R b) => (fv_co_co_tm b)
+  | (a_App a rho R b) => (fv_co_co_tm a) \u (fv_co_co_tm b)
   | (a_Fam F) => {}
   | (a_Const T) => {}
   | (a_Pi rho A R B) => (fv_co_co_tm A) \u (fv_co_co_tm B)
@@ -582,9 +582,9 @@ Fixpoint tm_subst_tm_co (a5:tm) (x5:tmvar) (g_5:co) {struct g_5} : co :=
   | (g_Refl2 a b g) => g_Refl2 (tm_subst_tm_tm a5 x5 a) (tm_subst_tm_tm a5 x5 b) (tm_subst_tm_co a5 x5 g)
   | (g_Sym g) => g_Sym (tm_subst_tm_co a5 x5 g)
   | (g_Trans g1 g2) => g_Trans (tm_subst_tm_co a5 x5 g1) (tm_subst_tm_co a5 x5 g2)
-  | (g_PiCong rho g1 g2) => g_PiCong rho (tm_subst_tm_co a5 x5 g1) (tm_subst_tm_co a5 x5 g2)
-  | (g_AbsCong rho g1 g2) => g_AbsCong rho (tm_subst_tm_co a5 x5 g1) (tm_subst_tm_co a5 x5 g2)
-  | (g_AppCong g1 rho g2) => g_AppCong (tm_subst_tm_co a5 x5 g1) rho (tm_subst_tm_co a5 x5 g2)
+  | (g_PiCong rho R g1 g2) => g_PiCong rho R (tm_subst_tm_co a5 x5 g1) (tm_subst_tm_co a5 x5 g2)
+  | (g_AbsCong rho R g1 g2) => g_AbsCong rho R (tm_subst_tm_co a5 x5 g1) (tm_subst_tm_co a5 x5 g2)
+  | (g_AppCong g1 rho R g2) => g_AppCong (tm_subst_tm_co a5 x5 g1) rho R (tm_subst_tm_co a5 x5 g2)
   | (g_PiFst g) => g_PiFst (tm_subst_tm_co a5 x5 g)
   | (g_CPiFst g) => g_CPiFst (tm_subst_tm_co a5 x5 g)
   | (g_IsoSnd g) => g_IsoSnd (tm_subst_tm_co a5 x5 g)
@@ -594,7 +594,7 @@ Fixpoint tm_subst_tm_co (a5:tm) (x5:tmvar) (g_5:co) {struct g_5} : co :=
   | (g_CAppCong g g1 g2) => g_CAppCong (tm_subst_tm_co a5 x5 g) (tm_subst_tm_co a5 x5 g1) (tm_subst_tm_co a5 x5 g2)
   | (g_CPiSnd g g1 g2) => g_CPiSnd (tm_subst_tm_co a5 x5 g) (tm_subst_tm_co a5 x5 g1) (tm_subst_tm_co a5 x5 g2)
   | (g_Cast g1 g2) => g_Cast (tm_subst_tm_co a5 x5 g1) (tm_subst_tm_co a5 x5 g2)
-  | (g_EqCong g1 A R g2) => g_EqCong (tm_subst_tm_co a5 x5 g1) (tm_subst_tm_tm a5 x5 A) R (tm_subst_tm_co a5 x5 g2)
+  | (g_EqCong g1 A g2) => g_EqCong (tm_subst_tm_co a5 x5 g1) (tm_subst_tm_tm a5 x5 A) (tm_subst_tm_co a5 x5 g2)
   | (g_IsoConv phi1 phi2 g) => g_IsoConv (tm_subst_tm_constraint a5 x5 phi1) (tm_subst_tm_constraint a5 x5 phi2) (tm_subst_tm_co a5 x5 g)
   | (g_Eta a) => g_Eta (tm_subst_tm_tm a5 x5 a)
   | (g_Left g g') => g_Left (tm_subst_tm_co a5 x5 g) (tm_subst_tm_co a5 x5 g')
@@ -611,8 +611,8 @@ with tm_subst_tm_tm (a5:tm) (x5:tmvar) (a_6:tm) {struct a_6} : tm :=
   | (a_Var_b nat) => a_Var_b nat
   | (a_Var_f x) => (if eq_var x x5 then a5 else (a_Var_f x))
   | (a_Abs rho A R b) => a_Abs rho (tm_subst_tm_tm a5 x5 A) R (tm_subst_tm_tm a5 x5 b)
-  | (a_UAbs rho b) => a_UAbs rho (tm_subst_tm_tm a5 x5 b)
-  | (a_App a rho b) => a_App (tm_subst_tm_tm a5 x5 a) rho (tm_subst_tm_tm a5 x5 b)
+  | (a_UAbs rho R b) => a_UAbs rho R (tm_subst_tm_tm a5 x5 b)
+  | (a_App a rho R b) => a_App (tm_subst_tm_tm a5 x5 a) rho R (tm_subst_tm_tm a5 x5 b)
   | (a_Fam F) => a_Fam F
   | (a_Const T) => a_Const T
   | (a_Pi rho A R B) => a_Pi rho (tm_subst_tm_tm a5 x5 A) R (tm_subst_tm_tm a5 x5 B)
@@ -640,9 +640,9 @@ Fixpoint co_subst_co_co (g_5:co) (c5:covar) (g__6:co) {struct g__6} : co :=
   | (g_Refl2 a b g) => g_Refl2 (co_subst_co_tm g_5 c5 a) (co_subst_co_tm g_5 c5 b) (co_subst_co_co g_5 c5 g)
   | (g_Sym g) => g_Sym (co_subst_co_co g_5 c5 g)
   | (g_Trans g1 g2) => g_Trans (co_subst_co_co g_5 c5 g1) (co_subst_co_co g_5 c5 g2)
-  | (g_PiCong rho g1 g2) => g_PiCong rho (co_subst_co_co g_5 c5 g1) (co_subst_co_co g_5 c5 g2)
-  | (g_AbsCong rho g1 g2) => g_AbsCong rho (co_subst_co_co g_5 c5 g1) (co_subst_co_co g_5 c5 g2)
-  | (g_AppCong g1 rho g2) => g_AppCong (co_subst_co_co g_5 c5 g1) rho (co_subst_co_co g_5 c5 g2)
+  | (g_PiCong rho R g1 g2) => g_PiCong rho R (co_subst_co_co g_5 c5 g1) (co_subst_co_co g_5 c5 g2)
+  | (g_AbsCong rho R g1 g2) => g_AbsCong rho R (co_subst_co_co g_5 c5 g1) (co_subst_co_co g_5 c5 g2)
+  | (g_AppCong g1 rho R g2) => g_AppCong (co_subst_co_co g_5 c5 g1) rho R (co_subst_co_co g_5 c5 g2)
   | (g_PiFst g) => g_PiFst (co_subst_co_co g_5 c5 g)
   | (g_CPiFst g) => g_CPiFst (co_subst_co_co g_5 c5 g)
   | (g_IsoSnd g) => g_IsoSnd (co_subst_co_co g_5 c5 g)
@@ -652,7 +652,7 @@ Fixpoint co_subst_co_co (g_5:co) (c5:covar) (g__6:co) {struct g__6} : co :=
   | (g_CAppCong g g1 g2) => g_CAppCong (co_subst_co_co g_5 c5 g) (co_subst_co_co g_5 c5 g1) (co_subst_co_co g_5 c5 g2)
   | (g_CPiSnd g g1 g2) => g_CPiSnd (co_subst_co_co g_5 c5 g) (co_subst_co_co g_5 c5 g1) (co_subst_co_co g_5 c5 g2)
   | (g_Cast g1 g2) => g_Cast (co_subst_co_co g_5 c5 g1) (co_subst_co_co g_5 c5 g2)
-  | (g_EqCong g1 A R g2) => g_EqCong (co_subst_co_co g_5 c5 g1) (co_subst_co_tm g_5 c5 A) R (co_subst_co_co g_5 c5 g2)
+  | (g_EqCong g1 A g2) => g_EqCong (co_subst_co_co g_5 c5 g1) (co_subst_co_tm g_5 c5 A) (co_subst_co_co g_5 c5 g2)
   | (g_IsoConv phi1 phi2 g) => g_IsoConv (co_subst_co_constraint g_5 c5 phi1) (co_subst_co_constraint g_5 c5 phi2) (co_subst_co_co g_5 c5 g)
   | (g_Eta a) => g_Eta (co_subst_co_tm g_5 c5 a)
   | (g_Left g g') => g_Left (co_subst_co_co g_5 c5 g) (co_subst_co_co g_5 c5 g')
@@ -669,8 +669,8 @@ with co_subst_co_tm (g5:co) (c5:covar) (a5:tm) {struct a5} : tm :=
   | (a_Var_b nat) => a_Var_b nat
   | (a_Var_f x) => a_Var_f x
   | (a_Abs rho A R b) => a_Abs rho (co_subst_co_tm g5 c5 A) R (co_subst_co_tm g5 c5 b)
-  | (a_UAbs rho b) => a_UAbs rho (co_subst_co_tm g5 c5 b)
-  | (a_App a rho b) => a_App (co_subst_co_tm g5 c5 a) rho (co_subst_co_tm g5 c5 b)
+  | (a_UAbs rho R b) => a_UAbs rho R (co_subst_co_tm g5 c5 b)
+  | (a_App a rho R b) => a_App (co_subst_co_tm g5 c5 a) rho R (co_subst_co_tm g5 c5 b)
   | (a_Fam F) => a_Fam F
   | (a_Const T) => a_Const T
   | (a_Pi rho A R B) => a_Pi rho (co_subst_co_tm g5 c5 A) R (co_subst_co_tm g5 c5 B)
@@ -725,10 +725,10 @@ Fixpoint erase_tm (a : tm) : tm :=
    | a_Star    => a_Star
    | a_Var_b n => a_Var_b n
    | a_Var_f x => a_Var_f x
-   | a_Abs rho A R b => a_UAbs rho (erase_tm b)
-   | a_UAbs rho b => a_UAbs rho (erase_tm b)
-   | a_App a Rel b => a_App (erase_tm a) Rel (erase_tm b)
-   | a_App a Irrel b => a_App (erase_tm a) Irrel a_Bullet
+   | a_Abs rho A R b => a_UAbs rho R (erase_tm b)
+   | a_UAbs rho R b => a_UAbs rho R (erase_tm b)
+   | a_App a Rel R b => a_App (erase_tm a) Rel R (erase_tm b)
+   | a_App a Irrel R b => a_App (erase_tm a) Irrel R a_Bullet
    | a_Const T => a_Const T
    | a_Fam F => a_Fam F
    | a_Pi rho A R B => a_Pi rho (erase_tm A) R (erase_tm B)
@@ -776,8 +776,8 @@ Qed.
 Definition FixDef : tm :=
   (a_Abs Irrel a_Star Nom
          (a_Abs Rel (a_Pi Rel (a_Var_b 0) Nom (a_Var_b 1)) Nom
-                (a_App (a_Var_b 0) Rel
-                       (a_App (a_App (a_Fam Fix) Irrel (a_Var_b 1)) Rel (a_Var_b 0))))).
+                (a_App (a_Var_b 0) Rel Nom
+                       (a_App (a_App (a_Fam Fix) Irrel Nom (a_Var_b 1)) Rel Nom (a_Var_b 0))))).
 
 Definition FixTy : tm :=
   a_Pi Irrel a_Star Nom
@@ -828,12 +828,12 @@ with Value : tm -> Prop :=    (* defn Value *)
      lc_tm A ->
      lc_tm (a_Abs Rel A R a) ->
      Value (a_Abs Rel A R a)
- | Value_UAbsRel : forall (a:tm),
-     lc_tm (a_UAbs Rel a) ->
-     Value (a_UAbs Rel a)
- | Value_UAbsIrrel : forall (L:vars) (a:tm),
+ | Value_UAbsRel : forall (R:role) (a:tm),
+     lc_tm (a_UAbs Rel R a) ->
+     Value (a_UAbs Rel R a)
+ | Value_UAbsIrrel : forall (L:vars) (R:role) (a:tm),
       ( forall x , x \notin  L  -> Value  ( open_tm_wrt_tm a (a_Var_f x) )  )  ->
-     Value (a_UAbs Irrel a)
+     Value (a_UAbs Irrel R a)
  | Value_AbsIrrel : forall (L:vars) (A:tm) (R:role) (a:tm),
      lc_tm A ->
       ( forall x , x \notin  L  -> CoercedValue  ( open_tm_wrt_tm a (a_Var_f x) )  )  ->
@@ -890,13 +890,13 @@ Inductive erased_tm : tm -> Prop :=    (* defn erased_tm *)
      erased_tm a_Star
  | erased_a_Var : forall (x:tmvar),
      erased_tm (a_Var_f x)
- | erased_a_Abs : forall (L:vars) (rho:relflag) (a:tm),
+ | erased_a_Abs : forall (L:vars) (rho:relflag) (R:role) (a:tm),
       ( forall x , x \notin  L  -> erased_tm  ( open_tm_wrt_tm a (a_Var_f x) )  )  ->
-     erased_tm  ( (a_UAbs rho a) ) 
- | erased_a_App : forall (a:tm) (rho:relflag) (b:tm),
+     erased_tm  ( (a_UAbs rho R a) ) 
+ | erased_a_App : forall (a:tm) (rho:relflag) (R:role) (b:tm),
      erased_tm a ->
      erased_tm b ->
-     erased_tm  ( (a_App a rho b) ) 
+     erased_tm  ( (a_App a rho R b) ) 
  | erased_a_Pi : forall (L:vars) (rho:relflag) (A:tm) (R:role) (B:tm),
      erased_tm A ->
       ( forall x , x \notin  L  -> erased_tm  ( open_tm_wrt_tm B (a_Var_f x) )  )  ->
@@ -932,23 +932,23 @@ Inductive Par : context -> available_props -> tm -> tm -> Prop :=    (* defn Par
  | Par_Refl : forall (G:context) (D:available_props) (a:tm),
      lc_tm a ->
      Par G D a a
- | Par_Beta : forall (G:context) (D:available_props) (a:tm) (rho:relflag) (b a' b':tm),
-     Par G D a  ( (a_UAbs rho a') )  ->
+ | Par_Beta : forall (G:context) (D:available_props) (a:tm) (rho:relflag) (R:role) (b a' b':tm),
+     Par G D a  ( (a_UAbs rho R a') )  ->
      Par G D b b' ->
-     Par G D (a_App a rho b)  (open_tm_wrt_tm  a'   b' ) 
- | Par_App : forall (G:context) (D:available_props) (a:tm) (rho:relflag) (b a' b':tm),
+     Par G D (a_App a rho R b)  (open_tm_wrt_tm  a'   b' ) 
+ | Par_App : forall (G:context) (D:available_props) (a:tm) (rho:relflag) (R:role) (b a' b':tm),
      Par G D a a' ->
      Par G D b b' ->
-     Par G D (a_App a rho b) (a_App a' rho b')
+     Par G D (a_App a rho R b) (a_App a' rho R b')
  | Par_CBeta : forall (G:context) (D:available_props) (a a':tm),
      Par G D a  ( (a_UCAbs a') )  ->
      Par G D (a_CApp a g_Triv)  (open_tm_wrt_co  a'   g_Triv ) 
  | Par_CApp : forall (G:context) (D:available_props) (a a':tm),
      Par G D a a' ->
      Par G D (a_CApp a g_Triv) (a_CApp a' g_Triv)
- | Par_Abs : forall (L:vars) (G:context) (D:available_props) (rho:relflag) (a a':tm),
+ | Par_Abs : forall (L:vars) (G:context) (D:available_props) (rho:relflag) (R:role) (a a':tm),
       ( forall x , x \notin  L  -> Par G D  ( open_tm_wrt_tm a (a_Var_f x) )   ( open_tm_wrt_tm a' (a_Var_f x) )  )  ->
-     Par G D (a_UAbs rho a) (a_UAbs rho a')
+     Par G D (a_UAbs rho R a) (a_UAbs rho R a')
  | Par_Pi : forall (L:vars) (G:context) (D:available_props) (rho:relflag) (A:tm) (R:role) (B A' B':tm),
      Par G D A A' ->
       ( forall x , x \notin  L  -> Par G D  ( open_tm_wrt_tm B (a_Var_f x) )   ( open_tm_wrt_tm B' (a_Var_f x) )  )  ->
@@ -981,10 +981,10 @@ with joins : context -> available_props -> tm -> tm -> Prop :=    (* defn joins 
 
 (* defns Jbeta *)
 Inductive Beta : tm -> tm -> Prop :=    (* defn Beta *)
- | Beta_AppAbs : forall (rho:relflag) (v b:tm),
+ | Beta_AppAbs : forall (rho:relflag) (R:role) (v b:tm),
      lc_tm b ->
-     Value  ( (a_UAbs rho v) )  ->
-     Beta (a_App  ( (a_UAbs rho v) )  rho b)  (open_tm_wrt_tm  v   b ) 
+     Value  ( (a_UAbs rho R v) )  ->
+     Beta (a_App  ( (a_UAbs rho R v) )  rho R b)  (open_tm_wrt_tm  v   b ) 
  | Beta_CAppCAbs : forall (a':tm),
      lc_tm (a_UCAbs a') ->
      Beta (a_CApp  ( (a_UCAbs a') )  g_Triv)  (open_tm_wrt_co  a'   g_Triv ) 
@@ -992,20 +992,20 @@ Inductive Beta : tm -> tm -> Prop :=    (* defn Beta *)
       binds  F  (Ax  a A R )   toplevel   ->
      Beta (a_Fam F) a
 with reduction_in_one : tm -> tm -> Prop :=    (* defn reduction_in_one *)
- | E_AbsTerm : forall (L:vars) (a a':tm),
+ | E_AbsTerm : forall (L:vars) (R:role) (a a':tm),
       ( forall x , x \notin  L  -> reduction_in_one  ( open_tm_wrt_tm a (a_Var_f x) )   ( open_tm_wrt_tm a' (a_Var_f x) )  )  ->
-     reduction_in_one (a_UAbs Irrel a) (a_UAbs Irrel a')
- | E_AppLeft : forall (a:tm) (rho:relflag) (b a':tm),
+     reduction_in_one (a_UAbs Irrel R a) (a_UAbs Irrel R a')
+ | E_AppLeft : forall (a:tm) (rho:relflag) (R:role) (b a':tm),
      lc_tm b ->
      reduction_in_one a a' ->
-     reduction_in_one (a_App a rho b) (a_App a' rho b)
+     reduction_in_one (a_App a rho R b) (a_App a' rho R b)
  | E_CAppLeft : forall (a a':tm),
      reduction_in_one a a' ->
      reduction_in_one (a_CApp a g_Triv) (a_CApp a' g_Triv)
- | E_AppAbs : forall (rho:relflag) (v a:tm),
+ | E_AppAbs : forall (rho:relflag) (R:role) (v a:tm),
      lc_tm a ->
-     Value  ( (a_UAbs rho v) )  ->
-     reduction_in_one (a_App  ( (a_UAbs rho v) )  rho a)  (open_tm_wrt_tm  v   a ) 
+     Value  ( (a_UAbs rho R v) )  ->
+     reduction_in_one (a_App  ( (a_UAbs rho R v) )  rho R a)  (open_tm_wrt_tm  v   a ) 
  | E_CAppCAbs : forall (b:tm),
      lc_tm (a_UCAbs b) ->
      reduction_in_one (a_CApp  ( (a_UCAbs b) )  g_Triv)  (open_tm_wrt_co  b   g_Triv ) 
@@ -1045,20 +1045,20 @@ with Typing : context -> tm -> tm -> role -> Prop :=    (* defn Typing *)
       ( Typing G A a_Star R )  ->
      SubRole R R' ->
      Typing G (a_Pi rho A R B) a_Star R'
- | E_Abs : forall (L:vars) (G:context) (rho:relflag) (a A:tm) (R:role) (B:tm) (R':role),
+ | E_Abs : forall (L:vars) (G:context) (rho:relflag) (R:role) (a A B:tm) (R':role),
       ( forall x , x \notin  L  -> Typing  (( x ~ Tm  A R ) ++  G )   ( open_tm_wrt_tm a (a_Var_f x) )   ( open_tm_wrt_tm B (a_Var_f x) )  R' )  ->
       ( Typing G A a_Star R )  ->
       ( forall x , x \notin  L  -> RhoCheck rho x  ( open_tm_wrt_tm a (a_Var_f x) )  )  ->
      SubRole R R' ->
-     Typing G (a_UAbs rho a)  ( (a_Pi rho A R B) )  R'
- | E_App : forall (G:context) (b a B:tm) (R':role) (A:tm) (R:role),
+     Typing G (a_UAbs rho R a)  ( (a_Pi rho A R B) )  R'
+ | E_App : forall (G:context) (b:tm) (R:role) (a B:tm) (R':role) (A:tm),
      Typing G b (a_Pi Rel A R B) R' ->
      Typing G a A R ->
-     Typing G (a_App b Rel a)  (open_tm_wrt_tm  B   a )  R'
- | E_IApp : forall (G:context) (b B a:tm) (R':role) (A:tm) (R:role),
+     Typing G (a_App b Rel R a)  (open_tm_wrt_tm  B   a )  R'
+ | E_IApp : forall (G:context) (b:tm) (R:role) (B a:tm) (R':role) (A:tm),
      Typing G b (a_Pi Irrel A R B) R' ->
      Typing G a A R ->
-     Typing G (a_App b Irrel a_Bullet)  (open_tm_wrt_tm  B   a )  R'
+     Typing G (a_App b Irrel R a_Bullet)  (open_tm_wrt_tm  B   a )  R'
  | E_Conv : forall (G:context) (a B:tm) (R:role) (A:tm),
      Typing G a A R ->
      DefEq G  (dom  G )  A B a_Star R ->
@@ -1127,21 +1127,21 @@ with DefEq : context -> available_props -> tm -> tm -> tm -> role -> Prop :=    
       ( Typing G (a_Pi rho A2 R B2) a_Star R' )  ->
       ( SubRole R R' )  ->
      DefEq G D  ( (a_Pi rho A1 R B1) )   ( (a_Pi rho A2 R B2) )  a_Star R'
- | E_AbsCong : forall (L:vars) (G:context) (D:available_props) (rho:relflag) (b1 b2 A1:tm) (R:role) (B:tm) (R':role),
+ | E_AbsCong : forall (L:vars) (G:context) (D:available_props) (rho:relflag) (R:role) (b1 b2 A1 B:tm) (R':role),
       ( forall x , x \notin  L  -> DefEq  (( x ~ Tm  A1 R ) ++  G )  D  ( open_tm_wrt_tm b1 (a_Var_f x) )   ( open_tm_wrt_tm b2 (a_Var_f x) )   ( open_tm_wrt_tm B (a_Var_f x) )  R' )  ->
       ( Typing G A1 a_Star R )  ->
       ( SubRole R R' )  ->
       ( forall x , x \notin  L  -> RhoCheck rho x  ( open_tm_wrt_tm b1 (a_Var_f x) )  )  ->
       ( forall x , x \notin  L  -> RhoCheck rho x  ( open_tm_wrt_tm b2 (a_Var_f x) )  )  ->
-     DefEq G D  ( (a_UAbs rho b1) )   ( (a_UAbs rho b2) )   ( (a_Pi rho A1 R B) )  R'
- | E_AppCong : forall (G:context) (D:available_props) (a1 a2 b1 b2 B:tm) (R':role) (A:tm) (R:role),
+     DefEq G D  ( (a_UAbs rho R b1) )   ( (a_UAbs rho R b2) )   ( (a_Pi rho A1 R B) )  R'
+ | E_AppCong : forall (G:context) (D:available_props) (a1:tm) (R:role) (a2 b1 b2 B:tm) (R':role) (A:tm),
      DefEq G D a1 b1  ( (a_Pi Rel A R B) )  R' ->
      DefEq G D a2 b2 A R ->
-     DefEq G D (a_App a1 Rel a2) (a_App b1 Rel b2)  (  (open_tm_wrt_tm  B   a2 )  )  R'
- | E_IAppCong : forall (G:context) (D:available_props) (a1 b1 B a:tm) (R':role) (A:tm) (R:role),
+     DefEq G D (a_App a1 Rel R a2) (a_App b1 Rel R b2)  (  (open_tm_wrt_tm  B   a2 )  )  R'
+ | E_IAppCong : forall (G:context) (D:available_props) (a1:tm) (R:role) (b1 B a:tm) (R':role) (A:tm),
      DefEq G D a1 b1  ( (a_Pi Irrel A R B) )  R' ->
      Typing G a A R ->
-     DefEq G D (a_App a1 Irrel a_Bullet) (a_App b1 Irrel a_Bullet)  (  (open_tm_wrt_tm  B   a )  )  R'
+     DefEq G D (a_App a1 Irrel R a_Bullet) (a_App b1 Irrel R a_Bullet)  (  (open_tm_wrt_tm  B   a )  )  R'
  | E_PiFst : forall (G:context) (D:available_props) (A1 A2:tm) (R:role) (rho:relflag) (B1 B2:tm) (R':role),
      DefEq G D (a_Pi rho A1 R B1) (a_Pi rho A2 R B2) a_Star R' ->
      DefEq G D A1 A2 a_Star R
@@ -1232,10 +1232,10 @@ with AnnTyping : context -> tm -> tm -> role -> Prop :=    (* defn AnnTyping *)
       ( forall x , x \notin  L  -> RhoCheck rho x  (erase_tm   ( open_tm_wrt_tm a (a_Var_f x) )  )  )  ->
      SubRole R R' ->
      AnnTyping G (a_Abs rho A R a)  ( (a_Pi rho A R B) )  R'
- | An_App : forall (G:context) (b:tm) (rho:relflag) (a B:tm) (R':role) (A:tm) (R:role),
+ | An_App : forall (G:context) (b:tm) (rho:relflag) (R:role) (a B:tm) (R':role) (A:tm),
      AnnTyping G b  ( (a_Pi rho A R B) )  R' ->
      AnnTyping G a A R ->
-     AnnTyping G (a_App b rho a)  (  (open_tm_wrt_tm  B   a )  )  R'
+     AnnTyping G (a_App b rho R a)  (  (open_tm_wrt_tm  B   a )  )  R'
  | An_Conv : forall (G:context) (a:tm) (g:co) (B:tm) (R:role) (A:tm),
      AnnTyping G a A R ->
      AnnDefEq G  (dom  G )  g A B R ->
@@ -1259,12 +1259,12 @@ with AnnTyping : context -> tm -> tm -> role -> Prop :=    (* defn AnnTyping *)
       ( AnnTyping  nil  A a_Star R )  ->
      AnnTyping G (a_Fam F) A R
 with AnnIso : context -> available_props -> co -> constraint -> constraint -> Prop :=    (* defn AnnIso *)
- | An_PropCong : forall (G:context) (D:available_props) (g1:co) (A:tm) (R:role) (g2:co) (A1 B1 A2 B2:tm),
+ | An_PropCong : forall (G:context) (D:available_props) (g1:co) (A:tm) (g2:co) (A1 B1:tm) (R:role) (A2 B2:tm),
      AnnDefEq G D g1 A1 A2 R ->
      AnnDefEq G D g2 B1 B2 R ->
      AnnPropWff G (Eq A1 B1 A R) ->
      AnnPropWff G (Eq A2 B2 A R) ->
-     AnnIso G D  ( (g_EqCong g1 A R g2) )   ( (Eq A1 B1 A R) )   ( (Eq A2 B2 A R) ) 
+     AnnIso G D  ( (g_EqCong g1 A g2) )   ( (Eq A1 B1 A R) )   ( (Eq A2 B2 A R) ) 
  | An_CPiFst : forall (G:context) (D:available_props) (g:co) (phi1 phi2:constraint) (A2 B2:tm) (R:role),
      AnnDefEq G D g (a_CPi phi1 A2) (a_CPi phi2 B2) R ->
      AnnIso G D (g_CPiFst g) phi1 phi2
@@ -1312,15 +1312,16 @@ with AnnDefEq : context -> available_props -> co -> tm -> tm -> role -> Prop := 
       (  (erase_tm  B0 )   =   (erase_tm  B1 )  )  ->
      Beta  (erase_tm  a1 )   (erase_tm  a2 )  ->
      AnnDefEq G D (g_Beta a1 a2) a1 a2 R
- | An_PiCong : forall (L:vars) (G:context) (D:available_props) (rho:relflag) (g1 g2:co) (A1:tm) (R:role) (B1 A2 B3 B2:tm),
-     AnnDefEq G D g1 A1 A2 R ->
-      ( forall x , x \notin  L  -> AnnDefEq  (( x ~ Tm  A1 R ) ++  G )  D  ( open_co_wrt_tm g2 (a_Var_f x) )   ( open_tm_wrt_tm B1 (a_Var_f x) )    (open_tm_wrt_tm  B2   (a_Var_f x) )   R )  ->
+ | An_PiCong : forall (L:vars) (G:context) (D:available_props) (rho:relflag) (R:role) (g1 g2:co) (A1 B1 A2 B3:tm) (R':role) (B2:tm),
+     AnnDefEq G D g1 A1 A2 R' ->
+      ( forall x , x \notin  L  -> AnnDefEq  (( x ~ Tm  A1 R ) ++  G )  D  ( open_co_wrt_tm g2 (a_Var_f x) )   ( open_tm_wrt_tm B1 (a_Var_f x) )    (open_tm_wrt_tm  B2   (a_Var_f x) )   R' )  ->
       ( forall x , x \notin  L  ->  (  ( open_tm_wrt_tm B3 (a_Var_f x) )   =   (open_tm_wrt_tm  B2   (a_Conv (a_Var_f x) (g_Sym g1)) )  )  )  ->
-     AnnTyping G (a_Pi rho A1 R B1) a_Star R ->
-     AnnTyping G (a_Pi rho A1 R B2) a_Star R ->
-     AnnTyping G (a_Pi rho A2 R B3) a_Star R ->
-     AnnDefEq G D (g_PiCong rho g1 g2)  ( (a_Pi rho A1 R B1) )   ( (a_Pi rho A2 R B3) )  R
- | An_AbsCong : forall (L:vars) (G:context) (D:available_props) (rho:relflag) (g1 g2:co) (A1:tm) (R:role) (b1 A2 b3:tm) (R':role) (b2 B:tm),
+     AnnTyping G (a_Pi rho A1 R B1) a_Star R' ->
+     AnnTyping G (a_Pi rho A1 R B2) a_Star R' ->
+     AnnTyping G (a_Pi rho A2 R B3) a_Star R' ->
+      ( SubRole R R' )  ->
+     AnnDefEq G D (g_PiCong rho R g1 g2)  ( (a_Pi rho A1 R B1) )   ( (a_Pi rho A2 R B3) )  R'
+ | An_AbsCong : forall (L:vars) (G:context) (D:available_props) (rho:relflag) (R:role) (g1 g2:co) (A1 b1 A2 b3:tm) (R':role) (b2 B:tm),
      AnnDefEq G D g1 A1 A2 R ->
       ( forall x , x \notin  L  -> AnnDefEq  (( x ~ Tm  A1 R ) ++  G )  D  ( open_co_wrt_tm g2 (a_Var_f x) )   ( open_tm_wrt_tm b1 (a_Var_f x) )    (open_tm_wrt_tm  b2   (a_Var_f x) )   R' )  ->
       ( forall x , x \notin  L  ->  (  ( open_tm_wrt_tm b3 (a_Var_f x) )   =   (open_tm_wrt_tm  b2   (a_Conv (a_Var_f x) (g_Sym g1)) )  )  )  ->
@@ -1330,45 +1331,40 @@ with AnnDefEq : context -> available_props -> co -> tm -> tm -> role -> Prop := 
       ( forall x , x \notin  L  -> RhoCheck rho x  (erase_tm   ( open_tm_wrt_tm b3 (a_Var_f x) )  )  )  ->
       ( AnnTyping G  ( (a_Abs rho A1 R b2) )  B R' )  ->
       ( SubRole R R' )  ->
-     AnnDefEq G D  ( (g_AbsCong rho g1 g2) )   ( (a_Abs rho A1 R b1) )   ( (a_Abs rho A2 R b3) )  R'
- | An_AppCong : forall (G:context) (D:available_props) (g1:co) (rho:relflag) (g2:co) (a1 a2 b1 b2:tm) (R' R:role) (A B:tm) (g3:co),
+     AnnDefEq G D  ( (g_AbsCong rho R g1 g2) )   ( (a_Abs rho A1 R b1) )   ( (a_Abs rho A2 R b3) )  R'
+ | An_AppCong : forall (G:context) (D:available_props) (g1:co) (rho:relflag) (R:role) (g2:co) (a1 a2 b1 b2:tm) (R':role) (A B:tm) (g3:co),
      AnnDefEq G D g1 a1 b1 R' ->
      AnnDefEq G D g2 a2 b2 R ->
-     AnnTyping G (a_App a1 rho a2) A R' ->
-     AnnTyping G (a_App b1 rho b2) B R' ->
+     AnnTyping G (a_App a1 rho R a2) A R' ->
+     AnnTyping G (a_App b1 rho R b2) B R' ->
       ( AnnDefEq G  (dom  G )  g3 A B R' )  ->
-      ( SubRole R R' )  ->
-     AnnDefEq G D (g_AppCong g1 rho g2) (a_App a1 rho a2) (a_App b1 rho b2) R'
- | An_PiFst : forall (G:context) (D:available_props) (g:co) (A1 A2:tm) (R3:role) (rho:relflag) (R1:role) (B1:tm) (R2:role) (B2:tm) (R:role),
-     AnnDefEq G D g (a_Pi rho A1 R1 B1) (a_Pi rho A2 R2 B2) R ->
-     SubRole R3 R1 ->
-     SubRole R3 R2 ->
-     AnnDefEq G D (g_PiFst g) A1 A2 R3
- | An_PiSnd : forall (G:context) (D:available_props) (g1 g2:co) (B1 a1 B2 a2:tm) (R':role) (rho:relflag) (A1:tm) (R1:role) (A2:tm) (R2 R:role),
-     AnnDefEq G D g1 (a_Pi rho A1 R1 B1) (a_Pi rho A2 R2 B2) R' ->
+     AnnDefEq G D (g_AppCong g1 rho R g2) (a_App a1 rho R a2) (a_App b1 rho R b2) R'
+ | An_PiFst : forall (G:context) (D:available_props) (g:co) (A1 A2:tm) (R:role) (rho:relflag) (B1 B2:tm) (R':role),
+     AnnDefEq G D g (a_Pi rho A1 R B1) (a_Pi rho A2 R B2) R' ->
+     AnnDefEq G D (g_PiFst g) A1 A2 R
+ | An_PiSnd : forall (G:context) (D:available_props) (g1 g2:co) (B1 a1 B2 a2:tm) (R':role) (rho:relflag) (A1:tm) (R:role) (A2:tm),
+     AnnDefEq G D g1 (a_Pi rho A1 R B1) (a_Pi rho A2 R B2) R' ->
      AnnDefEq G D g2 a1 a2 R ->
      AnnTyping G a1 A1 R ->
      AnnTyping G a2 A2 R ->
-     SubRole R R1 ->
-     SubRole R R2 ->
      AnnDefEq G D (g_PiSnd g1 g2)   (open_tm_wrt_tm  B1   a1 )     (open_tm_wrt_tm  B2   a2 )   R'
- | An_CPiCong : forall (L:vars) (G:context) (D:available_props) (g1 g3:co) (phi1:constraint) (B1:tm) (phi2:constraint) (B3:tm) (R:role) (B2:tm),
-     AnnIso G D g1 phi1 phi2 ->
-      ( forall c , c \notin  L  -> AnnDefEq  (( c ~ Co  phi1 ) ++  G )  D  ( open_co_wrt_co g3 (g_Var_f c) )   ( open_tm_wrt_co B1 (g_Var_f c) )    (open_tm_wrt_co  B2   (g_Var_f c) )   R )  ->
+ | An_CPiCong : forall (L:vars) (G:context) (D:available_props) (g1 g3:co) (a1 b1 A1:tm) (R:role) (B1 a2 b2 A2 B3 B2:tm) (R':role),
+     AnnIso G D g1 (Eq a1 b1 A1 R) (Eq a2 b2 A2 R) ->
+      ( forall c , c \notin  L  -> AnnDefEq  (( c ~ Co  (Eq a1 b1 A1 R) ) ++  G )  D  ( open_co_wrt_co g3 (g_Var_f c) )   ( open_tm_wrt_co B1 (g_Var_f c) )    (open_tm_wrt_co  B2   (g_Var_f c) )   R' )  ->
       ( forall c , c \notin  L  ->  (  ( open_tm_wrt_co B3 (g_Var_f c) )   =   (open_tm_wrt_co  B2   (g_Cast (g_Var_f c) (g_Sym g1)) )  )  )  ->
-     AnnTyping G (a_CPi phi1 B1) a_Star R ->
-      ( AnnTyping G (a_CPi phi2 B3) a_Star R )  ->
-     AnnTyping G (a_CPi phi1 B2) a_Star R ->
-     AnnDefEq G D  ( (g_CPiCong g1 g3) )   ( (a_CPi phi1 B1) )   ( (a_CPi phi2 B3) )  R
- | An_CAbsCong : forall (L:vars) (G:context) (D:available_props) (g1 g3 g4:co) (phi1:constraint) (a1:tm) (phi2:constraint) (a3:tm) (R:role) (a2 B1 B B2:tm),
-     AnnIso G D g1 phi1 phi2 ->
-      ( forall c , c \notin  L  -> AnnDefEq  (( c ~ Co  phi1 ) ++  G )  D  ( open_co_wrt_co g3 (g_Var_f c) )   ( open_tm_wrt_co a1 (g_Var_f c) )    (open_tm_wrt_co  a2   (g_Var_f c) )   R )  ->
+     AnnTyping G (a_CPi (Eq a1 b1 A1 R) B1) a_Star R' ->
+      ( AnnTyping G (a_CPi (Eq a2 b2 A2 R) B3) a_Star R' )  ->
+     AnnTyping G (a_CPi (Eq a1 b1 A1 R) B2) a_Star R' ->
+     AnnDefEq G D  ( (g_CPiCong g1 g3) )   ( (a_CPi (Eq a1 b1 A1 R) B1) )   ( (a_CPi (Eq a2 b2 A2 R) B3) )  R
+ | An_CAbsCong : forall (L:vars) (G:context) (D:available_props) (g1 g3 g4:co) (b0 b1 A1:tm) (R:role) (a1 b2 b3 A2 a3:tm) (R':role) (a2 B1 B B2:tm) (phi2:constraint),
+     AnnIso G D g1 (Eq b0 b1 A1 R) (Eq b2 b3 A2 R) ->
+      ( forall c , c \notin  L  -> AnnDefEq  (( c ~ Co  (Eq b0 b1 A1 R) ) ++  G )  D  ( open_co_wrt_co g3 (g_Var_f c) )   ( open_tm_wrt_co a1 (g_Var_f c) )    (open_tm_wrt_co  a2   (g_Var_f c) )   R' )  ->
       ( forall c , c \notin  L  ->  (  ( open_tm_wrt_co a3 (g_Var_f c) )   =   (open_tm_wrt_co  a2   (g_Cast (g_Var_f c) (g_Sym g1)) )  )  )  ->
-     AnnTyping G  ( (a_CAbs phi1 a1) )  (a_CPi phi1 B1) R ->
-     AnnTyping G  ( (a_CAbs phi1 a2) )  B R ->
-     AnnTyping G  ( (a_CAbs phi2 a3) )  (a_CPi phi2 B2) R ->
-     AnnDefEq G  (dom  G )  g4 (a_CPi phi1 B1) (a_CPi phi2 B2) R ->
-     AnnDefEq G D  ( (g_CAbsCong g1 g3 g4) )   ( (a_CAbs phi1 a1) )   ( (a_CAbs phi2 a3) )  R
+     AnnTyping G  ( (a_CAbs (Eq b0 b1 A1 R) a1) )  (a_CPi (Eq b0 b1 A1 R) B1) R' ->
+     AnnTyping G  ( (a_CAbs (Eq b0 b1 A1 R) a2) )  B R' ->
+     AnnTyping G  ( (a_CAbs (Eq b2 b3 A2 R) a3) )  (a_CPi (Eq b2 b3 A2 R) B2) R' ->
+     AnnDefEq G  (dom  G )  g4 (a_CPi (Eq b0 b1 A1 R) B1) (a_CPi phi2 B2) R' ->
+     AnnDefEq G D  ( (g_CAbsCong g1 g3 g4) )   ( (a_CAbs (Eq b0 b1 A1 R) a1) )   ( (a_CAbs (Eq b2 b3 A2 R) a3) )  R'
  | An_CAppCong : forall (G:context) (D:available_props) (g1 g2 g3:co) (a1 b1:tm) (R:role) (a2 b2:tm) (R':role) (a3 b3 A B:tm) (g4:co),
      AnnDefEq G D g1 a1 b1 R ->
      AnnDefEq G  (dom  G )  g2 a2 b2 R' ->
@@ -1386,11 +1382,9 @@ with AnnDefEq : context -> available_props -> co -> tm -> tm -> role -> Prop := 
      AnnDefEq G D g1 a a' R1 ->
      AnnIso G D g2 (Eq a a' A R1) (Eq b b' B R2) ->
      AnnDefEq G D (g_Cast g1 g2) b b' R2
- | An_IsoSnd : forall (G:context) (D:available_props) (g:co) (A B:tm) (R0:role) (a a':tm) (R1:role) (b b':tm) (R2:role),
-     AnnIso G D g  ( (Eq a a' A R1) )   ( (Eq b b' B R2) )  ->
-     SubRole R1 R0 ->
-     SubRole R2 R0 ->
-     AnnDefEq G D (g_IsoSnd g) A B R0
+ | An_IsoSnd : forall (G:context) (D:available_props) (g:co) (A B:tm) (R:role) (a a' b b':tm),
+     AnnIso G D g  ( (Eq a a' A R) )   ( (Eq b b' B R) )  ->
+     AnnDefEq G D (g_IsoSnd g) A B R
 with AnnCtx : context -> Prop :=    (* defn AnnCtx *)
  | An_Empty : 
      AnnCtx  nil 
@@ -1416,14 +1410,14 @@ with AnnSig : sig -> Prop :=    (* defn AnnSig *)
 
 (* defns Jred *)
 Inductive head_reduction : context -> tm -> tm -> Prop :=    (* defn head_reduction *)
- | An_AppLeft : forall (G:context) (a:tm) (rho:relflag) (b a':tm),
+ | An_AppLeft : forall (G:context) (a:tm) (rho:relflag) (R:role) (b a':tm),
      lc_tm b ->
      head_reduction G a a' ->
-     head_reduction G (a_App a rho b) (a_App a' rho b)
+     head_reduction G (a_App a rho R b) (a_App a' rho R b)
  | An_AppAbs : forall (G:context) (rho:relflag) (A:tm) (R:role) (w a:tm),
      lc_tm a ->
      Value  ( (a_Abs rho A R w) )  ->
-     head_reduction G (a_App  ( (a_Abs rho A R w) )  rho a)  (open_tm_wrt_tm  w   a ) 
+     head_reduction G (a_App  ( (a_Abs rho A R w) )  rho R a)  (open_tm_wrt_tm  w   a ) 
  | An_CAppLeft : forall (G:context) (a:tm) (g:co) (a':tm),
      lc_co g ->
      head_reduction G a a' ->
@@ -1449,15 +1443,15 @@ Inductive head_reduction : context -> tm -> tm -> Prop :=    (* defn head_reduct
      lc_co g2 ->
      Value v ->
      head_reduction G (a_Conv  ( (a_Conv v g1) )  g2) (a_Conv v  ( (g_Trans g1 g2) ) )
- | An_Push : forall (G:context) (v:tm) (g:co) (rho:relflag) (b b':tm) (g':co) (A1:tm) (R1:role) (B1 A2:tm) (R2:role) (B2:tm) (R:role),
+ | An_Push : forall (G:context) (v:tm) (g:co) (rho:relflag) (R:role) (b b':tm) (g':co) (A1 B1 A2 B2:tm) (R':role),
      Value v ->
-     AnnDefEq G  (dom  G )  g (a_Pi rho A1 R1 B1) (a_Pi rho A2 R2 B2) R ->
+     AnnDefEq G  (dom  G )  g (a_Pi rho A1 R B1) (a_Pi rho A2 R B2) R' ->
       ( b'  =  (a_Conv b (g_Sym  ( (g_PiFst g) ) )) )  ->
       ( g'  =  (g_PiSnd g (g_Refl2 b' b  ( (g_PiFst g) ) )) )  ->
-     head_reduction G (a_App  ( (a_Conv v g) )  rho b) (a_Conv  ( (a_App v rho b') )  g')
- | An_CPush : forall (G:context) (v:tm) (g g1 g1' g':co) (phi1:constraint) (A1:tm) (phi2:constraint) (A2:tm) (R:role),
+     head_reduction G (a_App  ( (a_Conv v g) )  rho R b) (a_Conv  ( (a_App v rho R b') )  g')
+ | An_CPush : forall (G:context) (v:tm) (g g1 g1' g':co) (a1 b1 B1:tm) (R:role) (A1 a2 b2 B2 A2:tm) (R':role),
      Value v ->
-     AnnDefEq G  (dom  G )  g (a_CPi phi1 A1) (a_CPi phi2 A2) R ->
+     AnnDefEq G  (dom  G )  g (a_CPi (Eq a1 b1 B1 R) A1) (a_CPi (Eq a2 b2 B2 R) A2) R' ->
       ( g1'  =  (g_Cast g1 (g_Sym  ( (g_CPiFst g) ) )) )  ->
       ( g'  =  (g_CPiSnd g g1' g1) )  ->
      head_reduction G (a_CApp  ( (a_Conv v g) )  g1) (a_Conv  ( (a_CApp v g1') )  g').
