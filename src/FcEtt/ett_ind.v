@@ -144,9 +144,9 @@ Ltac lc_inversion c :=
     inversion H; clear H
   | [ H : lc_tm (a_Abs _ _ _ _) |- _ ] =>
     inversion H; clear H
-  | [ H : lc_tm (a_UAbs _ _) |- _ ] =>
+  | [ H : lc_tm (a_UAbs _ _ _) |- _ ] =>
     inversion H; clear H
-  | [ H : lc_tm (a_App _ _ _) |- _ ] =>
+  | [ H : lc_tm (a_App _ _ _ _) |- _ ] =>
     inversion H; clear H
   | [ H : lc_tm (a_Pi _ _ _ _) |- _ ] =>
     inversion H; clear H
@@ -228,13 +228,13 @@ Ltac invert_syntactic_equality :=
   repeat match goal with
   | [ H : a_Var_f _  = a_Var_f _ |- _ ] =>
     inversion H; subst; clear H
-  | [ H : a_Abs _ _ _ = a_Abs _ _ _ |- _ ] =>
+  | [ H : a_Abs _ _ _ _ = a_Abs _ _ _ _ |- _ ] =>
     inversion H; subst; clear H
-  | [ H : a_UAbs _ _ = a_UAbs _ _ |- _ ] =>
+  | [ H : a_UAbs _ _ _ = a_UAbs _ _ _ |- _ ] =>
     inversion H; subst; clear H
   | [ H : a_Pi _ _ _ _ = a_Pi _ _ _ _ |- _ ] =>
     inversion H; subst; clear H
-  | [ H : a_App _ _ _ = a_App _ _ _ |- _ ] =>
+  | [ H : a_App _ _ _ _ = a_App _ _ _ _ |- _ ] =>
     inversion H; subst; clear H
   | [ H : a_Fam _  = a_Fam _ |- _ ] =>
     inversion H; subst; clear H
@@ -585,10 +585,10 @@ Proof.
   +  eapply fv_swap with (x:=x); eauto.
 Qed.
 
-Lemma eta_swap: forall x y a' b rho,
+Lemma eta_swap: forall x y a' b rho R,
     x `notin` fv_tm_tm_tm a' \u fv_tm_tm_tm b ->
-    open_tm_wrt_tm a' (a_Var_f x) = a_App b rho (a_Var_f x) ->
-    open_tm_wrt_tm a' (a_Var_f y) = a_App b rho (a_Var_f y).
+    open_tm_wrt_tm a' (a_Var_f x) = a_App b rho R (a_Var_f x) ->
+    open_tm_wrt_tm a' (a_Var_f y) = a_App b rho R (a_Var_f y).
 Proof.
   intros.
   rewrite (tm_subst_tm_tm_intro x); auto.
@@ -641,7 +641,7 @@ Ltac E_pick_fresh x :=
     | [ |- Typing _ ?shape _ _] =>
       let v := match shape with
             | a_Pi _ _ _ _ => E_Pi
-            | a_UAbs _ _ => E_Abs
+            | a_UAbs _ _ _ => E_Abs
             | a_CPi _ _  => E_CPi
             | a_CAbs _ _ => E_CAbs
             | a_UCAbs _  => E_CAbs
@@ -650,10 +650,10 @@ Ltac E_pick_fresh x :=
     | [ |- DefEq _ _ ?shape ?s2 _ _] =>
       let v := match shape with
                | a_Pi _ _ _ _ => E_PiCong
-               | a_UAbs Rel _ => match s2 with
-                                | a_UAbs _ _ => E_AbsCong
+               | a_UAbs Rel _ _ => match s2 with
+                                | a_UAbs _ _ _ => E_AbsCong
                                 end
-               | a_UAbs _ _ => E_AbsCong
+               | a_UAbs _ _ _ => E_AbsCong
                | a_CPi _ _  => E_CPiCong
                | a_CAbs _ _ => E_CAbsCong
                | a_UCAbs _  => E_CAbsCong
@@ -666,8 +666,8 @@ Ltac Par_pick_fresh x :=
     | [ |- Par _ _ ?shape ?s2 ] =>
       let v := match shape with
             | a_Pi _ _ _ _ => Par_Pi
-            | a_UAbs _ _ =>  match s2 with
-                                | a_UAbs _ _ => Par_Abs
+            | a_UAbs _ _ _ =>  match s2 with
+                                | a_UAbs _ _ _ => Par_Abs
                                 end
             | a_CPi _ _  => Par_CPi
             | a_CAbs _ _ => Par_CAbs
@@ -688,8 +688,8 @@ Ltac An_pick_fresh x :=
     | a_Abs    _ _ _ _ => An_Abs
     | a_CPi      _ _ => An_CPi
     | a_CAbs     _ _ => An_CAbs
-    | g_PiCong _ _ _ => An_PiCong
-    | g_AbsCong _ _ _  => An_AbsCong
+    | g_PiCong _ _ _ _ => An_PiCong
+    | g_AbsCong _ _ _ _ => An_AbsCong
     | g_CPiCong  _ _   => An_CPiCong
     | g_CAbsCong _ _ _ => An_CAbsCong
                end in

@@ -607,7 +607,7 @@ Lemma E_Abs_exists :  forall x (G : context) (rho : relflag) (a A B : tm) R R',
     -> Typing G A a_Star R
     -> RhoCheck rho x (open_tm_wrt_tm a (a_Var_f x))
     -> SubRole R R'
-    -> Typing G (a_UAbs rho a) (a_Pi rho A R B) R'.
+    -> Typing G (a_UAbs rho R a) (a_Pi rho A R B) R'.
 Proof.
   intros.
   pick fresh y and apply E_Abs; auto.

@@ -48,7 +48,7 @@ Ltac erased_pick_fresh x :=
   match goal with
     [ |- erased_tm ?s ] =>
     let v := match s with
-             | a_UAbs _ _  => erased_a_Abs
+             | a_UAbs _ _ _ => erased_a_Abs
              | a_Pi _ _ _ _ => erased_a_Pi
              | a_CPi _ _   => erased_a_CPi
              | a_UCAbs _   => erased_a_CAbs
@@ -58,9 +58,9 @@ Ltac erased_pick_fresh x :=
 
 Ltac erased_inversion :=
   repeat match goal with
-  | [H : erased_tm (a_UAbs _ _)|- _ ] =>
+  | [H : erased_tm (a_UAbs _ _ _)|- _ ] =>
     inversion H; subst; clear H
-  | [H : erased_tm (a_App _ _ _)|- _ ] =>
+  | [H : erased_tm (a_App _ _ _ _)|- _ ] =>
     inversion H; subst; clear H
   | [H : erased_tm (a_Pi _ _ _ _)|- _ ] =>
     inversion H; subst; clear H
@@ -443,12 +443,12 @@ Proof.
 Qed.
 
 
-Lemma Par_Abs_exists: ∀ x (G : context) D rho (a a' : tm),
+Lemma Par_Abs_exists: ∀ x (G : context) D rho R (a a' : tm),
     x `notin` fv_tm_tm_tm a
     → Par G D (open_tm_wrt_tm a (a_Var_f x)) a'
-    → Par G D (a_UAbs rho a) (a_UAbs rho (close_tm_wrt_tm x a')).
+    → Par G D (a_UAbs rho R a) (a_UAbs rho R (close_tm_wrt_tm x a')).
 Proof.
-  intros x G D rho a a' hi0 H0.
+  intros x G D rho R a a' hi0 H0.
   apply (Par_Abs (singleton x)); eauto.
   intros x0 h0.
   rewrite -tm_subst_tm_tm_spec.
@@ -649,18 +649,18 @@ Proof.
   apply H2.
 Qed.
 
-Lemma multipar_Abs_exists: ∀ x (G : context) D rho (a a' : tm),
-       lc_tm (a_UAbs rho a) -> x `notin` fv_tm_tm_tm a
+Lemma multipar_Abs_exists: ∀ x (G : context) D rho R (a a' : tm),
+       lc_tm (a_UAbs rho R a) -> x `notin` fv_tm_tm_tm a
        → multipar G D (open_tm_wrt_tm a (a_Var_f x)) a'
-       → multipar G D (a_UAbs rho a) (a_UAbs rho (close_tm_wrt_tm x a')).
+       → multipar G D (a_UAbs rho R a) (a_UAbs rho R (close_tm_wrt_tm x a')).
 Proof.
-  intros x G D rho B B' lc e H.
+  intros x G D rho R B B' lc e H.
   dependent induction H; eauto 2.
   - autorewrite with lngen. eauto 2.
-  - assert (Par G D (a_UAbs rho B) (a_UAbs rho (close_tm_wrt_tm x b))).
+  - assert (Par G D (a_UAbs rho R B) (a_UAbs rho R (close_tm_wrt_tm x b))).
     eapply (Par_Abs_exists); auto.
-    assert (multipar G D (a_UAbs rho (close_tm_wrt_tm x b))
-                       (a_UAbs rho (close_tm_wrt_tm x c))).
+    assert (multipar G D (a_UAbs rho R (close_tm_wrt_tm x b))
+                       (a_UAbs rho R (close_tm_wrt_tm x c))).
     { apply IHmultipar; auto.
     * inversion lc; subst; clear lc.
         constructor; eauto.

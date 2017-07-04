@@ -233,7 +233,7 @@ Axiom E_Abs_exists :  forall x (G : context) (rho : relflag) (a A B : tm) R R',
     -> Typing G A a_Star R
     -> RhoCheck rho x (open_tm_wrt_tm a (a_Var_f x))
     -> SubRole R R'
-    -> Typing G (a_UAbs rho a) (a_Pi rho A R B) R'.
+    -> Typing G (a_UAbs rho R a) (a_Pi rho A R B) R'.
 
 End ext_subst_sig.
 
@@ -257,17 +257,17 @@ Axiom invert_a_CPi: forall G phi A B0 R,
     Typing G (a_CPi phi B0) A R ->
       DefEq G (dom G) A a_Star a_Star Rep /\ (exists L, forall c, c `notin` L -> Typing ([(c, Co phi)] ++ G) (open_tm_wrt_co B0 (g_Var_f c) ) a_Star R)  /\ PropWff G phi.
 
-Axiom invert_a_App_Rel : forall G a b C R,
-    Typing G (a_App a Rel b) C R ->
-    exists A B R1 R2, Typing G a (a_Pi Rel A R1 B) R2 /\
-           Typing G b A R1 /\
-           DefEq G (dom G) C (open_tm_wrt_tm B b) a_Star R /\ SubRole R2 R.
+Axiom invert_a_App_Rel : forall G a b C R R',
+    Typing G (a_App a Rel R b) C R' ->
+    exists A B R'', Typing G a (a_Pi Rel A R B) R'' /\
+           Typing G b A R /\
+           DefEq G (dom G) C (open_tm_wrt_tm B b) a_Star R' /\ SubRole R'' R'.
 
-Axiom invert_a_App_Irrel : forall G a b C R,
-    Typing G (a_App a Irrel b) C R ->
-    exists A B b0 R1 R2, Typing G a (a_Pi Irrel A R1 B) R2 /\
-              Typing G b0 A R1 /\
-              DefEq G (dom G) C (open_tm_wrt_tm B b0) a_Star R /\ SubRole R2 R.
+Axiom invert_a_App_Irrel : forall G a b C R R',
+    Typing G (a_App a Irrel R b) C R' ->
+    exists A B b0 R'', Typing G a (a_Pi Irrel A R B) R'' /\
+              Typing G b0 A R /\
+              DefEq G (dom G) C (open_tm_wrt_tm B b0) a_Star R' /\ SubRole R'' R'.
 
 Axiom invert_a_CApp : forall G a g A R,
     Typing G (a_CApp a g) A R ->
@@ -278,17 +278,17 @@ Axiom invert_a_CApp : forall G a g A R,
              SubRole R2 R.
 
 Axiom invert_a_UAbs:
-  forall G rho A R b0,
-    Typing G (a_UAbs rho b0) A R
-    -> exists A1 B1 R', DefEq G (dom G) A (a_Pi rho A1 R' B1) a_Star R
+  forall G rho A R1 R b0,
+    Typing G (a_UAbs rho R1 b0) A R
+    -> exists A1 B1, DefEq G (dom G) A (a_Pi rho A1 R1 B1) a_Star R
                /\ (exists L, forall x, x `notin` L ->
-                            Typing ([(x, Tm A1 R')] ++ G)
+                            Typing ([(x, Tm A1 R1)] ++ G)
                                    (open_tm_wrt_tm b0 (a_Var_f x))
                                    (open_tm_wrt_tm B1 (a_Var_f x)) R
-                            /\ Typing ([(x, Tm A1 R')] ++ G)
+                            /\ Typing ([(x, Tm A1 R1)] ++ G)
                                      (open_tm_wrt_tm B1 (a_Var_f x)) a_Star R
                             /\ RhoCheck rho x (open_tm_wrt_tm b0 (a_Var_f x)))
-               /\ Typing G A1 a_Star R' /\ SubRole R' R.
+               /\ Typing G A1 a_Star R1 /\ SubRole R1 R.
 
 Axiom invert_a_UCAbs: forall G A R b0,
     Typing G (a_UCAbs b0) A R ->
@@ -399,7 +399,7 @@ Axiom E_Abs2 : ∀ (L : atoms) (G : context) (rho : relflag) (a A B : tm) R R',
         x `notin` L → Typing ([(x, Tm A R)] ++ G) (open_tm_wrt_tm a (a_Var_f x)) (open_tm_wrt_tm B (a_Var_f x)) R')
     → (∀ x : atom, x `notin` L → RhoCheck rho x (open_tm_wrt_tm a (a_Var_f x)))
     -> SubRole R R'
-    → Typing G (a_UAbs rho a) (a_Pi rho A R B) R'.
+    → Typing G (a_UAbs rho R a) (a_Pi rho A R B) R'.
 
 Axiom E_Conv2 : ∀ (G : context) (a B A : tm) R,
     Typing G a A R → DefEq G (dom G) A B a_Star R →
@@ -423,7 +423,7 @@ Axiom E_AbsCong2
        → (∀ x : atom, x `notin` L → RhoCheck rho x (open_tm_wrt_tm b1 (a_Var_f x)))
        → (∀ x : atom, x `notin` L → RhoCheck rho x (open_tm_wrt_tm b2 (a_Var_f x)))
        -> SubRole R R'
-       → DefEq G D (a_UAbs rho b1) (a_UAbs rho b2) (a_Pi rho A1 R B) R'.
+       → DefEq G D (a_UAbs rho R b1) (a_UAbs rho R b2) (a_Pi rho A1 R B) R'.
 
 Axiom E_CAbsCong2
      : ∀ (L : atoms) (G : context) (D : available_props) (a b : tm) (phi1 : constraint) R
@@ -709,12 +709,12 @@ Module Type fc_subst_sig.
       → RhoCheck rho x2 (erase_tm (open_tm_wrt_tm b3 (a_Var_f x2)))
       → AnnTyping G (a_Abs rho A1 R b2) B R'
       -> SubRole R R'
-      → AnnDefEq G D (g_AbsCong rho g1 g2) (a_Abs rho A1 R b1) (a_Abs rho A2 R b3) R'.
+      → AnnDefEq G D (g_AbsCong rho R g1 g2) (a_Abs rho A1 R b1) (a_Abs rho A2 R b3) R'.
 
   Axiom An_AbsCong_inversion :
-    forall G D rho g1 g2 B1 B2 R,
-      AnnDefEq G D (g_AbsCong rho g1 g2) B1 B2 R →
-    exists A1 A2 b1 b2 b3 B R',
+    forall G D rho g1 g2 B1 B2 R R',
+      AnnDefEq G D (g_AbsCong rho R' g1 g2) B1 B2 R →
+    exists A1 A2 b1 b2 b3 B,
       B1 = (a_Abs rho A1 R' b1) /\
       B2 = (a_Abs rho A2 R' b3) /\
       AnnTyping G A1 a_Star R'  /\
@@ -769,19 +769,19 @@ Module Type fc_subst_sig.
       → AnnTyping G (a_Pi rho A1 R B1) a_Star R
       → AnnTyping G (a_Pi rho A2 R B3) a_Star R
       → AnnTyping G (a_Pi rho A1 R B2) a_Star R
-      → AnnDefEq G D (g_PiCong rho g1 g2) (a_Pi rho A1 R B1) (a_Pi rho A2 R B3) R.
+      → AnnDefEq G D (g_PiCong rho R g1 g2) (a_Pi rho A1 R B1) (a_Pi rho A2 R B3) R.
 
-  Axiom An_PiCong_inversion : forall (G:context) (D:available_props) (rho:relflag) (g1 g2:co) (C1 C2 :tm) R,
-    AnnDefEq G D (g_PiCong rho g1 g2) C1 C2 R ->
+  Axiom An_PiCong_inversion : forall (G:context) (D:available_props) (rho:relflag) (g1 g2:co) (C1 C2 :tm) R' R,
+    AnnDefEq G D (g_PiCong rho R' g1 g2) C1 C2 R ->
       exists A1 B1 A2 B2 B3,
-      C1 = (a_Pi rho A1 R B1) /\
-      C2 = (a_Pi rho A2 R B3) /\
-      AnnTyping G (a_Pi rho A1 R B1) a_Star R /\
-      AnnTyping G (a_Pi rho A2 R B3) a_Star R /\
-      AnnTyping G (a_Pi rho A1 R B2) a_Star R /\
-      AnnDefEq G D g1 A1 A2 R /\
+      C1 = (a_Pi rho A1 R' B1) /\
+      C2 = (a_Pi rho A2 R' B3) /\
+      AnnTyping G (a_Pi rho A1 R' B1) a_Star R /\
+      AnnTyping G (a_Pi rho A2 R' B3) a_Star R /\
+      AnnTyping G (a_Pi rho A1 R' B2) a_Star R /\
+      AnnDefEq G D g1 A1 A2 R' /\
       (forall x , x \notin dom G  ->
-            AnnDefEq  ((x ~ Tm  A1 R) ++ G) D (open_co_wrt_tm g2 (a_Var_f x)) (open_tm_wrt_tm B1 (a_Var_f x)) ((open_tm_wrt_tm B2 (a_Var_f x))) R /\
+            AnnDefEq  ((x ~ Tm  A1 R') ++ G) D (open_co_wrt_tm g2 (a_Var_f x)) (open_tm_wrt_tm B1 (a_Var_f x)) ((open_tm_wrt_tm B2 (a_Var_f x))) R /\
             (open_tm_wrt_tm B3 (a_Var_f x)  = (open_tm_wrt_tm  B2 (a_Conv (a_Var_f x) (g_Sym g1))))).
 
   Axiom An_CAbsCong_exists :

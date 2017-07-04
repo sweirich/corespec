@@ -39,7 +39,7 @@ Proof.
     match goal with [H: lc_tm (?a1 ?a2), K : lc_tm ?b |- _ ] =>
                     move: (tm_subst_tm_tm_lc_tm _ _ x H K) => h0; auto end].
 
-  - intros L a v H b x H0.
+  - intros L R a v H b x H0.
     econstructor; eauto.
     instantiate (1 := L \u singleton x) => x0 h0.
     rewrite tm_subst_tm_tm_open_tm_wrt_tm_var; auto.
@@ -66,10 +66,10 @@ Qed.
 
 (* ------------------------------------------------- *)
 
-Lemma Value_UAbsIrrel_exists : ∀ x (a : tm),
+Lemma Value_UAbsIrrel_exists : ∀ x (a : tm) R,
     x `notin` fv_tm a
     → (Value (open_tm_wrt_tm a (a_Var_f x)))
-    → Value (a_UAbs Irrel a).
+    → Value (a_UAbs Irrel R a).
 Proof.
   intros.
   eapply (Value_UAbsIrrel ({{x}})); eauto.

@@ -56,7 +56,7 @@ Ltac an_use_binder f x :=
 Lemma An_App_intro :
   forall (G : context) (b : tm) (rho : relflag) (R R': role) (a B A C : tm),
        AnnTyping G b (a_Pi rho A R B) R' -> (open_tm_wrt_tm B a) = C ->
-       AnnTyping G a A R -> AnnTyping G (a_App b rho a) C R'.
+       AnnTyping G a A R -> AnnTyping G (a_App b rho R a) C R'.
 Proof.
   intros. subst. eapply An_App; eauto.
 Qed.
@@ -119,7 +119,7 @@ Ltac use_binder f x :=
 Lemma E_App_intro :
   forall (G : context) (b : tm) (R R' : role)(a B A C : tm),
        Typing G b (a_Pi Rel A R B) R' -> (open_tm_wrt_tm B a) = C ->
-       Typing G a A R -> Typing G (a_App b Rel a) C R'.
+       Typing G a A R -> Typing G (a_App b Rel R a) C R'.
 Proof.
   intros. subst.  eapply E_App; eauto.
 Qed.
@@ -127,7 +127,7 @@ Qed.
 Lemma E_IApp_intro :
   forall (G : context) (b : tm) (a B A C : tm) (R R' : role),
        Typing G b (a_Pi Irrel A R B) R' -> (open_tm_wrt_tm B a) = C ->
-       Typing G a A R -> Typing G (a_App b Irrel a_Bullet) C R'.
+       Typing G a A R -> Typing G (a_App b Irrel R a_Bullet) C R'.
 Proof.
   intros. subst.  eapply E_IApp; eauto.
 Qed.

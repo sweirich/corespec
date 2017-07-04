@@ -331,7 +331,7 @@ Proof.
     (* tm *)
     [ (* star *)
     | i | y
-    | rho ty IHty R body IHbody | rho e IH | e1 IH1 rho e2 IH2
+    | rho ty IHty R body IHbody | rho e R IH | e1 IH1 rho R e2 IH2
     | f | k
     | rho A1 IH1 R1 A2 IH2
     (* cast *)
@@ -349,7 +349,7 @@ Proof.
        | |- tm         → _ =>
          elim =>  [ (* star *)
                  | i' | y'
-                 | rho' ty' IHty' R' body' IHbody' | rho' e' IH' | e1' IH1' rho' e2' IH2'
+                 | rho' ty' IHty' R' body' IHbody' | rho' e' R' IH' | e1' IH1' rho' R' e2' IH2'
                  | f' | k'
                  | rho' A1' IH1' R' A2' IH2'
                  | e' IHe' g'
@@ -408,7 +408,7 @@ Proof.
     (* tm *)
     [ (* star *)
     | i | y
-    | rho ty IHty R body IHbody | rho e IH | e1 IH1 rho e2 IH2
+    | rho ty IHty R body IHbody | rho e R IH | e1 IH1 rho R e2 IH2
     | f | k
     | rho A1 IH1 R1 A2 IH2
     (* cast was solved auto *)
@@ -426,7 +426,7 @@ Proof.
        | |- tm         → _ =>
          elim => [ (* star *)
                  | i' | y'
-                 | rho' ty' IHty' R' body' IHbody' | rho' e' IH' | e1' IH1' rho' e2' IH2'
+                 | rho' ty' IHty' R' body' IHbody' | rho' e' R' IH' | e1' IH1' rho' R' e2' IH2'
                  | f' | k'
                  | rho' A1' IH1' R' A2' IH2'
                  | e' IHe' g'

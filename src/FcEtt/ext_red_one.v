@@ -92,11 +92,11 @@ Proof.
 Qed.
 
 
-Lemma E_AbsTerm_exists : ∀ x (a a' : tm),
+Lemma E_AbsTerm_exists : ∀ x (a a' : tm) R,
     x `notin` (fv_tm a \u fv_tm a') ->
      reduction_in_one (open_tm_wrt_tm a (a_Var_f x))
                        (open_tm_wrt_tm a' (a_Var_f x))
-    → reduction_in_one (a_UAbs Irrel a) (a_UAbs Irrel a').
+    → reduction_in_one (a_UAbs Irrel R a) (a_UAbs Irrel R a').
 Proof.
   intros.
   eapply (E_AbsTerm ({{x}})).
@@ -120,7 +120,7 @@ Proof.
 
   - pick fresh x.
     move: (H0 x ltac:(auto)) => h0.
-    move: (H2 x ltac:(auto)) => h5.
+    move: (H4 x ltac:(auto)) => h5.
     eapply h0; eauto.
 Qed.
 
@@ -145,7 +145,7 @@ Proof.
   (* TODO: guard the number of subgoals (2)? *)
 
   - pick fresh x.
-    move: (H2 x ltac:(auto)) => h7.
+    move: (H4 x ltac:(auto)) => h7.
     move: (H0 x ltac:(auto)) => h1.
     apply h1 in h7.
     apply open_tm_wrt_tm_inj in h7; eauto. rewrite h7. auto.
