@@ -118,6 +118,7 @@
 \ottprodline{|}{ ( \ottnt{a} \mathrel{|\!\!=\!\!|}_{ \gamma } \ottnt{b} ) }{}{}{}{}\ottprodnewline
 \ottprodline{|}{\ottkw{sym} \, \gamma}{}{}{}{}\ottprodnewline
 \ottprodline{|}{\gamma_{{\mathrm{1}}}  \ottsym{;}  \gamma_{{\mathrm{2}}}}{}{}{}{}\ottprodnewline
+\ottprodline{|}{\ottkw{sub} \, \gamma}{}{}{}{}\ottprodnewline
 \ottprodline{|}{ \mathrm{\Pi}^{ \ottnt{R} , \rho } \ottmv{x} \!:\! \gamma_{{\mathrm{1}}} . \gamma_{{\mathrm{2}}} }{}{\textsf{bind}\; \ottmv{x}\; \textsf{in}\; \gamma_{{\mathrm{2}}}}{}{}\ottprodnewline
 \ottprodline{|}{ \mathrm{\lambda}^{ \ottnt{R} , \rho } \ottmv{x} \!:\! \gamma_{{\mathrm{1}}} . \gamma_{{\mathrm{2}}} }{}{\textsf{bind}\; \ottmv{x}\; \textsf{in}\; \gamma_{{\mathrm{2}}}}{}{}\ottprodnewline
 \ottprodline{|}{ \gamma_{{\mathrm{1}}} \  \gamma_{{\mathrm{2}}} ^{ \ottnt{R} , \rho } }{}{}{}{}\ottprodnewline
@@ -1521,6 +1522,15 @@
 {\ottdrulename{An\_Fam}}{}%
 }}
 
+
+\newcommand{\ottdruleAnXXSubRole}[1]{\ottdrule[#1]{%
+\ottpremise{ \ottnt{R_{{\mathrm{1}}}}  \leq  \ottnt{R_{{\mathrm{2}}}} }%
+\ottpremise{\Gamma  \vdash  \ottnt{a}  \ottsym{:}  \ottnt{A}  \ottsym{/}  \ottnt{R_{{\mathrm{1}}}}}%
+}{
+\Gamma  \vdash  \ottnt{a}  \ottsym{:}  \ottnt{A}  \ottsym{/}  \ottnt{R_{{\mathrm{2}}}}}{%
+{\ottdrulename{An\_SubRole}}{}%
+}}
+
 \newcommand{\ottdefnAnnTyping}[1]{\begin{ottdefnblock}[#1]{$\Gamma  \vdash  \ottnt{a}  \ottsym{:}  \ottnt{A}  \ottsym{/}  \ottnt{R}$}{\ottcom{typing}}
 \ottusedrule{\ottdruleAnXXStar{}}
 \ottusedrule{\ottdruleAnXXVar{}}
@@ -1532,6 +1542,7 @@
 \ottusedrule{\ottdruleAnXXCAbs{}}
 \ottusedrule{\ottdruleAnXXCApp{}}
 \ottusedrule{\ottdruleAnXXFam{}}
+\ottusedrule{\ottdruleAnXXSubRole{}}
 \end{ottdefnblock}}
 
 %% defn AnnIso
@@ -1771,6 +1782,15 @@
 {\ottdrulename{An\_IsoSnd}}{}%
 }}
 
+
+\newcommand{\ottdruleAnXXSub}[1]{\ottdrule[#1]{%
+\ottpremise{ \Gamma ;  \Delta  \vdash  \gamma   \ottsym{:}   \ottnt{a}  \sim_ \ottnt{R_{{\mathrm{1}}}}   \ottnt{b} }%
+\ottpremise{ \ottnt{R_{{\mathrm{1}}}}  \leq  \ottnt{R_{{\mathrm{2}}}} }%
+}{
+ \Gamma ;  \Delta  \vdash  \ottkw{sub} \, \gamma   \ottsym{:}   \ottnt{a}  \sim_ \ottnt{R_{{\mathrm{2}}}}   \ottnt{b} }{%
+{\ottdrulename{An\_Sub}}{}%
+}}
+
 \newcommand{\ottdefnAnnDefEq}[1]{\begin{ottdefnblock}[#1]{$ \Gamma ;  \Delta  \vdash  \gamma   \ottsym{:}   \ottnt{A}  \sim_ \ottnt{R}   \ottnt{B} $}{\ottcom{coercion between types}}
 \ottusedrule{\ottdruleAnXXAssn{}}
 \ottusedrule{\ottdruleAnXXRefl{}}
@@ -1789,6 +1809,7 @@
 \ottusedrule{\ottdruleAnXXCPiSnd{}}
 \ottusedrule{\ottdruleAnXXCast{}}
 \ottusedrule{\ottdruleAnXXIsoSnd{}}
+\ottusedrule{\ottdruleAnXXSub{}}
 \end{ottdefnblock}}
 
 %% defn AnnCtx
@@ -1977,7 +1998,7 @@
 \ottall
 
 \begin{verbatim}
-Definition rules:        146 good    0 bad
-Definition rule clauses: 426 good    0 bad
+Definition rules:        148 good    0 bad
+Definition rule clauses: 432 good    0 bad
 \end{verbatim}
 \end{document}

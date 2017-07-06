@@ -151,6 +151,7 @@ co, g {{ tex \gamma }} :: 'g_' ::= {{ com explicit coercions }}
      {{ tex ([[a]]\mathrel{|\!\!=\!\!|}_{[[g]]}[[b]]) }}
    | sym g                ::   :: Sym
    | g1 ; g2              ::   :: Trans
+   | sub g                ::   :: Sub
 
    | all rho R x : g1 -> g2 ::   :: PiCong (+ bind x in g2 +)
      {{ tex \mathrm{\Pi}^{[[R]],[[rho]]}[[x]]\!:\![[g1]].[[g2]] }}
@@ -1187,6 +1188,12 @@ F ~ a : A/R in an_toplevel
 ----------------------- :: Fam
 G |- F : A/R
 
+R1 <= R2
+G |- a : A / R1
+----------------- :: SubRole
+G |- a : A / R2
+
+
 defn
 G ; D |- g : phi1 == phi2 ::  :: AnnIso :: 'An_'
 {{ tex [[G]];[[D]][[|-]] [[g]] : [[phi1]] \sim [[phi2]] }}
@@ -1255,6 +1262,7 @@ G ; D |- g2 : a1 ~ b : R
 [ G ; dom G |- g3 : A ~ A1 : R ]
 ------------------------------------- :: Trans
 G ; D |- (g1 ; g2) : a ~ b : R
+
 
 G |- a1 : B0/R
 G |- a2 : B1/R
@@ -1364,6 +1372,11 @@ G ; D |- g1 |> g2 : b~b' : R2
 G ; D |- g : (a~a' : A/R) == (b~b' : B/R)
 ---------------------------------- :: IsoSnd
 G ; D |- isoSnd g : A ~ B : R
+
+G ; D |- g : a ~ b : R1
+R1 <= R2
+---------------------------------------- :: Sub
+G ; D |- sub g : a ~ b : R2
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
