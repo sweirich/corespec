@@ -372,7 +372,8 @@ Ltac ext_induction CON :=
 
 Ltac ann_induction CON :=
     apply ann_typing_wff_iso_defeq_mutual;
-    [ pose CON :=  An_Star       |
+    [ pose CON :=  An_SubRole    |
+      pose CON :=  An_Star       |
       pose CON :=  An_Var        |
       pose CON :=  An_Pi         |
       pose CON :=  An_Abs        |
@@ -392,6 +393,7 @@ Ltac ann_induction CON :=
       pose CON :=  An_EraseEq      |
       pose CON :=  An_Sym        |
       pose CON :=  An_Trans      |
+      pose CON :=  An_Sub        |
       pose CON :=  An_Beta       |
       pose CON :=  An_PiCong     |
       pose CON :=  An_AbsCong    |

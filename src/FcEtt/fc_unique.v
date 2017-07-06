@@ -86,18 +86,26 @@ Ltac resolve_binds_unique :=
 
 
 Lemma unique_mutual :
-  (forall G a A1 R, AnnTyping G a A1 R -> forall {A2}, AnnTyping G a A2 R -> A1 = A2) /\
+  (forall G a A1 R, AnnTyping G a A1 R -> forall {A2}{R'}, AnnTyping G a A2 R' -> A1 = A2) /\
   (forall G phi, AnnPropWff G phi -> True) /\
   (forall G D g p1 p2, AnnIso G D g p1 p2 -> forall {q1 q2}, AnnIso G D g q1 q2 -> p1 = q1 /\ p2 = q2) /\
   (forall G D g a b R, AnnDefEq G D g a b R -> forall {a1 b1}, AnnDefEq G D g a1 b1 R -> a = a1 /\ b = b1) /\
   (forall G, AnnCtx G -> True).
 Proof.
-  apply ann_typing_wff_iso_defeq_mutual. 
-  all: intros. all: try inversion H1; subst; try solve [try inversion H0; subst; basic_solve'; subst].
-  - autotype.
-  - autotype. f_equal.
+  apply ann_typing_wff_iso_defeq_mutual.
+  all: intros. all: try inversion H2; subst; try solve [try inversion H0; subst; basic_solve'; subst].
+  - remember a_Star as star.
+    induction H0; eauto.
+    all: inversion Heqstar.
+  - remember (a_Var_f x) as vx. induction H0; eauto.
+    all: inversion Heqvx. subst. assert (Tm A R = Tm A0 R0).
+    eapply binds_unique; eauto. inversion H2; auto.
+  - remember (a_Pi rho A R B) as pi. induction H1.
+    all: inversion Heqpi; auto.
+  - remember (a_Abs rho A R a) as abs. induction H1.
+    all: inversion Heqabs; auto. subst. check. autotype. f_equal.
     pick fresh x.
-    eapply open_tm_wrt_tm_inj with (x1 := x); auto. 
+    eapply open_tm_wrt_tm_inj with (x1 := x); auto.
   - apply_ind b. done. 
   - autotype.
     apply_ind a. firstorder.

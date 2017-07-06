@@ -84,7 +84,7 @@ Proof.
   { eapply An_App_intro; eauto.
     { eapply An_App_intro; simpl; eauto.
       { eapply An_App_intro; simpl; eauto.
-        econstructor; eauto.
+        eapply An_Fam; eauto.
         eapply AxFix.
         an_use_binder An_Pi Z.
         an_use_binder An_Pi W; eauto.

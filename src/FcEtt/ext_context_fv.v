@@ -78,10 +78,20 @@ Proof.
   (* split all asummptions about unions *)
 
   (* Do the cases about the context at the end. *)
+  all: try (intros x0 A0 R0 BI).
+  all: try solve [inversion BI].
   all: try (intros x0 A0 BI).
   all: try solve [inversion BI].
   all: try (match goal with |- _ ∧ _ => split end).
 
+  all: try (intros y h1; inversion BI; [
+              match goal with
+                [ H5 : (_,_) = (_,_) |- _ ] =>
+                inversion H5; subst; clear H5; eauto end|
+              match goal with
+                [ H5 : List.In (?x0, ?s ?a ?R) ?G,
+                  H : forall x A R, binds x (?s A R) ?G -> _ |- _ ] =>
+                destruct (H x0 _ _ H5); eauto end]).
 
   all: try (intros y h1; inversion BI; [
               match goal with
@@ -89,10 +99,9 @@ Proof.
                 inversion H5; subst; clear H5; eauto end|
               match goal with
                 [ H5 : List.In (?x0, ?s ?a) ?G,
-                  H : forall x A, binds x (?s A _) ?G -> _ |- _ ] =>
+                  H : forall x A, binds x (?s A) ?G -> _ |- _ ] =>
                 destruct (H x0 _ H5); eauto end]).
-Admitted.
-(*
+
   (* rest of the cases *)
   all: intros y IN.
 
@@ -180,10 +189,12 @@ Admitted.
   all: try solve [ simpl in *; eauto].
 
   (* all: try solve [ assert (c = y) by auto; subst; eapply binds_In; eauto ]. *)
+
   all: try solve [ destruct (H0 _ _ b0); simpl in *; eauto].
+  all: try solve [ destruct (H _ _ _ b); simpl in *; eauto].
 
 Qed.
-*)
+
 
 Definition Typing_context_fv  := first context_fv_mutual.
 Definition ProfWff_context_fv := second context_fv_mutual.
