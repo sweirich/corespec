@@ -4,7 +4,7 @@ Require Export Coq.Program.Basics.
 Require Export Coq.Program.Equality.
 
 Require Export Metalib.Metatheory.
-Require Export LibLNgen.
+Require Export Metalib.LibLNgen.
 
 Require Export FcEtt.ett_ott.
 
