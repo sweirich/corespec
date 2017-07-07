@@ -53,16 +53,17 @@ coq: $(COQMKFILENAME)
 
 
 %_inf.v: $(OTT_LOC)/%.ott Makefile
-	$(LNGEN) --coq $*_inf.v --coq-ott $*_ott --coq-loadpath ../../metalib $(OTT_LOC)/$*.ott
+	$(LNGEN) --coq-no-proofs --coq $*_inf.v --coq-ott $*_ott $(OTT_LOC)/$*.ott
 	make METALIB.FIX_$*_inf
 
 $(COQMKFILENAME): Makefile $(shell ls *.v | grep -v _ott.v | grep -v _inf.v)
-	{ echo "-R . $(LIBNAME) -R $(METALIBLOCATION) Metalib " ; ls *.v ; } > _CoqProject && coq_makefile -arg '-w -variable-collision,-meta-collision,-require-in-module' -f _CoqProject -o $(COQMKFILENAME)
+	{ echo "-R . $(LIBNAME) " ; ls *.v ; } > _CoqProject && coq_makefile -arg '-w -variable-collision,-meta-collision,-require-in-module' -f _CoqProject -o $(COQMKFILENAME)
 
 # Target to be called with some filename appended to it
 # It is a quick hack to fix the imports to metalib
 METALIB.FIX_%:
 	sed -i -e 's/Metatheory/Metalib.Metatheory/g' $*.v
+	sed -i -e 's/LibLNgen/Metalib.LibLNgen/g' $*.v
 	sed '1d' $*.v > __TMP__; mv __TMP__ $*.v
 
 coqclean:
