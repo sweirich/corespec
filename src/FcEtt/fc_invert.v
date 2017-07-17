@@ -448,10 +448,10 @@ Proof.
    eapply An_Refl; eauto 1.
    eapply An_Star. eauto.
  - assert (HG : AnnCtx G); eauto with ctx_wff.
-   assert (U1 : AnnTyping G (a_Pi Rel A B) a_Star).
+   assert (U1 : AnnTyping G (a_Pi rho A B) a_Star).
    eapply AnnTyping_regularity; eauto.
    inversion U1.
-   exists (a_Pi Rel A B), (a_Pi Rel A B). eexists.
+   exists (a_Pi rho A B), (a_Pi rho A B). eexists.
    repeat split; eauto 1.
    pick fresh x and apply An_Abs; auto.
    rewrite e; eauto.
@@ -459,6 +459,10 @@ Proof.
    eapply AnnTyping_weakening with (F:=nil); simpl; eauto.
    econstructor; eauto.
    econstructor; eauto.
+   rewrite e; eauto.
+   destruct rho. econstructor; eauto. econstructor; eauto.
+   simpl. autorewcs. apply union_notin_iff. split. 
+   eapply fv_tm_erase_tm. auto. auto.
 (*   rewrite e; eauto.
    econstructor. eapply lc_erase. eauto using AnnTyping_lc1. *)
    eapply An_Refl. eauto.

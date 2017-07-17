@@ -181,6 +181,21 @@ Proof.
     destruct (AtomSetImpl.union_1 h3).
     assert (x `notin` singleton y). auto. done.
     done.
+  - apply IHPar.
+    pick fresh y.
+    move: (H1 y ltac:(auto)) => h0.
+    apply (fun_cong fv_tm_tm_tm) in h0.
+    simpl in h0.
+    move: (@fv_tm_tm_tm_open_tm_wrt_tm_lower a (a_Var_f y) x) => h1.
+    move: (@fv_tm_tm_tm_open_tm_wrt_tm_upper a (a_Var_f y) x) => h2.
+    unfold not. intro IN.
+    assert (h3: x `in` (union (fv_tm_tm_tm b) empty)). auto.
+    rewrite -h0 in h3.
+    apply h2 in h3.
+    simpl in h3.
+    destruct (AtomSetImpl.union_1 h3).
+    assert (x `notin` singleton y). auto. done.
+    done.
 Qed.
 
 

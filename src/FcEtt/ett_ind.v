@@ -464,7 +464,11 @@ Ltac rewrite_body :=
     rewrite e; auto
   | [ e : ∀ x : atom, (x `in` ?L → False) →  _ _ (a_Var_f x) = _ _ _ (a_Var_f x) |- _ ] =>
     rewrite e; auto
+  | [ e : ∀ x : atom, (x `in` ?L → False) →  _ _ (a_Var_f x) = _ _ _ (a_Bullet) |- _ ] =>
+    rewrite e; auto
   | [ e : ∀ x : atom, (x `notin` ?L) →  _ _ (a_Var_f x) = _ _ _ (a_Var_f x) |- _ ] =>
+    rewrite e; auto
+  | [ e : ∀ x : atom, (x `notin` ?L) →  _ _ (a_Var_f x) = _ _ _ (a_Bullet) |- _ ] =>
     rewrite e; auto
 
   end.
@@ -673,10 +677,15 @@ Ltac Par_pick_fresh x :=
     | [ |- Par _ _ ?shape ?s2 ] =>
       let v := match shape with
             | a_Pi _ _ _ => Par_Pi
-            | a_UAbs _ _ =>  match s2 with
+            | a_UAbs Rel _ =>  match s2 with
                                 | a_UAbs _ _ => Par_Abs
                                 | _ => Par_Eta
                                 end
+            | a_UAbs Irrel _ =>  match s2 with
+                                | a_UAbs _ _ => Par_Abs
+                                | _ => Par_EtaIrrel
+                                end
+            | a_UAbs _ _ =>  Par_Abs
             | a_CPi _ _  => Par_CPi
             | a_CAbs _ _ => Par_CAbs
             | a_UCAbs _  => Par_CAbs

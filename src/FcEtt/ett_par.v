@@ -220,8 +220,7 @@ Qed.
 Hint Resolve subst_tm_erased subst_co_erased : erased.
 
 Lemma Par_lc1 : forall G D a a' , Par G D a a' -> lc_tm a.
-  intros.  induction H; auto.
-  apply_lc_exists x; unfold not in *; rewrite_body.
+  intros.  induction H; auto. all: lc_solve.
 Qed.
 
 (* FIXME: find a good place for this tactic. *)
@@ -356,6 +355,12 @@ Proof.
     erased_body x Eaa;
     eta_eq x E.
     rewrite E in Eaa; inversion Eaa; auto.
+  - (* Eta2 *)
+    eapply IHEp; auto.
+    pick fresh x;
+    erased_body x Eaa;
+    eta_eq x E.
+    rewrite E in Eaa; inversion Eaa; auto.
 Qed.
 
 Hint Resolve Par_erased_tm : erased.
@@ -409,6 +414,13 @@ Proof.
     rewrite tm_subst_tm_tm_open_tm_wrt_tm in h0; auto.
     simpl in h0.
     destruct (@eq_dec tmvar _ y x); subst; try done.
+  - Par_pick_fresh y; eauto.
+    have h1: y <> x by auto.
+    move: (H y ltac:(auto)) => h0.
+    apply (fun_cong (tm_subst_tm_tm b x)) in h0.
+    rewrite tm_subst_tm_tm_open_tm_wrt_tm in h0; auto.
+    simpl in h0.
+    destruct (@eq_dec tmvar _ y x); subst; try done.
 Qed.
 
 
@@ -431,12 +443,24 @@ Proof.
     end.
      move: (Typing_context_fv h0) => ?. split_hyp.
      fsetdec.
-  -
-    pick fresh y.
+  - pick fresh y.
     move: (H4 y ltac:(auto)) => h0.
     move: (H2 y ltac:(auto)) => h1.
     rewrite h1 in h0. inversion h0. subst.
     eapply (Par_Eta (L \u singleton x)). eauto.
+    intros z Fr0.
+    move: (H2 z ltac:(auto)) => h2.
+    apply (fun_cong (tm_subst_tm_tm b x)) in h2.
+    rewrite tm_subst_tm_tm_open_tm_wrt_tm in h2.
+    simpl in h2.
+    destruct (@eq_dec tmvar _ z x); try done.
+    clear Fr. fsetdec.
+    eapply Par_lc1. eauto.
+  - pick fresh y.
+    move: (H4 y ltac:(auto)) => h0.
+    move: (H2 y ltac:(auto)) => h1.
+    rewrite h1 in h0. inversion h0. subst.
+    eapply (Par_EtaIrrel (L \u singleton x)). eauto.
     intros z Fr0.
     move: (H2 z ltac:(auto)) => h2.
     apply (fun_cong (tm_subst_tm_tm b x)) in h2.
@@ -466,8 +490,12 @@ Proof.
     move: (Typing_context_fv  h0) => ?. split_hyp.
     simpl in *.
     fsetdec.
-  -
-    pick fresh y and apply Par_Eta; eauto.
+  - pick fresh y and apply Par_Eta; eauto.
+    move: (H y ltac:(auto)) => h1.
+    apply (fun_cong (co_subst_co_tm b x)) in h1.
+    rewrite co_subst_co_tm_open_tm_wrt_tm in h1.
+    simpl in h1. auto. auto.
+  - pick fresh y and apply Par_EtaIrrel; eauto.
     move: (H y ltac:(auto)) => h1.
     apply (fun_cong (co_subst_co_tm b x)) in h1.
     rewrite co_subst_co_tm_open_tm_wrt_tm in h1.

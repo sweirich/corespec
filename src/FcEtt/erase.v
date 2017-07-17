@@ -384,13 +384,20 @@ Proof.
     simpl_env in h0.
     resolve_unique_subst. inversion H1. subst.
     apply open_tm_wrt_tm_inj in H6; auto. subst.
-    simpl.
-    eapply E_EtaRel with (L := L \u {{x}}); auto.
+    simpl. destruct rho.
+    + eapply E_EtaRel with (L := L \u {{x}}); auto.
     intros.
     replace (a_Var_f x0) with (erase (a_Var_f x0)).
     rewrite open_tm_erase_tm.
     rewrite e; auto.
     simpl; auto.
+    + eapply E_EtaIrrel with (L := L \u {{x}}); auto.
+    intros.
+    replace (a_Var_f x0) with (erase (a_Var_f x0)).
+    rewrite open_tm_erase_tm.
+    rewrite e; auto.
+    simpl; auto.
+    
 
 (* Left/Right
   - simpl in *.
@@ -2506,6 +2513,58 @@ Proof.
       eapply AnnTyping_weakening with (F:=nil); eauto with ctx_wff.
       simpl_env; eauto.
     + simpl; auto.
+- destruct (H _ H0 H1) as (a0 & A0 & E1 & E2 & AT).
+  clear H.
+  move: (AnnTyping_regularity AT) => h0.
+  destruct (erase_pi E2 h0) as (A1 & B1 & E3 & E4 & E5 & AT1).
+  have h1: (exists g, AnnDefEq G0 (dom G0) g A0 (a_Pi Irrel A1 B1)).
+  {
+    eexists. eapply An_EraseEq; eauto.
+  }
+  move: h1 => [g TT].
+  have h1: AnnTyping G0 (a_Conv a0 g) (a_Pi Irrel A1 B1) by eauto.
+  subst.
+  have h2: erase a0 = erase (a_Conv a0 g) by simpl; auto.
+  pick fresh y.
+  move: (e y ltac:(auto)) => e0. rewrite h2 in e0.
+  replace (a_App (erase (a_Conv a0 g)) Irrel a_Bullet) with
+  (erase (a_App (a_Conv a0 g) Irrel (a_Var_f y))) in e0.
+  move: (An_Pi_inversion AT1) => h3. split_hyp.
+  eexists.
+  exists (a_Abs Irrel A1 (close_tm_wrt_tm y (a_App (a_Conv a0 g) Irrel (a_Var_f y)))).
+  exists (a_Conv a0 g). exists (a_Pi Irrel A1 B1).
+  split.
+  replace (erase
+    (a_Abs Irrel A1
+            (close_tm_wrt_tm y (a_App (a_Conv a0 g) Irrel (a_Var_f y)))))
+  with
+  (a_UAbs Irrel
+     (erase (close_tm_wrt_tm y
+                             (a_App (a_Conv a0 g) Irrel (a_Var_f y))))).
+  autorewcs. rewrite -close_tm_erase_tm. simpl. simpl in e0.
+  rewrite -e0.
+  autorewrite with lngen.
+  auto.
+  simpl; auto.
+  repeat split; simpl; eauto 2.
+  eapply An_Eta with (L := L \u dom G0 \u {{y}} ). eauto.
+  intros.
+  rewrite -tm_subst_tm_tm_spec.
+  simpl.
+  rewrite tm_subst_tm_tm_fresh_eq; auto.
+  rewrite tm_subst_tm_co_fresh_eq; auto.
+  destruct eq_dec; try done.
+  eapply (@An_Abs_exists y); autorewrite with lngen; eauto 2.
+  + fsetdec.
+  + econstructor.
+      eapply AnnTyping_weakening with (F:=nil); eauto with ctx_wff.
+      simpl_env; eauto.
+    + simpl; auto. constructor. simpl.
+      apply union_notin_iff. split.
+      admit. eauto.
+    + simpl. auto.
+Admitted.
+
 
 (* --------------------------------------------------------------------- *)
 (*
