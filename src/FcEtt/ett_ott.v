@@ -1018,6 +1018,10 @@ Inductive Par : context -> available_props -> tm -> tm -> Prop :=    (* defn Par
      Par G D b b' ->
       ( forall x , x \notin  L  ->  (  ( open_tm_wrt_tm a (a_Var_f x) )   =  (a_App b Irrel a_Bullet) )  )  ->
      Par G D (a_UAbs Irrel a) b'
+ | Par_EtaC : forall (L:vars) (G:context) (D:available_props) (a b' b:tm),
+     Par G D b b' ->
+      ( forall c , c \notin  L  ->  (  ( open_tm_wrt_co a (g_Var_f c) )   =  (a_CApp b g_Triv) )  )  ->
+     Par G D (a_UCAbs a) b'
 with MultiPar : context -> available_props -> tm -> tm -> Prop :=    (* defn MultiPar *)
  | MP_Refl : forall (G:context) (D:available_props) (a:tm),
      lc_tm a ->
@@ -1234,6 +1238,10 @@ with DefEq : context -> available_props -> tm -> tm -> tm -> Prop :=    (* defn 
      Typing G b (a_Pi Irrel A B) ->
       ( forall x , x \notin  L  ->  (  ( open_tm_wrt_tm a (a_Var_f x) )   =  (a_App b Irrel a_Bullet) )  )  ->
      DefEq G D (a_UAbs Irrel a) b (a_Pi Irrel A B)
+ | E_EtaC : forall (L:vars) (G:context) (D:available_props) (a b:tm) (phi:constraint) (B:tm),
+     Typing G b (a_CPi phi B) ->
+      ( forall c , c \notin  L  ->  (  ( open_tm_wrt_co a (g_Var_f c) )   =  (a_CApp b g_Triv) )  )  ->
+     DefEq G D (a_UCAbs a) b (a_CPi phi B)
 with Ctx : context -> Prop :=    (* defn Ctx *)
  | E_Empty : 
      Ctx  nil 
@@ -1449,6 +1457,10 @@ with AnnDefEq : context -> available_props -> co -> tm -> tm -> Prop :=    (* de
      AnnTyping G b (a_Pi rho A B) ->
       ( forall x , x \notin  L  ->  (  ( open_tm_wrt_tm a (a_Var_f x) )   =  (a_App b rho (a_Var_f x)) )  )  ->
      AnnDefEq G D (g_Eta b)  ( (a_Abs rho A a) )  b
+ | An_EtaC : forall (L:vars) (G:context) (D:available_props) (b:tm) (phi:constraint) (a B:tm),
+     AnnTyping G b (a_CPi phi B) ->
+      ( forall c , c \notin  L  ->  (  ( open_tm_wrt_co a (g_Var_f c) )   =  (a_CApp b (g_Var_f c)) )  )  ->
+     AnnDefEq G D (g_Eta b)  ( (a_CAbs phi a) )  b
 with AnnCtx : context -> Prop :=    (* defn AnnCtx *)
  | An_Empty : 
      AnnCtx  nil 
