@@ -35,16 +35,22 @@
 \acmBadgeR[http://icfp17.sigplan.org/track/icfp-2017-Artifacts]{artifact_evaluated-reusable.png}
 \acmBadgeL[http://icfp17.sigplan.org/track/icfp-2017-Artifacts]{artifact_available.png}
 \else
-\documentclass[format=acmsmall, review=false,
-screen=true]{acmart}\settopmatter{}
+%% FINAL VERSION SETTINGS
+\documentclass[format=acmsmall,review=false,screen=true]{acmart}\settopmatter{}
+%%% The following is specific to ICFP'17 and the paper
+%%% 'A Specification for Dependent Types in Haskell'
+%%% by Stephanie Weirich, Antoine Voizard, Pedro Henrique Avezedo de Amorim, and Richard A. Eisenberg.
+%%%
 \setcopyright{rightsretained}
-\acmJournal{PACMPL}
-\acmBadgeR[http://icfp17.sigplan.org/track/icfp-2017-Artifacts]{artifact_evaluated-reusable.png}
-\acmBadgeL[http://icfp17.sigplan.org/track/icfp-2017-Artifacts]{artifact_available.png}
-\acmJournal{PACMPL}
-\acmYear{2017} \acmVolume{1} \acmNumber{1} \acmArticle{31} \acmMonth{9}
-\acmDOI{10.1145/3110275}
 \acmPrice{}
+\acmDOI{10.1145/3110275}
+\acmYear{2017}
+\copyrightyear{2017}
+\acmJournal{PACMPL}
+\acmVolume{1}
+\acmNumber{ICFP}
+\acmArticle{31}
+\acmMonth{9}
 \fi\fi
 
 \ifpublic
@@ -2180,7 +2186,6 @@ can add higher-inductive types to GHC.
   National Science Foundation.
 \end{acks}
 
-\newpage
 \bibliography{weirich,rae,proposal}
 \fi
 
