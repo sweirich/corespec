@@ -1,4 +1,4 @@
--R . FcEtt -R ../metalib Metalib 
+-R . FcEtt 
 beta.v
 congruence.v
 dep_prog.v
