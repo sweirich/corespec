@@ -67,10 +67,11 @@ tm, a, b, v, w, A, B :: 'a_' ::= {{ com types and kinds }}
    | T                  ::   :: Const
    | all rho x : A / R -> B ::   :: Pi (+ bind x in B +)
      {{ tex \mathrm{\Pi}^[[rho]][[x]]\!:\![[A]]/[[R]][[->]][[B]] }}
-   | a |> g             ::   :: Conv
+   | a |> R g             ::   :: Conv
+     {{ tex [[a]][[|>]]_{[[R]]} [[g]] }}
    | all c : phi . B    ::   :: CPi (+ bind c in B +)
      {{ tex [[all]][[c]]\!:\![[phi]].[[B]] }}
-   
+
    | /\ c : phi . b     ::   :: CAbs (+ bind c in b +)
      {{ tex [[/\]][[c]]\!:\![[phi]].[[b]] }}
    | /\ c  . b          ::   :: UCAbs (+ bind c in b +)
@@ -82,6 +83,8 @@ tm, a, b, v, w, A, B :: 'a_' ::= {{ com types and kinds }}
    | K                ::   :: DataCon
    | match a with brs ::   :: Case
 
+	%% change the role in an annotated term
+   | sub R a          ::    :: Sub
 
    %% standard substitution, using open
    | a { b / x }      :: S :: Subst
@@ -109,7 +112,7 @@ tm, a, b, v, w, A, B :: 'a_' ::= {{ com types and kinds }}
      {{ coq [[a]] }} {{ tex [[a]] }}
      {{ com parsing precedence is hard }}
 
-   |  | a |           :: S :: Erase   {{ coq (erase_tm [[a]]) }}
+   |  | a | R          :: S :: Erase   {{ coq (erase_tm [[a]][[R]]) }}
 
    %% abbreviations for examples
    | Int              :: S :: Int    {{ coq 0 }}
@@ -122,8 +125,9 @@ tm, a, b, v, w, A, B :: 'a_' ::= {{ com types and kinds }}
    | Fix              :: S :: Fix    {{ coq 0 }}
    | a -> b           :: S :: Arrow  {{ coq (a_Pi [[a]] [[b]]) }}
    | phi => A         :: S :: CArrow {{ coq (a_CPi [[phi]] [[A]]) }}
-   | a b              :: S :: RelApp
-     {{ coq (a_App [[a]] Rel [[b]]) }}
+   | a R b          :: S :: RelApp
+     {{ coq (a_App [[a]] Rel [[R]] [[b]]) }}
+     {{ tex [[a]] [[b]]^{[[R]],+} }}
    | \ x R . a          :: S :: RelUAbs
      {{ coq (a_UAbs Rel [[R]] [[a]]) }}
      {{ tex \lambda^{[[R]]} [[x]].[[a]] }}
@@ -176,7 +180,8 @@ co, g {{ tex \gamma }} :: 'g_' ::= {{ com explicit coercions }}
    | g ( g1 , g2 )        ::   :: CAppCong
    | g @ ( g1 , g2 )      ::   :: CPiSnd
      {{ tex [[g]] [[@]] ([[g1]] \sim [[g2]]) }}
-   | g1 |> g2             ::   :: Cast
+   | g1 |> R g2           ::   :: Cast
+     {{ tex [[g1]] [[|>]]_{[[R]]} [[g2]] }}
    | g1 ~ A  g2       ::   :: EqCong
      {{ tex [[g1]] [[~]]_{[[A]]} [[g2]] }}
    | conv phi1 phi2 g     ::   :: IsoConv
@@ -254,7 +259,7 @@ context, G {{ tex \Gamma }} :: 'ctx_' ::= {{ com contexts }}
 
    | G , x : A / R   ::    :: ConsTm  {{ coq (([[x]]~ Tm [[A]][[R]]) ++ [[G]]) }}
    | G , c : phi     ::    :: ConsCo  {{ coq (([[c]]~ Co [[phi]]) ++ [[G]]) }}
-   
+
    | G { b / x }     :: M  :: SubstA  {{ coq (open_context_wrt_tm [[x G]][[b]] }}
    | G { g / c }     :: M  :: SubstG  {{ coq (open_context_wrt_co [[c G]][[g]]  }}
    | G ++ G'         :: M  :: Append  {{ coq ([[G]] ++ [[G']]) }}
@@ -423,52 +428,62 @@ Definition min (r1 : role) (r2 : role) : role :=
   | Rep, Rep => Rep
   end.
 
-Fixpoint erase_tm (a : tm) : tm :=
+Definition lte_role (r1 : role) (r2 : role) : bool :=
+  match r1 , r2 with
+  | Nom, _ => true
+  | Rep, Rep => true
+  | Rep, Nom => false
+  end.
+
+Fixpoint erase_tm (a : tm) (r : role) : tm :=
    match a with
    | a_Star    => a_Star
    | a_Var_b n => a_Var_b n
    | a_Var_f x => a_Var_f x
-   | a_Abs rho A R b => a_UAbs rho R (erase_tm b)
-   | a_UAbs rho R b => a_UAbs rho R (erase_tm b)
-   | a_App a Rel R b => a_App (erase_tm a) Rel R (erase_tm b)
-   | a_App a Irrel R b => a_App (erase_tm a) Irrel R a_Bullet
+   | a_Abs rho A R b => a_UAbs rho R (erase_tm b r)
+   | a_UAbs rho R b => a_UAbs rho R (erase_tm b r)
+   | a_App a Rel R b => a_App (erase_tm a r) Rel R (erase_tm b r)
+   | a_App a Irrel R b => a_App (erase_tm a r) Irrel R a_Bullet
    | a_Const T => a_Const T
    | a_Fam F => a_Fam F
-   | a_Pi rho A R B => a_Pi rho (erase_tm A) R (erase_tm B)
-   | a_Conv a _ => erase_tm a
-   | a_CPi phi B => a_CPi (erase_constraint phi) (erase_tm B)
-   | a_CAbs phi b => a_UCAbs (erase_tm b)
-   | a_UCAbs b => a_UCAbs (erase_tm b)
-   | a_CApp a g => a_CApp (erase_tm a) g_Triv
+   | a_Pi rho A R B => a_Pi rho (erase_tm A r) R (erase_tm B r)
+   | a_Conv a r1 g => if (lte_role r1 r) then
+	                      erase_tm a r else
+						   a_Conv (erase_tm a r) r1 g_Triv
+   | a_CPi phi B => a_CPi (erase_constraint phi r) (erase_tm B r)
+   | a_CAbs phi b => a_UCAbs (erase_tm b r)
+   | a_UCAbs b => a_UCAbs (erase_tm b r)
+   | a_CApp a g => a_CApp (erase_tm a r) g_Triv
    | a_DataCon K => a_Star  (* a_DataCon K *)
    | a_Case a brs => a_Star (* a_Case (erase_tm a) (erase_brs brs) *)
    | a_Bullet => a_Bullet
+   | a_Sub _ a => erase_tm a r
    end
-with erase_brs (x : brs) : brs :=
+with erase_brs (x : brs) (r:role): brs :=
    match x with
    | br_None => br_None
-   | br_One k a y => br_One k (erase_tm a) (erase_brs y)
+   | br_One k a y => br_One k (erase_tm a r) (erase_brs y r)
    end
-with erase_constraint (phi : constraint) : constraint :=
+with erase_constraint (phi : constraint) (r:role): constraint :=
    match phi with
-   | Eq A B A1 R => Eq (erase_tm A) (erase_tm B) (erase_tm A1) R
+   | Eq A B A1 R => Eq (erase_tm A r) (erase_tm B r) (erase_tm A1 r) R
    end.
 
-Definition erase_sort s :=
+Definition erase_sort s r :=
  match s with
- | Tm a R => Tm (erase_tm a) R
- | Co p => Co (erase_constraint p)
+ | Tm a R => Tm (erase_tm a r) R
+ | Co p => Co (erase_constraint p r)
 end.
 
 
-Definition erase_csort s :=
+Definition erase_csort s r :=
  match s with
- | Cs a   => Cs (erase_tm a)
- | Ax a A R => Ax (erase_tm a) (erase_tm A) R
+ | Cs a   => Cs (erase_tm a r)
+ | Ax a A R => Ax (erase_tm a r) (erase_tm A r) R
 end.
 
-Definition erase_context G := map erase_sort G.
-Definition erase_sig S := map erase_csort S.
+Definition erase_context G r := map (fun s => erase_sort s r) G.
+Definition erase_sig S r := map (fun s => erase_csort s r) S.
 
 (* -------------- A specific signature with Fix ------------ *)
 Definition Fix : atom.
@@ -490,7 +505,7 @@ Definition FixTy : tm :=
 
 Definition an_toplevel : sig := Fix ~ Ax FixDef FixTy Nom.
 
-Definition toplevel : sig := erase_sig an_toplevel.
+Definition toplevel : sig := erase_sig an_toplevel Nom.
 
 }}
 
@@ -522,67 +537,77 @@ defns
 JValue :: '' ::=
 
 defn
-CoercedValue A ::   :: CoercedValue :: ''
+CoercedValue R A ::   :: CoercedValue :: ''
 {{ com Values with at most one coercion at the top }}
 by
 
-Value a
+Value R a
 ----------------- :: CV
-CoercedValue a
+CoercedValue R a
 
-Value a
+Value R a
+not (R1 <= R)
 ---------------------- :: CC
-CoercedValue (a |> g)
+CoercedValue R (a |>R1 g)
 
 defn
-Value A  ::   :: Value    :: 'Value_'
+Value R A  ::   :: Value    :: 'Value_'
 {{ com values }}
-{{ tex \suppress{\mathsf{Value}\ [[A]]} }}
+{{ tex \suppress{\mathsf{Value}_{[[R]]}\ [[A]]} }}
 by
 
 ------- :: Star
-Value TYPE
+Value R TYPE
 
 -------------------------- :: Pi
-Value all rho x : A / R -> B
+Value R all rho x : A / R1 -> B
 
 -------------------- :: CPi
-Value all c : phi. B
+Value R all c : phi. B
 
 --------------------- :: AbsRel
-Value \ + x:A/R. a
+Value R \ + x:A/R1. a
 
 --------------------- :: UAbsRel
-Value \ + R x. a
+Value R \ + R1 x. a
 
-Value a
+Value R a
 --------------------- :: UAbsIrrel
-Value \ - R x. a
+Value R \ - R1 x. a
 
-CoercedValue a
+CoercedValue R a
 -------------------- :: AbsIrrel
-Value \ - x : A/R . a
+Value R \ - x : A/R1 . a
 
 --------------------- :: CAbs
-Value /\c:phi.a
+Value R /\c:phi.a
 
 --------------------- :: UCAbs
-Value /\c .a
+Value R /\c .a
 
+F ~ a : A/R1 in toplevel
+not (R1 <= R)
+------------------------- :: Ax
+Value R F
 
 defn
-ValueType A ::   :: value_type :: 'value_type_'
+ValueType R A ::   :: value_type :: 'value_type_'
 {{ com Types with head forms (erased language) }}
 by
 
 ------- :: Star
-ValueType TYPE
+ValueType R TYPE
 
 -------------------------- :: Pi
-ValueType all rho x : A / R -> B
+ValueType R all rho x : A / R1 -> B
 
 -------------------- :: CPi
-ValueType all c : phi. B
+ValueType R all c : phi. B
+
+F ~ a : A/R1 in toplevel
+not (R1 <= R)
+------------------------- :: Ax
+ValueType R F
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -605,11 +630,11 @@ consistent (all rho x1:A1 / R -> B1) (all rho x2:A2 / R -> B2)
 ------------------------ :: CPi
 consistent (all c1:phi1. A1) (all c2 :phi2. A2)
 
-not ValueType b
+not ValueType R b
 ---------------------- :: Step_R
 consistent a b
 
-not ValueType a
+not ValueType R a
 ---------------------- :: Step_L
 consistent a b
 
@@ -688,83 +713,104 @@ defns
 
 
 defn
-G ; D |- a => b ::  :: Par :: 'Par_'
-{{ tex \vDash [[a]] [[=>]] [[b]] }}
+G ; D |- a => b / R ::  :: Par :: 'Par_'
+{{ tex \vDash [[a]] [[=>]]_{[[R]]} [[b]] }}
 {{ com parallel reduction (implicit language) }}
 by
 
 ----------------------- :: Refl
-G ; D |- a => a
+G ; D |- a => a  / R
 
 
-G ; D |- a => (\rho R x.a')
-G ; D |- b => b'
+G ; D |- a => (\rho R x.a') / R1
+G ; D |- b => b' / R
 ---------------------------- :: Beta
-G ; D |- a rho R b => a' { b' / x }
+G ; D |- a rho R b => a' { b' / x } / R1
 
-G ; D |- a => a'
-G ; D |- b => b'
+G ; D |- a => a' / R1
+G ; D |- b => b' / R
 -------------------------- :: App
-G ; D |- a rho R b => a' rho R b'
+G ; D |- a rho R b => a' rho R b' / R1
 
-G ; D |- a => (/\c .a')
+G ; D |- a => (/\c .a')  / R
 ----------------------- :: CBeta
-G ; D |- a [o] => a' { o / c }
+G ; D |- a [o] => a' { o / c } / R
 
-G ; D |- a => a'
+G ; D |- a => a' / R
 ----------------------- :: CApp
-G ; D |- a [o] => a' [o]
+G ; D |- a [o] => a' [o] / R
 
-G ; D |- a => a'
+G ; D |- a => a' / R1
 -------------------------------- :: Abs
-G ; D |- \ rho R x. a => \ rho R x. a'
+G ; D |- \ rho R x. a => \ rho R x. a' / R1
 
-G ; D |- A => A'
-G ; D |- B => B'
+G ; D |- A => A' / R
+G ; D |- B => B' / R1
 -------------------------------------------- :: Pi
-G ; D |- all rho x:A/R -> B => all rho x:A'/R -> B'
+G ; D |- all rho x:A/R -> B => all rho x:A'/R -> B' / R1
 
-G ; D |- a => a'
+G ; D |- a => a' / R
 --------------------------- :: CAbs
-G ; D |- /\c . a => /\c . a'
+G ; D |- /\c . a => /\c . a' / R
 
-G ; D |- A => A'
-G ; D |- B => B'
-G ; D |- a => a'
-G ; D |- A1 => A1'
+G ; D |- A => A' / R
+G ; D |- B => B' / R
+G ; D |- a => a' / R1
+G ; D |- A1 => A1' / R
 ----------------------------------------- :: CPi
-G ; D |- all c:A~B:A1/R. a => all c:A'~B':A1'/R. a'
+G ; D |- all c:A~B:A1/R. a => all c:A'~B':A1'/R. a' / R1
 
 % NOTE: toplevel is assumed to be locally closed
 F ~ a : A/R in toplevel
+R <= R1
 -------------------------------- :: Axiom
-G ; D |- F => a
+G ; D |- F => a / R1
+
+
+G ; D |- a1 => a2 / R1
+not (R1 <= R)
+--------------------------------------- :: Cong
+G ; D |- a1 |> R o => a2 |> R o / R1
+
+
+G ; D |- a1 => (a2 |> R o)  / R1
+------------------------------------  :: Combine
+G ; D |- (a1 |> R o) =>  (a2 |> R o) / R1
+
+G ; D |- a1 => (a2 |> R o) / R1
+G ; D |- b1 => b2 / R1
+---------------------------------------------------- :: Push
+G ; D |- a1 R2 b1 => (a2 R2 (b2 |> R o)) |> R o / R1
+
+G ; D |- a1 => (a2 |> R o) / R1
+---------------------------------------------------- :: CPush
+G ; D |- a1 [o] => (a2 [o]) |> R o / R1
 
 
 defn
-G ; D |- a =>* b ::   :: MultiPar :: 'MP_'
+G ; D |- a =>* b / R ::   :: MultiPar :: 'MP_'
 {{ tex [[|-]] [[a]] [[=>*]] [[b]] }}
 {{ com multistep parallel reduction }}
 by
 
 ------------------ :: Refl
-G ; D |- a =>* a
+G ; D |- a =>* a / R
 
-G ; D |- a => b
-G ; D |- b =>* a'
+G ; D |- a => b / R
+G ; D |- b =>* a' / R
 --------------------- :: Step
-G ; D |- a =>* a'
+G ; D |- a =>* a' / R
 
 defn
-G ; D |- a <=> b ::   :: joins :: ''
+G ; D |- a <=> b / R ::   :: joins :: ''
 {{ tex [[|-]] [[a]] [[<=>]] [[b]] }}
 {{ com parallel reduction to a common term }}
 by
 
-G ; D |- a1 =>* b
-G ; D |- a2 =>* b
+G ; D |- a1 =>* b / R
+G ; D |- a2 =>* b / R
 ------------------------ :: join
-G ; D |- a1 <=> a2
+G ; D |- a1 <=> a2 / R
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -774,67 +820,79 @@ defns
  Jbeta :: '' ::=
 
 defn
-|= a > b  ::     :: Beta :: 'Beta_'
+|= a > b / R  ::     :: Beta :: 'Beta_'
 {{ com primitive reductions on erased terms }}
 by
 
-Value (\rho R x. v)
+Value R1 (\rho R x. v)
 ------------------------------------ :: AppAbs
-|= (\rho R x.v) rho R b > v { b / x }
+|= (\rho R x.v) rho R b > v { b / x } / R1
 
 
 ------------------------------- :: CAppCAbs
-|= (/\c .a') [o] > a' { o / c }
+|= (/\c .a') [o] > a' { o / c } / R
 
 
 F ~ a : A/R in toplevel
 -------------------------------- :: Axiom
-|= F > a
+|= F > a / R
 
 
 defn
- |= a ~> b ::   :: reduction_in_one :: 'E_'
+ |= a ~> b / R ::   :: reduction_in_one :: 'E_'
 {{ com single-step head reduction for implicit language }}
 by
 
-|= a ~> a'
+|= a ~> a' / R1
 -------------------------  :: AbsTerm
-|= \- R x.a ~> \- R x.a'
+|= \- R x.a ~> \- R x.a' / R1
 
-|= a ~> a'
+|= a ~> a' / R1
 -------------------------  :: AppLeft
-|= a rho R b ~> a' rho R b
+|= a rho R b ~> a' rho R b / R1
 
-|= a  ~> a'
+|= a  ~> a' / R
 -----------------------------   :: CAppLeft
-|= a [o]  ~> a' [o]
+|= a [o]  ~> a' [o] / R
 
 
-Value (\rho R x. v)
+Value R1 (\rho R x. v)
 ----------------------------------  :: AppAbs
-|= (\rho R x.v) rho R a ~> v { a / x}
+|= (\rho R x.v) rho R a ~> v { a / x} / R1
 
 --------------------------------  :: CAppCAbs
-|= (/\c .b) [o] ~> b { o / c}
+|= (/\c .b) [o] ~> b { o / c} / R
 
 F ~ a : A/R in toplevel
 -------------------- :: Axiom
-|= F ~> a
+|= F ~> a / R
 
+|= a ~> a' / R
+------------------------------- :: Cong
+|= a |> R o ~> a' |> R o / R1
+
+------------------------------------ :: Combine
+|= (a |> R o) |> R o ~> a |> R o / R1
+
+------------------------------------ :: Push
+|= (v1 |> R o) R1 v2 ~> (v1 R1 (v2 |> R o)) |> R o / R2
+
+------------------------------------ :: CPush
+|= (v1 |> R o) [o] ~> (v1 [o]) |> R o / R1
 
 defn
 
-|= a ~>* b ::  :: reduction :: ''
+|= a ~>* b / R ::  :: reduction :: ''
 {{ com multistep reduction }}
 by
 
 ------------------- :: Equal
-|= a ~>* a
+|= a ~>* a / R
 
-|= a ~> b
-|= b ~>* a'
+|= a ~> b / R
+|= b ~>* a' / R
 ------------------- :: Step
-|= a ~>* a'
+|= a ~>* a' / R
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Implicit (or erased) language type system
@@ -926,6 +984,12 @@ F ~ a : A / R in toplevel
 ------------------ :: Fam
 G |= F : A / R
 
+G |= a : A1 / R1
+G ; dom G |= A1 == A2 : TYPE / R2
+not (R2 <= R1)
+------------------- :: TyCast
+G |= a |> R2 o : A2 / R1
+
 
 defn
 G ; D |= phi1 == phi2  ::    :: Iso :: 'E_'
@@ -980,7 +1044,7 @@ G ; D |= a == b : A / R2
 
 G |= a1 : B / R
 [G |= a2 : B / R ]
-|= a1 > a2
+|= a1 > a2 / R
 --------------------------------  :: Beta
 G ; D |= a1 == a2 : B / R
 
@@ -1070,7 +1134,11 @@ G ; D |= a ~ b : A/R == a' ~ b' : A'/R
 -------------------------------------- :: IsoSnd
 G ; D |= A == A' : TYPE/R
 
-
+G ; D |= a1 == a2 : A / R1
+G ; D |= A == B : TYPE / R2
+not (R2 <= R1)
+------------------------------------ :: CastCong
+G ; D |= a1 |> R2 o == a2 |> R2 o : B / R1
 
 defn
 |= G ::    :: Ctx  :: 'E_'
@@ -1126,7 +1194,7 @@ by
 
 G |- a : A/R
 G |- b : B/R
-|A| = |B|
+|A|R = |B|R
 ------------------------- :: Wff
 G |- a ~ b : A/R  ok
 
@@ -1151,7 +1219,7 @@ G |- all rho x:A/R -> B : TYPE/R'
 
 [ G |- A : TYPE/R ]
 G, x:A/R |- a : B/R'
-rho => check x in | a |
+rho => check x in | a |R'
 R <= R'
 ---------------------------------- :: Abs
 G |- \ rho x : A/R. a : (all rho x:A/R -> B)/R'
@@ -1165,7 +1233,7 @@ G |- a : A/R
 G ; dom G |- g : A ~ B : R
 G |- B : TYPE/R
 ----------------------------- :: Conv
-G |- a |> g : B/R
+G |- a |>R g : B/R
 
 [ G |- phi ok ]
 G, c : phi |- B : TYPE/R
@@ -1218,8 +1286,8 @@ G ; D |- sym g : phi2 == phi1
 G; D |- g : A ~ B : R
 G |- a1 ~ a2 : A/R ok
 G |- a1' ~ a2' : B/R ok
-|a1| = |a1'|
-|a2| = |a2'|
+|a1|R = |a1'|R
+|a2|R = |a2'|R
 -------------------------------------- :: IsoConv
 G ; D |- conv (a1 ~ a2 : A/R) (a1' ~ a2' : B/R) g : (a1 ~ a2 : A/R) == (a1' ~ a2' : B/R)
 
@@ -1242,7 +1310,7 @@ G ; D |- refl a : a ~ a : R
 
 G |- a : A/R
 G |- b : B/R
-|a| = |b|
+|a|R = |b|R
 G ; dom G |- g : A ~ B : R
 ----------------------------- :: EraseEq
 G ; D |- refl2 a b g : a ~ b : R
@@ -1266,8 +1334,8 @@ G ; D |- (g1 ; g2) : a ~ b : R
 
 G |- a1 : B0/R
 G |- a2 : B1/R
-|B0| = |B1|
-|= |a1| > |a2|
+|B0|R = |B1|R
+|= |a1|R > |a2|R / R
 --------------------------------  :: Beta
 G ; D |- red a1 a2 : a1 ~ a2 : R
 
@@ -1277,7 +1345,7 @@ G ; D |- red a1 a2 : a1 ~ a2 : R
 %% Need all three assns, so that we know A1, A2, B1, B2, B3 all have kind TYPE
 G ; D |- g1 : A1 ~ A2 : R'
 G, x : A1/R ; D |- g2 : B1 ~ (# B2 {{{ x / x }}} #) : R'
-B3 = B2 { x |> sym g1 / x }
+B3 = B2 { x |>R' sym g1 / x }
 G |- all rho x:A1/R -> B1 : TYPE/R'
 G |- all rho x:A1/R -> B2 : TYPE/R'
 G |- all rho x:A2/R -> B3 : TYPE/R'
@@ -1287,11 +1355,11 @@ G ; D |- all rho R x:g1 -> g2 : (all rho x:A1/R -> B1) ~ (all rho x:A2/R -> B3) 
 
 G ; D |- g1 : A1 ~ A2 : R
 G, x : A1/R ; D |- g2 : b1 ~ (# b2 {{{x / x}}} #) : R'
-b3 = b2 { x |> sym g1 / x }
+b3 = b2 { x |>R' sym g1 / x }
 [ G |- A1 : TYPE/R ]
 G |- A2 : TYPE/R
-rho => check x in | b1 |
-rho => check x in | b3 |
+rho => check x in | b1 |R'
+rho => check x in | b3 |R'
 [G |- (\ rho x:A1/R. b2) : B/R']
 [R <= R' ]
 ------------------------------------------------------------------ :: AbsCong
@@ -1323,7 +1391,7 @@ G ; D |- g1 @ g2 : (# B1 {a1 /x} #) ~ (# B2 {a2/x} #) : R'
 
 G ; D |- g1 : a1 ~ b1 : A1/R == a2 ~ b2 : A2/R
 G, c:a1 ~ b1 : A1/R ; D |- g3 : B1 ~ (# B2 {{{c/c}}} #) : R'
-B3 = B2 { c |> sym g1 / c }
+B3 = B2 { c |>R' sym g1 / c }
 G |- all c:a1 ~ b1 : A1/R . B1 : TYPE/R'
 [G |- all c:a2 ~ b2 : A2/R . B3 : TYPE/R']
 G |- all c:a1 ~ b1 : A1/R . B2 : TYPE/R'
@@ -1333,7 +1401,7 @@ G ; D |- (all c: g1. g3) : (all c:a1 ~ b1 : A1/R. B1) ~ (all c:a2 ~ b2 : A2/R. B
 
 G ; D |- g1 : b0 ~ b1 : A1/R == b2 ~ b3 : A2/R
 G, c:b0 ~ b1 : A1/R ; D |- g3 : a1 ~ (# a2{{{c/c}}} #) : R'
-a3 = a2 { c |> sym g1 / c }
+a3 = a2 { c |>R' sym g1 / c }
 %% To know that the two types are equal, we need to know
 %% that the range types can be shown identical without using
 %% the assumption c:phi1. This is a stronger property than
@@ -1366,7 +1434,7 @@ G ; D |- g1 @ (g2, g3) : B1 { g2 / c1 } ~ B2 { g3 / c2 } : R0
 G ; D |- g1 : a~a' : R1
 G ; D |- g2 : a~a' :A/R1 == b~b' : B/R2
 --------------------------------------- :: Cast
-G ; D |- g1 |> g2 : b~b' : R2
+G ; D |- g1 |>R2 g2 : b~b' : R2
 
 
 G ; D |- g : (a~a' : A/R) == (b~b' : B/R)
@@ -1422,49 +1490,50 @@ defns
   Jred :: '' ::=
 
 defn
-G |- a ~>h b ::   :: head_reduction :: 'An_'
-{{ com single-step, weak head reduction to values for annotated language }}
+G |- a ~>h b / R ::   :: head_reduction :: 'An_'
+{{ com single-step, weak head reduction to 
+   values for annotated language }}
 % NOTE: this reduction needs a context for the the
 % two push rules. We need to read the coercion proofs
 % to know what type annotations to use after the push.
 by
 
-G |- a ~>h a'
+G |- a ~>h a' / R1
 -------------------------  :: AppLeft
-G |- a rho R b ~>h a' rho R b
+G |- a rho R b ~>h a' rho R b  / R1
 
-Value (\rho x:A/R.w)
+Value R (\rho x:A/R.w)
 -----------------------------------------  :: AppAbs
-G |- (\rho x:A/R.w) rho R a ~>h w { a / x}
+G |- (\rho x:A/R.w) rho R a ~>h w { a / x} / R
 
 
-G |- a  ~>h a'
+G |- a  ~>h a' / R
 -----------------------------   :: CAppLeft
-G |- a [g]  ~>h a' [g]
+G |- a [g]  ~>h a' [g] / R
 
 
 ------------------------------------  :: CAppCAbs
-G |- (/\c:phi.b) [g] ~>h b { g / c}
+G |- (/\c:phi.b) [g] ~>h b { g / c} / R
 
 G |- A : TYPE/R
-G, x : A/R |- b ~>h b'
+G, x : A/R |- b ~>h b' / R1
 ------------------------------------------- :: AbsTerm
-G |- (\- x:A/R. b) ~>h (\- x:A/R. b')
+G |- (\- x:A/R. b) ~>h (\- x:A/R. b') /R1
 
 
 F ~ a : A/R in an_toplevel
 ------------------------- :: Axiom
-G |- F ~>h a
+G |- F ~>h a / R
 
 
-G |- a ~>h a'
+G |- a ~>h a' / R
 ---------------------------- :: ConvTerm
- G |- a |> g ~>h a' |> g
+ G |- a |>R1 g ~>h a' |>R1 g / R
 
 
-Value v
+Value R v
 ------------------------------------- :: Combine
-G |- (v |> g1) |> g2 ~>h v |> (g1 ; g2)
+G |- (v |>R2 g1) |>R2 g2 ~>h v |>R2 (g1 ; g2) / R
 
 % Not used (or needed)
 
@@ -1482,17 +1551,17 @@ G |- (v |> g1) |> g2 ~>h v |> (g1 ; g2)
 
 
 
-Value v
+Value R v
 G ; dom G |- g : all rho x1: A1/R -> B1 ~ all rho x2: A2/R -> B2 : R'
-b' = b |> sym (piFst g)
+b' = b |>R' sym (piFst g)
 g' = g @ refl2 b' b (piFst g)
 ---------------------------------------------------------- :: Push
-G |- (v |> g) rho R b ~>h (v rho R b') |> g'
+G |- (v |>R' g) rho R b ~>h ((v rho R b') |>R' g') / R
 
 
-Value v
+Value R v
 G ; dom G |- g : all c1:a1 ~ b1 : B1/R. A1 ~ all c2:a2 ~ b2 : B2/R. A2 : R'
-g1' = g1 |> sym (cpiFst g)
+g1' = g1 |>R' sym (cpiFst g)
 g' = g @ ( g1' , g1 )
 -------------------------------------------------------- :: CPush
-G |- (v |> g) [g1] ~>h (v [g1']) |> g'
+G |- (v |>R' g) [g1] ~>h ((v [g1']) |>R' g') / R
