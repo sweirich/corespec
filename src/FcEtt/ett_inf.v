@@ -1,8 +1,9 @@
+Require Import Coq.Arith.Wf_nat.
 Require Import Coq.Logic.FunctionalExtensionality.
 Require Import Coq.Program.Equality.
 
-Require Export Metalib.Metatheory.
-Require Export Metalib.LibLNgen.
+Require Export Metatheory.
+Require Export LibLNgen.
 
 Require Export ett_ott.
 

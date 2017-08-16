@@ -109,7 +109,7 @@ Definition constraint_Closecl : Operators.Close.class constraint := Operators.Cl
 
 
 (* TODO: this function is not yet defined with the other erase_*, as it's pretty much useless, but do we want to define it in the ott file? *)
-Definition erase_co (_ : co) := g_Triv.
+Definition erase_co (_ : co)(_ : role) := g_Triv.
 
 Definition tm_Erasecl         : Operators.Erase.class tm         := Operators.Erase.Class erase_tm.
 Definition co_Erasecl         : Operators.Erase.class co         := Operators.Erase.Class erase_co.

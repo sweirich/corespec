@@ -51,9 +51,9 @@ Axiom Ctx_uniq : forall G, Ctx G -> uniq G.
 
 Axiom Toplevel_lc : forall c s, binds c s toplevel -> lc_sig_sort s.
 
-Axiom Value_lc : forall A, Value A -> lc_tm A.
+Axiom Value_lc : forall A R, Value R A -> lc_tm A.
 
-Axiom CoercedValue_lc : forall A, CoercedValue A -> lc_tm A.
+Axiom CoercedValue_lc : forall A R, CoercedValue R A -> lc_tm A.
 
 End ext_wf_sig.
 
@@ -670,7 +670,7 @@ Module Type fc_subst_sig.
        AnnTyping G A a_Star R ->
        AnnTyping  (( x ~ Tm  A R) ++ G) (open_tm_wrt_tm a (a_Var_f x))
                   (open_tm_wrt_tm B (a_Var_f x)) R' ->
-       RhoCheck rho x (erase_tm (open_tm_wrt_tm a (a_Var_f x))) ->
+       RhoCheck rho x (erase_tm (open_tm_wrt_tm a (a_Var_f x)) R) ->
         SubRole R R' ->
         AnnTyping G (a_Abs rho A R a) (a_Pi rho A R B) R'.
 
@@ -702,11 +702,11 @@ Module Type fc_subst_sig.
       → (AnnDefEq ([(x1, Tm A1 R)] ++ G) D  (open_co_wrt_tm g2 (a_Var_f x1))
                   (open_tm_wrt_tm b1 (a_Var_f x1)) (open_tm_wrt_tm b2 (a_Var_f x1))) R'
       → (open_tm_wrt_tm b3 (a_Var_f x2) =
-         open_tm_wrt_tm b2 (a_Conv (a_Var_f x2) (g_Sym g1)))
+         open_tm_wrt_tm b2 (a_Conv (a_Var_f x2) R (g_Sym g1)))
       → AnnTyping G A1 a_Star R
       → AnnTyping G A2 a_Star R
-      → RhoCheck rho x1 (erase_tm (open_tm_wrt_tm b1 (a_Var_f x1)))
-      → RhoCheck rho x2 (erase_tm (open_tm_wrt_tm b3 (a_Var_f x2)))
+      → RhoCheck rho x1 (erase_tm (open_tm_wrt_tm b1 (a_Var_f x1)) R)
+      → RhoCheck rho x2 (erase_tm (open_tm_wrt_tm b3 (a_Var_f x2)) R)
       → AnnTyping G (a_Abs rho A1 R b2) B R'
       -> SubRole R R'
       → AnnDefEq G D (g_AbsCong rho R g1 g2) (a_Abs rho A1 R b1) (a_Abs rho A2 R b3) R'.
@@ -723,9 +723,9 @@ Module Type fc_subst_sig.
       AnnTyping G (a_Abs rho A1 R' b2) B R /\
       (forall x, x \notin dom G →
           AnnDefEq  (( x ~ Tm A1 R') ++  G) D (open_co_wrt_tm g2 (a_Var_f x)) (open_tm_wrt_tm b1 (a_Var_f x))  ((open_tm_wrt_tm b2 (a_Var_f x))) R /\
-          (open_tm_wrt_tm b3 (a_Var_f x)) = (open_tm_wrt_tm b2 (a_Conv (a_Var_f x) (g_Sym g1))) /\
-          (RhoCheck rho x  (erase_tm (open_tm_wrt_tm b1 (a_Var_f x)))) /\
-          (RhoCheck rho x  (erase_tm (open_tm_wrt_tm b3 (a_Var_f x))))).
+          (open_tm_wrt_tm b3 (a_Var_f x)) = (open_tm_wrt_tm b2 (a_Conv (a_Var_f x) R (g_Sym g1))) /\
+          (RhoCheck rho x  (erase_tm (open_tm_wrt_tm b1 (a_Var_f x)) R)) /\
+          (RhoCheck rho x  (erase_tm (open_tm_wrt_tm b3 (a_Var_f x)) R))).
 
   Axiom An_CPiCong_exists : ∀ c1 c2 (G : context) D (g1 g3 : co) (phi1 : constraint)
        (B1 : tm) (phi2 : constraint) (B3 B2 : tm) R,
@@ -735,7 +735,7 @@ Module Type fc_subst_sig.
     → (AnnDefEq ([(c1, Co phi1)] ++ G) D (open_co_wrt_co g3 (g_Var_f c1))
                 (open_tm_wrt_co B1 (g_Var_f c1)) (open_tm_wrt_co B2 (g_Var_f c1)) R)
     → (open_tm_wrt_co B3 (g_Var_f c2) =
-       open_tm_wrt_co B2 (g_Cast (g_Var_f c2) (g_Sym g1)))
+       open_tm_wrt_co B2 (g_Cast (g_Var_f c2) R (g_Sym g1)))
     → AnnTyping G (a_CPi phi1 B1) a_Star R
     → AnnTyping G (a_CPi phi2 B3) a_Star R
     → AnnTyping G (a_CPi phi1 B2) a_Star R
@@ -755,7 +755,7 @@ Module Type fc_subst_sig.
         (forall c, c `notin` dom G →
           (AnnDefEq ([(c, Co phi1)] ++ G) D (open_co_wrt_co g3 (g_Var_f c))
           (open_tm_wrt_co B1 (g_Var_f c)) (open_tm_wrt_co B2 (g_Var_f c)) R) /\
-          (open_tm_wrt_co B3 (g_Var_f c) = open_tm_wrt_co B2 (g_Cast (g_Var_f c) (g_Sym g1)))).
+          (open_tm_wrt_co B3 (g_Var_f c) = open_tm_wrt_co B2 (g_Cast (g_Var_f c) R (g_Sym g1)))).
 
   Axiom An_PiCong_exists : forall x1 x2 (G:context) D rho
                              (g1 g2 : co) (A1 B1 A2 B3 B2 : tm) R,
@@ -765,7 +765,7 @@ Module Type fc_subst_sig.
       → AnnDefEq ([(x1, Tm A1 R)] ++ G) D (open_co_wrt_tm g2 (a_Var_f x1))
                  (open_tm_wrt_tm B1 (a_Var_f x1)) (open_tm_wrt_tm B2 (a_Var_f x1)) R
       → (open_tm_wrt_tm B3 (a_Var_f x2) =
-         open_tm_wrt_tm B2 (a_Conv (a_Var_f x2) (g_Sym g1)))
+         open_tm_wrt_tm B2 (a_Conv (a_Var_f x2) R (g_Sym g1)))
       → AnnTyping G (a_Pi rho A1 R B1) a_Star R
       → AnnTyping G (a_Pi rho A2 R B3) a_Star R
       → AnnTyping G (a_Pi rho A1 R B2) a_Star R
@@ -782,7 +782,7 @@ Module Type fc_subst_sig.
       AnnDefEq G D g1 A1 A2 R' /\
       (forall x , x \notin dom G  ->
             AnnDefEq  ((x ~ Tm  A1 R') ++ G) D (open_co_wrt_tm g2 (a_Var_f x)) (open_tm_wrt_tm B1 (a_Var_f x)) ((open_tm_wrt_tm B2 (a_Var_f x))) R /\
-            (open_tm_wrt_tm B3 (a_Var_f x)  = (open_tm_wrt_tm  B2 (a_Conv (a_Var_f x) (g_Sym g1))))).
+            (open_tm_wrt_tm B3 (a_Var_f x)  = (open_tm_wrt_tm  B2 (a_Conv (a_Var_f x) R (g_Sym g1))))).
 
   Axiom An_CAbsCong_exists :
   forall c1 c2 (G : context) (D : available_props) (g1 g3 g4 : co)
@@ -793,7 +793,7 @@ Module Type fc_subst_sig.
     → (AnnDefEq ([(c1, Co phi1)] ++ G) D (open_co_wrt_co g3 (g_Var_f c1))
                 (open_tm_wrt_co a1 (g_Var_f c1)) (open_tm_wrt_co a2 (g_Var_f c1)) R)
     → (open_tm_wrt_co a3 (g_Var_f c2) =
-       open_tm_wrt_co a2 (g_Cast (g_Var_f c2) (g_Sym g1)))
+       open_tm_wrt_co a2 (g_Cast (g_Var_f c2) R (g_Sym g1)))
     → AnnTyping G (a_CAbs phi1 a1) (a_CPi phi1 B1) R
     → AnnTyping G (a_CAbs phi2 a3) (a_CPi phi2 B2) R
     → AnnDefEq G (dom G) g4 (a_CPi phi1 B1) (a_CPi phi2 B2) R
@@ -816,7 +816,7 @@ Module Type fc_subst_sig.
     → (AnnDefEq ([(c1, Co phi1)] ++ G) D (open_co_wrt_co g3 (g_Var_f c1))
                 (open_tm_wrt_co a1 (g_Var_f c1)) (open_tm_wrt_co a2 (g_Var_f c1))) R /\
       (open_tm_wrt_co a3 (g_Var_f c1) =
-       open_tm_wrt_co a2 (g_Cast (g_Var_f c1) (g_Sym g1))).
+       open_tm_wrt_co a2 (g_Cast (g_Var_f c1) R (g_Sym g1))).
 
 
   (* -----  inversion lemmas for some typing judgments (with maximal co-finite quantification) ----------- *)
@@ -834,7 +834,7 @@ Module Type fc_subst_sig.
     (exists B, A1 = a_Pi rho A R B /\
     AnnTyping G A a_Star R /\
     ∀ x, x \notin dom G ->
-      RhoCheck rho x (erase_tm (open_tm_wrt_tm a (a_Var_f x))) /\
+      RhoCheck rho x (erase_tm (open_tm_wrt_tm a (a_Var_f x)) R) /\
       AnnTyping (( x ~ Tm  A R) ++ G)
                 (open_tm_wrt_tm a (a_Var_f x))
                 (open_tm_wrt_tm B (a_Var_f x)) R').

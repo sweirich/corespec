@@ -69,7 +69,7 @@ Lemma lc_mutual :
   (forall G0 D A B T R, DefEq G0 D A B T R -> lc_tm A /\ lc_tm B /\ lc_tm T) /\
   (forall G0, Ctx G0 -> forall x s , binds x s G0 -> lc_sort s).
 Proof.
-  eapply typing_wff_iso_defeq_mutual. 
+  eapply typing_wff_iso_defeq_mutual.
   all: pre; basic_solve_n 2.
   all: split_hyp.
   all: lc_solve.  
