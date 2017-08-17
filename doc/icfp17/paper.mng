@@ -204,12 +204,12 @@
 \affiliation{
   \position{}
   \department{}              %% \department is recommended
-  \institution{Ecole Polytechnique and University of Campinas}     %% \institution is required
+  \institution{Ecole Polytechnique, France and University of Campinas}     %% \institution is required
   \streetaddress{}
   \city{Paris}
   \state{}
   \postcode{}
-  \country{France}
+  \country{Brazil}
 }
 \email{pedro-henrique.azevedo-de-amorim@polytechnique.edu}
 
