@@ -1,0 +1,204 @@
+\documentclass[format=sigplan,review=false,screen=true]{acmart}\settopmatter{}
+
+\usepackage[para]{footmisc}   %% gather footnotes on a single line
+
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{supertabular}
+\usepackage{stmaryrd}
+\usepackage{color}
+\usepackage{multirow}
+\usepackage{calc}
+\usepackage[T1]{fontenc}
+\usepackage{graphicx}
+\usepackage{xspace}
+\usepackage{dashrule}  % for \hdashrule
+\usepackage{stackrel}
+\usepackage{enumerate}
+\usepackage{framed}
+\usepackage{bussproofs}
+\usepackage{mdframed}  % highlight
+\usepackage{hyperref}
+\usepackage{comment}
+%\usepackage{natbib}
+\usepackage{ifthen}
+\usepackage{pdftexcmds}
+
+\usepackage{mathpartir}
+\usepackage{ottalt}
+
+\usepackage{fancyvrb}
+
+\usepackage{listings}
+\lstset{language=Haskell}
+
+%\special{papersize=8.5in,11in}
+%\setlength{\pdfpageheight}{\paperheight}
+%\setlength{\pdfpagewidth}{\paperwidth}
+
+%\usepackage{palatino}
+\renewcommand{\familydefault}{\rmdefault}
+%\renewcommand{\ttdefault}{cmtt}
+
+%% Show admissible premises in rules
+%% This should be false in main body of text and true in the appendix.
+\newif\ifadmissible
+\admissiblefalse
+\newcommand\suppress[1]{\ifadmissible{[#1]}\else{}\fi}
+\inputott{ett-rules}
+
+
+\newcommand{\alt}{\ |\ }
+\newcommand{\rul}[1]{\rref{#1}}
+
+
+\newcommand{\fc}{DC\xspace}
+\newcommand{\fimp}{D\xspace}
+\newcommand{\pico}{\textsc{PiCo}\xspace}
+
+
+\newif\ifcomments
+\ifcomments
+\newcommand{\scw}[1]{\textcolor{blue}{{SCW: #1}}}
+\newcommand{\rae}[1]{\textcolor{magenta}{{RAE: #1}}}
+\newcommand\av[1]{\textcolor{orange}{{AV: #1}}}
+\else
+\newcommand{\scw}[1]{}
+\newcommand{\rae}[1]{}
+\newcommand\av[1]{}
+\fi
+
+
+
+
+%% allow more interline spacing (and fewer overfull hboxes).
+\tolerance=5000
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%% Copyright information
+%% Supplied to authors (based on authors' rights management selection;
+%% see authors.acm.org) by publisher for camera-ready submission
+%\setcopyright{none}             %% For review submission
+%\setcopyright{acmcopyright}
+%\setcopyright{acmlicensed}
+%\setcopyright{rightsretained}
+
+
+%% Bibliography style
+\bibliographystyle{ACM-Reference-Format}
+%% Citation style
+%% Note: author/year citations are required for papers published as an
+%% issue of PACMPL.
+\citestyle{acmauthoryear}   %% For author/year citations
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{document}
+
+
+\title{A specification of eta-equivalence in LNrep}
+
+\author{Stephanie Weirich}
+\orcid{0000-0002-6756-9168}
+\affiliation{
+  \position{Professor}
+  \department{Computer and Information Science}              %% \department is recommended
+  \institution{University of Pennsylvania}            %% \institution is required
+  \streetaddress{3330 Walnut St}
+  \city{Philadelphia}
+  \state{PA}
+  \postcode{19104}
+  \country{USA}
+}
+\email{sweirich@cis.upenn.edu}
+
+\author{Antoine Voizard}
+\affiliation{
+  \position{}
+  \department{}              %% \department is recommended
+  \institution{University of Pennsylvania}            %% \institution is required
+  \streetaddress{}
+  \city{}
+  \state{}
+  \postcode{}
+  \country{USA}
+}
+\email{voizard@seas.upenn.edu}
+
+\begin{abstract}
+abstract
+\end{abstract}
+
+\maketitle
+
+%% Our running head is too long for acmsmall
+\renewcommand{\shortauthors}{Weirich, Voizard}
+
+\section{Introduction}
+
+How do we specify eta-reduction using the locally nameless representation?
+
+As part of a larger proof development, we added eta reduction using the
+following rule:
+
+...
+
+
+\begin{verbatim}
+Induction exp :=
+   | var_f : atom -> exp
+   | var_b : nat -> exp
+   | abs   : exp -> exp
+   | app   : exp -> exp -> exp
+\end{verbatim}
+
+The rule we used (cofinite quantification)
+\begin{verbatim}
+Par_Eta : forall a b b',
+  Par b b' ->
+  (forall x, x notin L -> open a x = app b x) ->
+  Par (abs a) b'
+\end{verbatim}
+
+Alternative exists fresh
+\begin{verbatim}
+Par_Eta : forall a b b' x,
+  x notin ???
+  Par b b' ->
+  open a x = app b x ->
+  Par (abs a) b'
+\end{verbatim}
+
+Alternative close version
+\begin{verbatim}
+Par_Eta : forall a b x,
+  Par b b ->
+  Par (abs (close x (app a (var_f x)))) b
+\end{verbatim}
+
+
+
+\end{document}
+
+
+
+
+%% Local Variables:
+%% mode: LaTeX
+%% End:
+
+%%  LocalWords:  interline overfull hboxes papersize FL Ahmed eir sweirich HM
+%%  LocalWords:  Hamidhasan taun SCW lncs urgh app rccll damas milner HMV SB
+%%  LocalWords:  Damas's outsidein SB's ghc Expr normalizePoly normalizeProxy
+%%  LocalWords:  normalizeExpr TypeApplications AllowAmbiguousTypes APIs API
+%%  LocalWords:  ICFP Refl SCond MonadReader MonadWriter RAE polytype const
+%%  LocalWords:  NB SwapPair swapPair sP HM's monotypes Barendregt Gen InstG
+%%  LocalWords:  monotype vars InstS hmv Abs TApp Var V's Annot algv foo DAbs
+%%  LocalWords:  RankNTypes metatheorems skolemization inst'd DeepSkol Skol
+%%  LocalWords:  Twelf Dreyer Blume's ML's DK Neel Krishnaswami Didier hlio
+%%  LocalWords:  TypeOperators DataKinds PolyKinds ConstraintKinds Typeable
+%%  LocalWords:  ScopedTypeVariables woozle boolCast eqT unsafeThe Val Cond
+%%  LocalWords:  eval SExpr sEval SBool SVal sIf Inst IFPOP ListInst infixr
+%%  LocalWords:  STrue SFalse supertype checkIf myId myAbs abs Num GHCi ghci
+%%  LocalWords:  fromInteger myPair MkG pr Ty forall ol pid cc hm sp inst gen
+%%  LocalWords:  sb dn pf sf ys xs se
