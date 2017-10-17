@@ -143,6 +143,12 @@ following rule:
 
 ...
 
+\begin{verbatim}
+ |- b => b'
+a = b x
+----------------------------- :: Eta
+ |- \ x. a => b'
+\end{verbatim}
 
 \begin{verbatim}
 Induction exp :=

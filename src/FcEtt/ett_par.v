@@ -386,7 +386,7 @@ Proof.
   all: try destruct rho; try solve [Par_pick_fresh y;
                   autorewrite with subst_open_var; eauto with lc].
   destruct (x0 == x). Unshelve.
-  all: eauto. 
+  all: eauto.
 Qed.
 
 Lemma open1 : forall b S D a a' L, Par S D a a'
@@ -496,7 +496,7 @@ Proof.
     rewrite tm_subst_tm_tm_open_tm_wrt_co in h2.
     simpl in h2.
     destruct (@eq_dec tmvar _ z x); try done.
-    clear Fr. 
+    clear Fr.
     eapply Par_lc1. eauto.
 Qed.
 
@@ -638,6 +638,21 @@ Proof.
   rewrite (co_subst_co_tm_intro c  a (g_Var_f c0));  auto.
   apply subst4; auto.
 Qed.
+
+Lemma Par_EtaRel_exists : forall a b b' x,
+   x `notin` fv_tm_tm_tm a
+   Par G D b b' ->
+   (open_tm_wrt_tm a (a_Var_f x)) = a_App b Rel (a_Var_f x) ->
+   Par G D (a_UAbs Rel a) b'.
+Admitted.
+
+
+Lemma Par_EtaRel_close : forall b b' x,
+   x `notin` fv_tm_tm_tm b
+   Par G D b b' ->
+   Par G D (a_UAbs Rel (close_tm_wrt_tm x (a_App b Rel (a_Var_f x)))) b'.
+Admitted.
+
 
 Lemma Par_open_tm_wrt_co_preservation: forall G D B1 B2 c, Par G D (open_tm_wrt_co B1 (g_Var_f c)) B2 -> exists B', B2 = open_tm_wrt_co B' (g_Var_f c) /\ Par G D (open_tm_wrt_co B1 (g_Var_f c)) (open_tm_wrt_co B' (g_Var_f c)).
 Proof.
