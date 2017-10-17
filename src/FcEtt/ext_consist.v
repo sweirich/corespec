@@ -71,8 +71,10 @@ Lemma Par_Abs_inversion : forall G D a b rho,
           forall x, x `notin` fv_tm_tm_tm a \u fv_tm_tm_tm a' ->
                Par G D (open_tm_wrt_tm a (a_Var_f x)) (open_tm_wrt_tm a' (a_Var_f x)))
     \/
-    (exists a', Par G D a' b /\ forall x, x `notin`  fv_tm_tm_tm a ->
-          open_tm_wrt_tm a (a_Var_f x) = a_App a' rho (a_Var_f x)).
+    (exists a', Par G D a' b /\ (forall x, x `notin`  fv_tm_tm_tm a ->
+          open_tm_wrt_tm a (a_Var_f x) = a_App a' rho (a_Var_f x)) /\ rho = Rel)
+    \/ (exists a', Par G D a' b /\ (forall x, x `notin`  fv_tm_tm_tm a ->
+          open_tm_wrt_tm a (a_Var_f x) = a_App a' rho a_Bullet) /\ rho = Irrel). 
 
 Proof.
   intros G D a a' rho P.
@@ -84,8 +86,9 @@ Proof.
     rewrite (tm_subst_tm_tm_intro y); eauto.
     rewrite (tm_subst_tm_tm_intro y a'0); eauto.
     apply subst2; eauto.
-  + right.
+  + right. left. 
     exists b. split. auto.
+    split; eauto.
     intros x Fr.
     pick fresh y.
     rewrite (tm_subst_tm_tm_intro y); eauto.
@@ -93,7 +96,16 @@ Proof.
     simpl.
     rewrite tm_subst_tm_tm_fresh_eq; auto.
     destruct eq_dec. auto.
-    done.
+    done. 
+  + right. right.
+    exists b. split. auto.
+    split; eauto.
+    intros x Fr.
+    pick fresh y.
+    rewrite (tm_subst_tm_tm_intro y); eauto.
+    rewrite H5; eauto.
+    simpl.
+    rewrite tm_subst_tm_tm_fresh_eq; auto. 
 Qed.
 
 (* -------------------------------------------------------------------------------- *)
@@ -163,9 +175,18 @@ Ltac invert_equality :=
       Ltac eta_expand x :=
         let h1 := fresh in
       match goal with
-        [ H18 : ∀ x : atom,
+       | [ H18 : ∀ x : atom,
               x `notin` ?L0
               → open_tm_wrt_tm ?a (a_Var_f x) = a_App ?b0 ?rho (a_Var_f x)
+              |- _ ] =>
+        pick fresh x for (L0 \u  fv_tm_tm_tm a \u fv_tm_tm_tm b0);
+        move: (H18 x ltac:(auto)) => h1; clear H18;
+        rewrite (@tm_subst_tm_tm_intro x a); auto; rewrite h1;
+        simpl; destruct (@eq_dec tmvar _ x x); try done;
+        rewrite tm_subst_tm_tm_fresh_eq; auto
+       | [ H18 : ∀ x : atom,
+              x `notin` ?L0
+              → open_tm_wrt_tm ?a (a_Var_f x) = a_App ?b0 ?rho a_Bullet
               |- _ ] =>
         pick fresh x for (L0 \u  fv_tm_tm_tm a \u fv_tm_tm_tm b0);
         move: (H18 x ltac:(auto)) => h1; clear H18;
@@ -314,29 +335,31 @@ Proof.
   - (* two betas *)
     use_size_induction a0 ac Par1 Par2.
     use_size_induction b bc Par3 Par4.
-    destruct (Par_Abs_inversion Par1) as [[a'' [EQ h0]]| [ax [X1 X2]]]; subst;
-    destruct (Par_Abs_inversion Par2) as [[a''' [EQ2 h1]]| [ay [Y1 Y2]]]; subst.
+    destruct (Par_Abs_inversion Par1) as [[a'' [EQ h0]] | [X1 | X2]]; subst;
+    destruct (Par_Abs_inversion Par2) as [[a''' [EQ2 h1]]| [Y1 | Y2]]; subst.
     -- inversion EQ2. subst.
        exists (open_tm_wrt_tm a''' bc).
        split. pick fresh x; eapply open2; eauto using Par_erased_tm.
        pick fresh x; eapply open2; eauto using Par_erased_tm.
     -- exists (open_tm_wrt_tm a'' bc).
-       split.
-       pick fresh x; eapply open2; eauto using Par_erased_tm.
+       split. pick fresh x; eapply open2; eauto using Par_erased_tm.
+       destruct Y1 as [ay [Par5 [EQ W]]].
        eta_expand x.
+    -- destruct Y2 as [ay [Par5 [EQ W]]]. inversion W.
     -- exists (open_tm_wrt_tm a''' bc).
-       split.
-       eta_expand x.
+       split. destruct X1 as [ax [Par5 [EQ W]]]. eta_expand x. 
        pick fresh x; eapply open2; eauto using Par_erased_tm.
-    -- exists (a_App ac rho bc).
-       split.
-       eta_expand x.
-       eta_expand x.
-       Unshelve. all: exact D.
+    -- exists (a_App ac Rel bc).
+       split. inversion X1. inversion H7. inversion H9. eta_expand x0.
+       inversion Y1. inversion H7. inversion H9. eta_expand x0.
+    -- destruct Y2 as [ay [Par5 [EQ W]]]. inversion W.
+    -- destruct X2 as [ax [Par5 [EQ W]]]. inversion W.
+    -- destruct X2 as [ax [Par5 [EQ W]]]. inversion W.
+    -- destruct X2 as [ax [Par5 [EQ W]]]. inversion W.
   - (* app beta / app cong *)
     use_size_induction a0 ac Par1 Par2.
     use_size_induction b bc Par3 Par4.
-    invert_erased_tm (a_UAbs rho a').
+    invert_erased_tm (a_UAbs Rel a').
     inversion Par1; subst; clear Par1.
     -- exists (open_tm_wrt_tm a' bc); auto.
       split; eauto.
@@ -347,22 +370,32 @@ Proof.
       par_erased_open x J Par3.
     -- exists (a_App ac Rel bc).
       split.
-      eta_expand x.
+      eta_expand x. 
       eauto.
   - (* app cong / app beta *)
     use_size_induction a0 ac Par1 Par2.
-    use_size_induction b bc Par3 Par4.
-    invert_erased_tm (a_UAbs rho a'0).
-    destruct (Par_Abs_inversion Par2) as [ [a'' [EQ X]] | [b0 [Par5 Y]]].
+    (* use_size_induction b bc Par3 Par4. *) 
+    invert_erased_tm (a_UAbs Irrel a').
+    invert_erased_tm (a_UAbs Irrel a'0).
+    destruct (Par_Abs_inversion Par1) as [ [a'' [EQ X]] | M].
+    destruct (Par_Abs_inversion Par2) as [ [a''' [EQ' X']] | M'].
+   (* destruct (Par_Abs_inversion Par2) as [ [a'' [EQ X]] | [b0 [Par5 Y]]].*)
     * subst.
-      exists (open_tm_wrt_tm a'' bc).
-      split; eauto.
+      exists (open_tm_wrt_tm a''' a_Bullet).
+      split; eauto. 
+      pick fresh x; eapply open2; eauto. inversion EQ'; subst.
+      apply X. fsetdec. 
       pick fresh x; eapply open2; eauto.
-      eapply Par_erased_tm; eauto.
-    * exists (a_App ac rho bc).
+    * inversion M'.
+      ** inversion H7. inversion H9. inversion H11. inversion H13.
+      ** exists (a_App ac Irrel a_Bullet).
+      split;
+      eauto; inversion H7; inversion H9; inversion H11.
+      admit. eta_expand x0.
+    (* * exists (a_App ac rho bc).
       split.
       eauto.
-      eta_expand x.
+      eta_expand x. *)
   - (* app cong / app cong *)
     use_size_induction a0 ac Par1 Par2.
     use_size_induction b bc Par3 Par4.

@@ -397,7 +397,21 @@ Proof.
     rewrite open_tm_erase_tm.
     rewrite e; auto.
     simpl; auto.
-    
+  - simpl in *.
+    destruct (An_CAbs_inversion H0) as (B0 & h0 & h1). subst.
+    pick fresh x. destruct (h1 x ltac:(auto)) as [RC h3].
+    rewrite e in h3; auto.
+    inversion h3. subst.
+    have h4: AnnCtx G by eauto with ctx_wff.
+    have h5: AnnCtx (nil ++ (x ~ Co phi) ++ G) by econstructor; eauto with ctx_wff.
+    move: (AnnTyping_weakening a0 (x ~ Co phi) nil G eq_refl ltac:(auto)) => h0.
+    simpl_env in h0. clear h4 h5.
+    resolve_unique_subst. inversion H1. subst.
+    apply open_tm_wrt_co_inj in H4; auto. subst.
+    simpl. eapply E_EtaC with (L := L \u {{x}}); auto.
+    intros.
+    erewrite open_co_erase_tm2. 
+    erewrite e; auto.
 
 (* Left/Right
   - simpl in *.
@@ -2530,7 +2544,7 @@ Proof.
   replace (a_App (erase (a_Conv a0 g)) Irrel a_Bullet) with
   (erase (a_App (a_Conv a0 g) Irrel (a_Var_f y))) in e0.
   move: (An_Pi_inversion AT1) => h3. split_hyp.
-  eexists.
+  eexists. 
   exists (a_Abs Irrel A1 (close_tm_wrt_tm y (a_App (a_Conv a0 g) Irrel (a_Var_f y)))).
   exists (a_Conv a0 g). exists (a_Pi Irrel A1 B1).
   split.
@@ -2561,9 +2575,53 @@ Proof.
       simpl_env; eauto.
     + simpl; auto. constructor. simpl.
       apply union_notin_iff. split.
-      admit. eauto.
+      apply fv_tm_erase_tm. fsetdec. eauto.
     + simpl. auto.
-Admitted.
+ - destruct (H _ H0 H1) as (a0 & A0 & E1 & E2 & AT).
+  clear H.
+  move: (AnnTyping_regularity AT) => h0.
+  destruct (erase_cpi E2 h0) as (A1 & B1 & E3 & E4 & E5 & AT1).
+  have h1: (exists g, AnnDefEq G0 (dom G0) g A0 (a_CPi A1 B1)).
+  {
+    eexists. eapply An_EraseEq; eauto.
+    
+  } 
+  move: h1 => [g TT].
+  have h1: AnnTyping G0 (a_Conv a0 g) (a_CPi A1 B1) by eauto.
+  subst.
+  have h2: erase a0 = erase (a_Conv a0 g) by simpl; auto.
+  pick fresh y.
+  move: (e y ltac:(auto)) => e0. rewrite h2 in e0.
+  replace (a_CApp (erase (a_Conv a0 g)) g_Triv) with
+  (erase (a_CApp (a_Conv a0 g) g_Triv)) in e0; eauto.
+  move: (An_CPi_inversion AT1) => h3. split_hyp.
+  eexists. exists (a_CAbs A1 (close_tm_wrt_co y (a_CApp (a_Conv a0 g) (g_Var_f y)))).
+  exists (a_Conv a0 g). exists (a_CPi A1 B1).
+  split.
+  replace (erase
+    (a_CAbs A1
+            (close_tm_wrt_co y (a_CApp (a_Conv a0 g) (g_Var_f y)))))
+  with
+  (a_UCAbs
+     (erase (close_tm_wrt_co y
+                             (a_CApp (a_Conv a0 g) (g_Var_f y))))).
+  autorewcs. rewrite -close_co_erase_tm. simpl. simpl in e0.
+  rewrite -e0.
+  autorewrite with lngen.
+  auto.
+  simpl; auto.
+  repeat split; simpl; eauto 2. 
+  eapply An_EtaC with (L := L \u dom G0 \u {{y}} ). eauto.
+  intros. rewrite -co_subst_co_tm_spec.
+  simpl. rewrite co_subst_co_tm_fresh_eq; auto.
+  rewrite co_subst_co_co_fresh_eq; auto. auto.
+  destruct eq_dec; try done.
+  eapply (@An_CAbs_exists y); autorewrite with lngen; eauto 2.
+  + fsetdec.
+  + destruct A1. eapply An_CApp. 
+      eapply AnnTyping_weakening with (F:=nil); eauto with ctx_wff.
+      eapply An_Assn; eauto.
+Qed.
 
 
 (* --------------------------------------------------------------------- *)
@@ -3416,7 +3474,7 @@ Admitted.
     ++ subst. eauto.
   + eauto.
   + eauto. *)
-Qed.
+
 
 
 

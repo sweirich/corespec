@@ -667,11 +667,14 @@ erased_tm a
 -------------------- :: Abs
 erased_tm (\rho x.a)
 
-%% Note, this is not quite right, but it is ok.
 erased_tm a
 erased_tm b
 ----------------- :: App
-erased_tm (a rho b)
+erased_tm (a + b)
+
+erased_tm a
+----------------- :: AppIrrel
+erased_tm (a - [])
 
 erased_tm A
 erased_tm B
@@ -745,15 +748,23 @@ by
 G ; D |- a => a
 
 
-G ; D |- a => (\rho x.a')
+G ; D |- a => (\+ x.a')
 G ; D |- b => b'
 ---------------------------- :: Beta
-G ; D |- a rho b => a' { b' / x }
+G ; D |- a + b => a' { b' / x }
+
+G ; D |- a => (\- x.a')
+---------------------------- :: BetaIrrel
+G ; D |- a - [] => a' { [] / x }
 
 G ; D |- a => a'
 G ; D |- b => b'
 -------------------------- :: App
-G ; D |- a rho b => a' rho b'
+G ; D |- a + b => a' + b'
+
+G ; D |- a => a'
+-------------------------- :: AppIrrel
+G ; D |- a - [] => a' - []
 
 G ; D |- a => (/\c .a')
 ----------------------- :: CBeta
@@ -842,9 +853,12 @@ defn
 {{ com primitive reductions on erased terms }}
 by
 
-Value (\rho x. v)
 ------------------------------------ :: AppAbs
-|= (\rho x.v) rho b > v { b / x }
+|= (\+ x.v) + b > v { b / x }
+
+Value (\- x. v)
+------------------------------------ :: AppAbsIrrel
+|= (\- x.v) - [] > v { [] / x }
 
 
 ------------------------------- :: CAppCAbs
@@ -867,16 +881,23 @@ by
 
 |= a ~> a'
 -------------------------  :: AppLeft
-|= a rho b ~> a' rho b
+|= a + b ~> a' + b
+
+|= a ~> a'
+-------------------------  :: AppLeftIrrel
+|= a - [] ~> a' - []
 
 |= a  ~> a'
 -----------------------------   :: CAppLeft
 |= a [o]  ~> a' [o]
 
 
-Value (\rho x. v)
 ----------------------------------  :: AppAbs
-|= (\rho x.v) rho a ~> v { a / x}
+|= (\+ x.v) + a ~> v { a / x}
+
+Value (\- x. v)
+----------------------------------  :: AppAbsIrrel
+|= (\- x.v) - [] ~> v { [] / x}
 
 --------------------------------  :: CAppCAbs
 |= (/\c .b) [o] ~> b { o / c}

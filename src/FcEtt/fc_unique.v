@@ -222,12 +222,21 @@ Proof.
   - inversion H0. subst. apply H in H4.
     split_hyp. invert_syntactic_equality. auto.
   - ann_invert_clear.
-    apply_ind b1. subst.
-    pick fresh x.
-    move: (H5 x ltac:(auto)) => h0.
-    rewrite -e in h0; auto.
-    apply open_tm_wrt_tm_inj in h0; auto.
-    subst. auto.
+    + apply_ind b1. subst.
+      pick fresh x.
+      move: (H5 x ltac:(auto)) => h0.
+      rewrite -e in h0; auto.
+      apply open_tm_wrt_tm_inj in h0; auto.
+      subst. auto.
+    + apply_ind b1.
+  - ann_invert_clear.
+    + apply_ind b1.
+    + apply_ind b1. subst.
+      pick fresh x.
+      move: (H5 x ltac:(auto)) => h0.
+      rewrite -e in h0; auto.
+      apply open_tm_wrt_co_inj in h0; auto.
+      subst. auto.
     (* Left/Right
   - ann_invert_clear.
     apply_ind g1. invert_syntactic_equality. auto.

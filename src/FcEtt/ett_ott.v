@@ -938,10 +938,13 @@ Inductive erased_tm : tm -> Prop :=    (* defn erased_tm *)
  | erased_a_Abs : forall (L:vars) (rho:relflag) (a:tm),
       ( forall x , x \notin  L  -> erased_tm  ( open_tm_wrt_tm a (a_Var_f x) )  )  ->
      erased_tm  ( (a_UAbs rho a) ) 
- | erased_a_App : forall (a:tm) (rho:relflag) (b:tm),
+ | erased_a_App : forall (a b:tm),
      erased_tm a ->
      erased_tm b ->
-     erased_tm  ( (a_App a rho b) ) 
+     erased_tm  ( (a_App a Rel b) ) 
+ | erased_a_AppIrrel : forall (a:tm),
+     erased_tm a ->
+     erased_tm  ( (a_App a Irrel a_Bullet) ) 
  | erased_a_Pi : forall (L:vars) (rho:relflag) (A B:tm),
      erased_tm A ->
       ( forall x , x \notin  L  -> erased_tm  ( open_tm_wrt_tm B (a_Var_f x) )  )  ->
@@ -977,14 +980,20 @@ Inductive Par : context -> available_props -> tm -> tm -> Prop :=    (* defn Par
  | Par_Refl : forall (G:context) (D:available_props) (a:tm),
      lc_tm a ->
      Par G D a a
- | Par_Beta : forall (G:context) (D:available_props) (a:tm) (rho:relflag) (b a' b':tm),
-     Par G D a  ( (a_UAbs rho a') )  ->
+ | Par_Beta : forall (G:context) (D:available_props) (a b a' b':tm),
+     Par G D a  ( (a_UAbs Rel a') )  ->
      Par G D b b' ->
-     Par G D (a_App a rho b)  (open_tm_wrt_tm  a'   b' ) 
- | Par_App : forall (G:context) (D:available_props) (a:tm) (rho:relflag) (b a' b':tm),
+     Par G D (a_App a Rel b)  (open_tm_wrt_tm  a'   b' ) 
+ | Par_BetaIrrel : forall (G:context) (D:available_props) (a a':tm),
+     Par G D a  ( (a_UAbs Irrel a') )  ->
+     Par G D (a_App a Irrel a_Bullet)  (open_tm_wrt_tm  a'   a_Bullet ) 
+ | Par_App : forall (G:context) (D:available_props) (a b a' b':tm),
      Par G D a a' ->
      Par G D b b' ->
-     Par G D (a_App a rho b) (a_App a' rho b')
+     Par G D (a_App a Rel b) (a_App a' Rel b')
+ | Par_AppIrrel : forall (G:context) (D:available_props) (a a':tm),
+     Par G D a a' ->
+     Par G D (a_App a Irrel a_Bullet) (a_App a' Irrel a_Bullet)
  | Par_CBeta : forall (G:context) (D:available_props) (a a':tm),
      Par G D a  ( (a_UCAbs a') )  ->
      Par G D (a_CApp a g_Triv)  (open_tm_wrt_co  a'   g_Triv ) 
@@ -1038,10 +1047,13 @@ with joins : context -> available_props -> tm -> tm -> Prop :=    (* defn joins 
 
 (* defns Jbeta *)
 Inductive Beta : tm -> tm -> Prop :=    (* defn Beta *)
- | Beta_AppAbs : forall (rho:relflag) (v b:tm),
+ | Beta_AppAbs : forall (v b:tm),
+     lc_tm (a_UAbs Rel v) ->
      lc_tm b ->
-     Value  ( (a_UAbs rho v) )  ->
-     Beta (a_App  ( (a_UAbs rho v) )  rho b)  (open_tm_wrt_tm  v   b ) 
+     Beta (a_App  ( (a_UAbs Rel v) )  Rel b)  (open_tm_wrt_tm  v   b ) 
+ | Beta_AppAbsIrrel : forall (v:tm),
+     Value  ( (a_UAbs Irrel v) )  ->
+     Beta (a_App  ( (a_UAbs Irrel v) )  Irrel a_Bullet)  (open_tm_wrt_tm  v   a_Bullet ) 
  | Beta_CAppCAbs : forall (a':tm),
      lc_tm (a_UCAbs a') ->
      Beta (a_CApp  ( (a_UCAbs a') )  g_Triv)  (open_tm_wrt_co  a'   g_Triv ) 
@@ -1052,17 +1064,23 @@ with reduction_in_one : tm -> tm -> Prop :=    (* defn reduction_in_one *)
  | E_AbsTerm : forall (L:vars) (a a':tm),
       ( forall x , x \notin  L  -> reduction_in_one  ( open_tm_wrt_tm a (a_Var_f x) )   ( open_tm_wrt_tm a' (a_Var_f x) )  )  ->
      reduction_in_one (a_UAbs Irrel a) (a_UAbs Irrel a')
- | E_AppLeft : forall (a:tm) (rho:relflag) (b a':tm),
+ | E_AppLeft : forall (a b a':tm),
      lc_tm b ->
      reduction_in_one a a' ->
-     reduction_in_one (a_App a rho b) (a_App a' rho b)
+     reduction_in_one (a_App a Rel b) (a_App a' Rel b)
+ | E_AppLeftIrrel : forall (a a':tm),
+     reduction_in_one a a' ->
+     reduction_in_one (a_App a Irrel a_Bullet) (a_App a' Irrel a_Bullet)
  | E_CAppLeft : forall (a a':tm),
      reduction_in_one a a' ->
      reduction_in_one (a_CApp a g_Triv) (a_CApp a' g_Triv)
- | E_AppAbs : forall (rho:relflag) (v a:tm),
+ | E_AppAbs : forall (v a:tm),
+     lc_tm (a_UAbs Rel v) ->
      lc_tm a ->
-     Value  ( (a_UAbs rho v) )  ->
-     reduction_in_one (a_App  ( (a_UAbs rho v) )  rho a)  (open_tm_wrt_tm  v   a ) 
+     reduction_in_one (a_App  ( (a_UAbs Rel v) )  Rel a)  (open_tm_wrt_tm  v   a ) 
+ | E_AppAbsIrrel : forall (v:tm),
+     Value  ( (a_UAbs Irrel v) )  ->
+     reduction_in_one (a_App  ( (a_UAbs Irrel v) )  Irrel a_Bullet)  (open_tm_wrt_tm  v   a_Bullet ) 
  | E_CAppCAbs : forall (b:tm),
      lc_tm (a_UCAbs b) ->
      reduction_in_one (a_CApp  ( (a_UCAbs b) )  g_Triv)  (open_tm_wrt_co  b   g_Triv ) 

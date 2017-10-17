@@ -23,12 +23,13 @@ Require Import FcEtt.ett_value.
 (** comment *) 
 Lemma Beta_lc1 : forall a a' , Beta a a' -> lc_tm a.
   intros.  induction H; auto.
-  eapply Value_lc in H0. eauto.
+  eapply Value_lc in H. eauto.
 Qed.
 
 Lemma Beta_lc2 : forall a a' , Beta a a' -> lc_tm a'.
 intros.  induction H; auto.
-- apply Value_lc in H0. inversion H0.
+- inversion H. apply lc_body_tm_wrt_tm; auto.
+- apply Value_lc in H. inversion H.
   apply lc_body_tm_wrt_tm; auto.
 - inversion H. apply lc_body_tm_wrt_co; auto.
 - apply Toplevel_lc in H. inversion H. auto.
@@ -46,7 +47,10 @@ Proof.
     rewrite tm_subst_tm_tm_open_tm_wrt_tm; eauto 2.
     econstructor; eauto using tm_subst_tm_tm_lc_tm.
     apply tm_subst_tm_tm_lc_tm with (a2 := b) (x1:=x) in H; auto.
-    eapply Value_tm_subst_tm_tm in H1; eauto.
+  - simpl.
+    rewrite tm_subst_tm_tm_open_tm_wrt_tm; eauto 2.
+    econstructor; eauto using tm_subst_tm_tm_lc_tm.
+    eapply Value_tm_subst_tm_tm in H; eauto.
   - simpl.
     rewrite tm_subst_tm_tm_open_tm_wrt_co; eauto 2.
     simpl.
@@ -67,7 +71,10 @@ Proof.
     rewrite co_subst_co_tm_open_tm_wrt_tm; eauto 2.
     econstructor; eauto using co_subst_co_tm_lc_tm.
     apply co_subst_co_tm_lc_tm with (g1 := b) (c1:=x) in H; auto.
-    eapply Value_co_subst_co_tm in H1; eauto.
+  - simpl.
+    rewrite co_subst_co_tm_open_tm_wrt_tm; eauto 2.
+    econstructor; eauto using co_subst_co_tm_lc_tm.
+    eapply Value_co_subst_co_tm in H; eauto.
   - simpl.
     rewrite co_subst_co_tm_open_tm_wrt_co; eauto 2.
     simpl.

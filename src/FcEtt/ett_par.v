@@ -236,6 +236,7 @@ Proof.
   intros.  induction H; auto.
   - lc_solve.
   - lc_solve.
+  - lc_solve.
   - lc_toplevel_inversion.
 Qed.
 
@@ -319,7 +320,10 @@ Hint Resolve toplevel_erased1 toplevel_erased2 : erased.
 (* Introduce a hypothesis about an erased opened term. *)
 Ltac erased_body x Ea :=
     match goal with
-      [ H4 : ∀ x : atom, x `notin` ?L0 → erased_tm (open_tm_wrt_tm ?a (a_Var_f x))
+     | [ H4 : ∀ x : atom, x `notin` ?L0 → erased_tm (open_tm_wrt_tm ?a (a_Var_f x))
+                         |- _ ] =>
+      move: (H4 x ltac:(auto)) => Ea; clear H4
+     | [ H4 : ∀ x : atom, x `notin` ?L0 → erased_tm (open_tm_wrt_co ?a (g_Var_f x))
                          |- _ ] =>
       move: (H4 x ltac:(auto)) => Ea; clear H4
     end.
@@ -327,11 +331,9 @@ Ltac erased_body x Ea :=
 (* Move this to ett_ind? *)
 Ltac eta_eq y EQ :=
    match goal with
-      [ H :
-          ∀ x : atom,
-            x `notin` ?L → open_tm_wrt_tm ?a (a_Var_f x) =
+     | [ H : ∀ x : atom, x `notin` ?L → open_tm_wrt_tm ?a (a_Var_f x) =
                            a_App ?b ?rho _ |- _ ] =>
-   move: (H y ltac:(auto)) =>  EQ
+        move: (H y ltac:(auto)) =>  EQ
 end.
 
 
@@ -341,6 +343,10 @@ Proof.
   all: try solve [ erased_pick_fresh x; auto ].
   all: eauto.
   - move: (IHEp1 ltac:(auto)); inversion 1;
+    pick fresh x;
+    rewrite (tm_subst_tm_tm_intro x); auto;
+    apply subst_tm_erased; auto.
+  - move: (IHEp ltac:(auto)); inversion 1;
     pick fresh x;
     rewrite (tm_subst_tm_tm_intro x); auto;
     apply subst_tm_erased; auto.
@@ -357,10 +363,16 @@ Proof.
     rewrite E in Eaa; inversion Eaa; auto.
   - (* Eta2 *)
     eapply IHEp; auto.
-    pick fresh x;
-    erased_body x Eaa;
+    pick fresh x.
+    erased_body x Eaa.
     eta_eq x E.
     rewrite E in Eaa; inversion Eaa; auto.
+  - (* Eta3 *)
+    eapply IHEp; auto.
+    pick fresh x.
+    erased_body x Eaa.
+    rewrite H in Eaa.
+    inversion Eaa; auto. fsetdec.
 Qed.
 
 Hint Resolve Par_erased_tm : erased.
@@ -371,11 +383,10 @@ Lemma subst1 : forall b S D a a' x, Par S D a a' -> erased_tm b ->
                            Par S D (tm_subst_tm_tm a x b) (tm_subst_tm_tm a' x b).
 Proof.
   intros b S D a a' x PAR ET. induction ET; intros; simpl; auto.
-  all: try solve [Par_pick_fresh y;
+  all: try destruct rho; try solve [Par_pick_fresh y;
                   autorewrite with subst_open_var; eauto with lc].
-  destruct (x0 == x); auto.
-  Unshelve.
-  all: eauto.
+  destruct (x0 == x). Unshelve.
+  all: eauto. 
 Qed.
 
 Lemma open1 : forall b S D a a' L, Par S D a a'
@@ -421,6 +432,11 @@ Proof.
     rewrite tm_subst_tm_tm_open_tm_wrt_tm in h0; auto.
     simpl in h0.
     destruct (@eq_dec tmvar _ y x); subst; try done.
+  - Par_pick_fresh y; eauto.
+    have h1: y <> x by auto.
+    move: (H y ltac:(auto)) => h0.
+    apply (fun_cong (tm_subst_tm_tm b x)) in h0.
+    rewrite tm_subst_tm_tm_open_tm_wrt_co in h0; auto.
 Qed.
 
 
@@ -469,6 +485,19 @@ Proof.
     destruct (@eq_dec tmvar _ z x); try done.
     clear Fr. fsetdec.
     eapply Par_lc1. eauto.
+  - pick fresh y.
+    move: (H4 y ltac:(auto)) => h0.
+    move: (H2 y ltac:(auto)) => h1.
+    rewrite h1 in h0. inversion h0. subst.
+    eapply (Par_EtaC (L \u singleton x)). eauto.
+    intros z Fr0.
+    move: (H2 z ltac:(auto)) => h2.
+    apply (fun_cong (tm_subst_tm_tm b x)) in h2.
+    rewrite tm_subst_tm_tm_open_tm_wrt_co in h2.
+    simpl in h2.
+    destruct (@eq_dec tmvar _ z x); try done.
+    clear Fr. 
+    eapply Par_lc1. eauto.
 Qed.
 
 
@@ -500,6 +529,12 @@ Proof.
     apply (fun_cong (co_subst_co_tm b x)) in h1.
     rewrite co_subst_co_tm_open_tm_wrt_tm in h1.
     simpl in h1. auto. auto.
+  - pick fresh y and apply Par_EtaC; eauto.
+    move: (H y ltac:(auto)) => h1.
+    apply (fun_cong (co_subst_co_tm b x)) in h1.
+    rewrite co_subst_co_tm_open_tm_wrt_co in h1.
+    rewrite co_subst_co_co_var_neq in h1.
+    simpl in h1. auto. fsetdec. auto.
 Qed.
 
 Lemma multipar_subst3 : forall S D b b' x, erased_tm b ->

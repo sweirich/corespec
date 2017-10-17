@@ -204,7 +204,7 @@ Lemma co_subst_co_tm_lc_tm_inverse
           lc_constraint phi -> forall XX, phi = (co_subst_co_constraint g1 c1 XX) ->
           lc_constraint XX).
 Proof.
-  intros.
+  intros. 
   apply lc_tm_lc_brs_lc_co_lc_constraint_mutind.
   all: intros.
   (* simple destruct and inversion. *)
@@ -212,13 +212,13 @@ Proof.
        | [H0 : _ = _ ?g1 ?c1 ?XX |- _] =>
          destruct XX; simpl in H0; inversion H0; clear H0; subst; auto
        end.
-  all: apply_lc_exists xc;
-    match goal with
+  all: try apply_lc_exists xc;
+    try match goal with
     | [ H1 : ∀ x XX,
           _ (_ ?g1 ?c1 ?XX2) (_ x) = _ ?g1 ?c1 XX → _ XX |- _ ] =>
       eapply (H1 xc); autorewrite with subst_open; auto
     end.
-  all: rewrite co_subst_co_co_var_neq; auto.
+  all: try rewrite co_subst_co_co_var_neq; auto.
 Qed.
 
 
@@ -470,6 +470,12 @@ Ltac rewrite_body :=
     rewrite e; auto
   | [ e : ∀ x : atom, (x `notin` ?L) →  _ _ (a_Var_f x) = _ _ _ (a_Bullet) |- _ ] =>
     rewrite e; auto
+  | [ e: ∀ c : atom,
+    (c `in` ?L → False) → _ _ (g_Var_f c) = a_CApp _ _ |- _ ] =>
+    rewrite e; auto
+  | [ e: ∀ c : atom,
+    (c `notin` ?L) → _ _ (g_Var_f c) = a_CApp _ _ |- _ ] =>
+    rewrite e; auto
 
   end.
 
@@ -688,7 +694,10 @@ Ltac Par_pick_fresh x :=
             | a_UAbs _ _ =>  Par_Abs
             | a_CPi _ _  => Par_CPi
             | a_CAbs _ _ => Par_CAbs
-            | a_UCAbs _  => Par_CAbs
+            | a_UCAbs _  => match s2 with
+                                | a_UCAbs _ => Par_CAbs
+                                | _ => Par_EtaC
+                                end
            end
       in pick fresh x and apply v
   end.

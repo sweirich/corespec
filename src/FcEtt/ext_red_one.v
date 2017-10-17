@@ -74,8 +74,17 @@ Proof.
                    simpl; eauto using tm_subst_tm_tm_lc_tm,
                           tm_subst_tm_co_lc_co.
   - eapply (E_AbsTerm (L \u {{x0}})); eauto. intros x Fr.
-
     subst_helper x x0 b0.
+  - autorewrite with subst_open; eauto.
+    econstructor; eauto using tm_subst_tm_tm_lc_tm.
+    pick fresh x.
+    eapply lc_a_UAbs_exists with (x1:=x).
+    inversion H; subst. 
+    move: (H2 x) => h0.
+    replace (a_Var_f x) with (tm_subst_tm_tm b0 x0 (a_Var_f x)).
+    rewrite <- tm_subst_tm_tm_open_tm_wrt_tm; eauto.
+    apply tm_subst_tm_tm_lc_tm; eauto. 
+    apply tm_subst_tm_tm_var_neq. fsetdec.
   - autorewrite with subst_open; eauto.
     econstructor; eauto using tm_subst_tm_tm_lc_tm.
     match goal with | [ H0 : Value _ |- _ ] =>
@@ -147,6 +156,8 @@ Proof.
     move: (H0 x ltac:(auto)) => h1.
     apply h1 in h7.
     apply open_tm_wrt_tm_inj in h7; eauto. rewrite h7. auto.
+  - inversion H0.
+  - inversion H5.
   - have: (Ax a A = Ax a2 A0). eapply binds_unique; eauto using uniq_toplevel.
     move => h; inversion h; done.
 Qed.

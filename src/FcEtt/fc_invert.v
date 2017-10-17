@@ -454,18 +454,29 @@ Proof.
    exists (a_Pi rho A B), (a_Pi rho A B). eexists.
    repeat split; eauto 1.
    pick fresh x and apply An_Abs; auto.
-   rewrite e; eauto.
-   econstructor.
+   + rewrite e; eauto. econstructor.
    eapply AnnTyping_weakening with (F:=nil); simpl; eauto.
    econstructor; eauto.
    econstructor; eauto.
-   rewrite e; eauto.
+   + rewrite e; eauto.
    destruct rho. econstructor; eauto. econstructor; eauto.
    simpl. autorewcs. apply union_notin_iff. split. 
    eapply fv_tm_erase_tm. auto. auto.
 (*   rewrite e; eauto.
    econstructor. eapply lc_erase. eauto using AnnTyping_lc1. *)
-   eapply An_Refl. eauto.
+   + eapply An_Refl. eauto.
+ - assert (HG : AnnCtx G); eauto with ctx_wff.
+   assert (U1 : AnnTyping G (a_CPi phi B) a_Star).
+   eapply AnnTyping_regularity; eauto.
+   inversion U1. subst.
+   exists (a_CPi phi B), (a_CPi phi B). eexists.
+   repeat split; eauto 1. 
+   pick fresh x and apply An_CAbs; auto.
+   inversion H3; subst.
+   + rewrite e; eauto. econstructor. 
+     eapply AnnTyping_weakening with (F:=nil); simpl; eauto.
+     econstructor; eauto. econstructor; eauto. 
+   + eapply An_Refl. eauto.
  (* Left/Right
  -  exists (a_Pi rho A B), (a_Pi rho A' B'), g2. repeat split; eauto 1.
  -  exists A, A'. eexists.  repeat split; eauto 1.
