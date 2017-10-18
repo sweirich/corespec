@@ -639,19 +639,29 @@ Proof.
   apply subst4; auto.
 Qed.
 
-Lemma Par_EtaRel_exists : forall a b b' x,
-   x `notin` fv_tm_tm_tm a
+Lemma Par_EtaRel_exists : forall (G: context) D a b b' x,
+   x `notin` union (fv_tm_tm_tm a) (fv_tm_tm_tm b) ->
    Par G D b b' ->
    (open_tm_wrt_tm a (a_Var_f x)) = a_App b Rel (a_Var_f x) ->
    Par G D (a_UAbs Rel a) b'.
-Admitted.
+Proof.
+  intros G D a b b' x hi0 H0 EQ.
+  eapply (Par_Eta (singleton x)); eauto.
+  intros x0 h0. apply eta_swap with x; eauto.
+Qed.
 
 
-Lemma Par_EtaRel_close : forall b b' x,
-   x `notin` fv_tm_tm_tm b
+
+Lemma Par_EtaRel_close : forall (G: context) D b b' x,
+   x `notin` fv_tm_tm_tm b ->
    Par G D b b' ->
    Par G D (a_UAbs Rel (close_tm_wrt_tm x (a_App b Rel (a_Var_f x)))) b'.
-Admitted.
+Proof.
+   intros G D b b' x h0 H. eapply (Par_Eta (singleton x)); eauto.
+   intros x0 h1. apply eta_swap with x.
+   - rewrite fv_tm_tm_tm_close_tm_wrt_tm. simpl. fsetdec.
+   - apply open_tm_wrt_tm_close_tm_wrt_tm.
+   Qed.
 
 
 Lemma Par_open_tm_wrt_co_preservation: forall G D B1 B2 c, Par G D (open_tm_wrt_co B1 (g_Var_f c)) B2 -> exists B', B2 = open_tm_wrt_co B' (g_Var_f c) /\ Par G D (open_tm_wrt_co B1 (g_Var_f c)) (open_tm_wrt_co B' (g_Var_f c)).
