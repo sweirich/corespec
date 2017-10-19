@@ -375,27 +375,27 @@ Proof.
   - (* app cong / app beta *)
     use_size_induction a0 ac Par1 Par2.
     (* use_size_induction b bc Par3 Par4. *) 
-    invert_erased_tm (a_UAbs Irrel a').
+    invert_erased_tm (a_UAbs Irrel a');
     invert_erased_tm (a_UAbs Irrel a'0).
-    destruct (Par_Abs_inversion Par1) as [ [a'' [EQ X]] | M].
-    destruct (Par_Abs_inversion Par2) as [ [a''' [EQ' X']] | M'].
-   (* destruct (Par_Abs_inversion Par2) as [ [a'' [EQ X]] | [b0 [Par5 Y]]].*)
+    destruct (Par_Abs_inversion Par1) as [ [a'' [EQ X]] | [K | M]];
+    destruct (Par_Abs_inversion Par2) as [ [a''' [EQ' X']] | [K' | M']].
     * subst.
       exists (open_tm_wrt_tm a''' a_Bullet).
       split; eauto. 
       pick fresh x; eapply open2; eauto. inversion EQ'; subst.
       apply X. fsetdec. 
       pick fresh x; eapply open2; eauto.
-    * inversion M'.
-      ** inversion H7. inversion H9. inversion H11. inversion H13.
-      ** exists (a_App ac Irrel a_Bullet).
-      split;
-      eauto; inversion H7; inversion H9; inversion H11.
-      admit. eta_expand x0.
-    (* * exists (a_App ac rho bc).
-      split.
-      eauto.
-      eta_expand x. *)
+    * inversion K'. inversion H7. inversion H10. inversion H12.
+    * admit.
+    * inversion K. inversion H7. inversion H10. inversion H12.
+    * inversion K. inversion H7. inversion H10. inversion H12.
+    * inversion K. inversion H7. inversion H10. inversion H12.
+    * admit.
+    * inversion K'. inversion H7. inversion H10. inversion H12.
+    * exists (a_App ac Irrel a_Bullet). split.
+      inversion M. inversion H7. inversion H10. inversion H12.
+      eta_expand x0. inversion M'. inversion H7. inversion H10. inversion H12.
+      eta_expand x0.
   - (* app cong / app cong *)
     use_size_induction a0 ac Par1 Par2.
     use_size_induction b bc Par3 Par4.
