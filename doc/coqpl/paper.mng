@@ -206,7 +206,13 @@ Par_Eta : forall a b x,
   Par (abs (close x (app a (var_f x)))) b
 \end{verbatim}
 
+TODO: explain why they work
 
+
+\section{Lessons learned}
+- With some infrastructure, it can actually be quite quick to mechanize (not an absurdly longer time than on paper), which makes it quite useful provided the confidence
+
+- Mecha (and coq in particular) becomes a critical enabler in the study of such complex, intricate, but interesting languages. Esp. for a compiler, having a internal lang with a mechanized metatheory is quite cool
 
 \end{document}
 
