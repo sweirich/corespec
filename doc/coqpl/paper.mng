@@ -134,7 +134,31 @@ abstract
 %% Our running head is too long for acmsmall
 \renewcommand{\shortauthors}{Weirich, Voizard}
 
+Disclaimer: the current prose will need a loooot of refinement/improvement
+
 \section{Introduction}
+
+The Corespec project is a large (large?) scale mechanization in Coq of the metatheory of System D and System DC,
+two related, dependently-typed languages aimed at replacing GHC's internal language, Core. In this talk, we propose to
+take a look at this development through the lens of a recent addition to it, some of the $\eta$-reduction rules. In
+particular, this will allow us to explore (better word?) how the locally nameless variable-binding representation
+works in practice for mechanized metatheory.
+
+\section{Corespec}
+The idea behind Corespec is to provide a replacement for GHC Core that supports full spectrum dependent types.
+In particular, this requires untangling the notions of type on the one hand and of erasable component (computationally irrelevant)
+on the other - which current GHC essentially conflates.
+
+The problem with such design is that the resulting language(s), combining several important features (dependent types, irrelevance,
+explicit type coercions, non-termination) is/are quite complex, with a design tricky to get precisely right. This is the main reason why
+mechanizing our formalization in Coq has been invaluable in getting strong confidence in our results, but also in designing the system
+in the first place. TODO: should say we designed directly in Coq, not mechanized afterwards
+
+Potential ideas: the "breaking the design + recompiling" methodology
+
+\subsection{Locally Nameless representation}
+Used a LN repr, With Ott and Lngen, Ott: Coq definitions from high level specification, Lngen: deriving maaany helper lemmas about the representation
+
 
 How do we specify eta-reduction using the locally nameless representation?
 
@@ -182,7 +206,13 @@ Par_Eta : forall a b x,
   Par (abs (close x (app a (var_f x)))) b
 \end{verbatim}
 
+TODO: explain why they work
 
+
+\section{Lessons learned}
+- With some infrastructure, it can actually be quite quick to mechanize (not an absurdly longer time than on paper), which makes it quite useful provided the confidence
+
+- Mecha (and coq in particular) becomes a critical enabler in the study of such complex, intricate, but interesting languages. Esp. for a compiler, having a internal lang with a mechanized metatheory is quite cool
 
 \end{document}
 
