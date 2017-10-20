@@ -163,69 +163,141 @@ the notions of type on the one hand and of erasable component (computationally
 irrelevant) on the other - which current GHC essentially conflates.
 
 As part of this process, the Corespec project developed two related
-dependently-typed languages:
-System D and System DC. The former includes only computationally relevant
-information in its syntax; the latter includes much more: typing annotations, irrelevant
-arguments, and coercions in support of decidable type checking.
+dependently-typed languages: System D and System DC. The former is Curry-style
+and includes only computationally relevant information in its syntax; the
+latter includes much more: typing annotations, irrelevant arguments, and
+coercions in support of decidable type checking. As these annotations are
+complex, the implicit language provides an uncluttered specification of the
+semantics of the language as well as an simplified context for certain parts
+of the metatheory.
 
-The problem with such design (which design?) is that the resulting language(s), which combine several important features (dependent types, irrelevance,
-explicit type coercions, non-termination) is/are quite complex, with a design tricky to get precisely right. This is the main reason why
-mechanizing our formalization in Coq has been invaluable in getting strong confidence in our results, but also in designing the system
-in the first place (although we were also building on previous results).
-In particular, it is important to note that the mechanization was no afterthought -
-we designed these new languages while mechanizing their metatheory.
+We have shown that these two languages are related via annotation and erasure
+theorems. That means that our progress result about System D can be translated
+to System DC through the first theorem, and the preservation result of System
+DC can be similarly translated to System D via the second.
 
-\scw{That is only sort-of true. There were many many papers about FC that we
-  drew from. Even though this was a differnt system, and mechanization lead to
-new designs, such as AnRefl2, we weren't working from scratch.}
-\av{Well, I agree with you, but I don't really see how this goes against the current version..? I tried changing it a bit, is that better?}
-Potential ideas: the "breaking the design + recompiling" methodology
+Our Coq formalization has been invaluable both in the confidence that it gives
+us in our results, but also in the design of the system in the first
+place. Although Systems D and DC draw on prior
+work~\cite{eisenberg:phd,gundry:phd,weirich:dwk}, we designed this language in
+conjunction with its mechanization.
+
+After completing the initial design, which we reported in ICFP 2017, we have
+been extending the equational theory with rules for $\eta$-equivalence. For
+this part of the project, we have been joined by Kravchuk-Kirilyuk who did not
+participate in the original design.
+
+\av{Potential ideas: the "breaking the design + recompiling" methodology}
 
 \scw{We need to explain much more precisely about what definitions are
   provided by Ott, what lemmas are provided by
   lngen, and what we actually proved.  maybe pick some representative
   lemmas such as confluence to state?}
 
-\subsection{Locally Nameless representation}
-To represent variable bindings, we have use a locally nameless encoding in this project.~\cite{aydemir:popl-binders}
-In this representation, bound variables use de Bruijn indices while free variables use explicit names instead.
-\av{Do we need to explain briefly what that is?}\scw{yes a bit}
+\subsection{Tool support for Locally Nameless representation}
+Our formalization of Systems D and DC uses a locally nameless representation
+for variable binding, and employs co-finite
+quantification~\cite{aydemir:popl-binders} in the rules that manipulate
+binders.
 
-To help us manipulate the representation more conveniently, we have relied on 2 main tools.
+Our choice was strongly influenced by the availability of two tools:
 
-The first, Ott~\cite{Ott}, is a specification tool that makes it easier to define programming languages. One can think of it as a compiler for its specification language.
-It takes as input rules of the shape as shown below \av{ref} -
-that is, an user-definable ascii representation of the syntax, judgment and rules of the language. It outputs a representation of it in another
-format - for instance, \LaTeX, or Coq with a locally-nameless representation (abbreviated Coq/LN in the following). \av{bad sentence}.
-For instance, rule \av{refs} XXXX as show in figure XXXX
-gets compiled to the case XXXX shown in figure XXXXX (this is a constructor of the inductive type that ott defines to represent the reduction judgment).
+The first, Ott~\cite{Ott}, is a specification tool for programming languages
+semantics. One can think of it as a compiler for its specification language.
+It takes as input rules of the shape as shown below \av{ref} - that is, an
+user-definable ascii representation of the syntax, judgment and rules of the
+language. It outputs a representation of it in another format - for instance,
+\LaTeX, or Coq with a locally-nameless representation (abbreviated Coq/LN in
+the following). \av{bad sentence}.
 
-The second tool, LNgen~\cite{aydemir:lngen}, is a complement to Ott when used to output Coq/LN.
-It derives a large amount of helper lemmas about the Coq/LN code that Ott generated.
-For instance, \av{What? Should we mention close?}
-In almost any reasoning about LN terms, one needs to rely on some of these lemmas to keep the proofs manageable and high-level. \av{Not great}
+For example, when using Ott for a simplified version of the language (here
+simply the $\lambda$-calculus), one obtains the following inductive type to
+represent the syntax:
+\begin{verbatim}
+Induction exp :=
+   | var_f : atom -> exp
+   | var_b : nat -> exp
+   | abs   : exp -> exp
+   | app   : exp -> exp -> exp
+\end{verbatim}
+As expected, we get a locally nameless representation: variables have 2
+constructors, one for bound variables that uses a de Bruijn representation,
+and another for free variables that relies on a set of names (\verb!atom!).
+
+Ott also translates rule specifications of inductive definitions to a Coq
+inductive datatype.  For instance, rule \av{refs} XXXX as show in figure XXXX
+gets compiled to the case XXXX shown in figure XXXXX (this is a constructor of
+the inductive type that ott defines to represent the reduction judgment). Ott
+also automatically defines operations for free variable calculation (called
+|fv|, free variable substitution (called |subst|) and bound variable
+substitution (called |open|).
+
+The second tool, LNgen~\cite{aydemir:lngen}, is a complement to Ott when used
+to output Coq/LN.  This tool uses the same specification to derive additional
+definitions and helper lemmas about the Coq/LN code that Ott generated.  For
+instance, \av{What? Should we mention close?}  In almost any reasoning about
+LN terms, these lemmas keep the proofs manageable and high-level. \av{Not
+  great}
+
+For example, one lemma generated by LNgen asserts that
+\begin{verbatim}
+Lemma subst_fresh :
+   forall x, x `notin` fv e -> subst x e = e.
+\end{verbatim}
+
+\section{Case study: Eta reduction}
+One part of extending Systems D and DC with eta-eqivalence rules requires
+proving the confluence of a parallel reduction system extended with rules for
+\emph{eta-reduction}. This confluence proof justifies the consistency of the
+type equivalence rules of our language and is the main component of our
+canonical forms theorem.
+
+Our Ott specification of this rule, in ASCII syntax, appears in Figure
+\ref{fig:ott-eta}.
+\begin{figure}[h]
+\begin{verbatim}
+ |- b => b'
+ a = b x
+----------------------------- :: Eta
+ |- \ x. a => b'
+\end{verbatim}
+\caption{Ott input for rule Eta}
+\label{fig:ott-eta}
+\end{figure}
+
+At first glance, this rule seems a bit strange. What has become of the
+free variable condition (\verb|x `notin` fv b|)  required by Eta-reduction?
+
+When we look at the generated Coq definition, it is also not immediately
+obvious that \verb|x| is not allowed to appear in \verb|b|. Here is the
+here is the case (constructor)
+generated for the $\eta$ rule above:
+\begin{verbatim}
+Par_Eta : forall (L:vars) (a b b' : Exp),
+  Par b b' ->
+  (forall x, x notin L -> open a x = app b x) ->
+  Par (abs a) b'
+\end{verbatim}
+This rule is on constructor of the \verb|Par| inductive type that specifies
+the parallel reduction relation \verb||= b => b'|.  This rule also relies on
+co-finite quantification: the second premise generalizes over the complement
+of \verb!L!, an universally quantified finite set.
+It is in this quantification that enforces the free variable
+condition. Because \verb|b| is quantified at the outer most level of the type, it
+cannot depend on the variable \verb|x|.
 
 
-How do we specify eta-reduction using the locally nameless representation?
-
-As part of a larger proof development, we added eta reduction using the
-following rule:
-
-...
 
 \scw{This rule captures the free variable condition because it allows x to
   appear in a (because a is under the binder \\x) but x cannot appear in b
 (because b doesn't appear under the binder).}
 
-\section{Case study: Eta}
 
-Here is how we represent the $\eta$-reduction (in the parallel reduction relation) in a simplified version of the language:
-\begin{verbatim}
- |- b => b'
-a = b x
------------------------------ :: Eta
- |- \ x. a => b'
-\end{verbatim}
+
+
+Here is how we represent the $\eta$-reduction (in the parallel reduction
+relation) in a simplified version of the language:
+
 This should look somewhat unusual. Indeed, why are we not asserting that $[[x `notin` fv b]]$?
 The answer is, this condition \emph{is} actually enforced, although somewhat indirectly. Notice that, in
 the conclusion, $[[a]]$ appears under the binder. This prompts Ott to output a definition in which $[[x]]$ can
@@ -240,35 +312,14 @@ appear in $[[b]]$. This results in the proper semantics for this rule.
 Despite this, one might rightly (\av{rightly?}) wonder why we are not using this more direct version of the rule instead:
 \begin{verbatim}
  |- b => b'
-x `notin` fv b
------------------------------ :: EtaPaper?
+  x `notin` fv b
+----------------------------- :: EtaNaive
  |- \ x. b x => b'
 \end{verbatim}
 The answer is simple: the LN backend of Ott unfortunately can't handle that definition. \av{Not proud of the writing}
 
 
-When using Ott for a simplified version of the language (here simply the $\lambda$-calculus), one obtains the following
-inductive type to represent the syntax:
-\begin{verbatim}
-Induction exp :=
-   | var_f : atom -> exp
-   | var_b : nat -> exp
-   | abs   : exp -> exp
-   | app   : exp -> exp -> exp
-\end{verbatim}
-As expected, we get a locally nameless representation: variables have 2 constructors, one for bound variables that
-uses a de Bruijn representation, and another for free variables that relies on a set of names (\verb!atom!).
 
-Ott outputs another inductive type that represents the parallel reduction judgment; here is the case (constructor)
-generated for the $\eta$ rule above:
-\begin{verbatim}
-Par_Eta : forall (L:vars) (a b b' : Exp),
-  Par b b' ->
-  (forall x, x notin L -> open a x = app b x) ->
-  Par (abs a) b'
-\end{verbatim}
-It relies on the co-finite quantification over the complement of \verb!L!, an universally quantified finite set.
-\av{Todo: explain the spirit of this representation}
 
 
 While this version works well for backward reasoning, it is quite horrible to use in forward reasoning,
