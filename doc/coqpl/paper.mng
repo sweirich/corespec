@@ -58,6 +58,7 @@
 
 
 \newif\ifcomments
+\commentstrue
 \ifcomments
 \newcommand{\scw}[1]{\textcolor{blue}{{SCW: #1}}}
 \newcommand{\rae}[1]{\textcolor{magenta}{{RAE: #1}}}
@@ -152,9 +153,18 @@ on the other - which current GHC essentially conflates.
 The problem with such design is that the resulting language(s), combining several important features (dependent types, irrelevance,
 explicit type coercions, non-termination) is/are quite complex, with a design tricky to get precisely right. This is the main reason why
 mechanizing our formalization in Coq has been invaluable in getting strong confidence in our results, but also in designing the system
-in the first place. TODO: should say we designed directly in Coq, not mechanized afterwards
+in the first place. TODO: should say we designed directly in Coq, not
+mechanized afterwards
+\scw{That is only sort-of true. There were many many papers about FC that we
+  drew from. Even though this was a differnt system, and mechanization lead to
+new designs, such as AnRefl2, we weren't working from scratch.}
 
 Potential ideas: the "breaking the design + recompiling" methodology
+
+\scw{We need to explain much more precisely about what definitions are
+  provided by Ott, what lemmas are provided by
+  lngen, and what we actually proved.  maybe pick some representative
+  lemmas such as confluence to state?}
 
 \subsection{Locally Nameless representation}
 Used a LN repr, With Ott and Lngen, Ott: Coq definitions from high level specification, Lngen: deriving maaany helper lemmas about the representation
@@ -167,12 +177,27 @@ following rule:
 
 ...
 
+\scw{This rule captures the free variable condition because it allows x to
+  appear in a (because a is under the binder \\x) but x cannot appear in b
+(because b doesn't appear under the binder).}
+
 \begin{verbatim}
  |- b => b'
 a = b x
 ----------------------------- :: Eta
  |- \ x. a => b'
 \end{verbatim}
+
+\scw{Here is the rule that we might imagine writing in Ott. Sadly, it is
+  outside the scope of what the LN backend for Ott can handle.  }
+
+\begin{verbatim}
+ |- b => b'
+x `notin` fv b
+----------------------------- :: EtaPaper?
+ |- \ x. b x => b'
+\end{verbatim}
+
 
 \begin{verbatim}
 Induction exp :=
@@ -202,17 +227,47 @@ Par_Eta : forall a b b' x,
 Alternative close version
 \begin{verbatim}
 Par_Eta : forall a b x,
-  Par b b ->
+  Par a b ->
   Par (abs (close x (app a (var_f x)))) b
 \end{verbatim}
 
 TODO: explain why they work
 
 
+
 \section{Lessons learned}
+\scw{These lessons are far too general for coqpl.  that group already believes in
+  the benefit of mechanization, so won't be impressed by general statements
+  about the usefulness of coq for pl. }
 - With some infrastructure, it can actually be quite quick to mechanize (not an absurdly longer time than on paper), which makes it quite useful provided the confidence
 
-- Mecha (and coq in particular) becomes a critical enabler in the study of such complex, intricate, but interesting languages. Esp. for a compiler, having a internal lang with a mechanized metatheory is quite cool
+- Mecha (and coq in particular) becomes a critical enabler in the study of
+such complex, intricate, but interesting languages. Esp. for a compiler,
+having a internal lang with a mechanized metatheory is quite cool
+
+
+\scw{Here's how to make it concrete: we can mention the inversion lemma that
+  doesn't hold. Not only is this something that surprised me, but it is also
+  good to know that we don't need it to hold.}
+\begin{lemma}[Inversion]
+if $[[G |= \x.b x : Pi x : A.B ]]$ and $[[ x `notin` fv b]]$ then $[[ G |= b :
+Pi x:A.B ]]$.
+\end{lemma}
+The lemma fails because the erased language only mentions variables in
+computationally relevant positions. However, we could have used x implicitly,
+such as in instantiating a polymorphic function.
+
+Because this lemma doesn't hold, our parallel reduction relation does not have
+the preservation property. The rule above allows the term to reduce, in some
+cases to an ill-typed term.  However, none of the rest of the metatheory
+relies on preservation for parallel reduction---and we can verify that easily
+with the proof scripts.
+
+- Collaboration benefit: we were able to bring in a new collaborator (Ana)
+after all of the proofs were done, and she could make progress without having
+to understand the entire development. \scw{Ana, can you say anything specific
+about joining this scale of project?}
+
 
 \end{document}
 
