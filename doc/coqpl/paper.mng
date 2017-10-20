@@ -126,8 +126,21 @@
 }
 \email{voizard@seas.upenn.edu}
 
+\author{Anastasiya Kravchuk-Kirilyuk}
+\affiliation{
+  \position{}
+  \department{}              %% \department is recommended
+  \institution{University of Pennsylvania}            %% \institution is required
+  \streetaddress{}
+  \city{}
+  \state{}
+  \postcode{}
+  \country{USA}
+}
+\email{akravc@sas.upenn.edu}
+
 \begin{abstract}
-abstract
+abstract - do we need one? Is a good introduction enough?
 \end{abstract}
 
 \maketitle
@@ -139,18 +152,20 @@ Disclaimer: the current prose will need a loooot of refinement/improvement
 
 \section{Introduction}
 
-The Corespec project is a large (large?) scale mechanization in Coq of the metatheory of System D and System DC,
-two related, dependently-typed languages aimed at replacing GHC's internal language, Core. In this talk, we propose to
-take a look at this development through the lens of a recent addition to it, some of the $\eta$-reduction rules. In
-particular, this will allow us to explore (better word?) how the locally nameless variable-binding representation
-works in practice for mechanized metatheory.
+%% first sentence sounds long - need to break it up a bit.
+
+The Corespec project is an extensive  mechanization in Coq of the metatheory of System D and System DC,
+two related, dependently-typed languages aimed at replacing GHC's internal language, Core. In this talk, we 
+take a fresh (?) look at our development through the lens of a recent addition, the $\eta$-reduction rules. In
+particular, this will allow us to explore (?) the practical application of locally nameless variable-binding representation 
+for mechanized metatheory.
 
 \section{Corespec}
 The idea behind Corespec is to provide a replacement for GHC Core that supports full spectrum dependent types.
-In particular, this requires untangling the notions of type on the one hand and of erasable component (computationally irrelevant)
+Specifically, this requires untangling the notions of type on the one hand and of erasable component (computationally irrelevant)
 on the other - which current GHC essentially conflates.
 
-The problem with such design is that the resulting language(s), combining several important features (dependent types, irrelevance,
+The problem with such design (which design?) is that the resulting language(s), which combine several important features (dependent types, irrelevance,
 explicit type coercions, non-termination) is/are quite complex, with a design tricky to get precisely right. This is the main reason why
 mechanizing our formalization in Coq has been invaluable in getting strong confidence in our results, but also in designing the system
 in the first place (although we were also building on previous results).
@@ -161,7 +176,6 @@ we designed these new languages while mechanizing their metatheory.
   drew from. Even though this was a differnt system, and mechanization lead to
 new designs, such as AnRefl2, we weren't working from scratch.}
 \av{Well, I agree with you, but I don't really see how this goes against the current version..? I tried changing it a bit, is that better?}
-
 Potential ideas: the "breaking the design + recompiling" methodology
 
 \scw{We need to explain much more precisely about what definitions are
