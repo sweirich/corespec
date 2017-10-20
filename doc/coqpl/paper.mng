@@ -140,32 +140,33 @@
 \email{akravc@sas.upenn.edu}
 
 \begin{abstract}
-abstract - do we need one? Is a good introduction enough?
-\scw{Two sentences}
+
+The Corespec project is an extensive mechanization in Coq of the metatheory of
+System D and System DC, two related, dependently-typed languages aimed at
+replacing the GHC's internal language, Core~\cite{ghc}. In this talk, we take
+a retrospective look at our development through the lens of a recent addition,
+$\eta$-equivalence. In particular, we describe our experience with the
+practical application of locally nameless variable-binding representation for
+mechanized metatheory, supported by the Ott and LNgen tools.
 \end{abstract}
 
 \maketitle
 
 %% Our running head is too long for acmsmall
-\renewcommand{\shortauthors}{Weirich, Voizard}
-
-Disclaimer: the current prose will need a loooot of refinement/improvement
-
-\section{Introduction}
-
-%% first sentence sounds long - need to break it up a bit.
-
-
-The Corespec project~\cite{Weirich:systemd} is an extensive  mechanization in Coq of the metatheory of System D and System DC,
-two related, dependently-typed languages aimed at replacing GHC's internal language, Core. In this talk, we
-take a fresh (?) look at our development through the lens of a recent addition, the $\eta$-reduction rules. In
-particular, this will allow us to explore (?) the practical application of locally nameless variable-binding representation
-for mechanized metatheory.
+\renewcommand{\shortauthors}{Weirich, Voizard, Kravchuk-Kirilyuk}
 
 \section{Corespec}
-The idea behind Corespec is to provide a replacement for GHC Core that supports full spectrum dependent types.
-Specifically, this requires untangling the notions of type on the one hand and of erasable component (computationally irrelevant)
-on the other - which current GHC essentially conflates.
+The idea behind the Corespec project is to provide a replacement for GHC's
+Core language FC~\cite{fc} that supports full spectrum dependent
+types~\cite{Weirich:systemd} .  Specifically, this project required untangling
+the notions of type on the one hand and of erasable component (computationally
+irrelevant) on the other - which current GHC essentially conflates.
+
+As part of this process, the Corespec project developed two related
+dependently-typed languages:
+System D and System DC. The former includes only computationally relevant
+information in its syntax; the latter includes much more: typing annotations, irrelevant
+arguments, and coercions in support of decidable type checking.
 
 The problem with such design (which design?) is that the resulting language(s), which combine several important features (dependent types, irrelevance,
 explicit type coercions, non-termination) is/are quite complex, with a design tricky to get precisely right. This is the main reason why
