@@ -357,7 +357,17 @@ in some cases to an ill-typed term.  However, none of the rest of the
 metatheory relies on preservation for parallel reduction---and we can verify
 that easily with our existing proof development.
 
+This development also relies strongly on the tool support provided by Ott and
+LNgen. Because we have formalized the rules of the complete system using the
+Ott tool, the semantics that appears typeset in our paper exactly corresponds
+to the rules that we did our proofs about in Coq. Furthermore, the extensive
+library of lemmas and definitions provided by LNgen were essential to our
+development. \scw{say more ... how big is the library. how much did we use it?}
 
+\scw{Say that we wouldn't do something like this without tool support. Maybe
+  cite autosubst \url{https://www.ps.uni-saarland.de/autosubst/} and needle
+  and knot (steven Kuechel) as other examples of tools for Coq-based variable
+  binding.}
 
 \bibliography{../icfp17/weirich.bib,../icfp17/proposal.bib,../icfp17/rae.bib,coqpl.bib}
 
