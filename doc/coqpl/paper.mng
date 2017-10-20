@@ -333,14 +333,16 @@ Lngen provides several lemmas to easily rewrite interactions of \verb!open! and 
 a good check on the meaning of what we're defining. \av{bad writing...}
 
 \section{Lessons learned}
-\scw{These lessons are far too general for coqpl.  that group already believes in
-  the benefit of mechanization, so won't be impressed by general statements
-  about the usefulness of coq for pl. } \av{Ok}
+Overall, we have been very happy with the use of Coq and the related tools
+for our development. In particular, the mechanization of
+Systems D and DC has made it easier to include new collaborators when
+considering extensions of the system. In this case, KK could make progress on
+this task without having to understand the entire development.
 
-
-\scw{Here's how to make it concrete: we can mention the inversion lemma that
-  doesn't hold. Not only is this something that surprised me, but it is also
-  good to know that we don't need it to hold.}
+Furthermore, we also appreciated the confidence that Coq provides in our
+reasoning. For example, our initial design of our $\eta$-equivalence rule
+dependend on the following inversion lemma, which sadly, does not hold in
+System D, for subtle reasons.
 \begin{lemma}[Inversion]
 if $[[G |= \x.b x : Pi x : A.B ]]$ and $[[ x `notin` fv b]]$ then $[[ G |= b :
 Pi x:A.B ]]$.
@@ -349,16 +351,12 @@ The lemma fails because the erased language only mentions variables in
 computationally relevant positions. However, we could have used x implicitly,
 such as in instantiating a polymorphic function.
 
-Because this lemma doesn't hold, our parallel reduction relation does not have
-the preservation property. The rule above allows the term to reduce, in some
-cases to an ill-typed term.  However, none of the rest of the metatheory
-relies on preservation for parallel reduction---and we can verify that easily
-with the proof scripts.
+Because this lemma doesn't hold, our untyped parallel reduction relation does
+not have the preservation property. The rule above allows the term to reduce,
+in some cases to an ill-typed term.  However, none of the rest of the
+metatheory relies on preservation for parallel reduction---and we can verify
+that easily with our existing proof development.
 
-- Collaboration benefit: we were able to bring in a new collaborator (Ana)
-after all of the proofs were done, and she could make progress without having
-to understand the entire development. \scw{Ana, can you say anything specific
-about joining this scale of project?}
 
 
 \bibliography{../icfp17/weirich.bib,../icfp17/proposal.bib,../icfp17/rae.bib,coqpl.bib}
