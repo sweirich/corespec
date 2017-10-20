@@ -155,9 +155,9 @@ Disclaimer: the current prose will need a loooot of refinement/improvement
 %% first sentence sounds long - need to break it up a bit.
 
 The Corespec project is an extensive  mechanization in Coq of the metatheory of System D and System DC,
-two related, dependently-typed languages aimed at replacing GHC's internal language, Core. In this talk, we 
+two related, dependently-typed languages aimed at replacing GHC's internal language, Core. In this talk, we
 take a fresh (?) look at our development through the lens of a recent addition, the $\eta$-reduction rules. In
-particular, this will allow us to explore (?) the practical application of locally nameless variable-binding representation 
+particular, this will allow us to explore (?) the practical application of locally nameless variable-binding representation
 for mechanized metatheory.
 
 \section{Corespec}
@@ -185,20 +185,22 @@ Potential ideas: the "breaking the design + recompiling" methodology
 
 \subsection{Locally Nameless representation}
 To represent variable bindings, we have use a locally nameless encoding in this project.
-\av{Do we need to explain briefly what that is?}
+In this representation, bound variables use de Bruijn indices while free variables use explicit names instead.
 
 To help us manipulate the representation more conveniently, we have relied on 2 main tools.
 
 The first, Ott, is a specification tool that makes it easier to define programming languages. One can think of it as a compiler for its specification language.
 It takes as input rules of the shape as shown below \av{ref} -
-that is, an user-definable ascii representation of the syntax, judgment and rules of the language. It outputs a representation of it in another
+that is, an user-definable ascii representation of the syntax, judgment and rules of the language.
+It outputs a representation of it in another
 format - for instance, \latex, or Coq with a locally-nameless representation (abbreviated Coq/LN in the following). \av{bad sentence}.
 For instance, rule \av{refs} XXXX as show in figure XXXX
 gets compiled to the case XXXX shown in figure XXXXX (this is a constructor of the inductive type that ott defines to represent the reduction judgment).
 
-The second tool, Lngen, is a complement to Ott when used to output Coq/LN. It derives a large amount of helper lemmas about the Coq/LN code that Ott generated.
+The second tool, Lngen, is a complement to Ott when used to output Coq/LN.
+It derives a large amount of helper lemmas about the Coq/LN code that Ott generated.
 For instance, \av{What? Should we mention close?}
-In almost any reasoning about LN terms, one need to rely on some of these lemmas to keep the proofs manageable and high-level. \av{Not great}
+In almost any reasoning about LN terms, one needs to rely on some of these lemmas to keep the proofs manageable and high-level. \av{Not great}
 
 
 How do we specify eta-reduction using the locally nameless representation?
