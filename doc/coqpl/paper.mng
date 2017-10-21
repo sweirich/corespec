@@ -97,7 +97,8 @@
 \begin{document}
 
 
-\title{A specification of eta-equivalence in LNrep}
+%\title{A specification of eta-equivalence in LNrep}
+\title{Locally Nameless Eta-equivalence}
 
 \author{Stephanie Weirich}
 \orcid{0000-0002-6756-9168}
@@ -143,7 +144,7 @@
 
 The Corespec project is an extensive mechanization in Coq of the metatheory of
 System D and System DC, two related, dependently-typed languages aimed at
-replacing the GHC's internal language, Core~\cite{ghc}. In this talk, we take
+replacing the GHC's internal language, Core~\cite{ghc-core-spec}. In this talk, we take
 a retrospective look at our development through the lens of a recent addition,
 $\eta$-equivalence. In particular, we describe our experience with the
 practical application of locally nameless variable-binding representation for
@@ -157,7 +158,7 @@ mechanized metatheory, supported by the Ott and LNgen tools.
 
 \section{Corespec}
 The idea behind the Corespec project is to provide a replacement for GHC's
-Core language FC~\cite{fc} that supports full spectrum dependent
+Core language FC~\cite{systemfc} that supports full spectrum dependent
 types~\cite{Weirich:systemd} .  Specifically, this project required untangling
 the notions of type on the one hand and of erasable component (computationally
 irrelevant) on the other - which current GHC essentially conflates.
@@ -350,8 +351,8 @@ reasoning. For example, our initial design of our $\eta$-equivalence rule
 depended on the following inversion lemma, which sadly, does not hold in
 System D, for subtle reasons.
 \begin{lemma}[Inversion]
-if $[[G |= \x.b x : Pi x : A.B ]]$ and $[[ x `notin` fv b]]$ then $[[ G |= b :
-Pi x:A.B ]]$.
+if $[[G |= \x.b x : all rho x : A -> B ]]$ and $[[x notin fv b]]\,$ then
+$[[ G |= b : all rho x:A -> B ]]$.
 \end{lemma}
 % The lemma fails because the erased language only mentions variables in
 % computationally relevant positions. However, we could have used x implicitly,
@@ -372,10 +373,14 @@ library of lemmas and definitions provided by LNgen were essential to our
 development. % \scw{say more ... how big is the library. how much did we use it?}
 
 Tool support has been critical to this project's very existence. Other
-\scw{Say that we wouldn't do something like this without tool support. Maybe
-  cite autosubst \url{https://www.ps.uni-saarland.de/autosubst/} and needle
-  and knot (steven Kuechel) as other examples of tools for Coq-based variable
-  binding.}
+sets of tools exist to deal with variable binding in Coq, such as
+Autosubst ~\cite{SchaeferEtAl:2015:Autosubst:-Reasoning} or
+Needle and Knot \cite{keuchel2016needle}.
+
+%\scw{Say that we wouldn't do something like this without tool support. Maybe
+%  cite autosubst \url{https://www.ps.uni-saarland.de/autosubst/} and needle
+%  and knot (steven Kuechel) as other examples of tools for Coq-based variable
+%  binding.}
 
 \bibliography{../icfp17/weirich.bib,../icfp17/proposal.bib,../icfp17/rae.bib,coqpl.bib}
 
