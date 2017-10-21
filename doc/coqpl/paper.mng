@@ -98,7 +98,7 @@
 
 
 %\title{A specification of eta-equivalence in LNrep}
-\title{Locally Nameless Eta-equivalence}
+\title{Locally Nameless at Scale}
 
 \author{Stephanie Weirich}
 \orcid{0000-0002-6756-9168}
@@ -249,7 +249,7 @@ Lemma subst_fresh :
 % Looks like there needs to be more written about this lemma or otherwise why have it at all?
 
 \section{Case study: Eta reduction}
-One part of extending Systems D and DC with eta-eqivalence rules requires
+One part of extending Systems D and DC with eta-equivalence rules requires
 proving the confluence of a parallel reduction system extended with rules for
 \emph{eta-reduction}. This confluence proof justifies the consistency of the
 type equivalence rules of our language and is the main component of our
