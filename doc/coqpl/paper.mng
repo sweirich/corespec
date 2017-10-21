@@ -169,7 +169,7 @@ dependently-typed languages: System D and System DC. The former is Curry-style
 and includes only computationally relevant information in its syntax; the
 latter includes much more: typing annotations, irrelevant arguments, and
 coercions in support of decidable type checking. Thus, the implicit language provides an uncluttered specification of the
-semantics of the language as well as an simplified context for certain parts
+semantics of the language as well as a simplified context for certain parts
 of the metatheory.
 
 We have shown that these two languages are related via annotation and erasure
@@ -208,7 +208,7 @@ It takes as input rules
 similar to the one in figure \ref{fig:ott-eta}
 %of the shape as shown below
 - that is, a
-user-definable ascii representation of the syntax, judgment, and rules of the
+user-definable ASCII representation of the syntax, judgment, and rules of the
 language. Ott compiles this to a representation in another format - for instance,
 \LaTeX, or Coq with a locally-nameless representation (Coq/LN in
 the following).
