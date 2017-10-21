@@ -285,7 +285,7 @@ Par_Eta : forall (L:vars) (a b b' : Exp),
   Par (abs a) b'
 \end{verbatim}
 % this next paragraph could be shortened but I don't understand it so idk how to condense it
-This rule is a specification of eta-equivalence within the parallel reduction relation (Par).
+This rule is the constructor of eta-equivalence within the parallel reduction relation (\verb!Par!).
 It relies on
 co-finite quantification: the second premise generalizes over the complement
 of \verb!L!, a universally quantified finite set. This means
