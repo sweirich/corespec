@@ -72,15 +72,17 @@ Inductive sort : Set :=  (*r binding classifier *)
  | Tm (A:tm) (R:role)
  | Co (phi:constraint).
 
-Inductive sig_sort : Set :=  (*r signature classifier *)
- | Cs (A:tm)
- | Ax (a:tm) (A:tm) (R:role).
-
 Definition context : Set := list ( atom * sort ).
 
 Definition sig : Set := list (atom * sig_sort).
 
 Definition available_props : Type := atoms.
+
+Definition role_context : Set := list ( atom * role ).
+
+Inductive sig_sort : Set :=  (*r signature classifier *)
+ | Cs (A:tm)
+ | Ax (a:tm) (A:tm) (R:role).
 
 (* EXPERIMENTAL *)
 (** auxiliary functions on the new list types *)
@@ -922,43 +924,46 @@ Inductive consistent : tm -> tm -> Prop :=    (* defn consistent *)
      consistent a b.
 
 (* defns Jerased *)
-Inductive erased_tm : tm -> Prop :=    (* defn erased_tm *)
- | erased_a_Bullet : 
-     erased_tm a_Bullet
- | erased_a_Star : 
-     erased_tm a_Star
- | erased_a_Var : forall (x:tmvar),
-     erased_tm (a_Var_f x)
- | erased_a_Abs : forall (L:vars) (rho:relflag) (R1:role) (a:tm),
-      ( forall x , x \notin  L  -> erased_tm  ( open_tm_wrt_tm a (a_Var_f x) )  )  ->
-     erased_tm  ( (a_UAbs rho R1 a) ) 
- | erased_a_App : forall (a:tm) (rho:relflag) (R1:role) (b:tm),
-     erased_tm a ->
-     erased_tm b ->
-     erased_tm  ( (a_App a rho R1 b) ) 
- | erased_a_Pi : forall (L:vars) (rho:relflag) (A:tm) (R1:role) (B:tm),
-     erased_tm A ->
-      ( forall x , x \notin  L  -> erased_tm  ( open_tm_wrt_tm B (a_Var_f x) )  )  ->
-     erased_tm  ( (a_Pi rho A R1 B) ) 
- | erased_a_CPi : forall (L:vars) (a b A:tm) (R1:role) (B:tm),
-     erased_tm a ->
-     erased_tm b ->
-     erased_tm A ->
-      ( forall c , c \notin  L  -> erased_tm  ( open_tm_wrt_co B (g_Var_f c) )  )  ->
-     erased_tm  ( (a_CPi (Eq a b A R1) B) ) 
- | erased_a_CAbs : forall (L:vars) (b:tm),
-      ( forall c , c \notin  L  -> erased_tm  ( open_tm_wrt_co b (g_Var_f c) )  )  ->
-     erased_tm  ( (a_UCAbs b) ) 
- | erased_a_CApp : forall (a:tm),
-     erased_tm a ->
-     erased_tm  ( (a_CApp a g_Triv) ) 
- | erased_a_Fam : forall (F:tyfam),
-     erased_tm (a_Fam F)
- | erased_a_Const : forall (T:const),
-     erased_tm (a_Const T)
- | erased_a_Conv : forall (a:tm) (R:role),
-     erased_tm a ->
-     erased_tm  ( (a_Conv a R g_Triv) ) .
+Inductive erased_tm : role_context -> tm -> role -> Prop :=    (* defn erased_tm *)
+ | erased_a_Bullet : forall (W:role_context) (R:role),
+     erased_tm W a_Bullet R
+ | erased_a_Star : forall (W:role_context) (R:role),
+     erased_tm W a_Star R
+ | erased_a_Var : forall (W:role_context) (x:tmvar) (R:role) (W':role_context),
+     erased_tm  ( W  ++ ( x  ~  R ) ++  W' )  (a_Var_f x) R
+ | erased_a_Abs : forall (L:vars) (W W':role_context) (rho:relflag) (R1:role) (a:tm) (R:role),
+      ( forall x , x \notin  L  -> erased_tm  ( W  ++ ( x  ~  R1 ) ++  W' )   ( open_tm_wrt_tm a (a_Var_f x) )  R )  ->
+     erased_tm  ( W  ++  W' )   ( (a_UAbs rho R1 a) )  R
+ | erased_a_App : forall (W:role_context) (a:tm) (rho:relflag) (R1:role) (b:tm) (R:role),
+     erased_tm W a R ->
+     erased_tm W b R ->
+     erased_tm W  ( (a_App a rho R1 b) )  R
+ | erased_a_Pi : forall (L:vars) (W W':role_context) (rho:relflag) (A:tm) (R1:role) (B:tm) (R R2:role),
+     erased_tm W A R2 ->
+      ( forall x , x \notin  L  -> erased_tm  ( W  ++ ( x  ~  R1 ) ++  W' )   ( open_tm_wrt_tm B (a_Var_f x) )  R )  ->
+     SubRole R1 R2 ->
+     erased_tm  ( W  ++  W' )   ( (a_Pi rho A R1 B) )  R
+ | erased_a_CPi : forall (L:vars) (W W':role_context) (a b A:tm) (R1:role) (B:tm) (R R2:role),
+     erased_tm W a R1 ->
+     erased_tm W b R1 ->
+     erased_tm W A R2 ->
+      ( forall c , c \notin  L  -> erased_tm  ( W  ++ ( c  ~  R1 ) ++  W' )   ( open_tm_wrt_co B (g_Var_f c) )  R )  ->
+     SubRole R1 R2 ->
+     erased_tm  ( W  ++  W' )   ( (a_CPi (Eq a b A R1) B) )  R
+ | erased_a_CAbs : forall (L:vars) (W W':role_context) (b:tm) (R R1:role),
+      ( forall c , c \notin  L  -> erased_tm  ( W  ++ ( c  ~  R1 ) ++  W' )   ( open_tm_wrt_co b (g_Var_f c) )  R )  ->
+     erased_tm  ( W  ++  W' )   ( (a_UCAbs b) )  R
+ | erased_a_CApp : forall (W:role_context) (a:tm) (R:role),
+     erased_tm W a R ->
+     erased_tm W  ( (a_CApp a g_Triv) )  R
+ | erased_a_Fam : forall (W:role_context) (F:tyfam) (R:role),
+     erased_tm W (a_Fam F) R
+ | erased_a_Const : forall (W:role_context) (T:const) (R:role),
+     erased_tm W (a_Const T) R
+ | erased_a_Conv : forall (W:role_context) (a:tm) (R1 R:role),
+     erased_tm W a R ->
+      not (  ( SubRole R1 R )  )  ->
+     erased_tm W  ( (a_Conv a R1 g_Triv) )  R.
 
 (* defns JChk *)
 Inductive RhoCheck : relflag -> tmvar -> tm -> Prop :=    (* defn RhoCheck *)
@@ -970,75 +975,75 @@ Inductive RhoCheck : relflag -> tmvar -> tm -> Prop :=    (* defn RhoCheck *)
      RhoCheck Irrel x A.
 
 (* defns Jpar *)
-Inductive Par : context -> available_props -> tm -> tm -> role -> Prop :=    (* defn Par *)
- | Par_Refl : forall (G:context) (D:available_props) (a:tm) (R:role),
+Inductive Par : context -> available_props -> role_context -> tm -> tm -> role -> Prop :=    (* defn Par *)
+ | Par_Refl : forall (G:context) (D:available_props) (W:role_context) (a:tm) (R:role),
      lc_tm a ->
-     Par G D a a R
- | Par_Beta : forall (G:context) (D:available_props) (a:tm) (rho:relflag) (R:role) (b a' b':tm) (R1:role),
-     Par G D a  ( (a_UAbs rho R a') )  R1 ->
-     Par G D b b' R ->
-     SubRole R R1 ->
-     Par G D (a_App a rho R b)  (open_tm_wrt_tm  a'   b' )  R1
- | Par_App : forall (G:context) (D:available_props) (a:tm) (rho:relflag) (R:role) (b a' b':tm) (R1:role),
-     Par G D a a' R1 ->
-     Par G D b b' R ->
-     SubRole R R1 ->
-     Par G D (a_App a rho R b) (a_App a' rho R b') R1
- | Par_CBeta : forall (G:context) (D:available_props) (a a':tm) (R:role),
-     Par G D a  ( (a_UCAbs a') )  R ->
-     Par G D (a_CApp a g_Triv)  (open_tm_wrt_co  a'   g_Triv )  R
- | Par_CApp : forall (G:context) (D:available_props) (a a':tm) (R:role),
-     Par G D a a' R ->
-     Par G D (a_CApp a g_Triv) (a_CApp a' g_Triv) R
- | Par_Abs : forall (L:vars) (G:context) (D:available_props) (rho:relflag) (R:role) (a a':tm) (R1:role),
-      ( forall x , x \notin  L  -> Par G D  ( open_tm_wrt_tm a (a_Var_f x) )   ( open_tm_wrt_tm a' (a_Var_f x) )  R1 )  ->
-     Par G D (a_UAbs rho R a) (a_UAbs rho R a') R1
- | Par_Pi : forall (L:vars) (G:context) (D:available_props) (rho:relflag) (A:tm) (R:role) (B A' B':tm) (R1:role),
-     Par G D A A' R ->
-      ( forall x , x \notin  L  -> Par G D  ( open_tm_wrt_tm B (a_Var_f x) )   ( open_tm_wrt_tm B' (a_Var_f x) )  R1 )  ->
-     SubRole R R1 ->
-     Par G D (a_Pi rho A R B) (a_Pi rho A' R B') R1
- | Par_CAbs : forall (L:vars) (G:context) (D:available_props) (a a':tm) (R:role),
-      ( forall c , c \notin  L  -> Par G D  ( open_tm_wrt_co a (g_Var_f c) )   ( open_tm_wrt_co a' (g_Var_f c) )  R )  ->
-     Par G D (a_UCAbs a) (a_UCAbs a') R
- | Par_CPi : forall (L:vars) (G:context) (D:available_props) (A B A1:tm) (R:role) (a A' B' A1' a':tm) (R1:role),
-     Par G D A A' R ->
-     Par G D B B' R ->
-      ( forall c , c \notin  L  -> Par G D  ( open_tm_wrt_co a (g_Var_f c) )   ( open_tm_wrt_co a' (g_Var_f c) )  R1 )  ->
-     Par G D A1 A1' R ->
-     SubRole R R1 ->
-     Par G D (a_CPi (Eq A B A1 R) a) (a_CPi (Eq A' B' A1' R) a') R1
- | Par_Axiom : forall (G:context) (D:available_props) (F:tyfam) (a:tm) (R1:role) (A:tm) (R:role),
-      binds  F  (Ax  a A R )   toplevel   ->
-     SubRole R R1 ->
-     Par G D (a_Fam F) a R1
- | Par_Cong : forall (G:context) (D:available_props) (a1:tm) (R:role) (a2:tm) (R1:role),
-     Par G D a1 a2 R1 ->
-     Par G D (a_Conv a1 R g_Triv) (a_Conv a2 R g_Triv) R1
- | Par_Combine : forall (G:context) (D:available_props) (a1:tm) (R:role) (a2:tm) (R1:role),
-     Par G D a1  ( (a_Conv a2 R g_Triv) )  R1 ->
-     Par G D  ( (a_Conv a1 R g_Triv) )   ( (a_Conv a2 R g_Triv) )  R1
- | Par_Push : forall (G:context) (D:available_props) (a1:tm) (R2:role) (b1 a2 b2:tm) (R R1:role),
-     Par G D a1  ( (a_Conv a2 R g_Triv) )  R1 ->
-     Par G D b1 b2 R2 ->
+     Par G D W a a R
+ | Par_Beta : forall (G:context) (D:available_props) (W:role_context) (a:tm) (rho:relflag) (R1:role) (b a' b':tm) (R:role),
+     Par G D W a  ( (a_UAbs rho R1 a') )  R ->
+     Par G D W b b' R1 ->
+     SubRole R1 R ->
+     Par G D W (a_App a rho R1 b)  (open_tm_wrt_tm  a'   b' )  R
+ | Par_App : forall (G:context) (D:available_props) (W:role_context) (a:tm) (rho:relflag) (R1:role) (b a' b':tm) (R:role),
+     Par G D W a a' R ->
+     Par G D W b b' R1 ->
+     SubRole R1 R ->
+     Par G D W (a_App a rho R1 b) (a_App a' rho R1 b') R
+ | Par_CBeta : forall (G:context) (D:available_props) (W:role_context) (a a':tm) (R:role),
+     Par G D W a  ( (a_UCAbs a') )  R ->
+     Par G D W (a_CApp a g_Triv)  (open_tm_wrt_co  a'   g_Triv )  R
+ | Par_CApp : forall (G:context) (D:available_props) (W:role_context) (a a':tm) (R:role),
+     Par G D W a a' R ->
+     Par G D W (a_CApp a g_Triv) (a_CApp a' g_Triv) R
+ | Par_Abs : forall (L:vars) (G:context) (D:available_props) (W W':role_context) (rho:relflag) (R1:role) (a a':tm) (R:role),
+      ( forall x , x \notin  L  -> Par G D  ( W  ++ ( x  ~  R1 ) ++  W' )   ( open_tm_wrt_tm a (a_Var_f x) )   ( open_tm_wrt_tm a' (a_Var_f x) )  R )  ->
+     Par G D  ( W  ++  W' )  (a_UAbs rho R1 a) (a_UAbs rho R1 a') R
+ | Par_Pi : forall (L:vars) (G:context) (D:available_props) (W W':role_context) (rho:relflag) (A:tm) (R1:role) (B A' B':tm) (R R2:role),
+     Par G D W A A' R2 ->
+      ( forall x , x \notin  L  -> Par G D  ( W  ++ ( x  ~  R1 ) ++  W' )   ( open_tm_wrt_tm B (a_Var_f x) )   ( open_tm_wrt_tm B' (a_Var_f x) )  R )  ->
+     SubRole R1 R2 ->
+     Par G D  ( W  ++  W' )  (a_Pi rho A R1 B) (a_Pi rho A' R1 B') R
+ | Par_CAbs : forall (L:vars) (G:context) (D:available_props) (W W':role_context) (a a':tm) (R R1:role),
+      ( forall c , c \notin  L  -> Par G D  ( W  ++ ( c  ~  R1 ) ++  W' )   ( open_tm_wrt_co a (g_Var_f c) )   ( open_tm_wrt_co a' (g_Var_f c) )  R )  ->
+     Par G D  ( W  ++  W' )  (a_UCAbs a) (a_UCAbs a') R
+ | Par_CPi : forall (L:vars) (G:context) (D:available_props) (W W':role_context) (a b A:tm) (R1:role) (B a' b' A' B':tm) (R R2:role),
+     Par G D W A A' R2 ->
+     Par G D W a a' R1 ->
+     Par G D W b b' R1 ->
+      ( forall c , c \notin  L  -> Par G D  ( W  ++ ( c  ~  R1 ) ++  W' )   ( open_tm_wrt_co B (g_Var_f c) )   ( open_tm_wrt_co B' (g_Var_f c) )  R )  ->
+     SubRole R1 R2 ->
+     Par G D  ( W  ++  W' )  (a_CPi (Eq a b A R1) B) (a_CPi (Eq a' b' A' R1) B') R
+ | Par_Axiom : forall (G:context) (D:available_props) (W:role_context) (F:tyfam) (a:tm) (R:role) (A:tm) (R1:role),
+      binds  F  (Ax  a A R1 )   toplevel   ->
+     SubRole R1 R ->
+     Par G D W (a_Fam F) a R
+ | Par_Cong : forall (G:context) (D:available_props) (W:role_context) (a1:tm) (R:role) (a2:tm) (R1:role),
+     Par G D W a1 a2 R1 ->
+     Par G D W (a_Conv a1 R g_Triv) (a_Conv a2 R g_Triv) R1
+ | Par_Combine : forall (G:context) (D:available_props) (W:role_context) (a1:tm) (R:role) (a2:tm) (R1:role),
+     Par G D W a1  ( (a_Conv a2 R g_Triv) )  R1 ->
+     Par G D W  ( (a_Conv a1 R g_Triv) )   ( (a_Conv a2 R g_Triv) )  R1
+ | Par_Push : forall (G:context) (D:available_props) (W:role_context) (a1:tm) (R2:role) (b1 a2 b2:tm) (R R1:role),
+     Par G D W a1  ( (a_Conv a2 R g_Triv) )  R1 ->
+     Par G D W b1 b2 R2 ->
      SubRole R2 R1 ->
-     Par G D  (a_App  a1  Rel  R2   b1 )  (a_Conv  (  (a_App  a2  Rel  R2    ( (a_Conv b2 R g_Triv) )  )  )  R g_Triv) R1
- | Par_CPush : forall (G:context) (D:available_props) (a1 a2:tm) (R R1:role),
-     Par G D a1  ( (a_Conv a2 R g_Triv) )  R1 ->
-     Par G D (a_CApp a1 g_Triv) (a_Conv  ( (a_CApp a2 g_Triv) )  R g_Triv) R1
-with MultiPar : context -> available_props -> tm -> tm -> role -> Prop :=    (* defn MultiPar *)
- | MP_Refl : forall (G:context) (D:available_props) (a:tm) (R:role),
+     Par G D W  (a_App  a1  Rel  R2   b1 )  (a_Conv  (  (a_App  a2  Rel  R2    ( (a_Conv b2 R g_Triv) )  )  )  R g_Triv) R1
+ | Par_CPush : forall (G:context) (D:available_props) (W:role_context) (a1 a2:tm) (R R1:role),
+     Par G D W a1  ( (a_Conv a2 R g_Triv) )  R1 ->
+     Par G D W (a_CApp a1 g_Triv) (a_Conv  ( (a_CApp a2 g_Triv) )  R g_Triv) R1
+with MultiPar : context -> available_props -> role_context -> tm -> tm -> role -> Prop :=    (* defn MultiPar *)
+ | MP_Refl : forall (G:context) (D:available_props) (W:role_context) (a:tm) (R:role),
      lc_tm a ->
-     MultiPar G D a a R
- | MP_Step : forall (G:context) (D:available_props) (a a':tm) (R:role) (b:tm),
-     Par G D a b R ->
-     MultiPar G D b a' R ->
-     MultiPar G D a a' R
-with joins : context -> available_props -> tm -> tm -> role -> Prop :=    (* defn joins *)
- | join : forall (G:context) (D:available_props) (a1 a2:tm) (R:role) (b:tm),
-     MultiPar G D a1 b R ->
-     MultiPar G D a2 b R ->
-     joins G D a1 a2 R.
+     MultiPar G D W a a R
+ | MP_Step : forall (G:context) (D:available_props) (W:role_context) (a a':tm) (R:role) (b:tm),
+     Par G D W a b R ->
+     MultiPar G D W b a' R ->
+     MultiPar G D W a a' R
+with joins : context -> available_props -> role_context -> tm -> tm -> role -> Prop :=    (* defn joins *)
+ | join : forall (G:context) (D:available_props) (W:role_context) (a1 a2:tm) (R:role) (b:tm),
+     MultiPar G D W a1 b R ->
+     MultiPar G D W a2 b R ->
+     joins G D W a1 a2 R.
 
 (* defns Jbeta *)
 Inductive Beta : tm -> tm -> role -> Prop :=    (* defn Beta *)

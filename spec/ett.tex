@@ -163,6 +163,15 @@
 \ottprodline{|}{\ottsym{(}  \Gamma  \ottsym{)}} {\textsf{M}}{}{}{}\ottprodnewline
 \ottprodline{|}{ \Gamma } {\textsf{M}}{}{}{}}
 
+\newcommand{\ottroleXXcontext}{
+\ottrulehead{\ottnt{role\_context}  ,\ \Omega}{::=}{\ottcom{role_contexts}}\ottprodnewline
+\ottfirstprodline{|}{\varnothing}{}{}{}{}\ottprodnewline
+\ottprodline{|}{\Omega  \ottsym{,}  \ottmv{x}  \ottsym{:}  \ottnt{R}  \ottsym{,}  \Omega'}{}{}{}{}\ottprodnewline
+\ottprodline{|}{\Omega  \ottsym{,}  \ottmv{c}  \ottsym{:}  \ottnt{R}  \ottsym{,}  \Omega'}{}{}{}{}\ottprodnewline
+\ottprodline{|}{ \Omega ,  \Omega' } {\textsf{M}}{}{}{}\ottprodnewline
+\ottprodline{|}{\ottsym{(}  \Omega  \ottsym{)}} {\textsf{M}}{}{}{}\ottprodnewline
+\ottprodline{|}{ \Omega } {\textsf{M}}{}{}{}}
+
 \newcommand{\ottavailableXXprops}{
 \ottrulehead{\ottnt{available\_props}  ,\ \Delta}{::=}{}\ottprodnewline
 \ottfirstprodline{|}{ \varnothing }{}{}{}{}\ottprodnewline
@@ -267,7 +276,7 @@
 
 \newcommand{\ottJerased}{
 \ottrulehead{\ottnt{Jerased}}{::=}{}\ottprodnewline
-\ottfirstprodline{|}{\ottsym{erased\_tm}  \ottnt{a}}{}{}{}{}}
+\ottfirstprodline{|}{\Omega  \vdash  \ottsym{erased\_tm}  \ottnt{a} \, \ottnt{R}}{}{}{}{}}
 
 \newcommand{\ottJChk}{
 \ottrulehead{\ottnt{JChk}}{::=}{}\ottprodnewline
@@ -275,9 +284,9 @@
 
 \newcommand{\ottJpar}{
 \ottrulehead{\ottnt{Jpar}}{::=}{}\ottprodnewline
-\ottfirstprodline{|}{ \vDash  \ottnt{a}   \Rightarrow _{ \ottnt{R} }  \ottnt{b} }{}{}{}{\ottcom{parallel reduction (implicit language)}}\ottprodnewline
-\ottprodline{|}{ \vdash   \ottnt{a}   \Rightarrow^{\ast} _ \ottnt{R}   \ottnt{b} }{}{}{}{\ottcom{multistep parallel reduction}}\ottprodnewline
-\ottprodline{|}{ \vdash   \ottnt{a}   \Leftrightarrow _ \ottnt{R}   \ottnt{b} }{}{}{}{\ottcom{parallel reduction to a common term}}}
+\ottfirstprodline{|}{ \Omega  \vDash  \ottnt{a}   \Rightarrow _{ \ottnt{R} }  \ottnt{b} }{}{}{}{\ottcom{parallel reduction (implicit language)}}\ottprodnewline
+\ottprodline{|}{ \Omega   \vdash   \ottnt{a}   \Rightarrow^{\ast} _ \ottnt{R}   \ottnt{b} }{}{}{}{\ottcom{multistep parallel reduction}}\ottprodnewline
+\ottprodline{|}{ \Omega   \vdash   \ottnt{a}   \Leftrightarrow _ \ottnt{R}   \ottnt{b} }{}{}{}{\ottcom{parallel reduction to a common term}}}
 
 \newcommand{\ottJbeta}{
 \ottrulehead{\ottnt{Jbeta}}{::=}{}\ottprodnewline
@@ -342,6 +351,7 @@
 \ottprodline{|}{\ottnt{sig\_sort}}{}{}{}{}\ottprodnewline
 \ottprodline{|}{\ottnt{sort}}{}{}{}{}\ottprodnewline
 \ottprodline{|}{\ottnt{context}}{}{}{}{}\ottprodnewline
+\ottprodline{|}{\ottnt{role\_context}}{}{}{}{}\ottprodnewline
 \ottprodline{|}{\ottnt{available\_props}}{}{}{}{}\ottprodnewline
 \ottprodline{|}{\ottnt{sig}}{}{}{}{}\ottprodnewline
 \ottprodline{|}{\ottnt{terminals}}{}{}{}{}\ottprodnewline
@@ -357,6 +367,7 @@
 \ottsigXXsort\ottinterrule
 \ottsort\ottinterrule
 \ottcontext\ottinterrule
+\ottroleXXcontext\ottinterrule
 \ottavailableXXprops\ottinterrule
 \ottsig\ottinterrule
 \ottterminals\ottinterrule
@@ -616,100 +627,103 @@
 %% defn erased_tm
 \newcommand{\ottdruleerasedXXaXXBullet}[1]{\ottdrule[#1]{%
 }{
-\ottsym{erased\_tm}  \Box}{%
+\Omega  \vdash  \ottsym{erased\_tm}  \Box \, \ottnt{R}}{%
 {\ottdrulename{erased\_a\_Bullet}}{}%
 }}
 
 
 \newcommand{\ottdruleerasedXXaXXStar}[1]{\ottdrule[#1]{%
 }{
-\ottsym{erased\_tm}   \star }{%
+\Omega  \vdash  \ottsym{erased\_tm}   \star  \, \ottnt{R}}{%
 {\ottdrulename{erased\_a\_Star}}{}%
 }}
 
 
 \newcommand{\ottdruleerasedXXaXXVar}[1]{\ottdrule[#1]{%
 }{
-\ottsym{erased\_tm}  \ottmv{x}}{%
+\Omega  \ottsym{,}  \ottmv{x}  \ottsym{:}  \ottnt{R}  \ottsym{,}  \Omega'  \vdash  \ottsym{erased\_tm}  \ottmv{x} \, \ottnt{R}}{%
 {\ottdrulename{erased\_a\_Var}}{}%
 }}
 
 
 \newcommand{\ottdruleerasedXXaXXAbs}[1]{\ottdrule[#1]{%
-\ottpremise{\ottsym{erased\_tm}  \ottnt{a}}%
+\ottpremise{\Omega  \ottsym{,}  \ottmv{x}  \ottsym{:}  \ottnt{R_{{\mathrm{1}}}}  \ottsym{,}  \Omega'  \vdash  \ottsym{erased\_tm}  \ottnt{a} \, \ottnt{R}}%
 }{
-\ottsym{erased\_tm}  \ottsym{(}   \mathrm{\lambda}^{ \ottnt{R_{{\mathrm{1}}}} , \rho } \ottmv{x} . \ottnt{a}   \ottsym{)}}{%
+ \Omega ,  \Omega'   \vdash  \ottsym{erased\_tm}  \ottsym{(}   \mathrm{\lambda}^{ \ottnt{R_{{\mathrm{1}}}} , \rho } \ottmv{x} . \ottnt{a}   \ottsym{)} \, \ottnt{R}}{%
 {\ottdrulename{erased\_a\_Abs}}{}%
 }}
 
 
 \newcommand{\ottdruleerasedXXaXXApp}[1]{\ottdrule[#1]{%
-\ottpremise{\ottsym{erased\_tm}  \ottnt{a}}%
-\ottpremise{\ottsym{erased\_tm}  \ottnt{b}}%
+\ottpremise{\Omega  \vdash  \ottsym{erased\_tm}  \ottnt{a} \, \ottnt{R}}%
+\ottpremise{\Omega  \vdash  \ottsym{erased\_tm}  \ottnt{b} \, \ottnt{R}}%
 }{
-\ottsym{erased\_tm}  \ottsym{(}   \ottnt{a} \  \ottnt{b} ^{ \ottnt{R_{{\mathrm{1}}}} , \rho }   \ottsym{)}}{%
+\Omega  \vdash  \ottsym{erased\_tm}  \ottsym{(}   \ottnt{a} \  \ottnt{b} ^{ \ottnt{R_{{\mathrm{1}}}} , \rho }   \ottsym{)} \, \ottnt{R}}{%
 {\ottdrulename{erased\_a\_App}}{}%
 }}
 
 
 \newcommand{\ottdruleerasedXXaXXPi}[1]{\ottdrule[#1]{%
-\ottpremise{\ottsym{erased\_tm}  \ottnt{A}}%
-\ottpremise{\ottsym{erased\_tm}  \ottnt{B}}%
+\ottpremise{\Omega  \vdash  \ottsym{erased\_tm}  \ottnt{A} \, \ottnt{R_{{\mathrm{2}}}}}%
+\ottpremise{\Omega  \ottsym{,}  \ottmv{x}  \ottsym{:}  \ottnt{R_{{\mathrm{1}}}}  \ottsym{,}  \Omega'  \vdash  \ottsym{erased\_tm}  \ottnt{B} \, \ottnt{R}}%
+\ottpremise{ \ottnt{R_{{\mathrm{1}}}}  \leq  \ottnt{R_{{\mathrm{2}}}} }%
 }{
-\ottsym{erased\_tm}  \ottsym{(}   \mathrm{\Pi}^ \rho \ottmv{x} \!:\! \ottnt{A} / \ottnt{R_{{\mathrm{1}}}} \to \ottnt{B}   \ottsym{)}}{%
+ \Omega ,  \Omega'   \vdash  \ottsym{erased\_tm}  \ottsym{(}   \mathrm{\Pi}^ \rho \ottmv{x} \!:\! \ottnt{A} / \ottnt{R_{{\mathrm{1}}}} \to \ottnt{B}   \ottsym{)} \, \ottnt{R}}{%
 {\ottdrulename{erased\_a\_Pi}}{}%
 }}
 
 
 \newcommand{\ottdruleerasedXXaXXCPi}[1]{\ottdrule[#1]{%
-\ottpremise{\ottsym{erased\_tm}  \ottnt{a}}%
-\ottpremise{\ottsym{erased\_tm}  \ottnt{b}}%
-\ottpremise{\ottsym{erased\_tm}  \ottnt{A}}%
-\ottpremise{\ottsym{erased\_tm}  \ottnt{B}}%
+\ottpremise{\Omega  \vdash  \ottsym{erased\_tm}  \ottnt{a} \, \ottnt{R_{{\mathrm{1}}}}}%
+\ottpremise{\Omega  \vdash  \ottsym{erased\_tm}  \ottnt{b} \, \ottnt{R_{{\mathrm{1}}}}}%
+\ottpremise{\Omega  \vdash  \ottsym{erased\_tm}  \ottnt{A} \, \ottnt{R_{{\mathrm{2}}}}}%
+\ottpremise{\Omega  \ottsym{,}  \ottmv{c}  \ottsym{:}  \ottnt{R_{{\mathrm{1}}}}  \ottsym{,}  \Omega'  \vdash  \ottsym{erased\_tm}  \ottnt{B} \, \ottnt{R}}%
+\ottpremise{ \ottnt{R_{{\mathrm{1}}}}  \leq  \ottnt{R_{{\mathrm{2}}}} }%
 }{
-\ottsym{erased\_tm}  \ottsym{(}   \forall \ottmv{c} \!:\!  \ottnt{a}   \sim _{ \ottnt{A} / \ottnt{R_{{\mathrm{1}}}} }  \ottnt{b}  . \ottnt{B}   \ottsym{)}}{%
+ \Omega ,  \Omega'   \vdash  \ottsym{erased\_tm}  \ottsym{(}   \forall \ottmv{c} \!:\!  \ottnt{a}   \sim _{ \ottnt{A} / \ottnt{R_{{\mathrm{1}}}} }  \ottnt{b}  . \ottnt{B}   \ottsym{)} \, \ottnt{R}}{%
 {\ottdrulename{erased\_a\_CPi}}{}%
 }}
 
 
 \newcommand{\ottdruleerasedXXaXXCAbs}[1]{\ottdrule[#1]{%
-\ottpremise{\ottsym{erased\_tm}  \ottnt{b}}%
+\ottpremise{\Omega  \ottsym{,}  \ottmv{c}  \ottsym{:}  \ottnt{R_{{\mathrm{1}}}}  \ottsym{,}  \Omega'  \vdash  \ottsym{erased\_tm}  \ottnt{b} \, \ottnt{R}}%
 }{
-\ottsym{erased\_tm}  \ottsym{(}   \mathrm{\Lambda} \ottmv{c} . \ottnt{b}   \ottsym{)}}{%
+ \Omega ,  \Omega'   \vdash  \ottsym{erased\_tm}  \ottsym{(}   \mathrm{\Lambda} \ottmv{c} . \ottnt{b}   \ottsym{)} \, \ottnt{R}}{%
 {\ottdrulename{erased\_a\_CAbs}}{}%
 }}
 
 
 \newcommand{\ottdruleerasedXXaXXCApp}[1]{\ottdrule[#1]{%
-\ottpremise{\ottsym{erased\_tm}  \ottnt{a}}%
+\ottpremise{\Omega  \vdash  \ottsym{erased\_tm}  \ottnt{a} \, \ottnt{R}}%
 }{
-\ottsym{erased\_tm}  \ottsym{(}  \ottnt{a}  \ottsym{[}  \bullet  \ottsym{]}  \ottsym{)}}{%
+\Omega  \vdash  \ottsym{erased\_tm}  \ottsym{(}  \ottnt{a}  \ottsym{[}  \bullet  \ottsym{]}  \ottsym{)} \, \ottnt{R}}{%
 {\ottdrulename{erased\_a\_CApp}}{}%
 }}
 
 
 \newcommand{\ottdruleerasedXXaXXFam}[1]{\ottdrule[#1]{%
 }{
-\ottsym{erased\_tm}  \ottmv{F}}{%
+\Omega  \vdash  \ottsym{erased\_tm}  \ottmv{F} \, \ottnt{R}}{%
 {\ottdrulename{erased\_a\_Fam}}{}%
 }}
 
 
 \newcommand{\ottdruleerasedXXaXXConst}[1]{\ottdrule[#1]{%
 }{
-\ottsym{erased\_tm}  \ottmv{T}}{%
+\Omega  \vdash  \ottsym{erased\_tm}  \ottmv{T} \, \ottnt{R}}{%
 {\ottdrulename{erased\_a\_Const}}{}%
 }}
 
 
 \newcommand{\ottdruleerasedXXaXXConv}[1]{\ottdrule[#1]{%
-\ottpremise{\ottsym{erased\_tm}  \ottnt{a}}%
+\ottpremise{\Omega  \vdash  \ottsym{erased\_tm}  \ottnt{a} \, \ottnt{R}}%
+\ottpremise{ \neg  \ottsym{(}   \ottnt{R_{{\mathrm{1}}}}  \leq  \ottnt{R}   \ottsym{)} }%
 }{
-\ottsym{erased\_tm}  \ottsym{(}   \ottnt{a} \triangleright _{ \ottnt{R} }  \bullet   \ottsym{)}}{%
+\Omega  \vdash  \ottsym{erased\_tm}  \ottsym{(}   \ottnt{a} \triangleright _{ \ottnt{R_{{\mathrm{1}}}} }  \bullet   \ottsym{)} \, \ottnt{R}}{%
 {\ottdrulename{erased\_a\_Conv}}{}%
 }}
 
-\newcommand{\ottdefnerasedXXtm}[1]{\begin{ottdefnblock}[#1]{$\ottsym{erased\_tm}  \ottnt{a}$}{}
+\newcommand{\ottdefnerasedXXtm}[1]{\begin{ottdefnblock}[#1]{$\Omega  \vdash  \ottsym{erased\_tm}  \ottnt{a} \, \ottnt{R}$}{}
 \ottusedrule{\ottdruleerasedXXaXXBullet{}}
 \ottusedrule{\ottdruleerasedXXaXXStar{}}
 \ottusedrule{\ottdruleerasedXXaXXVar{}}
@@ -758,128 +772,128 @@
 %% defn Par
 \newcommand{\ottdruleParXXRefl}[1]{\ottdrule[#1]{%
 }{
- \vDash  \ottnt{a}   \Rightarrow _{ \ottnt{R} }  \ottnt{a} }{%
+ \Omega  \vDash  \ottnt{a}   \Rightarrow _{ \ottnt{R} }  \ottnt{a} }{%
 {\ottdrulename{Par\_Refl}}{}%
 }}
 
 
 \newcommand{\ottdruleParXXBeta}[1]{\ottdrule[#1]{%
-\ottpremise{ \vDash  \ottnt{a}   \Rightarrow _{ \ottnt{R_{{\mathrm{1}}}} }  \ottsym{(}   \mathrm{\lambda}^{ \ottnt{R} , \rho } \ottmv{x} . \ottnt{a'}   \ottsym{)} }%
-\ottpremise{ \vDash  \ottnt{b}   \Rightarrow _{ \ottnt{R} }  \ottnt{b'} }%
-\ottpremise{ \ottnt{R}  \leq  \ottnt{R_{{\mathrm{1}}}} }%
+\ottpremise{ \Omega  \vDash  \ottnt{a}   \Rightarrow _{ \ottnt{R} }  \ottsym{(}   \mathrm{\lambda}^{ \ottnt{R_{{\mathrm{1}}}} , \rho } \ottmv{x} . \ottnt{a'}   \ottsym{)} }%
+\ottpremise{ \Omega  \vDash  \ottnt{b}   \Rightarrow _{ \ottnt{R_{{\mathrm{1}}}} }  \ottnt{b'} }%
+\ottpremise{ \ottnt{R_{{\mathrm{1}}}}  \leq  \ottnt{R} }%
 }{
- \vDash   \ottnt{a} \  \ottnt{b} ^{ \ottnt{R} , \rho }    \Rightarrow _{ \ottnt{R_{{\mathrm{1}}}} }  \ottnt{a'}  \ottsym{\{}  \ottnt{b'}  \ottsym{/}  \ottmv{x}  \ottsym{\}} }{%
+ \Omega  \vDash   \ottnt{a} \  \ottnt{b} ^{ \ottnt{R_{{\mathrm{1}}}} , \rho }    \Rightarrow _{ \ottnt{R} }  \ottnt{a'}  \ottsym{\{}  \ottnt{b'}  \ottsym{/}  \ottmv{x}  \ottsym{\}} }{%
 {\ottdrulename{Par\_Beta}}{}%
 }}
 
 
 \newcommand{\ottdruleParXXApp}[1]{\ottdrule[#1]{%
-\ottpremise{ \vDash  \ottnt{a}   \Rightarrow _{ \ottnt{R_{{\mathrm{1}}}} }  \ottnt{a'} }%
-\ottpremise{ \vDash  \ottnt{b}   \Rightarrow _{ \ottnt{R} }  \ottnt{b'} }%
-\ottpremise{ \ottnt{R}  \leq  \ottnt{R_{{\mathrm{1}}}} }%
+\ottpremise{ \Omega  \vDash  \ottnt{a}   \Rightarrow _{ \ottnt{R} }  \ottnt{a'} }%
+\ottpremise{ \Omega  \vDash  \ottnt{b}   \Rightarrow _{ \ottnt{R_{{\mathrm{1}}}} }  \ottnt{b'} }%
+\ottpremise{ \ottnt{R_{{\mathrm{1}}}}  \leq  \ottnt{R} }%
 }{
- \vDash   \ottnt{a} \  \ottnt{b} ^{ \ottnt{R} , \rho }    \Rightarrow _{ \ottnt{R_{{\mathrm{1}}}} }   \ottnt{a'} \  \ottnt{b'} ^{ \ottnt{R} , \rho }  }{%
+ \Omega  \vDash   \ottnt{a} \  \ottnt{b} ^{ \ottnt{R_{{\mathrm{1}}}} , \rho }    \Rightarrow _{ \ottnt{R} }   \ottnt{a'} \  \ottnt{b'} ^{ \ottnt{R_{{\mathrm{1}}}} , \rho }  }{%
 {\ottdrulename{Par\_App}}{}%
 }}
 
 
 \newcommand{\ottdruleParXXCBeta}[1]{\ottdrule[#1]{%
-\ottpremise{ \vDash  \ottnt{a}   \Rightarrow _{ \ottnt{R} }  \ottsym{(}   \mathrm{\Lambda} \ottmv{c} . \ottnt{a'}   \ottsym{)} }%
+\ottpremise{ \Omega  \vDash  \ottnt{a}   \Rightarrow _{ \ottnt{R} }  \ottsym{(}   \mathrm{\Lambda} \ottmv{c} . \ottnt{a'}   \ottsym{)} }%
 }{
- \vDash  \ottnt{a}  \ottsym{[}  \bullet  \ottsym{]}   \Rightarrow _{ \ottnt{R} }  \ottnt{a'}  \ottsym{\{}  \bullet  \ottsym{/}  \ottmv{c}  \ottsym{\}} }{%
+ \Omega  \vDash  \ottnt{a}  \ottsym{[}  \bullet  \ottsym{]}   \Rightarrow _{ \ottnt{R} }  \ottnt{a'}  \ottsym{\{}  \bullet  \ottsym{/}  \ottmv{c}  \ottsym{\}} }{%
 {\ottdrulename{Par\_CBeta}}{}%
 }}
 
 
 \newcommand{\ottdruleParXXCApp}[1]{\ottdrule[#1]{%
-\ottpremise{ \vDash  \ottnt{a}   \Rightarrow _{ \ottnt{R} }  \ottnt{a'} }%
+\ottpremise{ \Omega  \vDash  \ottnt{a}   \Rightarrow _{ \ottnt{R} }  \ottnt{a'} }%
 }{
- \vDash  \ottnt{a}  \ottsym{[}  \bullet  \ottsym{]}   \Rightarrow _{ \ottnt{R} }  \ottnt{a'}  \ottsym{[}  \bullet  \ottsym{]} }{%
+ \Omega  \vDash  \ottnt{a}  \ottsym{[}  \bullet  \ottsym{]}   \Rightarrow _{ \ottnt{R} }  \ottnt{a'}  \ottsym{[}  \bullet  \ottsym{]} }{%
 {\ottdrulename{Par\_CApp}}{}%
 }}
 
 
 \newcommand{\ottdruleParXXAbs}[1]{\ottdrule[#1]{%
-\ottpremise{ \vDash  \ottnt{a}   \Rightarrow _{ \ottnt{R_{{\mathrm{1}}}} }  \ottnt{a'} }%
+\ottpremise{ \Omega  \ottsym{,}  \ottmv{x}  \ottsym{:}  \ottnt{R_{{\mathrm{1}}}}  \ottsym{,}  \Omega'  \vDash  \ottnt{a}   \Rightarrow _{ \ottnt{R} }  \ottnt{a'} }%
 }{
- \vDash   \mathrm{\lambda}^{ \ottnt{R} , \rho } \ottmv{x} . \ottnt{a}    \Rightarrow _{ \ottnt{R_{{\mathrm{1}}}} }   \mathrm{\lambda}^{ \ottnt{R} , \rho } \ottmv{x} . \ottnt{a'}  }{%
+  \Omega ,  \Omega'   \vDash   \mathrm{\lambda}^{ \ottnt{R_{{\mathrm{1}}}} , \rho } \ottmv{x} . \ottnt{a}    \Rightarrow _{ \ottnt{R} }   \mathrm{\lambda}^{ \ottnt{R_{{\mathrm{1}}}} , \rho } \ottmv{x} . \ottnt{a'}  }{%
 {\ottdrulename{Par\_Abs}}{}%
 }}
 
 
 \newcommand{\ottdruleParXXPi}[1]{\ottdrule[#1]{%
-\ottpremise{ \vDash  \ottnt{A}   \Rightarrow _{ \ottnt{R} }  \ottnt{A'} }%
-\ottpremise{ \vDash  \ottnt{B}   \Rightarrow _{ \ottnt{R_{{\mathrm{1}}}} }  \ottnt{B'} }%
-\ottpremise{ \ottnt{R}  \leq  \ottnt{R_{{\mathrm{1}}}} }%
+\ottpremise{ \Omega  \vDash  \ottnt{A}   \Rightarrow _{ \ottnt{R_{{\mathrm{2}}}} }  \ottnt{A'} }%
+\ottpremise{ \Omega  \ottsym{,}  \ottmv{x}  \ottsym{:}  \ottnt{R_{{\mathrm{1}}}}  \ottsym{,}  \Omega'  \vDash  \ottnt{B}   \Rightarrow _{ \ottnt{R} }  \ottnt{B'} }%
+\ottpremise{ \ottnt{R_{{\mathrm{1}}}}  \leq  \ottnt{R_{{\mathrm{2}}}} }%
 }{
- \vDash   \mathrm{\Pi}^ \rho \ottmv{x} \!:\! \ottnt{A} / \ottnt{R} \to \ottnt{B}    \Rightarrow _{ \ottnt{R_{{\mathrm{1}}}} }   \mathrm{\Pi}^ \rho \ottmv{x} \!:\! \ottnt{A'} / \ottnt{R} \to \ottnt{B'}  }{%
+  \Omega ,  \Omega'   \vDash   \mathrm{\Pi}^ \rho \ottmv{x} \!:\! \ottnt{A} / \ottnt{R_{{\mathrm{1}}}} \to \ottnt{B}    \Rightarrow _{ \ottnt{R} }   \mathrm{\Pi}^ \rho \ottmv{x} \!:\! \ottnt{A'} / \ottnt{R_{{\mathrm{1}}}} \to \ottnt{B'}  }{%
 {\ottdrulename{Par\_Pi}}{}%
 }}
 
 
 \newcommand{\ottdruleParXXCAbs}[1]{\ottdrule[#1]{%
-\ottpremise{ \vDash  \ottnt{a}   \Rightarrow _{ \ottnt{R} }  \ottnt{a'} }%
+\ottpremise{ \Omega  \ottsym{,}  \ottmv{c}  \ottsym{:}  \ottnt{R_{{\mathrm{1}}}}  \ottsym{,}  \Omega'  \vDash  \ottnt{a}   \Rightarrow _{ \ottnt{R} }  \ottnt{a'} }%
 }{
- \vDash   \mathrm{\Lambda} \ottmv{c} . \ottnt{a}    \Rightarrow _{ \ottnt{R} }   \mathrm{\Lambda} \ottmv{c} . \ottnt{a'}  }{%
+  \Omega ,  \Omega'   \vDash   \mathrm{\Lambda} \ottmv{c} . \ottnt{a}    \Rightarrow _{ \ottnt{R} }   \mathrm{\Lambda} \ottmv{c} . \ottnt{a'}  }{%
 {\ottdrulename{Par\_CAbs}}{}%
 }}
 
 
 \newcommand{\ottdruleParXXCPi}[1]{\ottdrule[#1]{%
-\ottpremise{ \vDash  \ottnt{A}   \Rightarrow _{ \ottnt{R} }  \ottnt{A'} }%
-\ottpremise{ \vDash  \ottnt{B}   \Rightarrow _{ \ottnt{R} }  \ottnt{B'} }%
-\ottpremise{ \vDash  \ottnt{a}   \Rightarrow _{ \ottnt{R_{{\mathrm{1}}}} }  \ottnt{a'} }%
-\ottpremise{ \vDash  \ottnt{A_{{\mathrm{1}}}}   \Rightarrow _{ \ottnt{R} }  \ottnt{A'_{{\mathrm{1}}}} }%
-\ottpremise{ \ottnt{R}  \leq  \ottnt{R_{{\mathrm{1}}}} }%
+\ottpremise{ \Omega  \vDash  \ottnt{A}   \Rightarrow _{ \ottnt{R_{{\mathrm{2}}}} }  \ottnt{A'} }%
+\ottpremise{ \Omega  \vDash  \ottnt{a}   \Rightarrow _{ \ottnt{R_{{\mathrm{1}}}} }  \ottnt{a'} }%
+\ottpremise{ \Omega  \vDash  \ottnt{b}   \Rightarrow _{ \ottnt{R_{{\mathrm{1}}}} }  \ottnt{b'} }%
+\ottpremise{ \Omega  \ottsym{,}  \ottmv{c}  \ottsym{:}  \ottnt{R_{{\mathrm{1}}}}  \ottsym{,}  \Omega'  \vDash  \ottnt{B}   \Rightarrow _{ \ottnt{R} }  \ottnt{B'} }%
+\ottpremise{ \ottnt{R_{{\mathrm{1}}}}  \leq  \ottnt{R_{{\mathrm{2}}}} }%
 }{
- \vDash   \forall \ottmv{c} \!:\!  \ottnt{A}   \sim _{ \ottnt{A_{{\mathrm{1}}}} / \ottnt{R} }  \ottnt{B}  . \ottnt{a}    \Rightarrow _{ \ottnt{R_{{\mathrm{1}}}} }   \forall \ottmv{c} \!:\!  \ottnt{A'}   \sim _{ \ottnt{A'_{{\mathrm{1}}}} / \ottnt{R} }  \ottnt{B'}  . \ottnt{a'}  }{%
+  \Omega ,  \Omega'   \vDash   \forall \ottmv{c} \!:\!  \ottnt{a}   \sim _{ \ottnt{A} / \ottnt{R_{{\mathrm{1}}}} }  \ottnt{b}  . \ottnt{B}    \Rightarrow _{ \ottnt{R} }   \forall \ottmv{c} \!:\!  \ottnt{a'}   \sim _{ \ottnt{A'} / \ottnt{R_{{\mathrm{1}}}} }  \ottnt{b'}  . \ottnt{B'}  }{%
 {\ottdrulename{Par\_CPi}}{}%
 }}
 
 
 \newcommand{\ottdruleParXXAxiom}[1]{\ottdrule[#1]{%
-\ottpremise{\ottmv{F}  \sim  \ottnt{a}  \ottsym{:}  \ottnt{A}  \ottsym{/}  \ottnt{R} \, \in \,  \Sigma_0 }%
-\ottpremise{ \ottnt{R}  \leq  \ottnt{R_{{\mathrm{1}}}} }%
+\ottpremise{\ottmv{F}  \sim  \ottnt{a}  \ottsym{:}  \ottnt{A}  \ottsym{/}  \ottnt{R_{{\mathrm{1}}}} \, \in \,  \Sigma_0 }%
+\ottpremise{ \ottnt{R_{{\mathrm{1}}}}  \leq  \ottnt{R} }%
 }{
- \vDash  \ottmv{F}   \Rightarrow _{ \ottnt{R_{{\mathrm{1}}}} }  \ottnt{a} }{%
+ \Omega  \vDash  \ottmv{F}   \Rightarrow _{ \ottnt{R} }  \ottnt{a} }{%
 {\ottdrulename{Par\_Axiom}}{}%
 }}
 
 
 \newcommand{\ottdruleParXXCong}[1]{\ottdrule[#1]{%
-\ottpremise{ \vDash  \ottnt{a_{{\mathrm{1}}}}   \Rightarrow _{ \ottnt{R_{{\mathrm{1}}}} }  \ottnt{a_{{\mathrm{2}}}} }%
+\ottpremise{ \Omega  \vDash  \ottnt{a_{{\mathrm{1}}}}   \Rightarrow _{ \ottnt{R_{{\mathrm{1}}}} }  \ottnt{a_{{\mathrm{2}}}} }%
 }{
- \vDash   \ottnt{a_{{\mathrm{1}}}} \triangleright _{ \ottnt{R} }  \bullet    \Rightarrow _{ \ottnt{R_{{\mathrm{1}}}} }   \ottnt{a_{{\mathrm{2}}}} \triangleright _{ \ottnt{R} }  \bullet  }{%
+ \Omega  \vDash   \ottnt{a_{{\mathrm{1}}}} \triangleright _{ \ottnt{R} }  \bullet    \Rightarrow _{ \ottnt{R_{{\mathrm{1}}}} }   \ottnt{a_{{\mathrm{2}}}} \triangleright _{ \ottnt{R} }  \bullet  }{%
 {\ottdrulename{Par\_Cong}}{}%
 }}
 
 
 \newcommand{\ottdruleParXXCombine}[1]{\ottdrule[#1]{%
-\ottpremise{ \vDash  \ottnt{a_{{\mathrm{1}}}}   \Rightarrow _{ \ottnt{R_{{\mathrm{1}}}} }  \ottsym{(}   \ottnt{a_{{\mathrm{2}}}} \triangleright _{ \ottnt{R} }  \bullet   \ottsym{)} }%
+\ottpremise{ \Omega  \vDash  \ottnt{a_{{\mathrm{1}}}}   \Rightarrow _{ \ottnt{R_{{\mathrm{1}}}} }  \ottsym{(}   \ottnt{a_{{\mathrm{2}}}} \triangleright _{ \ottnt{R} }  \bullet   \ottsym{)} }%
 }{
- \vDash  \ottsym{(}   \ottnt{a_{{\mathrm{1}}}} \triangleright _{ \ottnt{R} }  \bullet   \ottsym{)}   \Rightarrow _{ \ottnt{R_{{\mathrm{1}}}} }  \ottsym{(}   \ottnt{a_{{\mathrm{2}}}} \triangleright _{ \ottnt{R} }  \bullet   \ottsym{)} }{%
+ \Omega  \vDash  \ottsym{(}   \ottnt{a_{{\mathrm{1}}}} \triangleright _{ \ottnt{R} }  \bullet   \ottsym{)}   \Rightarrow _{ \ottnt{R_{{\mathrm{1}}}} }  \ottsym{(}   \ottnt{a_{{\mathrm{2}}}} \triangleright _{ \ottnt{R} }  \bullet   \ottsym{)} }{%
 {\ottdrulename{Par\_Combine}}{}%
 }}
 
 
 \newcommand{\ottdruleParXXPush}[1]{\ottdrule[#1]{%
-\ottpremise{ \vDash  \ottnt{a_{{\mathrm{1}}}}   \Rightarrow _{ \ottnt{R_{{\mathrm{1}}}} }  \ottsym{(}   \ottnt{a_{{\mathrm{2}}}} \triangleright _{ \ottnt{R} }  \bullet   \ottsym{)} }%
-\ottpremise{ \vDash  \ottnt{b_{{\mathrm{1}}}}   \Rightarrow _{ \ottnt{R_{{\mathrm{2}}}} }  \ottnt{b_{{\mathrm{2}}}} }%
+\ottpremise{ \Omega  \vDash  \ottnt{a_{{\mathrm{1}}}}   \Rightarrow _{ \ottnt{R_{{\mathrm{1}}}} }  \ottsym{(}   \ottnt{a_{{\mathrm{2}}}} \triangleright _{ \ottnt{R} }  \bullet   \ottsym{)} }%
+\ottpremise{ \Omega  \vDash  \ottnt{b_{{\mathrm{1}}}}   \Rightarrow _{ \ottnt{R_{{\mathrm{2}}}} }  \ottnt{b_{{\mathrm{2}}}} }%
 \ottpremise{ \ottnt{R_{{\mathrm{2}}}}  \leq  \ottnt{R_{{\mathrm{1}}}} }%
 }{
- \vDash   \ottnt{a_{{\mathrm{1}}}}   \ottnt{b_{{\mathrm{1}}}} ^{ \ottnt{R_{{\mathrm{2}}}} ,+}    \Rightarrow _{ \ottnt{R_{{\mathrm{1}}}} }   \ottsym{(}   \ottnt{a_{{\mathrm{2}}}}   \ottsym{(}   \ottnt{b_{{\mathrm{2}}}} \triangleright _{ \ottnt{R} }  \bullet   \ottsym{)} ^{ \ottnt{R_{{\mathrm{2}}}} ,+}   \ottsym{)} \triangleright _{ \ottnt{R} }  \bullet  }{%
+ \Omega  \vDash   \ottnt{a_{{\mathrm{1}}}}   \ottnt{b_{{\mathrm{1}}}} ^{ \ottnt{R_{{\mathrm{2}}}} ,+}    \Rightarrow _{ \ottnt{R_{{\mathrm{1}}}} }   \ottsym{(}   \ottnt{a_{{\mathrm{2}}}}   \ottsym{(}   \ottnt{b_{{\mathrm{2}}}} \triangleright _{ \ottnt{R} }  \bullet   \ottsym{)} ^{ \ottnt{R_{{\mathrm{2}}}} ,+}   \ottsym{)} \triangleright _{ \ottnt{R} }  \bullet  }{%
 {\ottdrulename{Par\_Push}}{}%
 }}
 
 
 \newcommand{\ottdruleParXXCPush}[1]{\ottdrule[#1]{%
-\ottpremise{ \vDash  \ottnt{a_{{\mathrm{1}}}}   \Rightarrow _{ \ottnt{R_{{\mathrm{1}}}} }  \ottsym{(}   \ottnt{a_{{\mathrm{2}}}} \triangleright _{ \ottnt{R} }  \bullet   \ottsym{)} }%
+\ottpremise{ \Omega  \vDash  \ottnt{a_{{\mathrm{1}}}}   \Rightarrow _{ \ottnt{R_{{\mathrm{1}}}} }  \ottsym{(}   \ottnt{a_{{\mathrm{2}}}} \triangleright _{ \ottnt{R} }  \bullet   \ottsym{)} }%
 }{
- \vDash  \ottnt{a_{{\mathrm{1}}}}  \ottsym{[}  \bullet  \ottsym{]}   \Rightarrow _{ \ottnt{R_{{\mathrm{1}}}} }   \ottsym{(}  \ottnt{a_{{\mathrm{2}}}}  \ottsym{[}  \bullet  \ottsym{]}  \ottsym{)} \triangleright _{ \ottnt{R} }  \bullet  }{%
+ \Omega  \vDash  \ottnt{a_{{\mathrm{1}}}}  \ottsym{[}  \bullet  \ottsym{]}   \Rightarrow _{ \ottnt{R_{{\mathrm{1}}}} }   \ottsym{(}  \ottnt{a_{{\mathrm{2}}}}  \ottsym{[}  \bullet  \ottsym{]}  \ottsym{)} \triangleright _{ \ottnt{R} }  \bullet  }{%
 {\ottdrulename{Par\_CPush}}{}%
 }}
 
-\newcommand{\ottdefnPar}[1]{\begin{ottdefnblock}[#1]{$ \vDash  \ottnt{a}   \Rightarrow _{ \ottnt{R} }  \ottnt{b} $}{\ottcom{parallel reduction (implicit language)}}
+\newcommand{\ottdefnPar}[1]{\begin{ottdefnblock}[#1]{$ \Omega  \vDash  \ottnt{a}   \Rightarrow _{ \ottnt{R} }  \ottnt{b} $}{\ottcom{parallel reduction (implicit language)}}
 \ottusedrule{\ottdruleParXXRefl{}}
 \ottusedrule{\ottdruleParXXBeta{}}
 \ottusedrule{\ottdruleParXXApp{}}
@@ -899,34 +913,34 @@
 %% defn MultiPar
 \newcommand{\ottdruleMPXXRefl}[1]{\ottdrule[#1]{%
 }{
- \vdash   \ottnt{a}   \Rightarrow^{\ast} _ \ottnt{R}   \ottnt{a} }{%
+ \Omega   \vdash   \ottnt{a}   \Rightarrow^{\ast} _ \ottnt{R}   \ottnt{a} }{%
 {\ottdrulename{MP\_Refl}}{}%
 }}
 
 
 \newcommand{\ottdruleMPXXStep}[1]{\ottdrule[#1]{%
-\ottpremise{ \vDash  \ottnt{a}   \Rightarrow _{ \ottnt{R} }  \ottnt{b} }%
-\ottpremise{ \vdash   \ottnt{b}   \Rightarrow^{\ast} _ \ottnt{R}   \ottnt{a'} }%
+\ottpremise{ \Omega  \vDash  \ottnt{a}   \Rightarrow _{ \ottnt{R} }  \ottnt{b} }%
+\ottpremise{ \Omega   \vdash   \ottnt{b}   \Rightarrow^{\ast} _ \ottnt{R}   \ottnt{a'} }%
 }{
- \vdash   \ottnt{a}   \Rightarrow^{\ast} _ \ottnt{R}   \ottnt{a'} }{%
+ \Omega   \vdash   \ottnt{a}   \Rightarrow^{\ast} _ \ottnt{R}   \ottnt{a'} }{%
 {\ottdrulename{MP\_Step}}{}%
 }}
 
-\newcommand{\ottdefnMultiPar}[1]{\begin{ottdefnblock}[#1]{$ \vdash   \ottnt{a}   \Rightarrow^{\ast} _ \ottnt{R}   \ottnt{b} $}{\ottcom{multistep parallel reduction}}
+\newcommand{\ottdefnMultiPar}[1]{\begin{ottdefnblock}[#1]{$ \Omega   \vdash   \ottnt{a}   \Rightarrow^{\ast} _ \ottnt{R}   \ottnt{b} $}{\ottcom{multistep parallel reduction}}
 \ottusedrule{\ottdruleMPXXRefl{}}
 \ottusedrule{\ottdruleMPXXStep{}}
 \end{ottdefnblock}}
 
 %% defn joins
 \newcommand{\ottdrulejoin}[1]{\ottdrule[#1]{%
-\ottpremise{ \vdash   \ottnt{a_{{\mathrm{1}}}}   \Rightarrow^{\ast} _ \ottnt{R}   \ottnt{b} }%
-\ottpremise{ \vdash   \ottnt{a_{{\mathrm{2}}}}   \Rightarrow^{\ast} _ \ottnt{R}   \ottnt{b} }%
+\ottpremise{ \Omega   \vdash   \ottnt{a_{{\mathrm{1}}}}   \Rightarrow^{\ast} _ \ottnt{R}   \ottnt{b} }%
+\ottpremise{ \Omega   \vdash   \ottnt{a_{{\mathrm{2}}}}   \Rightarrow^{\ast} _ \ottnt{R}   \ottnt{b} }%
 }{
- \vdash   \ottnt{a_{{\mathrm{1}}}}   \Leftrightarrow _ \ottnt{R}   \ottnt{a_{{\mathrm{2}}}} }{%
+ \Omega   \vdash   \ottnt{a_{{\mathrm{1}}}}   \Leftrightarrow _ \ottnt{R}   \ottnt{a_{{\mathrm{2}}}} }{%
 {\ottdrulename{join}}{}%
 }}
 
-\newcommand{\ottdefnjoins}[1]{\begin{ottdefnblock}[#1]{$ \vdash   \ottnt{a}   \Leftrightarrow _ \ottnt{R}   \ottnt{b} $}{\ottcom{parallel reduction to a common term}}
+\newcommand{\ottdefnjoins}[1]{\begin{ottdefnblock}[#1]{$ \Omega   \vdash   \ottnt{a}   \Leftrightarrow _ \ottnt{R}   \ottnt{b} $}{\ottcom{parallel reduction to a common term}}
 \ottusedrule{\ottdrulejoin{}}
 \end{ottdefnblock}}
 
@@ -2133,6 +2147,6 @@
 
 \begin{verbatim}
 Definition rules:        161 good    0 bad
-Definition rule clauses: 472 good    0 bad
+Definition rule clauses: 475 good    0 bad
 \end{verbatim}
 \end{document}
