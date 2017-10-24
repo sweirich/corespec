@@ -763,11 +763,11 @@ Fixpoint erase_tm (a : tm) (r : role) : tm :=
    | a_Var_f x => a_Var_f x
    | a_Abs rho A R b => a_UAbs rho R (erase_tm b r)
    | a_UAbs rho R b => a_UAbs rho R (erase_tm b r)
-   | a_App a Rel R b => a_App (erase_tm a r) Rel R (erase_tm b r)
+   | a_App a Rel R b => a_App (erase_tm a r) Rel R (erase_tm b R)
    | a_App a Irrel R b => a_App (erase_tm a r) Irrel R a_Bullet
    | a_Const T => a_Const T
    | a_Fam F => a_Fam F
-   | a_Pi rho A R B => a_Pi rho (erase_tm A r) R (erase_tm B r)
+   | a_Pi rho A R B => a_Pi rho (erase_tm A R) R (erase_tm B r)
    | a_Conv a r1 g => if (lte_role r1 r) then
 	                      erase_tm a r else
 						   a_Conv (erase_tm a r) r1 g_Triv
@@ -787,7 +787,7 @@ with erase_brs (x : brs) (r:role): brs :=
    end
 with erase_constraint (phi : constraint) (r:role): constraint :=
    match phi with
-   | Eq A B A1 R => Eq (erase_tm A r) (erase_tm B r) (erase_tm A1 r) R
+   | Eq A B A1 R => Eq (erase_tm A R) (erase_tm B R) (erase_tm A1 R) R
    end.
 
 Definition erase_sort s r :=
@@ -872,7 +872,7 @@ with Value : role -> tm -> Prop :=    (* defn Value *)
      lc_tm (a_UAbs Rel R1 a) ->
      Value R (a_UAbs Rel R1 a)
  | Value_UAbsIrrel : forall (L:vars) (R R1:role) (a:tm),
-      ( forall x , x \notin  L  -> Value R  ( open_tm_wrt_tm a (a_Var_f x) )  )  ->
+      ( forall x , x \notin  L  -> CoercedValue R  ( open_tm_wrt_tm a (a_Var_f x) )  )  ->
      Value R (a_UAbs Irrel R1 a)
  | Value_AbsIrrel : forall (L:vars) (R:role) (A:tm) (R1:role) (a:tm),
      lc_tm A ->
@@ -938,23 +938,23 @@ Inductive erased_tm : tm -> Prop :=    (* defn erased_tm *)
      erased_tm a_Star
  | erased_a_Var : forall (x:tmvar),
      erased_tm (a_Var_f x)
- | erased_a_Abs : forall (L:vars) (rho:relflag) (R:role) (a:tm),
+ | erased_a_Abs : forall (L:vars) (rho:relflag) (R1:role) (a:tm),
       ( forall x , x \notin  L  -> erased_tm  ( open_tm_wrt_tm a (a_Var_f x) )  )  ->
-     erased_tm  ( (a_UAbs rho R a) ) 
- | erased_a_App : forall (a:tm) (rho:relflag) (R:role) (b:tm),
+     erased_tm  ( (a_UAbs rho R1 a) ) 
+ | erased_a_App : forall (a:tm) (rho:relflag) (R1:role) (b:tm),
      erased_tm a ->
      erased_tm b ->
-     erased_tm  ( (a_App a rho R b) ) 
- | erased_a_Pi : forall (L:vars) (rho:relflag) (A:tm) (R:role) (B:tm),
+     erased_tm  ( (a_App a rho R1 b) ) 
+ | erased_a_Pi : forall (L:vars) (rho:relflag) (A:tm) (R1:role) (B:tm),
      erased_tm A ->
       ( forall x , x \notin  L  -> erased_tm  ( open_tm_wrt_tm B (a_Var_f x) )  )  ->
-     erased_tm  ( (a_Pi rho A R B) ) 
- | erased_a_CPi : forall (L:vars) (a b A:tm) (R:role) (B:tm),
+     erased_tm  ( (a_Pi rho A R1 B) ) 
+ | erased_a_CPi : forall (L:vars) (a b A:tm) (R1:role) (B:tm),
      erased_tm a ->
      erased_tm b ->
      erased_tm A ->
       ( forall c , c \notin  L  -> erased_tm  ( open_tm_wrt_co B (g_Var_f c) )  )  ->
-     erased_tm  ( (a_CPi (Eq a b A R) B) ) 
+     erased_tm  ( (a_CPi (Eq a b A R1) B) ) 
  | erased_a_CAbs : forall (L:vars) (b:tm),
       ( forall c , c \notin  L  -> erased_tm  ( open_tm_wrt_co b (g_Var_f c) )  )  ->
      erased_tm  ( (a_UCAbs b) ) 
@@ -964,7 +964,10 @@ Inductive erased_tm : tm -> Prop :=    (* defn erased_tm *)
  | erased_a_Fam : forall (F:tyfam),
      erased_tm (a_Fam F)
  | erased_a_Const : forall (T:const),
-     erased_tm (a_Const T).
+     erased_tm (a_Const T)
+ | erased_a_Conv : forall (a:tm) (R:role),
+     erased_tm a ->
+     erased_tm  ( (a_Conv a R g_Triv) ) .
 
 (* defns JChk *)
 Inductive RhoCheck : relflag -> tmvar -> tm -> Prop :=    (* defn RhoCheck *)
@@ -983,10 +986,12 @@ Inductive Par : context -> available_props -> tm -> tm -> role -> Prop :=    (* 
  | Par_Beta : forall (G:context) (D:available_props) (a:tm) (rho:relflag) (R:role) (b a' b':tm) (R1:role),
      Par G D a  ( (a_UAbs rho R a') )  R1 ->
      Par G D b b' R ->
+     SubRole R R1 ->
      Par G D (a_App a rho R b)  (open_tm_wrt_tm  a'   b' )  R1
  | Par_App : forall (G:context) (D:available_props) (a:tm) (rho:relflag) (R:role) (b a' b':tm) (R1:role),
      Par G D a a' R1 ->
      Par G D b b' R ->
+     SubRole R R1 ->
      Par G D (a_App a rho R b) (a_App a' rho R b') R1
  | Par_CBeta : forall (G:context) (D:available_props) (a a':tm) (R:role),
      Par G D a  ( (a_UCAbs a') )  R ->
@@ -1000,6 +1005,7 @@ Inductive Par : context -> available_props -> tm -> tm -> role -> Prop :=    (* 
  | Par_Pi : forall (L:vars) (G:context) (D:available_props) (rho:relflag) (A:tm) (R:role) (B A' B':tm) (R1:role),
      Par G D A A' R ->
       ( forall x , x \notin  L  -> Par G D  ( open_tm_wrt_tm B (a_Var_f x) )   ( open_tm_wrt_tm B' (a_Var_f x) )  R1 )  ->
+     SubRole R R1 ->
      Par G D (a_Pi rho A R B) (a_Pi rho A' R B') R1
  | Par_CAbs : forall (L:vars) (G:context) (D:available_props) (a a':tm) (R:role),
       ( forall c , c \notin  L  -> Par G D  ( open_tm_wrt_co a (g_Var_f c) )   ( open_tm_wrt_co a' (g_Var_f c) )  R )  ->
@@ -1009,6 +1015,7 @@ Inductive Par : context -> available_props -> tm -> tm -> role -> Prop :=    (* 
      Par G D B B' R ->
       ( forall c , c \notin  L  -> Par G D  ( open_tm_wrt_co a (g_Var_f c) )   ( open_tm_wrt_co a' (g_Var_f c) )  R1 )  ->
      Par G D A1 A1' R ->
+     SubRole R R1 ->
      Par G D (a_CPi (Eq A B A1 R) a) (a_CPi (Eq A' B' A1' R) a') R1
  | Par_Axiom : forall (G:context) (D:available_props) (F:tyfam) (a:tm) (R1:role) (A:tm) (R:role),
       binds  F  (Ax  a A R )   toplevel   ->
@@ -1016,14 +1023,14 @@ Inductive Par : context -> available_props -> tm -> tm -> role -> Prop :=    (* 
      Par G D (a_Fam F) a R1
  | Par_Cong : forall (G:context) (D:available_props) (a1:tm) (R:role) (a2:tm) (R1:role),
      Par G D a1 a2 R1 ->
-      not (  ( SubRole R1 R )  )  ->
      Par G D (a_Conv a1 R g_Triv) (a_Conv a2 R g_Triv) R1
  | Par_Combine : forall (G:context) (D:available_props) (a1:tm) (R:role) (a2:tm) (R1:role),
      Par G D a1  ( (a_Conv a2 R g_Triv) )  R1 ->
      Par G D  ( (a_Conv a1 R g_Triv) )   ( (a_Conv a2 R g_Triv) )  R1
  | Par_Push : forall (G:context) (D:available_props) (a1:tm) (R2:role) (b1 a2 b2:tm) (R R1:role),
      Par G D a1  ( (a_Conv a2 R g_Triv) )  R1 ->
-     Par G D b1 b2 R1 ->
+     Par G D b1 b2 R2 ->
+     SubRole R2 R1 ->
      Par G D  (a_App  a1  Rel  R2   b1 )  (a_Conv  (  (a_App  a2  Rel  R2    ( (a_Conv b2 R g_Triv) )  )  )  R g_Triv) R1
  | Par_CPush : forall (G:context) (D:available_props) (a1 a2:tm) (R R1:role),
      Par G D a1  ( (a_Conv a2 R g_Triv) )  R1 ->
@@ -1072,11 +1079,13 @@ with reduction_in_one : tm -> tm -> role -> Prop :=    (* defn reduction_in_one 
  | E_CAppCAbs : forall (b:tm) (R:role),
      lc_tm (a_UCAbs b) ->
      reduction_in_one (a_CApp  ( (a_UCAbs b) )  g_Triv)  (open_tm_wrt_co  b   g_Triv )  R
- | E_Axiom : forall (F:tyfam) (a:tm) (R:role) (A:tm),
+ | E_Axiom : forall (F:tyfam) (a:tm) (R1:role) (A:tm) (R:role),
       binds  F  (Ax  a A R )   toplevel   ->
-     reduction_in_one (a_Fam F) a R
+     SubRole R R1 ->
+     reduction_in_one (a_Fam F) a R1
  | E_Cong : forall (a:tm) (R:role) (a':tm) (R1:role),
-     reduction_in_one a a' R ->
+     reduction_in_one a a' R1 ->
+      not (  ( SubRole R R1 )  )  ->
      reduction_in_one (a_Conv a R g_Triv) (a_Conv a' R g_Triv) R1
  | E_Combine : forall (a:tm) (R R1:role),
      lc_tm a ->
@@ -1161,6 +1170,7 @@ with Typing : context -> tm -> tm -> role -> Prop :=    (* defn Typing *)
      Typing G a A1 R1 ->
      DefEq G  (dom  G )  A1 A2 a_Star R2 ->
       not (  ( SubRole R2 R1 )  )  ->
+      ( Typing G A2 a_Star R2 )  ->
      Typing G (a_Conv a R2 g_Triv) A2 R1
 with Iso : context -> available_props -> constraint -> constraint -> Prop :=    (* defn Iso *)
  | E_PropCong : forall (G:context) (D:available_props) (A1 B1 A:tm) (R:role) (A2 B2:tm),

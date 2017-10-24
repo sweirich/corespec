@@ -109,7 +109,7 @@ Definition constraint_Closecl : Operators.Close.class constraint := Operators.Cl
 
 
 (* TODO: this function is not yet defined with the other erase_*, as it's pretty much useless, but do we want to define it in the ott file? *)
-Definition erase_co (_ : co) := g_Triv.
+Definition erase_co (_ : co) (_ : role) := g_Triv.
 
 Definition tm_Erasecl         : Operators.Erase.class tm         := Operators.Erase.Class erase_tm.
 Definition co_Erasecl         : Operators.Erase.class co         := Operators.Erase.Class erase_co.
@@ -147,10 +147,10 @@ End Test.
 
 (* TODO: could be nicer with some more canonical structures *)
 Module Rew.
-  Definition r_erase_tm         : forall x, erase_tm x = erase x         := fun _ => eq_refl.
-  Definition r_erase_co         : forall x, erase_co x = erase x         := fun _ => eq_refl.
-  Definition r_erase_brs        : forall x, erase_brs x = erase x        := fun _ => eq_refl.
-  Definition r_erase_constraint : forall x, erase_constraint x = erase x := fun _ => eq_refl.
+  Definition r_erase_tm         : forall R x, erase_tm x R = erase x R         := fun _ _ => eq_refl.
+  Definition r_erase_co         : forall R x, erase_co x R = erase x R         := fun _ _ => eq_refl.
+  Definition r_erase_brs        : forall R x, erase_brs x R = erase x R        := fun _ _ => eq_refl.
+  Definition r_erase_constraint : forall R x, erase_constraint x R = erase x R := fun _ _ => eq_refl.
 
   Definition r_close_tm_tm         : forall x t, close_tm_wrt_tm x t = close_tm x t         := fun _ _ => eq_refl.
   Definition r_close_tm_co         : forall x t, close_co_wrt_tm x t = close_tm x t         := fun _ _ => eq_refl.

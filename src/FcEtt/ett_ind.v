@@ -150,7 +150,7 @@ Ltac lc_inversion c :=
     inversion H; clear H
   | [ H : lc_tm (a_Pi _ _ _ _) |- _ ] =>
     inversion H; clear H
-  | [ H : lc_tm (a_Conv _ _) |- _ ] =>
+  | [ H : lc_tm (a_Conv _ _ _) |- _ ] =>
     inversion H; clear H
   | [ H : lc_tm (a_CPi _ _) |- _ ] =>
     inversion H; clear H
@@ -240,7 +240,7 @@ Ltac invert_syntactic_equality :=
     inversion H; subst; clear H
   | [ H : a_Const _  = a_Const _ |- _ ] =>
     inversion H; subst; clear H
-  | [ H : a_Conv _ _ = a_Conv _ _ |- _ ] =>
+  | [ H : a_Conv _ _ _ = a_Conv _ _ _ |- _ ] =>
     inversion H; subst; clear H
   | [ H : a_UCAbs _ = a_UCAbs _ |- _ ] =>
     inversion H; subst; clear H
@@ -367,7 +367,8 @@ Ltac ext_induction CON :=
       pose CON :=  E_IsoSnd     |
       pose CON :=  E_Empty      |
       pose CON :=  E_ConsTm     |
-      pose CON :=  E_ConsCo     ].
+      pose CON :=  E_ConsCo     |
+      pose CON :=  E_TyCast   ].
 
 
 Ltac ann_induction CON :=
@@ -665,7 +666,7 @@ Ltac E_pick_fresh x :=
 
 Ltac Par_pick_fresh x :=
   match goal with
-    | [ |- Par _ _ ?shape ?s2 ] =>
+    | [ |- Par _ _ ?shape ?s2 ?R ] =>
       let v := match shape with
             | a_Pi _ _ _ _ => Par_Pi
             | a_UAbs _ _ _ =>  match s2 with
@@ -736,4 +737,14 @@ Proof.
 Qed.
 
 Hint Rewrite tm_subst_cast.
+
+Lemma rep_nsub_nom : ~ SubRole Rep Nom.
+Proof. intro. 
+       remember Rep as R1.
+       remember Nom as R2.
+       induction H. inversion HeqR1.
+       subst. inversion HeqR2.
+       destruct R2; auto.
+Qed.
+
 

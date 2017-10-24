@@ -5,7 +5,7 @@ Require Import Coq.Program.Equality.
 Require Export Metatheory.
 Require Export LibLNgen.
 
-Require Export ett_ott.
+Require Import ett_ott.
 
 (** NOTE: Auxiliary theorems are hidden in generated documentation.
     In general, there is a [_rec] version of every lemma involving
