@@ -60,6 +60,30 @@ Lemma Ctx_uniq : forall G, Ctx G -> uniq G.
   inversion 1; subst; solve_uniq.
 Qed.
 
+Lemma dom_rctx_le_ctx : forall G, dom (ctx_to_rctx G) [<=] dom G.
+Proof. intros; induction G; simpl. fsetdec.
+       destruct a, s. simpl. fsetdec. fsetdec.
+Qed.
+
+Lemma ctx_to_rctx_uniq : forall G, Ctx G -> uniq (ctx_to_rctx G).
+Proof. intros G. induction G; intros.
+        - simpl; auto.
+        - inversion H; subst; simpl. apply Ctx_uniq in H.
+          apply IHG in H2. econstructor; eauto. 
+          assert (P : dom (ctx_to_rctx G) [<=] dom G). 
+          { apply dom_rctx_le_ctx. } fsetdec.
+          inversion H. apply IHG; auto.
+Qed.
+
+Lemma ctx_to_rctx_binds_tm : forall G x A R, binds x (Tm A R) G ->
+                                             binds x R (ctx_to_rctx G).
+Proof. intros G. induction G; intros; simpl; eauto.
+       destruct a, s. apply binds_cons_1 in H. inversion H; eauto.
+       inversion H0. inversion H2. subst. auto.
+       apply binds_cons_1 in H. inversion H. inversion H0. inversion H2.
+       eauto.
+Qed.
+
 Hint Resolve Ctx_uniq.
 
 Lemma lc_mutual :

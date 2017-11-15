@@ -425,6 +425,7 @@ Ltac gather_atoms ::=
   let A := gather_atoms_with (fun x : vars => x) in
   let B := gather_atoms_with (fun x : var => {{ x }}) in
   let C1 := gather_atoms_with (fun x : context => dom x) in
+  let C2 := gather_atoms_with (fun x : role_context => dom x) in
   let D1 := gather_atoms_with (fun x => fv_tm_tm_tm x) in
   let D2 := gather_atoms_with (fun x => fv_tm_tm_co x) in
   let D3 := gather_atoms_with (fun x => fv_tm_tm_constraint x) in
@@ -435,7 +436,7 @@ Ltac gather_atoms ::=
   let D8 := gather_atoms_with (fun x => fv_co_co_constraint x) in
   let D9 := gather_atoms_with (fun x => fv_co_co_sort x) in
   let D10 := gather_atoms_with (fun x => fv_co_co_brs x) in
-  constr:(A \u B \u C1 \u D1 \u D2 \u D3 \u D4 \u D5 \u D6 \u D7 \u D8 \u D9 \u D10).
+  constr:(A \u B \u C1 \u C2 \u D1 \u D2 \u D3 \u D4 \u D5 \u D6 \u D7 \u D8 \u D9 \u D10).
 
 
 (* ----------------------------------------------------- *)

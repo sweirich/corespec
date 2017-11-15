@@ -24,6 +24,41 @@ Require Export FcEtt.toplevel.
 Require Export FcEtt.ett_value.
 
 
+Lemma rctx_uniq : forall W a R, erased_tm W a R -> uniq W.
+Proof. intros W a R H. induction H; eauto.
+        - pick fresh x. eapply uniq_app_2; eauto.
+        - pick fresh c; eauto.
+Qed.
+
+Lemma erased_app_rctx : forall W1 W2 W3 a R, uniq (W1 ++ W2 ++ W3) -> 
+                               erased_tm (W1 ++ W3) a R ->
+                               erased_tm (W1 ++ W2 ++ W3) a R.
+Proof. intros W1 W2 W3 a R U H. generalize dependent W2. 
+       dependent induction H; intros; eauto.
+        - eapply erased_a_Abs with (L := union L (dom (W1 ++ W2 ++ W3))).
+          intros. rewrite <- app_assoc.
+          eapply H0; eauto. simpl_env. auto.
+        - eapply erased_a_Pi with (L := union L (dom (W1 ++ W2 ++ W3))); eauto.
+          intros. rewrite <- app_assoc.
+          eapply H1; eauto. simpl_env. auto.
+        - econstructor; eauto.
+Qed.
+
+Lemma par_app_rctx : forall S D W1 W2 W3 a a' R, uniq (W1 ++ W2 ++ W3) ->
+                     Par S D (W1 ++ W3) a a' R -> 
+                     Par S D (W1 ++ W2 ++ W3) a a' R.
+Proof. intros S D W1 W2 W3 a a' R U H. generalize dependent W2.
+       dependent induction H; intros; eauto.
+        - econstructor. eapply erased_app_rctx; eauto.
+        - eapply Par_Abs with (L := union L (dom (W1 ++ W2 ++ W3))).
+          intros. rewrite <- app_assoc.
+          eapply H0; eauto. simpl_env. auto.
+        - eapply Par_Pi with (L := union L (dom (W1 ++ W2 ++ W3))); eauto.
+          intros. rewrite <- app_assoc.
+          eapply H1; eauto. simpl_env. auto.
+        - econstructor; eauto.
+Qed.
+
 (* ------------------------------------------ *)
 
 (* Synatactic properties about parallel reduction. (Excluding confluence.) *)
@@ -33,9 +68,9 @@ Require Export FcEtt.ett_value.
 
 (* TODO: move these definitions to the OTT file. *)
 
-Inductive multipar S D ( a : tm) : tm -> role -> Prop :=
-| mp_refl : forall R, multipar S D a a R
-| mp_step : forall R b c, Par S D a b R -> multipar S D b c R -> multipar S D a c R.
+Inductive multipar S D W ( a : tm) (R : role) : tm -> Prop :=
+| mp_refl : multipar S D W a R a
+| mp_step : forall b c, Par S D W a b R -> multipar S D W b R c -> multipar S D W a R c.
 
 Hint Constructors multipar.
 
@@ -46,7 +81,7 @@ Hint Constructors multipar.
 
 Ltac erased_pick_fresh x :=
   match goal with
-    [ |- erased_tm ?s ] =>
+    [ |- erased_tm ?s ?R ] =>
     let v := match s with
              | a_UAbs _ _ _ => erased_a_Abs
              | a_Pi _ _ _ _ => erased_a_Pi
@@ -112,42 +147,119 @@ Qed.
 
 Hint Resolve erased_tm_erase : erased. Locate multipar.
 *)
-Inductive erased_sort : sort -> Prop := 
-| erased_Tm : forall a R, erased_tm a -> erased_sort (Tm a R)
-| erased_Co : forall a b A R, erased_tm a -> erased_tm b -> erased_tm A -> erased_sort (Co (Eq a b A R)).
+Inductive erased_sort (W : role_context) : sort -> Prop := 
+| erased_Tm : forall a R, erased_tm W a R -> erased_sort W (Tm a R)
+| erased_Co : forall a b A R, erased_tm W a R -> erased_tm W b R -> erased_tm W A R -> erased_sort W (Co (Eq a b A R)).
 
 (* Check Forall_forall FIXME:?? *)
 
-Definition erased_context : context -> Prop :=
-  Forall (fun p => match p with (a,s) => (erased_sort s) end).
+Inductive erased_context : role_context -> context -> Prop :=
+ | nil_erased_ctx : erased_context nil nil
+ | co_erased_ctx : forall W G c a b A R,
+                   erased_sort W (Co (Eq a b A R)) -> erased_context W G -> 
+                   erased_context W ([(c, (Co (Eq a b A R)))] ++ G)
+ | tm_erased_ctx : forall W G x A R, erased_context W G ->
+                   erased_sort W (Tm A R) ->
+                   erased_context ([(x,R)] ++ W) ([(x, (Tm A R))] ++ G).
 
-Definition joins S D a b R := exists c, erased_context S /\ erased_tm a /\ erased_tm b /\
-                               multipar S D a c R /\ multipar S D b c R.
+Lemma dom_erased_ctx_rctx_le_ctx : forall W G, erased_context W G ->
+                                               dom W [<=] dom G.
+Proof. intros; induction H; simpl; fsetdec.
+Qed.
+
+Lemma uniq_erased_ctx_rctx : forall W G, erased_context W G -> uniq G
+                                          -> uniq W.
+Proof. intros. induction H; auto.
+       apply IHerased_context. eapply uniq_app_2; eauto.
+       inversion H0. apply IHerased_context in H4. constructor.
+       auto. apply dom_erased_ctx_rctx_le_ctx in H. fsetdec.
+Qed.
+
+Definition joins S D W a b R := exists c, erased_tm W a R /\ erased_tm W b R /\
+                               multipar S D W a R c /\ multipar S D W b R c.
 
 
-Lemma erased_lc : forall a, erased_tm a -> lc_tm a.
+Lemma erased_lc : forall W a R, erased_tm W a R -> lc_tm a.
 intros; induction H; auto.
 Qed.
 
 Hint Resolve erased_lc : lc.
 
-Lemma subst_tm_erased : forall x b, erased_tm b -> forall a, erased_tm a -> erased_tm (tm_subst_tm_tm b x a).
+Lemma subst_tm_erased : forall W1 x R1 W2 a R b, 
+               erased_tm (W1 ++ [(x,R1)] ++ W2) a R ->
+               erased_tm W2 b R1 -> 
+               erased_tm (W1 ++ W2) (tm_subst_tm_tm b x a) R.
 Proof.
-  intros x b Eb a Ea. induction Ea; simpl; intros; eauto 2.
-  all: try solve [erased_pick_fresh x0; autorewrite with subst_open_var; eauto using erased_lc].
-  destruct eq_dec; eauto.
+  intros W1 x R1 W2 a R b H1 H2. dependent induction H1; simpl; eauto.
+  - destruct (x0 == x); auto. 
+     + subst. assert (P:R = R1).
+       eapply binds_mid_eq; eauto. subst. replace W1 with (nil ++ W1); eauto.
+       rewrite app_assoc. eapply erased_app_rctx; simpl_env; eauto.
+     + econstructor. eapply uniq_remove_mid; eauto.
+       eapply binds_remove_mid; eauto.
+  - pick fresh y and apply erased_a_Abs.
+     assert(P : a_Var_f y = tm_subst_tm_tm b x (a_Var_f y)).
+     {rewrite tm_subst_tm_tm_fresh_eq; auto. }
+     rewrite P.
+     rewrite <- tm_subst_tm_tm_open_tm_wrt_tm; auto.
+     rewrite <- app_assoc. eapply H0; eauto. simpl_env. auto.
+     eapply erased_lc; eauto.
+  - pick fresh y and apply erased_a_Pi; eauto.
+     assert(P : a_Var_f y = tm_subst_tm_tm b x (a_Var_f y)).
+     {rewrite tm_subst_tm_tm_fresh_eq; auto. }
+     rewrite P.
+     rewrite <- tm_subst_tm_tm_open_tm_wrt_tm; auto.
+     rewrite <- app_assoc. eapply H0; eauto. simpl_env. auto.
+     eapply erased_lc; eauto.
+  - pick fresh c and apply erased_a_CPi; eauto.
+     assert(P : g_Var_f c = tm_subst_tm_co b x (g_Var_f c)).
+     {rewrite tm_subst_tm_co_fresh_eq; auto. }
+     rewrite P.
+     rewrite <- tm_subst_tm_tm_open_tm_wrt_co; auto.
+     eapply H0; eauto. eapply erased_lc; eauto.
+  - pick fresh c and apply erased_a_CAbs; eauto.
+     assert(P : g_Var_f c = tm_subst_tm_co b x (g_Var_f c)).
+     {rewrite tm_subst_tm_co_fresh_eq; auto. }
+     rewrite P.
+     rewrite <- tm_subst_tm_tm_open_tm_wrt_co; auto.
+     eapply H0; eauto. eapply erased_lc; eauto.
 Qed.
 
-Lemma subst_co_erased : forall c g a, lc_co g -> erased_tm a -> erased_tm (co_subst_co_tm g c a).
+
+Lemma subst_co_erased : forall W c g a R, lc_co g -> erased_tm W a R -> erased_tm W (co_subst_co_tm g c a) R.
 Proof.
-  induction 2; simpl; intros; eauto 2.
-  all: try solve [erased_pick_fresh x0; autorewrite with subst_open_var; eauto using erased_lc].
+  intros W c g a R lc H. generalize dependent g.
+  induction H; intros; simpl; eauto.
+  - eapply erased_a_Abs with (L := L).
+     intros x0 H1.
+     assert(P : a_Var_f x0 = co_subst_co_tm g c (a_Var_f x0)).
+     {rewrite co_subst_co_tm_fresh_eq; auto. }
+     rewrite P.
+     rewrite <- co_subst_co_tm_open_tm_wrt_tm; auto.
+   - eapply erased_a_Pi with (L := L); eauto.
+     intros x0 H2.
+     assert(P : a_Var_f x0 = co_subst_co_tm g c (a_Var_f x0)).
+     {rewrite co_subst_co_tm_fresh_eq; auto. }
+     rewrite P.
+     rewrite <- co_subst_co_tm_open_tm_wrt_tm; auto.
+   - eapply erased_a_CPi with (L := union L (singleton c)); eauto.
+     intros c0 H4.
+     assert(P : g_Var_f c0 = co_subst_co_co g c (g_Var_f c0)).
+     {rewrite co_subst_co_co_fresh_eq; auto. } 
+     rewrite P.
+     rewrite <- co_subst_co_tm_open_tm_wrt_co; auto.
+   - eapply erased_a_CAbs with (L := union L (singleton c)); eauto.
+     intros c0 H4.
+     assert(P : g_Var_f c0 = co_subst_co_co g c (g_Var_f c0)).
+     {rewrite co_subst_co_co_fresh_eq; auto. } 
+     rewrite P.
+     rewrite <- co_subst_co_tm_open_tm_wrt_co; auto.
 Qed.
 
 Hint Resolve subst_tm_erased subst_co_erased : erased.
 
-Lemma Par_lc1 : forall G D a a' R , Par G D a a' R -> lc_tm a.
-  intros.  induction H; auto.
+Lemma Par_lc1 : forall G D W a a' R , Par G D W a a' R -> lc_tm a.
+  intros.  induction H; auto. eapply erased_lc; eauto.
 Qed.
 
 (* FIXME: find a good place for this tactic. *)
@@ -158,9 +270,10 @@ Ltac lc_toplevel_inversion :=
     apply Toplevel_lc in b; inversion b; auto
 end.
 
-Lemma Par_lc2 : forall G D a a' R, Par G D a a' R -> lc_tm a'.
+Lemma Par_lc2 : forall G D W a a' R, Par G D W a a' R -> lc_tm a'.
 Proof.
-  intros.  induction H; auto.
+  intros. induction H; auto.
+  - lc_solve.
   - lc_solve.
   - lc_solve.
   - lc_toplevel_inversion.
@@ -171,47 +284,72 @@ Qed.
 Hint Resolve Par_lc1 Par_lc2 : lc.
 
 Lemma typing_erased_mutual:
-    (forall G b A R, Typing G b A R -> erased_tm b) /\
+    (forall G b A R, Typing G b A R -> erased_tm (ctx_to_rctx G) b R) /\
     (forall G0 phi (H : PropWff G0 phi),
-        forall A B T R, phi = Eq A B T R -> erased_tm A /\ erased_tm B /\ erased_tm T) /\
+        forall A B T R, phi = Eq A B T R -> erased_tm (ctx_to_rctx G0) A R /\ 
+        erased_tm (ctx_to_rctx G0) B R /\ erased_tm (ctx_to_rctx G0) T R) /\
      (forall G0 D p1 p2 (H : Iso G0 D p1 p2), True ) /\
      (forall G0 D A B T R (H : DefEq G0 D A B T R), True) /\
      (forall G0 (H : Ctx G0), True).
-Proof.
+Proof. 
   apply typing_wff_iso_defeq_mutual; intros; repeat split; split_hyp; subst; 
   simpl; auto.
   all : try solve [inversion H2; subst; auto].
   all : try solve [econstructor; eauto].
+  - econstructor. apply ctx_to_rctx_uniq; eauto.
+  - econstructor. apply ctx_to_rctx_uniq; eauto. 
+    eapply ctx_to_rctx_binds_tm; eauto.
+  - econstructor; eauto. econstructor. apply ctx_to_rctx_uniq.
+    eapply Typing_Ctx; eauto.
   - destruct phi.
     apply (@erased_a_CPi L); try solve [apply (H0 a b A R0); auto]; auto;
     pose H2 := H0 a b A R0 eq_refl; inversion H2 as [H21 [H22 H23]]; econstructor; eassumption.
+  - econstructor. apply ctx_to_rctx_uniq. auto.
 Qed.
 
 
-Lemma Typing_erased: forall G b A R, Typing G b A R -> erased_tm b.
+Lemma Typing_erased: forall G b A R, Typing G b A R -> 
+                                     erased_tm (ctx_to_rctx G) b R.
 Proof.
   apply typing_erased_mutual.
 Qed.
 
 Hint Resolve Typing_erased : erased.
-
+(*
 
 Lemma typing_erased_type_mutual:
-    (forall G b A R, Typing G b A R -> erased_tm A) /\
+    (forall G b A R, Typing G b A R -> erased_tm (ctx_to_rctx G) A R) /\
     (forall G0 phi (H : PropWff G0 phi), True) /\
      (forall G0 D p1 p2 (H : Iso G0 D p1 p2), True ) /\
      (forall G0 D A B T R (H : DefEq G0 D A B T R), True) /\
-     (forall G0 (H : Ctx G0), erased_context G0).
+     (forall G0 (H : Ctx G0), erased_context (ctx_to_rctx G0) G0).
 Proof.
   apply typing_wff_iso_defeq_mutual; intros; repeat split; split_hyp; subst; simpl; auto.
-  all: unfold erased_context in *.
   all: eauto using Typing_erased.
     all: try solve [inversion H; pick fresh x;
       rewrite (tm_subst_tm_tm_intro x); auto;
         eapply subst_tm_erased;
         eauto using Typing_erased].
-  - eapply Forall_forall in H; eauto. simpl in H. inversion H. eassumption.
-  - inversion p. econstructor; eauto using Typing_erased.
+  - induction H. 
+     + inversion b.
+     + inversion b. inversion H1.
+       simpl in H1. apply IHerased_context; auto.
+       inversion c; auto.
+     + inversion b. 
+        * inversion H1; subst. inversion H0; subst.
+          assert (P : [(x,R)] = nil ++ [(x,R)]). { auto. }
+          rewrite P. rewrite app_assoc. apply erased_app_rctx; eauto.
+          apply Ctx_uniq in c. simpl_env. apply dom_erased_ctx_rctx_le_ctx in H.
+          inversion c. constructor. eapply rctx_uniq; eauto. fsetdec.
+        * assert (P : [(x0,R0)] = nil ++ [(x0,R0)]). { auto. }
+          rewrite P. rewrite app_assoc. apply erased_app_rctx; auto.
+          simpl_env. apply dom_erased_ctx_rctx_le_ctx in H.
+          inversion c. constructor. eapply rctx_uniq; eauto. fsetdec.
+          simpl_env. inversion c. apply IHerased_context; eauto.
+  - inversion H; subst. apply Typing_erased in t0.
+    pick fresh x. rewrite (tm_subst_tm_tm_intro x); auto.
+    replace (ctx_to_rctx G) with (nil ++ (ctx_to_rctx G)); auto.
+    eapply subst_tm_erased; eauto.
   - inversion H; pick fresh x;
       rewrite (co_subst_co_tm_intro x); auto.
         eapply subst_co_erased;
@@ -231,14 +369,18 @@ Lemma Typing_erased_type : forall G b A R, Typing G b A R -> erased_tm A.
 Proof. apply typing_erased_type_mutual. Qed.
 
 Hint Resolve Typing_erased_type : erased.
-
-Lemma toplevel_erased1 : forall F a A R, binds F (Ax a A R) toplevel -> erased_tm a.
+*)
+Lemma toplevel_erased1 : forall W F a A R, binds F (Ax a A R) toplevel -> 
+                                           uniq W -> erased_tm W a R.
 Proof.
   intros.
   move: (toplevel_closed H) => h0.
-  eauto with erased.
+  replace W with (nil ++ W ++ nil).
+  apply erased_app_rctx. simpl_env; auto.
+  simpl_env. pose (P := Typing_erased h0). simpl in P.
+  auto. simpl_env. auto.
 Qed.
-
+(*
 Lemma toplevel_erased2 : forall F a A R, binds F (Ax a A R) toplevel -> erased_tm A.
 Proof.
   intros.
@@ -247,8 +389,8 @@ Proof.
 Qed.
 
 Hint Resolve toplevel_erased1 toplevel_erased2 : erased.
-
-
+*)
+(*
 (* Introduce a hypothesis about an erased opened term. *)
 Ltac erased_body x Ea :=
     match goal with
@@ -266,8 +408,37 @@ Ltac eta_eq y EQ :=
                            a_App ?b ?rho _ _ |- _ ] =>
    move: (H y ltac:(auto)) =>  EQ
 end.
+*)
 
+Lemma Par_erased_tm_fst : forall G D W a a' R, Par G D W a a' R -> 
+                                               erased_tm W a R.
+Proof. intros G D W a a' R H. induction H; eauto.
+Qed.
 
+Lemma Par_erased_tm_snd : forall G D W a a' R, Par G D W a a' R ->
+                                               erased_tm W a' R.
+Proof. intros G D W a a' R H. induction H; eauto.
+        - inversion IHPar1; subst. pick fresh x.
+          assert (Q : tm_subst_tm_tm b' x (a_Var_f x) = b').
+          { simpl; destruct (@eq_dec tmvar _ x x); try done. }
+          rewrite <- Q. assert (P : tm_subst_tm_tm b' x a' = a').
+          { eapply tm_subst_tm_tm_fresh_eq; eauto. }
+          rewrite <- P. rewrite <- tm_subst_tm_tm_open_tm_wrt_tm.
+          replace W with (W ++ nil); auto. eapply subst_tm_erased; eauto.
+          simpl_env. auto. eapply erased_lc; eauto.
+        - inversion IHPar; subst. pick fresh c.
+          assert (Q : co_subst_co_co g_Triv c (g_Var_f c) = g_Triv).
+          { simpl; destruct (@eq_dec covar _ c c); try done. }
+          rewrite <- Q. assert (P : co_subst_co_tm g_Triv c a' = a').
+          { eapply co_subst_co_tm_fresh_eq; eauto. }
+          rewrite <- P. rewrite <- co_subst_co_tm_open_tm_wrt_co.
+          replace W with (W ++ nil); auto. eapply subst_co_erased; eauto.
+          simpl_env. auto. auto.
+        - admit.
+        - inversion IHPar1; eauto.
+        - inversion IHPar; eauto.
+Admitted.
+(*
 Lemma Par_erased_tm : forall G D a a' R, Par G D a a' R -> erased_tm a -> erased_tm a'.
 Proof.
   intros G D a a' R Ep Ea.  induction Ep; inversion Ea; subst; eauto 2.
@@ -296,18 +467,76 @@ Lemma Par_sub: forall S D a a' R1 R2, Par S D a a' R1 -> SubRole R1 R2 ->
 Proof. intros S D a a' R1 R2 H SR. generalize dependent R2.
        induction H; intros; simpl; eauto.
 Qed.
+*)
 
-Lemma subst1 : forall b S D a a' R x, Par S D a a' R -> erased_tm b ->
-                           Par S D (tm_subst_tm_tm a x b) (tm_subst_tm_tm a' x b) R.
+Lemma subst1 : forall b S D W W' a a' R1 R2 x, Par S D W a a' R1 -> 
+               erased_tm (W ++ [(x,R1)] ++ W') b R2 ->
+               Par S D (W ++ W') (tm_subst_tm_tm a x b) (tm_subst_tm_tm a' x b) R2.
 Proof.
-  intros b S D a a' R x PAR ET. 
-  induction ET; intros; simpl; auto.
-  destruct (x0 == x); auto.
-  all: try solve [Par_pick_fresh y;
-                  autorewrite with subst_open_var; eauto 2 with lc].
-  econstructor. auto.
-  Unshelve.
-  all: eauto.
+  intros b S D W W' a a' R1 R2 x PAR ET.
+  dependent induction ET; intros; simpl; auto.
+   - constructor. constructor. eapply uniq_remove_mid; eauto.
+   - constructor. constructor. eapply uniq_remove_mid; eauto.
+   - destruct (x0 == x); auto. 
+     + subst. assert (P:R = R1).
+       eapply binds_mid_eq; eauto. subst. replace W' with (W' ++ nil); eauto.
+       eapply par_app_rctx. simpl_env. eapply uniq_remove_mid; eauto.
+       simpl_env; eauto. 
+     + econstructor. econstructor. eapply uniq_remove_mid; eauto.
+       eapply binds_remove_mid; eauto.
+   - eapply Par_Abs with (L := union L (singleton x)).
+     intros x0 H1.
+     assert(P : a_Var_f x0 = tm_subst_tm_tm a x (a_Var_f x0)).
+     {rewrite tm_subst_tm_tm_fresh_eq; auto. }
+     assert(Q : a_Var_f x0 = tm_subst_tm_tm a' x (a_Var_f x0)).
+     {rewrite tm_subst_tm_tm_fresh_eq; auto. }
+     rewrite P.
+     rewrite <- tm_subst_tm_tm_open_tm_wrt_tm; auto.
+     rewrite <- P. rewrite Q.
+     rewrite <- tm_subst_tm_tm_open_tm_wrt_tm; auto.
+     rewrite <- Q. simpl_env. eapply H0; eauto. simpl_env. auto.
+     eapply Par_lc2; eauto. eapply Par_lc1; eauto.
+   - econstructor; eauto.
+   - eapply Par_Pi with (L := union L (singleton x)); eauto.
+     intros x0 H1.
+     assert(P : a_Var_f x0 = tm_subst_tm_tm a x (a_Var_f x0)).
+     {rewrite tm_subst_tm_tm_fresh_eq; auto. }
+     assert(Q : a_Var_f x0 = tm_subst_tm_tm a' x (a_Var_f x0)).
+     {rewrite tm_subst_tm_tm_fresh_eq; auto. }
+     rewrite P.
+     rewrite <- tm_subst_tm_tm_open_tm_wrt_tm; auto.
+     rewrite <- P. rewrite Q.
+     rewrite <- tm_subst_tm_tm_open_tm_wrt_tm; auto.
+     rewrite <- Q. simpl_env. eapply H0; eauto. simpl_env. auto.
+     eapply Par_lc2; eauto. eapply Par_lc1; eauto.
+   - eapply Par_CPi with (L := union L (singleton x)); eauto.
+     intros c H1.
+     assert(P : g_Var_f c = tm_subst_tm_co a x (g_Var_f c)).
+     {rewrite tm_subst_tm_co_fresh_eq; auto. }
+     assert(Q : g_Var_f c = tm_subst_tm_co a' x (g_Var_f c)).
+     {rewrite tm_subst_tm_co_fresh_eq; auto. }
+     rewrite P.
+     rewrite <- tm_subst_tm_tm_open_tm_wrt_co; auto.
+     rewrite <- P. rewrite Q.
+     rewrite <- tm_subst_tm_tm_open_tm_wrt_co; auto.
+     rewrite <- Q. eapply H0; eauto.
+     eapply Par_lc2; eauto. eapply Par_lc1; eauto.
+   - eapply Par_CAbs with (L := union L (singleton x)); eauto.
+     intros c H1.
+     assert(P : g_Var_f c = tm_subst_tm_co a x (g_Var_f c)).
+     {rewrite tm_subst_tm_co_fresh_eq; auto. }
+     assert(Q : g_Var_f c = tm_subst_tm_co a' x (g_Var_f c)).
+     {rewrite tm_subst_tm_co_fresh_eq; auto. }
+     rewrite P.
+     rewrite <- tm_subst_tm_tm_open_tm_wrt_co; auto.
+     rewrite <- P. rewrite Q.
+     rewrite <- tm_subst_tm_tm_open_tm_wrt_co; auto.
+     rewrite <- Q. eapply H0; eauto.
+     eapply Par_lc2; eauto. eapply Par_lc1; eauto.
+   - econstructor; eauto.
+   - econstructor; eauto.
+   - econstructor; eauto.
+   - econstructor; eauto.
 Qed.
 
 Lemma open1 : forall b S D a a' L, Par S D a a'
