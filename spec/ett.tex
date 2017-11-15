@@ -141,15 +141,15 @@
 \ottprodline{|}{ \gamma } {\textsf{S}}{}{}{}\ottprodnewline
 \ottprodline{|}{\gamma  \ottsym{\{}  \ottnt{a}  \ottsym{/}  \ottmv{x}  \ottsym{\}}} {\textsf{S}}{}{}{}}
 
-\newcommand{\ottsigXXsort}{
-\ottrulehead{\ottnt{sig\_sort}}{::=}{\ottcom{signature classifier}}\ottprodnewline
-\ottfirstprodline{|}{\ottkw{Cs} \, \ottnt{A}}{}{}{}{}\ottprodnewline
-\ottprodline{|}{\ottkw{Ax} \, \ottnt{a} \, \ottnt{A} \, \ottnt{R}}{}{}{}{}}
-
 \newcommand{\ottsort}{
 \ottrulehead{\ottnt{sort}}{::=}{\ottcom{binding classifier}}\ottprodnewline
 \ottfirstprodline{|}{\ottkw{Tm} \, \ottnt{A} \, \ottnt{R}}{}{}{}{}\ottprodnewline
 \ottprodline{|}{\ottkw{Co} \, \phi}{}{}{}{}}
+
+\newcommand{\ottsigXXsort}{
+\ottrulehead{\ottnt{sig\_sort}}{::=}{\ottcom{signature classifier}}\ottprodnewline
+\ottfirstprodline{|}{\ottkw{Cs} \, \ottnt{A}}{}{}{}{}\ottprodnewline
+\ottprodline{|}{\ottkw{Ax} \, \ottnt{a} \, \ottnt{A} \, \ottnt{R}}{}{}{}{}}
 
 \newcommand{\ottcontext}{
 \ottrulehead{\ottnt{context}  ,\ \Gamma}{::=}{\ottcom{contexts}}\ottprodnewline
@@ -163,22 +163,6 @@
 \ottprodline{|}{\ottsym{(}  \Gamma  \ottsym{)}} {\textsf{M}}{}{}{}\ottprodnewline
 \ottprodline{|}{ \Gamma } {\textsf{M}}{}{}{}}
 
-\newcommand{\ottroleXXcontext}{
-\ottrulehead{\ottnt{role\_context}  ,\ \Omega}{::=}{\ottcom{role_contexts}}\ottprodnewline
-\ottfirstprodline{|}{\varnothing}{}{}{}{}\ottprodnewline
-\ottprodline{|}{\Omega  \ottsym{,}  \ottmv{x}  \ottsym{:}  \ottnt{R}  \ottsym{,}  \Omega'}{}{}{}{}\ottprodnewline
-\ottprodline{|}{\Omega  \ottsym{,}  \ottmv{c}  \ottsym{:}  \ottnt{R}  \ottsym{,}  \Omega'}{}{}{}{}\ottprodnewline
-\ottprodline{|}{ \Omega ,  \Omega' } {\textsf{M}}{}{}{}\ottprodnewline
-\ottprodline{|}{\ottsym{(}  \Omega  \ottsym{)}} {\textsf{M}}{}{}{}\ottprodnewline
-\ottprodline{|}{ \Omega } {\textsf{M}}{}{}{}}
-
-\newcommand{\ottavailableXXprops}{
-\ottrulehead{\ottnt{available\_props}  ,\ \Delta}{::=}{}\ottprodnewline
-\ottfirstprodline{|}{ \varnothing }{}{}{}{}\ottprodnewline
-\ottprodline{|}{\Delta  \ottsym{,}  \ottmv{c}}{}{}{}{}\ottprodnewline
-\ottprodline{|}{ \widetilde { \Gamma } } {\textsf{M}}{}{}{}\ottprodnewline
-\ottprodline{|}{\ottsym{(}  \Delta  \ottsym{)}} {\textsf{M}}{}{}{}}
-
 \newcommand{\ottsig}{
 \ottrulehead{\ottnt{sig}  ,\ \Sigma}{::=}{\ottcom{signatures}}\ottprodnewline
 \ottfirstprodline{|}{ \varnothing }{}{}{}{}\ottprodnewline
@@ -187,6 +171,20 @@
 \ottprodline{|}{ \Sigma_0 } {\textsf{M}}{}{}{}\ottprodnewline
 \ottprodline{|}{ \Sigma_1 } {\textsf{M}}{}{}{}\ottprodnewline
 \ottprodline{|}{|  \Sigma  |} {\textsf{M}}{}{}{}}
+
+\newcommand{\ottavailableXXprops}{
+\ottrulehead{\ottnt{available\_props}  ,\ \Delta}{::=}{}\ottprodnewline
+\ottfirstprodline{|}{ \varnothing }{}{}{}{}\ottprodnewline
+\ottprodline{|}{\Delta  \ottsym{,}  \ottmv{c}}{}{}{}{}\ottprodnewline
+\ottprodline{|}{ \widetilde { \Gamma } } {\textsf{M}}{}{}{}\ottprodnewline
+\ottprodline{|}{\ottsym{(}  \Delta  \ottsym{)}} {\textsf{M}}{}{}{}}
+
+\newcommand{\ottroleXXcontext}{
+\ottrulehead{\ottnt{role\_context}  ,\ \Omega}{::=}{\ottcom{role_contexts}}\ottprodnewline
+\ottfirstprodline{|}{\varnothing}{}{}{}{}\ottprodnewline
+\ottprodline{|}{\Omega  \ottsym{,}  \ottmv{x}  \ottsym{:}  \ottnt{R}}{}{}{}{}\ottprodnewline
+\ottprodline{|}{\ottsym{(}  \Omega  \ottsym{)}} {\textsf{M}}{}{}{}\ottprodnewline
+\ottprodline{|}{ \Omega } {\textsf{M}}{}{}{}}
 
 \newcommand{\ottterminals}{
 \ottrulehead{\ottnt{terminals}}{::=}{}\ottprodnewline
@@ -235,6 +233,7 @@
 \ottrulehead{\ottnt{formula}  ,\ \psi}{::=}{}\ottprodnewline
 \ottfirstprodline{|}{\ottnt{judgement}}{}{}{}{}\ottprodnewline
 \ottprodline{|}{\ottmv{x}  \ottsym{:}  \ottnt{A}  \ottsym{/}  \ottnt{R} \, \in \, \Gamma}{}{}{}{}\ottprodnewline
+\ottprodline{|}{\ottmv{x}  \ottsym{:}  \ottnt{R} \, \in \, \Omega}{}{}{}{}\ottprodnewline
 \ottprodline{|}{\ottmv{c}  \ottsym{:}  \phi \, \in \, \Gamma}{}{}{}{}\ottprodnewline
 \ottprodline{|}{\ottmv{T}  \ottsym{:}  \ottnt{A}  \ottsym{/}  \ottnt{R} \, \in \, \Sigma}{}{}{}{}\ottprodnewline
 \ottprodline{|}{\ottmv{F}  \sim  \ottnt{a}  \ottsym{:}  \ottnt{A}  \ottsym{/}  \ottnt{R} \, \in \, \Sigma}{}{}{}{}\ottprodnewline
@@ -244,6 +243,7 @@
 \ottprodline{|}{\ottmv{c} \, \ottkw{not} \, \ottkw{relevant} \, \in \, \gamma}{}{}{}{}\ottprodnewline
 \ottprodline{|}{\ottmv{x} \, \not\in \, \mathsf{fv}\! \, \ottnt{a}}{}{}{}{}\ottprodnewline
 \ottprodline{|}{\ottmv{x} \, \not\in \, \mathsf{dom} \, \Gamma}{}{}{}{}\ottprodnewline
+\ottprodline{|}{\ottsym{rctx\_uniq}  \Omega}{}{}{}{}\ottprodnewline
 \ottprodline{|}{\ottmv{c} \, \not\in \, \mathsf{dom} \, \Gamma}{}{}{}{}\ottprodnewline
 \ottprodline{|}{\ottmv{T} \, \not\in \, \mathsf{dom} \, \Sigma}{}{}{}{}\ottprodnewline
 \ottprodline{|}{\ottmv{F} \, \not\in \, \mathsf{dom} \, \Sigma}{}{}{}{}\ottprodnewline
@@ -276,7 +276,7 @@
 
 \newcommand{\ottJerased}{
 \ottrulehead{\ottnt{Jerased}}{::=}{}\ottprodnewline
-\ottfirstprodline{|}{\Omega  \vdash  \ottsym{erased\_tm}  \ottnt{a} \, \ottnt{R}}{}{}{}{}}
+\ottfirstprodline{|}{ \Omega  \vDash erased\_tm \hspace{2pt}  \ottnt{a}  \hspace{2pt}  \ottnt{R} }{}{}{}{}}
 
 \newcommand{\ottJChk}{
 \ottrulehead{\ottnt{JChk}}{::=}{}\ottprodnewline
@@ -348,12 +348,12 @@
 \ottprodline{|}{\ottnt{tm}}{}{}{}{}\ottprodnewline
 \ottprodline{|}{\ottnt{brs}}{}{}{}{}\ottprodnewline
 \ottprodline{|}{\ottnt{co}}{}{}{}{}\ottprodnewline
-\ottprodline{|}{\ottnt{sig\_sort}}{}{}{}{}\ottprodnewline
 \ottprodline{|}{\ottnt{sort}}{}{}{}{}\ottprodnewline
+\ottprodline{|}{\ottnt{sig\_sort}}{}{}{}{}\ottprodnewline
 \ottprodline{|}{\ottnt{context}}{}{}{}{}\ottprodnewline
-\ottprodline{|}{\ottnt{role\_context}}{}{}{}{}\ottprodnewline
-\ottprodline{|}{\ottnt{available\_props}}{}{}{}{}\ottprodnewline
 \ottprodline{|}{\ottnt{sig}}{}{}{}{}\ottprodnewline
+\ottprodline{|}{\ottnt{available\_props}}{}{}{}{}\ottprodnewline
+\ottprodline{|}{\ottnt{role\_context}}{}{}{}{}\ottprodnewline
 \ottprodline{|}{\ottnt{terminals}}{}{}{}{}\ottprodnewline
 \ottprodline{|}{\ottnt{formula}}{}{}{}{}}
 
@@ -364,12 +364,12 @@
 \otttm\ottinterrule
 \ottbrs\ottinterrule
 \ottco\ottinterrule
-\ottsigXXsort\ottinterrule
 \ottsort\ottinterrule
+\ottsigXXsort\ottinterrule
 \ottcontext\ottinterrule
-\ottroleXXcontext\ottinterrule
-\ottavailableXXprops\ottinterrule
 \ottsig\ottinterrule
+\ottavailableXXprops\ottinterrule
+\ottroleXXcontext\ottinterrule
 \ottterminals\ottinterrule
 \ottformula\ottinterrule
 \ottJSubRole\ottinterrule
@@ -626,104 +626,116 @@
 % defns Jerased
 %% defn erased_tm
 \newcommand{\ottdruleerasedXXaXXBullet}[1]{\ottdrule[#1]{%
+\ottpremise{\ottsym{rctx\_uniq}  \Omega}%
 }{
-\Omega  \vdash  \ottsym{erased\_tm}  \Box \, \ottnt{R}}{%
+ \Omega  \vDash erased\_tm \hspace{2pt}  \Box  \hspace{2pt}  \ottnt{R} }{%
 {\ottdrulename{erased\_a\_Bullet}}{}%
 }}
 
 
 \newcommand{\ottdruleerasedXXaXXStar}[1]{\ottdrule[#1]{%
+\ottpremise{\ottsym{rctx\_uniq}  \Omega}%
 }{
-\Omega  \vdash  \ottsym{erased\_tm}   \star  \, \ottnt{R}}{%
+ \Omega  \vDash erased\_tm \hspace{2pt}   \star   \hspace{2pt}  \ottnt{R} }{%
 {\ottdrulename{erased\_a\_Star}}{}%
 }}
 
 
 \newcommand{\ottdruleerasedXXaXXVar}[1]{\ottdrule[#1]{%
+\ottpremise{\ottsym{rctx\_uniq}  \Omega}%
+\ottpremise{\ottmv{x}  \ottsym{:}  \ottnt{R} \, \in \, \Omega}%
 }{
-\Omega  \ottsym{,}  \ottmv{x}  \ottsym{:}  \ottnt{R}  \ottsym{,}  \Omega'  \vdash  \ottsym{erased\_tm}  \ottmv{x} \, \ottnt{R}}{%
+ \Omega  \vDash erased\_tm \hspace{2pt}  \ottmv{x}  \hspace{2pt}  \ottnt{R} }{%
 {\ottdrulename{erased\_a\_Var}}{}%
 }}
 
 
 \newcommand{\ottdruleerasedXXaXXAbs}[1]{\ottdrule[#1]{%
-\ottpremise{\Omega  \ottsym{,}  \ottmv{x}  \ottsym{:}  \ottnt{R_{{\mathrm{1}}}}  \ottsym{,}  \Omega'  \vdash  \ottsym{erased\_tm}  \ottnt{a} \, \ottnt{R}}%
+\ottpremise{ \Omega  \ottsym{,}  \ottmv{x}  \ottsym{:}  \ottnt{R_{{\mathrm{1}}}}  \vDash erased\_tm \hspace{2pt}  \ottnt{a}  \hspace{2pt}  \ottnt{R} }%
 }{
- \Omega ,  \Omega'   \vdash  \ottsym{erased\_tm}  \ottsym{(}   \mathrm{\lambda}^{ \ottnt{R_{{\mathrm{1}}}} , \rho } \ottmv{x} . \ottnt{a}   \ottsym{)} \, \ottnt{R}}{%
+ \Omega  \vDash erased\_tm \hspace{2pt}  \ottsym{(}   \mathrm{\lambda}^{ \ottnt{R_{{\mathrm{1}}}} , \rho } \ottmv{x} . \ottnt{a}   \ottsym{)}  \hspace{2pt}  \ottnt{R} }{%
 {\ottdrulename{erased\_a\_Abs}}{}%
 }}
 
 
 \newcommand{\ottdruleerasedXXaXXApp}[1]{\ottdrule[#1]{%
-\ottpremise{\Omega  \vdash  \ottsym{erased\_tm}  \ottnt{a} \, \ottnt{R}}%
-\ottpremise{\Omega  \vdash  \ottsym{erased\_tm}  \ottnt{b} \, \ottnt{R}}%
+\ottpremise{ \Omega  \vDash erased\_tm \hspace{2pt}  \ottnt{a}  \hspace{2pt}  \ottnt{R} }%
+\ottpremise{ \Omega  \vDash erased\_tm \hspace{2pt}  \ottnt{b}  \hspace{2pt}  \ottnt{R_{{\mathrm{1}}}} }%
 }{
-\Omega  \vdash  \ottsym{erased\_tm}  \ottsym{(}   \ottnt{a} \  \ottnt{b} ^{ \ottnt{R_{{\mathrm{1}}}} , \rho }   \ottsym{)} \, \ottnt{R}}{%
+ \Omega  \vDash erased\_tm \hspace{2pt}  \ottsym{(}   \ottnt{a} \  \ottnt{b} ^{ \ottnt{R_{{\mathrm{1}}}} , \rho }   \ottsym{)}  \hspace{2pt}  \ottnt{R} }{%
 {\ottdrulename{erased\_a\_App}}{}%
 }}
 
 
 \newcommand{\ottdruleerasedXXaXXPi}[1]{\ottdrule[#1]{%
-\ottpremise{\Omega  \vdash  \ottsym{erased\_tm}  \ottnt{A} \, \ottnt{R_{{\mathrm{2}}}}}%
-\ottpremise{\Omega  \ottsym{,}  \ottmv{x}  \ottsym{:}  \ottnt{R_{{\mathrm{1}}}}  \ottsym{,}  \Omega'  \vdash  \ottsym{erased\_tm}  \ottnt{B} \, \ottnt{R}}%
-\ottpremise{ \ottnt{R_{{\mathrm{1}}}}  \leq  \ottnt{R_{{\mathrm{2}}}} }%
+\ottpremise{ \Omega  \vDash erased\_tm \hspace{2pt}  \ottnt{A}  \hspace{2pt}  \ottnt{R_{{\mathrm{1}}}} }%
+\ottpremise{ \Omega  \ottsym{,}  \ottmv{x}  \ottsym{:}  \ottnt{R_{{\mathrm{1}}}}  \vDash erased\_tm \hspace{2pt}  \ottnt{B}  \hspace{2pt}  \ottnt{R} }%
 }{
- \Omega ,  \Omega'   \vdash  \ottsym{erased\_tm}  \ottsym{(}   \mathrm{\Pi}^ \rho \ottmv{x} \!:\! \ottnt{A} / \ottnt{R_{{\mathrm{1}}}} \to \ottnt{B}   \ottsym{)} \, \ottnt{R}}{%
+ \Omega  \vDash erased\_tm \hspace{2pt}  \ottsym{(}   \mathrm{\Pi}^ \rho \ottmv{x} \!:\! \ottnt{A} / \ottnt{R_{{\mathrm{1}}}} \to \ottnt{B}   \ottsym{)}  \hspace{2pt}  \ottnt{R} }{%
 {\ottdrulename{erased\_a\_Pi}}{}%
 }}
 
 
 \newcommand{\ottdruleerasedXXaXXCPi}[1]{\ottdrule[#1]{%
-\ottpremise{\Omega  \vdash  \ottsym{erased\_tm}  \ottnt{a} \, \ottnt{R_{{\mathrm{1}}}}}%
-\ottpremise{\Omega  \vdash  \ottsym{erased\_tm}  \ottnt{b} \, \ottnt{R_{{\mathrm{1}}}}}%
-\ottpremise{\Omega  \vdash  \ottsym{erased\_tm}  \ottnt{A} \, \ottnt{R_{{\mathrm{2}}}}}%
-\ottpremise{\Omega  \ottsym{,}  \ottmv{c}  \ottsym{:}  \ottnt{R_{{\mathrm{1}}}}  \ottsym{,}  \Omega'  \vdash  \ottsym{erased\_tm}  \ottnt{B} \, \ottnt{R}}%
-\ottpremise{ \ottnt{R_{{\mathrm{1}}}}  \leq  \ottnt{R_{{\mathrm{2}}}} }%
+\ottpremise{ \Omega  \vDash erased\_tm \hspace{2pt}  \ottnt{a}  \hspace{2pt}  \ottnt{R_{{\mathrm{1}}}} }%
+\ottpremise{ \Omega  \vDash erased\_tm \hspace{2pt}  \ottnt{b}  \hspace{2pt}  \ottnt{R_{{\mathrm{1}}}} }%
+\ottpremise{ \Omega  \vDash erased\_tm \hspace{2pt}  \ottnt{A}  \hspace{2pt}  \ottnt{R_{{\mathrm{1}}}} }%
+\ottpremise{ \Omega  \vDash erased\_tm \hspace{2pt}  \ottnt{B}  \hspace{2pt}  \ottnt{R} }%
 }{
- \Omega ,  \Omega'   \vdash  \ottsym{erased\_tm}  \ottsym{(}   \forall \ottmv{c} \!:\!  \ottnt{a}   \sim _{ \ottnt{A} / \ottnt{R_{{\mathrm{1}}}} }  \ottnt{b}  . \ottnt{B}   \ottsym{)} \, \ottnt{R}}{%
+ \Omega  \vDash erased\_tm \hspace{2pt}  \ottsym{(}   \forall \ottmv{c} \!:\!  \ottnt{a}   \sim _{ \ottnt{A} / \ottnt{R_{{\mathrm{1}}}} }  \ottnt{b}  . \ottnt{B}   \ottsym{)}  \hspace{2pt}  \ottnt{R} }{%
 {\ottdrulename{erased\_a\_CPi}}{}%
 }}
 
 
 \newcommand{\ottdruleerasedXXaXXCAbs}[1]{\ottdrule[#1]{%
-\ottpremise{\Omega  \ottsym{,}  \ottmv{c}  \ottsym{:}  \ottnt{R_{{\mathrm{1}}}}  \ottsym{,}  \Omega'  \vdash  \ottsym{erased\_tm}  \ottnt{b} \, \ottnt{R}}%
+\ottpremise{ \Omega  \vDash erased\_tm \hspace{2pt}  \ottnt{b}  \hspace{2pt}  \ottnt{R} }%
 }{
- \Omega ,  \Omega'   \vdash  \ottsym{erased\_tm}  \ottsym{(}   \mathrm{\Lambda} \ottmv{c} . \ottnt{b}   \ottsym{)} \, \ottnt{R}}{%
+ \Omega  \vDash erased\_tm \hspace{2pt}  \ottsym{(}   \mathrm{\Lambda} \ottmv{c} . \ottnt{b}   \ottsym{)}  \hspace{2pt}  \ottnt{R} }{%
 {\ottdrulename{erased\_a\_CAbs}}{}%
 }}
 
 
 \newcommand{\ottdruleerasedXXaXXCApp}[1]{\ottdrule[#1]{%
-\ottpremise{\Omega  \vdash  \ottsym{erased\_tm}  \ottnt{a} \, \ottnt{R}}%
+\ottpremise{ \Omega  \vDash erased\_tm \hspace{2pt}  \ottnt{a}  \hspace{2pt}  \ottnt{R} }%
 }{
-\Omega  \vdash  \ottsym{erased\_tm}  \ottsym{(}  \ottnt{a}  \ottsym{[}  \bullet  \ottsym{]}  \ottsym{)} \, \ottnt{R}}{%
+ \Omega  \vDash erased\_tm \hspace{2pt}  \ottsym{(}  \ottnt{a}  \ottsym{[}  \bullet  \ottsym{]}  \ottsym{)}  \hspace{2pt}  \ottnt{R} }{%
 {\ottdrulename{erased\_a\_CApp}}{}%
 }}
 
 
 \newcommand{\ottdruleerasedXXaXXFam}[1]{\ottdrule[#1]{%
+\ottpremise{\ottsym{rctx\_uniq}  \Omega}%
 }{
-\Omega  \vdash  \ottsym{erased\_tm}  \ottmv{F} \, \ottnt{R}}{%
+ \Omega  \vDash erased\_tm \hspace{2pt}  \ottmv{F}  \hspace{2pt}  \ottnt{R} }{%
 {\ottdrulename{erased\_a\_Fam}}{}%
 }}
 
 
 \newcommand{\ottdruleerasedXXaXXConst}[1]{\ottdrule[#1]{%
+\ottpremise{\ottsym{rctx\_uniq}  \Omega}%
 }{
-\Omega  \vdash  \ottsym{erased\_tm}  \ottmv{T} \, \ottnt{R}}{%
+ \Omega  \vDash erased\_tm \hspace{2pt}  \ottmv{T}  \hspace{2pt}  \ottnt{R} }{%
 {\ottdrulename{erased\_a\_Const}}{}%
 }}
 
 
 \newcommand{\ottdruleerasedXXaXXConv}[1]{\ottdrule[#1]{%
-\ottpremise{\Omega  \vdash  \ottsym{erased\_tm}  \ottnt{a} \, \ottnt{R}}%
-\ottpremise{ \neg  \ottsym{(}   \ottnt{R_{{\mathrm{1}}}}  \leq  \ottnt{R}   \ottsym{)} }%
+\ottpremise{ \Omega  \vDash erased\_tm \hspace{2pt}  \ottnt{a}  \hspace{2pt}  \ottnt{R} }%
 }{
-\Omega  \vdash  \ottsym{erased\_tm}  \ottsym{(}   \ottnt{a} \triangleright _{ \ottnt{R_{{\mathrm{1}}}} }  \bullet   \ottsym{)} \, \ottnt{R}}{%
+ \Omega  \vDash erased\_tm \hspace{2pt}  \ottsym{(}   \ottnt{a} \triangleright _{ \ottnt{R_{{\mathrm{1}}}} }  \bullet   \ottsym{)}  \hspace{2pt}  \ottnt{R} }{%
 {\ottdrulename{erased\_a\_Conv}}{}%
 }}
 
-\newcommand{\ottdefnerasedXXtm}[1]{\begin{ottdefnblock}[#1]{$\Omega  \vdash  \ottsym{erased\_tm}  \ottnt{a} \, \ottnt{R}$}{}
+
+\newcommand{\ottdruleerasedXXaXXSub}[1]{\ottdrule[#1]{%
+\ottpremise{ \Omega  \vDash erased\_tm \hspace{2pt}  \ottnt{a}  \hspace{2pt}  \ottnt{R_{{\mathrm{1}}}} }%
+\ottpremise{ \ottnt{R_{{\mathrm{1}}}}  \leq  \ottnt{R_{{\mathrm{2}}}} }%
+}{
+ \Omega  \vDash erased\_tm \hspace{2pt}  \ottnt{a}  \hspace{2pt}  \ottnt{R_{{\mathrm{2}}}} }{%
+{\ottdrulename{erased\_a\_Sub}}{}%
+}}
+
+\newcommand{\ottdefnerasedXXtm}[1]{\begin{ottdefnblock}[#1]{$ \Omega  \vDash erased\_tm \hspace{2pt}  \ottnt{a}  \hspace{2pt}  \ottnt{R} $}{}
 \ottusedrule{\ottdruleerasedXXaXXBullet{}}
 \ottusedrule{\ottdruleerasedXXaXXStar{}}
 \ottusedrule{\ottdruleerasedXXaXXVar{}}
@@ -736,6 +748,7 @@
 \ottusedrule{\ottdruleerasedXXaXXFam{}}
 \ottusedrule{\ottdruleerasedXXaXXConst{}}
 \ottusedrule{\ottdruleerasedXXaXXConv{}}
+\ottusedrule{\ottdruleerasedXXaXXSub{}}
 \end{ottdefnblock}}
 
 
@@ -771,6 +784,7 @@
 % defns Jpar
 %% defn Par
 \newcommand{\ottdruleParXXRefl}[1]{\ottdrule[#1]{%
+\ottpremise{ \Omega  \vDash erased\_tm \hspace{2pt}  \ottnt{a}  \hspace{2pt}  \ottnt{R} }%
 }{
  \Omega  \vDash  \ottnt{a}   \Rightarrow _{ \ottnt{R} }  \ottnt{a} }{%
 {\ottdrulename{Par\_Refl}}{}%
@@ -780,7 +794,6 @@
 \newcommand{\ottdruleParXXBeta}[1]{\ottdrule[#1]{%
 \ottpremise{ \Omega  \vDash  \ottnt{a}   \Rightarrow _{ \ottnt{R} }  \ottsym{(}   \mathrm{\lambda}^{ \ottnt{R_{{\mathrm{1}}}} , \rho } \ottmv{x} . \ottnt{a'}   \ottsym{)} }%
 \ottpremise{ \Omega  \vDash  \ottnt{b}   \Rightarrow _{ \ottnt{R_{{\mathrm{1}}}} }  \ottnt{b'} }%
-\ottpremise{ \ottnt{R_{{\mathrm{1}}}}  \leq  \ottnt{R} }%
 }{
  \Omega  \vDash   \ottnt{a} \  \ottnt{b} ^{ \ottnt{R_{{\mathrm{1}}}} , \rho }    \Rightarrow _{ \ottnt{R} }  \ottnt{a'}  \ottsym{\{}  \ottnt{b'}  \ottsym{/}  \ottmv{x}  \ottsym{\}} }{%
 {\ottdrulename{Par\_Beta}}{}%
@@ -790,7 +803,6 @@
 \newcommand{\ottdruleParXXApp}[1]{\ottdrule[#1]{%
 \ottpremise{ \Omega  \vDash  \ottnt{a}   \Rightarrow _{ \ottnt{R} }  \ottnt{a'} }%
 \ottpremise{ \Omega  \vDash  \ottnt{b}   \Rightarrow _{ \ottnt{R_{{\mathrm{1}}}} }  \ottnt{b'} }%
-\ottpremise{ \ottnt{R_{{\mathrm{1}}}}  \leq  \ottnt{R} }%
 }{
  \Omega  \vDash   \ottnt{a} \  \ottnt{b} ^{ \ottnt{R_{{\mathrm{1}}}} , \rho }    \Rightarrow _{ \ottnt{R} }   \ottnt{a'} \  \ottnt{b'} ^{ \ottnt{R_{{\mathrm{1}}}} , \rho }  }{%
 {\ottdrulename{Par\_App}}{}%
@@ -814,39 +826,37 @@
 
 
 \newcommand{\ottdruleParXXAbs}[1]{\ottdrule[#1]{%
-\ottpremise{ \Omega  \ottsym{,}  \ottmv{x}  \ottsym{:}  \ottnt{R_{{\mathrm{1}}}}  \ottsym{,}  \Omega'  \vDash  \ottnt{a}   \Rightarrow _{ \ottnt{R} }  \ottnt{a'} }%
+\ottpremise{ \Omega  \ottsym{,}  \ottmv{x}  \ottsym{:}  \ottnt{R_{{\mathrm{1}}}}  \vDash  \ottnt{a}   \Rightarrow _{ \ottnt{R} }  \ottnt{a'} }%
 }{
-  \Omega ,  \Omega'   \vDash   \mathrm{\lambda}^{ \ottnt{R_{{\mathrm{1}}}} , \rho } \ottmv{x} . \ottnt{a}    \Rightarrow _{ \ottnt{R} }   \mathrm{\lambda}^{ \ottnt{R_{{\mathrm{1}}}} , \rho } \ottmv{x} . \ottnt{a'}  }{%
+ \Omega  \vDash   \mathrm{\lambda}^{ \ottnt{R_{{\mathrm{1}}}} , \rho } \ottmv{x} . \ottnt{a}    \Rightarrow _{ \ottnt{R} }   \mathrm{\lambda}^{ \ottnt{R_{{\mathrm{1}}}} , \rho } \ottmv{x} . \ottnt{a'}  }{%
 {\ottdrulename{Par\_Abs}}{}%
 }}
 
 
 \newcommand{\ottdruleParXXPi}[1]{\ottdrule[#1]{%
-\ottpremise{ \Omega  \vDash  \ottnt{A}   \Rightarrow _{ \ottnt{R_{{\mathrm{2}}}} }  \ottnt{A'} }%
-\ottpremise{ \Omega  \ottsym{,}  \ottmv{x}  \ottsym{:}  \ottnt{R_{{\mathrm{1}}}}  \ottsym{,}  \Omega'  \vDash  \ottnt{B}   \Rightarrow _{ \ottnt{R} }  \ottnt{B'} }%
-\ottpremise{ \ottnt{R_{{\mathrm{1}}}}  \leq  \ottnt{R_{{\mathrm{2}}}} }%
+\ottpremise{ \Omega  \vDash  \ottnt{A}   \Rightarrow _{ \ottnt{R_{{\mathrm{1}}}} }  \ottnt{A'} }%
+\ottpremise{ \Omega  \ottsym{,}  \ottmv{x}  \ottsym{:}  \ottnt{R_{{\mathrm{1}}}}  \vDash  \ottnt{B}   \Rightarrow _{ \ottnt{R} }  \ottnt{B'} }%
 }{
-  \Omega ,  \Omega'   \vDash   \mathrm{\Pi}^ \rho \ottmv{x} \!:\! \ottnt{A} / \ottnt{R_{{\mathrm{1}}}} \to \ottnt{B}    \Rightarrow _{ \ottnt{R} }   \mathrm{\Pi}^ \rho \ottmv{x} \!:\! \ottnt{A'} / \ottnt{R_{{\mathrm{1}}}} \to \ottnt{B'}  }{%
+ \Omega  \vDash   \mathrm{\Pi}^ \rho \ottmv{x} \!:\! \ottnt{A} / \ottnt{R_{{\mathrm{1}}}} \to \ottnt{B}    \Rightarrow _{ \ottnt{R} }   \mathrm{\Pi}^ \rho \ottmv{x} \!:\! \ottnt{A'} / \ottnt{R_{{\mathrm{1}}}} \to \ottnt{B'}  }{%
 {\ottdrulename{Par\_Pi}}{}%
 }}
 
 
 \newcommand{\ottdruleParXXCAbs}[1]{\ottdrule[#1]{%
-\ottpremise{ \Omega  \ottsym{,}  \ottmv{c}  \ottsym{:}  \ottnt{R_{{\mathrm{1}}}}  \ottsym{,}  \Omega'  \vDash  \ottnt{a}   \Rightarrow _{ \ottnt{R} }  \ottnt{a'} }%
+\ottpremise{ \Omega  \vDash  \ottnt{a}   \Rightarrow _{ \ottnt{R} }  \ottnt{a'} }%
 }{
-  \Omega ,  \Omega'   \vDash   \mathrm{\Lambda} \ottmv{c} . \ottnt{a}    \Rightarrow _{ \ottnt{R} }   \mathrm{\Lambda} \ottmv{c} . \ottnt{a'}  }{%
+ \Omega  \vDash   \mathrm{\Lambda} \ottmv{c} . \ottnt{a}    \Rightarrow _{ \ottnt{R} }   \mathrm{\Lambda} \ottmv{c} . \ottnt{a'}  }{%
 {\ottdrulename{Par\_CAbs}}{}%
 }}
 
 
 \newcommand{\ottdruleParXXCPi}[1]{\ottdrule[#1]{%
-\ottpremise{ \Omega  \vDash  \ottnt{A}   \Rightarrow _{ \ottnt{R_{{\mathrm{2}}}} }  \ottnt{A'} }%
+\ottpremise{ \Omega  \vDash  \ottnt{A}   \Rightarrow _{ \ottnt{R_{{\mathrm{1}}}} }  \ottnt{A'} }%
 \ottpremise{ \Omega  \vDash  \ottnt{a}   \Rightarrow _{ \ottnt{R_{{\mathrm{1}}}} }  \ottnt{a'} }%
 \ottpremise{ \Omega  \vDash  \ottnt{b}   \Rightarrow _{ \ottnt{R_{{\mathrm{1}}}} }  \ottnt{b'} }%
-\ottpremise{ \Omega  \ottsym{,}  \ottmv{c}  \ottsym{:}  \ottnt{R_{{\mathrm{1}}}}  \ottsym{,}  \Omega'  \vDash  \ottnt{B}   \Rightarrow _{ \ottnt{R} }  \ottnt{B'} }%
-\ottpremise{ \ottnt{R_{{\mathrm{1}}}}  \leq  \ottnt{R_{{\mathrm{2}}}} }%
+\ottpremise{ \Omega  \vDash  \ottnt{B}   \Rightarrow _{ \ottnt{R} }  \ottnt{B'} }%
 }{
-  \Omega ,  \Omega'   \vDash   \forall \ottmv{c} \!:\!  \ottnt{a}   \sim _{ \ottnt{A} / \ottnt{R_{{\mathrm{1}}}} }  \ottnt{b}  . \ottnt{B}    \Rightarrow _{ \ottnt{R} }   \forall \ottmv{c} \!:\!  \ottnt{a'}   \sim _{ \ottnt{A'} / \ottnt{R_{{\mathrm{1}}}} }  \ottnt{b'}  . \ottnt{B'}  }{%
+ \Omega  \vDash   \forall \ottmv{c} \!:\!  \ottnt{a}   \sim _{ \ottnt{A} / \ottnt{R_{{\mathrm{1}}}} }  \ottnt{b}  . \ottnt{B}    \Rightarrow _{ \ottnt{R} }   \forall \ottmv{c} \!:\!  \ottnt{a'}   \sim _{ \ottnt{A'} / \ottnt{R_{{\mathrm{1}}}} }  \ottnt{b'}  . \ottnt{B'}  }{%
 {\ottdrulename{Par\_CPi}}{}%
 }}
 
@@ -854,6 +864,7 @@
 \newcommand{\ottdruleParXXAxiom}[1]{\ottdrule[#1]{%
 \ottpremise{\ottmv{F}  \sim  \ottnt{a}  \ottsym{:}  \ottnt{A}  \ottsym{/}  \ottnt{R_{{\mathrm{1}}}} \, \in \,  \Sigma_0 }%
 \ottpremise{ \ottnt{R_{{\mathrm{1}}}}  \leq  \ottnt{R} }%
+\ottpremise{\ottsym{rctx\_uniq}  \Omega}%
 }{
  \Omega  \vDash  \ottmv{F}   \Rightarrow _{ \ottnt{R} }  \ottnt{a} }{%
 {\ottdrulename{Par\_Axiom}}{}%
@@ -879,7 +890,6 @@
 \newcommand{\ottdruleParXXPush}[1]{\ottdrule[#1]{%
 \ottpremise{ \Omega  \vDash  \ottnt{a_{{\mathrm{1}}}}   \Rightarrow _{ \ottnt{R_{{\mathrm{1}}}} }  \ottsym{(}   \ottnt{a_{{\mathrm{2}}}} \triangleright _{ \ottnt{R} }  \bullet   \ottsym{)} }%
 \ottpremise{ \Omega  \vDash  \ottnt{b_{{\mathrm{1}}}}   \Rightarrow _{ \ottnt{R_{{\mathrm{2}}}} }  \ottnt{b_{{\mathrm{2}}}} }%
-\ottpremise{ \ottnt{R_{{\mathrm{2}}}}  \leq  \ottnt{R_{{\mathrm{1}}}} }%
 }{
  \Omega  \vDash   \ottnt{a_{{\mathrm{1}}}}   \ottnt{b_{{\mathrm{1}}}} ^{ \ottnt{R_{{\mathrm{2}}}} ,+}    \Rightarrow _{ \ottnt{R_{{\mathrm{1}}}} }   \ottsym{(}   \ottnt{a_{{\mathrm{2}}}}   \ottsym{(}   \ottnt{b_{{\mathrm{2}}}} \triangleright _{ \ottnt{R} }  \bullet   \ottsym{)} ^{ \ottnt{R_{{\mathrm{2}}}} ,+}   \ottsym{)} \triangleright _{ \ottnt{R} }  \bullet  }{%
 {\ottdrulename{Par\_Push}}{}%
@@ -2146,7 +2156,7 @@
 \ottall
 
 \begin{verbatim}
-Definition rules:        161 good    0 bad
-Definition rule clauses: 475 good    0 bad
+Definition rules:        162 good    0 bad
+Definition rule clauses: 478 good    0 bad
 \end{verbatim}
 \end{document}

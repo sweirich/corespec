@@ -74,15 +74,15 @@ Inductive sort : Set :=  (*r binding classifier *)
 
 Definition context : Set := list ( atom * sort ).
 
-Definition sig : Set := list (atom * sig_sort).
-
-Definition available_props : Type := atoms.
-
-Definition role_context : Set := list ( atom * role ).
-
 Inductive sig_sort : Set :=  (*r signature classifier *)
  | Cs (A:tm)
  | Ax (a:tm) (A:tm) (R:role).
+
+Definition available_props : Type := atoms.
+
+Definition sig : Set := list (atom * sig_sort).
+
+Definition role_context : Set := list ( atom * role ).
 
 (* EXPERIMENTAL *)
 (** auxiliary functions on the new list types *)
@@ -210,22 +210,16 @@ with open_constraint_wrt_tm_rec (k:nat) (a5:tm) (phi5:constraint) : constraint :
   | (Eq a b A R) => Eq (open_tm_wrt_tm_rec k a5 a) (open_tm_wrt_tm_rec k a5 b) (open_tm_wrt_tm_rec k a5 A) R
 end.
 
-Definition open_sort_wrt_co_rec (k:nat) (g5:co) (sort5:sort) : sort :=
-  match sort5 with
-  | (Tm A R) => Tm (open_tm_wrt_co_rec k g5 A) R
-  | (Co phi) => Co (open_constraint_wrt_co_rec k g5 phi)
-end.
-
 Definition open_sig_sort_wrt_co_rec (k:nat) (g5:co) (sig_sort5:sig_sort) : sig_sort :=
   match sig_sort5 with
   | (Cs A) => Cs (open_tm_wrt_co_rec k g5 A)
   | (Ax a A R) => Ax (open_tm_wrt_co_rec k g5 a) (open_tm_wrt_co_rec k g5 A) R
 end.
 
-Definition open_sig_sort_wrt_tm_rec (k:nat) (a5:tm) (sig_sort5:sig_sort) : sig_sort :=
-  match sig_sort5 with
-  | (Cs A) => Cs (open_tm_wrt_tm_rec k a5 A)
-  | (Ax a A R) => Ax (open_tm_wrt_tm_rec k a5 a) (open_tm_wrt_tm_rec k a5 A) R
+Definition open_sort_wrt_co_rec (k:nat) (g5:co) (sort5:sort) : sort :=
+  match sort5 with
+  | (Tm A R) => Tm (open_tm_wrt_co_rec k g5 A) R
+  | (Co phi) => Co (open_constraint_wrt_co_rec k g5 phi)
 end.
 
 Definition open_sort_wrt_tm_rec (k:nat) (a5:tm) (sort5:sort) : sort :=
@@ -234,19 +228,25 @@ Definition open_sort_wrt_tm_rec (k:nat) (a5:tm) (sort5:sort) : sort :=
   | (Co phi) => Co (open_constraint_wrt_tm_rec k a5 phi)
 end.
 
+Definition open_sig_sort_wrt_tm_rec (k:nat) (a5:tm) (sig_sort5:sig_sort) : sig_sort :=
+  match sig_sort5 with
+  | (Cs A) => Cs (open_tm_wrt_tm_rec k a5 A)
+  | (Ax a A R) => Ax (open_tm_wrt_tm_rec k a5 a) (open_tm_wrt_tm_rec k a5 A) R
+end.
+
 Definition open_brs_wrt_co g5 brs_6 := open_brs_wrt_co_rec 0 brs_6 g5.
 
 Definition open_tm_wrt_co g5 a5 := open_tm_wrt_co_rec 0 a5 g5.
 
 Definition open_brs_wrt_tm a5 brs_6 := open_brs_wrt_tm_rec 0 brs_6 a5.
 
-Definition open_sort_wrt_co g5 sort5 := open_sort_wrt_co_rec 0 sort5 g5.
-
 Definition open_sig_sort_wrt_co g5 sig_sort5 := open_sig_sort_wrt_co_rec 0 sig_sort5 g5.
+
+Definition open_sort_wrt_co g5 sort5 := open_sort_wrt_co_rec 0 sort5 g5.
 
 Definition open_co_wrt_co g_5 g__6 := open_co_wrt_co_rec 0 g__6 g_5.
 
-Definition open_sig_sort_wrt_tm a5 sig_sort5 := open_sig_sort_wrt_tm_rec 0 sig_sort5 a5.
+Definition open_sort_wrt_tm a5 sort5 := open_sort_wrt_tm_rec 0 sort5 a5.
 
 Definition open_constraint_wrt_co g5 phi5 := open_constraint_wrt_co_rec 0 phi5 g5.
 
@@ -254,7 +254,7 @@ Definition open_constraint_wrt_tm a5 phi5 := open_constraint_wrt_tm_rec 0 phi5 a
 
 Definition open_co_wrt_tm a5 g_5 := open_co_wrt_tm_rec 0 g_5 a5.
 
-Definition open_sort_wrt_tm a5 sort5 := open_sort_wrt_tm_rec 0 sort5 a5.
+Definition open_sig_sort_wrt_tm a5 sig_sort5 := open_sig_sort_wrt_tm_rec 0 sig_sort5 a5.
 
 Definition open_tm_wrt_tm a5 a_6 := open_tm_wrt_tm_rec 0 a_6 a5.
 
@@ -565,18 +565,6 @@ with fv_co_co_constraint (phi5:constraint) : vars :=
   | (Eq a b A R) => (fv_co_co_tm a) \u (fv_co_co_tm b) \u (fv_co_co_tm A)
 end.
 
-Definition fv_tm_tm_sort (sort5:sort) : vars :=
-  match sort5 with
-  | (Tm A R) => (fv_tm_tm_tm A)
-  | (Co phi) => (fv_tm_tm_constraint phi)
-end.
-
-Definition fv_co_co_sort (sort5:sort) : vars :=
-  match sort5 with
-  | (Tm A R) => (fv_co_co_tm A)
-  | (Co phi) => (fv_co_co_constraint phi)
-end.
-
 Definition fv_tm_tm_sig_sort (sig_sort5:sig_sort) : vars :=
   match sig_sort5 with
   | (Cs A) => (fv_tm_tm_tm A)
@@ -587,6 +575,18 @@ Definition fv_co_co_sig_sort (sig_sort5:sig_sort) : vars :=
   match sig_sort5 with
   | (Cs A) => (fv_co_co_tm A)
   | (Ax a A R) => (fv_co_co_tm a) \u (fv_co_co_tm A)
+end.
+
+Definition fv_tm_tm_sort (sort5:sort) : vars :=
+  match sort5 with
+  | (Tm A R) => (fv_tm_tm_tm A)
+  | (Co phi) => (fv_tm_tm_constraint phi)
+end.
+
+Definition fv_co_co_sort (sort5:sort) : vars :=
+  match sort5 with
+  | (Tm A R) => (fv_co_co_tm A)
+  | (Co phi) => (fv_co_co_constraint phi)
 end.
 
 (** substitutions *)
@@ -710,18 +710,6 @@ with co_subst_co_constraint (g5:co) (c5:covar) (phi5:constraint) {struct phi5} :
   | (Eq a b A R) => Eq (co_subst_co_tm g5 c5 a) (co_subst_co_tm g5 c5 b) (co_subst_co_tm g5 c5 A) R
 end.
 
-Definition tm_subst_tm_sort (a5:tm) (x5:tmvar) (sort5:sort) : sort :=
-  match sort5 with
-  | (Tm A R) => Tm (tm_subst_tm_tm a5 x5 A) R
-  | (Co phi) => Co (tm_subst_tm_constraint a5 x5 phi)
-end.
-
-Definition co_subst_co_sort (g5:co) (c5:covar) (sort5:sort) : sort :=
-  match sort5 with
-  | (Tm A R) => Tm (co_subst_co_tm g5 c5 A) R
-  | (Co phi) => Co (co_subst_co_constraint g5 c5 phi)
-end.
-
 Definition tm_subst_tm_sig_sort (a5:tm) (x5:tmvar) (sig_sort5:sig_sort) : sig_sort :=
   match sig_sort5 with
   | (Cs A) => Cs (tm_subst_tm_tm a5 x5 A)
@@ -732,6 +720,18 @@ Definition co_subst_co_sig_sort (g5:co) (c5:covar) (sig_sort5:sig_sort) : sig_so
   match sig_sort5 with
   | (Cs A) => Cs (co_subst_co_tm g5 c5 A)
   | (Ax a A R) => Ax (co_subst_co_tm g5 c5 a) (co_subst_co_tm g5 c5 A) R
+end.
+
+Definition tm_subst_tm_sort (a5:tm) (x5:tmvar) (sort5:sort) : sort :=
+  match sort5 with
+  | (Tm A R) => Tm (tm_subst_tm_tm a5 x5 A) R
+  | (Co phi) => Co (tm_subst_tm_constraint a5 x5 phi)
+end.
+
+Definition co_subst_co_sort (g5:co) (c5:covar) (sort5:sort) : sort :=
+  match sort5 with
+  | (Tm A R) => Tm (co_subst_co_tm g5 c5 A) R
+  | (Co phi) => Co (co_subst_co_constraint g5 c5 phi)
 end.
 
 
@@ -820,6 +820,13 @@ Definition FixTy : tm :=
 Definition an_toplevel : sig := Fix ~ Ax FixDef FixTy Nom.
 
 Definition toplevel : sig := erase_sig an_toplevel Nom.
+
+Fixpoint ctx_to_rctx (G : context) : role_context :=
+  match G with
+  | nil => nil
+  | (x, (Tm A R)) :: G => (x, R) :: (ctx_to_rctx G)
+  | (c, (Co _)) :: G => ctx_to_rctx G
+  end.
 
 
 
@@ -926,44 +933,51 @@ Inductive consistent : tm -> tm -> Prop :=    (* defn consistent *)
 (* defns Jerased *)
 Inductive erased_tm : role_context -> tm -> role -> Prop :=    (* defn erased_tm *)
  | erased_a_Bullet : forall (W:role_context) (R:role),
+      uniq  W  ->
      erased_tm W a_Bullet R
  | erased_a_Star : forall (W:role_context) (R:role),
+      uniq  W  ->
      erased_tm W a_Star R
- | erased_a_Var : forall (W:role_context) (x:tmvar) (R:role) (W':role_context),
-     erased_tm  ( W  ++ ( x  ~  R ) ++  W' )  (a_Var_f x) R
- | erased_a_Abs : forall (L:vars) (W W':role_context) (rho:relflag) (R1:role) (a:tm) (R:role),
-      ( forall x , x \notin  L  -> erased_tm  ( W  ++ ( x  ~  R1 ) ++  W' )   ( open_tm_wrt_tm a (a_Var_f x) )  R )  ->
-     erased_tm  ( W  ++  W' )   ( (a_UAbs rho R1 a) )  R
+ | erased_a_Var : forall (W:role_context) (x:tmvar) (R:role),
+      uniq  W  ->
+      binds  x   R   W  ->
+     erased_tm W (a_Var_f x) R
+ | erased_a_Abs : forall (L:vars) (W:role_context) (rho:relflag) (R1:role) (a:tm) (R:role),
+      ( forall x , x \notin  L  -> erased_tm  (( x  ~  R1 ) ++  W )   ( open_tm_wrt_tm a (a_Var_f x) )  R )  ->
+     erased_tm W  ( (a_UAbs rho R1 a) )  R
  | erased_a_App : forall (W:role_context) (a:tm) (rho:relflag) (R1:role) (b:tm) (R:role),
      erased_tm W a R ->
-     erased_tm W b R ->
+     erased_tm W b R1 ->
      erased_tm W  ( (a_App a rho R1 b) )  R
- | erased_a_Pi : forall (L:vars) (W W':role_context) (rho:relflag) (A:tm) (R1:role) (B:tm) (R R2:role),
-     erased_tm W A R2 ->
-      ( forall x , x \notin  L  -> erased_tm  ( W  ++ ( x  ~  R1 ) ++  W' )   ( open_tm_wrt_tm B (a_Var_f x) )  R )  ->
-     SubRole R1 R2 ->
-     erased_tm  ( W  ++  W' )   ( (a_Pi rho A R1 B) )  R
- | erased_a_CPi : forall (L:vars) (W W':role_context) (a b A:tm) (R1:role) (B:tm) (R R2:role),
+ | erased_a_Pi : forall (L:vars) (W:role_context) (rho:relflag) (A:tm) (R1:role) (B:tm) (R:role),
+     erased_tm W A R1 ->
+      ( forall x , x \notin  L  -> erased_tm  (( x  ~  R1 ) ++  W )   ( open_tm_wrt_tm B (a_Var_f x) )  R )  ->
+     erased_tm W  ( (a_Pi rho A R1 B) )  R
+ | erased_a_CPi : forall (L:vars) (W:role_context) (a b A:tm) (R1:role) (B:tm) (R:role),
      erased_tm W a R1 ->
      erased_tm W b R1 ->
-     erased_tm W A R2 ->
-      ( forall c , c \notin  L  -> erased_tm  ( W  ++ ( c  ~  R1 ) ++  W' )   ( open_tm_wrt_co B (g_Var_f c) )  R )  ->
-     SubRole R1 R2 ->
-     erased_tm  ( W  ++  W' )   ( (a_CPi (Eq a b A R1) B) )  R
- | erased_a_CAbs : forall (L:vars) (W W':role_context) (b:tm) (R R1:role),
-      ( forall c , c \notin  L  -> erased_tm  ( W  ++ ( c  ~  R1 ) ++  W' )   ( open_tm_wrt_co b (g_Var_f c) )  R )  ->
-     erased_tm  ( W  ++  W' )   ( (a_UCAbs b) )  R
+     erased_tm W A R1 ->
+      ( forall c , c \notin  L  -> erased_tm W  ( open_tm_wrt_co B (g_Var_f c) )  R )  ->
+     erased_tm W  ( (a_CPi (Eq a b A R1) B) )  R
+ | erased_a_CAbs : forall (L:vars) (W:role_context) (b:tm) (R:role),
+      ( forall c , c \notin  L  -> erased_tm W  ( open_tm_wrt_co b (g_Var_f c) )  R )  ->
+     erased_tm W  ( (a_UCAbs b) )  R
  | erased_a_CApp : forall (W:role_context) (a:tm) (R:role),
      erased_tm W a R ->
      erased_tm W  ( (a_CApp a g_Triv) )  R
  | erased_a_Fam : forall (W:role_context) (F:tyfam) (R:role),
+      uniq  W  ->
      erased_tm W (a_Fam F) R
  | erased_a_Const : forall (W:role_context) (T:const) (R:role),
+      uniq  W  ->
      erased_tm W (a_Const T) R
  | erased_a_Conv : forall (W:role_context) (a:tm) (R1 R:role),
      erased_tm W a R ->
-      not (  ( SubRole R1 R )  )  ->
-     erased_tm W  ( (a_Conv a R1 g_Triv) )  R.
+     erased_tm W  ( (a_Conv a R1 g_Triv) )  R
+ | erased_a_Sub : forall (W:role_context) (a:tm) (R2 R1:role),
+     erased_tm W a R1 ->
+     SubRole R1 R2 ->
+     erased_tm W a R2.
 
 (* defns JChk *)
 Inductive RhoCheck : relflag -> tmvar -> tm -> Prop :=    (* defn RhoCheck *)
@@ -977,17 +991,15 @@ Inductive RhoCheck : relflag -> tmvar -> tm -> Prop :=    (* defn RhoCheck *)
 (* defns Jpar *)
 Inductive Par : context -> available_props -> role_context -> tm -> tm -> role -> Prop :=    (* defn Par *)
  | Par_Refl : forall (G:context) (D:available_props) (W:role_context) (a:tm) (R:role),
-     lc_tm a ->
+     erased_tm W a R ->
      Par G D W a a R
  | Par_Beta : forall (G:context) (D:available_props) (W:role_context) (a:tm) (rho:relflag) (R1:role) (b a' b':tm) (R:role),
      Par G D W a  ( (a_UAbs rho R1 a') )  R ->
      Par G D W b b' R1 ->
-     SubRole R1 R ->
      Par G D W (a_App a rho R1 b)  (open_tm_wrt_tm  a'   b' )  R
  | Par_App : forall (G:context) (D:available_props) (W:role_context) (a:tm) (rho:relflag) (R1:role) (b a' b':tm) (R:role),
      Par G D W a a' R ->
      Par G D W b b' R1 ->
-     SubRole R1 R ->
      Par G D W (a_App a rho R1 b) (a_App a' rho R1 b') R
  | Par_CBeta : forall (G:context) (D:available_props) (W:role_context) (a a':tm) (R:role),
      Par G D W a  ( (a_UCAbs a') )  R ->
@@ -995,27 +1007,26 @@ Inductive Par : context -> available_props -> role_context -> tm -> tm -> role -
  | Par_CApp : forall (G:context) (D:available_props) (W:role_context) (a a':tm) (R:role),
      Par G D W a a' R ->
      Par G D W (a_CApp a g_Triv) (a_CApp a' g_Triv) R
- | Par_Abs : forall (L:vars) (G:context) (D:available_props) (W W':role_context) (rho:relflag) (R1:role) (a a':tm) (R:role),
-      ( forall x , x \notin  L  -> Par G D  ( W  ++ ( x  ~  R1 ) ++  W' )   ( open_tm_wrt_tm a (a_Var_f x) )   ( open_tm_wrt_tm a' (a_Var_f x) )  R )  ->
-     Par G D  ( W  ++  W' )  (a_UAbs rho R1 a) (a_UAbs rho R1 a') R
- | Par_Pi : forall (L:vars) (G:context) (D:available_props) (W W':role_context) (rho:relflag) (A:tm) (R1:role) (B A' B':tm) (R R2:role),
-     Par G D W A A' R2 ->
-      ( forall x , x \notin  L  -> Par G D  ( W  ++ ( x  ~  R1 ) ++  W' )   ( open_tm_wrt_tm B (a_Var_f x) )   ( open_tm_wrt_tm B' (a_Var_f x) )  R )  ->
-     SubRole R1 R2 ->
-     Par G D  ( W  ++  W' )  (a_Pi rho A R1 B) (a_Pi rho A' R1 B') R
- | Par_CAbs : forall (L:vars) (G:context) (D:available_props) (W W':role_context) (a a':tm) (R R1:role),
-      ( forall c , c \notin  L  -> Par G D  ( W  ++ ( c  ~  R1 ) ++  W' )   ( open_tm_wrt_co a (g_Var_f c) )   ( open_tm_wrt_co a' (g_Var_f c) )  R )  ->
-     Par G D  ( W  ++  W' )  (a_UCAbs a) (a_UCAbs a') R
- | Par_CPi : forall (L:vars) (G:context) (D:available_props) (W W':role_context) (a b A:tm) (R1:role) (B a' b' A' B':tm) (R R2:role),
-     Par G D W A A' R2 ->
+ | Par_Abs : forall (L:vars) (G:context) (D:available_props) (W:role_context) (rho:relflag) (R1:role) (a a':tm) (R:role),
+      ( forall x , x \notin  L  -> Par G D  (( x  ~  R1 ) ++  W )   ( open_tm_wrt_tm a (a_Var_f x) )   ( open_tm_wrt_tm a' (a_Var_f x) )  R )  ->
+     Par G D W (a_UAbs rho R1 a) (a_UAbs rho R1 a') R
+ | Par_Pi : forall (L:vars) (G:context) (D:available_props) (W:role_context) (rho:relflag) (A:tm) (R1:role) (B A' B':tm) (R:role),
+     Par G D W A A' R1 ->
+      ( forall x , x \notin  L  -> Par G D  (( x  ~  R1 ) ++  W )   ( open_tm_wrt_tm B (a_Var_f x) )   ( open_tm_wrt_tm B' (a_Var_f x) )  R )  ->
+     Par G D W (a_Pi rho A R1 B) (a_Pi rho A' R1 B') R
+ | Par_CAbs : forall (L:vars) (G:context) (D:available_props) (W:role_context) (a a':tm) (R:role),
+      ( forall c , c \notin  L  -> Par G D W  ( open_tm_wrt_co a (g_Var_f c) )   ( open_tm_wrt_co a' (g_Var_f c) )  R )  ->
+     Par G D W (a_UCAbs a) (a_UCAbs a') R
+ | Par_CPi : forall (L:vars) (G:context) (D:available_props) (W:role_context) (a b A:tm) (R1:role) (B a' b' A' B':tm) (R:role),
+     Par G D W A A' R1 ->
      Par G D W a a' R1 ->
      Par G D W b b' R1 ->
-      ( forall c , c \notin  L  -> Par G D  ( W  ++ ( c  ~  R1 ) ++  W' )   ( open_tm_wrt_co B (g_Var_f c) )   ( open_tm_wrt_co B' (g_Var_f c) )  R )  ->
-     SubRole R1 R2 ->
-     Par G D  ( W  ++  W' )  (a_CPi (Eq a b A R1) B) (a_CPi (Eq a' b' A' R1) B') R
+      ( forall c , c \notin  L  -> Par G D W  ( open_tm_wrt_co B (g_Var_f c) )   ( open_tm_wrt_co B' (g_Var_f c) )  R )  ->
+     Par G D W (a_CPi (Eq a b A R1) B) (a_CPi (Eq a' b' A' R1) B') R
  | Par_Axiom : forall (G:context) (D:available_props) (W:role_context) (F:tyfam) (a:tm) (R:role) (A:tm) (R1:role),
       binds  F  (Ax  a A R1 )   toplevel   ->
      SubRole R1 R ->
+      uniq  W  ->
      Par G D W (a_Fam F) a R
  | Par_Cong : forall (G:context) (D:available_props) (W:role_context) (a1:tm) (R:role) (a2:tm) (R1:role),
      Par G D W a1 a2 R1 ->
@@ -1026,7 +1037,6 @@ Inductive Par : context -> available_props -> role_context -> tm -> tm -> role -
  | Par_Push : forall (G:context) (D:available_props) (W:role_context) (a1:tm) (R2:role) (b1 a2 b2:tm) (R R1:role),
      Par G D W a1  ( (a_Conv a2 R g_Triv) )  R1 ->
      Par G D W b1 b2 R2 ->
-     SubRole R2 R1 ->
      Par G D W  (a_App  a1  Rel  R2   b1 )  (a_Conv  (  (a_App  a2  Rel  R2    ( (a_Conv b2 R g_Triv) )  )  )  R g_Triv) R1
  | Par_CPush : forall (G:context) (D:available_props) (W:role_context) (a1 a2:tm) (R R1:role),
      Par G D W a1  ( (a_Conv a2 R g_Triv) )  R1 ->
