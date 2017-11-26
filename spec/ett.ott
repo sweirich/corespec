@@ -675,8 +675,9 @@ W |- erased_tm TYPE R
 
 rctx_uniq W
 x : R in W
+R <= R1
 ------------------------------- :: Var
-W |- erased_tm x R
+W |- erased_tm x R1
 
 W , x : R1 |- erased_tm a R
 ------------------------------------ :: Abs
@@ -709,8 +710,10 @@ W |- erased_tm a R
 W |- erased_tm (a [o]) R
 
 rctx_uniq W
+F ~ a : A / R in toplevel
+R <= R1
 ------------------- :: Fam
-W |- erased_tm F R
+W |- erased_tm F R1
 
 rctx_uniq W
 ------------------- :: Const
@@ -719,11 +722,6 @@ W |- erased_tm T R
 W |- erased_tm a R
 ---------------------------- :: Conv
 W |- erased_tm (a |> R1 o) R
-
-W |- erased_tm a R1
-R1 <= R2
----------------------------- :: Sub
-W |- erased_tm a R2
 
 defns
 JChk :: '' ::=
@@ -1024,7 +1022,7 @@ G |= F : A / R
 G |= a : A1 / R1
 G ; dom G |= A1 == A2 : TYPE / R2
 not (R2 <= R1)
-[ G |= A2 : TYPE / R2 ]
+[ G |= A2 : TYPE / R1 ]
 ------------------------- :: TyCast
 G |= a |> R2 o : A2 / R1
 

@@ -644,8 +644,9 @@
 \newcommand{\ottdruleerasedXXaXXVar}[1]{\ottdrule[#1]{%
 \ottpremise{\ottsym{rctx\_uniq}  \Omega}%
 \ottpremise{\ottmv{x}  \ottsym{:}  \ottnt{R} \, \in \, \Omega}%
+\ottpremise{ \ottnt{R}  \leq  \ottnt{R_{{\mathrm{1}}}} }%
 }{
- \Omega  \vDash erased\_tm \hspace{2pt}  \ottmv{x}  \hspace{2pt}  \ottnt{R} }{%
+ \Omega  \vDash erased\_tm \hspace{2pt}  \ottmv{x}  \hspace{2pt}  \ottnt{R_{{\mathrm{1}}}} }{%
 {\ottdrulename{erased\_a\_Var}}{}%
 }}
 
@@ -705,8 +706,10 @@
 
 \newcommand{\ottdruleerasedXXaXXFam}[1]{\ottdrule[#1]{%
 \ottpremise{\ottsym{rctx\_uniq}  \Omega}%
+\ottpremise{\ottmv{F}  \sim  \ottnt{a}  \ottsym{:}  \ottnt{A}  \ottsym{/}  \ottnt{R} \, \in \,  \Sigma_0 }%
+\ottpremise{ \ottnt{R}  \leq  \ottnt{R_{{\mathrm{1}}}} }%
 }{
- \Omega  \vDash erased\_tm \hspace{2pt}  \ottmv{F}  \hspace{2pt}  \ottnt{R} }{%
+ \Omega  \vDash erased\_tm \hspace{2pt}  \ottmv{F}  \hspace{2pt}  \ottnt{R_{{\mathrm{1}}}} }{%
 {\ottdrulename{erased\_a\_Fam}}{}%
 }}
 
@@ -726,15 +729,6 @@
 {\ottdrulename{erased\_a\_Conv}}{}%
 }}
 
-
-\newcommand{\ottdruleerasedXXaXXSub}[1]{\ottdrule[#1]{%
-\ottpremise{ \Omega  \vDash erased\_tm \hspace{2pt}  \ottnt{a}  \hspace{2pt}  \ottnt{R_{{\mathrm{1}}}} }%
-\ottpremise{ \ottnt{R_{{\mathrm{1}}}}  \leq  \ottnt{R_{{\mathrm{2}}}} }%
-}{
- \Omega  \vDash erased\_tm \hspace{2pt}  \ottnt{a}  \hspace{2pt}  \ottnt{R_{{\mathrm{2}}}} }{%
-{\ottdrulename{erased\_a\_Sub}}{}%
-}}
-
 \newcommand{\ottdefnerasedXXtm}[1]{\begin{ottdefnblock}[#1]{$ \Omega  \vDash erased\_tm \hspace{2pt}  \ottnt{a}  \hspace{2pt}  \ottnt{R} $}{}
 \ottusedrule{\ottdruleerasedXXaXXBullet{}}
 \ottusedrule{\ottdruleerasedXXaXXStar{}}
@@ -748,7 +742,6 @@
 \ottusedrule{\ottdruleerasedXXaXXFam{}}
 \ottusedrule{\ottdruleerasedXXaXXConst{}}
 \ottusedrule{\ottdruleerasedXXaXXConv{}}
-\ottusedrule{\ottdruleerasedXXaXXSub{}}
 \end{ottdefnblock}}
 
 
@@ -1236,7 +1229,7 @@
 \ottpremise{\Gamma  \vDash  \ottnt{a}  \ottsym{:}  \ottnt{A_{{\mathrm{1}}}}  \ottsym{/}  \ottnt{R_{{\mathrm{1}}}}}%
 \ottpremise{\Gamma  \ottsym{;}   \widetilde { \Gamma }   \vDash  \ottnt{A_{{\mathrm{1}}}}  \equiv  \ottnt{A_{{\mathrm{2}}}}  \ottsym{:}   \star   \ottsym{/}  \ottnt{R_{{\mathrm{2}}}}}%
 \ottpremise{ \neg  \ottsym{(}   \ottnt{R_{{\mathrm{2}}}}  \leq  \ottnt{R_{{\mathrm{1}}}}   \ottsym{)} }%
-\ottpremise{ \suppress{ \Gamma  \vDash  \ottnt{A_{{\mathrm{2}}}}  \ottsym{:}   \star   \ottsym{/}  \ottnt{R_{{\mathrm{2}}}} } }%
+\ottpremise{ \suppress{ \Gamma  \vDash  \ottnt{A_{{\mathrm{2}}}}  \ottsym{:}   \star   \ottsym{/}  \ottnt{R_{{\mathrm{1}}}} } }%
 }{
 \Gamma  \vDash   \ottnt{a} \triangleright _{ \ottnt{R_{{\mathrm{2}}}} }  \bullet   \ottsym{:}  \ottnt{A_{{\mathrm{2}}}}  \ottsym{/}  \ottnt{R_{{\mathrm{1}}}}}{%
 {\ottdrulename{E\_TyCast}}{}%
@@ -2156,7 +2149,7 @@
 \ottall
 
 \begin{verbatim}
-Definition rules:        162 good    0 bad
+Definition rules:        161 good    0 bad
 Definition rule clauses: 478 good    0 bad
 \end{verbatim}
 \end{document}

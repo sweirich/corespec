@@ -938,10 +938,11 @@ Inductive erased_tm : role_context -> tm -> role -> Prop :=    (* defn erased_tm
  | erased_a_Star : forall (W:role_context) (R:role),
       uniq  W  ->
      erased_tm W a_Star R
- | erased_a_Var : forall (W:role_context) (x:tmvar) (R:role),
+ | erased_a_Var : forall (W:role_context) (x:tmvar) (R1 R:role),
       uniq  W  ->
       binds  x   R   W  ->
-     erased_tm W (a_Var_f x) R
+     SubRole R R1 ->
+     erased_tm W (a_Var_f x) R1
  | erased_a_Abs : forall (L:vars) (W:role_context) (rho:relflag) (R1:role) (a:tm) (R:role),
       ( forall x , x \notin  L  -> erased_tm  (( x  ~  R1 ) ++  W )   ( open_tm_wrt_tm a (a_Var_f x) )  R )  ->
      erased_tm W  ( (a_UAbs rho R1 a) )  R
@@ -965,19 +966,17 @@ Inductive erased_tm : role_context -> tm -> role -> Prop :=    (* defn erased_tm
  | erased_a_CApp : forall (W:role_context) (a:tm) (R:role),
      erased_tm W a R ->
      erased_tm W  ( (a_CApp a g_Triv) )  R
- | erased_a_Fam : forall (W:role_context) (F:tyfam) (R:role),
+ | erased_a_Fam : forall (W:role_context) (F:tyfam) (R1:role) (a A:tm) (R:role),
       uniq  W  ->
-     erased_tm W (a_Fam F) R
+      binds  F  (Ax  a A R )   toplevel   ->
+     SubRole R R1 ->
+     erased_tm W (a_Fam F) R1
  | erased_a_Const : forall (W:role_context) (T:const) (R:role),
       uniq  W  ->
      erased_tm W (a_Const T) R
  | erased_a_Conv : forall (W:role_context) (a:tm) (R1 R:role),
      erased_tm W a R ->
-     erased_tm W  ( (a_Conv a R1 g_Triv) )  R
- | erased_a_Sub : forall (W:role_context) (a:tm) (R2 R1:role),
-     erased_tm W a R1 ->
-     SubRole R1 R2 ->
-     erased_tm W a R2.
+     erased_tm W  ( (a_Conv a R1 g_Triv) )  R.
 
 (* defns JChk *)
 Inductive RhoCheck : relflag -> tmvar -> tm -> Prop :=    (* defn RhoCheck *)
@@ -1176,7 +1175,7 @@ with Typing : context -> tm -> tm -> role -> Prop :=    (* defn Typing *)
      Typing G a A1 R1 ->
      DefEq G  (dom  G )  A1 A2 a_Star R2 ->
       not (  ( SubRole R2 R1 )  )  ->
-      ( Typing G A2 a_Star R2 )  ->
+      ( Typing G A2 a_Star R1 )  ->
      Typing G (a_Conv a R2 g_Triv) A2 R1
 with Iso : context -> available_props -> constraint -> constraint -> Prop :=    (* defn Iso *)
  | E_PropCong : forall (G:context) (D:available_props) (A1 B1 A:tm) (R:role) (A2 B2:tm),
