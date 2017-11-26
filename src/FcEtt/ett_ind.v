@@ -667,7 +667,7 @@ Ltac E_pick_fresh x :=
 
 Ltac Par_pick_fresh x :=
   match goal with
-    | [ |- Par _ _ ?shape ?s2 ?R ] =>
+    | [ |- Par _ _ _ ?shape ?s2 ?R ] =>
       let v := match shape with
             | a_Pi _ _ _ _ => Par_Pi
             | a_UAbs _ _ _ =>  match s2 with
