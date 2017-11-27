@@ -327,7 +327,6 @@ Combined Scheme CoercedValue_Value_mutual from CoercedValue_ind', Value_ind'.
 (* Apply the mutual induction hypothesis and add a marker to the
    context indicating the current case (and also making the associated
    data constructor for that case available) as the name 'CON'. *)
-
 Ltac ext_induction CON :=
     apply typing_wff_iso_defeq_mutual;
     [ pose CON :=  E_SubRole    |
@@ -342,6 +341,7 @@ Ltac ext_induction CON :=
       pose CON :=  E_CAbs       |
       pose CON :=  E_CApp       |
       pose CON :=  E_Fam        |
+      pose CON :=  E_TyCast     |
       pose CON :=  E_Wff        |
       pose CON :=  E_PropCong   |
       pose CON :=  E_IsoConv    |
@@ -365,10 +365,10 @@ Ltac ext_induction CON :=
       pose CON :=  E_Cast       |
       pose CON :=  E_EqConv     |
       pose CON :=  E_IsoSnd     |
+      pose CON :=  E_CastCong   |
       pose CON :=  E_Empty      |
       pose CON :=  E_ConsTm     |
-      pose CON :=  E_ConsCo     |
-      pose CON :=  E_TyCast   ].
+      pose CON :=  E_ConsCo     ].
 
 
 Ltac ann_induction CON :=
@@ -391,7 +391,7 @@ Ltac ann_induction CON :=
       pose CON :=  An_IsoConv    |
       pose CON :=  An_Assn       |
       pose CON :=  An_Refl       |
-      pose CON :=  An_EraseEq      |
+      pose CON :=  An_EraseEq    |
       pose CON :=  An_Sym        |
       pose CON :=  An_Trans      |
       pose CON :=  An_Sub        |
