@@ -1290,6 +1290,7 @@ with DefEq : context -> available_props -> tm -> tm -> tm -> role -> Prop :=    
      DefEq G D a1 a2 A R1 ->
      DefEq G D A B a_Star R2 ->
       not (  ( SubRole R2 R1 )  )  ->
+     Typing G B a_Star R1 ->
      DefEq G D (a_Conv a1 R2 g_Triv) (a_Conv a2 R2 g_Triv) B R1
 with Ctx : context -> Prop :=    (* defn Ctx *)
  | E_Empty : 
