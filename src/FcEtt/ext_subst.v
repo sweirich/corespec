@@ -291,6 +291,7 @@ Proof. eapply typing_wff_iso_defeq_mutual;
     erewrite (tm_subst_fresh_2 _ h0); auto.
     erewrite (tm_subst_fresh_1 _ h0); auto.
     erewrite (tm_subst_fresh_1 _ h0); auto.
+  - eapply E_TyCast; try eapply DefEq_weaken_available; eauto.
   - destruct (c == x).
     + subst.
       apply binds_mid_eq in b0; auto; try done.
@@ -430,6 +431,7 @@ Proof.
     eapply_first_hyp; eauto 2.
   -  have h0: Typing nil a A R by eapply toplevel_closed; eauto.
     erewrite (tm_subst_co_fresh_1 _ h0); eauto.
+  - eapply E_TyCast; try eapply DefEq_weaken_available; eauto.
   - apply (E_Wff _ _ _  (co_subst_co_tm g_Triv c A)); eauto 3.
   - apply E_PropCong; eauto 3.
   - eapply E_CPiFst; eauto 3.
@@ -485,6 +487,7 @@ Proof.
     eauto 2.
   - eapply E_IsoSnd; eauto 1.
     eapply H; eauto.
+  - eapply E_CastCong; eauto 2.
   - induction F; done.
   - induction F; try done.
     destruct a.
