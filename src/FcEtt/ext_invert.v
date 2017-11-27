@@ -930,11 +930,9 @@ Proof.
     auto. auto. auto.
   - intros.
     pcess_hyps.
-    split.
+    split;
     eapply E_TyCast; eauto 3 using DefEq_weaken_available.
-    eapply E_TyCast; eauto 2 using DefEq_weaken_available.
-    (* FIXME: Didn't get to investigate much yet, but this doesn't sound good. Are we breaking regularity with that TyCast rule? *)
-Admitted.
+Qed.
 
 Lemma DefEq_regularity :
   forall G D A B T R, DefEq G D A B T R -> PropWff G (Eq A B T R).
