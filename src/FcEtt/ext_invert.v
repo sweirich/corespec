@@ -537,7 +537,6 @@ Proof.
   erewrite <- (@same_dom _ G1 G2). auto. eauto.
 Qed.
 
-
 Lemma context_DefEq_mutual:
   (forall G1  a A R,   Typing G1 a A R -> forall D G2,
         Ctx G2 -> context_DefEq D G1 G2 -> Typing G2 a A R) /\
@@ -550,7 +549,9 @@ Lemma context_DefEq_mutual:
   (forall G1 ,       Ctx G1 -> forall G2 D x A R, Ctx G2 -> context_DefEq D G1 G2
                                    -> binds x (Tm A R) G1 -> Typing G2 A a_Star R).
 Proof.
-  apply typing_wff_iso_defeq_mutual; eauto 3; try done.
+  (* apply typing_wff_iso_defeq_mutual; *)
+  ext_induction con; 
+  eauto 3; try done.
   - intros G1 x A R c H b D G2 H0 H1.
     case (@context_tm_binding_defeq D G1 G2 A R x); auto.
     intros A2 [h0 h1].
@@ -606,8 +607,13 @@ Proof.
     case K; auto => A' [h0 h1].
     apply (E_Conv _ _ _ A'); eauto 2.
     apply E_Sym.
-    eapply DefEq_weaken_available; eauto.
-  - *) intros G a b A R t H t0 H0 t1 H1 D G2 H2 H3.
+    eapply DefEq_weaken_available; eauto. 
+  - *) 
+    intros. eapply con; eauto 2.
+    eapply DefEq_weaken_available. 
+    apply H0; eauto.
+    eapply context_DefEq_weaken_available; eauto.
+  - intros G a b A R t H t0 H0 t1 H1 D G2 H2 H3.
     apply E_Wff; eauto.
   (*- intros G D A1 B1 A A2 B2 B d H d0 H0 d1 H1 G2 H2 H3.
     apply E_PropCong; auto.
@@ -662,6 +668,7 @@ Proof.
     rewrite <- (same_dom H2).
     apply H0; auto.
     eapply context_DefEq_weaken_available; eauto.
+  - intros. eapply con; eauto.
   - intros G x A R c H t H0 n G2 D x0 A0 R' H1 H2 H3.
     inversion H3; subst.
     + inversion H4; subst.
@@ -921,7 +928,12 @@ Proof.
     split; auto.
     Unshelve. exact (dom G). exact (dom G).
     auto. auto. auto.
-Qed.
+  - intros.
+    pcess_hyps.
+    split.
+    eapply E_TyCast; eauto 2 using DefEq_weaken_available.
+    (* FIXME: Didn't get to investigate much yet, but this doesn't sound good. Are we breaking regularity with that TyCast rule? *)
+Admitted.
 
 Lemma DefEq_regularity :
   forall G D A B T R, DefEq G D A B T R -> PropWff G (Eq A B T R).

@@ -4,8 +4,9 @@ Require Import FcEtt.tactics.
 Require Import FcEtt.utils.
 Require Export FcEtt.imports.
 Require Export FcEtt.ett_inf.
-Require Export FcEtt.ett_par.
+(* Require Export FcEtt.ett_par. *)
 Require Export FcEtt.ett_ind.
+Require Import FcEtt.ext_invert.
 
 
 Module ext_weak (wf: ext_wf_sig).
@@ -141,6 +142,8 @@ Proof.
   unfold not.
   intros b. destruct b as [phi b].
   assert (Tm A' R' = Co phi). eapply binds_unique; eauto.
+  SearchAbout (DefEq G _ _ _ _ _ -> Ctx G). SearchAbout DefEq_regularity.
+  apply wf.Ctx_uniq.
   inversion H2.
   fsetdec.
 Qed.
