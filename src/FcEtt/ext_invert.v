@@ -730,7 +730,7 @@ Lemma DefEqIso_regularity :
                   Typing G A T R /\ Typing G B T R) /\
   (forall G0, Ctx G0 -> True).
 Proof.
-  apply typing_wff_iso_defeq_mutual; eauto; try done.
+  ext_induction con; eauto; try done.
   - intros G D A1 B1 A R A2 B2 d H d0 H0.
     split_hyp.
     split; apply E_Wff; solve [auto | eapply Typing_regularity; eauto].
@@ -931,6 +931,7 @@ Proof.
   - intros.
     pcess_hyps.
     split.
+    eapply E_TyCast; eauto 3 using DefEq_weaken_available.
     eapply E_TyCast; eauto 2 using DefEq_weaken_available.
     (* FIXME: Didn't get to investigate much yet, but this doesn't sound good. Are we breaking regularity with that TyCast rule? *)
 Admitted.
