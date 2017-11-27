@@ -3,6 +3,9 @@ Require Import FcEtt.imports.
 Require Export FcEtt.ett_ott.
 Require Export FcEtt.utils.
 
+(* TODO: do this everywhere *)
+Generalizable Variables G D a t A B T R.
+
 
 (**** Signature file ****)
 (** This file contains the signatures for most modules in this development.
@@ -44,6 +47,10 @@ Axiom Iso_lc2 : forall G0 D p1 p2, Iso G0 D p1 p2 -> lc_constraint p2.
 Axiom DefEq_lc1 : forall G0 D A B T R,   DefEq G0 D A B T R -> lc_tm A.
 Axiom DefEq_lc2 : forall G0 D A B T R,   DefEq G0 D A B T R -> lc_tm B.
 Axiom DefEq_lc3 : forall G0 D A B T R,   DefEq G0 D A B T R -> lc_tm T.
+
+(* TODO: put the other versions *)
+Axiom Typing_Ctx : `(Typing G a A R → Ctx G).
+Axiom DefEq_Ctx  : `(DefEq G D A B T R → Ctx G).
 
 Axiom Ctx_lc : forall G0, Ctx G0 -> forall x s , binds x s G0 -> lc_sort s.
 

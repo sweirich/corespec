@@ -48,7 +48,7 @@ Proof.
 Qed.
 
 Definition Typing_Ctx := first ctx_wff_mutual.
-Definition PropWff_Ctx := second ctx_wff_mutual.
+Definition PropWff_Ctx := second ctx_wff_mutual. 
 Definition Iso_Ctx := third ctx_wff_mutual.
 Definition DefEq_Ctx := fourth ctx_wff_mutual.
 
