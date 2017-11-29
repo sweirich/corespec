@@ -133,7 +133,7 @@ Proof.
 Qed.
 
 Lemma FixTy_erase :
-  Typing nil (erase_tm FixTy) a_Star Nom.
+  Typing nil (erase_tm FixTy Nom) a_Star Nom.
 Proof.
   use_binder E_Pi X.
   use_binder E_Pi Z.
@@ -145,7 +145,7 @@ Proof.
 Qed.
 
 Lemma FixDef_FixTy_erase :
-  Typing nil (erase_tm FixDef) (erase_tm FixTy) Nom.
+  Typing nil (erase_tm FixDef Nom) (erase_tm FixTy Nom) Nom.
 Proof.
   pose (H := AxFix). clearbody H.
   unfold FixDef,FixTy; simpl.
@@ -156,9 +156,10 @@ Proof.
     { eapply E_App_intro; simpl; eauto.
       { eapply E_IApp_intro with (a := (a_Var_f X)); simpl; eauto.
 
-        pose (K := @E_Fam _ Fix  (erase_tm FixTy) Nom (erase_tm FixDef) H1).
+        pose (K := @E_Fam _ Fix  (erase_tm FixTy Nom) Nom (erase_tm FixDef Nom) H1).
         unfold toplevel, erase_sig in K.
-        apply binds_map with (f:=erase_csort) in H.
+        apply binds_map with 
+          (f:=fun s : sig_sort => erase_csort s Nom) in H.
         apply K in H.
         clear K.
         simpl in H.

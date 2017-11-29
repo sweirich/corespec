@@ -19,16 +19,16 @@ Require Import FcEtt.toplevel.
   *)
 
 
-Lemma CoercedValue_Value_lc_mutual: (forall A, CoercedValue A -> lc_tm A) /\
-                                    (forall A, Value A -> lc_tm A).
+Lemma CoercedValue_Value_lc_mutual: (forall R A, CoercedValue R A -> lc_tm A) /\
+                                    (forall R A, Value R A -> lc_tm A).
 Proof.
   apply CoercedValue_Value_mutual; eauto.
 Qed.
 
-Lemma Value_lc : forall A, Value A -> lc_tm A.
+Lemma Value_lc : forall R A, Value R A -> lc_tm A.
   destruct (CoercedValue_Value_lc_mutual); auto.
 Qed.
-Lemma CoercedValue_lc : forall A, CoercedValue A -> lc_tm A.
+Lemma CoercedValue_lc : forall R A, CoercedValue R A -> lc_tm A.
   destruct (CoercedValue_Value_lc_mutual); auto.
 Qed.
 
@@ -48,7 +48,7 @@ Proof.
 Qed.
 
 Definition Typing_Ctx := first ctx_wff_mutual.
-Definition PropWff_Ctx := second ctx_wff_mutual.
+Definition PropWff_Ctx := second ctx_wff_mutual. 
 Definition Iso_Ctx := third ctx_wff_mutual.
 Definition DefEq_Ctx := fourth ctx_wff_mutual.
 
@@ -58,6 +58,30 @@ Hint Resolve Typing_Ctx PropWff_Ctx Iso_Ctx DefEq_Ctx.
 Lemma Ctx_uniq : forall G, Ctx G -> uniq G.
   induction G; try auto.
   inversion 1; subst; solve_uniq.
+Qed.
+
+Lemma dom_rctx_le_ctx : forall G, dom (ctx_to_rctx G) [<=] dom G.
+Proof. intros; induction G; simpl. fsetdec.
+       destruct a, s. simpl. fsetdec. fsetdec.
+Qed.
+
+Lemma ctx_to_rctx_uniq : forall G, Ctx G -> uniq (ctx_to_rctx G).
+Proof. intros G. induction G; intros.
+        - simpl; auto.
+        - inversion H; subst; simpl. apply Ctx_uniq in H.
+          apply IHG in H2. econstructor; eauto. 
+          assert (P : dom (ctx_to_rctx G) [<=] dom G). 
+          { apply dom_rctx_le_ctx. } fsetdec.
+          inversion H. apply IHG; auto.
+Qed.
+
+Lemma ctx_to_rctx_binds_tm : forall G x A R, binds x (Tm A R) G ->
+                                             binds x R (ctx_to_rctx G).
+Proof. intros G. induction G; intros; simpl; eauto.
+       destruct a, s. apply binds_cons_1 in H. inversion H; eauto.
+       inversion H0. inversion H2. subst. auto.
+       apply binds_cons_1 in H. inversion H. inversion H0. inversion H2.
+       eauto.
 Qed.
 
 Hint Resolve Ctx_uniq.

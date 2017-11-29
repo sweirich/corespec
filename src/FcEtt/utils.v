@@ -85,7 +85,6 @@ Qed.
 
 (* ------------------------------------- *)
 
-
 Lemma binds_concat: forall G F E x A, binds x (Tm A) (F ++ E ++ G) <-> binds x (Tm A) (F) \/ binds x (Tm A) (E) \/ binds x (Tm A) (G).
 Proof.
 Admitted.
@@ -93,52 +92,16 @@ Admitted.
   intros G F E x A.
   split.
   - intros H.
-    induction F; eauto.
-    induction E; eauto.
-    simpl in H.
-    case H; eauto.
-    move => h0.
-    fsetdec.
-    move => h0.
-    right.
-    simpl in IHE.
-    case:IHE; try done.
-    move => h1.
-    case:h1; eauto.
-    move => h1.
-    left.
-    right; auto.
-    case H; auto.
-    fsetdec.
-    move => h0.
-    case IHF; try done.
-    move => h1.
-    left.
-    right; auto.
-    move => h1.
-    case: h1; auto.
-  - induction F; eauto.
-    induction E; eauto.
-    simpl.
-    move => h1.
-    case:h1; try done.
-    move => h1.
-    case:h1; try done.
-    move => h1.
-    case:h1; try done.
-    move => h1.
-    case h1; eauto.
-    move => h0.
-    case h0.
-    move => h1.
-    case:h1.
-    fsetdec.
-    move => h1.
-    right.
-    apply IHF; eauto.
-    move => h1.
-    right.
-    apply IHF; eauto.
+    apply binds_app_1 in H.
+    destruct H; auto.
+    apply binds_app_1 in H.
+    destruct H; auto.
+  - intros.
+    destruct H.
+    eauto.
+    destruct H.
+    auto.
+    auto.
 Qed.
 *)
 

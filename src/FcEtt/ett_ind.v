@@ -150,7 +150,7 @@ Ltac lc_inversion c :=
     inversion H; clear H
   | [ H : lc_tm (a_Pi _ _ _ _) |- _ ] =>
     inversion H; clear H
-  | [ H : lc_tm (a_Conv _ _) |- _ ] =>
+  | [ H : lc_tm (a_Conv _ _ _) |- _ ] =>
     inversion H; clear H
   | [ H : lc_tm (a_CPi _ _) |- _ ] =>
     inversion H; clear H
@@ -240,7 +240,7 @@ Ltac invert_syntactic_equality :=
     inversion H; subst; clear H
   | [ H : a_Const _  = a_Const _ |- _ ] =>
     inversion H; subst; clear H
-  | [ H : a_Conv _ _ = a_Conv _ _ |- _ ] =>
+  | [ H : a_Conv _ _ _ = a_Conv _ _ _ |- _ ] =>
     inversion H; subst; clear H
   | [ H : a_UCAbs _ = a_UCAbs _ |- _ ] =>
     inversion H; subst; clear H
@@ -327,7 +327,6 @@ Combined Scheme CoercedValue_Value_mutual from CoercedValue_ind', Value_ind'.
 (* Apply the mutual induction hypothesis and add a marker to the
    context indicating the current case (and also making the associated
    data constructor for that case available) as the name 'CON'. *)
-
 Ltac ext_induction CON :=
     apply typing_wff_iso_defeq_mutual;
     [ pose CON :=  E_SubRole    |
@@ -342,6 +341,7 @@ Ltac ext_induction CON :=
       pose CON :=  E_CAbs       |
       pose CON :=  E_CApp       |
       pose CON :=  E_Fam        |
+      pose CON :=  E_TyCast     |
       pose CON :=  E_Wff        |
       pose CON :=  E_PropCong   |
       pose CON :=  E_IsoConv    |
@@ -365,6 +365,7 @@ Ltac ext_induction CON :=
       pose CON :=  E_Cast       |
       pose CON :=  E_EqConv     |
       pose CON :=  E_IsoSnd     |
+      pose CON :=  E_CastCong   |
       pose CON :=  E_Empty      |
       pose CON :=  E_ConsTm     |
       pose CON :=  E_ConsCo     ].
@@ -390,7 +391,7 @@ Ltac ann_induction CON :=
       pose CON :=  An_IsoConv    |
       pose CON :=  An_Assn       |
       pose CON :=  An_Refl       |
-      pose CON :=  An_EraseEq      |
+      pose CON :=  An_EraseEq    |
       pose CON :=  An_Sym        |
       pose CON :=  An_Trans      |
       pose CON :=  An_Sub        |
@@ -424,6 +425,7 @@ Ltac gather_atoms ::=
   let A := gather_atoms_with (fun x : vars => x) in
   let B := gather_atoms_with (fun x : var => {{ x }}) in
   let C1 := gather_atoms_with (fun x : context => dom x) in
+  let C2 := gather_atoms_with (fun x : role_context => dom x) in
   let D1 := gather_atoms_with (fun x => fv_tm_tm_tm x) in
   let D2 := gather_atoms_with (fun x => fv_tm_tm_co x) in
   let D3 := gather_atoms_with (fun x => fv_tm_tm_constraint x) in
@@ -434,7 +436,7 @@ Ltac gather_atoms ::=
   let D8 := gather_atoms_with (fun x => fv_co_co_constraint x) in
   let D9 := gather_atoms_with (fun x => fv_co_co_sort x) in
   let D10 := gather_atoms_with (fun x => fv_co_co_brs x) in
-  constr:(A \u B \u C1 \u D1 \u D2 \u D3 \u D4 \u D5 \u D6 \u D7 \u D8 \u D9 \u D10).
+  constr:(A \u B \u C1 \u C2 \u D1 \u D2 \u D3 \u D4 \u D5 \u D6 \u D7 \u D8 \u D9 \u D10).
 
 
 (* ----------------------------------------------------- *)
@@ -665,7 +667,7 @@ Ltac E_pick_fresh x :=
 
 Ltac Par_pick_fresh x :=
   match goal with
-    | [ |- Par _ _ ?shape ?s2 ] =>
+    | [ |- Par _ _ _ ?shape ?s2 ?R ] =>
       let v := match shape with
             | a_Pi _ _ _ _ => Par_Pi
             | a_UAbs _ _ _ =>  match s2 with
@@ -727,8 +729,8 @@ Hint Resolve lc_open_switch_co.
 
 (* Putting this here because it's annoying to move elsewhere. *)
 
-Lemma tm_subst_cast : forall a x g,
-    tm_subst_tm_tm a x (a_Conv (a_Var_f x) g) = a_Conv a (tm_subst_tm_co a x g).
+Lemma tm_subst_cast : forall a x R g,
+    tm_subst_tm_tm a x (a_Conv (a_Var_f x) R g) = a_Conv a R (tm_subst_tm_co a x g).
 Proof.
   intros. simpl.
   destruct (x == x). auto.
@@ -736,4 +738,14 @@ Proof.
 Qed.
 
 Hint Rewrite tm_subst_cast.
+
+Lemma rep_nsub_nom : ~ SubRole Rep Nom.
+Proof. intro. 
+       remember Rep as R1.
+       remember Nom as R2.
+       induction H. inversion HeqR1.
+       subst. inversion HeqR2.
+       destruct R2; auto.
+Qed.
+
 

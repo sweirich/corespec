@@ -16,16 +16,15 @@ Require Import FcEtt.fc_wf.
 Import fc_wf.
 
 Require Import FcEtt.utils.
-Require Import FcEtt.erase_syntax.
 Require Export FcEtt.toplevel.
 Require Import FcEtt.ett_value.
 
-Lemma Beta_lc1 : forall a a' , Beta a a' -> lc_tm a.
+Lemma Beta_lc1 : forall a a' R, Beta a a' R -> lc_tm a.
   intros.  induction H; auto.
   eapply Value_lc in H0. eauto.
 Qed.
 
-Lemma Beta_lc2 : forall a a' , Beta a a' -> lc_tm a'.
+Lemma Beta_lc2 : forall a a' R, Beta a a' R -> lc_tm a'.
 intros.  induction H; auto.
 - apply Value_lc in H0. inversion H0.
   apply lc_body_tm_wrt_tm; auto.
@@ -37,7 +36,7 @@ Lemma cf : forall A B (f : A -> B) (a b : A),  a = b -> f a = f b.
   intros. f_equal.
   auto.
 Qed.
-Lemma Beta_tm_subst : forall a a' b x, Beta a a' -> lc_tm b -> Beta (tm_subst_tm_tm b x a) (tm_subst_tm_tm b x a').
+Lemma Beta_tm_subst : forall a a' R b x, Beta a a' R -> lc_tm b -> Beta (tm_subst_tm_tm b x a) (tm_subst_tm_tm b x a') R.
 Proof.
   intros.
   destruct H.
@@ -58,7 +57,7 @@ Proof.
     fsetdec.
 Qed.
 
-Lemma Beta_co_subst : forall a a' b x, Beta a a' -> lc_co b -> Beta (co_subst_co_tm b x a) (co_subst_co_tm b x a').
+Lemma Beta_co_subst : forall a a' R b x, Beta a a' R -> lc_co b -> Beta (co_subst_co_tm b x a) (co_subst_co_tm b x a') R.
 Proof.
   intros.
   destruct H.

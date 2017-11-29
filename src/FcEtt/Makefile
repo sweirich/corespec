@@ -35,6 +35,8 @@ METALIBFILES= $(METALIBLOCATION)/*.v  $(METALIBLOCATION)/Makefile  $(METALIBLOCA
 
 all: coq
 
+infra: ett_inf.v
+
 quick:  $(COQMKFILENAME)
 	@$(MAKE) -f CoqSrc.mk quick
 
