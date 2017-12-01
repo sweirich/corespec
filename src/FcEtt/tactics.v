@@ -66,7 +66,11 @@ Ltac subst_forall :=
   repeat find_eq_rew_clear.
 
 
+
+(*****************)
 (**** Solvers ****)
+(*****************)
+
 
 (* The <solve> versions are strict: they solve the goal or do nothing. The <nosolve> versions do whatever they can *)
 
@@ -100,6 +104,34 @@ Ltac solve_by_inv_hyp_about A :=
     | [ H : context [?A] |- _ ] => solve [inversion H; basic_solve]
   end.
 
+
+(*******************************)
+(**** Hypothesis processing ****)
+(*******************************)
+
+(** Automatic Specialization **)
+
+(* Automatically specializing context hyps that quantify type T to t (assumes t : T) *)
+Ltac spec_all_type t T :=
+  repeat match goal with
+    | [H : forall _ : T, _ |- _ ] => specialize (H t)
+  end.
+
+(* Version that recovers the type *)
+Ltac spec_all t :=
+  let T := type of t in
+  spec_all_type t T.
+
+(* Automatically instantiating induction hypotheses when their premises are available in the context *)
+Ltac autoprem :=
+  repeat match goal with
+    | [H : ?P → ?Q, p : ?P |- _] =>
+      move: H; move /(_ p) => H
+    end.
+
+
+
+(** Bookkepping **)
 Ltac revert_all :=
   repeat match goal with
       | [ H : _ |- _ ] => revert H
@@ -242,8 +274,10 @@ Ltac prove_eq_same_head :=
   solve [subst; reflexivity | f_equal; basic_solve].
 
 
-
+(************************************)
 (**** Handling of free variables ****)
+(************************************)
+
 (** Ad-hoc version of fsetdec, hopefully faster **)
 (* TODO: handle the subset-union cases (see fc_dec.v) *)
 Ltac break_union :=
@@ -258,6 +292,13 @@ Ltac fsetdec_fast := solve [break_union; basic_solve_n 3].
 
 (** Autofresh: instantiate all co-finitely quantified assumptions with the same variable **)
 Ltac autofresh_fixed x :=
+    (* Try to spot the freshness assumption and to make it as general as possible (in case the co-domain is an evar) *)
+    try (
+      match goal with
+        | [H : x `notin` _ |- _] =>
+          let l := gather_atoms in
+          instantiate (1 := l) in H
+      end);
    repeat match goal with
      | [ H : ∀ x' : atom, x' `notin` ?L -> _ |- _] =>
        let xL := fresh x L in
@@ -265,6 +306,8 @@ Ltac autofresh_fixed x :=
        specialize (H x xL);
        clear xL (* Clear specialized freshness assumptions *)
    end.
+
+Tactic Notation "autofresh" "with" hyp(x) := autofresh_fixed x.
 
  (* General version that picks up a fresh variable instead *)
  Ltac autofresh :=
