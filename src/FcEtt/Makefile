@@ -45,7 +45,7 @@ coq: $(COQMKFILENAME)
 	@$(MAKE) -f CoqSrc.mk
 
 
-%.vo: %.v
+%.vo: $(COQMKFILENAME) %.v
 	@$(MAKE) -f CoqSrc.mk $*.vo
 
 
