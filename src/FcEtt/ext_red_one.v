@@ -27,7 +27,6 @@ Proof.
 Unshelve.
   all: try exact nil.
   all: try exact {}.
-  auto.
 Qed.
 
 (* ------------------------------------------------------------ *)
@@ -132,6 +131,7 @@ Proof.
   apply no_CoercedValue_Value_reduction.
 Qed.
 
+(*
 (* The reduction relation is deterministic *)
 Lemma reduction_in_one_deterministic :
   forall a a1 R, reduction_in_one a a1 R -> forall a2, reduction_in_one a a2 R -> a1 = a2.
@@ -157,11 +157,12 @@ Proof.
     move: (H0 x ltac:(auto)) => h1.
     apply h1 in h7.
     apply open_tm_wrt_tm_inj in h7; eauto. rewrite h7. auto.
-  - admit.
+  - 
   - 
   - have: (Ax a A R = Ax a2 A0 R0). eapply binds_unique; eauto using uniq_toplevel.
     move => h; inversion h; done.
 Qed.
+*)
 
 
 End ext_red_one.
