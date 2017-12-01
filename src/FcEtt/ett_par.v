@@ -683,7 +683,7 @@ Qed.
 
 
 (* -------------------- weakening stuff for Par ---------------------- *)
-
+(* FIXME: shouldn't this go elsewhere? Maybe ett_par_weak? *)
 Lemma Par_weaken_available :
   forall G D S a b R, Par G D S a b R -> forall D', D [<=] D' -> Par G D' S a b R.
 Proof.
@@ -720,3 +720,56 @@ Proof.
        try auto_rew_env; apply_first_hyp; try simpl_env | idtac]; eauto 3.
 Qed.
 
+
+(* FIXME: where should this lemma go? *)
+Lemma erased_tm_ζ_weakening: `(
+  erased_tm ζ₀ a R →
+  ∀ ζ₁ ζ₂ ζ₃,
+    ζ₀ = ζ₁ ++ ζ₃ →
+    uniq (ζ₁ ++ ζ₂ ++ ζ₃) →
+    erased_tm (ζ₁ ++ ζ₂ ++ ζ₃) a R).
+Proof.
+  induction 1; pre; eauto 4; first by ok.
+    - econstructor.
+      intros.
+      instantiate (1 := (union L (dom (ζ₁ ++ ζ₃ ++ ζ₂)))) in H3.
+      have xL: x `notin` L by fsetdec_fast.
+      move: (H0 _ xL ([(x, R1)] ++ ζ₁) ζ₂ ζ₃).
+      apply; cbn; ok. (* FIXME: autotype should try to cbn *)
+    - econstructor.
+      + eauto 4.
+      + intros.
+        instantiate (1 := union L (dom (ζ₁ ++ ζ₃ ++ ζ₂))) in H4.
+      have xL: x `notin` L by fsetdec_fast.
+      move: (H1 _ xL ([(x, R1)] ++ ζ₁) ζ₂ ζ₃).
+      apply; cbn; ok.
+    - econstructor; eauto 3.
+Qed.
+
+
+(* TODO: This proof is very similar to the previous one (erased_tm_ζ_weakening).
+   We should make an automated tactic that can take advantage of these regular proof structures. *)
+Lemma Par_ζ_weakening : `(
+  Par Γ D ζ₀ a b R →
+  ∀ ζ₁ ζ₂ ζ₃,
+    ζ₀ = ζ₁ ++ ζ₃ →
+    uniq (ζ₁ ++ ζ₂ ++ ζ₃) →
+    Par Γ D (ζ₁ ++ ζ₂ ++ ζ₃) a b R).
+Proof.
+  induction 1; pre; eauto 4; try (econstructor; eauto 3 using erased_tm_ζ_weakening).
+  - intros.
+    instantiate (1 := union L (dom (ζ₁ ++ ζ₃ ++ ζ₂))) in H3.
+    have xL: x `notin` L by fsetdec_fast.
+    move: (H0 _ xL ([(x, R1)] ++ ζ₁) ζ₂ ζ₃).
+    apply; cbn; ok.
+ - intros.
+   instantiate (1 := union L (dom (ζ₁ ++ ζ₃ ++ ζ₂))) in H4.
+   have xL: x `notin` L by fsetdec_fast.
+   move: (H1 _ xL ([(x, R1)] ++ ζ₁) ζ₂ ζ₃).
+   apply; cbn; ok.
+Qed.
+
+(* Consistent naming effort *)
+(* TODO: replace everywhere, then replace original names with the aliases *)
+Definition Par_Γ_weakening := Par_weakening.
+Definition Par_D_weakening := Par_weaken_available.
