@@ -89,6 +89,11 @@ Lemma Par_erased_tm_fst : forall G D W a a' R, Par G D W a a' R ->
 Proof. intros G D W a a' R H. induction H; eauto.
 Qed.
 
+Lemma multipar_erased_tm_fst: forall G D W a a' R, multipar G D W a a' R -> 
+                                               erased_tm W a R.
+Proof. intros. induction H. auto. eapply Par_erased_tm_fst; eauto.
+Qed.
+
 Lemma Par_erased_tm_snd : forall G D W a a' R, Par G D W a a' R ->
                                                erased_tm W a' R.
 Proof. intros G D W a a' R H. induction H; eauto.
@@ -103,9 +108,24 @@ Proof. intros G D W a a' R H. induction H; eauto.
         - inversion IHPar; eauto.
 Qed.
 
+Lemma multipar_erased_tm_snd : forall G D W a a' R, multipar G D W a a' R ->
+                                               erased_tm W a' R.
+Proof. intros. induction H; auto.
+Qed.
+
 Lemma Par_rctx_uniq : forall G D W a a' R, Par G D W a a' R -> uniq W.
 Proof. intros. eapply rctx_uniq. eapply Par_erased_tm_fst; eauto.
 Qed.
+
+Lemma multipar_rctx_uniq: forall G D W a a' R, multipar G D W a a' R -> uniq W.
+Proof. intros. eapply rctx_uniq. eapply multipar_erased_tm_fst; eauto.
+Qed.
+
+Lemma par_multipar: forall G D W a a' R, Par G D W a a' R -> 
+                                         multipar G D W a a' R.
+Proof. intros. eapply mp_step. eauto. constructor. 
+       eapply Par_erased_tm_snd; eauto.
+Qed. 
 
 Hint Resolve Par_erased_tm_fst Par_erased_tm_snd : erased.
 
@@ -321,26 +341,30 @@ Qed.
 Hint Resolve erased_tm_open_tm_wrt_tm : erased.
 
 
-Lemma Par_Pi_exists: ∀ x (G : context) D S rho (A B A' B' : tm) R R',
-    x `notin` fv_tm_tm_tm B -> Par G D S A A' R
-    → Par G D S (open_tm_wrt_tm B (a_Var_f x)) B' R'
-    → Par G D S (a_Pi rho A R B) (a_Pi rho A' R (close_tm_wrt_tm x B')) R'.
+Lemma Par_Pi_exists: ∀ x (G : context) D W rho (A B A' B' : tm) R R',
+    x `notin` fv_tm_tm_tm B -> Par G D W A A' R
+    → Par G D ([(x,R)] ++ W) (open_tm_wrt_tm B (a_Var_f x)) B' R'
+    → Par G D W (a_Pi rho A R B) (a_Pi rho A' R (close_tm_wrt_tm x B')) R'.
 Proof.
-  intros x G S D rho A B A' B' R R' H H0 H1.
-  apply (Par_Pi (fv_tm_tm_tm B)); eauto.
+  intros x G D W rho A B A' B' R R' H H0 H1.
+  apply (Par_Pi (union (singleton x) (union (dom W) (fv_tm_tm_tm B)))); eauto.
   intros x0 h0.
   rewrite -tm_subst_tm_tm_spec.
   rewrite (tm_subst_tm_tm_intro x B (a_Var_f x0)); auto.
+  replace ([(x0,R)] ++ W) with (nil ++ [(x0,R)] ++ W); auto.
+  assert (uniq ([(x,R)] ++ W)). {eapply Par_rctx_uniq; eauto. }
   eapply subst2; eauto.
-Admitted.
+  simpl_env. apply par_app_rctx; eauto 1. solve_uniq.
+  econstructor. solve_uniq. auto. auto.
+Qed.
 
-Lemma Par_CPi_exists:  ∀ c (G : context) D S (A B a A' B' a' T T': tm) R R',
-       c `notin` fv_co_co_tm a -> Par G D S A A' R
-       → Par G D S B B' R -> Par G D S T T' R
-         → Par G D S (open_tm_wrt_co a (g_Var_f c)) (a') R'
-         → Par G D S (a_CPi (Eq A B T R) a) (a_CPi (Eq A' B' T' R) (close_tm_wrt_co c a')) R'.
+Lemma Par_CPi_exists:  ∀ c (G : context) D W (A B a A' B' a' T T': tm) R R',
+       c `notin` fv_co_co_tm a -> Par G D W A A' R
+       → Par G D W B B' R -> Par G D W T T' R
+         → Par G D W (open_tm_wrt_co a (g_Var_f c)) (a') R'
+         → Par G D W (a_CPi (Eq A B T R) a) (a_CPi (Eq A' B' T' R) (close_tm_wrt_co c a')) R'.
 Proof.
-  intros c G D S A B a A' B' a' T T' R R' H H0 H1 h0 H2.
+  intros c G D W A B a A' B' a' T T' R R' H H0 H1 h0 H2.
   apply (Par_CPi (singleton c)); auto.
   intros c0 H3.
   rewrite -co_subst_co_tm_spec.
@@ -349,25 +373,29 @@ Proof.
 Qed.
 
 
-Lemma Par_Abs_exists: ∀ x (G : context) D S rho R R' (a a' : tm),
+Lemma Par_Abs_exists: ∀ x (G : context) D W rho R R' (a a' : tm),
     x `notin` fv_tm_tm_tm a
-    → Par G D S (open_tm_wrt_tm a (a_Var_f x)) a' R'
-    → Par G D S(a_UAbs rho R a) (a_UAbs rho R (close_tm_wrt_tm x a')) R'.
+    → Par G D ([(x,R)] ++ W) (open_tm_wrt_tm a (a_Var_f x)) a' R'
+    → Par G D W (a_UAbs rho R a) (a_UAbs rho R (close_tm_wrt_tm x a')) R'.
 Proof.
-  intros x G D S rho R R' a a' hi0 H0.
-  apply (Par_Abs (singleton x)); eauto.
+  intros x G D W rho R R' a a' hi0 H0.
+  apply (Par_Abs (union (singleton x) (dom W))); eauto.
   intros x0 h0.
   rewrite -tm_subst_tm_tm_spec.
   rewrite (tm_subst_tm_tm_intro x a (a_Var_f x0)); auto.
-  eapply subst2; auto.
-Admitted.
+  replace ([(x0,R)] ++ W) with (nil ++ [(x0,R)] ++ W); auto.
+  assert (uniq ([(x,R)] ++ W)). {eapply Par_rctx_uniq; eauto. }
+  eapply subst2; eauto.
+  simpl_env. apply par_app_rctx; eauto 1.
+  solve_uniq. econstructor. solve_uniq. auto. auto.
+Qed.
 
-Lemma Par_CAbs_exists: forall c (G : context) D S (a a': tm) R,
+Lemma Par_CAbs_exists: forall c (G : context) D W (a a': tm) R,
        c `notin` fv_co_co_tm a
-       -> Par G D S (open_tm_wrt_co a (g_Var_f c)) a' R
-       → Par G D S (a_UCAbs a) (a_UCAbs (close_tm_wrt_co c a')) R.
+       -> Par G D W (open_tm_wrt_co a (g_Var_f c)) a' R
+       → Par G D W (a_UCAbs a) (a_UCAbs (close_tm_wrt_co c a')) R.
 Proof.
-  intros c G D S a a' R H H0.
+  intros c G D W a a' R H H0.
   apply (Par_CAbs (singleton c)); auto.
   intros c0 H3.
   rewrite -co_subst_co_tm_spec.
@@ -375,12 +403,12 @@ Proof.
   apply subst4; auto.
 Qed.
 
-Lemma Par_open_tm_wrt_co_preservation: forall G D S B1 B2 c R, 
-  Par G D S (open_tm_wrt_co B1 (g_Var_f c)) B2 R ->
+Lemma Par_open_tm_wrt_co_preservation: forall G D W B1 B2 c R, 
+  Par G D W (open_tm_wrt_co B1 (g_Var_f c)) B2 R ->
   exists B', B2 = open_tm_wrt_co B' (g_Var_f c)
-    /\ Par G D S (open_tm_wrt_co B1 (g_Var_f c)) (open_tm_wrt_co B' (g_Var_f c)) R.
+    /\ Par G D W (open_tm_wrt_co B1 (g_Var_f c)) (open_tm_wrt_co B' (g_Var_f c)) R.
 Proof.
-  intros G D S B1 B2 c R H.
+  intros G D W B1 B2 c R H.
   exists (close_tm_wrt_co c B2).
   have:open_tm_wrt_co (close_tm_wrt_co c B2) (g_Var_f c) = B2 by apply open_tm_wrt_co_close_tm_wrt_co.
   move => h0.
@@ -389,12 +417,12 @@ Proof.
   eauto.
 Qed.
 
-Lemma Par_open_tm_wrt_tm_preservation: forall G D S B1 B2 x R,
-  Par G D S (open_tm_wrt_tm B1 (a_Var_f x)) B2 R ->
+Lemma Par_open_tm_wrt_tm_preservation: forall G D W B1 B2 x R,
+  Par G D W (open_tm_wrt_tm B1 (a_Var_f x)) B2 R ->
   exists B', B2 = open_tm_wrt_tm B' (a_Var_f x)
-    /\ Par G D S (open_tm_wrt_tm B1 (a_Var_f x)) (open_tm_wrt_tm B' (a_Var_f x)) R.
+    /\ Par G D W (open_tm_wrt_tm B1 (a_Var_f x)) (open_tm_wrt_tm B' (a_Var_f x)) R.
 Proof.
-  intros G D S B1 B2 x R H.
+  intros G D W B1 B2 x R H.
   exists (close_tm_wrt_tm x B2).
   have:open_tm_wrt_tm (close_tm_wrt_tm x B2) (a_Var_f x) = B2 by apply open_tm_wrt_tm_close_tm_wrt_tm.
   move => h0.
@@ -403,248 +431,192 @@ Proof.
   eauto.
 Qed.
 
-Lemma multipar_Pi_exists: ∀ x (G : context) D S rho (A B A' B' : tm) R R',
-       lc_tm (a_Pi rho A R B) ->
+Lemma multipar_Pi_exists: ∀ x (G : context) D W rho (A B A' B' : tm) R R',
        x `notin` fv_tm_tm_tm B ->
-       multipar G D S A A' R
-       → multipar G D S (open_tm_wrt_tm B (a_Var_f x)) B' R'
-       → multipar G D S (a_Pi rho A R B) (a_Pi rho A' R (close_tm_wrt_tm x B')) R'.
+       multipar G D W A A' R
+       → multipar G D ([(x,R)] ++ W) (open_tm_wrt_tm B (a_Var_f x)) B' R'
+       → multipar G D W (a_Pi rho A R B) (a_Pi rho A' R (close_tm_wrt_tm x B')) R'.
 Proof.
-  intros x G D S rho A B A' B' R R' lc e H H0.
+  intros x G D W rho A B A' B' R R' e H H0.
   dependent induction H; eauto.
   - dependent induction H0; eauto.
-(*    by erewrite close_tm_wrt_tm_open_tm_wrt_tm; eauto.
-    apply (@mp_step _ _ _ _ (a_Pi rho a R (close_tm_wrt_tm x b))); auto.
-    + inversion lc; subst; clear lc.
-      apply (Par_Pi (singleton x)); auto.
-      intros x0 H1.
-      rewrite -tm_subst_tm_tm_spec.
-      rewrite (tm_subst_tm_tm_intro x B (a_Var_f x0)); auto.
-      apply subst2; auto.
+    erewrite close_tm_wrt_tm_open_tm_wrt_tm; eauto.
+    constructor. eapply erased_Pi_some_any; eauto.
+    apply (@mp_step _ _ _ _ _ (a_Pi rho a R (close_tm_wrt_tm x b))); auto.
+    + eapply Par_Pi_exists; eauto.
     + apply IHmultipar; auto.
-      * inversion lc; subst; clear lc.
-        constructor; eauto.
-        intros x0.
-        rewrite -tm_subst_tm_tm_spec.
-        apply tm_subst_tm_tm_lc_tm; auto.
-        apply Par_lc2 in H; auto.
       * rewrite fv_tm_tm_tm_close_tm_wrt_tm_rec.
         fsetdec.
       * rewrite open_tm_wrt_tm_close_tm_wrt_tm; auto.
-  - apply (@mp_step _ _ _ _ (a_Pi rho b R B)); auto.
-     + apply (Par_Pi (singleton x)); auto.
-       intros x0 H2.
-       inversion lc; subst; clear lc; auto.
-     + apply IHmultipar; auto.
-       inversion lc; subst; clear lc.
-       constructor; auto.
-       apply Par_lc2 in H; auto.
+  - apply (@mp_step _ _ _ _ _ (a_Pi rho b R B)); auto.
+    apply (Par_Pi (union (singleton x) (union (dom W) (fv_tm_tm_tm B)))). 
+    auto. intros. econstructor. 
+    assert (uniq ([(x,R)] ++ W)). {eapply multipar_rctx_uniq; eauto. }
+    rewrite (tm_subst_tm_tm_intro x B (a_Var_f x0)); auto.
+    replace ([(x0,R)] ++ W) with (nil ++ [(x0,R)] ++ W); auto.
+    eapply subst_tm_erased. simpl_env. apply erased_app_rctx.
+    solve_uniq. eapply multipar_erased_tm_fst; eauto.
+    econstructor. solve_uniq. auto. auto.
 Qed.
-*)
-Admitted.
 
-Lemma multipar_Pi_A_proj: ∀ (G : context) D S rho (A B A' B' : tm) R R',
-    lc_tm A ->
-    multipar G D S (a_Pi rho A R B) (a_Pi rho A' R B') R' ->
-    multipar G D S A A' R.
+
+Lemma multipar_Pi_A_proj: ∀ (G : context) D W rho (A B A' B' : tm) R R',
+    multipar G D W (a_Pi rho A R B) (a_Pi rho A' R B') R' ->
+    multipar G D W A A' R.
 Proof.
-  intros G D S rho A B A' B' R R' h0 h1.
-  dependent induction h1; eauto.
-  - inversion H; subst; eauto.
-  - 
-  eapply IHh1; eauto.
-  (*
-  apply (@mp_step _ _ _ _ A'0); auto.
-  eapply IHh1; eauto.
-  eapply Par_lc2; eauto 1.
-Qed. *)
-Admitted.
+  intros G D W rho A B A' B' R R' h1.
+  dependent induction h1.
+  - inversion H. constructor. auto.
+  - inversion H. subst. eapply IHh1; eauto.
+    apply mp_step with (b := A'0). auto.
+    eapply IHh1; eauto.
+Qed.
 
-Lemma multipar_Pi_B_proj: ∀ (G : context) D S rho (A B A' B' : tm) R R',
-    multipar G D S (a_Pi rho A R B) (a_Pi rho A' R B') R' →
+Lemma multipar_Pi_B_proj: ∀ (G : context) D W rho (A B A' B' : tm) R R',
+    multipar G D W (a_Pi rho A R B) (a_Pi rho A' R B') R' →
     exists L, forall x, x `notin` L -> 
-      multipar G D S (open_tm_wrt_tm B (a_Var_f x)) (open_tm_wrt_tm B' (a_Var_f x)) R'.
+      multipar G D ([(x,R)] ++ W) (open_tm_wrt_tm B (a_Var_f x)) (open_tm_wrt_tm B' (a_Var_f x)) R'.
 Proof.
-  intros G D S rho A B A' B' R R' h1.
+  intros G D W rho A B A' B' R R' h1.
   dependent induction h1; eauto.
-  inversion H; subst.
-  (*
-  eapply IHh1; eauto.
-  destruct (IHh1 rho A'0 B'0 A' B' R) as [L0 h0]; auto.
-  exists (L \u L0); eauto.
-  apply (fv_tm_tm_tm A').
+  - inversion H. subst. exists L. intros.
+    constructor. auto.
+  - inversion H; subst.
+    eapply IHh1; eauto.
+    destruct (IHh1 rho A'0 B'0 A' B' R) as [L0 h0]; auto.
+    exists (L \u L0); eauto.
 Qed.
-*)
-Admitted.
 
 
-Lemma multipar_CPi_exists:  ∀ c (G : context) D S (A B a T A' B' a' T': tm) R R',
-       lc_tm (a_CPi (Eq A B T R) a) -> c `notin` fv_co_co_tm a ->
-       multipar G D S A A' R →
-       multipar G D S B B' R ->
-       multipar G D S T T' R →
-       multipar G D S (open_tm_wrt_co a (g_Var_f c)) a' R' →
-       multipar G D S (a_CPi (Eq A B T R) a) (a_CPi (Eq A' B' T' R) (close_tm_wrt_co c a')) R'.
+Lemma multipar_CPi_exists:  ∀ c (G : context) D W (A B a T A' B' a' T': tm) R R',
+       c `notin` fv_co_co_tm a ->
+       multipar G D W A A' R →
+       multipar G D W B B' R ->
+       multipar G D W T T' R →
+       multipar G D W (open_tm_wrt_co a (g_Var_f c)) a' R' →
+       multipar G D W (a_CPi (Eq A B T R) a) (a_CPi (Eq A' B' T' R) (close_tm_wrt_co c a')) R'.
 Proof.
-  intros c G D S A B a T A' B' a' T' R R' lc e H H0 H2 H1.
+  intros c G D W A B a T A' B' a' T' R R' e H H0 H2 H1.
   dependent induction H; eauto 1.
   - dependent induction H0; eauto 1.
     + dependent induction H1; eauto 1.
       * dependent induction H2; eauto 1.
         rewrite close_tm_wrt_co_open_tm_wrt_co; auto.
-        inversion lc; subst. (*
-        inversion H3; subst.
+        constructor. econstructor; eauto 1.
+        intros. rewrite (co_subst_co_tm_intro c).
+        apply subst_co_erased. auto. auto. auto.
         apply mp_step with (b:= (a_CPi (Eq a0 a1 b R) a)); eauto.
-        apply IHmultipar; auto.
-        apply (lc_a_CPi_exists c); auto.
-        constructor; eauto.
-        eapply Par_lc2; eauto.
+        econstructor; eauto 2. intros. constructor.
+        rewrite (co_subst_co_tm_intro c).
+        apply subst_co_erased. auto. auto. auto.
       * eapply mp_step with (b:= (a_CPi (Eq a0 a1 T R) (close_tm_wrt_co c b))); eauto.
-        -- inversion lc; subst; clear lc.
-           inversion H4; subst; clear H4.
-           apply (Par_CPi (singleton c)); auto.
-           intros c1 H0.
-           rewrite -co_subst_co_tm_spec.
-           rewrite (co_subst_co_tm_intro c a (g_Var_f c1)); auto.
-           apply subst4; auto.
+        -- apply Par_CPi_exists; auto 2. constructor.
+           eapply multipar_erased_tm_fst; eauto.
         -- apply IHmultipar; eauto.
-           ++ inversion lc; subst; clear lc.
-              constructor; eauto 1.
-              intros c1.
-              rewrite -co_subst_co_tm_spec.
-              apply co_subst_co_tm_lc_tm; auto.
-              apply Par_lc2 in H; auto.
            ++ rewrite fv_co_co_tm_close_tm_wrt_co_rec.
               fsetdec.
            ++ rewrite open_tm_wrt_co_close_tm_wrt_co; auto.
       + eapply mp_step with (b:= (a_CPi (Eq a0 b T R) a)); eauto.
-        -- inversion lc; subst; clear lc.
-           inversion H5; subst; clear H5.
-           apply (Par_CPi (singleton c)); auto.
-        -- apply IHmultipar; eauto.
-           inversion lc; subst.
-           apply lc_a_CPi; eauto.
-           inversion H5; subst.
-           constructor; eauto.
-           eapply Par_lc2; eauto.
+        -- apply (Par_CPi (singleton c)); auto 2.
+           constructor. eapply multipar_erased_tm_fst; eauto.
+           intros. constructor. rewrite (co_subst_co_tm_intro c).
+           apply subst_co_erased. auto. eapply multipar_erased_tm_fst; eauto.
+           auto.
   - apply mp_step with (b:= (a_CPi (Eq b B T R) a)); auto.
-    inversion lc; subst.
-    inversion H6; subst.
-      by apply (Par_CPi (singleton c)); auto.
-     apply IHmultipar; auto.
-     inversion lc; subst; clear lc.
-     constructor; auto.
-     constructor; auto.
-     apply Par_lc2 in H; auto.
-     inversion H6; auto.
-     inversion H6; auto.
-     Unshelve. apply (fv_co_co_tm a).
+     apply (Par_CPi (singleton c)); auto.
+     constructor. eapply multipar_erased_tm_fst; eauto.
+     constructor. eapply multipar_erased_tm_fst; eauto.
+     intros. constructor. rewrite (co_subst_co_tm_intro c).
+     apply subst_co_erased. auto. eapply multipar_erased_tm_fst; eauto.
+     auto. Unshelve. apply (fv_co_co_tm a). apply (fv_co_co_tm a).
 Qed.
-*)
-Admitted.
 
-Lemma multipar_CPi_B_proj:  ∀ (G : context) D S (A B a A' B' a' T T': tm) R R',
-    multipar G D S (a_CPi (Eq A B T R) a) (a_CPi (Eq A' B' T' R) a') R' →
+
+Lemma multipar_CPi_B_proj:  ∀ (G : context) D W (A B a A' B' a' T T': tm) R R',
+    multipar G D W (a_CPi (Eq A B T R) a) (a_CPi (Eq A' B' T' R) a') R' →
     exists L, forall c, c `notin` L ->
-      multipar G D S (open_tm_wrt_co a (g_Var_f c)) (open_tm_wrt_co a' (g_Var_f c)) R'.
+      multipar G D W (open_tm_wrt_co a (g_Var_f c)) (open_tm_wrt_co a' (g_Var_f c)) R'.
 Proof.
-  intros G D S A B a A' B' a' T T' R R' h1.
+  intros G D W A B a A' B' a' T T' R R' h1.
   dependent induction h1; eauto.
-  inversion H; subst. (*
-  eapply IHh1; eauto.
-  destruct (IHh1 A'0 B'0 a'0 A' B' a' A1' T' R) as [L0 h0]; auto.
-  exists (L \u L0); eauto.
-  apply (fv_tm_tm_tm A').
+  - inversion H. subst. exists L. intros.
+    constructor. auto.
+  - inversion H; subst.
+    eapply IHh1; eauto.
+    destruct (IHh1 _ _ _ _ _ _ _ _ _ ltac:(auto) ltac:(auto)) as [L0 h0]; auto.
+    exists (L \u L0); eauto.
 Qed.
-*)
-Admitted.
 
-Lemma multipar_CPi_phi_proj:  ∀ (G : context) D S (A B a A' B' a' T T': tm) R R',
-    multipar G D S (a_CPi (Eq A B T R) a) (a_CPi (Eq A' B' T' R) a') R' ->
-    multipar G D S A A' R 
-      /\ multipar G D S B B' R
-      /\ multipar G D S T T' R.
+Lemma multipar_CPi_phi_proj:  ∀ (G : context) D W (A B a A' B' a' T T': tm) R R',
+    multipar G D W (a_CPi (Eq A B T R) a) (a_CPi (Eq A' B' T' R) a') R' ->
+    multipar G D W A A' R 
+      /\ multipar G D W B B' R
+      /\ multipar G D W T T' R.
 Proof.
-  intros G D S A B a A' B' a' T T' R R' H.
+  intros G D W A B a A' B' a' T T' R R' H.
   dependent induction H; eauto.
-  inversion H; subst. (*
-  eapply IHmultipar; eauto.
-  repeat split; eauto.
-  apply mp_step with (b := A'0); auto.
-  destruct (IHmultipar A'0 B'0 a'0 A' B' a' A1' T' R); auto.
-  destruct (IHmultipar A'0 B'0 a'0 A' B' a' A1' T' R); auto.
-  apply mp_step with (b:= B'0); auto.
-  apply H2.
-  destruct (IHmultipar A'0 B'0 a'0 A' B' a' A1' T' R); auto.
-  apply mp_step with (b:= A1'); auto.
-  apply H2.
+  - inversion H; subst. split. constructor; auto.
+    split. all:constructor; auto.
+  - inversion H; subst.
+    eapply IHmultipar; eauto.
+    destruct (IHmultipar _ _ _ _ _ _ _ _ _ ltac:(auto) ltac:(auto))
+    as [H1 [H2 H3]].
+    repeat split.
+    apply mp_step with (b := a'0); auto.
+    apply mp_step with (b := b'); auto.
+    apply mp_step with (b := A'0); auto.
 Qed.
-*)
-Admitted.
 
-Lemma multipar_Abs_exists: ∀ x (G : context) D S rho R R' (a a' : tm),
-       lc_tm (a_UAbs rho R a) -> x `notin` fv_tm_tm_tm a →
-       multipar G D S (open_tm_wrt_tm a (a_Var_f x)) a' R' →
-       multipar G D S (a_UAbs rho R a) (a_UAbs rho R (close_tm_wrt_tm x a')) R'.
+
+Lemma multipar_Abs_exists: ∀ x (G : context) D W rho R R' (a a' : tm),
+       x `notin` fv_tm_tm_tm a →
+       multipar G D ([(x,R)] ++ W) (open_tm_wrt_tm a (a_Var_f x)) a' R' →
+       multipar G D W (a_UAbs rho R a) (a_UAbs rho R (close_tm_wrt_tm x a')) R'.
 Proof.
-  intros x G D S rho R R' B B' lc e H.
+  intros x G D W rho R R' B B' e H.
   dependent induction H; eauto 2.
-  - autorewrite with lngen. eauto 2.
-  (*
-  - assert (Par G D (a_UAbs rho R B) (a_UAbs rho R (close_tm_wrt_tm x b)) R0).
+  - autorewrite with lngen. constructor.
+    assert (uniq ([(x,R)] ++ W)). {eapply rctx_uniq; eauto. }
+    apply erased_a_Abs with (L := union (singleton x) (dom W)).
+    intros. rewrite (tm_subst_tm_tm_intro x B (a_Var_f x0)); auto.
+    replace ([(x0,R)] ++ W) with (nil ++ [(x0,R)] ++ W); auto.
+    apply subst_tm_erased with (R1 := R). simpl_env. apply erased_app_rctx.
+    solve_uniq. auto. econstructor; auto. solve_uniq.
+  - assert (Par G D W (a_UAbs rho R B) (a_UAbs rho R (close_tm_wrt_tm x b)) R0).
     eapply (Par_Abs_exists); auto.
-    assert (multipar G D (a_UAbs rho R (close_tm_wrt_tm x b))
+    assert (multipar G D W (a_UAbs rho R (close_tm_wrt_tm x b))
                        (a_UAbs rho R (close_tm_wrt_tm x c)) R0).
     { apply IHmultipar; auto.
-    * inversion lc; subst; clear lc.
-        constructor; eauto.
-        intros x0.
-        rewrite -tm_subst_tm_tm_spec.
-        apply tm_subst_tm_tm_lc_tm; auto.
-        apply Par_lc2 in H; auto.
     * rewrite fv_tm_tm_tm_close_tm_wrt_tm_rec.
       fsetdec.
     * rewrite open_tm_wrt_tm_close_tm_wrt_tm; auto. }
     eapply mp_step; eauto.
 Qed.
-*)
-Admitted.
 
-Lemma multipar_CAbs_exists: forall c (G : context) D S (a a': tm) R,
-       lc_tm (a_UCAbs a) -> c `notin` fv_co_co_tm a →
-       multipar G D S (open_tm_wrt_co a (g_Var_f c)) a' R →
-       multipar G D S (a_UCAbs a) (a_UCAbs (close_tm_wrt_co c a')) R.
+Lemma multipar_CAbs_exists: forall c (G : context) D W (a a': tm) R,
+       c `notin` fv_co_co_tm a →
+       multipar G D W (open_tm_wrt_co a (g_Var_f c)) a' R →
+       multipar G D W (a_UCAbs a) (a_UCAbs (close_tm_wrt_co c a')) R.
 Proof.
-  intros c G D S a a' R lc e H.
-  dependent induction H; eauto 1. (*
-    by rewrite close_tm_wrt_co_open_tm_wrt_co; auto.
-  inversion lc; subst.
-  apply mp_step with (b:= ( (a_UCAbs (close_tm_wrt_co c b)))); eauto.
-  + apply (Par_CAbs (singleton c)); auto.
-    intros c1 h0.
-    rewrite -co_subst_co_tm_spec.
-    rewrite (co_subst_co_tm_intro c a (g_Var_f c1)); auto.
-    apply subst4; auto.
-  + apply IHmultipar; eauto.
-    * constructor; eauto 1.
-      intros c1.
-      rewrite -co_subst_co_tm_spec.
-      apply co_subst_co_tm_lc_tm; auto.
-      apply Par_lc2 in H; auto.
-    * rewrite fv_co_co_tm_close_tm_wrt_co_rec.
-      fsetdec.
-    * rewrite open_tm_wrt_co_close_tm_wrt_co; auto.
+  intros c G D W a a' R e H.
+  dependent induction H; eauto 1.
+  - rewrite close_tm_wrt_co_open_tm_wrt_co; auto.
+    constructor. econstructor. intros. rewrite (co_subst_co_tm_intro c).
+    apply subst_co_erased. auto. auto. auto.
+  - apply mp_step with (b:= ((a_UCAbs (close_tm_wrt_co c b)))); eauto.
+    apply Par_CAbs_exists; auto.
+    apply IHmultipar; eauto.
+    rewrite fv_co_co_tm_close_tm_wrt_co_rec.
+    fsetdec. rewrite open_tm_wrt_co_close_tm_wrt_co; auto.
+    Unshelve. auto.
 Qed.
-*)
-Admitted.
 
-
-Lemma multipar_open_tm_wrt_co_preservation: forall G D S B1 B2 c R,
-  multipar G D S (open_tm_wrt_co B1 (g_Var_f c)) B2 R ->
+Lemma multipar_open_tm_wrt_co_preservation: forall G D W B1 B2 c R,
+  multipar G D W (open_tm_wrt_co B1 (g_Var_f c)) B2 R ->
   exists B', B2 = open_tm_wrt_co B' (g_Var_f c)
-    /\ multipar G D S (open_tm_wrt_co B1 (g_Var_f c)) (open_tm_wrt_co B' (g_Var_f c)) R.
+    /\ multipar G D W (open_tm_wrt_co B1 (g_Var_f c)) (open_tm_wrt_co B' (g_Var_f c)) R.
 Proof.
-  intros G D S B1 B2 c R H.
+  intros G D W B1 B2 c R H.
   exists (close_tm_wrt_co c B2).
   have:open_tm_wrt_co (close_tm_wrt_co c B2) (g_Var_f c) = B2 by apply open_tm_wrt_co_close_tm_wrt_co.
   move => h0.
@@ -653,12 +625,12 @@ Proof.
   eauto.
 Qed.
 
-Lemma multipar_open_tm_wrt_tm_preservation: forall G D S B1 B2 R x,
-  multipar G D S (open_tm_wrt_tm B1 (a_Var_f x)) B2 R ->
+Lemma multipar_open_tm_wrt_tm_preservation: forall G D W B1 B2 R x,
+  multipar G D W (open_tm_wrt_tm B1 (a_Var_f x)) B2 R ->
   exists B', B2 = open_tm_wrt_tm B' (a_Var_f x)
-    /\ multipar G D S (open_tm_wrt_tm B1 (a_Var_f x)) (open_tm_wrt_tm B' (a_Var_f x)) R.
+    /\ multipar G D W (open_tm_wrt_tm B1 (a_Var_f x)) (open_tm_wrt_tm B' (a_Var_f x)) R.
 Proof.
-  intros G D S B1 B2 R x H.
+  intros G D W B1 B2 R x H.
   exists (close_tm_wrt_tm x B2).
   have:open_tm_wrt_tm (close_tm_wrt_tm x B2) (a_Var_f x) = B2 by apply open_tm_wrt_tm_close_tm_wrt_tm.
   move => h0.
@@ -667,15 +639,15 @@ Proof.
   eauto.
 Qed.
 
-Lemma context_Par_irrelevance: forall G1 G2 D1 D2 S a a' R,
-                                             Par G1 D1 S a a' R -> Par G2 D2 S a a' R.
+Lemma context_Par_irrelevance: forall G1 G2 D1 D2 W a a' R,
+                                             Par G1 D1 W a a' R -> Par G2 D2 W a a' R.
 Proof.
-  intros G1 G2 D1 D2 S a a' R H.
+  intros G1 G2 D1 D2 W a a' R H.
   induction H; eauto.
 Qed.
 
 
-Lemma multipar_context_independent: forall G1 G2 D S A B R,  multipar G1 D S A B R -> multipar G2 D S A B R.
+Lemma multipar_context_independent: forall G1 G2 D W A B R,  multipar G1 D W A B R -> multipar G2 D W A B R.
 Proof.
   induction 1; eauto.
   apply (@context_Par_irrelevance _ G2 D D) in H; eauto.

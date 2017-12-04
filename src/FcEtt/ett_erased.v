@@ -168,6 +168,18 @@ Qed.
 
 Hint Resolve subst_tm_erased subst_co_erased : erased.
 
+Lemma erased_Pi_some_any: forall W x rho A R1 B R2,
+       x `notin` fv_tm_tm_tm B ->
+       erased_tm W A R1 ->
+       erased_tm ([(x,R1)] ++ W) (open_tm_wrt_tm B (a_Var_f x)) R2 ->
+       erased_tm W (a_Pi rho A R1 B) R2.
+Proof. intros. apply (erased_a_Pi (union (singleton x) (dom W))); eauto.
+       intros. rewrite (tm_subst_tm_tm_intro x B (a_Var_f x0)); auto.
+       replace ([(x0,R1)] ++ W) with (nil ++ [(x0,R1)] ++ W); auto.
+       assert (uniq ([(x,R1)] ++ W)). {eapply rctx_uniq; eauto. }
+       eapply subst_tm_erased. simpl_env. apply erased_app_rctx; eauto.
+       econstructor. solve_uniq. auto. auto.
+Qed.
 
 Lemma typing_erased_mutual:
     (forall G b A R, Typing G b A R -> erased_tm (ctx_to_rctx G) b R) /\
