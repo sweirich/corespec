@@ -10,7 +10,7 @@ Require Export FcEtt.ett_ott.
 Require Export FcEtt.ett_inf.
 Require Export FcEtt.ett_ind.
 Require Export FcEtt.ett_par.
-Require Export FcEtt.erase_syntax.
+(* Require Export FcEtt.erase_syntax.
 Require Import FcEtt.ext_red_one.
 Require Import FcEtt.ext_red.
 
@@ -24,65 +24,58 @@ Module red_one := ext_red_one invert.
 Export red_one.
 
 Module red := ext_red invert.
-Export red.
+Export red. *)
 
 Set Implicit Arguments.
 Set Bullet Behavior "Strict Subproofs".
 
-Definition Good (G : context) (D : available_props):=
+(* Definition Good (G : context) (D : available_props):=
   erased_context G /\
   forall c1 A B1 T1 R,
     binds c1 (Co (Eq A B1 T1 R)) G
     -> c1 `in` D
-    -> exists C, Par G D A C /\ Par G D B1 C.
+    -> exists C, Par G D A C /\ Par G D B1 C. *)
 
 (* ---------------------------------------- *)
 
 Lemma open2 :
-  forall x b b' S D a a',
+  forall x b b' S D W a a' R R',
     x `notin` fv_tm_tm_tm a' \u fv_tm_tm_tm a ->
-    erased_tm b ->
-    erased_tm (open_tm_wrt_tm a (a_Var_f x)) ->
-    Par S D (open_tm_wrt_tm a (a_Var_f x)) (open_tm_wrt_tm a' (a_Var_f x)) ->
-    Par S D b b' ->
-    Par S D (open_tm_wrt_tm a b) (open_tm_wrt_tm a' b').
+    Par S D ([(x,R)] ++ W) (open_tm_wrt_tm a (a_Var_f x)) (open_tm_wrt_tm a' (a_Var_f x)) R' ->
+    Par S D W b b' R ->
+    Par S D W (open_tm_wrt_tm a b) (open_tm_wrt_tm a' b') R'.
 Proof.
   intros x b b'. intros.
   rewrite (tm_subst_tm_tm_intro x); auto.
   rewrite [(_ _ b')] (tm_subst_tm_tm_intro x); auto.
-  apply subst3; auto.
+  replace W with (nil ++ W); auto.
+  eapply subst3; eauto.
 Qed.
 
 
-Lemma a_Pi_head : forall S G b A R rho B,
-    Par S G (a_Pi rho A R B) b -> exists A' B' L,
-      b = a_Pi rho A' R B' /\ Par S G A A' /\
-      (forall x, x `notin` L -> Par S G (open_tm_wrt_tm B (a_Var_f x)) (open_tm_wrt_tm B' (a_Var_f x))).
+Lemma a_Pi_head : forall S G W b A R rho B R',
+    Par S G W (a_Pi rho A R B) b R' -> exists A' B' L,
+      b = a_Pi rho A' R B' /\ Par S G W A A' R /\
+      (forall x, x `notin` L -> 
+        Par S G ([(x,R)] ++ W) (open_tm_wrt_tm B (a_Var_f x)) 
+                               (open_tm_wrt_tm B' (a_Var_f x)) R').
 Proof.
-  intros. inversion H. subst. inversion H0.  exists A , B, empty. split; auto.
-  subst.
-  exists A', B', L.  split; auto.
+  intros. inversion H. subst.
+  inversion H0. subst.  exists A , B, L. split; auto.
+  subst. exists A', B', L.  split; auto.
 Qed.
 
-Lemma Par_Abs_inversion : forall G D a b rho R,
-    Par G D (a_UAbs rho R a) b ->
-    (exists a', b = (a_UAbs rho R a') /\
-          forall x, x `notin` fv_tm_tm_tm a \u fv_tm_tm_tm a' ->
-               Par G D (open_tm_wrt_tm a (a_Var_f x)) (open_tm_wrt_tm a' (a_Var_f x)))
-    \/
-    (exists a', Par G D a' b /\ forall x, x `notin`  fv_tm_tm_tm a ->
-          open_tm_wrt_tm a (a_Var_f x) = a_App a' rho R (a_Var_f x)).
+Lemma Par_Abs_inversion : forall G D W a b rho R R',
+    Par G D W (a_UAbs rho R a) b R' ->
+    exists a' L, b = (a_UAbs rho R a') /\
+          forall x, x `notin` L ->
+         Par G D ([(x,R)] ++ W) (open_tm_wrt_tm a (a_Var_f x)) (open_tm_wrt_tm a' (a_Var_f x)) R'.
 
 Proof.
-  intros G D a a' rho R P.
+  intros G D W a a' rho R R' P.
   inversion P; subst.
-  + left. exists a. inversion H; eauto.
-  + left. exists a'0. split. auto.
-    intros x Fr.
-    pick fresh y.
-    rewrite (tm_subst_tm_tm_intro y); eauto.
-    rewrite (tm_subst_tm_tm_intro y a'0); eauto.
-    apply subst2; eauto.
+  + inversion H. subst. exists a, L. split; auto.
+  + exists a'0, L. split. auto. auto.
 Qed.
 
 (* -------------------------------------------------------------------------------- *)
@@ -102,29 +95,19 @@ Ltac invert_equality :=
 
   Ltac try_refl_left :=
   try match goal with
-      | [ P2 : Par _ _ ?b ?b |- exists cc:tm, Par ?S ?D ?b cc /\ Par ?S ?D ?a2 cc ] =>
+      | [ P2 : Par _ _ _ ?b ?b _ |- exists cc:tm, Par ?S ?D _ ?b cc _ /\ Par ?S ?D _ ?a2 cc _ ] =>
         exists a2; assert (lc_tm a2); try eapply Par_lc2; eauto; try split; eauto; fail
       end.
   Ltac try_refl_right :=
   try match goal with
-      | [ P2 : Par _ _ ?b ?b |- exists cc:tm, Par ?S ?D ?a2 cc /\ Par ?S ?D ?b cc ] =>
+      | [ P2 : Par _ _ _ ?b ?b _ |- exists cc:tm, Par ?S ?D _ ?a2 cc _ /\ Par ?S ?D _ ?b cc _ ] =>
         exists a2; assert (lc_tm a2); try eapply Par_lc2; eauto; try split; eauto; fail
       end.
 
   Ltac invert_erased :=
     match goal with
-    | [ H : erased_tm ?a |- _ ] => inversion H; subst; clear H
+    | [ H : erased_tm _ ?a _ |- _ ] => inversion H; subst; clear H
     end.
-
-  (* Find prove that the result of Par is erased, and then invert that *)
-  Ltac invert_erased_tm b :=
-        let h0 := fresh in
-        match goal with
-          [ h : Par ?G ?D ?a b, h1: erased_tm ?a |- _ ] =>
-          assert (h0 : erased_tm b);
-          [ eapply (Par_erased_tm h); eauto | inversion h0; subst]
-        end.
-
 
         (*    If we know that (a ^ x) == (App b rho x), replace
              (a ^ b0) with (App b rho b0)
@@ -167,42 +150,14 @@ Ltac invert_lc :=
     | [ H : lc_tm ?a |- _ ] => inversion H; subst; clear H
   end.
 
-  Ltac use_size_induction a ac Par1 Par2 :=
+Ltac use_size_induction a ac Par1 Par2 :=
   match goal with
   | [   IH : forall y: nat, ?T,
-        H2 : Good ?G ?D,
         H3 : erased_tm a,
-        H : Par ?G ?D a ?b0,
-        H4 : Par ?G ?D a ?b1 |- _ ] =>
-      move: (@IH (size_tm a) ltac:(omega) a ltac:(auto) _ _ _ H2 H3 H _ H4) => [ ac [Par1 Par2]]
+        H : Par ?G ?D ?W a ?b0 ?R,
+        H4 : Par ?G ?D ?W a ?b1 ?R |- _ ] =>
+      move: (@IH (size_tm a) ltac:(omega) a ltac:(auto) _ _ _ H3 H _ H4) => [ ac [Par1 Par2]]
   end.
-
-
-  Ltac use_size_induction_open a0 x ac Par1 Par2 :=
-      let h0 := fresh in
-      let h1 := fresh in
-      let h2 := fresh in
-      let EQ1 := fresh in
-      let EQ2 := fresh in
-      match goal with
-        | [  H : ∀ x : atom,
-              x `notin` ?L
-              → Par ?S ?D (?open_tm_wrt_tm a0 (?a_Var_f x)) ?b,
-             H4: ∀ x : atom,
-                 x `notin` ?L0
-                 → Par ?S ?D (?open_tm_wrt_tm a0 (?a_Var_f x)) ?c,
-             H1 : ∀ x : atom, x `notin` ?L1 →
-    erased_tm (?open_tm_wrt_tm a0 (?a_Var_f x)) |- _ ] =>
-    move: (H x ltac:(auto)) => h0; clear H;
-    move: (H4 x ltac:(auto)) => h1; clear H4;
-                               move: (H1 x ltac:(auto)) => h2; clear H1;
-    move: (size_tm_open_tm_wrt_tm_var a0 x) => EQ1;
-    move: (size_tm_open_tm_wrt_co_var a0 x) => EQ2;
-
-    use_size_induction (open_tm_wrt_tm a0 (a_Var_f x)) ac Par1 Par2;
-    clear h0; clear h1; clear h2; clear EQ1; clear EQ2
-    end.
-
 
 Ltac par_erased_open x J Par4 :=
   let K := fresh in
@@ -246,10 +201,10 @@ Ltac par_erased_open x J Par4 :=
       end.
 
 
-Lemma confluence_size : forall n a, size_tm a <= n ->  forall S D a1, Good S D -> erased_tm a -> Par S D a a1 -> forall a2, Par S D a a2 -> exists b, Par S D a1 b /\ Par S D a2 b.
+Lemma confluence_size : forall n a, size_tm a <= n ->  forall S D W a1 R, Par S D W a a1 R -> forall a2, Par S D W a a2 R -> exists b, Par S D W a1 b R /\ Par S D W a2 b R.
 Proof.
   pose confluence_size_def n :=
-      forall a, size_tm a <= n ->  forall S D a1, Good S D -> erased_tm a -> Par S D a a1 -> forall a2, Par S D a a2 -> exists b, Par S D a1 b /\ Par S D a2 b.
+      forall a, size_tm a <= n ->  forall S D W a1 R, Par S D W a a1 R -> forall a2, Par S D W a a2 R -> exists b, Par S D W a1 b R /\ Par S D W a2 b R.
   intro n. fold (confluence_size_def n).  eapply (well_founded_induction_type lt_wf).
   clear n. intros n IH. unfold confluence_size_def in *. clear confluence_size_def.
   intros a SZ S D a1 Gs Ea P1 a2 P2.
