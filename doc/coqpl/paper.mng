@@ -80,7 +80,7 @@
 %% Copyright information
 %% Supplied to authors (based on authors' rights management selection;
 %% see authors.acm.org) by publisher for camera-ready submission
-%\setcopyright{none}             %% For review submission
+\setcopyright{none}             %% For review submission
 %\setcopyright{acmcopyright}
 %\setcopyright{acmlicensed}
 %\setcopyright{rightsretained}
