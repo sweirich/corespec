@@ -385,25 +385,38 @@ Proof.
       pick fresh x; eapply open2; eauto. inversion EQ'; subst.
       apply X. fsetdec. 
       pick fresh x; eapply open2; eauto.
-    * inversion K'. inversion H7. inversion H10. inversion H12.
-    * admit.
-    * inversion K. inversion H7. inversion H10. inversion H12.
-    * inversion K. inversion H7. inversion H10. inversion H12.
-    * inversion K. inversion H7. inversion H10. inversion H12.
-    * admit.
-    * inversion K'. inversion H7. inversion H10. inversion H12.
+    * destruct K' as [z [Par5 [EQ' W]]]. inversion W.
+    * exists (open_tm_wrt_tm a'' a_Bullet). 
+      split. pick fresh x; eapply open2; eauto.
+      inversion EQ; subst. destruct M' as [ax [Par5 [EQ W]]].
+      eta_expand x.
+    * destruct K as [z [Par5 [EQ W]]]. inversion W.
+    * destruct K as [z [Par5 [EQ W]]]. inversion W.
+    * destruct K as [z [Par5 [EQ W]]]. inversion W.
+    * exists (open_tm_wrt_tm a''' a_Bullet). split. 
+      destruct M as [ax [Par5 [EQ W]]]. 
+      inversion EQ'; subst. eta_expand x. 
+      pick fresh x; eapply open2; eauto.
+    * destruct K' as [z [Par5 [EQ W]]]. inversion W.
     * exists (a_App ac Irrel a_Bullet). split.
-      inversion M. inversion H7. inversion H10. inversion H12.
-      eta_expand x0. inversion M'. inversion H7. inversion H10. inversion H12.
-      eta_expand x0.
+      destruct M as [ax [Par5 [EQ W]]].
+      eta_expand x. destruct M' as [z [Par5 [EQ W]]].
+      eta_expand x.
   - (* app cong / app cong *)
     use_size_induction a0 ac Par1 Par2.
-    use_size_induction b bc Par3 Par4.
-    exists (a_App ac rho bc). split; auto.
+    (* use_size_induction b bc Par3 Par4. *)
+    eexists. split; eauto.
+    invert_erased_tm (a_UAbs Irrel a').
+    destruct (Par_Abs_inversion Par1).
+    -- admit.
+    -- inversion H5.
+       * clear H5. destruct H7 as [z [Par5 [EQ W]]]. inversion W.
+       * clear H5. destruct H7 as [z [Par5 [EQ W]]]. eta_expand x.
   - (* two cbetas *)
     use_size_induction a0 ac Par1 Par2.
-    invert_erased_tm (a_UCAbs a').
-    invert_erased_tm (a_UCAbs a'0).
+    (* invert_erased_tm (a_UCAbs a'). 
+    invert_erased_tm (a_UCAbs a'0). *)
+    invert_erased_tm (a_UAbs Rel a'0).
     inversion Par1; inversion Par2; subst; invert_syntactic_equality.
     -- invert_lc.
        exists  (open_tm_wrt_co a' g_Triv); eauto.

@@ -1,4 +1,4 @@
-\documentclass[format=sigplan,review=false,screen=true]{acmart}\settopmatter{}
+\documentclass[format=sigplan,10pt,review=false,screen=true]{acmart}\settopmatter{}
 
 \usepackage[para]{footmisc}   %% gather footnotes on a single line
 
@@ -95,7 +95,7 @@
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{document}
-
+\settopmatter{printfolios=true}
 
 %\title{A specification of eta-equivalence in LNrep}
 \title{Locally Nameless at Scale}
@@ -103,13 +103,8 @@
 \author{Stephanie Weirich}
 \orcid{0000-0002-6756-9168}
 \affiliation{
-  \position{Professor}
-  \department{Computer and Information Science}              %% \department is recommended
   \institution{University of Pennsylvania}            %% \institution is required
   \streetaddress{3330 Walnut St}
-  \city{Philadelphia}
-  \state{PA}
-  \postcode{19104}
   \country{USA}
 }
 \email{sweirich@cis.upenn.edu}
