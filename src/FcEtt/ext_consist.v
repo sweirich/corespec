@@ -108,6 +108,26 @@ Proof.
     rewrite tm_subst_tm_tm_fresh_eq; auto. 
 Qed.
 
+Lemma Par_Abs_inversion_Rel : forall G D a b,
+    Par G D (a_UAbs Rel a) b ->
+    (exists a', b = (a_UAbs Rel a') /\
+          forall x, x `notin` fv_tm_tm_tm a \u fv_tm_tm_tm a' ->
+               Par G D (open_tm_wrt_tm a (a_Var_f x)) (open_tm_wrt_tm a' (a_Var_f x)))
+    \/
+    (exists a', Par G D a' b /\ (forall x, x `notin`  fv_tm_tm_tm a ->
+          open_tm_wrt_tm a (a_Var_f x) = a_App a' Rel (a_Var_f x))).
+Admitted.
+
+Lemma Par_Abs_inversion_Irrel : forall G D a b,
+    Par G D (a_UAbs Irrel a) b ->
+    (exists a', b = (a_UAbs Irrel a') /\
+          forall x, x `notin` fv_tm_tm_tm a \u fv_tm_tm_tm a' ->
+               Par G D (open_tm_wrt_tm a (a_Var_f x)) (open_tm_wrt_tm a' (a_Var_f x)))
+    \/ (exists a', Par G D a' b /\ (forall x, x `notin`  fv_tm_tm_tm a ->
+          open_tm_wrt_tm a (a_Var_f x) = a_App a' Irrel a_Bullet)). 
+Admitted.
+
+
 (* -------------------------------------------------------------------------------- *)
 
 Ltac try_refl :=
@@ -335,27 +355,22 @@ Proof.
   - (* two betas *)
     use_size_induction a0 ac Par1 Par2.
     use_size_induction b bc Par3 Par4.
-    destruct (Par_Abs_inversion Par1) as [[a'' [EQ h0]] | [X1 | X2]]; subst;
-    destruct (Par_Abs_inversion Par2) as [[a''' [EQ2 h1]]| [Y1 | Y2]]; subst.
+    destruct (Par_Abs_inversion_Rel Par1) as [[a'' [EQ h0]] | [X1]]; subst;
+    destruct (Par_Abs_inversion_Rel Par2) as [[a''' [EQ2 h1]]| [Y1]]; subst.
     -- inversion EQ2. subst.
        exists (open_tm_wrt_tm a''' bc).
        split. pick fresh x; eapply open2; eauto using Par_erased_tm.
        pick fresh x; eapply open2; eauto using Par_erased_tm.
     -- exists (open_tm_wrt_tm a'' bc).
        split. pick fresh x; eapply open2; eauto using Par_erased_tm.
-       destruct Y1 as [ay [Par5 [EQ W]]].
+       inversion H7.
        eta_expand x.
-    -- destruct Y2 as [ay [Par5 [EQ W]]]. inversion W.
     -- exists (open_tm_wrt_tm a''' bc).
-       split. destruct X1 as [ax [Par5 [EQ W]]]. eta_expand x. 
+       split. inversion H7. eta_expand x. 
        pick fresh x; eapply open2; eauto using Par_erased_tm.
     -- exists (a_App ac Rel bc).
-       split. inversion X1. inversion H7. inversion H9. eta_expand x0.
-       inversion Y1. inversion H7. inversion H9. eta_expand x0.
-    -- destruct Y2 as [ay [Par5 [EQ W]]]. inversion W.
-    -- destruct X2 as [ax [Par5 [EQ W]]]. inversion W.
-    -- destruct X2 as [ax [Par5 [EQ W]]]. inversion W.
-    -- destruct X2 as [ax [Par5 [EQ W]]]. inversion W.
+       split. inversion H7. eta_expand x0.
+       inversion H8. eta_expand x0.
   - (* app beta / app cong *)
     use_size_induction a0 ac Par1 Par2.
     use_size_induction b bc Par3 Par4.
@@ -372,7 +387,7 @@ Proof.
       split.
       eta_expand x. 
       eauto.
-  - (* app cong / app beta *)
+  - (* two irrel betas *)
     use_size_induction a0 ac Par1 Par2.
     (* use_size_induction b bc Par3 Par4. *) 
     invert_erased_tm (a_UAbs Irrel a');

@@ -1,4 +1,14 @@
-\documentclass[format=sigplan,10pt,review=false,screen=true]{acmart}\settopmatter{}
+%\documentclass[format=sigplan,10pt,review=false,screen=true]{acmart}\settopmatter{}
+\documentclass[sigplan,screen,10pt,nocopyright,printccs=false]{acmart}
+\renewcommand\footnotetextcopyrightpermission[1]{} % removes footnote with conference information in first column
+\settopmatter{printfolios=true,printacmref=false}
+
+% Suppress conference info in the headers
+\usepackage{fancyhdr}
+\fancyhead[LE]{}%
+\fancyhead[RO]{}%
+\fancyhead[LO]{\shorttitle}%
+\fancyhead[RE]{\shortauthors}%
 
 \usepackage[para]{footmisc}   %% gather footnotes on a single line
 
