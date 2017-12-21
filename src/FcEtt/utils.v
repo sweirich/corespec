@@ -4,9 +4,6 @@ Set Bullet Behavior "Strict Subproofs".
 Set Implicit Arguments.
 
 
-(**** Auxiliary definitions ****)
-
-
 Definition first :=
   fun (A B C D  E: Prop) (p : A /\ B /\ C /\ D /\ E) =>
     match p with

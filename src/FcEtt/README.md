@@ -63,7 +63,7 @@ Metatheory of Implicit Language
 * ext_weak.v     - weakening lemma
 * ext_subst.v    - substitution lemma
 * ext_invert.v   - inversion lemmas, regularity   G |- a : A => G |- A : *
-* ext_red.v      - preservation lemma (Par relation)
+* ext_red.v      - preservation lemma (reduction_in_one)
 * ext_red_one.v  - facts about Values & reduction_in_one
 * ext_consist.v  - consistency via confluence & reduction
 

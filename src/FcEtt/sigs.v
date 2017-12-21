@@ -4,13 +4,6 @@ Require Export FcEtt.ett_ott.
 Require Export FcEtt.utils.
 
 
-(**** Signature file ****)
-(** This file contains the signatures for most modules in this development.
-    This is in particular useful to allow parallel compilation. **)
-
-(* TODO: this approach has some annoying drawbacks.
-         It may be possible to achieve the same result more easily using the quick option for compilation *)
-
 
 (**************** Ext_Wf ****************)
 
@@ -50,6 +43,10 @@ Axiom Ctx_lc : forall G0, Ctx G0 -> forall x s , binds x s G0 -> lc_sort s.
 Axiom Ctx_uniq : forall G, Ctx G -> uniq G.
 
 Axiom Toplevel_lc : forall c s, binds c s toplevel -> lc_sig_sort s.
+
+Axiom Path_lc : forall T a, Path T a -> lc_tm a.
+
+Axiom DataTy_lc : forall A, DataTy A a_Star -> lc_tm A.
 
 Axiom Value_lc : forall A, Value A -> lc_tm A.
 
@@ -242,6 +239,11 @@ Module Type ext_invert_sig.
 (* ---------- inversion lemmas ---------------- *)
 
 Axiom binds_to_Typing: forall G T A, Ctx G -> binds T (Tm A) G -> Typing G A a_Star.
+
+Axiom invert_a_Const : forall G T A,
+    Typing G (a_Const T) A ->
+    exists B, DataTy B a_Star /\ DefEq G (dom G) A B  a_Star
+         /\ binds T (Cs B) toplevel.
 
 Axiom invert_a_Pi: forall G rho A0 A B0,
     Typing G (a_Pi rho A0 B0) A ->
@@ -534,7 +536,7 @@ End fc_weak_sig.
 (**************** FC Substitution ****************)
 Module Type fc_subst_sig.
 
-  (* FIXME: delete?
+  (*
   Axiom context_fv_mutual :
   (forall G (a : tm) A (H: AnnTyping G a A),
       fv_tm_tm_tm a [<=] dom G /\ fv_co_co_tm a [<=] dom G /\
@@ -695,7 +697,7 @@ Module Type fc_subst_sig.
 
   Axiom An_AbsCong_inversion :
     forall G D rho g1 g2 B1 B2,
-      AnnDefEq G D (g_AbsCong rho g1 g2) B1 B2 →
+      AnnDefEq G D (g_AbsCong rho g1 g2) B1 B2 ->
     exists A1 A2 b1 b2 b3 B,
       B1 = (a_Abs rho A1 b1) /\
       B2 = (a_Abs rho A2 b3) /\
@@ -703,7 +705,7 @@ Module Type fc_subst_sig.
       AnnTyping G A2 a_Star  /\
       AnnDefEq G D g1 A1 A2  /\
       AnnTyping G (a_Abs rho A1 b2) B /\
-      (forall x, x \notin dom G →
+      (forall x, x \notin dom G  (* \u fv_tm_tm_tm b1 \u fv_tm_tm_tm b2 \u fv_tm_tm_tm b3 *) ->
           AnnDefEq  (( x ~ Tm A1) ++  G) D (open_co_wrt_tm g2 (a_Var_f x)) (open_tm_wrt_tm b1 (a_Var_f x))  ((open_tm_wrt_tm b2 (a_Var_f x))) /\
           (open_tm_wrt_tm b3 (a_Var_f x)) = (open_tm_wrt_tm b2 (a_Conv (a_Var_f x) (g_Sym g1))) /\
           (RhoCheck rho x  (erase_tm (open_tm_wrt_tm b1 (a_Var_f x)))) /\
@@ -712,15 +714,15 @@ Module Type fc_subst_sig.
   Axiom An_CPiCong_exists : ∀ c1 c2 (G : context) D (g1 g3 : co) (phi1 : constraint)
        (B1 : tm) (phi2 : constraint) (B3 B2 : tm),
     AnnIso G D g1 phi1 phi2
-    → c1 `notin` D \u fv_co_co_tm B2 \u fv_co_co_tm B1 \u fv_co_co_co g3
-    → c2 `notin` fv_co_co_co g1 \u fv_co_co_tm B2 \u fv_co_co_tm B3
+    -> c1 `notin` D \u fv_co_co_tm B2 \u fv_co_co_tm B1 \u fv_co_co_co g3
+    -> c2 `notin` fv_co_co_co g1 \u fv_co_co_tm B2 \u fv_co_co_tm B3
     → (AnnDefEq ([(c1, Co phi1)] ++ G) D (open_co_wrt_co g3 (g_Var_f c1))
                 (open_tm_wrt_co B1 (g_Var_f c1)) (open_tm_wrt_co B2 (g_Var_f c1)))
     → (open_tm_wrt_co B3 (g_Var_f c2) =
        open_tm_wrt_co B2 (g_Cast (g_Var_f c2) (g_Sym g1)))
     → AnnTyping G (a_CPi phi1 B1) a_Star
     → AnnTyping G (a_CPi phi2 B3) a_Star
-    → AnnTyping G (a_CPi phi1 B2) a_Star
+    -> AnnTyping G (a_CPi phi1 B2) a_Star
     → AnnDefEq G D (g_CPiCong g1 g3) (a_CPi phi1 B1)
                (a_CPi phi2 B3).
 
@@ -734,7 +736,9 @@ Module Type fc_subst_sig.
         AnnTyping G (a_CPi phi1 B1) a_Star /\
         AnnTyping G (a_CPi phi2 B3) a_Star /\
         AnnTyping G (a_CPi phi1 B2) a_Star /\
-        (forall c, c `notin` dom G →
+        (forall c, c `notin` dom G (* \u D \u fv_co_co_tm B2 \u fv_co_co_tm B1
+             \u fv_co_co_co g3 \u
+                fv_co_co_co g1 \u fv_co_co_tm B3 *) →
           (AnnDefEq ([(c, Co phi1)] ++ G) D (open_co_wrt_co g3 (g_Var_f c))
           (open_tm_wrt_co B1 (g_Var_f c)) (open_tm_wrt_co B2 (g_Var_f c))) /\
           (open_tm_wrt_co B3 (g_Var_f c) = open_tm_wrt_co B2 (g_Cast (g_Var_f c) (g_Sym g1)))).
@@ -794,12 +798,12 @@ Module Type fc_subst_sig.
       AnnTyping G (a_CAbs phi1 a2) B /\
       AnnDefEq G (dom G) g4 (a_CPi phi1 B1) (a_CPi phi2 B2) /\
  forall c1,
-      c1`notin` dom G
+      c1`notin` dom G (* \u D \u fv_co_co_tm a2 \u fv_co_co_tm a1 \u fv_co_co_co g3
+                  \u fv_co_co_co g1 \u fv_co_co_tm a3 *)
     → (AnnDefEq ([(c1, Co phi1)] ++ G) D (open_co_wrt_co g3 (g_Var_f c1))
                 (open_tm_wrt_co a1 (g_Var_f c1)) (open_tm_wrt_co a2 (g_Var_f c1))) /\
       (open_tm_wrt_co a3 (g_Var_f c1) =
        open_tm_wrt_co a2 (g_Cast (g_Var_f c1) (g_Sym g1))).
-
 
   (* -----  inversion lemmas for some typing judgments (with maximal co-finite quantification) ----------- *)
 

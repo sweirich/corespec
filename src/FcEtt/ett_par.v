@@ -39,6 +39,79 @@ Inductive multipar S D ( a : tm) : tm -> Prop :=
 
 Hint Constructors multipar.
 
+(*
+Inductive consistent : tm -> tm -> Prop :=
+| consistent_a_Star   : consistent a_Star a_Star
+| consistent_a_Pi     : forall rho A1 B1 A2 B2,
+    lc_tm A1 ->
+    lc_tm (a_Pi rho A1 B1) ->
+    lc_tm A2 ->
+    lc_tm (a_Pi rho A2 B2) ->
+    consistent (a_Pi rho A1 B1) (a_Pi rho A2 B2)
+| consistent_a_CPi    : forall phi1 A1 phi2 A2,
+    lc_constraint phi1 ->
+    lc_tm (a_CPi phi1 A1) ->
+    lc_constraint phi2 ->
+    lc_tm (a_CPi phi2 A2) ->
+    consistent (a_CPi phi1 A1) (a_CPi phi2 A2)
+| consistent_Path     : forall T p1 p2,
+    Path T p1 -> Path T p2 ->
+    consistent p1 p2
+| consistent_a_Const  : forall T, consistent (a_Const T)(a_Const T)
+| consistent_a_App    : forall p1 p2 b1 b2 rho,
+    lc_tm b1 -> lc_tm b2 ->
+    consistent p1 p2 ->
+    consistent (a_App p1 rho b1) (a_App p2 rho b2)
+| consistent_a_CApp    : forall p1 p2 b1 b2,
+    lc_co b1 -> lc_co b2 ->
+    consistent p1 p2 ->
+    consistent (a_CApp p1 b1) (a_CApp p2 b2)
+| consistent_a_Step_R : forall a b,
+    lc_tm a ->
+    not (value_type b) -> consistent a b
+| consistent_a_Step_L : forall a b,
+    lc_tm a ->
+    not (value_type b) -> consistent b a.
+Hint Constructors consistent.
+*)
+
+(*
+Inductive erased_tm : tm -> Prop :=
+| erased_a_Bullet :
+    (erased_tm a_Bullet)
+ | erased_a_Star :
+     (erased_tm a_Star)
+ | erased_a_Var_f : forall (x:tmvar),
+     (erased_tm (a_Var_f x))
+ | erased_a_Abs : forall L rho (b:tm),
+     ( forall x , x `notin` L -> erased_tm  ( open_tm_wrt_tm b (a_Var_f x) )  )  ->
+     (erased_tm (a_UAbs rho b))
+ | erased_a_App : forall rho (a b:tm),
+     (erased_tm a) ->
+     (erased_tm b) ->
+     (erased_tm (a_App a rho b))
+ | erased_a_Pi : forall L rho (A B:tm),
+     (erased_tm A) ->
+      ( forall x , x `notin` L -> erased_tm  ( open_tm_wrt_tm B (a_Var_f x) )  )  ->
+     (erased_tm (a_Pi rho A B))
+ | erased_a_CPi : forall L (A A1 A2: tm) (B:tm),
+     (erased_tm A1) ->  (erased_tm A2) -> (erased_tm A) ->
+      ( forall c , c `notin` L -> erased_tm  ( open_tm_wrt_co B (g_Var_f c) )  )  ->
+     (erased_tm (a_CPi (Eq A1 A2 A) B))
+ | erased_a_CAbs : forall L (A A1 A2:tm) (b:tm),
+      (forall c , c `notin` L -> erased_tm  ( open_tm_wrt_co b (g_Var_f c) )  )  ->
+     (erased_tm (a_UCAbs b))
+ | erased_a_CApp : forall (a:tm),
+     (erased_tm a) ->
+     (erased_tm (a_CApp a g_Triv))
+ | erased_a_Const : forall T,
+     erased_tm (a_Const T)
+ | erased_a_Fam : forall F,
+     erased_tm (a_Fam F)
+.
+
+Hint Constructors erased_tm.
+*)
 
 (* NOTE: we have a database 'erased' for proving that terms are erased. *)
 
@@ -116,7 +189,7 @@ Inductive erased_sort : sort -> Prop :=
 | erased_Tm : forall a, erased_tm a -> erased_sort (Tm a)
 | erased_Co : forall a b A, erased_tm a -> erased_tm b -> erased_tm A -> erased_sort (Co (Eq a b A)).
 
-(* Check Forall_forall FIXME:?? *)
+(* Check Forall_forall *)
 
 Definition erased_context : context -> Prop :=
   Forall (fun p => match p with (a,s) => erased_sort s end).
@@ -147,7 +220,7 @@ Qed.
 Hint Resolve subst_tm_erased subst_co_erased : erased.
 
 Lemma Par_lc1 : forall G D a a' , Par G D a a' -> lc_tm a.
-  intros.  induction H; auto.
+  intros.  induction H; auto. all: lc_solve.
 Qed.
 
 (* FIXME: find a good place for this tactic. *)
@@ -161,6 +234,7 @@ end.
 Lemma Par_lc2 : forall G D a a' , Par G D a a' -> lc_tm a'.
 Proof.
   intros.  induction H; auto.
+  - lc_solve.
   - lc_solve.
   - lc_solve.
   - lc_toplevel_inversion.
@@ -246,7 +320,10 @@ Hint Resolve toplevel_erased1 toplevel_erased2 : erased.
 (* Introduce a hypothesis about an erased opened term. *)
 Ltac erased_body x Ea :=
     match goal with
-      [ H4 : ∀ x : atom, x `notin` ?L0 → erased_tm (open_tm_wrt_tm ?a (a_Var_f x))
+     | [ H4 : ∀ x : atom, x `notin` ?L0 → erased_tm (open_tm_wrt_tm ?a (a_Var_f x))
+                         |- _ ] =>
+      move: (H4 x ltac:(auto)) => Ea; clear H4
+     | [ H4 : ∀ x : atom, x `notin` ?L0 → erased_tm (open_tm_wrt_co ?a (g_Var_f x))
                          |- _ ] =>
       move: (H4 x ltac:(auto)) => Ea; clear H4
     end.
@@ -254,11 +331,9 @@ Ltac erased_body x Ea :=
 (* Move this to ett_ind? *)
 Ltac eta_eq y EQ :=
    match goal with
-      [ H :
-          ∀ x : atom,
-            x `notin` ?L → open_tm_wrt_tm ?a (a_Var_f x) =
+     | [ H : ∀ x : atom, x `notin` ?L → open_tm_wrt_tm ?a (a_Var_f x) =
                            a_App ?b ?rho _ |- _ ] =>
-   move: (H y ltac:(auto)) =>  EQ
+        move: (H y ltac:(auto)) =>  EQ
 end.
 
 
@@ -273,9 +348,31 @@ Proof.
     apply subst_tm_erased; auto.
   - move: (IHEp ltac:(auto)); inversion 1;
     pick fresh x;
+    rewrite (tm_subst_tm_tm_intro x); auto;
+    apply subst_tm_erased; auto.
+  - move: (IHEp ltac:(auto)); inversion 1;
+    pick fresh x;
     rewrite (co_subst_co_tm_intro x); auto;
     apply subst_co_erased; auto.
   - eauto with erased.
+  - (* Eta *)
+    eapply IHEp; auto.
+    pick fresh x;
+    erased_body x Eaa;
+    eta_eq x E.
+    rewrite E in Eaa; inversion Eaa; auto.
+  - (* Eta2 *)
+    eapply IHEp; auto.
+    pick fresh x.
+    erased_body x Eaa.
+    eta_eq x E.
+    rewrite E in Eaa; inversion Eaa; auto.
+  - (* Eta3 *)
+    eapply IHEp; auto.
+    pick fresh x.
+    erased_body x Eaa.
+    rewrite H in Eaa.
+    inversion Eaa; auto. fsetdec.
 Qed.
 
 Hint Resolve Par_erased_tm : erased.
@@ -286,10 +383,9 @@ Lemma subst1 : forall b S D a a' x, Par S D a a' -> erased_tm b ->
                            Par S D (tm_subst_tm_tm a x b) (tm_subst_tm_tm a' x b).
 Proof.
   intros b S D a a' x PAR ET. induction ET; intros; simpl; auto.
-  all: try solve [Par_pick_fresh y;
+  all: try destruct rho; try solve [Par_pick_fresh y;
                   autorewrite with subst_open_var; eauto with lc].
-  destruct (x0 == x); auto.
-  Unshelve.
+  destruct (x0 == x). Unshelve.
   all: eauto.
 Qed.
 
@@ -322,6 +418,25 @@ Proof.
     move: (Typing_context_fv h0) => ?. split_hyp.
     simpl in *.
     fsetdec.
+  - Par_pick_fresh y; eauto.
+    have h1: y <> x by auto.
+    move: (H y ltac:(auto)) => h0.
+    apply (fun_cong (tm_subst_tm_tm b x)) in h0.
+    rewrite tm_subst_tm_tm_open_tm_wrt_tm in h0; auto.
+    simpl in h0.
+    destruct (@eq_dec tmvar _ y x); subst; try done.
+  - Par_pick_fresh y; eauto.
+    have h1: y <> x by auto.
+    move: (H y ltac:(auto)) => h0.
+    apply (fun_cong (tm_subst_tm_tm b x)) in h0.
+    rewrite tm_subst_tm_tm_open_tm_wrt_tm in h0; auto.
+    simpl in h0.
+    destruct (@eq_dec tmvar _ y x); subst; try done.
+  - Par_pick_fresh y; eauto.
+    have h1: y <> x by auto.
+    move: (H y ltac:(auto)) => h0.
+    apply (fun_cong (tm_subst_tm_tm b x)) in h0.
+    rewrite tm_subst_tm_tm_open_tm_wrt_co in h0; auto.
 Qed.
 
 
@@ -344,6 +459,45 @@ Proof.
     end.
      move: (Typing_context_fv h0) => ?. split_hyp.
      fsetdec.
+  - pick fresh y.
+    move: (H4 y ltac:(auto)) => h0.
+    move: (H2 y ltac:(auto)) => h1.
+    rewrite h1 in h0. inversion h0. subst.
+    eapply (Par_Eta (L \u singleton x)). eauto.
+    intros z Fr0.
+    move: (H2 z ltac:(auto)) => h2.
+    apply (fun_cong (tm_subst_tm_tm b x)) in h2.
+    rewrite tm_subst_tm_tm_open_tm_wrt_tm in h2.
+    simpl in h2.
+    destruct (@eq_dec tmvar _ z x); try done.
+    clear Fr. fsetdec.
+    eapply Par_lc1. eauto.
+  - pick fresh y.
+    move: (H4 y ltac:(auto)) => h0.
+    move: (H2 y ltac:(auto)) => h1.
+    rewrite h1 in h0. inversion h0. subst.
+    eapply (Par_EtaIrrel (L \u singleton x)). eauto.
+    intros z Fr0.
+    move: (H2 z ltac:(auto)) => h2.
+    apply (fun_cong (tm_subst_tm_tm b x)) in h2.
+    rewrite tm_subst_tm_tm_open_tm_wrt_tm in h2.
+    simpl in h2.
+    destruct (@eq_dec tmvar _ z x); try done.
+    clear Fr. fsetdec.
+    eapply Par_lc1. eauto.
+  - pick fresh y.
+    move: (H4 y ltac:(auto)) => h0.
+    move: (H2 y ltac:(auto)) => h1.
+    rewrite h1 in h0. inversion h0. subst.
+    eapply (Par_EtaC (L \u singleton x)). eauto.
+    intros z Fr0.
+    move: (H2 z ltac:(auto)) => h2.
+    apply (fun_cong (tm_subst_tm_tm b x)) in h2.
+    rewrite tm_subst_tm_tm_open_tm_wrt_co in h2.
+    simpl in h2.
+    destruct (@eq_dec tmvar _ z x); try done.
+    clear Fr.
+    eapply Par_lc1. eauto.
 Qed.
 
 
@@ -365,6 +519,22 @@ Proof.
     move: (Typing_context_fv  h0) => ?. split_hyp.
     simpl in *.
     fsetdec.
+  - pick fresh y and apply Par_Eta; eauto.
+    move: (H y ltac:(auto)) => h1.
+    apply (fun_cong (co_subst_co_tm b x)) in h1.
+    rewrite co_subst_co_tm_open_tm_wrt_tm in h1.
+    simpl in h1. auto. auto.
+  - pick fresh y and apply Par_EtaIrrel; eauto.
+    move: (H y ltac:(auto)) => h1.
+    apply (fun_cong (co_subst_co_tm b x)) in h1.
+    rewrite co_subst_co_tm_open_tm_wrt_tm in h1.
+    simpl in h1. auto. auto.
+  - pick fresh y and apply Par_EtaC; eauto.
+    move: (H y ltac:(auto)) => h1.
+    apply (fun_cong (co_subst_co_tm b x)) in h1.
+    rewrite co_subst_co_tm_open_tm_wrt_co in h1.
+    rewrite co_subst_co_co_var_neq in h1.
+    simpl in h1. auto. fsetdec. auto.
 Qed.
 
 Lemma multipar_subst3 : forall S D b b' x, erased_tm b ->
@@ -468,6 +638,31 @@ Proof.
   rewrite (co_subst_co_tm_intro c  a (g_Var_f c0));  auto.
   apply subst4; auto.
 Qed.
+
+Lemma Par_EtaRel_exists : forall (G: context) D a b b' x,
+   x `notin` union (fv_tm_tm_tm a) (fv_tm_tm_tm b) ->
+   Par G D b b' ->
+   (open_tm_wrt_tm a (a_Var_f x)) = a_App b Rel (a_Var_f x) ->
+   Par G D (a_UAbs Rel a) b'.
+Proof.
+  intros G D a b b' x hi0 H0 EQ.
+  eapply (Par_Eta (singleton x)); eauto.
+  intros x0 h0. apply eta_swap with x; eauto.
+Qed.
+
+
+
+Lemma Par_EtaRel_close : forall (G: context) D b b' x,
+   x `notin` fv_tm_tm_tm b ->
+   Par G D b b' ->
+   Par G D (a_UAbs Rel (close_tm_wrt_tm x (a_App b Rel (a_Var_f x)))) b'.
+Proof.
+   intros G D b b' x h0 H. eapply (Par_Eta (singleton x)); eauto.
+   intros x0 h1. apply eta_swap with x.
+   - rewrite fv_tm_tm_tm_close_tm_wrt_tm. simpl. fsetdec.
+   - apply open_tm_wrt_tm_close_tm_wrt_tm.
+   Qed.
+
 
 Lemma Par_open_tm_wrt_co_preservation: forall G D B1 B2 c, Par G D (open_tm_wrt_co B1 (g_Var_f c)) B2 -> exists B', B2 = open_tm_wrt_co B' (g_Var_f c) /\ Par G D (open_tm_wrt_co B1 (g_Var_f c)) (open_tm_wrt_co B' (g_Var_f c)).
 Proof.

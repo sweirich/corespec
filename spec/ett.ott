@@ -43,6 +43,8 @@ constraint, phi {{ tex \phi }} :: '' ::= {{ com props }}
      {{ coq (open_constraint_wrt_tm [[x b]] [[phi]]) }}
    | | phi |          :: S :: Erase
      {{ coq (erase_constraint [[phi]]) }}
+%% TODO: think about adding this constraint
+%% | phi1 ~ phi2       ::   :: CoIso
 
 
 tm, a, b, v, w, A, B :: 'a_' ::= {{ com types and kinds }}
@@ -472,6 +474,29 @@ Definition toplevel : sig := erase_sig an_toplevel.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% "Syntactic" definitions
 
+defns
+JSyn :: '' ::=
+
+
+defn
+Path T a  ::  :: Path :: 'Path_'
+{{ com Type headed by constant }}
+by
+
+--------- :: Const
+Path T T
+
+Path T a
+----------------- :: App
+Path T (a rho b)
+
+Path T a
+----------------  :: CApp
+Path T (a [g])
+
+Path T a
+-----------------  :: Conv
+Path T (a |> g)
 
 
 defns
@@ -526,6 +551,21 @@ Value /\c:phi.a
 Value /\c .a
 
 
+--------------------- :: Const
+Value T
+
+Path T a
+Value a
+--------------------- :: App
+Value (a rho b)
+
+
+Path T a
+Value a
+--------------------- :: CApp
+Value (a [g])
+
+
 defn
 ValueType A ::   :: value_type :: 'value_type_'
 {{ com Types with head forms (erased language) }}
@@ -540,6 +580,39 @@ ValueType all rho x : A -> B
 -------------------- :: CPi
 ValueType all c : phi. B
 
+------------------------ :: Const
+ValueType T
+
+Path T a
+Value a
+----------------------- :: App
+ValueType (a rho b)
+
+Path T a
+Value a
+----------------------- :: CApp
+ValueType (a [g])
+
+
+defn
+DataTy a b ::   :: DataTy :: 'DT_'
+{{ com extract the result of a data constructor }}
+by
+
+---------------- :: Star
+DataTy TYPE TYPE
+
+Path T A
+----------- :: Path
+DataTy A A
+
+DataTy B  b
+---------------------------- :: Pi
+DataTy (all rho x:A -> B) b
+
+DataTy B b
+---------------------------- :: CPi
+DataTy (all c:phi. B) b
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Definitions for consistency proof
@@ -560,6 +633,11 @@ consistent (all rho x1:A1 -> B1) (all rho x2:A2 -> B2)
 
 ------------------------ :: CPi
 consistent (all c1:phi1. A1) (all c2 :phi2. A2)
+
+Path T a1
+Path T a2
+----------------- :: Path
+consistent a1 a2
 
 not ValueType b
 ---------------------- :: Step_R
@@ -589,11 +667,14 @@ erased_tm a
 -------------------- :: Abs
 erased_tm (\rho x.a)
 
-%% Note, this is not quite right, but it is ok.
 erased_tm a
 erased_tm b
 ----------------- :: App
-erased_tm (a rho b)
+erased_tm (a + b)
+
+erased_tm a
+----------------- :: AppIrrel
+erased_tm (a - [])
 
 erased_tm A
 erased_tm B
@@ -615,11 +696,11 @@ erased_tm a
 --------------- :: CApp
 erased_tm (a [o])
 
+--------- :: Const
+erased_tm T
+
 -------- :: Fam
 erased_tm F
-
------------- :: Const
-erased_tm T
 
 defns
 JChk :: '' ::=
@@ -639,6 +720,20 @@ x notin fv A
 - => check x in A
 
 
+% defns
+%  JRhoEta :: '' ::=
+
+% defn
+% rho => eta x in b  ::    :: RhoEta :: 'RhoEta_'
+% by
+%
+% ------------------- :: Rel
+% + => eta x in x
+%
+% ------------------  :: Irrel
+% - => eta x in []
+
+
 defns
   Jpar :: '' ::=
 
@@ -653,15 +748,23 @@ by
 G ; D |- a => a
 
 
-G ; D |- a => (\rho x.a')
+G ; D |- a => (\+ x.a')
 G ; D |- b => b'
 ---------------------------- :: Beta
-G ; D |- a rho b => a' { b' / x }
+G ; D |- a + b => a' { b' / x }
+
+G ; D |- a => (\- x.a')
+---------------------------- :: BetaIrrel
+G ; D |- a - [] => a' { [] / x }
 
 G ; D |- a => a'
 G ; D |- b => b'
 -------------------------- :: App
-G ; D |- a rho b => a' rho b'
+G ; D |- a + b => a' + b'
+
+G ; D |- a => a'
+-------------------------- :: AppIrrel
+G ; D |- a - [] => a' - []
 
 G ; D |- a => (/\c .a')
 ----------------------- :: CBeta
@@ -695,6 +798,22 @@ G ; D |- all c:A~B:A1. a => all c:A'~B':A1'. a'
 F ~ a : A in toplevel
 -------------------------------- :: Axiom
 G ; D |- F => a
+
+G ; D |- b => b'
+a = b + x
+----------------------------- :: Eta
+G ; D |- \+ x. a => b'
+
+
+G ; D |- b => b'
+a = b - []
+----------------------------- :: EtaIrrel
+G ; D |- \- x. a => b'
+
+G ; D |- b => b'
+a = b [o]
+----------------------------- :: EtaC
+G ; D |- /\c. a => b'
 
 
 defn
@@ -734,9 +853,12 @@ defn
 {{ com primitive reductions on erased terms }}
 by
 
-Value (\rho x. v)
 ------------------------------------ :: AppAbs
-|= (\rho x.v) rho b > v { b / x }
+|= (\+ x.v) + b > v { b / x }
+
+Value (\- x. v)
+------------------------------------ :: AppAbsIrrel
+|= (\- x.v) - [] > v { [] / x }
 
 
 ------------------------------- :: CAppCAbs
@@ -759,16 +881,23 @@ by
 
 |= a ~> a'
 -------------------------  :: AppLeft
-|= a rho b ~> a' rho b
+|= a + b ~> a' + b
+
+|= a ~> a'
+-------------------------  :: AppLeftIrrel
+|= a - [] ~> a' - []
 
 |= a  ~> a'
 -----------------------------   :: CAppLeft
 |= a [o]  ~> a' [o]
 
 
-Value (\rho x. v)
 ----------------------------------  :: AppAbs
-|= (\rho x.v) rho a ~> v { a / x}
+|= (\+ x.v) + a ~> v { a / x}
+
+Value (\- x. v)
+----------------------------------  :: AppAbsIrrel
+|= (\- x.v) - [] ~> v { [] / x}
 
 --------------------------------  :: CAppCAbs
 |= (/\c .b) [o] ~> b { o / c}
@@ -868,6 +997,12 @@ G |= a1 : all c : (a ~ b : A) . B1
 G ; dom G |= a == b : A
 ------------------------------------------- :: CApp
 G |= a1 [ o ] : B1 { o / c }
+
+|= G
+T : A in toplevel
+[ empty |= A : TYPE ]
+---------------------- :: Const
+G |= T : A
 
 |= G
 F ~ a : A in toplevel
@@ -1012,6 +1147,111 @@ G ; D |= a ~ b : A == a' ~ b' : A'
 -------------------------------------- :: IsoSnd
 G ; D |= A == A' : TYPE
 
+G |= b : all + x:A -> B
+a = b + x
+------------------------------------------ :: EtaRel
+G ; D |= \+ x. a == b : all + x:A -> B
+
+%% TODO: Future extensions, more Eta rules
+
+G |= b : all - x:A -> B
+a = b - []
+------------------------------------------ :: EtaIrrel
+G ; D |= \- x. a == b : all - x:A -> B
+
+G |= b : all c:phi. B
+a = b [o]
+------------------------------------------ :: EtaC
+G ; D |= /\c. a == b : all c:phi. B
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Temporarily removing these from the development
+% to prepare for merge
+
+% sadly, I don't think any of these hypotheses are
+% admissible
+
+% We need all typing assumptions about a & a' to make sure that
+% a and a' are equated at the same type.
+
+% We need the typing assumptions about b & b', as well as the equality
+% assumption, to make sure that the type we pick for a & a' is consistent with
+% the applications.  i.e. we don't know that "a + b" actually used A as the
+% type of B.... maybe this type doesn't make sense in this context.
+
+% It's annoying that we need so much bookkeeping for this rule.
+
+% Path T a
+% Path T a'
+% G |= a : all +x:A -> B
+% G |= b : A
+% G |= a' : all +x:A -> B
+% G |= b' : A
+% G ; D |= a + b == a' + b' : B { b / x }
+% G ; dom G |= B {b/x} == B {b'/x} : TYPE
+% -------------------------------------- :: LeftRel
+% G ; D |= a == a' : all + x: A -> B
+
+% Path T a
+% Path T a'
+% G |= a : all -x:A -> B
+% G |= b : A
+% G |= a' : all -x:A -> B
+% G |= b' : A
+% G ; D |= a - [] == a' - [] : B { b / x }
+% G ; dom G |= B {b/x} == B {b'/x} : TYPE
+% -------------------------------------- :: LeftIrrel
+% G ; D |= a == a' : all -x: A -> B
+
+
+% Path T a
+% Path T a'
+% G |= a : all +x:A -> B
+% G |= b : A
+% G |= a' : all +x:A -> B
+% G |= b' : A
+% G ; D |= a + b == a' + b' : B { b / x }
+% G ; dom G |= B {b/x} == B {b'/x} : TYPE
+% ------------------------------------ :: Right
+% G ; D |= b == b' : A
+
+
+% Path T a
+% Path T a'
+% G |= a  : all c:(a1 ~ a2:A). B
+% G |= a' : all c:(a1 ~ a2:A). B
+% G ; dom G |= a1 == a2 : A
+% G ; D |= a [o] == a' [o] : B {o/c}
+% ---------------------------------- :: CLeft
+% G ; D |= a == a' : all c:(a1 ~ a2:A). B
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%% We can also add many more rules about "injectivity"
+%% to this language including:
+
+% G ; D |=  (/\c . a) == (/\ c . b) : all c:phi1. B
+% ------------------------------------------------------------ :: CAbsFst
+% G, c: phi1 ; D |= a == b : B
+
+% G ; D |=  (\ rho x. b1) == (\ rho x. b2) : all rho x:A1 -> B
+% -------------------------------------------------------------- :: AbsFst
+% G, x:A1 ; D |= b1 == b2 : B
+
+% G |= a1 : all - x:A -> B
+% G |= b1 : all - x:A -> B
+% G ; D |= a1 - [] == b1 - [] : B { a / x }
+% ------------------------------------------ :: IAppFst
+% G ; D |= a1 == b1 : all - x:A -> B
+
+
+% G |= a1 : all c:a ~ b : A. B
+% G |= b1 : all c:a ~ b : A. B
+% G ; D |= a1 [o] == b1 [o] : B { o / c }
+% -------------------------------------- :: CAppFst
+% G ; D |= a1 == b1 : all c:a ~ b : A. B
 
 
 defn
@@ -1045,6 +1285,13 @@ by
 
 ------------ :: Empty
 |= emptyS
+
+|= S
+DataTy A TYPE
+empty |= A : TYPE
+T notin dom S
+-------------- :: ConsCs
+|= S , T : A
 
 |= S
 empty |= A : TYPE
@@ -1121,6 +1368,12 @@ G |- a1 : all c : a ~ b : A1. B
 G ; dom G |- g : a ~ b
 ------------------------------------- :: CApp
 G |- a1 [ g ] : B { g / c }
+
+|- G
+T : A in an_toplevel
+[ empty |- A : TYPE ]
+----------------------- :: Const
+G |- T : A
 
 |- G
 F ~ a : A in an_toplevel
@@ -1206,13 +1459,12 @@ G ; D |- red a1 a2 : a1 ~ a2
 
 %% Note: need to include {x/x} to emphasize that x is free in B2 for
 %% the locally nameless backend.
-%% Need all three assns, so that we know A1, A2, B1, B2, B3 all have kind TYPE
 G ; D |- g1 : A1 ~ A2
 G, x : A1 ; D |- g2 : B1 ~ (# B2 {{{ x / x }}} #)
 B3 = B2 { x |> sym g1 / x }
 G |- all rho x:A1 -> B1 : TYPE
-G |- all rho x:A1 -> B2 : TYPE
 G |- all rho x:A2 -> B3 : TYPE
+G |- (all rho x:A1 -> B2) : TYPE
 ---------------------------------------------------------- :: PiCong
 G ; D |- all rho x:g1 -> g2 : (all rho x:A1 -> B1) ~ (all rho x:A2 -> B3)
 
@@ -1269,8 +1521,8 @@ a3 = a2 { c |> sym g1 / c }
 %% the assumption c:phi1. This is a stronger property than
 %% regularity implies.
 G |- (/\ c:phi1. a1) : all c:phi1. B1
-G |- (/\ c:phi1. a2) : B
 G |- (/\ c:phi2. a3) : all c:phi2. B2
+G |- (/\ c:phi1. a2) : B
 G ; dom G |- g4 : all c:phi1. B1 ~ all c:phi2. B2
 ---------------------------------------------------------------- :: CAbsCong
 G ; D |- (\ c: g1. g3 @ g4) : (/\ c:phi1. a1) ~ (/\ c:phi2. a3)
@@ -1303,6 +1555,67 @@ G ; D |- g : (a~a' : A) == (b~b' : B)
 ---------------------------------- :: IsoSnd
 G ; D |- isoSnd g : A ~ B
 
+
+G |- b : all rho x:A -> B
+a = b rho x
+--------------------------------------------------- :: Eta
+G ; D |- eta b : (\rho x:A. a) ~ b
+
+
+G |- b : all c:phi. B
+a = b [c]
+--------------------------------------------------- :: EtaC
+G ; D |- eta b : (/\ c:phi. a) ~ b
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% The admissible hyps are to give a strong enough ih for
+% the erasure lemma.
+
+% We also need g2 to maintain the typing invariant.
+% Perhaps we can eventually show g2, i.e. that
+% if we have two paths (a & a'), then their types must
+% be coercible.
+
+% Path T a
+% Path T a'
+% G |- a  : all rho x:A -> B
+% G |- a' : all rho x:A'-> B'
+% [G |- b  : A ]
+% [G |- b' : A']
+% G ; D |- g1 : a rho b ~ a' rho b'
+% G ; dom G |- g2 : (all rho x:A -> B) ~ (all rho x:A' -> B')
+% [G ; dom G |- g3 : B { b / x } ~ B' { b' / x } ]
+% ------------------------------------------------------------ :: Left
+% G ; D |- left g1 g2 : a ~ a'
+
+
+% Path T a
+% Path T a'
+% G |- a : all + x :A -> B
+% G |- a' : all + x :A' -> B'
+% [G |- b : A]
+% [G |- b' : A']
+% G ; D |- g1 : a + b ~ a' + b'
+% G ; dom G |- g2 : (all + x :A -> B) ~ (all + x : A' -> B')
+% [G ; dom G |- g3 : B { b / x } ~ B' { b' / x } ]
+% ------------------------------------------------------- :: Right
+% G ; D |- right g1 g2 : b ~ b'
+
+
+% Path T a
+% Path T a'
+% G |- a : all c:a1 ~ a2:A0. B
+% G |- a' : all c:a1' ~ a2':A0'. B'
+% [ G ; dom G |- g : a1 ~ a2 ]
+% [ G ; dom G |- g' : a1' ~ a2' ]
+% G ; D |- g1 : a [g] ~ a' [g']
+% G ; dom G |- g2 : all c:a1 ~ a2:A0. B ~ all c:a1' ~ a2':A0'. B'
+% [ G ; dom G |- g3 : B { g / c } ~ B' { g' / c } ]
+% ----------------------------------------------- :: CLeft
+% G ; D |- left g1 g2 : a ~ a'
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 defn
@@ -1334,6 +1647,12 @@ by
 ------------ :: Empty
 |- emptyS
 
+|- S
+empty |- A : TYPE
+DataTy A TYPE
+T notin dom S
+-------------- :: ConsCs
+|- S , T : A
 
 |- S
 empty |- A : TYPE

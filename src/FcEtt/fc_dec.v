@@ -63,7 +63,10 @@ Proof.
 
   + intros g sz.
     destruct g; auto; unfold size_co in sz; unfold size_tm in sz; fold size_tm in sz; fold size_co in sz; fold size_constraint in sz.
-
+(*
+    Focus 5.
+    apply FD_Left.
+*)
 
     all: try econstructor; intros.
     all: try wfind.
@@ -94,7 +97,7 @@ Proof.
   done.
 Qed.
 
-(* TODO: write the function that generates context fuel and write the general function (the one accepting an arbitrary context) *)
+(* TODO: as added bonus, make the function that generates context fuel and write the general function (the one accepting an arbitrary context) *)
 Definition FC_typechecker : ∀ t : tm, {T : tm | AnnTyping nil t T } + {(forall T, ¬ AnnTyping nil t T)} :=
   fun t => AnnTyping_dec nil t (gaspump t) An_Empty.
 

@@ -1,8 +1,5 @@
 (* Completing the infrastructure of ett
 
-   TODO: trying to patch on top of the generated code is pretty hacky to work with.
-   Extending ott/lngen seems to be a much cleaner option
-
    Current additions:
    - polymorphic functions (via canonical structures)
 *)

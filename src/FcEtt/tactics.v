@@ -5,17 +5,14 @@ Require Import FcEtt.imports.
 Require Import FcEtt.ett_inf.
 
 
-(**** Tactics for the project ****)
-
+(* Tactics for the project *)
 
 (* TODO
    - automated f_equal (etc)
    - split forall ands
    - pick fresh and specialize all atom -> P hyps
-   - automatic regularity application (example use sites: fc_dec_fun, ext_red)
    - the organization (in different tactics, etc) is probably perfectible
 *)
-
 
 (* Dynamic type, useful for some tactics *)
 Inductive Dyn : Type := dyn : forall {T : Type}, T -> Dyn.
@@ -60,7 +57,7 @@ Ltac find_eq_rew_clear :=
 
 
 (* Tactic equivalent to subst, but which also tries to rewrite universally quantified equalities *)
-(* FIXME: better name *)
+(* FIXME: good name *)
 Ltac subst_forall :=
   repeat find_eq_rew_clear.
 
@@ -127,9 +124,7 @@ Ltac disjunction_assumption :=
 Ltac invert_and_clear H := inversion H; clear H.
 
 
-(* Technical, tactic-internal: wrap an hypothesis in a dummy pair, so that it doesn't get picked-up by, say, a match goal
-   This is useful to avoid processing an hypothesis multiple times (ending up in an infinite loop) or to prevent an hypothesis from
-   being processed entirely, based on some criteria. *)
+(* Technical, tactic-internal *)
 Definition wrap : forall P : Prop, P -> P * True := fun _ p => (p, I).
 Ltac wrap_hyp H := apply wrap in H.
 
@@ -166,7 +161,7 @@ Ltac find_invertible_hyps :=
     (* TODO: do we want to keep the original hyp - wrap - or clear it? *)
     | [ H : AnnTyping _ (_ _) _ |- _ ] => inversion H; wrap_hyp H
 
-  (* TODO: rhochecks, deq as well *)
+  (* TODO: rhochecks as well *)
   (* TODO *)
   end).
 
@@ -241,9 +236,7 @@ Ltac prove_eq_same_head :=
   solve [subst; reflexivity | f_equal; basic_solve].
 
 
-
-(**** Handling of free variables ****)
-(** Ad-hoc version of fsetdec, hopefully faster **)
+(* Ad-hoc version of fsetdec, hopefully faster *)
 (* TODO: handle the subset-union cases (see fc_dec.v) *)
 Ltac break_union :=
   repeat match goal with
@@ -254,8 +247,6 @@ Ltac break_union :=
 
 Ltac fsetdec_fast := solve [break_union; basic_solve_n 3].
 
-
-(** Autofresh: instantiate all co-finitely quantified assumptions with the same variable **)
 Ltac autofresh_fixed x :=
    repeat match goal with
      | [ H : ∀ x' : atom, x' `notin` ?L -> _ |- _] =>
@@ -272,7 +263,8 @@ Ltac autofresh_fixed x :=
    autofresh_fixed x.
 
 
-(** General purpose automation tactic tailored for this development **)
+
+(* General purpose automation tactic, tailored for this development *)
 Ltac autotype :=
   pcess_hyps;
 
@@ -281,8 +273,7 @@ Ltac autotype :=
   repeat match goal with
     | [ |- _ /\ _ ] => split
 
-    (* Force failure if fsetdec can't solve this goal (there shouldn't be cases where other tactics can solve it) *)
-    | [ |- _ `in` _   ] => try fsetdec_fast; first [fsetdec | fail 2]
+    | [ |- _ `in` _   ] => try fsetdec_fast; first [fsetdec | fail 2] (* We force failure if fsetdec can not solve this goal (there shouldn't be cases where other tactics can solve it) *)
     | [ |- ¬ _ `in` _ ] => try fsetdec_fast; first [fsetdec | fail 2]
 
 
@@ -318,10 +309,6 @@ Ltac autotype :=
     | [ |- AnnIso    _ _ (_ _) _ _ ] => econstructor; pcess_hyps
   end.
 
-
-
-
-(**** Aliases for manual proofs ****)
+(**** Alias for manual proofs ****)
 Ltac ok := autotype.
-
 Ltac depind x := dependent induction x.

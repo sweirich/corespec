@@ -41,7 +41,8 @@ Set Bullet Behavior "Strict Subproofs".
 Set Implicit Arguments.
 
 
-(* This version is just for "head reduction". *)
+(* This version is just for "head reduction."
+ *)
 
 Lemma open_a_Conv : forall a b g,
     open_tm_wrt_tm (a_Conv a g) b =
@@ -98,7 +99,7 @@ Ltac eauto_lc := simpl; eauto using AnnTyping_lc1, Value_lc,
                         AnnDefEq_lc3, AnnPropWff_lc.
 
 
-(* We need to know that the term type checks. But if it does, our annotated
+(* We need to know that the term type checks.  But if it does, our annotated
    operational semantics corresponds with reduction_in_one. *)
 Lemma head_reduction_in_one : forall G a b,
     head_reduction G a b -> forall A,  AnnTyping G a A ->
@@ -162,8 +163,9 @@ Proof.
 Qed.
 
 
-(* We need to know that the term type checks. But if it does, our annotated
+(* We need to know that the term type checks.  But if it does, our annotated
    operational semantics corresponds with parallel reduction. *)
+
 Lemma head_reduction_erased : forall G a b, head_reduction G a b ->
     forall A, AnnTyping G a A ->  Par G (dom G) (erase a) (erase b).
 Proof.
@@ -270,6 +272,8 @@ Proof.
       inversion H2. inversion H7. subst. destruct phi1.
       eapply An_Conv; eauto.
       eapply AnnTyping_co_subst_nondep; eauto.
+  - move=> a' hr.
+    inversion hr.
   - move=> a' hr.
     inversion hr. subst.
 

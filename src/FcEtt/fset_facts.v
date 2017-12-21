@@ -2,10 +2,6 @@ Require Export FcEtt.tactics.
 Require Export FcEtt.ett_inf.
 Require Import FcEtt.imports.
 
-
-(**** Facts about finite sets ****)
-
-
 Lemma union_notin_iff a s1 s2 :
   a `notin` union s1 s2 ↔ a `notin` s1 ∧ a `notin` s2.
 Proof. fsetdec. Qed.

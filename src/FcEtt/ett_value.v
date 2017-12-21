@@ -20,6 +20,73 @@ Require Export FcEtt.toplevel.
 
 (* ------------------------------------------ *)
 
+(* Paths *)
+
+Lemma Path_tm_subst_tm_tm : forall T a x b, Path T a -> lc_tm b -> Path T (tm_subst_tm_tm b x a).
+Proof. induction 1; try destruct rho; simpl; eauto with lngen.
+Qed.
+
+Lemma Path_co_subst_co_tm : forall T a x b, Path T a -> lc_co b -> Path T (co_subst_co_tm b x a).
+Proof. induction 1; try destruct rho; simpl; eauto with lngen.
+Qed.
+
+Hint Resolve Path_tm_subst_tm_tm Path_co_subst_co_tm : lngen.
+
+Lemma Path_unique : forall T1 T2 a, Path T1 a -> Path T2 a -> T1 = T2.
+Proof.
+  induction 1; intros P; inversion P; auto.
+Qed.
+
+(* DataTy *)
+
+Lemma DataTy_tm_subst_tm_tm : forall b x A,
+    DataTy A a_Star -> lc_tm b -> DataTy (tm_subst_tm_tm b x A) a_Star.
+Proof.
+  intros. dependent induction H; simpl; eauto.
+  - pick fresh y and apply DT_Pi.
+    eauto with lngen.
+    autorewrite with subst_open_var; eauto.
+  - pick fresh y and apply DT_CPi.
+    eauto with lngen.
+    autorewrite with subst_open_var; eauto.
+Qed.
+
+Lemma DataTy_co_subst_co_tm : forall b x A,
+    DataTy A a_Star -> lc_co b -> DataTy (co_subst_co_tm b x A) a_Star.
+Proof.
+  intros. dependent induction H; simpl; eauto.
+  - pick fresh y and apply DT_Pi.
+    eauto with lngen.
+    autorewrite with subst_open_var; eauto.
+  - pick fresh y and apply DT_CPi.
+    eauto with lngen.
+    autorewrite with subst_open_var; eauto.
+Qed.
+
+Hint Resolve DataTy_tm_subst_tm_tm DataTy_co_subst_co_tm : lngen.
+
+(* ------------------------------------------- *)
+
+Definition decide_Path : forall a, lc_tm a -> (exists T, Path T a) \/ (forall T, not (Path T a)).
+Proof.
+  induction a; intro lc.
+  all: try solve [left; eauto].
+  all: try solve [right; move => T h1; inversion h1].
+  - lc_inversion c. destruct IHa1 as [[T h0]|n].
+    auto.
+    left; eauto.
+    right. move => T h1. inversion h1.
+    subst. unfold not in n. eauto.
+  - lc_inversion c. destruct IHa as [[T h0]|n].
+    auto.
+    left; eauto.
+    right. intros T h; inversion h; subst; unfold not in n; eauto.
+  - lc_inversion c. destruct IHa as [[T h0]|n].
+    auto.
+    left. exists T. auto.
+    right. intros T h; inversion h; subst; unfold not in n; eauto.
+Qed.
+
 (* ------------------------------------------- *)
 
 (* Values and CoercedValues *)
@@ -33,7 +100,8 @@ Proof.
   all: try solve [intros;
                   eauto using tm_subst_tm_tm_lc_tm,
                   tm_subst_tm_constraint_lc_constraint,
-                  tm_subst_tm_co_lc_co].
+                  tm_subst_tm_co_lc_co,
+                  Path_tm_subst_tm_tm].
   all: try solve [intros;
     constructor; eauto using tm_subst_tm_tm_lc_tm,  tm_subst_tm_constraint_lc_constraint;
     match goal with [H: lc_tm (?a1 ?a2), K : lc_tm ?b |- _ ] =>
@@ -102,7 +170,8 @@ Proof.
   all: try solve [intros;
                   eauto using co_subst_co_tm_lc_tm,
                   co_subst_co_constraint_lc_constraint,
-                  co_subst_co_co_lc_co].
+                  co_subst_co_co_lc_co,
+                  Path_co_subst_co_tm].
   all: try solve [intros;
     constructor; eauto using co_subst_co_tm_lc_tm,
                               co_subst_co_constraint_lc_constraint;
@@ -141,3 +210,76 @@ Qed.
 
 
 (* ------------------------------------------ *)
+
+Lemma decide_Value_mutual : forall a,
+    lc_tm a ->
+    (Value a \/ not (Value a)) /\ (CoercedValue a \/ (not (CoercedValue a))).
+Proof.
+  induction 1; try destruct rho.
+  all: try solve [split; left; auto].
+  all: try solve [split; right; intro h; inversion h; try inversion H;
+                  try inversion H1].
+  - pick fresh x.
+    destruct (H1 x) as [[V|NV][CV|NCV]].
+    all: try solve [split; left; eauto using Value_AbsIrrel_exists].
+    + split;
+      right; intro h; inversion h; try inversion H2; subst;
+      apply NCV;
+      pick fresh y;
+      rewrite (tm_subst_tm_tm_intro y); eauto;
+      eapply CoercedValue_tm_subst_tm_tm; eauto.
+  - pick fresh x.
+    destruct (H0 x) as [[V|NV]_].
+    all: try solve [split; left; eauto using Value_UAbsIrrel_exists].
+    split.
+    all: right; intro h; inversion h; try inversion H1; subst; apply NV;
+      pick fresh y;
+      rewrite (tm_subst_tm_tm_intro y); eauto;
+        eapply Value_tm_subst_tm_tm; eauto.
+  - destruct (IHlc_tm1) as [[V|NV][CV|NCV]];
+      destruct (decide_Path H) as [[T P]|NP].
+    all: split.
+    all: try solve [left; eauto].
+    all: try solve [right; intro h; inversion h; try inversion H1; eapply NP; eauto].
+    all: try solve [right; intro h; inversion h; try inversion H1; done].
+  - destruct (IHlc_tm1) as [[V|NV][CV|NCV]];
+      destruct (decide_Path H) as [[T P]|NP].
+    all: split.
+    all: try solve [left; eauto].
+    all: try solve [right; intro h; inversion h; try inversion H1; eapply NP; eauto].
+    all: try solve [right; intro h; inversion h; try inversion H1; done].
+  - destruct (IHlc_tm) as [[V|NV][CV|NCV]].
+    all: split.
+    all: try solve [left; eauto].
+    all: try solve [right; intro h; inversion h].
+    right. intro h; inversion h. inversion H1. done.
+    right. intro h; inversion h. inversion H1. done.
+  - destruct (IHlc_tm) as [[V|NV][CV|NCV]];
+      destruct (decide_Path H) as [[T P]|NP].
+    all: split.
+    all: try solve [left; eauto].
+    all: try solve [right; intro h; inversion h; try inversion H1; eapply NP; eauto].
+    all: try solve [right; intro h; inversion h; try inversion H1; done].
+Qed.
+
+
+Lemma decide_Value : forall a, lc_tm a -> (Value a \/ not (Value a)).
+Proof.
+  intros a.
+  eapply decide_Value_mutual.
+Qed.
+
+Lemma decide_CoercedValue : forall a, lc_tm a -> (CoercedValue a \/ not (CoercedValue a)).
+Proof.
+  intros a.
+  eapply decide_Value_mutual.
+Qed.
+
+
+  (* ------------------------------------------ *)
+
+Lemma DataTy_value_type : forall A, DataTy A a_Star -> value_type A.
+Proof.
+  intros A H.
+  dependent induction H; eauto with lc.
+Qed.
