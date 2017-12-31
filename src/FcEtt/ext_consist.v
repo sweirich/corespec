@@ -9,6 +9,7 @@ Require Export FcEtt.tactics.
 Require Export FcEtt.ett_ott.
 Require Export FcEtt.ett_inf.
 Require Export FcEtt.ett_ind.
+Require Export FcEtt.ett_erased.
 Require Export FcEtt.ett_par.
 (* Require Export FcEtt.erase_syntax.
 Require Import FcEtt.ext_red_one.
@@ -40,7 +41,7 @@ Set Bullet Behavior "Strict Subproofs".
 
 Lemma open2 :
   forall x b b' S D W a a' R R',
-    x `notin` fv_tm_tm_tm a' \u fv_tm_tm_tm a ->
+    x `notin` fv_tm_tm_tm a' \u fv_tm_tm_tm a \u dom W ->
     Par S D ([(x,R)] ++ W) (open_tm_wrt_tm a (a_Var_f x)) (open_tm_wrt_tm a' (a_Var_f x)) R' ->
     Par S D W b b' R ->
     Par S D W (open_tm_wrt_tm a b) (open_tm_wrt_tm a' b') R'.
@@ -50,6 +51,19 @@ Proof.
   rewrite [(_ _ b')] (tm_subst_tm_tm_intro x); auto.
   replace W with (nil ++ W); auto.
   eapply subst3; eauto.
+Qed.
+
+Lemma open3 :
+  forall c L S D W a a' R',
+    c `notin` fv_co_co_tm a' \u fv_co_co_tm a \u dom W \u L ->
+    Par S D W (open_tm_wrt_co a (g_Var_f c)) (open_tm_wrt_co a' (g_Var_f c)) R' ->
+    Par S D W (open_tm_wrt_co a g_Triv) (open_tm_wrt_co a' g_Triv) R'.
+Proof.
+  intros x L. intros.
+  rewrite (co_subst_co_tm_intro x); auto.
+  rewrite [(_ a' g_Triv)] (co_subst_co_tm_intro x); auto.
+  replace W with (nil ++ W); auto.
+  eapply subst4; eauto.
 Qed.
 
 
@@ -67,15 +81,38 @@ Qed.
 
 Lemma Par_Abs_inversion : forall G D W a b rho R R',
     Par G D W (a_UAbs rho R a) b R' ->
-    exists a' L, b = (a_UAbs rho R a') /\
-          forall x, x `notin` L ->
+    exists a', b = (a_UAbs rho R a') /\
+          forall x, x `notin` fv_tm_tm_tm a \u fv_tm_tm_tm a' \u dom W ->
          Par G D ([(x,R)] ++ W) (open_tm_wrt_tm a (a_Var_f x)) (open_tm_wrt_tm a' (a_Var_f x)) R'.
 
 Proof.
   intros G D W a a' rho R R' P.
   inversion P; subst.
-  + inversion H. subst. exists a, L. split; auto.
-  + exists a'0, L. split. auto. auto.
+  + inversion H. subst. exists a. split. reflexivity.
+    intros. econstructor. eapply rctx_uniq in H.
+    pick fresh y.
+    rewrite (tm_subst_tm_tm_intro y); eauto.
+    replace ([(x,R)] ++ W) with (nil ++ ([(x,R)] ++ W)); auto.
+    eapply subst_tm_erased. simpl_env.
+    eapply erased_app_rctx; simpl_env.
+    solve_uniq. auto. econstructor. solve_uniq. auto. auto.
+  + exists a'0. split. auto. intros. eapply Par_rctx_uniq in P.
+    pick fresh y.
+    rewrite (tm_subst_tm_tm_intro y); eauto.
+    rewrite (tm_subst_tm_tm_intro y a'0); eauto.
+    replace ([(x,R)] ++ W) with (nil ++ ([(x,R)] ++ W)); auto.
+    eapply subst2. simpl_env.
+    eapply par_app_rctx; simpl_env.
+    solve_uniq. auto. econstructor. solve_uniq. auto. auto.
+Qed.
+
+Lemma Par_Cong_inversion : forall G D W a1 a2 R R',
+      Par G D W (a_Conv a1 R' g_Triv) a2 R ->
+      exists a3, a2 = a_Conv a3 R' g_Triv.
+Proof. intros. inversion H; subst.
+       - exists a1; auto.
+       - exists a3; auto.
+       - exists a3; auto.
 Qed.
 
 (* -------------------------------------------------------------------------------- *)
@@ -93,15 +130,24 @@ Ltac invert_equality :=
     inversion H
   end.
 
-  Ltac try_refl_left :=
+  Ltac try_Refl_left :=
   try match goal with
-      | [ P2 : Par _ _ _ ?b ?b _ |- exists cc:tm, Par ?S ?D _ ?b cc _ /\ Par ?S ?D _ ?a2 cc _ ] =>
-        exists a2; assert (lc_tm a2); try eapply Par_lc2; eauto; try split; eauto; fail
+      | [ P1 : Par _ _ _ ?b ?b _,
+          P2 : Par _ _ _ ?b ?c _ |-
+          exists cc:tm, Par ?S ?D _ ?b cc _ /\ Par ?S ?D _ ?c cc _ ] =>
+        exists c; split; auto; 
+        apply Par_Refl; eapply Par_erased_tm_snd;
+        eauto; fail
       end.
-  Ltac try_refl_right :=
+
+  Ltac try_Refl_right :=
   try match goal with
-      | [ P2 : Par _ _ _ ?b ?b _ |- exists cc:tm, Par ?S ?D _ ?a2 cc _ /\ Par ?S ?D _ ?b cc _ ] =>
-        exists a2; assert (lc_tm a2); try eapply Par_lc2; eauto; try split; eauto; fail
+      | [ P1 : Par _ _ _ ?b ?c _,
+          P2 : Par _ _ _ ?b ?b _ |- 
+          exists cc:tm, Par ?S ?D _ ?c cc _ /\ Par ?S ?D _ ?b cc _ ] =>
+        exists c; split; auto; 
+        apply Par_Refl; eapply Par_erased_tm_snd;
+        eauto; fail
       end.
 
   Ltac invert_erased :=
@@ -150,14 +196,37 @@ Ltac invert_lc :=
     | [ H : lc_tm ?a |- _ ] => inversion H; subst; clear H
   end.
 
-Ltac use_size_induction a ac Par1 Par2 :=
+Ltac use_size_induction a conf L1 L2 :=
   match goal with
   | [   IH : forall y: nat, ?T,
-        H3 : erased_tm a,
-        H : Par ?G ?D ?W a ?b0 ?R,
-        H4 : Par ?G ?D ?W a ?b1 ?R |- _ ] =>
-      move: (@IH (size_tm a) ltac:(omega) a ltac:(auto) _ _ _ H3 H _ H4) => [ ac [Par1 Par2]]
+        H1 : Par ?G ?D ?W a ?b0 ?R,
+        H2 : Par ?G ?D ?W a ?b1 ?R |- _ ] =>
+      move: (@IH (size_tm a) ltac:(omega) a ltac:(auto) _ _ _ _ _ H1 _ H2) => 
+      [ conf [L1 L2]]
   end.
+
+Ltac use_size_induction_open a0 x ac Par1 Par2 :=
+      let h0 := fresh in
+      let h1 := fresh in
+      let h2 := fresh in
+      let EQ1 := fresh in
+      let EQ2 := fresh in
+      match goal with
+        | [  H : ∀ x : atom,
+              x `notin` ?L
+              → Par ?S ?D ?W (?open_tm_wrt_tm a0 (?a_Var_f x)) ?b ?R,
+             H4: ∀ x : atom,
+                 x `notin` ?L0
+                 → Par ?S ?D ?W (?open_tm_wrt_tm a0 (?a_Var_f x)) ?c ?R
+                        |- _ ] =>
+    move: (H x ltac:(auto)) => h0; clear H;
+    move: (H4 x ltac:(auto)) => h1; clear H4;
+    move: (size_tm_open_tm_wrt_tm_var a0 x) => EQ1;
+    move: (size_tm_open_tm_wrt_co_var a0 x) => EQ2;
+
+    use_size_induction (open_tm_wrt_tm a0 (a_Var_f x)) ac Par1 Par2;
+    clear h0; clear h1; clear EQ1; clear EQ2
+    end.
 
 Ltac par_erased_open x J Par4 :=
   let K := fresh in
@@ -207,193 +276,372 @@ Proof.
       forall a, size_tm a <= n ->  forall S D W a1 R, Par S D W a a1 R -> forall a2, Par S D W a a2 R -> exists b, Par S D W a1 b R /\ Par S D W a2 b R.
   intro n. fold (confluence_size_def n).  eapply (well_founded_induction_type lt_wf).
   clear n. intros n IH. unfold confluence_size_def in *. clear confluence_size_def.
-  intros a SZ S D a1 Gs Ea P1 a2 P2.
+  intros a SZ S D W a1 R P1 a2 P2.
   inversion P1; inversion P2; subst.
   all: try solve [invert_equality].
-  (* 37 subgoals *)
+
+  (* 63 subgoals *)
   (* TODO: there may be a way to check the number of subgoals (and guard against a innvalid number) *)
 
-  all: try_refl_left.
-  all: try_refl_right.
+  all: try_Refl_left.
+  all: try_Refl_right.
   all: try invert_syntactic_equality.
   all: simpl in SZ; destruct n; try solve [ inversion SZ ].
-  all: invert_erased; inversion Gs.
 
   - (* two betas *)
     use_size_induction a0 ac Par1 Par2.
     use_size_induction b bc Par3 Par4.
-    destruct (Par_Abs_inversion Par1) as [[a'' [EQ h0]]| [ax [X1 X2]]]; subst;
-    destruct (Par_Abs_inversion Par2) as [[a''' [EQ2 h1]]| [ay [Y1 Y2]]]; subst.
-    -- inversion EQ2. subst.
-       exists (open_tm_wrt_tm a''' bc).
-       split. pick fresh x; eapply open2; eauto using Par_erased_tm.
-       pick fresh x; eapply open2; eauto using Par_erased_tm.
-    -- exists (open_tm_wrt_tm a'' bc).
-       split.
-       pick fresh x; eapply open2; eauto using Par_erased_tm.
-       eta_expand x.
-    -- exists (open_tm_wrt_tm a''' bc).
-       split.
-       eta_expand x.
-       pick fresh x; eapply open2; eauto using Par_erased_tm.
-    -- exists (a_App ac rho R bc).
-       split.
-       eta_expand x.
-       eta_expand x.
-       Unshelve. all: exact D.
+    destruct (Par_Abs_inversion Par1) as [ax [EQ h0]]; subst;
+    destruct (Par_Abs_inversion Par2) as [ay [EQ2 h1]]; subst.
+    inversion EQ2. subst.
+    exists (open_tm_wrt_tm ay bc).
+    split. pick fresh x; eapply open2. auto. eauto. eauto.
+    pick fresh x; eapply open2; eauto.
   - (* app beta / app cong *)
     use_size_induction a0 ac Par1 Par2.
     use_size_induction b bc Par3 Par4.
-    invert_erased_tm (a_UAbs rho R a').
-    inversion Par1; subst; clear Par1.
-    -- exists (open_tm_wrt_tm a' bc); auto.
-      split; eauto.
-      apply open1 with (L:=L); eauto.
-    -- exists (open_tm_wrt_tm a'1 bc); auto.
-      split; eauto.
-      pick_fresh x.
-      par_erased_open x J Par3.
+    destruct (Par_Abs_inversion Par1) as [ax [EQ h0]]; subst.
+    exists (open_tm_wrt_tm ax bc). inversion Par1; subst.
+     + split. pick fresh x; eapply open2. auto. eauto. eauto.
+       eapply Par_Beta; eauto.
+     + split. pick fresh x; eapply open2. auto. eauto. eauto.
+       eapply Par_Beta; eauto.
+  - (* beta / push *)
+    use_size_induction a0 ac Par1 Par2.
+    inversion Par1; subst; inversion Par2.
+  - (* beta / push combine *)
+    use_size_induction a0 ac Par1 Par2.
+    inversion Par1; subst; inversion Par2.
   - (* app cong / app beta *)
     use_size_induction a0 ac Par1 Par2.
     use_size_induction b bc Par3 Par4.
-    invert_erased_tm (a_UAbs rho R a'0).
-    destruct (Par_Abs_inversion Par2) as [ [a'' [EQ X]] | [b0 [Par5 Y]]].
-    * subst.
-      exists (open_tm_wrt_tm a'' bc).
-      split; eauto.
-      pick fresh x; eapply open2; eauto.
-      eapply Par_erased_tm; eauto.
-    * exists (a_App ac rho R bc).
-      split.
-      eauto.
-      eta_expand x.
+    destruct (Par_Abs_inversion Par2) as [ax [EQ h0]]; subst.
+    exists (open_tm_wrt_tm ax bc). inversion Par2; subst.
+     + split. eapply Par_Beta; eauto.
+       pick fresh x; eapply open2. auto. eauto. eauto.
+     + split. eapply Par_Beta; eauto. 
+       pick fresh x; eapply open2. auto. eauto. eauto.
   - (* app cong / app cong *)
     use_size_induction a0 ac Par1 Par2.
     use_size_induction b bc Par3 Par4.
-    exists (a_App ac rho R bc). split; auto.
-  - (* two cbetas *)
+    exists (a_App ac rho R1 bc). split; auto.
+  - (* app / push *)
     use_size_induction a0 ac Par1 Par2.
-    invert_erased_tm (a_UCAbs a').
-    invert_erased_tm (a_UCAbs a'0).
-    inversion Par1; inversion Par2; subst; invert_syntactic_equality.
-    -- invert_lc.
-       exists  (open_tm_wrt_co a' g_Triv); eauto.
-       split; eauto 1; apply Par_Refl; apply (Par_lc2) in P2; auto.
-    -- invert_lc.
-       exists (open_tm_wrt_co a' g_Triv); eauto.
-       finish_open_co a'0.
-    -- invert_lc.
-       exists (open_tm_wrt_co a'1 g_Triv); eauto.
-      finish_open_co a'.
-    -- exists (open_tm_wrt_co a'1 g_Triv); eauto.
-      split; eauto.
-      * finish_open_co a'.
-      * finish_open_co a'0.
+    use_size_induction b bc Par3 Par4.
+    inversion Par2; subst.
+     + exists (a_Conv (a_App a4 Rel R1 (a_Conv bc R3 g_Triv)) R3 g_Triv).
+       split. apply Par_Push; auto. apply Par_Cong. apply Par_App; auto.
+       apply Par_Refl. apply Par_erased_tm_fst in Par2. inversion Par2.
+       auto.
+     + exists (a_Conv (a_App a2 Rel R1 (a_Conv bc R3 g_Triv)) R3 g_Triv).
+       split. apply Par_Push; auto. apply Par_Cong. apply Par_App; auto.
+     + exists (a_Conv (a_App a2 Rel R1 (a_Conv bc R3 g_Triv)) R3 g_Triv).
+       split. econstructor; auto. apply Par_Combine. apply Par_PushCombine.
+       auto. econstructor. auto.
+  - (* app / push combine *)
+    use_size_induction a0 ac Par1 Par2.
+    use_size_induction b bc Par3 Par4.
+    pose (P := Par_Cong_inversion Par4).
+    inversion P as [b4 Q]. subst.
+    inversion Par2; subst.
+     + exists (a_Conv (a_App a4 Rel R1 (a_Conv b4 R3 g_Triv)) R3 g_Triv).
+       split. apply Par_PushCombine; auto. econstructor.
+       econstructor. inversion H1; subst; auto. auto.
+     + exists (a_Conv (a_App a2 Rel R1 (a_Conv b4 R3 g_Triv)) R3 g_Triv).
+       split. apply Par_PushCombine; auto. econstructor. econstructor; auto.
+     + exists (a_Conv (a_App a2 Rel R1 (a_Conv b4 R3 g_Triv)) R3 g_Triv).
+       split. apply Par_PushCombine; auto. apply Par_Combine.
+       apply Par_PushCombine; auto.
+  - (* two cbetas *)
+    use_size_induction a0 ac Par1 Par2. inversion Par1; subst.
+    + exists (open_tm_wrt_co a' g_Triv); split.
+      econstructor. eapply Par_erased_tm_snd. eauto.
+      inversion Par2; subst. econstructor. eapply Par_erased_tm_snd. eauto.
+      pick fresh c. eapply open3 with (c := c) (L := L); eauto.
+    + exists (open_tm_wrt_co a'1 g_Triv); split.
+      pick fresh c. eapply open3 with (c := c) (L := L); eauto.
+      inversion Par2; subst. econstructor. eapply Par_erased_tm_snd. eauto.
+      pick fresh c. eapply open3 with (c := c) (L := L); eauto.
   - (* cbeta / capp cong *)
     use_size_induction a0 ac Par1 Par2.
-    inversion P2; subst; clear P2.
-    + exists (open_tm_wrt_co a' g_Triv).
-      split; eauto.
-      apply Par_lc2 in H.
-      inversion H; subst.
-      pick_fresh c.
-      match goal with
-        [ h : lc_tm (a_UCAbs ?a')|- _] => inversion h; clear h; subst
-      end.
-      move: (co_subst_co_tm_lc_tm _ g_Triv c ltac:(eauto) lc_g_Triv) => Kip.
-      repeat rewrite co_subst_co_tm_open_tm_wrt_co in Kip; eauto with lc.
-    + match goal with
-      | H : open_tm_wrt_co ?a ?g = ?b |- _ => rewrite H; clear H
-      end.
-      inversion Par1; subst; clear Par1; eauto.
-      invert_lc.
-      * exists (open_tm_wrt_co a' g_Triv); eauto with lc.
-      * exists (open_tm_wrt_co a'2 g_Triv); eauto with lc.
-        split; eauto.
-        finish_open_co a'.
-    + inversion Par1; subst; clear Par1; eauto.
-      invert_lc.
-      * exists (open_tm_wrt_co a' g_Triv); eauto with lc.
-      * exists (open_tm_wrt_co a'1 g_Triv); eauto with lc.
-        split; eauto.
-        finish_open_co a'.
+    inversion Par1; subst.
+    + exists (open_tm_wrt_co a' g_Triv). split.
+      econstructor. eapply Par_erased_tm_snd. eauto.
+      econstructor. eauto.
+    + exists (open_tm_wrt_co a'1 g_Triv). split.
+      pick fresh c. eapply open3 with (c := c) (L := L); eauto.
+      econstructor. eauto.
+  - (* cbeta / cpush *)
+    use_size_induction a0 ac Par1 Par2.
+    inversion Par1; subst; inversion Par2.
   - (* capp cong / cbeta *)
     use_size_induction a0 ac Par1 Par2.
-    inversion P2; subst; eauto; clear P2.
-    + inversion Par2; subst; clear Par2.
-      * exists (open_tm_wrt_co a'0 g_Triv); eauto.
-      * match goal with
-        | [H : a_CApp ?a ?g = ?b |- _ ] => rewrite H
-        end.
-        exists (open_tm_wrt_co a'1 g_Triv); eauto.
-        split; eauto.
-        finish_open_co a'0.
-    + inversion Par2; subst; clear Par2.
-      * invert_lc.
-        exists (open_tm_wrt_co a'0 g_Triv); eauto.
-        split; eauto.
-        match goal with
-        | [H :open_tm_wrt_co ?a ?g = ?b |- _ ] => rewrite H
-        end.
-        pick_fresh c.
-        move: (co_subst_co_tm_lc_tm (open_tm_wrt_co a'0 (g_Var_f c))
-                                    g_Triv c ltac:(eauto) lc_g_Triv) => Kip.
-        repeat rewrite co_subst_co_tm_open_tm_wrt_co in Kip; eauto with lc.
-      * match goal with
-        | [H : open_tm_wrt_co ?a ?g = ?b |- _ ] => rewrite H
-        end.
-        exists (open_tm_wrt_co a'2 g_Triv); eauto.
-        split; eauto.
-        finish_open_co a'0.
-    + inversion Par2; subst; clear Par2.
-      * match goal with
-        | [H : a_CApp ?a ?g = ?b |- _ ] => rewrite H
-        end.
-        exists (open_tm_wrt_co a'0 g_Triv); eauto.
-        split; eauto.
-        invert_lc.
-        pick_fresh c.
-        move: (co_subst_co_tm_lc_tm (open_tm_wrt_co a'0 (g_Var_f c))
-                                    g_Triv c ltac:(eauto) lc_g_Triv) => Kip.
-        repeat rewrite co_subst_co_tm_open_tm_wrt_co in Kip; auto with lc.
-      * match goal with
-        | [H : a_CApp ?a ?g = ?b |- _ ] => rewrite H
-        end.
-        exists (open_tm_wrt_co a'2 g_Triv); eauto.
-        split; eauto.
-        finish_open_co a'0.
+    inversion Par2; subst.
+    + exists (open_tm_wrt_co a'0 g_Triv). split. econstructor. eauto.
+      econstructor. eapply Par_erased_tm_snd. eauto.
+    + exists (open_tm_wrt_co a'1 g_Triv). split. econstructor. eauto.
+      pick fresh c. eapply open3 with (c := c) (L := L); eauto.
   - (* capp cong / capp cong *)
     use_size_induction a0 ac Par1 Par2.
     exists (a_CApp ac g_Triv). auto.
+  - (* capp / cpush *)
+    use_size_induction a0 ac Par1 Par2.
+    inversion Par2; subst.
+    + exists (a_Conv (a_CApp a4 g_Triv) R1 g_Triv). split.
+      econstructor. auto. econstructor. eapply Par_erased_tm_snd. eauto.
+    + exists (a_Conv (a_CApp a2 g_Triv) R1 g_Triv). split.
+      econstructor. auto. econstructor. econstructor. eauto.
+    + exists (a_Conv (a_CApp a2 g_Triv) R1 g_Triv). split.
+      econstructor. auto. eapply Par_Combine. econstructor. eauto.
   - (* abs cong / abs cong *)
     pick fresh x.
     use_size_induction_open a0 x ac Par1 Par2.
-    exists (a_UAbs rho R (close_tm_wrt_tm x ac)).
-    split; eauto; try solve [apply (@Par_Abs_exists x); eauto].
+    exists (a_UAbs rho R1 (close_tm_wrt_tm x ac)).
+    split; apply (@Par_Abs_exists x); eauto.
   - (* pi cong / pi cong *)
     pick fresh x.
     use_size_induction A ac Par1 Par2.
     use_size_induction_open B x bc Par3 Par4.
-    exists (a_Pi rho ac R (close_tm_wrt_tm x bc)).
-    split; eauto; try solve [apply (@Par_Pi_exists x); eauto].
+    exists (a_Pi rho ac R1 (close_tm_wrt_tm x bc)).
+    split; apply (@Par_Pi_exists x); eauto.
   - (* cabs cong / cabs cong *)
     pick fresh c.
     use_size_induction_open a0 c ac Par1 Par2.
     exists (a_UCAbs (close_tm_wrt_co c ac)).
-    split; eauto; try solve [apply (@Par_CAbs_exists c); eauto].
+    split; apply (@Par_CAbs_exists c); eauto.
   - (* cpi cong / cpi cong *)
     use_size_induction A AC Par1 Par2.
-    use_size_induction B BC Par3 Par4.
-    use_size_induction A1 AC1 Par5 Par6.
+    use_size_induction a0 aC Par3 Par4.
+    use_size_induction b bC Par5 Par6.
     pick fresh c.
-    use_size_induction_open a0 c ac Par7 Par8.
-    exists (a_CPi (Eq AC BC AC1 R) (close_tm_wrt_co c ac)).
-    split; eauto; try solve [apply (@Par_CPi_exists c); eauto].
+    use_size_induction_open B c BC Par7 Par8.
+    exists (a_CPi (Eq aC bC AC R1) (close_tm_wrt_co c BC)).
+    split; apply (@Par_CPi_exists c); eauto.
   - (* fam / fam *)
-    have E: (Ax a1 A R = Ax a2 A0 R0). eapply binds_unique; eauto using uniq_toplevel.
-    inversion E. subst. clear E.
-    have LC: lc_tm a2. apply Toplevel_lc in H. inversion H. auto.
-    exists a2. split; eauto.
+    have E: (Ax a1 A R1 = Ax a2 A0 R3). 
+    eapply binds_unique; eauto using uniq_toplevel.
+    inversion E. subst.
+    exists a2. split; econstructor; eapply Par_erased_tm_snd; eauto.
+  - (* cong / cong *)
+   use_size_induction a0 ac Par1 Par2.
+   exists (a_Conv ac R0 g_Triv). split; constructor; auto.
+  - (* cong / combine *)
+   use_size_induction a0 ac Par1 Par2.
+   inversion Par2; exists ac; subst; split; eauto.
+  - (* combine / cong *)
+   use_size_induction a0 ac Par1 Par2.
+   inversion Par1; exists ac; subst; split; eauto.
+  - (* combine / combine *)
+   use_size_induction a0 ac Par1 Par2. exists ac. split; eauto.
+  - (* push / beta *)
+   use_size_induction a0 ac Par1 Par2.
+   inversion Par2; subst. inversion Par1.
+   inversion Par1.
+  - (* push / app *)
+   use_size_induction a0 ac Par1 Par2.
+   use_size_induction b1 bc Par3 Par4.
+   inversion Par1; subst.
+     + exists (a_Conv (a_App a3 Rel R2 (a_Conv bc R0 g_Triv)) R0 g_Triv).
+       split. apply Par_Cong. apply Par_App; auto. econstructor.
+       inversion H1. auto. apply Par_Push; auto.
+     + exists (a_Conv (a_App a2 Rel R2 (a_Conv bc R0 g_Triv)) R0 g_Triv).
+       split. apply Par_Cong. apply Par_App; auto. apply Par_Push; auto.
+     + exists (a_Conv (a_App a2 Rel R2 (a_Conv bc R0 g_Triv)) R0 g_Triv).
+       split. apply Par_Combine. apply Par_PushCombine. auto. econstructor.
+       auto. econstructor; auto.
+  - (* push / push *)
+   use_size_induction a0 ac Par1 Par2.
+   use_size_induction b1 bc Par3 Par4.
+   inversion Par1; subst.
+     + inversion Par2; subst.
+        * exists (a_Conv (a_App a3 Rel R2 (a_Conv bc R0 g_Triv)) R0 g_Triv).
+          inversion H1; subst.
+          split; econstructor; econstructor; econstructor; eauto.
+        * exists (a_Conv (a_App a3 Rel R2 (a_Conv bc R0 g_Triv)) R0 g_Triv).
+          inversion H1; subst.
+          split. econstructor; econstructor; econstructor; eauto.
+          econstructor; econstructor; eauto.
+        * exists (a_Conv (a_App a3 Rel R2 (a_Conv bc R0 g_Triv)) R0 g_Triv).
+          split. econstructor; econstructor. inversion H1; subst; auto.
+          econstructor. auto. apply Par_Combine. apply Par_PushCombine.
+          auto. econstructor. auto.
+     + inversion Par2; subst.
+        * exists (a_Conv (a_App a2 Rel R2 (a_Conv bc R0 g_Triv)) R0 g_Triv).
+          inversion H11; subst.
+          split. econstructor; econstructor; eauto.
+          econstructor; econstructor; econstructor; eauto.
+        * exists (a_Conv (a_App a2 Rel R2 (a_Conv bc R0 g_Triv)) R0 g_Triv).
+          split; econstructor; econstructor; eauto.
+        * exists (a_Conv (a_App a2 Rel R2 (a_Conv bc R0 g_Triv)) R0 g_Triv).
+          split. econstructor; econstructor; eauto. apply Par_Combine.
+          apply Par_PushCombine. auto. econstructor. auto.
+      + inversion Par2; subst.
+        * exists (a_Conv (a_App a2 Rel R2 (a_Conv bc R0 g_Triv)) R0 g_Triv).
+          split. apply Par_Combine. apply Par_PushCombine.
+          auto. econstructor. auto. econstructor; econstructor.
+          inversion H11; subst; auto. econstructor. auto.
+        * exists (a_Conv (a_App a2 Rel R2 (a_Conv bc R0 g_Triv)) R0 g_Triv).
+          split.  apply Par_Combine. apply Par_PushCombine. auto.
+          econstructor. auto. econstructor; econstructor; eauto.
+        * exists (a_Conv (a_App a2 Rel R2 (a_Conv bc R0 g_Triv)) R0 g_Triv).
+          split; apply Par_Combine; apply Par_PushCombine; eauto.
+  - (* push / push combine *)
+   use_size_induction a0 ac Par1 Par2.
+   use_size_induction b1 bc Par3 Par4.
+   pose (P := Par_Cong_inversion Par4).
+   inversion P as [b4 Q]. subst.
+   inversion Par1; subst.
+    + inversion Par2; subst.
+       * exists (a_Conv (a_App a3 Rel R2 (a_Conv b4 R0 g_Triv)) R0 g_Triv).
+         inversion H1; subst. split; econstructor; econstructor.
+         econstructor; auto. apply Par_Combine; auto. econstructor; auto. auto.
+       * exists (a_Conv (a_App a3 Rel R2 (a_Conv b4 R0 g_Triv)) R0 g_Triv).
+         inversion H1; subst. split; econstructor; econstructor.
+         econstructor; auto. apply Par_Combine; auto. auto. auto.
+       * exists (a_Conv (a_App a3 Rel R2 (a_Conv b4 R0 g_Triv)) R0 g_Triv).
+         inversion H1; subst. split. econstructor; econstructor.
+         econstructor; auto. apply Par_Combine; auto. apply Par_Combine.
+         apply Par_PushCombine; auto.
+     + inversion Par2; subst.
+       * exists (a_Conv (a_App a2 Rel R2 (a_Conv b4 R0 g_Triv)) R0 g_Triv).
+         inversion H11; subst. split; econstructor; econstructor. auto.
+         apply Par_Combine; auto. econstructor; auto. auto.
+       * exists (a_Conv (a_App a2 Rel R2 (a_Conv b4 R0 g_Triv)) R0 g_Triv).
+         split; econstructor; econstructor; auto.
+       * exists (a_Conv (a_App a2 Rel R2 (a_Conv b4 R0 g_Triv)) R0 g_Triv).
+         split. econstructor; econstructor; auto.
+         apply Par_Combine. apply Par_PushCombine; auto.
+     + inversion Par2; subst.
+       * exists (a_Conv (a_App a2 Rel R2 (a_Conv b4 R0 g_Triv)) R0 g_Triv).
+         inversion H11; subst. split. apply Par_Combine.
+         apply Par_PushCombine; auto. econstructor; econstructor; auto.
+       * exists (a_Conv (a_App a2 Rel R2 (a_Conv b4 R0 g_Triv)) R0 g_Triv).
+         split. apply Par_Combine.
+         apply Par_PushCombine; auto. econstructor; econstructor; auto.
+       * exists (a_Conv (a_App a2 Rel R2 (a_Conv b4 R0 g_Triv)) R0 g_Triv).
+         split; apply Par_Combine; apply Par_PushCombine; auto.
+  - (* push combine / beta *)
+    use_size_induction a0 ac Par1 Par2.
+    inversion Par2; subst; inversion Par1.
+  - (* push combine / app *)
+    use_size_induction a0 ac Par1 Par2.
+    use_size_induction b1 bc Par3 Par4.
+    pose (P := Par_Cong_inversion Par3).
+    inversion P as [b4 Q]. subst.
+    inversion Par1; subst.
+     + exists (a_Conv (a_App a3 Rel R2 (a_Conv b4 R0 g_Triv)) R0 g_Triv).
+       split. econstructor; econstructor. econstructor.
+       inversion H1; subst; auto. auto. apply Par_PushCombine; auto.
+     + exists (a_Conv (a_App a2 Rel R2 (a_Conv b4 R0 g_Triv)) R0 g_Triv).
+       split. econstructor; econstructor; auto.
+       apply Par_PushCombine; auto.
+     + exists (a_Conv (a_App a2 Rel R2 (a_Conv b4 R0 g_Triv)) R0 g_Triv).
+       split. apply Par_Combine. apply Par_PushCombine; auto.
+       apply Par_PushCombine; auto.
+  - (* push combine / push *)
+   use_size_induction a0 ac Par1 Par2.
+   use_size_induction b1 bc Par3 Par4.
+   pose (P := Par_Cong_inversion Par3).
+   inversion P as [b4 Q]. subst.
+   inversion Par2; subst.
+    + inversion Par1; subst.
+       * exists (a_Conv (a_App a5 Rel R2 (a_Conv b4 R4 g_Triv)) R4 g_Triv).
+         inversion H1; subst. split; econstructor; econstructor; auto.
+       * exists (a_Conv (a_App a5 Rel R2 (a_Conv b4 R4 g_Triv)) R4 g_Triv).
+         inversion H1; subst. split; econstructor; econstructor; auto.
+       * exists (a_Conv (a_App a5 Rel R2 (a_Conv b4 R4 g_Triv)) R4 g_Triv).
+         inversion H1; subst. split. apply Par_Combine.
+         apply Par_PushCombine; auto. econstructor; econstructor.
+         econstructor; auto. apply Par_Combine; auto. 
+     + inversion Par1; subst.
+       * exists (a_Conv (a_App a2 Rel R2 (a_Conv b4 R4 g_Triv)) R4 g_Triv).
+         inversion H11; subst. split; econstructor; econstructor; auto.
+       * exists (a_Conv (a_App a2 Rel R2 (a_Conv b4 R4 g_Triv)) R4 g_Triv).
+         split; econstructor; econstructor; auto.
+       * exists (a_Conv (a_App a2 Rel R2 (a_Conv b4 R4 g_Triv)) R4 g_Triv).
+         split. apply Par_Combine. apply Par_PushCombine; auto.
+         econstructor; econstructor; auto.
+     + inversion Par1; subst.
+       * exists (a_Conv (a_App a2 Rel R2 (a_Conv b4 R4 g_Triv)) R4 g_Triv).
+         inversion H11; subst. split. econstructor; econstructor; auto.
+         apply Par_Combine. apply Par_PushCombine; auto.
+       * exists (a_Conv (a_App a2 Rel R2 (a_Conv b4 R4 g_Triv)) R4 g_Triv).
+         split. econstructor; econstructor; auto. apply Par_Combine.
+         apply Par_PushCombine; auto.
+       * exists (a_Conv (a_App a2 Rel R2 (a_Conv b4 R4 g_Triv)) R4 g_Triv).
+         split; apply Par_Combine; apply Par_PushCombine; auto.
+  - (* push combine / push combine *)
+    use_size_induction a0 ac Par1 Par2.
+    use_size_induction b1 bc Par3 Par4.
+    pose (P := Par_Cong_inversion Par3).
+    inversion P as [b4 Q]. subst.
+    inversion Par1; subst.
+    + inversion Par2; subst.
+       * exists (a_Conv (a_App a3 Rel R2 (a_Conv b4 R0 g_Triv)) R0 g_Triv).
+         inversion H1; subst. split; econstructor; econstructor; auto.
+       * exists (a_Conv (a_App a3 Rel R2 (a_Conv b4 R0 g_Triv)) R0 g_Triv).
+         inversion H1; subst. split; econstructor; econstructor; auto.
+       * exists (a_Conv (a_App a3 Rel R2 (a_Conv b4 R0 g_Triv)) R0 g_Triv).
+         inversion H1; subst. split. econstructor; econstructor.
+         econstructor; auto. auto. apply Par_Combine; auto.
+     + inversion Par2; subst.
+       * exists (a_Conv (a_App a2 Rel R2 (a_Conv b4 R0 g_Triv)) R0 g_Triv).
+         inversion H11; subst. split; econstructor; econstructor; auto.
+       * exists (a_Conv (a_App a2 Rel R2 (a_Conv b4 R0 g_Triv)) R0 g_Triv).
+         split; econstructor; econstructor; auto.
+       * exists (a_Conv (a_App a2 Rel R2 (a_Conv b4 R0 g_Triv)) R0 g_Triv).
+         split. econstructor; econstructor; auto.
+         apply Par_Combine. apply Par_PushCombine; auto.
+     + inversion Par2; subst.
+       * exists (a_Conv (a_App a2 Rel R2 (a_Conv b4 R0 g_Triv)) R0 g_Triv).
+         inversion H11; subst. split. apply Par_Combine.
+         apply Par_PushCombine; auto. econstructor; econstructor; auto.
+       * exists (a_Conv (a_App a2 Rel R2 (a_Conv b4 R0 g_Triv)) R0 g_Triv).
+         split. apply Par_Combine.
+         apply Par_PushCombine; auto. econstructor; econstructor; auto.
+       * exists (a_Conv (a_App a2 Rel R2 (a_Conv b4 R0 g_Triv)) R0 g_Triv).
+         split; apply Par_Combine; apply Par_PushCombine; auto.
+  - (* cpush / cbeta *)
+    use_size_induction a0 ac Par1 Par2.
+    inversion Par2; subst; inversion Par1.
+  - (* cpush / capp *) 
+    use_size_induction a0 ac Par1 Par2.
+    inversion Par1; subst.
+    + exists (a_Conv (a_CApp a3 g_Triv) R0 g_Triv). split.
+      econstructor. eapply Par_erased_tm_snd. eauto. econstructor. auto.
+    + exists (a_Conv (a_CApp a2 g_Triv) R0 g_Triv). split.
+      econstructor. econstructor. eauto. econstructor. auto.
+    + exists (a_Conv (a_CApp a2 g_Triv) R0 g_Triv). split.
+      eapply Par_Combine. econstructor. eauto. econstructor. auto.
+   - (* cpush / cpush *)
+    use_size_induction a0 ac Par1 Par2.
+    inversion Par1; subst.
+     + inversion Par2; subst.
+        * exists (a_Conv (a_CApp a3 g_Triv) R0 g_Triv).
+          split; econstructor; eapply Par_erased_tm_snd; eauto.
+        * exists (a_Conv (a_CApp a3 g_Triv) R0 g_Triv).
+          split. econstructor; eapply Par_erased_tm_snd; eauto.
+          econstructor; eauto.
+        * exists (a_Conv (a_CApp a3 g_Triv) R0 g_Triv).
+          split. econstructor; eapply Par_erased_tm_snd; eauto.
+          apply Par_Combine. econstructor; eauto.
+     + inversion Par2; subst.
+        * exists (a_Conv (a_CApp a2 g_Triv) R0 g_Triv).
+          split. econstructor; eauto.
+          econstructor; eapply Par_erased_tm_snd; eauto.
+        * exists (a_Conv (a_CApp a2 g_Triv) R0 g_Triv).
+          split; econstructor; eauto.
+        * exists (a_Conv (a_CApp a2 g_Triv) R0 g_Triv).
+          split. econstructor; eauto.
+          apply Par_Combine. econstructor; eauto.
+      + inversion Par2; subst.
+        * exists (a_Conv (a_CApp a2 g_Triv) R0 g_Triv).
+          split. apply Par_Combine. econstructor; eauto. 
+          econstructor; eapply Par_erased_tm_snd; eauto.
+        * exists (a_Conv (a_CApp a2 g_Triv) R0 g_Triv).
+          split. apply Par_Combine. econstructor; eauto. econstructor; eauto.
+        * exists (a_Conv (a_CApp a2 g_Triv) R0 g_Triv).
+          split; apply Par_Combine; econstructor; eauto.
 Qed.
 
 Lemma confluence : forall S D a a1, Good S D -> erased_tm a -> Par S D a a1 -> forall a2, Par S D a a2 -> exists b, Par S D a1 b /\ Par S D a2 b.

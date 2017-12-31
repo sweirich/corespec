@@ -79,6 +79,7 @@ Proof.
   - lc_solve.
   - lc_toplevel_inversion.
   - inversion IHPar1. constructor; auto.
+  - inversion IHPar1. constructor; auto.
   - inversion IHPar. constructor; auto.
 Qed.
 
@@ -104,6 +105,7 @@ Proof. intros G D W a a' R H. induction H; eauto.
           erewrite co_subst_co_tm_intro; eauto.
           replace W with (nil ++ W); auto. eapply subst_co_erased; eauto.
         - eapply erased_sub. eapply toplevel_erased1; eauto. auto.
+        - inversion IHPar1; eauto.
         - inversion IHPar1; eauto.
         - inversion IHPar; eauto.
 Qed.
@@ -242,6 +244,9 @@ Proof.
   - pose (P := IHPAR _ _ _ _ ltac:(auto) E). simpl in P. auto.
   - econstructor; eauto 2. pose (P := IHPAR1 _ _ _ _ ltac:(auto) E).
     simpl in P. auto.
+  - eapply Par_PushCombine; eauto 2. pose (P := IHPAR1 _ _ _ _ ltac:(auto) E).
+    simpl in P. auto. pose (P := IHPAR2 _ _ _ _ ltac:(auto) E).
+    simpl in P. auto.
   - econstructor; eauto. pose (P := IHPAR _ _ _ _ ltac:(auto) E).
     simpl in P. auto.
 Qed.
@@ -278,6 +283,9 @@ Proof.
     fsetdec.
   - pose (P := IHPar _ _ _ _ ltac:(auto) H0). simpl in P. auto.
   - econstructor; eauto 2. pose (P := IHPar1 _ _ _ _ ltac:(auto) H1).
+    simpl in P. auto.
+  - eapply Par_PushCombine; eauto 2. pose (P := IHPar1 _ _ _ _ ltac:(auto) H1).
+    simpl in P. auto. pose (P := IHPar2 _ _ _ _ ltac:(auto) H1).
     simpl in P. auto.
   - econstructor; eauto. pose (P := IHPar _ _ _ _ ltac:(auto) H0).
     simpl in P. auto.

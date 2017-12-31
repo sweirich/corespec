@@ -1046,6 +1046,10 @@ Inductive Par : context -> available_props -> role_context -> tm -> tm -> role -
      Par G D W a1  ( (a_Conv a2 R g_Triv) )  R1 ->
      Par G D W b1 b2 R2 ->
      Par G D W  (a_App  a1  Rel  R2   b1 )  (a_Conv  (  (a_App  a2  Rel  R2    ( (a_Conv b2 R g_Triv) )  )  )  R g_Triv) R1
+ | Par_PushCombine : forall (G:context) (D:available_props) (W:role_context) (a1:tm) (R2:role) (b1 a2 b2:tm) (R R1:role),
+     Par G D W a1  ( (a_Conv a2 R g_Triv) )  R1 ->
+     Par G D W b1  ( (a_Conv b2 R g_Triv) )  R2 ->
+     Par G D W  (a_App  a1  Rel  R2   b1 )  (a_Conv  (  (a_App  a2  Rel  R2    ( (a_Conv b2 R g_Triv) )  )  )  R g_Triv) R1
  | Par_CPush : forall (G:context) (D:available_props) (W:role_context) (a1 a2:tm) (R R1:role),
      Par G D W a1  ( (a_Conv a2 R g_Triv) )  R1 ->
      Par G D W (a_CApp a1 g_Triv) (a_Conv  ( (a_CApp a2 g_Triv) )  R g_Triv) R1
