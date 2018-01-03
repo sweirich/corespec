@@ -11,13 +11,9 @@
   2. `opam update`
   3. `opam install coq.8.6 coq-mathcomp-ssreflect.1.6.1`
 
-3. **To install `metalib`:**
+3. **install `metalib`:**
 
-  1. `git clone https://github.com/plclub/metalib.git` in the same directory as
-     `src` (so `src` and `metalib` are siblings).
-  2. `cd metalib`
-  3. `git checkout 8.6`
-  4. `make`
+  1. See instructions at `https://github.com/plclub/metalib`
 
 4. **(OPTIONAL) To install `lngen`:**
 
