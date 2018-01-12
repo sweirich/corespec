@@ -418,7 +418,7 @@ Proof.
     exists (a_CPi (Eq aC bC AC R1) (close_tm_wrt_co c BC)).
     split; apply (@Par_CPi_exists c); eauto.
   - (* fam / fam *)
-    have E: (Ax a1 A R1 = Ax a2 A0 R3). 
+    inversion H14; subst. have E: (Ax a1 A R1 = Ax a2 A0 R1).
     eapply binds_unique; eauto using uniq_toplevel.
     inversion E. subst.
     exists a2. split; econstructor; eapply Par_erased_tm_snd; eauto.
@@ -644,7 +644,9 @@ Proof.
           split; apply Par_Combine; econstructor; eauto.
 Qed.
 
-Lemma confluence : forall S D a a1, Good S D -> erased_tm a -> Par S D a a1 -> forall a2, Par S D a a2 -> exists b, Par S D a1 b /\ Par S D a2 b.
+Lemma confluence : forall S D W a a1 R, Par S D W a a1 R -> 
+                   forall a2, Par S D W a a2 R -> exists b,
+                           Par S D W a1 b R /\ Par S D W a2 b R.
 Proof.
   intros.
   eapply confluence_size; eauto.
@@ -653,15 +655,15 @@ Qed.
 
 (* ---------------------------------------------------------------------- *)
 
-Lemma multipar_Star : forall S D A B, multipar S D A B -> A = a_Star -> B = a_Star.
+Lemma multipar_Star : forall S D W A B R, multipar S D W A B R -> A = a_Star -> B = a_Star.
 Proof.
-  intros S D A B H. induction H. auto.
+  intros S D W A B R H. induction H. auto.
   inversion H; intro K; auto; try inversion K.
 Qed.
 
-Lemma multipar_Bullet : forall S D B, multipar S D a_Bullet B -> B = a_Bullet.
+Lemma multipar_Bullet : forall S D W B R, multipar S D W a_Bullet B R -> B = a_Bullet.
 Proof.
-  intros S D B H. dependent induction H. auto.
+  intros S D W B R H. dependent induction H. auto.
   inversion H; auto; try inversion K.
 Qed.
 
@@ -678,63 +680,68 @@ Ltac binds_notbinds :=
       end.
 
 
-Lemma Par_Const : forall S D T b,
-    Par S D (a_Const T) b -> b = a_Const T.
+Lemma Par_Const : forall S D W T b R,
+    Par S D W (a_Const T) b R -> b = a_Const T.
 Proof.
   intros. dependent induction H; eauto.
 Qed.
 
-Lemma multipar_Const : forall S D T b,
-    multipar S D (a_Const T) b ->
+Lemma multipar_Const : forall S D W T b R,
+    multipar S D W (a_Const T) b R ->
     (b = a_Const T).
 Proof.
-  intros S D T b H. dependent induction H; eauto using Par_Const.
+  intros S D W T b R H. dependent induction H; eauto using Par_Const.
 Qed.
 
+Lemma Par_Fam : forall S D W F a R R', Par S D W (a_Fam F R) a R' -> 
+                 (a = a_Fam F R) \/ SubRole R R'.
+Proof. intros. dependent induction H; auto.
+Qed.
 
-Lemma multipar_Pi : forall S D rho R A B, multipar S D A B -> forall A1 A2,
-      A = a_Pi rho A1 R A2 -> exists B1 B2, B = (a_Pi rho B1 R B2).
-intros S D rho A R B H. induction H. intros. subst. exists A1, A2. auto.
+Lemma multipar_Fam : forall S D W F a R R', multipar S D W (a_Fam F R) a R' ->
+                      (a = a_Fam F R) \/ SubRole R R'.
+Proof. intros. dependent induction H; auto. apply Par_Fam in H.
+       inversion H; auto.
+Qed.
+
+Lemma multipar_Pi : forall S D W rho A B R', multipar S D W A B R' -> 
+      forall A1 R A2, A = a_Pi rho A1 R A2 -> exists B1 B2, B = (a_Pi rho B1 R B2).
+Proof.
+intros S D W rho A B R' H. induction H. intros. subst. exists A1, A2. auto.
 intros. subst.
-inversion H; subst; destruct (IHmultipar _ _ eq_refl) as [B1 [B2 EQ]]; auto;
+inversion H; subst; destruct (IHmultipar _ _ _ eq_refl) as [B1 [B2 EQ]]; auto;
 exists B1, B2; auto.
 Qed.
 
-Lemma multipar_CPi : forall S D A C, multipar S D A C -> forall A1 A2 A3 R B, A = a_CPi (Eq A1 A2 A3 R) B -> exists B1 B2 B3 C2,
+Lemma multipar_CPi : forall S D W A C R', multipar S D W A C R' -> 
+        forall A1 A2 A3 R B, A = a_CPi (Eq A1 A2 A3 R) B -> exists B1 B2 B3 C2,
         C = (a_CPi (Eq B1 B2 B3 R) C2).
 Proof.
-  intros S D A C H. induction H; intros; subst.
+  intros S D W A C R' H. induction H; intros; subst.
   exists A1, A2, A3, B. auto.
   inversion H; subst; destruct (IHmultipar _ _ _ _ _ eq_refl) as [B1 [B2 [C2 EQ]]];
     auto; exists B1, B2, C2; auto.
 Qed.
 
 
-Lemma multipar_UAbs : forall S D rho R a b x,
-    x `notin` fv_tm_tm_tm a \u fv_tm_tm_tm b ->
-    multipar S D (a_UAbs rho R a) b ->
-    (exists b2, b = (a_UAbs rho R b2))
-    \/ (exists a1, exists a2, multipar S D (a_UAbs rho R a) (a_UAbs rho R a1) /\
-               open_tm_wrt_tm a1 (a_Var_f x) = a_App a2 rho R (a_Var_f x)).
+Lemma multipar_UAbs : forall S D W rho R a b R',
+    multipar S D W (a_UAbs rho R a) b R' ->
+    (exists b2, b = (a_UAbs rho R b2)).
 Proof.
-  intros S D rho R a b x Fr H. dependent induction H.
-  - left. exists a. auto.
-  - destruct (Par_Abs_inversion H) as [[a' [EQ _]] | [a' [_ F]]]; subst.
-    assert (h0 : x `notin` fv_tm_tm_tm (a_UAbs rho R a')). eapply Par_fv_preservation; eauto.
-    simpl in h0.
-    destruct (IHmultipar _ _ a' ltac:(auto) eq_refl) as [ [b2 EQ2] | [a1 [a2 [mp1 F2]]] ]; subst; clear IHmultipar.
-    left. exists b2. auto.
-    right. exists a1, a2. split. eauto. auto.
-    right. exists a, a'.
-    split. eauto. eauto.
+  intros S D W rho R a b R' H. dependent induction H.
+  - exists a. auto.
+  - destruct (Par_Abs_inversion H) as [a' [EQ _]]; subst.
+    destruct (IHmultipar _ _ a' eq_refl) as [b2 EQ2]; subst; clear IHmultipar.
+    exists b2. auto.
 Qed.
 
 
 
-Lemma multipar_CAbs : forall S D A C, multipar S D A C -> forall A1 A2 A3 R B, A = a_CAbs (Eq A1 A2 A3 R) B -> exists B1 B2 B3 C2,
+Lemma multipar_CAbs : forall S D W A C R', multipar S D W A C R' -> 
+        forall A1 A2 A3 R B, A = a_CAbs (Eq A1 A2 A3 R) B -> exists B1 B2 B3 C2,
         C = (a_CAbs (Eq B1 B2 B3 R) C2).
 Proof.
-  intros S D A C H. induction H; intros; subst.
+  intros S D W A C R' H. induction H; intros; subst.
   exists A1, A2, A3, B. auto.
   inversion H; subst; destruct (IHmultipar _ _ _ _ _ eq_refl) as [B1 [B2 [C2 EQ]]];
     auto; exists B1, B2, C2; auto.
@@ -742,81 +749,66 @@ Qed.
 
 (* --------------------------------------------------- *)
 
+Lemma joins_lc_fst : forall S D W a b R, joins S D W a b R -> lc_tm a.
+Proof. intros. inversion H as [T [H1 H2]]. 
+       apply multipar_erased_tm_fst in H1.
+       eapply erased_lc. eauto.
+Qed.
+
+Lemma joins_lc_snd : forall S D W a b R, joins S D W a b R -> lc_tm b.
+Proof. intros. inversion H as [T [H1 H2]].
+       apply multipar_erased_tm_fst in H2.
+       eapply erased_lc. eauto.
+Qed.
 
 (* Proof that joinability implies consistency. *)
 
-Ltac step_left := apply consistent_a_Step_R; [auto |intro N; inversion N; inversion H0]; fail.
-Ltac step_right := apply consistent_a_Step_L; [auto | intro N; inversion N; inversion H0]; fail.
+Ltac step_left := eapply consistent_a_Step_R; [eapply joins_lc_fst; eauto |intro N; inversion N]; fail.
+Ltac step_right := eapply consistent_a_Step_L; [eapply joins_lc_snd; eauto | intro N; inversion N]; fail.
 
-(* look for a multipar involvong a head form and apply the appropriate lemma for that
+(* look for a multipar involving a head form and apply the appropriate lemma for that
    head form. Note: for paths, the lemma has already been applied so we only need
    to look for a hypothesis about path consistency. *)
-Ltac multipar_step SIDE EQ :=
+Ltac multipar_step :=
   match goal with
-  | [ SIDE : multipar _ _ a_Star _ |- _ ] =>
-    apply multipar_Star in SIDE; auto; rename SIDE into EQ
-  | [ SIDE : multipar _ _ (a_Pi _ _ _ _) _ |- _ ] =>
-    destruct (multipar_Pi SIDE eq_refl) as [b1' [b2' EQ]]
-  | [ SIDE : multipar _ _ (a_CPi ?phi _) _ |- _ ] =>
+  | [ SIDE : multipar _ _ _ a_Star _ _ |- _ ] =>
+    apply multipar_Star in SIDE; auto; subst
+  | [ SIDE : multipar _ _ _ (a_Pi _ _ _ _) _ _ |- _ ] =>
+    destruct (multipar_Pi SIDE eq_refl) as [b1' [b2' EQ]]; clear SIDE; subst
+  | [ SIDE : multipar _ _ _ (a_CPi ?phi _) _ _ |- _ ] =>
     try (destruct phi); destruct (multipar_CPi SIDE eq_refl)
-      as (B1' & B2' & C1' & C2' &  EQ)
-  | [ SIDE : multipar _ _ (a_Const ?T) _ |- _ ] =>
+      as (B1' & B2' & C1' & C2' &  EQ); clear SIDE; subst
+  | [ SIDE : multipar _ _ _ (a_Fam ?F ?R) _ ?R' |- _ ] =>
+     apply multipar_Fam in SIDE; inversion SIDE as [H1 | H2];
+    [ inversion H1 | apply consistent_a_Step_R; [ eapply joins_lc_fst;
+      eauto | intro Hv; inversion Hv; contradiction ] ]
+  | [ SIDE : multipar _ _ _ (a_Fam ?F ?R) _ ?R' |- _ ] =>
+     apply multipar_Fam in SIDE; inversion SIDE as [H1 | H2];
+    [ inversion H1 | apply consistent_a_Step_L; [ eapply joins_lc_snd;
+      eauto | intro Hv; inversion Hv; contradiction ] ]
+  | [ SIDE : multipar _ _ _ (a_Const ?T) _ _ |- _ ] =>
     apply multipar_Const in SIDE; auto; rename SIDE into EQ
   end.
 
-
-
-Lemma join_consistent : forall S D a b, joins S D a b -> consistent a b.
+Lemma join_consistent : forall S D W a b R, joins S D W a b R -> consistent a b R.
 Proof.
-  intros.
-  all: destruct H as (TT & Es & Ea & Eb & MSL & MSR).
-  all: move: (erased_lc Ea) => lc_a.
-  all: move: (erased_lc Eb) => lc_b.
+  intros. assert (H' := H).
+  destruct H as (TT & MSL & MSR).
   destruct a; try step_right; destruct b; try step_left; auto.
-  (* 35 subgoals *)
-  all: repeat
-         let T  := fresh in
-         let h0 := fresh in
-         match goal with
-           [ SIDE : multipar _ _ (a_App ?b1 ?rho ?b2) _,
-               Eb : erased_tm (a_App ?b1 ?rho ?b2)  |- _ ] =>
-           destruct (decide_Path (erased_lc Eb)) as [ [T h0] | NP ];
-             [ eapply multipar_Path_consistent in SIDE; eauto | idtac ];
-             clear Eb end.
-    all: repeat
-         let T  := fresh in
-         let h0 := fresh in
-         match goal with
-           [ SIDE : multipar _ _ (a_CApp ?b1 ?b2) _, Eb: erased_tm (a_CApp ?b1 ?b2)  |- _ ] =>
-           destruct (decide_Path (erased_lc Eb)) as [ [T h0] | NP ];
-             [ eapply multipar_Path_consistent in SIDE; eauto | idtac ];
-             clear Eb
-         end.
-  all: try solve [inversion Ea].
-  all: try solve [inversion Eb].
-
-  all: try multipar_step MSL EQ1.
-  all: try multipar_step MSR EQ2.
-  all: try solve [rewrite EQ1 in EQ2; inversion EQ2; try inversion H; auto].
-  all: try solve [eapply consistent_a_Step_R; [auto | intros h0; inversion h0; unfold not in NP; eauto]].
-  all: try solve [eapply consistent_a_Step_L; [auto | intros h0; inversion h0; unfold not in NP; eauto]].
-
-  - destruct (multipar_Pi MSL eq_refl) as (B1 & B2 & EQ).
-    destruct (multipar_Pi MSR eq_refl) as (B1' & B2' & EQ').
-    subst.
-    inversion EQ. inversion EQ'.
-    subst. econstructor; eauto.
-    inversion lc_a. auto.
-    inversion lc_b. auto.
-  - destruct phi.
-    destruct (multipar_CPi MSL eq_refl) as (B1 & B2 & EQ).
-    destruct (multipar_CPi MSR eq_refl) as (B1'' & B2'' & EQ').
-    subst.
-    inversion EQ. inversion EQ'.
-    subst. econstructor; eauto.
-    inversion lc_a. auto.
-    inversion lc_b. auto.
-
+  all: try multipar_step; try (multipar_step; inversion EQ).
+  - apply multipar_Fam in MSL. inversion MSL as [H2 | H3]. subst.
+    inversion H2; subst. econstructor.
+    apply consistent_a_Step_L. eapply joins_lc_snd; eauto.
+    intro Hv; inversion Hv; contradiction.
+  - destruct (multipar_Pi MSL eq_refl) as [c1 [c2 EQ]].
+    inversion EQ; subst. econstructor. apply joins_lc_fst in H'.
+    inversion H'; auto. eapply joins_lc_fst; eauto. apply joins_lc_snd in H'.
+    inversion H'; auto. eapply joins_lc_snd; eauto.
+  - destruct phi. destruct (multipar_CPi MSL eq_refl)
+    as (c1 & c2 & c3 & c4 &  EQ). inversion EQ; subst. econstructor.
+    apply joins_lc_fst in H'. inversion H'; auto. 
+    eapply joins_lc_fst; eauto. apply joins_lc_snd in H'.
+    inversion H'; auto. eapply joins_lc_snd; eauto.
 Qed.
 
 (*

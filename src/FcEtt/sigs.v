@@ -311,11 +311,11 @@ Axiom invert_a_Var :
 
 Axiom invert_a_Star: forall A G R, Typing G a_Star A R -> DefEq G (dom G) A a_Star a_Star R.
 
-Axiom invert_a_Fam : forall G F A R,
-    Typing G (a_Fam F) A R ->
-    exists a B R', DefEq G (dom G) A B a_Star R /\
-           binds F (Ax a B R') toplevel /\ Typing nil B a_Star R
-                                        /\ SubRole R' R.
+Axiom invert_a_Fam : forall G F A R R',
+    Typing G (a_Fam F R) A R' ->
+    exists a B, DefEq G (dom G) A B a_Star R /\
+           binds F (Ax a B R) toplevel /\ Typing nil B a_Star R
+                                        /\ SubRole R R'.
 
 (* ---------- context conversion -------------- *)
 (* Terms still type check even after varying the context *)

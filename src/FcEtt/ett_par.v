@@ -56,8 +56,7 @@ Inductive multipar S D W ( a : tm) : tm -> role -> Prop :=
 
 Hint Constructors multipar.
 
-Definition joins S D W a b R := exists c, erased_tm W a R /\ erased_tm W b R /\
-                               multipar S D W a c R /\ multipar S D W b c R.
+Definition joins S D W a b R := exists c, multipar S D W a c R /\ multipar S D W b c R.
 
 Lemma Par_lc1 : forall G D W a a' R , Par G D W a a' R -> lc_tm a.
   intros.  induction H; auto. eapply erased_lc; eauto.
