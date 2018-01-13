@@ -75,7 +75,7 @@ Fixpoint close_tm_wrt_tm_rec (n1 : nat) (x1 : tmvar) (a1 : tm) {struct a1} : tm 
     | a_Abs rho1 A1 R1 b1 => a_Abs rho1 (close_tm_wrt_tm_rec n1 x1 A1) R1 (close_tm_wrt_tm_rec (S n1) x1 b1)
     | a_UAbs rho1 R1 b1 => a_UAbs rho1 R1 (close_tm_wrt_tm_rec (S n1) x1 b1)
     | a_App a2 rho1 R1 b1 => a_App (close_tm_wrt_tm_rec n1 x1 a2) rho1 R1 (close_tm_wrt_tm_rec n1 x1 b1)
-    | a_Fam F1 R1 => a_Fam F1 R1
+    | a_Fam F1 => a_Fam F1
     | a_Const T1 => a_Const T1
     | a_Pi rho1 A1 R1 B1 => a_Pi rho1 (close_tm_wrt_tm_rec n1 x1 A1) R1 (close_tm_wrt_tm_rec (S n1) x1 B1)
     | a_Conv a2 R1 g1 => a_Conv (close_tm_wrt_tm_rec n1 x1 a2) R1 (close_co_wrt_tm_rec n1 x1 g1)
@@ -138,7 +138,7 @@ Fixpoint close_tm_wrt_co_rec (n1 : nat) (c1 : covar) (a1 : tm) {struct a1} : tm 
     | a_Abs rho1 A1 R1 b1 => a_Abs rho1 (close_tm_wrt_co_rec n1 c1 A1) R1 (close_tm_wrt_co_rec n1 c1 b1)
     | a_UAbs rho1 R1 b1 => a_UAbs rho1 R1 (close_tm_wrt_co_rec n1 c1 b1)
     | a_App a2 rho1 R1 b1 => a_App (close_tm_wrt_co_rec n1 c1 a2) rho1 R1 (close_tm_wrt_co_rec n1 c1 b1)
-    | a_Fam F1 R1 => a_Fam F1 R1
+    | a_Fam F1 => a_Fam F1
     | a_Const T1 => a_Const T1
     | a_Pi rho1 A1 R1 B1 => a_Pi rho1 (close_tm_wrt_co_rec n1 c1 A1) R1 (close_tm_wrt_co_rec n1 c1 B1)
     | a_Conv a2 R1 g1 => a_Conv (close_tm_wrt_co_rec n1 c1 a2) R1 (close_co_wrt_co_rec n1 c1 g1)
@@ -233,7 +233,7 @@ Fixpoint size_tm (a1 : tm) {struct a1} : nat :=
     | a_Abs rho1 A1 R1 b1 => 1 + (size_relflag rho1) + (size_tm A1) + (size_role R1) + (size_tm b1)
     | a_UAbs rho1 R1 b1 => 1 + (size_relflag rho1) + (size_role R1) + (size_tm b1)
     | a_App a2 rho1 R1 b1 => 1 + (size_tm a2) + (size_relflag rho1) + (size_role R1) + (size_tm b1)
-    | a_Fam F1 R1 => 1 + (size_role R1)
+    | a_Fam F1 => 1
     | a_Const T1 => 1
     | a_Pi rho1 A1 R1 B1 => 1 + (size_relflag rho1) + (size_tm A1) + (size_role R1) + (size_tm B1)
     | a_Conv a2 R1 g1 => 1 + (size_tm a2) + (size_role R1) + (size_co g1)
@@ -313,8 +313,8 @@ Inductive degree_tm_wrt_tm : nat -> tm -> Prop :=
     degree_tm_wrt_tm n1 a1 ->
     degree_tm_wrt_tm n1 b1 ->
     degree_tm_wrt_tm n1 (a_App a1 rho1 R1 b1)
-  | degree_wrt_tm_a_Fam : forall n1 F1 R1,
-    degree_tm_wrt_tm n1 (a_Fam F1 R1)
+  | degree_wrt_tm_a_Fam : forall n1 F1,
+    degree_tm_wrt_tm n1 (a_Fam F1)
   | degree_wrt_tm_a_Const : forall n1 T1,
     degree_tm_wrt_tm n1 (a_Const T1)
   | degree_wrt_tm_a_Pi : forall n1 rho1 A1 R1 B1,
@@ -484,8 +484,8 @@ Inductive degree_tm_wrt_co : nat -> tm -> Prop :=
     degree_tm_wrt_co n1 a1 ->
     degree_tm_wrt_co n1 b1 ->
     degree_tm_wrt_co n1 (a_App a1 rho1 R1 b1)
-  | degree_wrt_co_a_Fam : forall n1 F1 R1,
-    degree_tm_wrt_co n1 (a_Fam F1 R1)
+  | degree_wrt_co_a_Fam : forall n1 F1,
+    degree_tm_wrt_co n1 (a_Fam F1)
   | degree_wrt_co_a_Const : forall n1 T1,
     degree_tm_wrt_co n1 (a_Const T1)
   | degree_wrt_co_a_Pi : forall n1 rho1 A1 R1 B1,
@@ -698,8 +698,8 @@ Inductive lc_set_tm : tm -> Set :=
     lc_set_tm a1 ->
     lc_set_tm b1 ->
     lc_set_tm (a_App a1 rho1 R1 b1)
-  | lc_set_a_Fam : forall F1 R1,
-    lc_set_tm (a_Fam F1 R1)
+  | lc_set_a_Fam : forall F1,
+    lc_set_tm (a_Fam F1)
   | lc_set_a_Const : forall T1,
     lc_set_tm (a_Const T1)
   | lc_set_a_Pi : forall rho1 A1 R1 B1,
