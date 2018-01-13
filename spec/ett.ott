@@ -63,7 +63,7 @@ tm, a, b, v, w, A, B :: 'a_' ::= {{ com types and kinds }}
      {{ tex \mathrm{\lambda}^{[[R]],[[rho]]}[[x]].[[b]] }}
    | a rho R b            ::   :: App
      {{ tex [[a]]\ [[b]]^{[[R]],[[rho]]}  }}
-   | F R                ::   :: Fam
+   | F                  ::   :: Fam
    | T                  ::   :: Const
    | all rho x : A / R -> B ::   :: Pi (+ bind x in B +)
      {{ tex \mathrm{\Pi}^[[rho]][[x]]\!:\![[A]]/[[R]][[->]][[B]] }}
@@ -458,7 +458,7 @@ Fixpoint erase_tm (a : tm) (r : role) : tm :=
    | a_App a Rel R b => a_App (erase_tm a r) Rel R (erase_tm b R)
    | a_App a Irrel R b => a_App (erase_tm a r) Irrel R a_Bullet
    | a_Const T => a_Const T
-   | a_Fam F R => a_Fam F R
+   | a_Fam F => a_Fam F
    | a_Pi rho A R B => a_Pi rho (erase_tm A R) R (erase_tm B r)
    | a_Conv a r1 g => if (lte_role r1 r) then
 	                      erase_tm a r else
@@ -508,7 +508,7 @@ Definition FixDef : tm :=
   (a_Abs Irrel a_Star Nom
          (a_Abs Rel (a_Pi Rel (a_Var_b 0) Nom (a_Var_b 1)) Nom
                 (a_App (a_Var_b 0) Rel Nom
-                       (a_App (a_App (a_Fam Fix Nom) Irrel Nom (a_Var_b 1)) Rel Nom (a_Var_b 0))))).
+                       (a_App (a_App (a_Fam Fix) Irrel Nom (a_Var_b 1)) Rel Nom (a_Var_b 0))))).
 
 Definition FixTy : tm :=
   a_Pi Irrel a_Star Nom
@@ -608,7 +608,7 @@ Value R /\c .a
 F ~ a : A/R1 in toplevel
 not (R1 <= R)
 ------------------------- :: Ax
-Value R (F R1)
+Value R F
 
 defn
 ValueType R A ::   :: value_type :: 'value_type_'
@@ -627,7 +627,7 @@ ValueType R all c : phi. B
 F ~ a : A/R1 in toplevel
 not (R1 <= R)
 ------------------------- :: Ax
-ValueType R (F R1)
+ValueType R F
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -651,7 +651,7 @@ consistent (all rho x1:A1 / R -> B1) (all rho x2:A2 / R -> B2) R'
 consistent (all c1:phi1. A1) (all c2 :phi2. A2) R
 
 -------------------------- :: Fam
-consistent (F R) (F R) R'
+consistent F F R'
 
 not ValueType R b
 ---------------------- :: Step_R
@@ -716,7 +716,7 @@ rctx_uniq W
 F ~ a : A / R in toplevel
 R <= R1
 ------------------- :: Fam
-W |- erased_tm (F R) R1
+W |- erased_tm F R1
 
 rctx_uniq W
 ------------------- :: Const
@@ -801,7 +801,7 @@ F ~ a : A/R1 in toplevel
 R1 <= R
 rctx_uniq W
 -------------------------------- :: Axiom
-G ; D ; W |- (F R1) => a / R
+G ; D ; W |- F => a / R
 
 
 G ; D ; W |- a1 => a2 / R1
@@ -876,7 +876,7 @@ Value R1 (\rho R x. v)
 
 F ~ a : A/R in toplevel
 -------------------------------- :: Axiom
-|= (F R) > a / R
+|= F > a / R
 
 
 defn
@@ -907,7 +907,7 @@ Value R1 (\rho R x. v)
 F ~ a : A/R in toplevel
 R <= R1
 -------------------- :: Axiom
-|= (F R) ~> a / R1
+|= F ~> a / R1
 
 |= a ~> a' / R1
 not (R <= R1)
@@ -1025,7 +1025,7 @@ G |= a1 [ o ] : B1 { o / c } / R'
 F ~ a : A / R in toplevel
 [ empty |= A : TYPE / R ]
 ------------------ :: Fam
-G |= (F R) : A / R
+G |= F : A / R
 
 G |= a : A1 / R1
 G ; dom G |= A1 == A2 : TYPE / R2
@@ -1299,7 +1299,7 @@ G |- a1 [ g ] : B { g / c } / R'
 F ~ a : A/R in an_toplevel
 [ empty |- A : TYPE/R ]
 ----------------------- :: Fam
-G |- (F R) : A/R
+G |- F : A/R
 
 R1 <= R2
 G |- a : A / R1
@@ -1568,7 +1568,7 @@ G |- (\- x:A/R. b) ~>h (\- x:A/R. b') /R1
 
 F ~ a : A/R in an_toplevel
 ------------------------- :: Axiom
-G |- (F R) ~>h a / R
+G |- F ~>h a / R
 
 
 G |- a ~>h a' / R

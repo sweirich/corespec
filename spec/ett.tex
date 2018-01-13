@@ -68,7 +68,7 @@
 \ottprodline{|}{ \mathrm{\lambda}^ \rho \ottmv{x} \!:\! \ottnt{A} / \ottnt{R} . \ottnt{b} }{}{\textsf{bind}\; \ottmv{x}\; \textsf{in}\; \ottnt{b}}{}{}\ottprodnewline
 \ottprodline{|}{ \mathrm{\lambda}^{ \ottnt{R} , \rho } \ottmv{x} . \ottnt{b} }{}{\textsf{bind}\; \ottmv{x}\; \textsf{in}\; \ottnt{b}}{}{}\ottprodnewline
 \ottprodline{|}{ \ottnt{a} \  \ottnt{b} ^{ \ottnt{R} , \rho } }{}{}{}{}\ottprodnewline
-\ottprodline{|}{\ottmv{F} \, \ottnt{R}}{}{}{}{}\ottprodnewline
+\ottprodline{|}{\ottmv{F}}{}{}{}{}\ottprodnewline
 \ottprodline{|}{\ottmv{T}}{}{}{}{}\ottprodnewline
 \ottprodline{|}{ \mathrm{\Pi}^ \rho \ottmv{x} \!:\! \ottnt{A} / \ottnt{R} \to \ottnt{B} }{}{\textsf{bind}\; \ottmv{x}\; \textsf{in}\; \ottnt{B}}{}{}\ottprodnewline
 \ottprodline{|}{ \ottnt{a} \triangleright _{ \ottnt{R} }  \gamma }{}{}{}{}\ottprodnewline
@@ -515,7 +515,7 @@
 \ottpremise{\ottmv{F}  \sim  \ottnt{a}  \ottsym{:}  \ottnt{A}  \ottsym{/}  \ottnt{R_{{\mathrm{1}}}} \, \in \,  \Sigma_0 }%
 \ottpremise{ \neg  \ottsym{(}   \ottnt{R_{{\mathrm{1}}}}  \leq  \ottnt{R}   \ottsym{)} }%
 }{
- \suppress{\mathsf{Value}_{ \ottnt{R} }\  \ottsym{(}  \ottmv{F} \, \ottnt{R_{{\mathrm{1}}}}  \ottsym{)} } }{%
+ \suppress{\mathsf{Value}_{ \ottnt{R} }\  \ottmv{F} } }{%
 {\ottdrulename{Value\_Ax}}{}%
 }}
 
@@ -558,7 +558,7 @@
 \ottpremise{\ottmv{F}  \sim  \ottnt{a}  \ottsym{:}  \ottnt{A}  \ottsym{/}  \ottnt{R_{{\mathrm{1}}}} \, \in \,  \Sigma_0 }%
 \ottpremise{ \neg  \ottsym{(}   \ottnt{R_{{\mathrm{1}}}}  \leq  \ottnt{R}   \ottsym{)} }%
 }{
-\ottkw{ValueType} \, \ottnt{R} \, \ottsym{(}  \ottmv{F} \, \ottnt{R_{{\mathrm{1}}}}  \ottsym{)}}{%
+\ottkw{ValueType} \, \ottnt{R} \, \ottmv{F}}{%
 {\ottdrulename{value\_type\_Ax}}{}%
 }}
 
@@ -598,7 +598,7 @@
 
 \newcommand{\ottdruleconsistentXXaXXFam}[1]{\ottdrule[#1]{%
 }{
-\ottkw{consistent} \, \ottsym{(}  \ottmv{F} \, \ottnt{R}  \ottsym{)} \, \ottsym{(}  \ottmv{F} \, \ottnt{R}  \ottsym{)} \, \ottnt{R'}}{%
+\ottkw{consistent} \, \ottmv{F} \, \ottmv{F} \, \ottnt{R'}}{%
 {\ottdrulename{consistent\_a\_Fam}}{}%
 }}
 
@@ -717,7 +717,7 @@
 \ottpremise{\ottmv{F}  \sim  \ottnt{a}  \ottsym{:}  \ottnt{A}  \ottsym{/}  \ottnt{R} \, \in \,  \Sigma_0 }%
 \ottpremise{ \ottnt{R}  \leq  \ottnt{R_{{\mathrm{1}}}} }%
 }{
- \Omega  \vDash erased\_tm \hspace{2pt}  \ottsym{(}  \ottmv{F} \, \ottnt{R}  \ottsym{)}  \hspace{2pt}  \ottnt{R_{{\mathrm{1}}}} }{%
+ \Omega  \vDash erased\_tm \hspace{2pt}  \ottmv{F}  \hspace{2pt}  \ottnt{R_{{\mathrm{1}}}} }{%
 {\ottdrulename{erased\_a\_Fam}}{}%
 }}
 
@@ -867,7 +867,7 @@
 \ottpremise{ \ottnt{R_{{\mathrm{1}}}}  \leq  \ottnt{R} }%
 \ottpremise{\ottsym{rctx\_uniq}  \Omega}%
 }{
- \Omega  \vDash  \ottsym{(}  \ottmv{F} \, \ottnt{R_{{\mathrm{1}}}}  \ottsym{)}   \Rightarrow _{ \ottnt{R} }  \ottnt{a} }{%
+ \Omega  \vDash  \ottmv{F}   \Rightarrow _{ \ottnt{R} }  \ottnt{a} }{%
 {\ottdrulename{Par\_Axiom}}{}%
 }}
 
@@ -989,7 +989,7 @@
 \newcommand{\ottdruleBetaXXAxiom}[1]{\ottdrule[#1]{%
 \ottpremise{\ottmv{F}  \sim  \ottnt{a}  \ottsym{:}  \ottnt{A}  \ottsym{/}  \ottnt{R} \, \in \,  \Sigma_0 }%
 }{
-\vDash  \ottsym{(}  \ottmv{F} \, \ottnt{R}  \ottsym{)}  \ottsym{>}  \ottnt{a}  \ottsym{/}  \ottnt{R}}{%
+\vDash  \ottmv{F}  \ottsym{>}  \ottnt{a}  \ottsym{/}  \ottnt{R}}{%
 {\ottdrulename{Beta\_Axiom}}{}%
 }}
 
@@ -1043,7 +1043,7 @@
 \ottpremise{\ottmv{F}  \sim  \ottnt{a}  \ottsym{:}  \ottnt{A}  \ottsym{/}  \ottnt{R} \, \in \,  \Sigma_0 }%
 \ottpremise{ \ottnt{R}  \leq  \ottnt{R_{{\mathrm{1}}}} }%
 }{
-\vDash  \ottsym{(}  \ottmv{F} \, \ottnt{R}  \ottsym{)}  \leadsto  \ottnt{a}  \ottsym{/}  \ottnt{R_{{\mathrm{1}}}}}{%
+\vDash  \ottmv{F}  \leadsto  \ottnt{a}  \ottsym{/}  \ottnt{R_{{\mathrm{1}}}}}{%
 {\ottdrulename{E\_Axiom}}{}%
 }}
 
@@ -1238,7 +1238,7 @@
 \ottpremise{\ottmv{F}  \sim  \ottnt{a}  \ottsym{:}  \ottnt{A}  \ottsym{/}  \ottnt{R} \, \in \,  \Sigma_0 }%
 \ottpremise{ \suppress{ \varnothing  \vDash  \ottnt{A}  \ottsym{:}   \star   \ottsym{/}  \ottnt{R} } }%
 }{
-\Gamma  \vDash  \ottsym{(}  \ottmv{F} \, \ottnt{R}  \ottsym{)}  \ottsym{:}  \ottnt{A}  \ottsym{/}  \ottnt{R}}{%
+\Gamma  \vDash  \ottmv{F}  \ottsym{:}  \ottnt{A}  \ottsym{/}  \ottnt{R}}{%
 {\ottdrulename{E\_Fam}}{}%
 }}
 
@@ -1687,7 +1687,7 @@
 \ottpremise{\ottmv{F}  \sim  \ottnt{a}  \ottsym{:}  \ottnt{A}  \ottsym{/}  \ottnt{R} \, \in \,  \Sigma_1 }%
 \ottpremise{ \suppress{ \varnothing  \vdash  \ottnt{A}  \ottsym{:}   \star   \ottsym{/}  \ottnt{R} } }%
 }{
-\Gamma  \vdash  \ottsym{(}  \ottmv{F} \, \ottnt{R}  \ottsym{)}  \ottsym{:}  \ottnt{A}  \ottsym{/}  \ottnt{R}}{%
+\Gamma  \vdash  \ottmv{F}  \ottsym{:}  \ottnt{A}  \ottsym{/}  \ottnt{R}}{%
 {\ottdrulename{An\_Fam}}{}%
 }}
 
@@ -2086,7 +2086,7 @@
 \newcommand{\ottdruleAnXXAxiom}[1]{\ottdrule[#1]{%
 \ottpremise{\ottmv{F}  \sim  \ottnt{a}  \ottsym{:}  \ottnt{A}  \ottsym{/}  \ottnt{R} \, \in \,  \Sigma_1 }%
 }{
-\Gamma  \vdash  \ottsym{(}  \ottmv{F} \, \ottnt{R}  \ottsym{)}  \leadsto  \ottnt{a}  \ottsym{/}  \ottnt{R}}{%
+\Gamma  \vdash  \ottmv{F}  \leadsto  \ottnt{a}  \ottsym{/}  \ottnt{R}}{%
 {\ottdrulename{An\_Axiom}}{}%
 }}
 
