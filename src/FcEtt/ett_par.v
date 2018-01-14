@@ -56,6 +56,15 @@ Inductive multipar S D W ( a : tm) : tm -> role -> Prop :=
 
 Hint Constructors multipar.
 
+Lemma multipar_app_rctx : forall S D W1 W2 W3 a a' R, uniq (W1 ++ W2 ++ W3) ->
+                     multipar S D (W1 ++ W3) a a' R -> 
+                     multipar S D (W1 ++ W2 ++ W3) a a' R.
+Proof. intros S D W1 W2 W3 a a' R U H. generalize dependent W2.
+       dependent induction H; intros; eauto.
+        - econstructor. eapply erased_app_rctx; eauto.
+        - econstructor; eauto. apply par_app_rctx; auto.
+Qed.
+
 Definition joins S D W a b R := exists c, multipar S D W a c R /\ multipar S D W b c R.
 
 Lemma Par_lc1 : forall G D W a a' R , Par G D W a a' R -> lc_tm a.
