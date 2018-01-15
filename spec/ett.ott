@@ -749,109 +749,109 @@ defns
 
 
 defn
-G ; D ; W |- a => b / R ::  :: Par :: 'Par_'
+ W |- a => b / R ::  :: Par :: 'Par_'
 {{ tex [[W]] \vDash [[a]] [[=>]]_{[[R]]} [[b]] }}
 {{ com parallel reduction (implicit language) }}
 by
 W |- erased_tm a R
 ------------------------- :: Refl
-G ; D ; W |- a => a  / R
+W |- a => a  / R
 
 
-G ; D ; W |- a => (\rho R1 x.a') / R
-G ; D ; W |- b => b' / R1
+W |- a => (\rho R1 x.a') / R
+W |- b => b' / R1
 ---------------------------------------- :: Beta
-G ; D ; W |- a rho R1 b => a' { b' / x } / R
+W |- a rho R1 b => a' { b' / x } / R
 
-G ; D ; W |- a => a' / R
-G ; D ; W |- b => b' / R1
+W |- a => a' / R
+W |- b => b' / R1
 ------------------------------------------- :: App
-G ; D ; W |- a rho R1 b => a' rho R1 b' / R
+W |- a rho R1 b => a' rho R1 b' / R
 
-G ; D ; W |- a => (/\c .a')  / R
+W |- a => (/\c .a')  / R
 ----------------------- :: CBeta
-G ; D ; W |- a [o] => a' { o / c } / R
+W |- a [o] => a' { o / c } / R
 
-G ; D ; W |- a => a' / R
+W |- a => a' / R
 ----------------------- :: CApp
-G ; D ; W |- a [o] => a' [o] / R
+W |- a [o] => a' [o] / R
 
-G ; D ; W , x : R1 |- a => a' / R
+W , x : R1 |- a => a' / R
 ---------------------------------------------------- :: Abs
-G ; D ; W |- \ rho R1 x. a => \ rho R1 x. a' / R
+W |- \ rho R1 x. a => \ rho R1 x. a' / R
 
-G ; D ; W |- A => A' / R1
-G ; D ; W , x : R1 |- B => B' / R
+W |- A => A' / R1
+W , x : R1 |- B => B' / R
 --------------------------------------------------------- :: Pi
-G ; D ; W |- all rho x:A/R1 -> B => all rho x:A'/R1 -> B' / R
+W |- all rho x:A/R1 -> B => all rho x:A'/R1 -> B' / R
 
-G ; D ; W |- a => a' / R
+W |- a => a' / R
 ------------------------------------------ :: CAbs
-G ; D ; W |- /\c . a => /\c . a' / R
+W |- /\c . a => /\c . a' / R
 
-G ; D ; W |- A => A' / R1
-G ; D ; W |- a => a' / R1
-G ; D ; W |- b => b' / R1
-G ; D ; W |- B => B' / R
+W |- A => A' / R1
+W |- a => a' / R1
+W |- b => b' / R1
+W |- B => B' / R
 ------------------------------------------------------------------ :: CPi
-G ; D ; W |- all c:a~b:A/R1. B => all c:a'~b':A'/R1. B' / R
+W |- all c:a~b:A/R1. B => all c:a'~b':A'/R1. B' / R
 
 % NOTE: toplevel is assumed to be locally closed
 F ~ a : A/R1 in toplevel
 R1 <= R
 rctx_uniq W
 -------------------------------- :: Axiom
-G ; D ; W |- F => a / R
+W |- F => a / R
 
 
-G ; D ; W |- a1 => a2 / R1
+W |- a1 => a2 / R1
 --------------------------------------- :: Cong
-G ; D ; W |- a1 |> R o => a2 |> R o / R1
+W |- a1 |> R o => a2 |> R o / R1
 
 
-G ; D ; W |- a1 => (a2 |> R o)  / R1
+W |- a1 => (a2 |> R o)  / R1
 ------------------------------------  :: Combine
-G ; D ; W |- (a1 |> R o) =>  (a2 |> R o) / R1
+W |- (a1 |> R o) =>  (a2 |> R o) / R1
 
-G ; D ; W |- a1 => (a2 |> R o) / R1
-G ; D ; W |- b1 => b2 / R2
+W |- a1 => (a2 |> R o) / R1
+W |- b1 => b2 / R2
 ---------------------------------------------------- :: Push
-G ; D ; W |- a1 R2 b1 => (a2 R2 (b2 |> R o)) |> R o / R1
+W |- a1 R2 b1 => (a2 R2 (b2 |> R o)) |> R o / R1
 
-G ; D ; W |- a1 => (a2 |> R o) / R1
-G ; D ; W |- b1 => (b2 |> R o) / R2
+W |- a1 => (a2 |> R o) / R1
+W |- b1 => (b2 |> R o) / R2
 ---------------------------------------------------- :: PushCombine
-G ; D ; W |- a1 R2 b1 => (a2 R2 (b2 |> R o)) |> R o / R1
+W |- a1 R2 b1 => (a2 R2 (b2 |> R o)) |> R o / R1
 
-G ; D ; W |- a1 => (a2 |> R o) / R1
+W |- a1 => (a2 |> R o) / R1
 ---------------------------------------------------- :: CPush
-G ; D ; W |- a1 [o] => (a2 [o]) |> R o / R1
+W |- a1 [o] => (a2 [o]) |> R o / R1
 
 
 defn
-G ; D ; W |- a =>* b / R ::   :: MultiPar :: 'MP_'
+W |- a =>* b / R ::   :: MultiPar :: 'MP_'
 {{ tex [[W]] [[|-]] [[a]] [[=>*]]_[[R]] [[b]] }}
 {{ com multistep parallel reduction }}
 by
 
 ------------------------- :: Refl
-G ; D ; W |- a =>* a / R
+W |- a =>* a / R
 
-G ; D ; W |- a => b / R
-G ; D ; W |- b =>* a' / R
+W |- a => b / R
+W |- b =>* a' / R
 -------------------------- :: Step
-G ; D ; W |- a =>* a' / R
+W |- a =>* a' / R
 
 defn
-G ; D ; W |- a <=> b / R ::   :: joins :: ''
+W |- a <=> b / R ::   :: joins :: ''
 {{ tex [[W]] [[|-]] [[a]] [[<=>]]_[[R]] [[b]] }}
 {{ com parallel reduction to a common term }}
 by
 
-G ; D ; W |- a1 =>* b / R
-G ; D ; W |- a2 =>* b / R
+W |- a1 =>* b / R
+W |- a2 =>* b / R
 -------------------------- :: join
-G ; D ; W |- a1 <=> a2 / R
+W |- a1 <=> a2 / R
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -1040,6 +1040,7 @@ G ; D |= phi1 == phi2  ::    :: Iso :: 'E_'
 {{ com prop equality }}
 by
 
+G |= A : TYPE / R
 G ; D |= A1 == A2 : A / R
 G ; D |= B1 == B2 : A / R
 --------------------------------------------- :: PropCong

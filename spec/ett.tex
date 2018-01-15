@@ -1271,6 +1271,7 @@
 
 %% defn Iso
 \newcommand{\ottdruleEXXPropCong}[1]{\ottdrule[#1]{%
+\ottpremise{\Gamma  \vDash  \ottnt{A}  \ottsym{:}   \star   \ottsym{/}  \ottnt{R}}%
 \ottpremise{\Gamma  \ottsym{;}  \Delta  \vDash  \ottnt{A_{{\mathrm{1}}}}  \equiv  \ottnt{A_{{\mathrm{2}}}}  \ottsym{:}  \ottnt{A}  \ottsym{/}  \ottnt{R}}%
 \ottpremise{\Gamma  \ottsym{;}  \Delta  \vDash  \ottnt{B_{{\mathrm{1}}}}  \equiv  \ottnt{B_{{\mathrm{2}}}}  \ottsym{:}  \ottnt{A}  \ottsym{/}  \ottnt{R}}%
 }{
@@ -2169,6 +2170,6 @@
 
 \begin{verbatim}
 Definition rules:        163 good    0 bad
-Definition rule clauses: 483 good    0 bad
+Definition rule clauses: 484 good    0 bad
 \end{verbatim}
 \end{document}
