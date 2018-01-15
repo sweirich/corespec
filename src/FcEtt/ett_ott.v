@@ -999,75 +999,75 @@ Inductive RhoCheck : relflag -> tmvar -> tm -> Prop :=    (* defn RhoCheck *)
      RhoCheck Irrel x A.
 
 (* defns Jpar *)
-Inductive Par : context -> available_props -> role_context -> tm -> tm -> role -> Prop :=    (* defn Par *)
- | Par_Refl : forall (G:context) (D:available_props) (W:role_context) (a:tm) (R:role),
+Inductive Par : role_context -> tm -> tm -> role -> Prop :=    (* defn Par *)
+ | Par_Refl : forall (W:role_context) (a:tm) (R:role),
      erased_tm W a R ->
-     Par G D W a a R
- | Par_Beta : forall (G:context) (D:available_props) (W:role_context) (a:tm) (rho:relflag) (R1:role) (b a' b':tm) (R:role),
-     Par G D W a  ( (a_UAbs rho R1 a') )  R ->
-     Par G D W b b' R1 ->
-     Par G D W (a_App a rho R1 b)  (open_tm_wrt_tm  a'   b' )  R
- | Par_App : forall (G:context) (D:available_props) (W:role_context) (a:tm) (rho:relflag) (R1:role) (b a' b':tm) (R:role),
-     Par G D W a a' R ->
-     Par G D W b b' R1 ->
-     Par G D W (a_App a rho R1 b) (a_App a' rho R1 b') R
- | Par_CBeta : forall (G:context) (D:available_props) (W:role_context) (a a':tm) (R:role),
-     Par G D W a  ( (a_UCAbs a') )  R ->
-     Par G D W (a_CApp a g_Triv)  (open_tm_wrt_co  a'   g_Triv )  R
- | Par_CApp : forall (G:context) (D:available_props) (W:role_context) (a a':tm) (R:role),
-     Par G D W a a' R ->
-     Par G D W (a_CApp a g_Triv) (a_CApp a' g_Triv) R
- | Par_Abs : forall (L:vars) (G:context) (D:available_props) (W:role_context) (rho:relflag) (R1:role) (a a':tm) (R:role),
-      ( forall x , x \notin  L  -> Par G D  (( x  ~  R1 ) ++  W )   ( open_tm_wrt_tm a (a_Var_f x) )   ( open_tm_wrt_tm a' (a_Var_f x) )  R )  ->
-     Par G D W (a_UAbs rho R1 a) (a_UAbs rho R1 a') R
- | Par_Pi : forall (L:vars) (G:context) (D:available_props) (W:role_context) (rho:relflag) (A:tm) (R1:role) (B A' B':tm) (R:role),
-     Par G D W A A' R1 ->
-      ( forall x , x \notin  L  -> Par G D  (( x  ~  R1 ) ++  W )   ( open_tm_wrt_tm B (a_Var_f x) )   ( open_tm_wrt_tm B' (a_Var_f x) )  R )  ->
-     Par G D W (a_Pi rho A R1 B) (a_Pi rho A' R1 B') R
- | Par_CAbs : forall (L:vars) (G:context) (D:available_props) (W:role_context) (a a':tm) (R:role),
-      ( forall c , c \notin  L  -> Par G D W  ( open_tm_wrt_co a (g_Var_f c) )   ( open_tm_wrt_co a' (g_Var_f c) )  R )  ->
-     Par G D W (a_UCAbs a) (a_UCAbs a') R
- | Par_CPi : forall (L:vars) (G:context) (D:available_props) (W:role_context) (a b A:tm) (R1:role) (B a' b' A' B':tm) (R:role),
-     Par G D W A A' R1 ->
-     Par G D W a a' R1 ->
-     Par G D W b b' R1 ->
-      ( forall c , c \notin  L  -> Par G D W  ( open_tm_wrt_co B (g_Var_f c) )   ( open_tm_wrt_co B' (g_Var_f c) )  R )  ->
-     Par G D W (a_CPi (Eq a b A R1) B) (a_CPi (Eq a' b' A' R1) B') R
- | Par_Axiom : forall (G:context) (D:available_props) (W:role_context) (F:tyfam) (a:tm) (R:role) (A:tm) (R1:role),
+     Par W a a R
+ | Par_Beta : forall (W:role_context) (a:tm) (rho:relflag) (R1:role) (b a' b':tm) (R:role),
+     Par W a  ( (a_UAbs rho R1 a') )  R ->
+     Par W b b' R1 ->
+     Par W (a_App a rho R1 b)  (open_tm_wrt_tm  a'   b' )  R
+ | Par_App : forall (W:role_context) (a:tm) (rho:relflag) (R1:role) (b a' b':tm) (R:role),
+     Par W a a' R ->
+     Par W b b' R1 ->
+     Par W (a_App a rho R1 b) (a_App a' rho R1 b') R
+ | Par_CBeta : forall (W:role_context) (a a':tm) (R:role),
+     Par W a  ( (a_UCAbs a') )  R ->
+     Par W (a_CApp a g_Triv)  (open_tm_wrt_co  a'   g_Triv )  R
+ | Par_CApp : forall (W:role_context) (a a':tm) (R:role),
+     Par W a a' R ->
+     Par W (a_CApp a g_Triv) (a_CApp a' g_Triv) R
+ | Par_Abs : forall (L:vars) (W:role_context) (rho:relflag) (R1:role) (a a':tm) (R:role),
+      ( forall x , x \notin  L  -> Par  (( x  ~  R1 ) ++  W )   ( open_tm_wrt_tm a (a_Var_f x) )   ( open_tm_wrt_tm a' (a_Var_f x) )  R )  ->
+     Par W (a_UAbs rho R1 a) (a_UAbs rho R1 a') R
+ | Par_Pi : forall (L:vars) (W:role_context) (rho:relflag) (A:tm) (R1:role) (B A' B':tm) (R:role),
+     Par W A A' R1 ->
+      ( forall x , x \notin  L  -> Par  (( x  ~  R1 ) ++  W )   ( open_tm_wrt_tm B (a_Var_f x) )   ( open_tm_wrt_tm B' (a_Var_f x) )  R )  ->
+     Par W (a_Pi rho A R1 B) (a_Pi rho A' R1 B') R
+ | Par_CAbs : forall (L:vars) (W:role_context) (a a':tm) (R:role),
+      ( forall c , c \notin  L  -> Par W  ( open_tm_wrt_co a (g_Var_f c) )   ( open_tm_wrt_co a' (g_Var_f c) )  R )  ->
+     Par W (a_UCAbs a) (a_UCAbs a') R
+ | Par_CPi : forall (L:vars) (W:role_context) (a b A:tm) (R1:role) (B a' b' A' B':tm) (R:role),
+     Par W A A' R1 ->
+     Par W a a' R1 ->
+     Par W b b' R1 ->
+      ( forall c , c \notin  L  -> Par W  ( open_tm_wrt_co B (g_Var_f c) )   ( open_tm_wrt_co B' (g_Var_f c) )  R )  ->
+     Par W (a_CPi (Eq a b A R1) B) (a_CPi (Eq a' b' A' R1) B') R
+ | Par_Axiom : forall (W:role_context) (F:tyfam) (a:tm) (R:role) (A:tm) (R1:role),
       binds  F  (Ax  a A R1 )   toplevel   ->
      SubRole R1 R ->
       uniq  W  ->
-     Par G D W (a_Fam F) a R
- | Par_Cong : forall (G:context) (D:available_props) (W:role_context) (a1:tm) (R:role) (a2:tm) (R1:role),
-     Par G D W a1 a2 R1 ->
-     Par G D W (a_Conv a1 R g_Triv) (a_Conv a2 R g_Triv) R1
- | Par_Combine : forall (G:context) (D:available_props) (W:role_context) (a1:tm) (R:role) (a2:tm) (R1:role),
-     Par G D W a1  ( (a_Conv a2 R g_Triv) )  R1 ->
-     Par G D W  ( (a_Conv a1 R g_Triv) )   ( (a_Conv a2 R g_Triv) )  R1
- | Par_Push : forall (G:context) (D:available_props) (W:role_context) (a1:tm) (R2:role) (b1 a2 b2:tm) (R R1:role),
-     Par G D W a1  ( (a_Conv a2 R g_Triv) )  R1 ->
-     Par G D W b1 b2 R2 ->
-     Par G D W  (a_App  a1  Rel  R2   b1 )  (a_Conv  (  (a_App  a2  Rel  R2    ( (a_Conv b2 R g_Triv) )  )  )  R g_Triv) R1
- | Par_PushCombine : forall (G:context) (D:available_props) (W:role_context) (a1:tm) (R2:role) (b1 a2 b2:tm) (R R1:role),
-     Par G D W a1  ( (a_Conv a2 R g_Triv) )  R1 ->
-     Par G D W b1  ( (a_Conv b2 R g_Triv) )  R2 ->
-     Par G D W  (a_App  a1  Rel  R2   b1 )  (a_Conv  (  (a_App  a2  Rel  R2    ( (a_Conv b2 R g_Triv) )  )  )  R g_Triv) R1
- | Par_CPush : forall (G:context) (D:available_props) (W:role_context) (a1 a2:tm) (R R1:role),
-     Par G D W a1  ( (a_Conv a2 R g_Triv) )  R1 ->
-     Par G D W (a_CApp a1 g_Triv) (a_Conv  ( (a_CApp a2 g_Triv) )  R g_Triv) R1
-with MultiPar : context -> available_props -> role_context -> tm -> tm -> role -> Prop :=    (* defn MultiPar *)
- | MP_Refl : forall (G:context) (D:available_props) (W:role_context) (a:tm) (R:role),
+     Par W (a_Fam F) a R
+ | Par_Cong : forall (W:role_context) (a1:tm) (R:role) (a2:tm) (R1:role),
+     Par W a1 a2 R1 ->
+     Par W (a_Conv a1 R g_Triv) (a_Conv a2 R g_Triv) R1
+ | Par_Combine : forall (W:role_context) (a1:tm) (R:role) (a2:tm) (R1:role),
+     Par W a1  ( (a_Conv a2 R g_Triv) )  R1 ->
+     Par W  ( (a_Conv a1 R g_Triv) )   ( (a_Conv a2 R g_Triv) )  R1
+ | Par_Push : forall (W:role_context) (a1:tm) (R2:role) (b1 a2 b2:tm) (R R1:role),
+     Par W a1  ( (a_Conv a2 R g_Triv) )  R1 ->
+     Par W b1 b2 R2 ->
+     Par W  (a_App  a1  Rel  R2   b1 )  (a_Conv  (  (a_App  a2  Rel  R2    ( (a_Conv b2 R g_Triv) )  )  )  R g_Triv) R1
+ | Par_PushCombine : forall (W:role_context) (a1:tm) (R2:role) (b1 a2 b2:tm) (R R1:role),
+     Par W a1  ( (a_Conv a2 R g_Triv) )  R1 ->
+     Par W b1  ( (a_Conv b2 R g_Triv) )  R2 ->
+     Par W  (a_App  a1  Rel  R2   b1 )  (a_Conv  (  (a_App  a2  Rel  R2    ( (a_Conv b2 R g_Triv) )  )  )  R g_Triv) R1
+ | Par_CPush : forall (W:role_context) (a1 a2:tm) (R R1:role),
+     Par W a1  ( (a_Conv a2 R g_Triv) )  R1 ->
+     Par W (a_CApp a1 g_Triv) (a_Conv  ( (a_CApp a2 g_Triv) )  R g_Triv) R1
+with MultiPar : role_context -> tm -> tm -> role -> Prop :=    (* defn MultiPar *)
+ | MP_Refl : forall (W:role_context) (a:tm) (R:role),
      lc_tm a ->
-     MultiPar G D W a a R
- | MP_Step : forall (G:context) (D:available_props) (W:role_context) (a a':tm) (R:role) (b:tm),
-     Par G D W a b R ->
-     MultiPar G D W b a' R ->
-     MultiPar G D W a a' R
-with joins : context -> available_props -> role_context -> tm -> tm -> role -> Prop :=    (* defn joins *)
- | join : forall (G:context) (D:available_props) (W:role_context) (a1 a2:tm) (R:role) (b:tm),
-     MultiPar G D W a1 b R ->
-     MultiPar G D W a2 b R ->
-     joins G D W a1 a2 R.
+     MultiPar W a a R
+ | MP_Step : forall (W:role_context) (a a':tm) (R:role) (b:tm),
+     Par W a b R ->
+     MultiPar W b a' R ->
+     MultiPar W a a' R
+with joins : role_context -> tm -> tm -> role -> Prop :=    (* defn joins *)
+ | join : forall (W:role_context) (a1 a2:tm) (R:role) (b:tm),
+     MultiPar W a1 b R ->
+     MultiPar W a2 b R ->
+     joins W a1 a2 R.
 
 (* defns Jbeta *)
 Inductive Beta : tm -> tm -> role -> Prop :=    (* defn Beta *)
@@ -1194,6 +1194,7 @@ with Typing : context -> tm -> tm -> role -> Prop :=    (* defn Typing *)
      Typing G (a_Conv a R2 g_Triv) A2 R1
 with Iso : context -> available_props -> constraint -> constraint -> Prop :=    (* defn Iso *)
  | E_PropCong : forall (G:context) (D:available_props) (A1 B1 A:tm) (R:role) (A2 B2:tm),
+     Typing G A a_Star R ->
      DefEq G D A1 A2 A R ->
      DefEq G D B1 B2 A R ->
      Iso G D (Eq A1 B1 A R) (Eq A2 B2 A R)
