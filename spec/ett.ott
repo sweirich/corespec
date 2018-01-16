@@ -1165,9 +1165,9 @@ G ; D |=  B1 { o / c} == B2 { o / c } : TYPE/R0
 %% Other rules
 
 G ; D |= a == b : A/R
-G ; D |= a ~ b : A/R == a' ~ b' : A'/R'
+G ; D |= a ~ b : A/R == a' ~ b' : A'/R
 -------------------------------------- :: Cast
-G ; D |= a' == b' : A'/R'
+G ; D |= a' == b' : A'/R
 
 G ; D |= a == b : A/R1
 G ; dom G |= A == B : TYPE/R2
@@ -1181,7 +1181,6 @@ G ; D |= A == A' : TYPE/R
 
 G ; D |= a1 == a2 : A / R1
 G ; D |= A == B : TYPE / R2
-not (R2 <= R1)
 G |= B : TYPE / R1
 ------------------------------------ :: CastCong
 G ; D |= a1 |> R2 o == a2 |> R2 o : B / R1

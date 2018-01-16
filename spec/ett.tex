@@ -1460,9 +1460,9 @@
 
 \newcommand{\ottdruleEXXCast}[1]{\ottdrule[#1]{%
 \ottpremise{\Gamma  \ottsym{;}  \Delta  \vDash  \ottnt{a}  \equiv  \ottnt{b}  \ottsym{:}  \ottnt{A}  \ottsym{/}  \ottnt{R}}%
-\ottpremise{\Gamma  \ottsym{;}  \Delta  \vDash   \ottnt{a}   \sim _{ \ottnt{A} / \ottnt{R} }  \ottnt{b}   \equiv   \ottnt{a'}   \sim _{ \ottnt{A'} / \ottnt{R'} }  \ottnt{b'} }%
+\ottpremise{\Gamma  \ottsym{;}  \Delta  \vDash   \ottnt{a}   \sim _{ \ottnt{A} / \ottnt{R} }  \ottnt{b}   \equiv   \ottnt{a'}   \sim _{ \ottnt{A'} / \ottnt{R} }  \ottnt{b'} }%
 }{
-\Gamma  \ottsym{;}  \Delta  \vDash  \ottnt{a'}  \equiv  \ottnt{b'}  \ottsym{:}  \ottnt{A'}  \ottsym{/}  \ottnt{R'}}{%
+\Gamma  \ottsym{;}  \Delta  \vDash  \ottnt{a'}  \equiv  \ottnt{b'}  \ottsym{:}  \ottnt{A'}  \ottsym{/}  \ottnt{R}}{%
 {\ottdrulename{E\_Cast}}{}%
 }}
 
@@ -1488,7 +1488,6 @@
 \newcommand{\ottdruleEXXCastCong}[1]{\ottdrule[#1]{%
 \ottpremise{\Gamma  \ottsym{;}  \Delta  \vDash  \ottnt{a_{{\mathrm{1}}}}  \equiv  \ottnt{a_{{\mathrm{2}}}}  \ottsym{:}  \ottnt{A}  \ottsym{/}  \ottnt{R_{{\mathrm{1}}}}}%
 \ottpremise{\Gamma  \ottsym{;}  \Delta  \vDash  \ottnt{A}  \equiv  \ottnt{B}  \ottsym{:}   \star   \ottsym{/}  \ottnt{R_{{\mathrm{2}}}}}%
-\ottpremise{ \neg  \ottsym{(}   \ottnt{R_{{\mathrm{2}}}}  \leq  \ottnt{R_{{\mathrm{1}}}}   \ottsym{)} }%
 \ottpremise{\Gamma  \vDash  \ottnt{B}  \ottsym{:}   \star   \ottsym{/}  \ottnt{R_{{\mathrm{1}}}}}%
 }{
 \Gamma  \ottsym{;}  \Delta  \vDash   \ottnt{a_{{\mathrm{1}}}} \triangleright _{ \ottnt{R_{{\mathrm{2}}}} }  \bullet   \equiv   \ottnt{a_{{\mathrm{2}}}} \triangleright _{ \ottnt{R_{{\mathrm{2}}}} }  \bullet   \ottsym{:}  \ottnt{B}  \ottsym{/}  \ottnt{R_{{\mathrm{1}}}}}{%
@@ -2170,6 +2169,6 @@
 
 \begin{verbatim}
 Definition rules:        163 good    0 bad
-Definition rule clauses: 484 good    0 bad
+Definition rule clauses: 483 good    0 bad
 \end{verbatim}
 \end{document}
