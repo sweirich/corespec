@@ -1270,219 +1270,65 @@ Proof.
     unfold joins. exists (a_Pi rho Ax R (close_tm_wrt_tm x Bx)); split;
     apply multipar_Pi_exists; eauto.
   - (* abs-cong *)
-    intros L G D rho R b1 b2 A1 B R' IHDefEq H1 t _ S RC1 RC2 GOOD.
-    inversion GOOD.
-    have e0: erased_tm A1. eapply Typing_erased; eauto.
-    pick fresh x for (L \u (fv_tm_tm_tm b1) \u (fv_tm_tm_tm b2)).
-    assert (G' : Good ([(x, Tm A1 R)] ++ G) D).
-    apply Good_add_tm; auto.
-    have: x `notin` L; auto => fr.
-    pose Ih2 := H1 x fr G'.
-    destruct Ih2 as [B'' h2].
-    split_hyp.
-    exists (a_UAbs rho R (close_tm_wrt_tm x B'')); eauto.
-    repeat split; eauto 1.
-    + apply (@erased_a_Abs L); try solve [apply h2; auto]; try solve [apply h1; auto]; eauto.
-      intros x0 h4.
-      assert (G'' : Good ([(x0, Tm A1 R)] ++ G) D).
-      apply Good_add_tm; auto.
-      pose Ih2 := H1 x0 h4 G''.
-      destruct Ih2 as [C'' h3]; eauto.
-      apply h3.
-    + apply (@erased_a_Abs L); try solve [apply h2; auto]; try solve [apply h1; auto]; eauto.
-      intros x0 h4.
-      assert (G'' : Good ([(x0, Tm A1 R)] ++ G) D).
-      apply Good_add_tm; auto.
-      pose Ih2 := H1 x0 h4 G''.
-      destruct Ih2 as [C'' h3]; eauto.
-      apply h3.
-    + apply multipar_Abs_exists; auto.
-      apply (lc_a_UAbs_exists x); apply erased_lc; auto.
-      eapply multipar_context_independent; eauto.
-    + apply multipar_Abs_exists; auto.
-      apply (lc_a_UAbs_exists x); apply erased_lc; auto.
-      eapply multipar_context_independent; eauto.
-  - intros G D a1 a2 b1 b2 d R' H R d0 H0 p H1 H2.
+    intros. pick fresh x. destruct (H x ltac:(auto)) as [b [Q1 Q2]].
+    unfold joins. exists (a_UAbs rho R (close_tm_wrt_tm x b)); split;
+    apply multipar_Abs_exists; eauto.
+  - intros.
     apply join_app; auto.
-  - intros G D a1 b1 B a R' A R d H t H0 H1.
-    inversion H1.
+  - intros. inversion H as [T [P1 P2]].
+    apply multipar_erased_tm_fst in P1. apply rctx_uniq in P1.
     apply join_app; auto.
-    exists a_Bullet. repeat split; eauto.
-  - intros G D A1 A2 R rho B1 B2 R' H IHDefEq GOOD.
-    inversion GOOD.
-    destruct IHDefEq; auto.
-    split_hyp.
-    pose K1 := multipar_Pi H5 eq_refl.
-    destruct K1 as [A' [B' h0]].
-    subst.
-    inversion H3; inversion H4; subst.
-    apply multipar_Pi_A_proj in H5.
-    apply multipar_Pi_A_proj in H6.
-    exists A'; eauto.
-    apply erased_lc; eauto.
-    apply erased_lc; eauto.
-  - intros G D B1 a1 B2 a2 R' rho A1 R A2 H IHDefEq1 H0 IHDefEq2 GOOD.
-    inversion GOOD.
-    destruct IHDefEq1; auto.
-    destruct IHDefEq2 as [ac h0]; auto.
-    split_hyp.
-    pose K1 := multipar_Pi H11 eq_refl.
-    destruct K1 as [A' [B' h0]].
-    subst.
-    inversion H9.
-    inversion H10; subst.
-    apply (multipar_Pi_B_proj) in H11.
-    apply (multipar_Pi_B_proj) in H12.
-    destruct H11 as [L1 h9].
-    destruct H12 as [L2 h10].
-    pick_fresh x.
-    exists (open_tm_wrt_tm B' ac).
-
-
-
-  repeat split; eauto.
-    + subst_tm_erased_open x.
-    + subst_tm_erased_open x.
-    + multipar_subst_open x.
-    + multipar_subst_open x.
+    exists a_Bullet. repeat split; econstructor; econstructor; auto.
+  - intros. inversion H as [T [P1 P2]].
+    destruct (multipar_Pi P1 eq_refl) as [Ax [Bx P]]. subst.
+    apply multipar_Pi_A_proj in P1.
+    apply multipar_Pi_A_proj in P2.
+    exists Ax; auto.
+  - intros. inversion H as [T [P1 P2]].
+    destruct (multipar_Pi P1 eq_refl) as [Ax [Bx P]]. subst.
+    apply (multipar_Pi_B_proj) in P1.
+    apply (multipar_Pi_B_proj) in P2.
+    inversion P1 as [L1 Q1]. inversion P2 as [L2 Q2].
+    inversion H0 as [ax [P3 P4]].
+    pick fresh x.
+    rewrite (tm_subst_tm_tm_intro x); auto.
+    rewrite (tm_subst_tm_tm_intro x B2); auto.
+    replace (ctx_to_rctx G) with (nil ++ (ctx_to_rctx G)); auto.
+    exists (tm_subst_tm_tm ax x (open_tm_wrt_tm Bx (a_Var_f x))); split;
+    eapply multipar_subst3; simpl_env; eauto.
   - (* cpi-cong *)
-    intros L G D a1 b1 A1 R A a2 b2 A2 B R' H hi0 H1 IHDefEq H2 _ _ t _ _ GOOD .
-    pick_fresh c.
-    match goal with
-      | [ H : Iso G D (Eq a1 b1 A1 R) (Eq a2 b2 A2 R) |- _ ] =>
-        destruct (hi0 GOOD a1 b1 A1 a2 b2 A2 R R) as [hi1 [hi2 hi3]]; auto
-    end.
-    have EC : erased_sort (Co (Eq a1 b1 A1 R)).
-    { inversion H2. apply erased_Co; eapply Typing_erased; eauto. }
-    destruct (IHDefEq c) as [Ac h1]; eauto.
-    + apply Good_NoAssn; auto.
-    + split_hyp.
-      unfold joins in *.
-      destruct hi1 as [Aco h0'].
-      destruct hi2 as [Bco h1'].
-      destruct hi3 as [Tco h2'].
-      split_hyp.
-      exists (a_CPi (Eq Aco Bco Tco R) (close_tm_wrt_co c Ac)); eauto.
-      repeat split; eauto 1.
-      * apply (@erased_a_CPi (L \u D)); eauto.
-        intros c0 Hi5.
-        destruct (IHDefEq c0) as [Ac' h2']; auto; subst.
-        apply Good_NoAssn; auto.
-        apply h2'.
-      * apply (@erased_a_CPi (L \u D)); eauto.
-        intros c0 Hi5.
-        destruct (IHDefEq c0) as [Ac' h2']; auto; subst.
-        apply Good_NoAssn; auto.
-        apply h2'.
-      * (* Ltac context_independence c := *)
-     (* eapply multipar_context_independent; eauto.
-        intros x; intros; assert (x <> c); [fsetdec|
-        match goal with
-          [ H23 : binds ?x (Co (Eq (a_Const ?F) ?a ?A4 ?R)) ([(c, Co (Eq ?A0 ?B0 ?A1 ?R'))] ++ ?G) |- _ ] =>
-              simpl in H23;
-              edestruct (binds_cons_1 _ x c _ _ G H23) as [[h0 h1] | h2];
-              [contradiction| auto]
-        end]. *)
-        multipar_CPi c.
-      * multipar_CPi c.
-  - intros L G D a b phi1 B R hi0 IHDefEq H1 _ GOOD.
-    destruct phi1.
-    pick_fresh c.
-    have EC : erased_sort (Co (Eq a0 b0 A R0)).
-    { inversion H1. apply erased_Co; eapply Typing_erased; eauto. }
-    inversion GOOD.
-    destruct (IHDefEq c) as [Ac h1]; auto.
-    + apply Good_NoAssn; auto.
-    + split_hyp.
-      unfold joins in *.
-      exists (a_UCAbs (close_tm_wrt_co c Ac)); eauto.
-      split_hyp.
-      repeat split; eauto 1.
-      * apply (@erased_a_CAbs (L \u D)); eauto.
-        intros c0 Hi6.
-        destruct (IHDefEq c0) as [Ac' h2']; auto; subst.
-        apply Good_NoAssn; auto.
-        apply h2'.
-      * apply (@erased_a_CAbs (L \u D)); eauto.
-        intros c0 Hi5.
-        destruct (IHDefEq c0) as [Ac' h2']; auto; subst.
-        apply Good_NoAssn; auto.
-        apply h2'.
-      * apply multipar_CAbs_exists; auto.
-        apply (lc_a_UCAbs_exists c); try constructor; apply erased_lc; auto.
-        eapply multipar_context_independent; eauto.
-      * apply multipar_CAbs_exists; auto.
-        apply (lc_a_UCAbs_exists c); try constructor; apply erased_lc; auto.
-        eapply multipar_context_independent; eauto.
-  - intros G D a1 b1 B R' a b A R d H p H0 H1.
+    intros. destruct (H a1 b1 A1 a2 b2 A2 R eq_refl eq_refl) as [J1 [J2 J3]].
+    inversion J1 as [ax [P1 P2]]. inversion J2 as [bx [P3 P4]].
+    inversion J3 as [Ax [P5 P6]].
+    pick fresh c. destruct (H0 c ltac:(auto)) as [Bx [P7 P8]].
+    exists (a_CPi (Eq ax bx Ax R) (close_tm_wrt_co c Bx)); split;
+    apply multipar_CPi_exists; auto.
+  - intros. pick fresh c.
+    destruct (H c ltac:(auto)) as [t [P1 P2]].
+    exists (a_UCAbs (close_tm_wrt_co c t)); split;
+    apply multipar_CAbs_exists; auto.
+  - intros.
     apply join_capp; auto.
-  - intros G D B1 B2 R0 A1 A2 A R A1' A2' A' R' H0 IHDefEq hi1 IHDefEq2 hi0 IHDefEq3 GOOD.
-    destruct IHDefEq as [Ac h0]; eauto.
-    split_hyp.
-    inversion GOOD.
-    match goal with
-      [ H1 : erased_tm (a_CPi (Eq A1 A2 A R) B1),
-        H2 : erased_tm (a_CPi (Eq A1' A2' A' R') B2),
-        H3 :  multipar G D (a_CPi (Eq A1 A2 A R) B1) Ac,
-        H4 : multipar G D (a_CPi (Eq A1' A2' A' R') B2) Ac |- _ ] =>
-      pose K1 := multipar_CPi H3 eq_refl;
-      destruct K1 as [B1' [B2' [B3' [Bc' h0]]]];
-      subst;
-      inversion H1;
-      inversion H2; subst;
-      apply multipar_CPi_B_proj in H3;
-      apply multipar_CPi_B_proj in H4;
-      destruct H3 as [L1 H3];
-      destruct H4 as [L2 H4]
-    end.
-    pick_fresh c.
-    exists (open_tm_wrt_co Bc' g_Triv).
-    have: c `notin` L; auto => h.
-    have: c `notin` L0; auto => h0.
-    repeat split; eauto 1.
-    + Ltac erased_open_tm_wrt_co c B1 :=
-        let K:= fresh in
-        match goal with
-        [ h : c `notin` ?L, H11 :  ∀ c : atom, c `notin` ?L → erased_tm (open_tm_wrt_co B1 (g_Var_f c)) |- _ ] =>
-        pose K := subst_co_erased c lc_g_Triv (H11 c h);
-        clearbody K;
-        repeat rewrite co_subst_co_tm_open_tm_wrt_co in K; auto;
-        simpl in K;
-        destruct eq_dec; try congruence;
-        rewrite co_subst_co_tm_fresh_eq in K; auto
-        end.
-      erased_open_tm_wrt_co c B1.
-    + erased_open_tm_wrt_co c B2.
-    + Ltac multipar_open_tm_wrt_co c B1 :=
-        let K:= fresh in
-        let h1:= fresh in
-        match goal with
-        [ H3 : ∀ c : atom, c `notin` ?L1 →
-                           multipar ?G ?D (open_tm_wrt_co B1 (g_Var_f c)) (open_tm_wrt_co ?Bc' (g_Var_f c))
-          |- _ ] =>
-        have: c `notin` L1; auto => h1;
-        pose K := multipar_subst4 c lc_g_Triv (H3 c h1);
-        clearbody K;
-        repeat rewrite co_subst_co_tm_open_tm_wrt_co in K; eauto;
-        simpl in K;
-        destruct eq_dec; try congruence;
-          repeat rewrite co_subst_co_tm_fresh_eq in K; auto
-        end.
-      multipar_open_tm_wrt_co c B1.
-    + multipar_open_tm_wrt_co c B2.
-  - intros G D A' B' a' R' A B a R d H i H0 H1.
-    destruct (H0 H1 A B a A' B' a' R R'); auto.
-    move: (H H1) => h0.
-    split_hyp.
-    have h1 : joins G D A' B; eauto.
-    apply join_transitive with (b := A); eauto.
+  - intros. inversion H as [t [P1 P2]].
+    destruct (multipar_CPi P1 eq_refl) as (c1 & c2 & C & E & P).
+    subst. apply multipar_CPi_B_proj in P1. apply multipar_CPi_B_proj in P2.
+    inversion P1 as [L1 Q1]. inversion P2 as [L2 Q2].
+    pick fresh c.
+    rewrite (co_subst_co_tm_intro c); auto.
+    rewrite (co_subst_co_tm_intro c B2); auto.
+    exists (co_subst_co_tm g_Triv c (open_tm_wrt_co E (g_Var_f c))); split;
+    apply multipar_subst4; auto.
+  - intros. destruct (H0 a b A a' b' A' R eq_refl eq_refl) as (P1 & P2 & P3).
+    apply join_transitive with (b := a); eauto.
     apply join_symmetry; auto.
-    apply join_transitive with (b := B); eauto.
-  - intros G D A A' R a b a' b' i H H0.
-    destruct (H H0 a b A a' b' A' R R); auto.
-    destruct H2; auto.
-    Unshelve. all: auto.
-Qed.
+    apply join_transitive with (b := b); eauto.
+  - intros. inversion H as [t [P1 P2]].
+    exists t; split; eapply multipar_sub; eauto.
+  - intros. destruct (H a b A a' b' A' R eq_refl eq_refl) as (P1 & P2 & P3).
+    auto.
+  - intros. inversion H as [T [P1 P2]].
+    exists (a_Conv T R2 g_Triv); split; apply multipar_Cast_exists; auto.
+Admitted.
 
 
 Lemma consistent_defeq: forall S D A B T R,   DefEq S D A B T R -> Good S D -> joins S D A B.

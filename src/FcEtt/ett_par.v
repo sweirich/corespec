@@ -554,18 +554,18 @@ Proof.
 Qed.
 
 
-Lemma multipar_CPi_B_proj:  ∀ W (A B a A' B' a' T T': tm) R R',
-    multipar W (a_CPi (Eq A B T R) a) (a_CPi (Eq A' B' T' R) a') R' →
+Lemma multipar_CPi_B_proj:  ∀ W (A B a A' B' a' T T': tm) R1 R2 R',
+    multipar W (a_CPi (Eq A B T R1) a) (a_CPi (Eq A' B' T' R2) a') R' →
     exists L, forall c, c `notin` L ->
       multipar W (open_tm_wrt_co a (g_Var_f c)) (open_tm_wrt_co a' (g_Var_f c)) R'.
 Proof.
-  intros W A B a A' B' a' T T' R R' h1.
+  intros W A B a A' B' a' T T' R1 R2 R' h1.
   dependent induction h1; eauto.
   - inversion H. subst. exists L. intros.
     constructor. auto.
   - inversion H; subst.
     eapply IHh1; eauto.
-    destruct (IHh1 _ _ _ _ _ _ _ _ _ ltac:(auto) ltac:(auto)) as [L0 h0]; auto.
+    destruct (IHh1 _ _ _ _ _ _ _ _ _ _ ltac:(auto) ltac:(auto)) as [L0 h0]; auto.
     exists (L \u L0); eauto.
 Qed.
 
@@ -659,4 +659,10 @@ Proof.
   split; eauto.
   rewrite h0.
   eauto.
+Qed.
+
+Lemma multipar_Cast_exists : forall W a1 a2 R R', multipar W a1 a2 R ->
+               multipar W (a_Conv a1 R' g_Triv) (a_Conv a2 R' g_Triv) R.
+Proof. intros. induction H. econstructor. econstructor. auto.
+       econstructor. eapply Par_Cong; eauto. auto.
 Qed.

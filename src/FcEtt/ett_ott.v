@@ -1281,10 +1281,10 @@ with DefEq : context -> available_props -> tm -> tm -> tm -> role -> Prop :=    
      DefEq G  (dom  G )  a1 a2 A R ->
      DefEq G  (dom  G )  a1' a2' A' R' ->
      DefEq G D  (open_tm_wrt_co  B1   g_Triv )   (open_tm_wrt_co  B2   g_Triv )  a_Star R0
- | E_Cast : forall (G:context) (D:available_props) (a' b' A':tm) (R':role) (a b A:tm) (R:role),
+ | E_Cast : forall (G:context) (D:available_props) (a' b' A':tm) (R:role) (a b A:tm),
      DefEq G D a b A R ->
-     Iso G D (Eq a b A R) (Eq a' b' A' R') ->
-     DefEq G D a' b' A' R'
+     Iso G D (Eq a b A R) (Eq a' b' A' R) ->
+     DefEq G D a' b' A' R
  | E_EqConv : forall (G:context) (D:available_props) (a b B:tm) (R2:role) (A:tm) (R1:role),
      DefEq G D a b A R1 ->
      DefEq G  (dom  G )  A B a_Star R2 ->
@@ -1296,7 +1296,6 @@ with DefEq : context -> available_props -> tm -> tm -> tm -> role -> Prop :=    
  | E_CastCong : forall (G:context) (D:available_props) (a1:tm) (R2:role) (a2 B:tm) (R1:role) (A:tm),
      DefEq G D a1 a2 A R1 ->
      DefEq G D A B a_Star R2 ->
-      not (  ( SubRole R2 R1 )  )  ->
      Typing G B a_Star R1 ->
      DefEq G D (a_Conv a1 R2 g_Triv) (a_Conv a2 R2 g_Triv) B R1
 with Ctx : context -> Prop :=    (* defn Ctx *)
