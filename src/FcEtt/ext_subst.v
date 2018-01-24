@@ -1,5 +1,3 @@
-Require Import FcEtt.sigs.
-
 Require Import FcEtt.tactics.
 Require Export FcEtt.imports.
 Require Import FcEtt.utils.
@@ -10,14 +8,12 @@ Require Export FcEtt.ett_ind.
 
 Require Export FcEtt.beta.
 Require Export FcEtt.ext_wf.
+Require Export FcEtt.ext_weak.
 Require Export FcEtt.ett_value.
 
 Set Bullet Behavior "Strict Subproofs".
 Set Implicit Arguments.
 
-
-Module ext_subst (weak : ext_weak_sig) <: ext_subst_sig.
-  Include weak.
 
 Lemma Ctx_strengthen : forall G1 G2, Ctx (G2 ++ G1) -> Ctx G1.
   induction G2; [ | inversion 1]; simpl; auto.
@@ -618,5 +614,3 @@ Proof.
   eapply rho_swap with (x := x); eauto.
 Qed.
 
-
-End ext_subst.

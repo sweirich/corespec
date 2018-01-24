@@ -1,6 +1,3 @@
-
-Require Import FcEtt.sigs.
-
 Require Export FcEtt.imports.
 Require Import FcEtt.utils.
 Require Export FcEtt.tactics.
@@ -12,9 +9,6 @@ Require Export FcEtt.ett_ind.
 Require Export FcEtt.ett_par.
 (* Require Export FcEtt.erase_syntax. *)
 
-
-Module ext_red_one (invert : ext_invert_sig).
-  Import invert.
 
 Set Implicit Arguments.
 Set Bullet Behavior "Strict Subproofs".
@@ -164,5 +158,3 @@ Proof.
 Qed.
 *)
 
-
-End ext_red_one.

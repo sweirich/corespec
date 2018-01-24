@@ -1,5 +1,3 @@
-Require Import FcEtt.sigs.
-
 Require Import FcEtt.tactics.
 
 Require Export FcEtt.imports.
@@ -19,11 +17,6 @@ Require Export FcEtt.fc_wf.
 Require Export FcEtt.fc_context_fv.
 
 Import FcEtt.ett_ott.
-
-Module fc_subst (wf : fc_wf_sig) (weak : fc_weak_sig) <: fc_subst_sig.
-
-Export wf.
-Export weak.
 
 Set Bullet Behavior "Strict Subproofs".
 Set Implicit Arguments.
@@ -1556,5 +1549,3 @@ Proof.
     rewrite (co_subst_co_co_fresh_eq); auto.
     eauto.
 Qed.
-
-End fc_subst.

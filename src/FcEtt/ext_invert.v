@@ -1,4 +1,3 @@
-Require Import FcEtt.sigs.
 Require Import FcEtt.imports.
 Require Import FcEtt.ett_ott.
 Require Import FcEtt.ett_inf.
@@ -7,11 +6,10 @@ Require Import FcEtt.ett_ind.
 Require Import FcEtt.ett_par.
 Require Import FcEtt.ext_wf.
 
+Require Import FcEtt.ext_subst.
+
 Require Import FcEtt.utils.
-
-Module ext_invert (subst : ext_subst_sig) <: ext_invert_sig.
-
-  Include subst.
+Require Import FcEtt.notations.
 
 
 Set Bullet Behavior "Strict Subproofs".
@@ -944,6 +942,7 @@ Proof.
   eapply Typing_regularity; eauto.
 Qed.
 
+
 Lemma Iso_regularity :
   forall G D phi1 phi2, Iso G D phi1 phi2 -> PropWff G phi1 /\ PropWff G phi2.
 Proof.
@@ -959,6 +958,13 @@ Proof.
   inversion H; subst.
   repeat split; auto.
 Qed.
+
+
+Lemma DefEq_regularity2 : `(DefEq Γ D A B T R ⟹ (Γ ⊨ A : T / R) ∧ Γ ⊨ B : T / R).
+Proof.
+  eauto using DefEq_regularity, PropWff_regularity.
+Qed.
+
 
 (* -------------------------------------------------------------- *)
 
@@ -1225,4 +1231,24 @@ Proof.
   eapply Typing_regularity. eauto.
 Qed.
 
-End ext_invert.
+
+(* More inversion lemmas *)
+Lemma invert_a_Conv : `(
+  Γ ⊨ (a_Conv a R₂ g_Triv) : A / R →
+   ∃ A₁ A₂ R₁ R₃,
+    Γ ⊨ a : A₁ / R₁ ∧
+    DefEq Γ (dom Γ) A₁ A₂ a_Star R₂ ∧
+    DefEq Γ (dom Γ) A₂ A a_Star R₃ ∧
+    Γ ⊨ A₂ : a_Star / R₁ ∧
+    ¬ SubRole R₂ R₁ ∧
+    SubRole R₁ R₃ ∧
+    SubRole R₃ R).
+Proof.
+  intros.
+  (* FIXME: make a friendlier depind that automatically reinstantiate hyps properly
+     (in our use cases, we rarely, if ever, need the additional generality) *)
+  dependent induction H.
+  - move: (IHTyping a R₂ eq_refl) => h. ok.
+  - move: (IHTyping1 a R₂ eq_refl) => h. ok.
+  - ok.
+Qed.

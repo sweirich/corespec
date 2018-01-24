@@ -1,16 +1,12 @@
-Require Import FcEtt.sigs.
-
 Require Import FcEtt.tactics.
 Require Import FcEtt.utils.
 Require Export FcEtt.imports.
+
 Require Export FcEtt.ett_inf.
 (* Require Export FcEtt.ett_par. *)
 Require Export FcEtt.ett_ind.
 
-
-Module ext_weak (wf: ext_wf_sig) (invert : ext_invert_sig).
-
-Include wf.
+Require Import FcEtt.ext_wf.
 
 Set Bullet Behavior "Strict Subproofs".
 Set Implicit Arguments.
@@ -308,5 +304,3 @@ Proof.
 Qed.
 *)
 
-
-End ext_weak.

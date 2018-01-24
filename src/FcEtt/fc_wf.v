@@ -1,5 +1,3 @@
-Require Import FcEtt.sigs.
-
 Require Export FcEtt.imports.
 Require Export FcEtt.ett_inf.
 Require Export FcEtt.ett_ind.
