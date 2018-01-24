@@ -1,4 +1,3 @@
-Require Export FcEtt.tactics.
 Require Export FcEtt.ett_inf.
 Require Import FcEtt.imports.
 

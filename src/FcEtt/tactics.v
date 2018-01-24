@@ -4,6 +4,13 @@ Require Import FcEtt.imports.
 (* FIXME; instead of importing inf, import only the right metalib module *)
 Require Import FcEtt.ett_inf.
 
+Require Import FcEtt.fset_facts.
+
+(* TODO: sort the import, remove unnecessary ones *)
+Import AtomSetFacts AtomSetProperties.
+
+Require Import FcEtt.notations.
+
 
 (**** Tactics for the project ****)
 
@@ -11,14 +18,24 @@ Require Import FcEtt.ett_inf.
 (* TODO
    - automated f_equal (etc)
    - split forall ands
-   - pick fresh and specialize all atom -> P hyps
    - automatic regularity application (example use sites: fc_dec_fun, ext_red)
    - the organization (in different tactics, etc) is probably perfectible
 *)
 
 
+(*******************************)
+(**** Basic Building Blocks ****)
+(*******************************)
+Ltac only_one_goal :=
+  let n:= numgoals in guard n=1.
+
+
+(* Shorthands for instantiation/specialization *)
+Ltac spec2 H x xL := specialize (H x xL).
+Ltac inst2 H x xL := let h := fresh H x in move: (H x xL) => h.
+
 (* Dynamic type, useful for some tactics *)
-Inductive Dyn : Type := dyn : forall {T : Type}, T -> Dyn.
+Polymorphic Cumulative Inductive Dyn : Type := dyn : forall {T : Type}, T -> Dyn.
 
 Ltac unwrap_dyn d :=
   match d with
@@ -159,12 +176,18 @@ Ltac disjunction_assumption :=
 (* This version does NOT check if the inversion produces only one goal *)
 Ltac invert_and_clear H := inversion H; clear H.
 
+(* This one does *)
+Ltac safe_invert_and_clear H := invert_and_clear H; only_one_goal.
+
 
 (* Technical, tactic-internal: wrap an hypothesis in a dummy pair, so that it doesn't get picked-up by, say, a match goal
    This is useful to avoid processing an hypothesis multiple times (ending up in an infinite loop) or to prevent an hypothesis from
    being processed entirely, based on some criteria. *)
 Definition wrap : forall P : Prop, P -> P * True := fun _ p => (p, I).
 Ltac wrap_hyp H := apply wrap in H.
+Ltac unwrap_all := repeat match goal with
+    | [ H : _ * True  |- _      ] => destruct H as [H _]
+  end.
 
 
 (* FIXME: copying this here, temporarily *)
@@ -187,7 +210,7 @@ Ltac prove_this stmt name :=
 
 (* This tactic finds "invertible" hyps (that is, the one that, once inverted, add information without generating multiple subgoals) and invert them. They are wrapped up afterwards to
    avoid inverting them again. *)
-Ltac find_invertible_hyps :=
+Ltac find_invertible_hyps := (* FIXME: finish + make sure it's uniform *)
   repeat (
   match goal with
     (* TODO: should we keep this hyp around? -> wrap *)
@@ -198,6 +221,11 @@ Ltac find_invertible_hyps :=
     (* Key step: invert typing hyps *)
     (* TODO: do we want to keep the original hyp - wrap - or clear it? *)
     | [ H : AnnTyping _ (_ _) _ _ |- _ ] => inversion H; wrap_hyp H
+
+
+    | [H : _ ⊨ (_ _) : _ |- _] => safe_invert_and_clear H
+    | [H : PropWff _ (Eq _ _ _ _) |- _] => safe_invert_and_clear H
+    | [H : RhoCheck _ _ _ |- _] => safe_invert_and_clear H
 
   (* TODO: rhochecks, deq as well *)
   (* TODO *)
@@ -215,8 +243,31 @@ Ltac pair_coupled_hyps :=
   end.
 
 
+Ltac simp_hyp H :=
+  match type of H with
+    | _ ∧ _ =>
+      let H1 := fresh H in
+      let H2 := fresh H in
+      move: H => [H1 H2];
+      simp_hyp H1;
+      simp_hyp H2
+    | ∃ _, _ =>
+      let x := fresh "x" in
+      let H1 := fresh H  in
+      move: H => [x H1];
+      simp_hyp H1
+    | _ => idtac
+  end.
+
+
+(* Simple forward reasoning *)
+Ltac fwd :=
+  repeat match goal with
+    | [ H₁ : ?T₁ → ?T₂, H₂ : ?T₁ |- _] => let h := fresh H₁ H₂ in move: (H₁ H₂) => ?; wrap_hyp H₂ (* Not clear which one to wrap *)
+  end.
+
+
 (* Put hyps in a more exploitable shape *)
-(* TODO: should that be called forward reasoning instead? *)
 Ltac pcess_hyps :=
   find_invertible_hyps;
 
@@ -224,7 +275,7 @@ Ltac pcess_hyps :=
 
   repeat (
     match goal with
-      | [ H : _ /\ _       |- _ ] => destruct H
+      | [ H : _ ∧ _       |- _ ] => destruct H
 
       | [ H : exists x, _  |- _ ] => destruct H
 
@@ -278,6 +329,8 @@ Ltac prove_eq_same_head :=
 (**** Handling of free variables ****)
 (************************************)
 
+Tactic Notation "pick" "fresh" := let x := fresh "x" in pick fresh x.
+
 (** Ad-hoc version of fsetdec, hopefully faster **)
 (* TODO: handle the subset-union cases (see fc_dec.v) *)
 Ltac break_union :=
@@ -291,29 +344,46 @@ Ltac fsetdec_fast := solve [break_union; basic_solve_n 3].
 
 
 (** Autofresh: instantiate all co-finitely quantified assumptions with the same variable **)
-Ltac autofresh_fixed x :=
-    (* Try to spot the freshness assumption and to make it as general as possible (in case the co-domain is an evar) *)
+(* These tactics have 2 versions: the first one, without suffix, is to be used when there is
+   only one variable we are interested in. Hypotheses are then *specialized* - that is, we
+   loose the original universal assumption while making the specific instance. The versions
+   with a '+' suffic are meant to be used when there are multiple variables involved; they
+   add the relevant instances without discarding the original hypothesis. *)
+Ltac autofresh_fixed_param tac x :=
+    (* Trying to spot the freshness assumption and to make it as general as possible
+    (in case the co-domain is an evar) *)
     try (
       match goal with
         | [H : x `notin` _ |- _] =>
           let l := gather_atoms in
           instantiate (1 := l) in H
       end);
+  (* Instantiating all co-finitely quantified hyps *)
    repeat match goal with
      | [ H : ∀ x' : atom, x' `notin` ?L -> _ |- _] =>
        let xL := fresh x L in
        (have xL : x `notin` L by first [fsetdec_fast | fsetdec]);
-       specialize (H x xL);
+       tac H x xL;
+       simp_hyp H;
+       wrap_hyp H;
        clear xL (* Clear specialized freshness assumptions *)
-   end.
+   end;
+   unwrap_all.
 
-Tactic Notation "autofresh" "with" hyp(x) := autofresh_fixed x.
+
+Tactic Notation "autofresh"  "with" hyp(x) := autofresh_fixed_param spec2 x.
+Tactic Notation "autofresh+" "with" hyp(x) := autofresh_fixed_param inst2 x.
+
+Tactic Notation "autofresh" "for" "all" := fail "TODO". (* /!| issues with unwrap_all *)
 
  (* General version that picks up a fresh variable instead *)
- Ltac autofresh :=
+ Ltac autofresh_param tac :=
    let x := fresh "x" in
    pick fresh x;
-   autofresh_fixed x.
+   autofresh_fixed_param tac x.
+
+Tactic Notation "autofresh"  := autofresh_param spec2.
+Tactic Notation "autofresh+" := autofresh_param inst2.
 
 
 (** General purpose automation tactic tailored for this development **)
@@ -323,7 +393,7 @@ Ltac autotype :=
 (* TODO: can use exactly once for inversions *)
 (* TODO: integrate the relevant ad-hoc tactics declared in different files *)
   repeat match goal with
-    | [ |- _ /\ _ ] => split
+    | [ |- _ ∧ _ ] => split
 
     (* Force failure if fsetdec can't solve this goal (there shouldn't be cases where other tactics can solve it) *)
     | [ |- _ `in` _   ] => try fsetdec_fast; first [fsetdec | fail 2]
@@ -362,6 +432,75 @@ Ltac autotype :=
   end.
 
 
+
+(** Bulldozing away these pesky free variables conditions **)
+(* TODO: autotype should call autofv when needed *)
+
+(* TODO:
+  - not complete, many cases are not covered (co vars in particular)
+  - right now, the following mostly implements proofs of non-inclusion. Implement inclusions
+*)
+
+(* Guard predicate: Does T 'talk about' variables? *)
+Ltac guard_about_vars T :=
+  match T with
+    | _ ∉ _ => idtac
+  end.
+
+Ltac fresh_fireworks := (* ... a firework of freshness conditions *)
+  repeat (fwd (* FIXME: should be *some* fwd reasoning, but not pcess_hyps (no unwrap) *);
+    match goal with
+      | [ H : _ ∉ (_ ∪ _) |- _ ] =>
+          let h := fresh H in
+          move: H (notin_union_1 _ _ _ H) (notin_union_2 _ _ _ H) => /= _ H h
+      | [ H : _ ∉ singleton _ |- _ ] =>
+          idtac "TODO: inv singleton";
+          wrap_hyp H
+      | [ H : _ ∉ fv_tm_tm_tm (open_tm_wrt_tm _ _) |- _ ] =>
+          let h := fresh H in
+          move: (subset_notin H (fv_tm_tm_tm_open_tm_wrt_tm_lower _ _)) => h;
+          wrap_hyp H
+      | [ H : _ ∉ fv_tm_tm_tm (open_tm_wrt_co _ _) |- _ ] =>
+          let h := fresh H in
+          move: (subset_notin H (fv_tm_tm_tm_open_tm_wrt_co_lower _ _)) => h;
+          wrap_hyp H
+      (* TODO: other cases (fv_co_co_co (open_co_wrt_co _ _)), etc *)
+    end);
+  (* unwrap_all -> Performed by autofv_solve, to avoid processing the same hyps several times *)
+  idtac.
+
+Ltac autofv_solve :=
+  unwrap_all;
+  repeat match goal with
+    (* TODO (long-term): The following should be generated by lngen *)
+    | [ |- _ ∉ fv_tm_tm_tm (open_tm_wrt_tm _ _) ] => solve [rewrite fv_tm_tm_tm_open_tm_wrt_tm_upper; cbn; autofv_solve | fail ]
+    | [ |- _ ∉ fv_tm_tm_tm (open_tm_wrt_co _ _) ] => solve [rewrite fv_tm_tm_tm_open_tm_wrt_co_upper; cbn; autofv_solve | fail ]
+    | [ |- _ ∉ fv_co_co_co (open_co_wrt_co _ _) ] => solve [rewrite fv_co_co_co_open_co_wrt_co_upper; cbn; autofv_solve | fail ]
+    | [ |- _ ∉ fv_co_co_co (open_co_wrt_tm _ _) ] => solve [rewrite fv_co_co_co_open_co_wrt_tm_upper; cbn; autofv_solve | fail ]
+    | [ |- _ ∉ fv_tm_tm_co (open_co_wrt_tm _ _) ] => solve [rewrite fv_tm_tm_co_open_co_wrt_tm_upper; cbn; autofv_solve | fail ]
+    | [ |- _ ∉ fv_tm_tm_co (open_co_wrt_co _ _) ] => solve [rewrite fv_tm_tm_co_open_co_wrt_co_upper; cbn; autofv_solve | fail ]
+    | [ |- _ ∉ fv_co_co_tm (open_tm_wrt_co _ _) ] => solve [rewrite fv_co_co_tm_open_tm_wrt_co_upper; cbn; autofv_solve | fail ]
+    | [ |- _ ∉ fv_co_co_tm (open_tm_wrt_tm _ _) ] => solve [rewrite fv_co_co_tm_open_tm_wrt_tm_upper; cbn; autofv_solve | fail ]
+
+    | [ |- _ ∉ (_ ∪ _) ] => eapply not_in_union
+
+  end;
+  solve [fsetdec_fast | fsetdec | eauto].
+
+
+Ltac autofv_fwd :=
+  fresh_fireworks;
+  repeat (match goal with
+    | [ H : ?T₁ → ?T₂ |- _ ] =>
+      guard_about_vars T₁;
+      let t₁ := fresh in
+      (have t₁ : T₁ by autofv_solve);
+      move: {H} (H t₁) => H
+  end; fresh_fireworks).
+
+Ltac autofv :=
+  autofv_fwd;
+  autofv_solve.
 
 
 (**** Aliases for manual proofs ****)
