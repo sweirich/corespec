@@ -387,6 +387,16 @@ Tactic Notation "autofresh+" := autofresh_param inst2.
 
 
 (** General purpose automation tactic tailored for this development **)
+
+(* Placeholder tactics meant to be redifined in the corresponding files *)
+Tactic Notation "tactic-not-avail" ident(name) :=
+  idtac "Info: tactic" name "isn't implemented at this point in the proof.";
+  idtac "Make sure to import the corresponding file if it is needed.".
+
+Ltac autoreg := tactic-not-avail autoreg.
+Ltac autoinv := tactic-not-avail autoinv.
+
+(* TODO: call on autoreg, autoinv, etc *)
 Ltac autotype :=
   pcess_hyps;
 

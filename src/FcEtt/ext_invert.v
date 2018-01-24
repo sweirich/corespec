@@ -698,7 +698,7 @@ Proof.
 Qed.
 
 Lemma context_DefEq_typing:
-  forall G1  a A R,
+  forall G1 a A R,
     Typing G1 a A R -> forall D G2, Ctx G2 -> context_DefEq D G1 G2 -> Typing G2 a A R.
 Proof.
   apply context_DefEq_mutual.
@@ -1252,3 +1252,83 @@ Proof.
   - move: (IHTyping1 a R₂ eq_refl) => h. ok.
   - ok.
 Qed.
+
+
+
+
+(****************************)
+(**** Regularity Tactics ****)
+(****************************)
+
+Check Typing_regularity.
+Ltac reg H :=
+  match type of H with
+  (*
+    | AnnTyping _ ?a ?A =>
+      first
+        [ let tpgA := fresh "tpg" A in move: (AnnTyping_regularity H) => tpgA
+        | let tpgA := fresh "tpg"   in move: (AnnTyping_regularity H) => tpgA]
+    | AnnDefEq _ _ ?g ?A ?B =>
+      let KA := fresh "K" A in
+      let KB := fresh "K" B in
+      let g' := fresh "g" in
+      let tpgA := fresh "tpg" A in
+      let tpgB := fresh "tpg" B in
+      (* let deqg' := fresh "deq" g' in *)
+      move: (AnnDefEq_regularity H) => [KA [KB [g' [tpgA [tpgB (* deqg' *) _]]]]]
+    (* FIXME: this is the same case than above, with less informative fresh names.
+       This is needed because fresh can fail (like, seriously?)
+       TODO: failproof version of fresh (will it be solved in ltac2?) *)
+    | AnnDefEq _ _ ?g ?A ?B =>
+      let KA   := fresh "K"   in
+      let KB   := fresh "K"   in
+      let g'   := fresh "g"   in
+      let tpgA := fresh "tpg" in
+      let tpgB := fresh "tpg" in
+      (* let deqg' := fresh "deq" g' in *)
+      move: (AnnDefEq_regularity H) => [KA [KB [g' [tpgA [tpgB (* deqg' *) _]]]]]
+
+    | AnnIso _ _ ?g ?phi1 ?phi2 =>
+      let pwfp1 := fresh "pwf" phi1 in
+      let pwfp2 := fresh "pwf" phi2 in
+      move: (AnnIso_regularity H) => [pwfp1 pwfp2]
+      *)
+    | _ ⊨ _ : a_Star / _ => fail 1
+    | _ ⊨ _ : _ / _ =>
+      move: (Typing_regularity H) => ?
+    | DefEq _ _ _ _ _ _ => (* TODO: do we want to name arguments? (like above) *)
+      move: (DefEq_regularity2 H) => [? ?]
+    
+
+  end.
+
+(* TODO: extend (for now, it assumes that we only need regularity on defeq hyps - there are other use cases in other files) *)
+Ltac autoreg :=
+  repeat match goal with
+    | [ H: AnnDefEq _ _ _ _ _ |- _ ] =>
+      reg H; wrap_hyp H
+    | [ H: AnnIso _ _ _ _ _ |- _ ] =>
+      reg H; wrap_hyp H
+    | [ H: _ ⊨ _ : _ / _ |- _ ] =>
+      reg H; wrap_hyp H
+    | [ H: DefEq _ _ _ _ _ _ |- _ ] =>
+      reg H; wrap_hyp H
+  end;
+  unwrap_all.
+
+
+(****************************)
+(**** Inversion Tactics ****)
+(****************************)
+
+Ltac autoinv :=
+  repeat match goal with  
+    | [H : _ ⊨ a_App _ Rel _ _   : _ / _ |- _] => eapply invert_a_App_Rel in H; pcess_hyps
+    | [H : _ ⊨ a_App _ Irrel _ _ : _ / _ |- _] => eapply invert_a_App_Irrel in H; pcess_hyps
+    | [H : _ ⊨ a_App _ ?ρ _ _    : _ / _ |- _] => destruct ρ
+    | [H : _ ⊨ a_CApp _ _        : _ / _ |- _] => eapply invert_a_CApp in H; pcess_hyps
+    | [H : _ ⊨ a_UAbs _ _ _      : _ / _ |- _] => eapply invert_a_UAbs in H; pcess_hyps
+    | [H : _ ⊨ a_UCAbs _         : _ / _ |- _] => eapply invert_a_UCAbs in H; pcess_hyps
+    | [H : _ ⊨ a_Conv _ _ _      : _ / _ |- _] => eapply invert_a_Conv in H; pcess_hyps
+  (* TODO *)
+  end.
