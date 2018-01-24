@@ -1,5 +1,4 @@
 
-Require Import FcEtt.sigs.
 
 Require Import Omega.
 
@@ -70,8 +69,8 @@ Qed.
 Lemma a_Pi_head : forall W b A R rho B R',
     Par W (a_Pi rho A R B) b R' -> exists A' B' L,
       b = a_Pi rho A' R B' /\ Par W A A' R /\
-      (forall x, x `notin` L -> 
-        Par([(x,R)] ++ W) (open_tm_wrt_tm B (a_Var_f x)) 
+      (forall x, x `notin` L ->
+        Par([(x,R)] ++ W) (open_tm_wrt_tm B (a_Var_f x))
                                (open_tm_wrt_tm B' (a_Var_f x)) R').
 Proof.
   intros. inversion H. subst.
@@ -135,7 +134,7 @@ Ltac invert_equality :=
       | [ P1 : Par _ ?b ?b _,
           P2 : Par _ ?b ?c _ |-
           exists cc:tm, Par _ ?b cc _ /\ Par _ ?c cc _ ] =>
-        exists c; split; auto; 
+        exists c; split; auto;
         apply Par_Refl; eapply Par_erased_tm_snd;
         eauto; fail
       end.
@@ -143,9 +142,9 @@ Ltac invert_equality :=
   Ltac try_Refl_right :=
   try match goal with
       | [ P1 : Par _ ?b ?c _,
-          P2 : Par _ ?b ?b _ |- 
+          P2 : Par _ ?b ?b _ |-
           exists cc:tm, Par _ ?c cc _ /\ Par _ ?b cc _ ] =>
-        exists c; split; auto; 
+        exists c; split; auto;
         apply Par_Refl; eapply Par_erased_tm_snd;
         eauto; fail
       end.
@@ -201,7 +200,7 @@ Ltac use_size_induction a conf L1 L2 :=
   | [   IH : forall y: nat, ?T,
         H1 : Par ?W a ?b0 ?R,
         H2 : Par ?W a ?b1 ?R |- _ ] =>
-      move: (@IH (size_tm a) ltac:(omega) a ltac:(auto) _ _ _ H1 _ H2) => 
+      move: (@IH (size_tm a) ltac:(omega) a ltac:(auto) _ _ _ H1 _ H2) =>
       [ conf [L1 L2]]
   end.
 
@@ -319,7 +318,7 @@ Proof.
     exists (open_tm_wrt_tm ax bc). inversion Par2; subst.
      + split. eapply Par_Beta; eauto.
        pick fresh x; eapply open2. auto. eauto. eauto.
-     + split. eapply Par_Beta; eauto. 
+     + split. eapply Par_Beta; eauto.
        pick fresh x; eapply open2. auto. eauto. eauto.
   - (* app cong / app cong *)
     use_size_induction a0 ac Par1 Par2.
@@ -552,7 +551,7 @@ Proof.
        * exists (a_Conv (a_App a5 Rel R2 (a_Conv b4 R4 g_Triv)) R4 g_Triv).
          inversion H1; subst. split. apply Par_Combine.
          apply Par_PushCombine; auto. econstructor; econstructor.
-         econstructor; auto. apply Par_Combine; auto. 
+         econstructor; auto. apply Par_Combine; auto.
      + inversion Par1; subst.
        * exists (a_Conv (a_App a2 Rel R2 (a_Conv b4 R4 g_Triv)) R4 g_Triv).
          inversion H9; subst. split; econstructor; econstructor; auto.
@@ -604,7 +603,7 @@ Proof.
   - (* cpush / cbeta *)
     use_size_induction a0 ac Par1 Par2.
     inversion Par2; subst; inversion Par1.
-  - (* cpush / capp *) 
+  - (* cpush / capp *)
     use_size_induction a0 ac Par1 Par2.
     inversion Par1; subst.
     + exists (a_Conv (a_CApp a3 g_Triv) R0 g_Triv). split.
@@ -636,7 +635,7 @@ Proof.
           apply Par_Combine. econstructor; eauto.
       + inversion Par2; subst.
         * exists (a_Conv (a_CApp a2 g_Triv) R0 g_Triv).
-          split. apply Par_Combine. econstructor; eauto. 
+          split. apply Par_Combine. econstructor; eauto.
           econstructor; eapply Par_erased_tm_snd; eauto.
         * exists (a_Conv (a_CApp a2 g_Triv) R0 g_Triv).
           split. apply Par_Combine. econstructor; eauto. econstructor; eauto.
@@ -644,7 +643,7 @@ Proof.
           split; apply Par_Combine; econstructor; eauto.
 Qed.
 
-Lemma confluence : forall W a a1 R, Par W a a1 R -> 
+Lemma confluence : forall W a a1 R, Par W a a1 R ->
                    forall a2, Par W a a2 R -> exists b,
                            Par W a1 b R /\ Par W a2 b R.
 Proof.
@@ -693,7 +692,7 @@ Proof.
   intros W T b R H. dependent induction H; eauto using Par_Const.
 Qed.
 
-Lemma Par_Fam : forall W F a R, Par W (a_Fam F) a R -> 
+Lemma Par_Fam : forall W F a R, Par W (a_Fam F) a R ->
                  (a = a_Fam F) \/ ~(value_type R (a_Fam F)).
 Proof. intros. dependent induction H. auto. right. intro.
        inversion H2. subst. have E: (Ax a A R1 = Ax a0 A0 R2).
@@ -707,7 +706,7 @@ Proof. intros. dependent induction H; auto. apply Par_Fam in H.
        inversion H; auto.
 Qed.
 
-Lemma multipar_Pi : forall W rho A B R', multipar W A B R' -> 
+Lemma multipar_Pi : forall W rho A B R', multipar W A B R' ->
       forall A1 R A2, A = a_Pi rho A1 R A2 -> exists B1 B2, B = (a_Pi rho B1 R B2).
 Proof.
 intros W rho A B R' H. induction H. intros. subst. exists A1, A2. auto.
@@ -716,7 +715,7 @@ inversion H; subst; destruct (IHmultipar _ _ _ eq_refl) as [B1 [B2 EQ]]; auto;
 exists B1, B2; auto.
 Qed.
 
-Lemma multipar_CPi : forall W A C R', multipar W A C R' -> 
+Lemma multipar_CPi : forall W A C R', multipar W A C R' ->
         forall A1 A2 A3 R B, A = a_CPi (Eq A1 A2 A3 R) B -> exists B1 B2 B3 C2,
         C = (a_CPi (Eq B1 B2 B3 R) C2).
 Proof.
@@ -740,7 +739,7 @@ Qed.
 
 
 
-Lemma multipar_CAbs : forall W A C R', multipar W A C R' -> 
+Lemma multipar_CAbs : forall W A C R', multipar W A C R' ->
         forall A1 A2 A3 R B, A = a_CAbs (Eq A1 A2 A3 R) B -> exists B1 B2 B3 C2,
         C = (a_CAbs (Eq B1 B2 B3 R) C2).
 Proof.
@@ -752,7 +751,7 @@ Qed.
 
 (* --------------------------------------------------- *)
 
-(* 
+(*
 Lemma multipar_lc2: forall a1 a2, lc_tm a1 -> multipar a1 a2 -> lc_tm a2.
   induction 2; eauto.
   apply IHmultipar.
@@ -761,7 +760,7 @@ Qed.
 *)
 
 Lemma joins_lc_fst : forall W a b R, joins W a b R -> lc_tm a.
-Proof. intros. inversion H as [T [H1 H2]]. 
+Proof. intros. inversion H as [T [H1 H2]].
        apply multipar_erased_tm_fst in H1.
        eapply erased_lc. eauto.
 Qed.
@@ -806,7 +805,7 @@ Lemma join_consistent : forall W a b R, joins W a b R -> consistent a b R.
 Proof.
   intros. assert (H' := H).
   destruct H as (TT & MSL & MSR).
-  destruct a; try step_right; destruct b; try step_left; auto. 
+  destruct a; try step_right; destruct b; try step_left; auto.
   all: try multipar_step; try (multipar_step; inversion EQ).
   - apply multipar_Fam in MSL. inversion MSL as [H2 | H3]. subst.
     inversion H2; subst. econstructor.
@@ -817,7 +816,7 @@ Proof.
     inversion H'; auto. eapply joins_lc_snd; eauto.
   - destruct phi. destruct (multipar_CPi MSL eq_refl)
     as (c1 & c2 & c3 & c4 &  EQ). inversion EQ; subst. econstructor.
-    apply joins_lc_fst in H'. inversion H'; auto. 
+    apply joins_lc_fst in H'. inversion H'; auto.
     eapply joins_lc_fst; eauto. apply joins_lc_snd in H'.
     inversion H'; auto. eapply joins_lc_snd; eauto.
 Qed.
@@ -863,7 +862,7 @@ Proof.
    exists e. split; eauto.
 Qed.
 
-Lemma multipar_append : forall W a b c R, multipar W a b R -> 
+Lemma multipar_append : forall W a b c R, multipar W a b R ->
                         multipar W b c R -> multipar W a c R.
 Proof.
   intros.
@@ -880,7 +879,7 @@ Qed.
  *)
 
 
-Lemma join_transitive : forall W a b R, joins W a b R -> 
+Lemma join_transitive : forall W a b R, joins W a b R ->
                         forall c, joins W b c R -> joins W a c R.
 Proof.
   intros W a b R H. destruct H as [t [H1 H2]].
@@ -1201,7 +1200,7 @@ Lemma consistent_mutual:
   (forall S phi,   PropWff S phi -> True) /\
   (forall S D p1 p2, Iso S D p1 p2 -> (forall A1 B1 T1 A2 B2 T2 R,
                      p1 = Eq A1 B1 T1 R -> p2 = Eq A2 B2 T2 R ->
-    (joins (ctx_to_rctx S) A1 A2 R /\ joins (ctx_to_rctx S) B1 B2 R /\ 
+    (joins (ctx_to_rctx S) A1 A2 R /\ joins (ctx_to_rctx S) B1 B2 R /\
      joins (ctx_to_rctx S) T1 T2 R))) /\
   (forall S D A B T R,   DefEq S D A B T R -> joins(ctx_to_rctx S) A B R) /\
   (forall S,       Ctx S -> True).
