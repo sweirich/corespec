@@ -61,8 +61,9 @@ coq: $(COQMKFILENAME)
 	$(LNGEN) --coq-no-proofs --coq $*_inf.v --coq-ott $*_ott $(OTT_LOC)/$*.ott
 	make METALIB.FIX_$*_inf
 
+#	{ echo "-R . $(LIBNAME)" ; ls *.v ; } > _CoqProject &&
 $(COQMKFILENAME): Makefile $(shell ls *.v | grep -v _ott.v | grep -v _inf.v)
-	{ echo "-R . $(LIBNAME)" ; ls *.v ; } > _CoqProject && coq_makefile -arg '-w -variable-collision,-meta-collision,-require-in-module' -f _CoqProject -o $(COQMKFILENAME)
+	coq_makefile -arg '-w -variable-collision,-meta-collision,-require-in-module' -f _CoqProject -o $(COQMKFILENAME)
 
 # Target to be called with some filename appended to it
 # It is a quick hack to fix the imports to metalib
