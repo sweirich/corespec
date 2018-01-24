@@ -48,6 +48,9 @@ coq: $(COQMKFILENAME)
 %.vo: $(COQMKFILENAME) %.v
 	@$(MAKE) -f CoqSrc.mk $*.vo
 
+%.vio: $(COQMKFILENAME) %.v
+	@$(MAKE) -f CoqSrc.mk $*.vio
+
 
 %_ott.v: $(OTT_LOC)/%.ott Makefile
 	ott -i $(OTT_LOC)/$*.ott -o $*_ott.v -coq_lngen true
@@ -69,6 +72,6 @@ METALIB.FIX_%:
 	sed '1d' $*.v > __TMP__; mv __TMP__ $*.v
 
 coqclean:
-	rm -if *.v.d *.vo *.glob $(VOFILES) $(COQMKFILENAME)
+	rm -if *.v.d *.vo *.vio *.glob $(VOFILES) $(COQMKFILENAME)
 
 clean: coqclean
