@@ -35,7 +35,7 @@ Ltac spec2 H x xL := specialize (H x xL).
 Ltac inst2 H x xL := let h := fresh H x in move: (H x xL) => h.
 
 (* Dynamic type, useful for some tactics *)
-Polymorphic Cumulative Inductive Dyn : Type := dyn : forall {T : Type}, T -> Dyn.
+Polymorphic (* Cumulative *) Inductive Dyn : Type := dyn : forall {T : Type}, T -> Dyn.
 
 Ltac unwrap_dyn d :=
   match d with
