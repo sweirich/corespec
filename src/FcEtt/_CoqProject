@@ -24,3 +24,4 @@ tactics.v
 toplevel.v
 utils.v
 beta.v
+congruence.v

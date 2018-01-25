@@ -1,4 +1,3 @@
-Require Import FcEtt.sigs.
 Require Import FcEtt.imports.
 Require Import FcEtt.ett_ott.
 
@@ -13,13 +12,9 @@ Require Import FcEtt.ext_red_one.
 
 Require Import FcEtt.tactics.
 
+Require Export FcEtt.ext_invert.
 
-Module ext_red (invert : ext_invert_sig).
-
-  Export invert.
-
-Module red_one := ext_red_one invert.
-Export red_one.
+Require Export FcEtt.ext_red_one.
 
 
 Set Bullet Behavior "Strict Subproofs".
@@ -84,7 +79,7 @@ Proof.
      eapply E_Sym. eauto.
      move: (DefEq_regularity h0) => h4.
      inversion h4.
-     auto. 
+     auto.
      Unshelve. exact (dom G). exact (dom G).
 Qed.
 
@@ -246,7 +241,7 @@ Proof.
       * eapply DefEq_weaken_available.
         eapply E_Sub with (R1 := x1); auto.
         eapply (E_Sym _ _ _ _ _ _ x0x2).
-      * apply DefEq_regularity in x0x2. 
+      * apply DefEq_regularity in x0x2.
         eapply E_SubRole with (R1 := x1); auto.
         by inversion x0x2.
       * eauto.
@@ -327,7 +322,3 @@ Proof.
     rewrite app_nil_l app_nil_r. intros.
     eapply E_SubRole with (R1 := x1); auto.
 Qed.
-
-
-
-End  ext_red.

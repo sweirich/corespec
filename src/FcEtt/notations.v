@@ -29,6 +29,7 @@ Notation "( ρ = +)∨( x ∉ '𝕗𝕧' A )" := (RhoCheck ρ x A) (at level 70,
 Notation "ρ-check ρ x A" := (RhoCheck ρ x A) (at level 70, only printing).
 
 (* Functions *)
+(* Change to ℱ𝒱 instead ?*)
 Notation "'ℱν' a" := (fv_tm_tm_tm a) (at level 50, only printing).
 Notation "'ℱν' a" := (fv_tm_tm_co a) (at level 50, only printing).
 Notation "'ℱν' φ" := (fv_co_co_co φ) (at level 50, only printing).

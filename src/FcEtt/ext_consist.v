@@ -1609,8 +1609,3 @@ Lemma progress : forall G a A R, Typing G a A R ->
       right.
       exists (a_CApp a' g_Triv); eauto.
 Qed.
-
-
-
-
-End ext_consist.
