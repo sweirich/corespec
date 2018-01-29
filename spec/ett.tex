@@ -434,15 +434,24 @@
 
 \newcommand{\ottdruleCC}[1]{\ottdrule[#1]{%
 \ottpremise{ \suppress{\mathsf{Value}_{ \ottnt{R} }\  \ottnt{a} } }%
-\ottpremise{ \neg  \ottsym{(}   \ottnt{R_{{\mathrm{1}}}}  \leq  \ottnt{R}   \ottsym{)} }%
 }{
-\ottkw{CoercedValue} \, \ottnt{R} \, \ottsym{(}   \ottnt{a} \triangleright _{ \ottnt{R_{{\mathrm{1}}}} }  \gamma   \ottsym{)}}{%
+\ottkw{CoercedValue} \, \ottnt{R} \, \ottsym{(}   \ottnt{a} \triangleright _{ \ottnt{R_{{\mathrm{1}}}} }  \bullet   \ottsym{)}}{%
 {\ottdrulename{CC}}{}%
+}}
+
+
+\newcommand{\ottdruleCCV}[1]{\ottdrule[#1]{%
+\ottpremise{\ottkw{CoercedValue} \, \ottnt{R} \, \ottsym{(}   \ottnt{a} \triangleright _{ \ottnt{R_{{\mathrm{1}}}} }  \bullet   \ottsym{)}}%
+\ottpremise{ \neg  \ottsym{(}   \ottnt{R_{{\mathrm{1}}}}  \leq  \ottnt{R_{{\mathrm{2}}}}   \ottsym{)} }%
+}{
+\ottkw{CoercedValue} \, \ottnt{R} \, \ottsym{(}   \ottsym{(}   \ottnt{a} \triangleright _{ \ottnt{R_{{\mathrm{1}}}} }  \bullet   \ottsym{)} \triangleright _{ \ottnt{R_{{\mathrm{2}}}} }  \bullet   \ottsym{)}}{%
+{\ottdrulename{CCV}}{}%
 }}
 
 \newcommand{\ottdefnCoercedValue}[1]{\begin{ottdefnblock}[#1]{$\ottkw{CoercedValue} \, \ottnt{R} \, \ottnt{A}$}{\ottcom{Values with at most one coercion at the top}}
 \ottusedrule{\ottdruleCV{}}
 \ottusedrule{\ottdruleCC{}}
+\ottusedrule{\ottdruleCCV{}}
 \end{ottdefnblock}}
 
 %% defn Value
@@ -489,14 +498,6 @@
 }}
 
 
-\newcommand{\ottdruleValueXXAbsIrrel}[1]{\ottdrule[#1]{%
-\ottpremise{\ottkw{CoercedValue} \, \ottnt{R} \, \ottnt{a}}%
-}{
- \suppress{\mathsf{Value}_{ \ottnt{R} }\   \mathrm{\lambda}^ \ottsym{-} \ottmv{x} \!:\! \ottnt{A} / \ottnt{R_{{\mathrm{1}}}} . \ottnt{a}  } }{%
-{\ottdrulename{Value\_AbsIrrel}}{}%
-}}
-
-
 \newcommand{\ottdruleValueXXCAbs}[1]{\ottdrule[#1]{%
 }{
  \suppress{\mathsf{Value}_{ \ottnt{R} }\   \mathrm{\Lambda} \ottmv{c} \!:\! \phi . \ottnt{a}  } }{%
@@ -526,7 +527,6 @@
 \ottusedrule{\ottdruleValueXXAbsRel{}}
 \ottusedrule{\ottdruleValueXXUAbsRel{}}
 \ottusedrule{\ottdruleValueXXUAbsIrrel{}}
-\ottusedrule{\ottdruleValueXXAbsIrrel{}}
 \ottusedrule{\ottdruleValueXXCAbs{}}
 \ottusedrule{\ottdruleValueXXUCAbs{}}
 \ottusedrule{\ottdruleValueXXAx{}}
@@ -715,7 +715,6 @@
 \newcommand{\ottdruleerasedXXaXXFam}[1]{\ottdrule[#1]{%
 \ottpremise{\ottsym{rctx\_uniq}  \Omega}%
 \ottpremise{\ottmv{F}  \sim  \ottnt{a}  \ottsym{:}  \ottnt{A}  \ottsym{/}  \ottnt{R} \, \in \,  \Sigma_0 }%
-\ottpremise{ \ottnt{R}  \leq  \ottnt{R_{{\mathrm{1}}}} }%
 }{
  \Omega  \vDash erased\_tm \hspace{2pt}  \ottmv{F}  \hspace{2pt}  \ottnt{R_{{\mathrm{1}}}} }{%
 {\ottdrulename{erased\_a\_Fam}}{}%
@@ -1050,7 +1049,6 @@
 
 \newcommand{\ottdruleEXXCong}[1]{\ottdrule[#1]{%
 \ottpremise{\vDash  \ottnt{a}  \leadsto  \ottnt{a'}  \ottsym{/}  \ottnt{R_{{\mathrm{1}}}}}%
-\ottpremise{ \neg  \ottsym{(}   \ottnt{R}  \leq  \ottnt{R_{{\mathrm{1}}}}   \ottsym{)} }%
 }{
 \vDash   \ottnt{a} \triangleright _{ \ottnt{R} }  \bullet   \leadsto   \ottnt{a'} \triangleright _{ \ottnt{R} }  \bullet   \ottsym{/}  \ottnt{R_{{\mathrm{1}}}}}{%
 {\ottdrulename{E\_Cong}}{}%
@@ -1058,20 +1056,24 @@
 
 
 \newcommand{\ottdruleEXXCombine}[1]{\ottdrule[#1]{%
+\ottpremise{\ottkw{CoercedValue} \, \ottnt{R} \, \ottsym{(}   \ottnt{v} \triangleright _{ \ottnt{R_{{\mathrm{1}}}} }  \bullet   \ottsym{)}}%
+\ottpremise{ \ottnt{R_{{\mathrm{1}}}}  \leq  \ottnt{R_{{\mathrm{2}}}} }%
 }{
-\vDash   \ottsym{(}   \ottnt{a} \triangleright _{ \ottnt{R} }  \bullet   \ottsym{)} \triangleright _{ \ottnt{R} }  \bullet   \leadsto   \ottnt{a} \triangleright _{ \ottnt{R} }  \bullet   \ottsym{/}  \ottnt{R_{{\mathrm{1}}}}}{%
+\vDash   \ottsym{(}   \ottnt{v} \triangleright _{ \ottnt{R_{{\mathrm{1}}}} }  \bullet   \ottsym{)} \triangleright _{ \ottnt{R_{{\mathrm{2}}}} }  \bullet   \leadsto   \ottnt{v} \triangleright _{ \ottnt{R_{{\mathrm{2}}}} }  \bullet   \ottsym{/}  \ottnt{R}}{%
 {\ottdrulename{E\_Combine}}{}%
 }}
 
 
 \newcommand{\ottdruleEXXPush}[1]{\ottdrule[#1]{%
+\ottpremise{\ottkw{CoercedValue} \, \ottnt{R_{{\mathrm{2}}}} \, \ottsym{(}   \ottnt{v_{{\mathrm{1}}}} \triangleright _{ \ottnt{R} }  \bullet   \ottsym{)}}%
 }{
-\vDash   \ottsym{(}   \ottnt{v_{{\mathrm{1}}}} \triangleright _{ \ottnt{R} }  \bullet   \ottsym{)}   \ottnt{v_{{\mathrm{2}}}} ^{ \ottnt{R_{{\mathrm{1}}}} ,+}   \leadsto   \ottsym{(}   \ottnt{v_{{\mathrm{1}}}}   \ottsym{(}   \ottnt{v_{{\mathrm{2}}}} \triangleright _{ \ottnt{R} }  \bullet   \ottsym{)} ^{ \ottnt{R_{{\mathrm{1}}}} ,+}   \ottsym{)} \triangleright _{ \ottnt{R} }  \bullet   \ottsym{/}  \ottnt{R_{{\mathrm{2}}}}}{%
+\vDash   \ottsym{(}   \ottnt{v_{{\mathrm{1}}}} \triangleright _{ \ottnt{R} }  \bullet   \ottsym{)} \  \ottnt{b} ^{ \ottnt{R_{{\mathrm{1}}}} , \rho }   \leadsto   \ottsym{(}   \ottnt{v_{{\mathrm{1}}}} \  \ottsym{(}   \ottnt{b} \triangleright _{ \ottnt{R} }  \bullet   \ottsym{)} ^{ \ottnt{R_{{\mathrm{1}}}} , \rho }   \ottsym{)} \triangleright _{ \ottnt{R} }  \bullet   \ottsym{/}  \ottnt{R_{{\mathrm{2}}}}}{%
 {\ottdrulename{E\_Push}}{}%
 }}
 
 
 \newcommand{\ottdruleEXXCPush}[1]{\ottdrule[#1]{%
+\ottpremise{\ottkw{CoercedValue} \, \ottnt{R_{{\mathrm{1}}}} \, \ottsym{(}   \ottnt{v_{{\mathrm{1}}}} \triangleright _{ \ottnt{R} }  \bullet   \ottsym{)}}%
 }{
 \vDash  \ottsym{(}   \ottnt{v_{{\mathrm{1}}}} \triangleright _{ \ottnt{R} }  \bullet   \ottsym{)}  \ottsym{[}  \bullet  \ottsym{]}  \leadsto   \ottsym{(}  \ottnt{v_{{\mathrm{1}}}}  \ottsym{[}  \bullet  \ottsym{]}  \ottsym{)} \triangleright _{ \ottnt{R} }  \bullet   \ottsym{/}  \ottnt{R_{{\mathrm{1}}}}}{%
 {\ottdrulename{E\_CPush}}{}%
@@ -1160,7 +1162,6 @@
 \newcommand{\ottdruleEXXPi}[1]{\ottdrule[#1]{%
 \ottpremise{\Gamma  \ottsym{,}  \ottmv{x}  \ottsym{:}  \ottnt{A}  \ottsym{/}  \ottnt{R}  \vDash  \ottnt{B}  \ottsym{:}   \star   \ottsym{/}  \ottnt{R'}}%
 \ottpremise{ \suppress{ \Gamma  \vDash  \ottnt{A}  \ottsym{:}   \star   \ottsym{/}  \ottnt{R} } }%
-\ottpremise{ \ottnt{R}  \leq  \ottnt{R'} }%
 }{
 \Gamma  \vDash   \mathrm{\Pi}^ \rho \ottmv{x} \!:\! \ottnt{A} / \ottnt{R} \to \ottnt{B}   \ottsym{:}   \star   \ottsym{/}  \ottnt{R'}}{%
 {\ottdrulename{E\_Pi}}{}%
@@ -1171,7 +1172,6 @@
 \ottpremise{\Gamma  \ottsym{,}  \ottmv{x}  \ottsym{:}  \ottnt{A}  \ottsym{/}  \ottnt{R}  \vDash  \ottnt{a}  \ottsym{:}  \ottnt{B}  \ottsym{/}  \ottnt{R'}}%
 \ottpremise{ \suppress{ \Gamma  \vDash  \ottnt{A}  \ottsym{:}   \star   \ottsym{/}  \ottnt{R} } }%
 \ottpremise{ ( \rho  = +) \vee ( \ottmv{x} \not\in\mathsf{fv}\;  \ottnt{a} ) }%
-\ottpremise{ \ottnt{R}  \leq  \ottnt{R'} }%
 }{
 \Gamma  \vDash   \mathrm{\lambda}^{ \ottnt{R} , \rho } \ottmv{x} . \ottnt{a}   \ottsym{:}  \ottsym{(}   \mathrm{\Pi}^ \rho \ottmv{x} \!:\! \ottnt{A} / \ottnt{R} \to \ottnt{B}   \ottsym{)}  \ottsym{/}  \ottnt{R'}}{%
 {\ottdrulename{E\_Abs}}{}%
@@ -1236,9 +1236,9 @@
 \newcommand{\ottdruleEXXFam}[1]{\ottdrule[#1]{%
 \ottpremise{\vDash  \Gamma}%
 \ottpremise{\ottmv{F}  \sim  \ottnt{a}  \ottsym{:}  \ottnt{A}  \ottsym{/}  \ottnt{R} \, \in \,  \Sigma_0 }%
-\ottpremise{ \suppress{ \varnothing  \vDash  \ottnt{A}  \ottsym{:}   \star   \ottsym{/}  \ottnt{R} } }%
+\ottpremise{ \suppress{ \varnothing  \vDash  \ottnt{A}  \ottsym{:}   \star   \ottsym{/}  \ottnt{R_{{\mathrm{1}}}} } }%
 }{
-\Gamma  \vDash  \ottmv{F}  \ottsym{:}  \ottnt{A}  \ottsym{/}  \ottnt{R}}{%
+\Gamma  \vDash  \ottmv{F}  \ottsym{:}  \ottnt{A}  \ottsym{/}  \ottnt{R_{{\mathrm{1}}}}}{%
 {\ottdrulename{E\_Fam}}{}%
 }}
 
@@ -1246,7 +1246,6 @@
 \newcommand{\ottdruleEXXTyCast}[1]{\ottdrule[#1]{%
 \ottpremise{\Gamma  \vDash  \ottnt{a}  \ottsym{:}  \ottnt{A_{{\mathrm{1}}}}  \ottsym{/}  \ottnt{R_{{\mathrm{1}}}}}%
 \ottpremise{\Gamma  \ottsym{;}   \widetilde { \Gamma }   \vDash  \ottnt{A_{{\mathrm{1}}}}  \equiv  \ottnt{A_{{\mathrm{2}}}}  \ottsym{:}   \star   \ottsym{/}  \ottnt{R_{{\mathrm{2}}}}}%
-\ottpremise{ \neg  \ottsym{(}   \ottnt{R_{{\mathrm{2}}}}  \leq  \ottnt{R_{{\mathrm{1}}}}   \ottsym{)} }%
 \ottpremise{ \suppress{ \Gamma  \vDash  \ottnt{A_{{\mathrm{2}}}}  \ottsym{:}   \star   \ottsym{/}  \ottnt{R_{{\mathrm{1}}}} } }%
 }{
 \Gamma  \vDash   \ottnt{a} \triangleright _{ \ottnt{R_{{\mathrm{2}}}} }  \bullet   \ottsym{:}  \ottnt{A_{{\mathrm{2}}}}  \ottsym{/}  \ottnt{R_{{\mathrm{1}}}}}{%
@@ -1271,7 +1270,6 @@
 
 %% defn Iso
 \newcommand{\ottdruleEXXPropCong}[1]{\ottdrule[#1]{%
-\ottpremise{\Gamma  \vDash  \ottnt{A}  \ottsym{:}   \star   \ottsym{/}  \ottnt{R}}%
 \ottpremise{\Gamma  \ottsym{;}  \Delta  \vDash  \ottnt{A_{{\mathrm{1}}}}  \equiv  \ottnt{A_{{\mathrm{2}}}}  \ottsym{:}  \ottnt{A}  \ottsym{/}  \ottnt{R}}%
 \ottpremise{\Gamma  \ottsym{;}  \Delta  \vDash  \ottnt{B_{{\mathrm{1}}}}  \equiv  \ottnt{B_{{\mathrm{2}}}}  \ottsym{:}  \ottnt{A}  \ottsym{/}  \ottnt{R}}%
 }{
@@ -1291,9 +1289,9 @@
 
 
 \newcommand{\ottdruleEXXCPiFst}[1]{\ottdrule[#1]{%
-\ottpremise{\Gamma  \ottsym{;}  \Delta  \vDash   \forall \ottmv{c} \!:\! \phi_{{\mathrm{1}}} . \ottnt{B_{{\mathrm{1}}}}   \equiv   \forall \ottmv{c} \!:\! \phi_{{\mathrm{2}}} . \ottnt{B_{{\mathrm{2}}}}   \ottsym{:}   \star   \ottsym{/}  \ottnt{R}}%
+\ottpremise{\Gamma  \ottsym{;}  \Delta  \vDash   \forall \ottmv{c} \!:\! \ottsym{(}   \ottnt{a_{{\mathrm{1}}}}   \sim _{ \ottnt{A} / \ottnt{R} }  \ottnt{a_{{\mathrm{2}}}}   \ottsym{)} . \ottnt{B_{{\mathrm{1}}}}   \equiv   \forall \ottmv{c} \!:\! \ottsym{(}   \ottnt{b_{{\mathrm{1}}}}   \sim _{ \ottnt{B} / \ottnt{R} }  \ottnt{b_{{\mathrm{2}}}}   \ottsym{)} . \ottnt{B_{{\mathrm{2}}}}   \ottsym{:}   \star   \ottsym{/}  \ottnt{R'}}%
 }{
-\Gamma  \ottsym{;}  \Delta  \vDash  \phi_{{\mathrm{1}}}  \equiv  \phi_{{\mathrm{2}}}}{%
+\Gamma  \ottsym{;}  \Delta  \vDash   \ottnt{a_{{\mathrm{1}}}}   \sim _{ \ottnt{A} / \ottnt{R} }  \ottnt{a_{{\mathrm{2}}}}   \equiv   \ottnt{b_{{\mathrm{1}}}}   \sim _{ \ottnt{B} / \ottnt{R} }  \ottnt{b_{{\mathrm{2}}}} }{%
 {\ottdrulename{E\_CPiFst}}{}%
 }}
 
@@ -1364,7 +1362,6 @@
 \ottpremise{ \suppress{ \Gamma  \vDash  \ottnt{A_{{\mathrm{1}}}}  \ottsym{:}   \star   \ottsym{/}  \ottnt{R} } }%
 \ottpremise{ \suppress{ \Gamma  \vDash   \mathrm{\Pi}^ \rho \ottmv{x} \!:\! \ottnt{A_{{\mathrm{1}}}} / \ottnt{R} \to \ottnt{B_{{\mathrm{1}}}}   \ottsym{:}   \star   \ottsym{/}  \ottnt{R'} } }%
 \ottpremise{ \suppress{ \Gamma  \vDash   \mathrm{\Pi}^ \rho \ottmv{x} \!:\! \ottnt{A_{{\mathrm{2}}}} / \ottnt{R} \to \ottnt{B_{{\mathrm{2}}}}   \ottsym{:}   \star   \ottsym{/}  \ottnt{R'} } }%
-\ottpremise{ \suppress{  \ottnt{R}  \leq  \ottnt{R'}  } }%
 }{
 \Gamma  \ottsym{;}  \Delta  \vDash  \ottsym{(}   \mathrm{\Pi}^ \rho \ottmv{x} \!:\! \ottnt{A_{{\mathrm{1}}}} / \ottnt{R} \to \ottnt{B_{{\mathrm{1}}}}   \ottsym{)}  \equiv  \ottsym{(}   \mathrm{\Pi}^ \rho \ottmv{x} \!:\! \ottnt{A_{{\mathrm{2}}}} / \ottnt{R} \to \ottnt{B_{{\mathrm{2}}}}   \ottsym{)}  \ottsym{:}   \star   \ottsym{/}  \ottnt{R'}}{%
 {\ottdrulename{E\_PiCong}}{}%
@@ -1374,7 +1371,6 @@
 \newcommand{\ottdruleEXXAbsCong}[1]{\ottdrule[#1]{%
 \ottpremise{\Gamma  \ottsym{,}  \ottmv{x}  \ottsym{:}  \ottnt{A_{{\mathrm{1}}}}  \ottsym{/}  \ottnt{R}  \ottsym{;}  \Delta  \vDash  \ottnt{b_{{\mathrm{1}}}}  \equiv  \ottnt{b_{{\mathrm{2}}}}  \ottsym{:}  \ottnt{B}  \ottsym{/}  \ottnt{R'}}%
 \ottpremise{ \suppress{ \Gamma  \vDash  \ottnt{A_{{\mathrm{1}}}}  \ottsym{:}   \star   \ottsym{/}  \ottnt{R} } }%
-\ottpremise{ \suppress{  \ottnt{R}  \leq  \ottnt{R'}  } }%
 \ottpremise{ ( \rho  = +) \vee ( \ottmv{x} \not\in\mathsf{fv}\;  \ottnt{b_{{\mathrm{1}}}} ) }%
 \ottpremise{ ( \rho  = +) \vee ( \ottmv{x} \not\in\mathsf{fv}\;  \ottnt{b_{{\mathrm{2}}}} ) }%
 }{
@@ -1696,7 +1692,7 @@
 \ottpremise{ \ottnt{R_{{\mathrm{1}}}}  \leq  \ottnt{R_{{\mathrm{2}}}} }%
 \ottpremise{\Gamma  \vdash  \ottnt{a}  \ottsym{:}  \ottnt{A}  \ottsym{/}  \ottnt{R_{{\mathrm{1}}}}}%
 }{
-\Gamma  \vdash  \ottnt{a}  \ottsym{:}  \ottnt{A}  \ottsym{/}  \ottnt{R_{{\mathrm{2}}}}}{%
+\Gamma  \vdash  \ottkw{sub} \, \ottnt{R_{{\mathrm{1}}}} \, \ottnt{a}  \ottsym{:}  \ottnt{A}  \ottsym{/}  \ottnt{R_{{\mathrm{2}}}}}{%
 {\ottdrulename{An\_SubRole}}{}%
 }}
 
@@ -1937,9 +1933,9 @@
 
 \newcommand{\ottdruleAnXXCast}[1]{\ottdrule[#1]{%
 \ottpremise{ \Gamma ;  \Delta  \vdash  \gamma_{{\mathrm{1}}}   \ottsym{:}   \ottnt{a}  \sim_ \ottnt{R_{{\mathrm{1}}}}   \ottnt{a'} }%
-\ottpremise{ \Gamma ; \Delta \vdash   \gamma_{{\mathrm{2}}}  :   \ottnt{a}   \sim _{ \ottnt{A} / \ottnt{R_{{\mathrm{1}}}} }  \ottnt{a'}   \sim   \ottnt{b}   \sim _{ \ottnt{B} / \ottnt{R_{{\mathrm{2}}}} }  \ottnt{b'}  }%
+\ottpremise{ \Gamma ; \Delta \vdash   \gamma_{{\mathrm{2}}}  :   \ottnt{a}   \sim _{ \ottnt{A} / \ottnt{R_{{\mathrm{1}}}} }  \ottnt{a'}   \sim   \ottnt{b}   \sim _{ \ottnt{B} / \ottnt{R_{{\mathrm{1}}}} }  \ottnt{b'}  }%
 }{
- \Gamma ;  \Delta  \vdash   \gamma_{{\mathrm{1}}}   \triangleright _{ \ottnt{R_{{\mathrm{2}}}} }  \gamma_{{\mathrm{2}}}    \ottsym{:}   \ottnt{b}  \sim_ \ottnt{R_{{\mathrm{2}}}}   \ottnt{b'} }{%
+ \Gamma ;  \Delta  \vdash   \gamma_{{\mathrm{1}}}   \triangleright _{ \ottnt{R_{{\mathrm{1}}}} }  \gamma_{{\mathrm{2}}}    \ottsym{:}   \ottnt{b}  \sim_ \ottnt{R_{{\mathrm{1}}}}   \ottnt{b'} }{%
 {\ottdrulename{An\_Cast}}{}%
 }}
 
@@ -2169,6 +2165,6 @@
 
 \begin{verbatim}
 Definition rules:        163 good    0 bad
-Definition rule clauses: 483 good    0 bad
+Definition rule clauses: 479 good    0 bad
 \end{verbatim}
 \end{document}

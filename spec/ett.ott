@@ -566,9 +566,13 @@ Value R a
 CoercedValue R a
 
 Value R a
-not (R1 <= R)
 ---------------------- :: CC
-CoercedValue R (a |>R1 g)
+CoercedValue R (a |>R1 o)
+
+CoercedValue R (a |>R1 o)
+not (R1 <= R2)
+----------------------------------- :: CCV
+CoercedValue R ((a |>R1 o) |>R2 o)
 
 defn
 Value R A  ::   :: Value    :: 'Value_'
@@ -594,10 +598,6 @@ Value R \ + R1 x. a
 CoercedValue R a
 --------------------- :: UAbsIrrel
 Value R \ - R1 x. a
-
-CoercedValue R a
--------------------- :: AbsIrrel
-Value R \ - x : A/R1 . a
 
 --------------------- :: CAbs
 Value R /\c:phi.a
@@ -714,7 +714,6 @@ W |- erased_tm (a [o]) R
 
 rctx_uniq W
 F ~ a : A / R in toplevel
-R <= R1
 ------------------- :: Fam
 W |- erased_tm F R1
 
@@ -910,16 +909,19 @@ R <= R1
 |= F ~> a / R1
 
 |= a ~> a' / R1
-not (R <= R1)
 ------------------------------- :: Cong
 |= a |> R o ~> a' |> R o / R1
 
+CoercedValue R (v |> R1 o)
+R1 <= R2
 ------------------------------------ :: Combine
-|= (a |> R o) |> R o ~> a |> R o / R1
+|= (v |> R1 o) |> R2 o ~> v |> R2 o / R
 
+CoercedValue R2 (v1 |> R o)
 ------------------------------------ :: Push
-|= (v1 |> R o) R1 v2 ~> (v1 R1 (v2 |> R o)) |> R o / R2
+|= (v1 |> R o) rho R1 b ~> (v1 rho R1 (b |> R o)) |> R o / R2
 
+CoercedValue R1 (v1 |> R o)
 ------------------------------------ :: CPush
 |= (v1 |> R o) [o] ~> (v1 [o]) |> R o / R1
 
@@ -978,14 +980,12 @@ G |= x : A / R
 %% 2nd premise is redundant, but convenient for IH
 G, x:A / R |= B : TYPE / R'
 [ G |= A : TYPE / R ]
-R <= R'
 ----------------------------------------- :: Pi
 G |= all rho x:A / R -> B : TYPE / R'
 
 G, x:A / R  |= a : B / R'
 [ G |= A : TYPE / R ]
 rho => check x in a
-R <= R'
 ---------------------------------- :: Abs
 G |= \ rho R x . a : ( all rho x:A / R -> B ) / R'
 
@@ -1023,13 +1023,12 @@ G |= a1 [ o ] : B1 { o / c } / R'
 
 |= G
 F ~ a : A / R in toplevel
-[ empty |= A : TYPE / R ]
+[ empty |= A : TYPE / R1 ]
 ------------------ :: Fam
-G |= F : A / R
+G |= F : A / R1
 
 G |= a : A1 / R1
 G ; dom G |= A1 == A2 : TYPE / R2
-not (R2 <= R1)
 [ G |= A2 : TYPE / R1 ]
 ------------------------- :: TyCast
 G |= a |> R2 o : A2 / R1
@@ -1040,7 +1039,6 @@ G ; D |= phi1 == phi2  ::    :: Iso :: 'E_'
 {{ com prop equality }}
 by
 
-G |= A : TYPE / R
 G ; D |= A1 == A2 : A / R
 G ; D |= B1 == B2 : A / R
 --------------------------------------------- :: PropCong
@@ -1052,9 +1050,9 @@ G |= A1 ~ A2 : B / R ok
 -------------------------------------------- :: IsoConv
 G ; D |= A1 ~ A2 : A / R == A1 ~ A2 : B / R
 
-G ; D |= all c:phi1. B1 == all c:phi2. B2 : TYPE / R
------------------------------------------------------ :: CPiFst
-G ; D |=  phi1 == phi2
+G ; D |= all c:(a1 ~ a2 : A/R). B1 == all c:(b1 ~ b2 : B/R). B2 : TYPE / R'
+---------------------------------------------------------------------------- :: CPiFst
+G ; D |=  a1 ~ a2 : A/R == b1 ~ b2 : B/R
 
 
 defn
@@ -1102,14 +1100,12 @@ G, x:A1/R; D |= B1 == B2 : TYPE/R'
 %% these two needed by regularity
 [G |= all rho x:A1/R -> B1 : TYPE/R']
 [G |= all rho x:A2/R -> B2 : TYPE/R']
-[ R <= R' ]
 ---------------------------------------------------------- :: PiCong
 G ; D |= (all rho x:A1/R -> B1) == (all rho x:A2/R -> B2) : TYPE/R'
 
 
 G, x:A1/R ; D |= b1 == b2 : B/R'
 [ G |= A1 : TYPE/R ]
-[ R <= R' ]
 rho => check x in b1
 rho => check x in b2
 -------------------------------------------------------------- :: AbsCong
@@ -1304,7 +1300,7 @@ G |- F : A/R
 R1 <= R2
 G |- a : A / R1
 ----------------- :: SubRole
-G |- a : A / R2
+G |- sub R1 a : A / R2
 
 
 defn
@@ -1477,9 +1473,9 @@ G ; D |- g1 @ (g2, g3) : B1 { g2 / c1 } ~ B2 { g3 / c2 } : R0
 
 
 G ; D |- g1 : a~a' : R1
-G ; D |- g2 : a~a' :A/R1 == b~b' : B/R2
+G ; D |- g2 : a~a' :A/R1 == b~b' : B/R1
 --------------------------------------- :: Cast
-G ; D |- g1 |>R2 g2 : b~b' : R2
+G ; D |- g1 |>R1 g2 : b~b' : R1
 
 
 G ; D |- g : (a~a' : A/R) == (b~b' : B/R)
