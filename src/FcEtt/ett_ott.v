@@ -857,11 +857,13 @@ Inductive CoercedValue : role -> tm -> Prop :=    (* defn CoercedValue *)
  | CV : forall (R:role) (a:tm),
      Value R a ->
      CoercedValue R a
- | CC : forall (R:role) (a:tm) (R1:role) (g:co),
-     lc_co g ->
+ | CC : forall (R:role) (a:tm) (R1:role),
      Value R a ->
-      not (  ( SubRole R1 R )  )  ->
-     CoercedValue R  ( (a_Conv a R1 g) ) 
+     CoercedValue R  ( (a_Conv a R1 g_Triv) ) 
+ | CCV : forall (R:role) (a:tm) (R1 R2:role),
+     CoercedValue R  ( (a_Conv a R1 g_Triv) )  ->
+      not (  ( SubRole R1 R2 )  )  ->
+     CoercedValue R  ( (a_Conv  ( (a_Conv a R1 g_Triv) )  R2 g_Triv) ) 
 with Value : role -> tm -> Prop :=    (* defn Value *)
  | Value_Star : forall (R:role),
      Value R a_Star
@@ -883,10 +885,6 @@ with Value : role -> tm -> Prop :=    (* defn Value *)
  | Value_UAbsIrrel : forall (L:vars) (R R1:role) (a:tm),
       ( forall x , x \notin  L  -> CoercedValue R  ( open_tm_wrt_tm a (a_Var_f x) )  )  ->
      Value R (a_UAbs Irrel R1 a)
- | Value_AbsIrrel : forall (L:vars) (R:role) (A:tm) (R1:role) (a:tm),
-     lc_tm A ->
-      ( forall x , x \notin  L  -> CoercedValue R  ( open_tm_wrt_tm a (a_Var_f x) )  )  ->
-     Value R (a_Abs Irrel A R1 a)
  | Value_CAbs : forall (R:role) (phi:constraint) (a:tm),
      lc_constraint phi ->
      lc_tm (a_CAbs phi a) ->
@@ -980,7 +978,6 @@ Inductive erased_tm : role_context -> tm -> role -> Prop :=    (* defn erased_tm
  | erased_a_Fam : forall (W:role_context) (F:tyfam) (R1:role) (a A:tm) (R:role),
       uniq  W  ->
       binds  F  (Ax  a A R )   toplevel   ->
-     SubRole R R1 ->
      erased_tm W (a_Fam F) R1
  | erased_a_Const : forall (W:role_context) (T:const) (R:role),
       uniq  W  ->
@@ -1105,17 +1102,17 @@ with reduction_in_one : tm -> tm -> role -> Prop :=    (* defn reduction_in_one 
      reduction_in_one (a_Fam F) a R1
  | E_Cong : forall (a:tm) (R:role) (a':tm) (R1:role),
      reduction_in_one a a' R1 ->
-      not (  ( SubRole R R1 )  )  ->
      reduction_in_one (a_Conv a R g_Triv) (a_Conv a' R g_Triv) R1
- | E_Combine : forall (a:tm) (R R1:role),
-     lc_tm a ->
-     reduction_in_one (a_Conv  ( (a_Conv a R g_Triv) )  R g_Triv) (a_Conv a R g_Triv) R1
- | E_Push : forall (v1:tm) (R R1:role) (v2:tm) (R2:role),
-     lc_tm v1 ->
-     lc_tm v2 ->
-     reduction_in_one  (a_App   ( (a_Conv v1 R g_Triv) )   Rel  R1   v2 )  (a_Conv  (  (a_App  v1  Rel  R1    ( (a_Conv v2 R g_Triv) )  )  )  R g_Triv) R2
+ | E_Combine : forall (v:tm) (R1 R2 R:role),
+     CoercedValue R  ( (a_Conv v R1 g_Triv) )  ->
+     SubRole R1 R2 ->
+     reduction_in_one (a_Conv  ( (a_Conv v R1 g_Triv) )  R2 g_Triv) (a_Conv v R2 g_Triv) R
+ | E_Push : forall (v1:tm) (R:role) (rho:relflag) (R1:role) (b:tm) (R2:role),
+     lc_tm b ->
+     CoercedValue R2  ( (a_Conv v1 R g_Triv) )  ->
+     reduction_in_one (a_App  ( (a_Conv v1 R g_Triv) )  rho R1 b) (a_Conv  ( (a_App v1 rho R1  ( (a_Conv b R g_Triv) ) ) )  R g_Triv) R2
  | E_CPush : forall (v1:tm) (R R1:role),
-     lc_tm v1 ->
+     CoercedValue R1  ( (a_Conv v1 R g_Triv) )  ->
      reduction_in_one (a_CApp  ( (a_Conv v1 R g_Triv) )  g_Triv) (a_Conv  ( (a_CApp v1 g_Triv) )  R g_Triv) R1
 with reduction : tm -> tm -> role -> Prop :=    (* defn reduction *)
  | Equal : forall (a:tm) (R:role),
@@ -1148,13 +1145,11 @@ with Typing : context -> tm -> tm -> role -> Prop :=    (* defn Typing *)
  | E_Pi : forall (L:vars) (G:context) (rho:relflag) (A:tm) (R:role) (B:tm) (R':role),
       ( forall x , x \notin  L  -> Typing  (( x ~ Tm  A R ) ++  G )   ( open_tm_wrt_tm B (a_Var_f x) )  a_Star R' )  ->
       ( Typing G A a_Star R )  ->
-     SubRole R R' ->
      Typing G (a_Pi rho A R B) a_Star R'
  | E_Abs : forall (L:vars) (G:context) (rho:relflag) (R:role) (a A B:tm) (R':role),
       ( forall x , x \notin  L  -> Typing  (( x ~ Tm  A R ) ++  G )   ( open_tm_wrt_tm a (a_Var_f x) )   ( open_tm_wrt_tm B (a_Var_f x) )  R' )  ->
       ( Typing G A a_Star R )  ->
       ( forall x , x \notin  L  -> RhoCheck rho x  ( open_tm_wrt_tm a (a_Var_f x) )  )  ->
-     SubRole R R' ->
      Typing G (a_UAbs rho R a)  ( (a_Pi rho A R B) )  R'
  | E_App : forall (G:context) (b:tm) (R:role) (a B:tm) (R':role) (A:tm),
      Typing G b (a_Pi Rel A R B) R' ->
@@ -1181,20 +1176,18 @@ with Typing : context -> tm -> tm -> role -> Prop :=    (* defn Typing *)
      Typing G a1 (a_CPi  ( (Eq a b A R) )  B1) R' ->
      DefEq G  (dom  G )  a b A R ->
      Typing G (a_CApp a1 g_Triv)  (open_tm_wrt_co  B1   g_Triv )  R'
- | E_Fam : forall (G:context) (F:tyfam) (A:tm) (R:role) (a:tm),
+ | E_Fam : forall (G:context) (F:tyfam) (A:tm) (R1:role) (a:tm) (R:role),
      Ctx G ->
       binds  F  (Ax  a A R )   toplevel   ->
-      ( Typing  nil  A a_Star R )  ->
-     Typing G (a_Fam F) A R
+      ( Typing  nil  A a_Star R1 )  ->
+     Typing G (a_Fam F) A R1
  | E_TyCast : forall (G:context) (a:tm) (R2:role) (A2:tm) (R1:role) (A1:tm),
      Typing G a A1 R1 ->
      DefEq G  (dom  G )  A1 A2 a_Star R2 ->
-      not (  ( SubRole R2 R1 )  )  ->
       ( Typing G A2 a_Star R1 )  ->
      Typing G (a_Conv a R2 g_Triv) A2 R1
 with Iso : context -> available_props -> constraint -> constraint -> Prop :=    (* defn Iso *)
  | E_PropCong : forall (G:context) (D:available_props) (A1 B1 A:tm) (R:role) (A2 B2:tm),
-     Typing G A a_Star R ->
      DefEq G D A1 A2 A R ->
      DefEq G D B1 B2 A R ->
      Iso G D (Eq A1 B1 A R) (Eq A2 B2 A R)
@@ -1203,9 +1196,9 @@ with Iso : context -> available_props -> constraint -> constraint -> Prop :=    
      PropWff G (Eq A1 A2 A R) ->
      PropWff G (Eq A1 A2 B R) ->
      Iso G D (Eq A1 A2 A R) (Eq A1 A2 B R)
- | E_CPiFst : forall (G:context) (D:available_props) (phi1 phi2:constraint) (B1 B2:tm) (R:role),
-     DefEq G D (a_CPi phi1 B1) (a_CPi phi2 B2) a_Star R ->
-     Iso G D phi1 phi2
+ | E_CPiFst : forall (G:context) (D:available_props) (a1 a2 A:tm) (R:role) (b1 b2 B B1 B2:tm) (R':role),
+     DefEq G D (a_CPi  ( (Eq a1 a2 A R) )  B1) (a_CPi  ( (Eq b1 b2 B R) )  B2) a_Star R' ->
+     Iso G D (Eq a1 a2 A R) (Eq b1 b2 B R)
 with DefEq : context -> available_props -> tm -> tm -> tm -> role -> Prop :=    (* defn DefEq *)
  | E_Assn : forall (G:context) (D:available_props) (a b A:tm) (R:role) (c:covar),
      Ctx G ->
@@ -1237,12 +1230,10 @@ with DefEq : context -> available_props -> tm -> tm -> tm -> role -> Prop :=    
       ( Typing G A1 a_Star R )  ->
       ( Typing G (a_Pi rho A1 R B1) a_Star R' )  ->
       ( Typing G (a_Pi rho A2 R B2) a_Star R' )  ->
-      ( SubRole R R' )  ->
      DefEq G D  ( (a_Pi rho A1 R B1) )   ( (a_Pi rho A2 R B2) )  a_Star R'
  | E_AbsCong : forall (L:vars) (G:context) (D:available_props) (rho:relflag) (R:role) (b1 b2 A1 B:tm) (R':role),
       ( forall x , x \notin  L  -> DefEq  (( x ~ Tm  A1 R ) ++  G )  D  ( open_tm_wrt_tm b1 (a_Var_f x) )   ( open_tm_wrt_tm b2 (a_Var_f x) )   ( open_tm_wrt_tm B (a_Var_f x) )  R' )  ->
       ( Typing G A1 a_Star R )  ->
-      ( SubRole R R' )  ->
       ( forall x , x \notin  L  -> RhoCheck rho x  ( open_tm_wrt_tm b1 (a_Var_f x) )  )  ->
       ( forall x , x \notin  L  -> RhoCheck rho x  ( open_tm_wrt_tm b2 (a_Var_f x) )  )  ->
      DefEq G D  ( (a_UAbs rho R b1) )   ( (a_UAbs rho R b2) )   ( (a_Pi rho A1 R B) )  R'
@@ -1375,10 +1366,10 @@ with AnnTyping : context -> tm -> tm -> role -> Prop :=    (* defn AnnTyping *)
       binds  F  (Ax  a A R )   an_toplevel   ->
       ( AnnTyping  nil  A a_Star R )  ->
      AnnTyping G (a_Fam F) A R
- | An_SubRole : forall (G:context) (a A:tm) (R2 R1:role),
+ | An_SubRole : forall (G:context) (R1:role) (a A:tm) (R2:role),
      SubRole R1 R2 ->
      AnnTyping G a A R1 ->
-     AnnTyping G a A R2
+     AnnTyping G (a_Sub R1 a) A R2
 with AnnIso : context -> available_props -> co -> constraint -> constraint -> Prop :=    (* defn AnnIso *)
  | An_PropCong : forall (G:context) (D:available_props) (g1:co) (A:tm) (g2:co) (A1 B1:tm) (R:role) (A2 B2:tm),
      AnnDefEq G D g1 A1 A2 R ->
@@ -1499,10 +1490,10 @@ with AnnDefEq : context -> available_props -> co -> tm -> tm -> role -> Prop := 
      AnnDefEq G  (dom  G )  g2 a a' R ->
      AnnDefEq G  (dom  G )  g3 b b' R' ->
      AnnDefEq G D (g_CPiSnd g1 g2 g3)  (open_tm_wrt_co  B1   g2 )   (open_tm_wrt_co  B2   g3 )  R0
- | An_Cast : forall (G:context) (D:available_props) (g1:co) (R2:role) (g2:co) (b b' a a':tm) (R1:role) (A B:tm),
+ | An_Cast : forall (G:context) (D:available_props) (g1:co) (R1:role) (g2:co) (b b' a a' A B:tm),
      AnnDefEq G D g1 a a' R1 ->
-     AnnIso G D g2 (Eq a a' A R1) (Eq b b' B R2) ->
-     AnnDefEq G D (g_Cast g1 R2 g2) b b' R2
+     AnnIso G D g2 (Eq a a' A R1) (Eq b b' B R1) ->
+     AnnDefEq G D (g_Cast g1 R1 g2) b b' R1
  | An_IsoSnd : forall (G:context) (D:available_props) (g:co) (A B:tm) (R:role) (a a' b b':tm),
      AnnIso G D g  ( (Eq a a' A R) )   ( (Eq b b' B R) )  ->
      AnnDefEq G D (g_IsoSnd g) A B R

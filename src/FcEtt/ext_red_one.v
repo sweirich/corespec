@@ -1,3 +1,4 @@
+
 Require Export FcEtt.imports.
 Require Import FcEtt.utils.
 Require Export FcEtt.tactics.
@@ -5,10 +6,9 @@ Require Export FcEtt.tactics.
 Require Export FcEtt.ett_ott.
 Require Export FcEtt.ett_inf.
 Require Export FcEtt.ett_ind.
-
 Require Export FcEtt.ett_par.
+Require Import FcEtt.ext_wf.
 (* Require Export FcEtt.erase_syntax. *)
-
 
 Set Implicit Arguments.
 Set Bullet Behavior "Strict Subproofs".
@@ -18,9 +18,6 @@ Set Bullet Behavior "Strict Subproofs".
 Lemma reduction_in_one_lc : forall a a' R, reduction_in_one a a' R -> lc_tm a -> lc_tm a'.
 Proof.
   induction 1; intros; lc_solve.
-Unshelve.
-  all: try exact nil.
-  all: try exact {}.
 Qed.
 
 (* ------------------------------------------------------------ *)
@@ -83,11 +80,15 @@ Proof.
     end.
     move: (Typing_context_fv h0)  => ?. split_hyp.
     fsetdec.
+  - eapply E_Combine; auto. eapply tm_subst_tm_tm_Value_mutual in H; eauto.
+  - econstructor. eapply tm_subst_tm_tm_lc_tm; eauto.
+    eapply tm_subst_tm_tm_Value_mutual in H0; eauto.
+  - econstructor; eapply tm_subst_tm_tm_Value_mutual in H; eauto.
 Qed.
 
 
 Lemma E_AbsTerm_exists : ∀ x (a a' : tm) R R',
-    x `notin` (fv_tm a \u fv_tm a') ->
+    x `notin` (fv_tm_tm_tm a \u fv_tm_tm_tm a') ->
      reduction_in_one (open_tm_wrt_tm a (a_Var_f x))
                        (open_tm_wrt_tm a' (a_Var_f x)) R'
     → reduction_in_one (a_UAbs Irrel R a) (a_UAbs Irrel R a') R'.
@@ -100,7 +101,6 @@ Proof.
   eapply subst_reduction_in_one; auto.
 Qed.
 
-
 (* Coerced values and values are terminal. *)
 Lemma no_CoercedValue_Value_reduction :
   (forall R a, CoercedValue R a -> forall b, not (reduction_in_one a b R)) /\
@@ -110,6 +110,8 @@ Proof.
   all: intro NH; inversion NH; subst.
   - eapply H; eauto.
   - inversion v.
+  - eapply H; eauto.
+  - contradiction.
   - pick fresh x.
     move: (H x ltac:(auto)) => h0.
     move: (H4 x ltac:(auto)) => h5.
@@ -125,11 +127,80 @@ Proof.
   apply no_CoercedValue_Value_reduction.
 Qed.
 
-(*
+Lemma sub_Value_mutual :
+  (forall R v,  CoercedValue R v -> forall R', SubRole R R' ->
+           CoercedValue R' v \/ exists a, reduction_in_one v a R') /\
+  (forall R v, Value R v -> forall R', SubRole R R' ->
+           Value R' v \/ exists a, reduction_in_one v a R').
+Proof.
+  apply CoercedValue_Value_mutual; simpl.
+  all: try solve [inversion 1 | econstructor; eauto]; eauto.
+  all: intros.
+  - destruct (H R' H0) as [H1 | H2]. left. econstructor; auto. auto.
+  - destruct (H R' H0) as [H1 | H2]. left. eapply CC; auto. right.
+    inversion H2 as [a0 S]. exists (a_Conv a0 R1 g_Triv). econstructor. auto.
+  - destruct (H R' H0) as [H2 | H3]. left. eapply CCV; eauto.
+    right. inversion H3 as [a0 S]. exists (a_Conv a0 R2 g_Triv); eauto.
+  - pick fresh x. destruct (H x ltac:(auto) R' H0) as [H1 | [a0 H2]].
+    left. econstructor. intros. rewrite (tm_subst_tm_tm_intro x); auto.
+    apply CoercedValue_tm_subst_tm_tm; auto.
+    right. pick fresh y.
+    apply subst_reduction_in_one with (x := x) (b := a_Var_f y) in H2; auto.
+    rewrite tm_subst_tm_tm_open_tm_wrt_tm in H2; auto.
+    rewrite tm_subst_tm_tm_fresh_eq in H2; auto.
+    assert (tm_subst_tm_tm (a_Var_f y) x (a_Var_f x) = a_Var_f y).
+    unfold tm_subst_tm_tm; default_simp. rewrite H1 in H2.
+    exists (a_UAbs Irrel R1 (close_tm_wrt_tm y (tm_subst_tm_tm (a_Var_f y) x a0))).
+    apply E_AbsTerm_exists with (x := y); auto.
+    apply notin_union_3; auto. rewrite fv_tm_tm_tm_close_tm_wrt_tm. auto.
+    rewrite open_tm_wrt_tm_close_tm_wrt_tm; auto.
+  - destruct (sub_dec R1 R') as [H1 | H2]. right. exists a; econstructor; eauto.
+    left; econstructor; eauto. Unshelve. all:auto.
+Qed.
+
+Lemma sub_red_one :
+  forall R R' a a', reduction_in_one a a' R -> SubRole R R' ->
+                    exists a'', reduction_in_one a a'' R'.
+Proof. intros. induction H; eauto.
+        - pick fresh x. destruct (H1 x) as [a'' P]; auto.
+          exists (a_UAbs Irrel R (close_tm_wrt_tm x a'')).
+          apply E_AbsTerm_exists with (x := x).
+          rewrite fv_tm_tm_tm_close_tm_wrt_tm. fsetdec.
+          rewrite open_tm_wrt_tm_close_tm_wrt_tm. auto.
+        - apply IHreduction_in_one in H0. inversion H0 as [a'' P].
+          exists (a_App a'' rho R b); auto.
+        - apply IHreduction_in_one in H0. inversion H0 as [a'' P].
+          exists (a_CApp a'' g_Triv); auto.
+        - eapply sub_Value_mutual in H1; eauto.
+          inversion H1. exists (open_tm_wrt_tm v a); auto.
+          inversion H2 as [a'' P]. exists (a_App a'' rho R a); auto.
+        - apply IHreduction_in_one in H0. inversion H0 as [a'' P].
+          exists (a_Conv a'' R g_Triv); auto.
+        - eapply sub_Value_mutual in H; eauto. inversion H as [H2 | H3].
+          exists (a_Conv v R2 g_Triv). eapply E_Combine; eauto.
+          inversion H3 as [a0 S]. exists (a_Conv a0 R2 g_Triv). eauto.
+        - eapply sub_Value_mutual in H1; eauto. inversion H1 as [H2 | H3].
+          exists (a_Conv (a_App v1 rho R1 (a_Conv b R g_Triv)) R g_Triv).
+          econstructor; eauto. inversion H3 as [a0 S].
+          exists (a_App a0 rho R1 b). econstructor. auto. auto.
+        - eapply sub_Value_mutual in H; eauto. inversion H as [H2 | H3].
+          exists (a_Conv (a_CApp v1 g_Triv) R g_Triv). econstructor; eauto.
+          inversion H3 as [a0 S]. exists (a_CApp a0 g_Triv).
+          econstructor. auto.
+Qed.
+
+Ltac CoercedValue_no_red :=
+     match goal with
+      | [ H : CoercedValue ?R ?a,
+          R : reduction_in_one ?a ?a' ?R |- _ ] =>
+        eapply no_CoercedValue_Value_reduction with (b := a') in H;
+        contradiction; fail
+     end.
+
 (* The reduction relation is deterministic *)
 Lemma reduction_in_one_deterministic :
   forall a a1 R, reduction_in_one a a1 R -> forall a2, reduction_in_one a a2 R -> a1 = a2.
-Proof. 
+Proof.
   intros a a1 R H.
   induction H; intros a2 h0.
   all: inversion h0; subst.
@@ -141,8 +212,7 @@ Proof.
 
   (* impossible case, reduction of value *)
   all: try solve [(have: False by eapply no_Value_reduction; eauto); done].
-
-  all: try ((have: False by eapply (@no_Value_reduction R (a_UCAbs Irrel b)); eauto); done).
+  all: try CoercedValue_no_red.
 
   (* TODO: guard the number of subgoals (2)? *)
 
@@ -151,10 +221,8 @@ Proof.
     move: (H0 x ltac:(auto)) => h1.
     apply h1 in h7.
     apply open_tm_wrt_tm_inj in h7; eauto. rewrite h7. auto.
-  - 
-  - 
-  - have: (Ax a A R = Ax a2 A0 R0). eapply binds_unique; eauto using uniq_toplevel.
+  - inversion H.
+  - inversion H1.
+  - have: (Ax a A R = Ax a2 A0 R2). eapply binds_unique; eauto using uniq_toplevel.
     move => h; inversion h; done.
 Qed.
-*)
-

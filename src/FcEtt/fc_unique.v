@@ -1,12 +1,15 @@
+Require Import FcEtt.sigs.
+
 Require Export FcEtt.ett_inf_cs.
 Require Export FcEtt.ett_ind.
 Require Import FcEtt.imports.
 Require Import FcEtt.tactics.
 
-Require Import FcEtt.fc_wf.
-Require Import FcEtt.fc_subst.
-
 Require Import FcEtt.ett_par.
+
+
+Module fc_unique (wf : fc_wf_sig) (subst : fc_subst_sig) <: fc_unique_sig.
+Import wf subst.
 
 Set Bullet Behavior "Strict Subproofs".
 Set Implicit Arguments.
@@ -315,3 +318,4 @@ Proof.
   - resolve_binds_unique. auto.
 Qed.
 
+End fc_unique.

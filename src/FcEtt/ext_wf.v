@@ -8,7 +8,6 @@ Require Export FcEtt.ett_ind.
 Require Import FcEtt.tactics.
 
 Require Import FcEtt.utils.
-
 Require Import FcEtt.toplevel.
 
 (* This file contains these results:

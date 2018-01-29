@@ -24,7 +24,7 @@ Ltac solve_binds :=
   end.
 
 Theorem ann_context_fv_mutual :
-  (forall G (a : tm) A R (H: AnnTyping G a A R),
+  (forall G (a : tm) A (H: AnnTyping G a A),
       fv_tm_tm_tm a [<=] dom G /\ fv_co_co_tm a [<=] dom G /\
       fv_tm_tm_tm A [<=] dom G /\ fv_co_co_tm A [<=] dom G)
   /\
@@ -36,14 +36,14 @@ Theorem ann_context_fv_mutual :
       fv_tm_tm_constraint p1 [<=] dom G /\ fv_co_co_constraint p1 [<=] dom G /\
       fv_tm_tm_constraint p2 [<=] dom G /\ fv_co_co_constraint p2 [<=] dom G)
   /\
-  (forall G D g A B R (H : AnnDefEq G D g A B R),
+  (forall G D g A B (H : AnnDefEq G D g A B),
       fv_tm_tm_co g [<=] dom G /\ fv_co_co_co g [<=] dom G /\
       fv_tm_tm_tm A [<=] dom G /\ fv_co_co_tm A [<=] dom G /\
       fv_tm_tm_tm B [<=] dom G /\ fv_co_co_tm B [<=] dom G)
   /\
-  (forall G (H : AnnCtx G) R,
+  (forall G (H : AnnCtx G),
       (forall x A,
-          binds x (Tm A R)   G ->
+          binds x (Tm A)   G ->
           fv_tm_tm_tm         A   [<=] dom G /\ fv_co_co_tm         A   [<=] dom G) /\
       (forall c phi,
           binds c (Co phi) G ->

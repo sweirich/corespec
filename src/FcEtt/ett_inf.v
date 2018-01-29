@@ -4,9 +4,7 @@ Require Import Coq.Program.Equality.
 
 Require Export Metalib.Metatheory.
 Require Export Metalib.LibLNgen.
-
 Require Import ett_ott.
-
 (** NOTE: Auxiliary theorems are hidden in generated documentation.
     In general, there is a [_rec] version of every lemma involving
     [open] and [close]. *)

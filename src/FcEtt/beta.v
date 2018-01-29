@@ -11,7 +11,6 @@ Require Export FcEtt.ext_context_fv.
 
 Require Import FcEtt.ext_wf.
 Import ext_wf.
-
 (*
 Require Import FcEtt.fc_wf.
 Import fc_wf.

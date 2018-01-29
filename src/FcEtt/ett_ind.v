@@ -748,4 +748,6 @@ Proof. intro.
        destruct R2; auto.
 Qed.
 
-
+Lemma sub_dec : forall R1 R2, SubRole R1 R2 \/ ~(SubRole R1 R2).
+Proof. intros. destruct R1, R2; auto. right. apply rep_nsub_nom.
+Qed.

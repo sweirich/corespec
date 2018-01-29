@@ -39,10 +39,10 @@ Set Bullet Behavior "Strict Subproofs".
 Lemma open_tm_erase_rec : forall a,
   (forall b k R, open_tm_wrt_tm_rec k (erase a R) (erase b R) =
                  erase (open_tm_wrt_tm_rec k a b) R) /\
-  (forall b k R1 R, open_brs_wrt_tm_rec k (erase a R1) (erase b R) =
+  (forall b k R, open_brs_wrt_tm_rec k (erase a R) (erase b R) =
                  erase (open_brs_wrt_tm_rec k a b) R) /\
   (forall g:co, True) /\
-  (forall b k R1 R, open_constraint_wrt_tm_rec k (erase a R1) (erase b R) =
+  (forall b k R, open_constraint_wrt_tm_rec k (erase a R) (erase b R) =
                  erase (open_constraint_wrt_tm_rec k a b) R).
 Proof.
   move=> a.
@@ -51,10 +51,9 @@ Proof.
   try (rewrite H; try rewrite H0; auto).
   case (lt_eq_lt_dec n k);
     try (move=> []); simpl; auto.
-  all: f_equal; eauto 1.
-  
+  all: f_equal; simpl; eauto 3.
   - destruct rho.
-  + simpl; auto. autorewcs. f_equal; eauto. (* rewrite H0.  rewrite H. auto. *)
+  + simpl; auto. autorewcs. f_equal; eauto.  (* rewrite H0.  rewrite H. auto. *)
   + simpl; auto. f_equal; eauto. (* rewrite H.  auto. *)
   - destruct R, R0; simpl; eauto. rewrite H; auto.
 Qed.

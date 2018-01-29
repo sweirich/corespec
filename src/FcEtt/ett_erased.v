@@ -93,6 +93,14 @@ Inductive erased_context : role_context -> context -> Prop :=
                    erased_sort W (Tm A R) ->
                    erased_context ([(x,R)] ++ W) ([(x, (Tm A R))] ++ G).
 
+Lemma dom_rctx_le_ctx : forall G, dom (ctx_to_rctx G) [<=] dom G.
+Proof. intros. induction G. auto. destruct a, s; simpl; fsetdec.
+Qed.
+
+Lemma notin_ctx_rctx : forall x G, x `notin` (dom G) -> x `notin` dom (ctx_to_rctx G).
+Proof. intros. induction G. auto. destruct a, s; simpl in *.
+       all : pose (P := H); apply notin_add_2 in P; fsetdec.
+Qed.
 
 Lemma dom_erased_ctx_rctx_le_ctx : forall W G, erased_context W G ->
                                                dom W [<=] dom G.
@@ -203,7 +211,7 @@ Proof.
   - destruct phi.
     apply (@erased_a_CPi L); try solve [apply (H0 a b A R0); auto]; auto;
     pose H2 := H0 a b A R0 eq_refl; inversion H2 as [H21 [H22 H23]]; econstructor; eassumption.
-  - econstructor. apply ctx_to_rctx_uniq; auto. eauto. eauto.
+  - econstructor. apply ctx_to_rctx_uniq; auto. eauto.
 Qed.
 
 

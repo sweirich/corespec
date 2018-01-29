@@ -1,3 +1,4 @@
+
 Require Import FcEtt.tactics.
 Require Export FcEtt.imports.
 Require Import FcEtt.utils.
@@ -8,12 +9,11 @@ Require Export FcEtt.ett_ind.
 
 Require Export FcEtt.beta.
 Require Export FcEtt.ext_wf.
-Require Export FcEtt.ext_weak.
 Require Export FcEtt.ett_value.
+Require Import FcEtt.ext_weak.
 
 Set Bullet Behavior "Strict Subproofs".
 Set Implicit Arguments.
-
 
 Lemma Ctx_strengthen : forall G1 G2, Ctx (G2 ++ G1) -> Ctx G1.
   induction G2; [ | inversion 1]; simpl; auto.
@@ -285,7 +285,7 @@ Proof. eapply typing_wff_iso_defeq_mutual;
     have h0: Typing nil a A R by eauto using toplevel_closed.
     eapply E_Fam with (a:= tm_subst_tm_tm a0 x a); eauto.
     erewrite (tm_subst_fresh_2 _ h0); auto.
-    erewrite (tm_subst_fresh_1 _ h0); auto.
+    erewrite (tm_subst_fresh_1 _ h0); auto. eauto.
     erewrite (tm_subst_fresh_1 _ h0); auto.
   - eapply E_TyCast; try eapply DefEq_weaken_available; eauto.
   - destruct (c == x).
@@ -423,8 +423,6 @@ Proof.
       have: Typing G0 (a_Var_f x) A R; auto => h1.
       move: (Typing_context_fv h1) => ?. split_hyp. auto.
   - eapply E_Conv; eauto 3.
-    eapply DefEq_weaken_available; eauto 1.
-    eapply_first_hyp; eauto 2.
   -  have h0: Typing nil a A R by eapply toplevel_closed; eauto.
     erewrite (tm_subst_co_fresh_1 _ h0); eauto.
   - eapply E_TyCast; try eapply DefEq_weaken_available; eauto.
@@ -596,7 +594,7 @@ Proof.
   pick fresh y and apply E_Pi.
   replace a_Star with (open_tm_wrt_tm a_Star (a_Var_f y)); auto.
   eapply Typing_swap; eauto.
-  auto. auto.
+  auto.
 Qed.
 
 
@@ -613,4 +611,3 @@ Proof.
   eapply (@Typing_swap x); eauto.
   eapply rho_swap with (x := x); eauto.
 Qed.
-
