@@ -10,27 +10,13 @@ To build the Coq, run `make coq`.
 This work checks with Coq's native theory -- it includes no Axioms or other
 extensions.
 
-Note: sigs.v contains the definition of several Coq module types that allow us
-to break the development into multiple pieces. These signatures use the
-keyword "Axiom" to specify the expected results of the modules.  All of these
-"Axioms" are proved in the development.
-
-    Modules and Sigs:
-     ext_wf     : ext_wf_sig
-     ext_weak   : ext_weak_sig
-     ext_subst  : ext_subst_sig
-     ext_invert : ext_invert_sig
-     fc_wf      : fc_wf_sig
-     fc_weak    : fc_weak_sig
-     fc_subst   : fc_subst_sig
-     fc_unique  : fc_unique_sig
-
 Libraries (not language specific)
 * dep_prog.v     - support for dependently-typed programming in Coq
 * fset_facts.v   - lemmas about finite sets
 * imports.v      - external libraries (such as ssreflect) and global settings
 * tactics.v      - (our own) general purpose tactics & solvers
 * utils.v        - auxiliary definitions
+* notations.v    - make things pretty
 
 Syntactic definitions
 * ett.ott        - source definitions in OTT
@@ -40,9 +26,6 @@ Syntactic definitions
 * ett_inf_cs.v   - ett_inf plus canonical structures
 * ett_ind.v      - induction scheme, gather_atoms
                    more syntactic infrastructure results
-
-
-
 Example concrete signature
 
 * fix_typing.v   - defines toplevel signature to include fixed point operator
@@ -60,13 +43,14 @@ Metatheory of Implicit Language
 * ext_wf.v       - well-formedness of judgements, i.e. local closure, ctx wff
                    done, but could use more automation
 * ext_context_fv.v - free variables contained in the context
+* ett_erased.v   - properties of "role-ing" judgement
 * ext_weak.v     - weakening lemma
 * ext_subst.v    - substitution lemma
 * ext_invert.v   - inversion lemmas, regularity   G |- a : A => G |- A : *
 * ext_red.v      - preservation lemma (Par relation)
 * ext_red_one.v  - facts about Values & reduction_in_one
 * ext_consist.v  - consistency via confluence & reduction
-
+* congruence. v  - congruence lemma for equality relation
 
 Metatheory of Explicit Language
 * fc_wf.v           - well-formedness of judgements, i.e. local closure, ctx wff
@@ -92,4 +76,4 @@ Connection between languages
 
 Results that depend on annotation/erasure
 * fc_consist.v      - progress lemma for fc
-* congruence.v      - substitutivity
+* fc_congruence.v   - substitutivity
