@@ -642,8 +642,11 @@ Proof.
   - intros. eauto 4.
   - intros.
     pick fresh x and apply E_CPiCong; eauto 2.
-    eapply H0; eauto.
-    econstructor; eauto.
+    eapply H0; eauto. inversion p; subst.
+    econstructor. auto.
+    econstructor; eapply E_Refl; auto.
+    pose (Q := H1 D G2 H4 H5). inversion Q; subst.
+    econstructor; eapply E_Refl; auto.
   - intros.
     pick fresh c and apply E_CAbsCong; eauto 2.
     destruct phi1.
