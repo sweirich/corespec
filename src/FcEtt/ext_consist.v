@@ -631,76 +631,7 @@ Lemma consist_sym : forall a b R, consistent a b R -> consistent b a R.
 Proof. intros. induction H; eauto.
 Qed.
 
-(*
-Inductive Path_consistent : role_context -> tyfam -> tm -> tm -> role -> Prop :=
-| PC_Const : forall W F a A R1 R, binds F (Ax a A R1) toplevel ->
-            ~(SubRole R1 R) -> uniq W -> Path_consistent W F (a_Fam F) (a_Fam F) R
-| PC_App   : forall W F a1 rho R1 a2 b1 b2 R,
-    erased_tm W a2 R1 -> erased_tm W b2 R1 ->
-    Path_consistent W F a1 b1 R ->
-    Path_consistent W F (a_App a1 rho R1 a2) (a_App b1 rho R1 b2) R
-| PC_CApp  : forall W F a1 b1 R,
-    Path_consistent W F a1 b1 R ->
-    Path_consistent W F (a_CApp a1 g_Triv) (a_CApp b1 g_Triv) R
-| PC_Conv  : forall W F a1 b1 R1 R,
-    Path_consistent W F a1 b1 R ->
-    Path_consistent W F (a_Conv a1 R1 g_Triv) (a_Conv b1 R1 g_Triv) R.
-Hint Constructors Path_consistent.
-
-Lemma Path_consistent_Path1 : forall W F a b R, Path_consistent W F a b R -> Path F a R.
-Proof. induction 1; eauto using erased_lc. Qed.
-
-Lemma Path_consistent_Path2 : forall W F a b R, Path_consistent W F a b R -> Path F b R.
-Proof. induction 1; eauto using erased_lc. Qed.
-
-Lemma Path_consistent_erased1 : forall W F a b R, Path_consistent W F a b R -> erased_tm W a R.
-Proof. induction 1; auto. econstructor; eauto. Qed.
-
-Lemma Path_consistent_erased2 : forall W F a b R, Path_consistent W F a b R -> erased_tm W b R.
-Proof. induction 1; auto. econstructor; eauto. Qed.
-
-Hint Resolve Path_consistent_erased1 Path_consistent_erased2 : erased.
-
-Lemma Path_consistent_Refl :
-  forall W F a R, Path F a R -> erased_tm W a R -> Path_consistent W F a a R.
-Proof. induction 1; intro h; inversion h; subst; eauto. Qed.
-
-Lemma Path_consistent_Trans_aux :
-  forall F b R,  Path F b R -> forall W a c, Path_consistent W F a b R ->
-               Path_consistent W F b c R -> Path_consistent W F a c R.
-Proof. induction 1.
-       all: intros W a0 c0 h1 h2; inversion h1; inversion h2; subst; auto.
-Qed.
-
-Lemma Path_consistent_Trans : forall W F a b c R,
-  Path_consistent W F a b R -> Path_consistent W F b c R -> Path_consistent W F a c R.
-Proof. intros. eapply Path_consistent_Trans_aux with (b:=b). eapply Path_consistent_Path2; auto.
-       eauto. eauto. eauto.
-Qed.
-
-
-Lemma Path_consistent_Sym :
-  forall W F a b R, Path_consistent W F a b R -> Path_consistent W F b a R.
-Proof.
-  induction 1; eauto.
-Qed.
-
-Lemma Par_Path_consistent :
-  forall W a b F R, Par W a b R -> Path F a R -> Path_consistent W F a b R.
-Proof.
-  induction 1; intros P; try (inversion P; fail).
-  - apply Path_consistent_Refl; auto.
-  - inversion P; subst. apply IHPar1 in H8. inversion H8.
-  - inversion P; subst. apply IHPar1 in H8. econstructor; eauto.
-    eapply Par_erased_tm_fst; eauto. eapply Par_erased_tm_snd; eauto.
-  - inversion P; subst. apply IHPar in H2. inversion H2.
-  - inversion P; subst. apply IHPar in H2. econstructor; eauto.
-  - inversion P; subst. have E: (Ax a A R1 = Ax a0 A0 R2).
-    eapply binds_unique; eauto using uniq_toplevel.
-    inversion E; subst. contradiction.
-  - inversion P; subst. apply IHPar in H4. econstructor; eauto.
-  - admit.
-  -  *)
+(* ----------------------------------------------------------------- *)
 
 (* Properties of Path *)
 
@@ -1304,8 +1235,13 @@ Qed.
 Lemma consistent_Star : forall A0 R,
     consistent a_Star A0 R -> value_type R A0 -> A0 = a_Star.
 Proof.
-  intros. inversion H; subst; auto. contradiction.
-  assert False by auto; auto. contradiction.
+  intros A0 R C V.
+  destruct A0; try destruct rho;
+    simpl in *; inversion C; inversion V.
+  all: subst; auto.
+  all: try solve [inversion H].
+  all: try solve [inversion H2].
+  all: done.
 Qed.
 
 
@@ -1334,14 +1270,14 @@ Proof.
   - assert False. eapply no_aAbs. eauto 2. done.
   - apply invert_a_UAbs in H0; eauto.
     destruct H0 as [A1 [B2 [H2 _]]].
-    impossible_defeq.
+    impossible_defeq. inversion H7.
   - apply invert_a_UAbs in H0; eauto.
     destruct H0 as (A1 & A2 & DE & A).
-    impossible_defeq.
+    impossible_defeq. inversion H6.
   - assert False. eapply no_aCAbs. eauto 2. done.
   - apply invert_a_UCAbs in H0; eauto.
     destruct H0 as [a0 [b [T [R1 [B1 [R2 [_ [P _]]]]]]]].
-    impossible_defeq.
+    impossible_defeq. inversion H7.
 Qed.
 
 
@@ -1351,12 +1287,12 @@ Lemma DefEq_Star: forall A G D R, Good G D -> value_type R A ->
 Proof.
   intros.
   apply defeq_consistent in H1; eauto.
-  inversion H1; eauto; subst; try done.
+  inversion H1; eauto; subst; try done. inversion H3.
 Qed.
 
 Lemma canonical_forms_Pi : forall G rho a A R B R', Good G (dom G) ->
     Typing G a (a_Pi rho A R B) R' -> Value R' a ->
-    (exists a1, a = a_UAbs rho R a1).
+    (exists a1, a = a_UAbs rho R a1) \/ (exists F, Path F a R').
 Proof.
   intros G rho a A R B R' C H H0.
   inversion H0; subst; eauto.
@@ -1364,32 +1300,26 @@ Proof.
     impossible_defeq.
   - eapply invert_a_Pi in H; eauto.
     destruct H as [H _]; eauto.
-    impossible_defeq.
+    impossible_defeq. inversion H7.
   - eapply invert_a_CPi in H; eauto.
     destruct H as [H _].
-    impossible_defeq.
+    impossible_defeq. inversion H7.
   - assert False. eapply no_aAbs. eauto 2. done.
   - eapply invert_a_UAbs in H; eauto.
     destruct H as (A1 & A2 & H & _); eauto.
-    impossible_defeq.
+    impossible_defeq. inversion H7.
   - eapply invert_a_UAbs in H; eauto.
     destruct H as (A1 & B1 & H & _); eauto.
-    impossible_defeq.
+    impossible_defeq. inversion H7.
   - assert False. eapply no_aCAbs. eauto 2. done.
   - eapply invert_a_UCAbs in H; eauto.
     destruct H as [a [b [T [R1 [B1 [_ [_ [H _]]]]]]]]; eauto.
-    impossible_defeq.
-  - eapply invert_a_Fam in H; eauto.
-    destruct H as (a & B0 & R0 & H & H3 & H4); eauto.
-    assert (Typing nil (a_Pi rho A R B) a_Star R').
-    have E: (Ax a B0 R0 = Ax a0 A0 R1).
-    eapply binds_unique; eauto using uniq_toplevel.
-    inversion E; subst. admit.
-Admitted.
+    impossible_defeq. inversion H7.
+Qed.
 
 Lemma canonical_forms_CPi : forall G a phi B R, Good G (dom G) ->
     Typing G a (a_CPi phi B) R -> Value R a ->
-    (exists a1, a = a_UCAbs a1).
+    (exists a1, a = a_UCAbs a1) \/ (exists F, Path F a R).
 Proof.
   intros G a phi B R C H H0.
   inversion H0; subst; eauto.
@@ -1397,24 +1327,19 @@ Proof.
     impossible_defeq.
   - eapply invert_a_Pi in H; eauto.
     destruct H as [H _]; eauto.
-    impossible_defeq.
+    impossible_defeq. inversion H8.
   - eapply invert_a_CPi in H; eauto.
     destruct H as [H _].
-    impossible_defeq.
+    impossible_defeq. inversion H8.
   - assert False. eapply no_aAbs. eauto 2. done.
   - eapply invert_a_UAbs in H; eauto.
     destruct H as [A1 [A2 [R' [H _]]]]; eauto.
-    impossible_defeq.
+    impossible_defeq. inversion H7.
   - eapply invert_a_UAbs in H; eauto.
     destruct H as [A1 [A2 [R' [H _]]]]; eauto.
-    impossible_defeq.
+    impossible_defeq. inversion H7.
   - assert False. eapply no_aCAbs. eauto 2. done.
-  - eapply invert_a_Fam in H; eauto.
-    destruct H as (a & B0 & R0 & H & H3 & H4); eauto.
-    have E: (Ax a B0 R0 = Ax a0 A R1).
-    eapply binds_unique; eauto using uniq_toplevel.
-    inversion E; subst. admit.
-Admitted.
+Qed.
 
 Definition irrelevant G D (a : tm) :=
   (forall x A R, binds x (Tm A R) G -> x `notin` fv_tm_tm_tm a) /\ Good G D.
@@ -1427,24 +1352,6 @@ Qed.
 Lemma notin_sub : forall x a b, x `notin` a -> b [<=] a -> x `notin` b.
   intros. fsetdec.
 Qed.
-
-(*
-(* helper tactic for progress lemma below. Dispatches goals of the form
-   "irrelevant G a " by inversion on IR, a similar assumption in the context *)
-Ltac show_irrelevant IR :=
-        let x := fresh in
-        let A0 := fresh in
-        let B0 := fresh in
-        let h0 := fresh in
-        let h1 := fresh in
-        unfold irrelevant in *;
-        move: IR => [h0 h1]; split; auto;
-        intros x A0 R0 B0;  apply h0 in B0; simpl in B0; fsetdec.
-
-Lemma notin_sub : forall x a b, x `notin` a -> b [<=] a -> x `notin` b.
-  intros. fsetdec.
-Qed.
-*)
 
 (*
    The progress lemma is stated in terms of the reduction_in_one relation,
@@ -1489,8 +1396,9 @@ Proof. intros. assert (lc_tm a). {eapply Typing_lc1; eauto. }
     + unfold irrelevant in H0. inversion H0. split; auto.
       intros. pose (Q := H3 x A0 R0 H8). simpl in Q. eauto.
     + inversion V; subst. apply canonical_forms_Pi in H; auto.
-      destruct H as [a1 e1]; subst. right.
+      destruct H as [[a1 e1] | [F Q]]; subst. right.
       exists (open_tm_wrt_tm a1 a); eauto.
+      left. econstructor. econstructor; eauto.
       right. exists (a_Conv (a_App a0 Rel R (a_Conv a R1 g_Triv)) R1 g_Triv).
       econstructor; auto. right.
       exists (a_Conv (a_App (a_Conv a0 R1 g_Triv) Rel R (a_Conv a R2 g_Triv)) R2 g_Triv).
@@ -1500,8 +1408,9 @@ Proof. intros. assert (lc_tm a). {eapply Typing_lc1; eauto. }
     case IHTyping1; auto.
     + split; auto. intros. pose (Q := H3 x A0 R0 H6). simpl in Q. eauto.
     + move => h1. inversion h1; subst. apply canonical_forms_Pi in H; auto.
-      destruct H as [a1 e1]; subst. right.
+      destruct H as [[a1 e1] | [F Q]]; subst. right.
       exists (open_tm_wrt_tm a1 a_Bullet); eauto.
+      left. econstructor. econstructor; eauto.
       right. exists (a_Conv (a_App a0 Irrel R (a_Conv a_Bullet R1 g_Triv)) R1 g_Triv).
       econstructor; auto. right.
       exists (a_Conv (a_App (a_Conv a0 R1 g_Triv) Irrel R (a_Conv a_Bullet R2 g_Triv)) R2 g_Triv).
@@ -1513,8 +1422,9 @@ Proof. intros. assert (lc_tm a). {eapply Typing_lc1; eauto. }
     case IHTyping; auto.
     + split; auto. intros. pose (Q := H3 x A0 R0 H7). simpl in Q. eauto.
     + move => h1. inversion h1; subst. apply canonical_forms_CPi in H; auto.
-      destruct H as [a2 e1]; subst. right.
+      destruct H as [[a2 e1] | [F Q]]; subst. right.
       exists (open_tm_wrt_co a2 g_Triv); eauto.
+      left. econstructor. econstructor; eauto.
       right. exists (a_Conv (a_CApp a0 g_Triv) R1 g_Triv). econstructor.
       inversion H5; auto. right.
       exists (a_Conv (a_CApp (a_Conv a0 R1 g_Triv) g_Triv) R2 g_Triv).
