@@ -718,16 +718,9 @@ Lemma Path_head_form_Path_consist : forall W F a b R, Path F a R ->
 Proof. intros. eapply consistent_a_Path; eauto. eapply multipar_Path; eauto.
 Qed.
 
-Lemma Path_head_form_no_Path_consist_L : forall a b R, Path_head_form a ->
+Lemma Path_head_form_no_Path_consist : forall a b R, Path_head_form a ->
          lc_tm b -> (forall F, ~(Path F a R)) -> consistent a b R.
 Proof. intros. eapply consistent_a_Step_L. auto.
-       intro H2; inversion H2; subst; try (inversion H; fail).
-       pose (Q := H1 F); contradiction.
-Qed.
-
-Lemma Path_head_form_no_Path_consist_R : forall a b R, Path_head_form b ->
-         lc_tm a -> (forall F, ~(Path F b R)) -> consistent a b R.
-Proof. intros. eapply consistent_a_Step_R. auto.
        intro H2; inversion H2; subst; try (inversion H; fail).
        pose (Q := H1 F); contradiction.
 Qed.
@@ -739,7 +732,7 @@ Proof. intros. inversion H; subst.
        apply decide_Path in H'; inversion H' as [[F0 Q]|n]).
        all: try(eapply Path_head_form_Path_consist; eauto; fail).
        all: try(apply multipar_lc2 in H0;
-            eapply Path_head_form_no_Path_consist_L; eauto; fail).
+            eapply Path_head_form_no_Path_consist; eauto; fail).
 Qed.
 
 Lemma Path_head_form_join_consist : forall W a b R, joins W a b R ->
@@ -751,8 +744,9 @@ Proof. intros. destruct H as (t & MSL & MSR).
        inversion P as [[F1 S]|n]. inversion Q as [[F2 S']|n'].
        assert (F1 = F2). eapply multipar_Path_join_head. eapply MSL.
        eapply MSR. auto. auto. subst. eauto.
-       apply multipar_lc1 in MSL. eapply Path_head_form_no_Path_consist_R; eauto.
-       apply multipar_lc1 in MSR. eapply Path_head_form_no_Path_consist_L; eauto.
+       apply multipar_lc1 in MSL. apply consist_sym.
+       eapply Path_head_form_no_Path_consist; eauto.
+       apply multipar_lc1 in MSR. eapply Path_head_form_no_Path_consist; eauto.
 Qed.
 
 
@@ -766,7 +760,7 @@ Proof. intros. destruct H as (t & MSL & MSR).
     inversion MSL. destruct phi; subst.
     destruct (multipar_CPi MSR eq_refl) as (b1 & b2 & B & C & Q). subst.
     inversion MSL. apply multipar_lc1 in MSR.
-    apply Path_head_form_no_Path_consist_L; eauto.
+    apply Path_head_form_no_Path_consist; eauto.
 Qed.
 
 Lemma Path_not_head_head_join_consist : forall W a b R, joins W a b R ->
@@ -779,7 +773,7 @@ Proof. intros. destruct H as (t & MSL & MSR).
     inversion MSR. destruct phi; subst.
     destruct (multipar_CPi MSL eq_refl) as (b' & b2 & B & C & U). subst.
     inversion MSR. apply multipar_lc1 in MSL.
-    apply Path_head_form_no_Path_consist_R; eauto.
+    apply consist_sym. apply Path_head_form_no_Path_consist; eauto.
 Qed.
 
 (* --------------------------------------------------- *)
