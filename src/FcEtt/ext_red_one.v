@@ -101,6 +101,11 @@ Proof.
   eapply subst_reduction_in_one; auto.
 Qed.
 
+Lemma Path_role_less : forall F a R, Path F a R -> exists a1 A1 R1,
+                          binds F (Ax a1 A1 R1) toplevel /\ ~(SubRole R1 R).
+Proof. intros F a R H. induction H; eauto.
+Qed.
+
 (* Coerced values and values are terminal. *)
 Lemma no_CoercedValue_Value_reduction :
   (forall R a, CoercedValue R a -> forall b, not (reduction_in_one a b R)) /\
@@ -119,6 +124,12 @@ Proof.
   - inversion H0. inversion b.
     rewrite H2 in H; inversion H; subst; auto.
     inversion H2. inversion H.
+  - pose (Q := H a'); contradiction.
+  - inversion p.
+  - inversion v.
+  - pose (Q := H a'); contradiction.
+  - inversion p.
+  - inversion v.
 Qed.
 
 Lemma no_Value_reduction :
@@ -126,6 +137,23 @@ Lemma no_Value_reduction :
 Proof.
   apply no_CoercedValue_Value_reduction.
 Qed.
+
+Lemma sub_Path : forall F a R1 R2, Path F a R1 -> SubRole R1 R2 ->
+                        Path F a R2 \/ (exists a', reduction_in_one a a' R2).
+Proof. intros. induction H.
+        - destruct (sub_dec R1 R2) as [P1 | P2].
+          right. exists a. eauto. left. eauto.
+        - apply IHPath in H0. inversion H0 as [P1 | P2].
+          left. eauto. right. inversion P2 as [a' Q].
+          exists (a_App a' rho R1 b'); eauto.
+        - apply IHPath in H0. inversion H0 as [P1 | P2].
+          left. eauto. right. inversion P2 as [a' Q].
+          exists (a_CApp a' g_Triv); eauto.
+        - apply IHPath in H0. inversion H0 as [P1 | P2].
+          left. eauto. right. inversion P2 as [a' Q].
+          exists (a_Conv a' R1 g_Triv); eauto.
+Qed.
+
 
 Lemma sub_Value_mutual :
   (forall R v,  CoercedValue R v -> forall R', SubRole R R' ->
@@ -156,6 +184,14 @@ Proof.
     rewrite open_tm_wrt_tm_close_tm_wrt_tm; auto.
   - destruct (sub_dec R1 R') as [H1 | H2]. right. exists a; econstructor; eauto.
     left; econstructor; eauto. Unshelve. all:auto.
+  - eapply sub_Path in p; eauto. destruct (H R' H0) as [P1 | P2].
+    destruct p as [Q1 | Q2]. left. eauto. destruct Q2 as [a' Q].
+    apply no_Value_reduction with (b := a') in P1. contradiction.
+    destruct P2 as [a0 P]. right. exists (a_App a0 rho R1 b'). eauto.
+  - eapply sub_Path in p; eauto. destruct (H R' H0) as [P1 | P2].
+    destruct p as [Q1 | Q2]. left. eauto. destruct Q2 as [a' Q].
+    apply no_Value_reduction with (b := a') in P1. contradiction.
+    destruct P2 as [a0 P]. right. exists (a_CApp a0 g_Triv). eauto.
 Qed.
 
 Lemma sub_red_one :

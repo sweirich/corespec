@@ -21,6 +21,18 @@ Require Export FcEtt.toplevel.
 
 (* ------------------------------------------- *)
 
+Lemma Path_subst_tm : forall F a x b R, Path F a R -> lc_tm b ->
+                            Path F (tm_subst_tm_tm b x a) R.
+Proof. intros. induction H; simpl; auto. econstructor; eauto.
+       econstructor. apply tm_subst_tm_tm_lc_tm; auto. auto.
+Qed.
+
+Lemma Path_subst_co : forall F a c b R, Path F a R -> lc_co b ->
+                            Path F (co_subst_co_tm b c a) R.
+Proof. intros. induction H; simpl; auto. econstructor; eauto.
+       econstructor. apply co_subst_co_tm_lc_tm; auto. auto.
+Qed.
+
 (* Values and CoercedValues *)
 
 Lemma tm_subst_tm_tm_Value_mutual :
@@ -42,11 +54,9 @@ Proof.
     econstructor; eauto.
     instantiate (1 := L \u singleton x) => x0 h0.
     rewrite tm_subst_tm_tm_open_tm_wrt_tm_var; auto.
-  (* - intros L R A R1 a l c H b x H0.
-    econstructor; eauto.
-    apply tm_subst_tm_tm_lc_tm; auto.
-    instantiate (1 := L \u singleton x) => x0 h0.
-    rewrite tm_subst_tm_tm_open_tm_wrt_tm_var; auto. *)
+  - intros. econstructor. apply tm_subst_tm_tm_lc_tm; auto.
+    eapply Path_subst_tm; eauto. eauto.
+  - intros. econstructor. eapply Path_subst_tm; eauto. eauto.
 Qed.
 
 Lemma Value_tm_subst_tm_tm :
@@ -114,13 +124,9 @@ Proof.
     move: (H y ltac:(eauto) b x H0) => h0.
     rewrite co_subst_co_tm_open_tm_wrt_tm in h0.
     simpl in h0. auto. auto.
-  (* - intros.
-    pick fresh y.
-    eapply Value_AbsIrrel_exists with (x:=y).
-    eapply fv_tm_tm_tm_co_subst_co_tm_notin; eauto.
-    eapply co_subst_co_tm_lc_tm; eauto.
-    move: (H y ltac:(eauto) b x H0) => h0.
-    rewrite co_subst_co_tm_open_tm_wrt_tm in h0; auto. *)
+  - intros. econstructor. apply co_subst_co_tm_lc_tm; auto.
+    eapply Path_subst_co; eauto. eauto.
+  - intros. econstructor. eapply Path_subst_co; eauto. eauto.
 Qed.
 
 Lemma Value_co_subst_co_tm :

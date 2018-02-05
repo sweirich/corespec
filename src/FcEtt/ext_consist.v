@@ -12,20 +12,6 @@ Require Export FcEtt.ett_par.
 Require Import FcEtt.ext_wf.
 Require Import FcEtt.ext_invert.
 Require Import FcEtt.ext_red_one.
-(* Require Export FcEtt.erase_syntax.
-
-Require Import FcEtt.ext_red.
-
-Require Import FcEtt.ext_wf.
-
-Module ext_consist (invert : ext_invert_sig).
-Import invert.
-
-Module red_one := ext_red_one invert.
-Export red_one.
-
-Module red := ext_red invert.
-Export red. *)
 
 Set Implicit Arguments.
 Set Bullet Behavior "Strict Subproofs".
@@ -149,52 +135,6 @@ Ltac invert_equality :=
         eauto; fail
       end.
 
-  Ltac invert_erased :=
-    match goal with
-    | [ H : erased_tm _ ?a _ |- _ ] => inversion H; subst; clear H
-    end.
-
-        (*    If we know that (a ^ x) == (App b rho x), replace
-             (a ^ b0) with (App b rho b0)
-            The tactic only succeeds if there is only 1 equality in
-            the context.
-       *)
-      Ltac eta_expand x :=
-        let h1 := fresh in
-      match goal with
-        [ H18 : ∀ x : atom,
-              x `notin` ?L0
-              → open_tm_wrt_tm ?a (a_Var_f x) = a_App ?b0 ?rho ?R (a_Var_f x)
-              |- _ ] =>
-        pick fresh x for (L0 \u  fv_tm_tm_tm a \u fv_tm_tm_tm b0);
-        move: (H18 x ltac:(auto)) => h1; clear H18;
-        rewrite (@tm_subst_tm_tm_intro x a); auto; rewrite h1;
-        simpl; destruct (@eq_dec tmvar _ x x); try done;
-        rewrite tm_subst_tm_tm_fresh_eq; auto
-      end.
-
-
-       (* Rewrite a goal of the form
-            ... (a'0 ^ b'0) ...
-          To
-            ... (b . b'0) ...
-          and try to solve it, give eta-assn Y2 *)
-      Ltac eta_case a'0 Y2 :=
-         let x:= fresh in
-         pick fresh x;
-         rewrite (tm_subst_tm_tm_intro x a'0); auto;
-         rewrite Y2; auto; simpl;
-         rewrite (tm_subst_tm_tm_fresh_eq); auto;
-         destruct eq_dec; try done;
-         eauto; clear x.
-
-
-
-Ltac invert_lc :=
-  match goal with
-    | [ H : lc_tm ?a |- _ ] => inversion H; subst; clear H
-  end.
-
 Ltac use_size_induction a conf L1 L2 :=
   match goal with
   | [   IH : forall y: nat, ?T,
@@ -226,47 +166,6 @@ Ltac use_size_induction_open a0 x ac Par1 Par2 :=
     use_size_induction (open_tm_wrt_tm a0 (a_Var_f x)) ac Par1 Par2;
     clear h0; clear h1; clear EQ1; clear EQ2
     end.
-
-Ltac par_erased_open x J Par4 :=
-  let K := fresh in
-  let KK := fresh in
-  let h0 := fresh in
-  match goal with
-  | [H13 : ∀ x : atom, x `notin` ?L →
-                       Par (open_tm_wrt_tm ?a (a_Var_f x)) ?b,
-     H4 : ∀ x : atom, x `notin` ?L1 → erased_tm  (open_tm_wrt_tm ?a (a_Var_f x))
-       |- _ ] =>
-    have: x `notin` L; auto => h0;
-    pose K:= H13 x h0; clearbody K; clear h0;
-    have: x `notin` L1; auto => h0;
-    pose KK := H4 x h0; clearbody KK;
-    pose J := subst3 x Par4 KK K;
-    clearbody J;
-    repeat rewrite tm_subst_tm_tm_open_tm_wrt_tm in J; [auto;
-    simpl in J;
-    destruct eq_dec; try congruence;
-    repeat rewrite tm_subst_tm_tm_fresh_eq in J; auto
-    | try apply (Par_lc2 Par4); auto
-    | apply (Par_lc1 Par4); auto]
-  end.
-
-      Ltac finish_open_co a'0 :=
-        let K := fresh in
-        let J := fresh in
-        let h0 := fresh in
-      match goal with
-      | H12 : forall c, c `notin` ?L -> Par ?G ?D (open_tm_wrt_co a'0 (g_Var_f c)) (open_tm_wrt_co ?b (g_Var_f c)) |- _ =>
-        pick_fresh c;
-        have: c `notin` L; auto => h0;
-        pose K := H12 c h0; clearbody K;
-        pose J := subst4 c lc_g_Triv K;
-        clearbody J;
-        repeat rewrite co_subst_co_tm_open_tm_wrt_co in J; eauto;
-        simpl in J;
-        destruct eq_dec; try congruence;
-        repeat rewrite co_subst_co_tm_fresh_eq in J; eauto with lc
-
-      end.
 
 
 Lemma confluence_size : forall n a, size_tm a <= n ->  forall W a1 R, Par W a a1 R -> forall a2, Par W a a2 R -> exists b, Par W a1 b R /\ Par W a2 b R.
@@ -654,30 +553,26 @@ Qed.
 
 (* ---------------------------------------------------------------------- *)
 
+Lemma multipar_lc1 : forall W a b R, multipar W a b R -> lc_tm a.
+Proof. intros. eapply erased_lc; eapply multipar_erased_tm_fst; eauto.
+Qed.
+
+Lemma multipar_lc2 : forall W a b R, multipar W a b R -> lc_tm b.
+Proof. intros. eapply erased_lc; eapply multipar_erased_tm_snd; eauto.
+Qed.
+
 Lemma multipar_Star : forall W A B R, multipar W A B R -> A = a_Star -> B = a_Star.
 Proof.
   intros W A B R H. induction H. auto.
   inversion H; intro K; auto; try inversion K.
 Qed.
 
+
 Lemma multipar_Bullet : forall W B R, multipar W a_Bullet B R -> B = a_Bullet.
 Proof.
   intros W B R H. dependent induction H. auto.
   inversion H; auto; try inversion K.
 Qed.
-
-
-
-Ltac binds_notbinds :=
-    match goal with
-    [ H0 : binds ?c (Ax ?T ?a ?R) toplevel,
-      H5 : forall (c : atom) a, not (binds c (Ax ?T a ?R) an_toplevel) |- _  ] =>
-      unfold not in H5; unfold toplevel in H0; unfold erase_sig in H0;
-      apply binds_map_3 in H0; destruct H0 as (s' & EQ & B);
-      destruct s'; simpl in EQ; inversion EQ; subst;
-      apply H5 in B; contradiction
-      end.
-
 
 Lemma Par_Const : forall W T b R,
     Par W (a_Const T) b R -> b = a_Const T.
@@ -690,20 +585,6 @@ Lemma multipar_Const : forall W T b R,
     (b = a_Const T).
 Proof.
   intros W T b R H. dependent induction H; eauto using Par_Const.
-Qed.
-
-Lemma Par_Fam : forall W F a R, Par W (a_Fam F) a R -> 
-                 (a = a_Fam F) \/ ~(value_type R (a_Fam F)).
-Proof. intros. dependent induction H. auto. right. intro.
-       inversion H2. subst. have E: (Ax a A R1 = Ax a0 A0 R2).
-       eapply binds_unique; eauto using uniq_toplevel.
-       inversion E. subst. contradiction.
-Qed.
-
-Lemma multipar_Fam : forall W F a R, multipar W (a_Fam F) a R ->
-                      (a = a_Fam F) \/ ~(value_type R (a_Fam F)).
-Proof. intros. dependent induction H; auto. apply Par_Fam in H.
-       inversion H; auto.
 Qed.
 
 Lemma multipar_Pi : forall W rho A B R', multipar W A B R' -> 
@@ -725,7 +606,6 @@ Proof.
     auto; exists B1, B2, C2; auto.
 Qed.
 
-
 Lemma multipar_UAbs : forall W rho R a b R',
     multipar W (a_UAbs rho R a) b R' ->
     (exists b2, b = (a_UAbs rho R b2)).
@@ -737,8 +617,6 @@ Proof.
     exists b2. auto.
 Qed.
 
-
-
 Lemma multipar_CAbs : forall W A C R', multipar W A C R' -> 
         forall A1 A2 A3 R B, A = a_CAbs (Eq A1 A2 A3 R) B -> exists B1 B2 B3 C2,
         C = (a_CAbs (Eq B1 B2 B3 R) C2).
@@ -749,15 +627,231 @@ Proof.
     auto; exists B1, B2, C2; auto.
 Qed.
 
-(* --------------------------------------------------- *)
-
-(* 
-Lemma multipar_lc2: forall a1 a2, lc_tm a1 -> multipar a1 a2 -> lc_tm a2.
-  induction 2; eauto.
-  apply IHmultipar.
-  eapply Par_lc2; apply H0.
+Lemma consist_sym : forall a b R, consistent a b R -> consistent b a R.
+Proof. intros. induction H; eauto.
 Qed.
-*)
+
+(*
+Inductive Path_consistent : role_context -> tyfam -> tm -> tm -> role -> Prop :=
+| PC_Const : forall W F a A R1 R, binds F (Ax a A R1) toplevel ->
+            ~(SubRole R1 R) -> uniq W -> Path_consistent W F (a_Fam F) (a_Fam F) R
+| PC_App   : forall W F a1 rho R1 a2 b1 b2 R,
+    erased_tm W a2 R1 -> erased_tm W b2 R1 ->
+    Path_consistent W F a1 b1 R ->
+    Path_consistent W F (a_App a1 rho R1 a2) (a_App b1 rho R1 b2) R
+| PC_CApp  : forall W F a1 b1 R,
+    Path_consistent W F a1 b1 R ->
+    Path_consistent W F (a_CApp a1 g_Triv) (a_CApp b1 g_Triv) R
+| PC_Conv  : forall W F a1 b1 R1 R,
+    Path_consistent W F a1 b1 R ->
+    Path_consistent W F (a_Conv a1 R1 g_Triv) (a_Conv b1 R1 g_Triv) R.
+Hint Constructors Path_consistent.
+
+Lemma Path_consistent_Path1 : forall W F a b R, Path_consistent W F a b R -> Path F a R.
+Proof. induction 1; eauto using erased_lc. Qed.
+
+Lemma Path_consistent_Path2 : forall W F a b R, Path_consistent W F a b R -> Path F b R.
+Proof. induction 1; eauto using erased_lc. Qed.
+
+Lemma Path_consistent_erased1 : forall W F a b R, Path_consistent W F a b R -> erased_tm W a R.
+Proof. induction 1; auto. econstructor; eauto. Qed.
+
+Lemma Path_consistent_erased2 : forall W F a b R, Path_consistent W F a b R -> erased_tm W b R.
+Proof. induction 1; auto. econstructor; eauto. Qed.
+
+Hint Resolve Path_consistent_erased1 Path_consistent_erased2 : erased.
+
+Lemma Path_consistent_Refl :
+  forall W F a R, Path F a R -> erased_tm W a R -> Path_consistent W F a a R.
+Proof. induction 1; intro h; inversion h; subst; eauto. Qed.
+
+Lemma Path_consistent_Trans_aux :
+  forall F b R,  Path F b R -> forall W a c, Path_consistent W F a b R ->
+               Path_consistent W F b c R -> Path_consistent W F a c R.
+Proof. induction 1.
+       all: intros W a0 c0 h1 h2; inversion h1; inversion h2; subst; auto.
+Qed.
+
+Lemma Path_consistent_Trans : forall W F a b c R,
+  Path_consistent W F a b R -> Path_consistent W F b c R -> Path_consistent W F a c R.
+Proof. intros. eapply Path_consistent_Trans_aux with (b:=b). eapply Path_consistent_Path2; auto.
+       eauto. eauto. eauto.
+Qed.
+
+
+Lemma Path_consistent_Sym :
+  forall W F a b R, Path_consistent W F a b R -> Path_consistent W F b a R.
+Proof.
+  induction 1; eauto.
+Qed.
+
+Lemma Par_Path_consistent :
+  forall W a b F R, Par W a b R -> Path F a R -> Path_consistent W F a b R.
+Proof.
+  induction 1; intros P; try (inversion P; fail).
+  - apply Path_consistent_Refl; auto.
+  - inversion P; subst. apply IHPar1 in H8. inversion H8.
+  - inversion P; subst. apply IHPar1 in H8. econstructor; eauto.
+    eapply Par_erased_tm_fst; eauto. eapply Par_erased_tm_snd; eauto.
+  - inversion P; subst. apply IHPar in H2. inversion H2.
+  - inversion P; subst. apply IHPar in H2. econstructor; eauto.
+  - inversion P; subst. have E: (Ax a A R1 = Ax a0 A0 R2).
+    eapply binds_unique; eauto using uniq_toplevel.
+    inversion E; subst. contradiction.
+  - inversion P; subst. apply IHPar in H4. econstructor; eauto.
+  - admit.
+  -  *)
+
+(* Properties of Path *)
+
+Lemma Path_lc : forall F a R, Path F a R -> lc_tm a.
+Proof. intros. induction H; eauto.
+Qed.
+
+Lemma uniq_Path : forall F F' a R, Path F a R -> Path F' a R -> F = F'.
+Proof. intros. generalize dependent F'. induction H; intros; auto.
+       inversion H1; subst. auto. inversion H1; subst. eauto.
+       inversion H0; subst. eauto. inversion H0; subst. eauto.
+Qed.
+
+Lemma decide_Path : forall W a R, erased_tm W a R -> (exists F, Path F a R) \/
+                                     (forall F, not (Path F a R)).
+Proof.
+  induction a; intros R' E.
+  all: try solve [right; move => F h1; inversion h1].
+  - inversion E; subst. apply IHa1 in H5. destruct H5 as [[F h0]|n].
+    left. exists F. econstructor; auto. eapply erased_lc; eauto.
+    right. intros. intro. inversion H; subst. pose (Q := n F). contradiction.
+  - inversion E; subst. destruct (sub_dec R R') as [P1 | P2].
+    right. intros. intro. inversion H; subst. have Q: (Ax a A R = Ax a0 A0 R1).
+    eapply binds_unique; eauto using uniq_toplevel.
+    inversion Q. subst. contradiction. left. exists F. eauto.
+  - inversion E; subst. apply IHa in H4. destruct H4 as [[F h0]|n].
+    left. exists F. eauto. right. intros. intro. inversion H; subst.
+    pose (Q := n F). contradiction.
+  - inversion E; subst. apply IHa in H3. destruct H3 as [[F h0]|n].
+    left. exists F. eauto. right. intros. intro. inversion H; subst.
+    pose (Q := n F). contradiction.
+Qed.
+
+Lemma Par_Path : forall F a R W a', Path F a R -> Par W a a' R -> Path F a' R.
+Proof. intros. generalize dependent a'. induction H; intros.
+       - inversion H1; subst. eauto. have E: (Ax a A R1 = Ax a' A0 R2).
+         eapply binds_unique; eauto using uniq_toplevel.
+         inversion E. subst. contradiction.
+       - inversion H1; subst. eauto. apply IHPath in H9.
+         inversion H9. apply IHPath in H9. econstructor; auto.
+         apply Par_erased_tm_snd in H10. eapply erased_lc; eauto.
+         apply IHPath in H9. inversion H9; subst. econstructor.
+         econstructor; auto. econstructor; auto.
+         apply Par_erased_tm_snd in H10. eapply erased_lc; eauto.
+         apply IHPath in H9. inversion H9; subst. econstructor.
+         econstructor; auto. econstructor; auto.
+         apply Par_erased_tm_snd in H10. inversion H10; subst.
+         eapply erased_lc; eauto.
+       - inversion H0; subst. eauto. apply IHPath in H3. inversion H3.
+         apply IHPath in H3. econstructor; auto.
+         apply IHPath in H3. inversion H3; subst. econstructor; auto.
+       - inversion H0; subst. eauto. apply IHPath in H6. eauto.
+         apply IHPath in H6. auto.
+Qed.
+
+Lemma multipar_Path :  forall F a R W a', Path F a R -> multipar W a a' R ->
+                       Path F a' R.
+Proof. intros. induction H0; auto. apply IHmultipar. eapply Par_Path; eauto.
+Qed.
+
+Lemma multipar_Path_join_head : forall F1 F2 W a1 a2 c R,
+      multipar W a1 c R -> multipar W a2 c R ->
+      Path F1 a1 R -> Path F2 a2 R -> F1 = F2.
+Proof. intros. eapply multipar_Path in H; eauto.
+       eapply multipar_Path in H0; eauto. eapply uniq_Path; eauto.
+Qed.
+
+(* Paths and consistency *)
+
+Inductive Path_head_form : tm -> Prop :=
+   | head_Fam : forall F, Path_head_form (a_Fam F)
+   | head_App : forall a rho R b, Path_head_form (a_App a rho R b)
+   | head_CApp : forall a g, Path_head_form (a_CApp a g)
+   | head_Conv : forall a R g, Path_head_form (a_Conv a R g).
+Hint Constructors Path_head_form.
+
+Inductive not_Path_head_form : tm -> Prop :=
+   | not_head_Pi : forall rho A R b, not_Path_head_form (a_Pi rho A R b)
+   | not_head_CPi : forall phi b, not_Path_head_form (a_CPi phi b).
+Hint Constructors not_Path_head_form.
+
+Lemma Path_head_form_Path_consist : forall W F a b R, Path F a R ->
+                       multipar W a b R -> consistent a b R.
+Proof. intros. eapply consistent_a_Path; eauto. eapply multipar_Path; eauto.
+Qed.
+
+Lemma Path_head_form_no_Path_consist_L : forall a b R, Path_head_form a ->
+         lc_tm b -> (forall F, ~(Path F a R)) -> consistent a b R.
+Proof. intros. eapply consistent_a_Step_L. auto.
+       intro H2; inversion H2; subst; try (inversion H; fail).
+       pose (Q := H1 F); contradiction.
+Qed.
+
+Lemma Path_head_form_no_Path_consist_R : forall a b R, Path_head_form b ->
+         lc_tm a -> (forall F, ~(Path F b R)) -> consistent a b R.
+Proof. intros. eapply consistent_a_Step_R. auto.
+       intro H2; inversion H2; subst; try (inversion H; fail).
+       pose (Q := H1 F); contradiction.
+Qed.
+
+Lemma Path_head_form_consist : forall W a b R, Path_head_form a ->
+                multipar W a b R -> consistent a b R.
+Proof. intros. inversion H; subst.
+       all: (assert (H' := H0); apply multipar_erased_tm_fst in H';
+       apply decide_Path in H'; inversion H' as [[F0 Q]|n]).
+       all: try(eapply Path_head_form_Path_consist; eauto; fail).
+       all: try(apply multipar_lc2 in H0;
+            eapply Path_head_form_no_Path_consist_L; eauto; fail).
+Qed.
+
+Lemma Path_head_form_join_consist : forall W a b R, joins W a b R ->
+             Path_head_form a -> Path_head_form b -> consistent a b R.
+Proof. intros. destruct H as (t & MSL & MSR).
+       assert (P := MSL); assert (Q := MSR).
+       apply multipar_erased_tm_fst in P. apply multipar_erased_tm_fst in Q.
+       apply decide_Path in P. apply decide_Path in Q.
+       inversion P as [[F1 S]|n]. inversion Q as [[F2 S']|n'].
+       assert (F1 = F2). eapply multipar_Path_join_head. eapply MSL.
+       eapply MSR. auto. auto. subst. eauto.
+       apply multipar_lc1 in MSL. eapply Path_head_form_no_Path_consist_R; eauto.
+       apply multipar_lc1 in MSR. eapply Path_head_form_no_Path_consist_L; eauto.
+Qed.
+
+
+Lemma Path_head_not_head_join_consist : forall W a b R, joins W a b R ->
+             Path_head_form a -> not_Path_head_form b -> consistent a b R.
+Proof. intros. destruct H as (t & MSL & MSR).
+    assert (P := MSL). apply multipar_erased_tm_fst in P.
+    apply decide_Path in P. inversion P as [[F S]|n].
+    eapply multipar_Path in MSL; eauto. inversion H1; subst.
+    destruct (multipar_Pi MSR eq_refl) as (b1 & b2 & Q); subst.
+    inversion MSL. destruct phi; subst.
+    destruct (multipar_CPi MSR eq_refl) as (b1 & b2 & B & C & Q). subst.
+    inversion MSL. apply multipar_lc1 in MSR.
+    apply Path_head_form_no_Path_consist_L; eauto.
+Qed.
+
+Lemma Path_not_head_head_join_consist : forall W a b R, joins W a b R ->
+             not_Path_head_form a -> Path_head_form b -> consistent a b R.
+Proof. intros. destruct H as (t & MSL & MSR).
+    assert (Q := MSR). apply multipar_erased_tm_fst in Q.
+    apply decide_Path in Q. inversion Q as [[F S]|n].
+    eapply multipar_Path in MSR; eauto. inversion H0; subst.
+    destruct (multipar_Pi MSL eq_refl) as (b1 & b2 & U); subst.
+    inversion MSR. destruct phi; subst.
+    destruct (multipar_CPi MSL eq_refl) as (b' & b2 & B & C & U). subst.
+    inversion MSR. apply multipar_lc1 in MSL.
+    apply Path_head_form_no_Path_consist_R; eauto.
+Qed.
+
+(* --------------------------------------------------- *)
 
 Lemma joins_lc_fst : forall W a b R, joins W a b R -> lc_tm a.
 Proof. intros. inversion H as [T [H1 H2]]. 
@@ -773,8 +867,8 @@ Qed.
 
 (* Proof that joinability implies consistency. *)
 
-Ltac step_left := eapply consistent_a_Step_R; [eapply joins_lc_fst; eauto |intro N; inversion N]; fail.
-Ltac step_right := eapply consistent_a_Step_L; [eapply joins_lc_snd; eauto | intro N; inversion N]; fail.
+Ltac step_left := eapply consistent_a_Step_R; [eapply joins_lc_fst; eauto |intro N; inversion N; subst; inversion H]; fail.
+Ltac step_right := eapply consistent_a_Step_L; [eapply joins_lc_snd; eauto | intro N; inversion N; subst; inversion H]; fail.
 
 (* look for a multipar involving a head form and apply the appropriate lemma for that
    head form. Note: for paths, the lemma has already been applied so we only need
@@ -783,20 +877,12 @@ Ltac multipar_step :=
   match goal with
   | [ SIDE : multipar _ a_Star _ _ |- _ ] =>
     apply multipar_Star in SIDE; auto; subst
+  (* *)
   | [ SIDE : multipar _ (a_Pi _ _ _ _) _ _ |- _ ] =>
     destruct (multipar_Pi SIDE eq_refl) as [b1' [b2' EQ]]; clear SIDE; subst
   | [ SIDE : multipar _ (a_CPi ?phi _) _ _ |- _ ] =>
     try (destruct phi); destruct (multipar_CPi SIDE eq_refl)
       as (B1' & B2' & C1' & C2' &  EQ); clear SIDE; subst
-  | [ SIDE : multipar _ (a_Fam ?F) _ ?R',
-      HYP  : joins _ _ (a_Fam ?F) ?R' |- _ ] =>
-     apply multipar_Fam in SIDE; inversion SIDE as [H1 | H2];
-    [ inversion H1 | apply consistent_a_Step_R; [ eapply joins_lc_fst;
-      eauto | auto ] ]
-  | [ SIDE : multipar _ (a_Fam ?F) _ ?R' |- _ ] =>
-     apply multipar_Fam in SIDE; inversion SIDE as [H1 | H2];
-    [ inversion H1 | apply consistent_a_Step_L; [ eapply joins_lc_snd;
-      eauto | auto ] ]
   | [ SIDE : multipar _ (a_Const ?T) _ _ |- _ ] =>
     apply multipar_Const in SIDE; auto; rename SIDE into EQ
   end.
@@ -805,11 +891,13 @@ Lemma join_consistent : forall W a b R, joins W a b R -> consistent a b R.
 Proof.
   intros. assert (H' := H).
   destruct H as (TT & MSL & MSR).
-  destruct a; try step_right; destruct b; try step_left; auto. 
+  destruct a; try step_right; destruct b; try step_left; auto.
   all: try multipar_step; try (multipar_step; inversion EQ).
-  - apply multipar_Fam in MSL. inversion MSL as [H2 | H3]. subst.
-    inversion H2; subst. econstructor.
-    apply consistent_a_Step_L. eapply joins_lc_snd; eauto. auto.
+  all: try (apply consist_sym; eapply Path_head_form_consist; eauto; fail).
+  all: try (eapply Path_head_form_consist; eauto; fail).
+  all: try (eapply Path_head_form_join_consist; eauto; fail).
+  all: try (eapply Path_head_not_head_join_consist; eauto; fail).
+  all: try (eapply Path_not_head_head_join_consist; eauto; fail).
   - destruct (multipar_Pi MSL eq_refl) as [c1 [c2 EQ]].
     inversion EQ; subst. econstructor. apply joins_lc_fst in H'.
     inversion H'; auto. eapply joins_lc_fst; eauto. apply joins_lc_snd in H'.
@@ -899,19 +987,6 @@ Qed.
 
 
 Definition extends (G G2 : context) := exists G1, G = G1 ++ G2.
-
-(*
-Lemma join_context_independent: forall G1 G2 W D A B,
-                                             joins G1 D A B -> joins G2 D A B.
-Proof.
-  intros G1 G2 D A B E H.
-  destruct H.
-  split_hyp.
-  unfold joins.
-  exists x.
-  repeat split; eauto with DB.
-Qed.
-*)
 
 Lemma Good_NoAssn: forall c phi G D, Good G D -> c `notin` D -> Good ((c, Co phi) :: G) D.
 Proof.
@@ -1057,49 +1132,6 @@ Proof.
   replace ([(y,R)] ++ W) with (nil ++ [(y,R)] ++ W); auto.
   apply multipar_app_rctx; auto.
 Qed.
-(*
-Lemma multipar_App_destruct : forall W rho R a1 a2 c R',
-    multipar W (a_App a1 rho R a2) c R' ->
-    (exists a1' a2',
-        multipar W (a_App a1 rho R a2) (a_App (a_UAbs rho R a1') rho R a2') R' /\
-        multipar W a1 (a_UAbs rho R a1') R' /\
-        multipar W a2 a2' R /\
-        multipar W (open_tm_wrt_tm a1' a2') c R') \/
-    (exists a1' a2',
-        multipar W (a_App a1 rho R a2) (a_App a1' rho R a2') R' /\
-        multipar W a1 a1' R' /\
-        multipar W a2 a2' R).
-Proof.
-  intros. dependent induction H.
-  right.
-  exists a1, a2. split; auto.
-  inversion H; subst. split; econstructor; eauto.
-  inversion H; subst. Focus 5.
-  + subst. eauto.
-  + subst. left.
-    exists a', b'. split; auto.
-    assert (lc_tm a1). eapply Par_lc1. eauto.
-    assert (lc_tm a2). eapply Par_lc1. eauto.
-    eapply multipar_app_lr; eauto.
-    split.
-    eapply mp_step; eauto.
-    split; eauto.
-  +
-    assert (lc_tm a1). eapply Par_lc1. eauto.
-    assert (lc_tm a2). eapply Par_lc1. eauto.
-    subst. destruct (IHmultipar rho R a' b') as [[a1' [a2' [P1 [P2 [P3 P4]]]]] |
-                                                [a1' [a2' [P1 [P2 P3]]]]] ; auto.
-    ++ clear IHmultipar. left.
-       exists a1', a2'.
-       repeat split; eauto.
-    ++ clear IHmultipar. right.
-
-       exists a1', a2'.
-       repeat split; eauto.
-Unshelve.
-all: exact S.
-Qed.
-*)
 
 Ltac subst_tm_erased_open x :=
   let K := fresh in
@@ -1117,36 +1149,6 @@ Ltac subst_tm_erased_open x :=
     destruct eq_dec; try congruence;
     rewrite tm_subst_tm_tm_fresh_eq in K; auto
   end.
-(*
-Ltac multipar_subst_open x :=
-  let K := fresh in
-  let h1 := fresh in
-  let h0 := fresh in
-  let h2 := fresh in
-  let lc1 := fresh in
-  match goal with
-    [
-      H2 : erased_tm ?a1,
-      H4 : multipar ?G ?D ?a1 ?ac,
-      H18: ∀ x : atom, x `notin` ?L0 → erased_tm (open_tm_wrt_tm ?B1 (a_Var_f x)),
-      H9 : ∀ x : atom,
-       x `notin` ?L1
-       → multipar ?G ?D (open_tm_wrt_tm ?B1 (a_Var_f x)) (open_tm_wrt_tm ?B' (a_Var_f x))
-    |-
-    multipar ?G ?D (open_tm_wrt_tm ?B1 ?a1) (open_tm_wrt_tm ?B' ?ac) ] =>
-      have: x `notin` L0; auto => h0;
-      have: x `notin` L1; auto => h1;
-
-      pose K := multipar_subst3 x H2 H4 (H18 x h0) (H9 x h1);
-      clearbody K;
-      (have: lc_tm a1 by eapply erased_lc; eauto) => lc1;
-      repeat rewrite tm_subst_tm_tm_open_tm_wrt_tm in K;
-      eauto;try solve [eapply multipar_lc2; eauto | eapply multipar_lc2; eauto];
-      simpl in K;
-      destruct eq_dec; try congruence;
-      repeat rewrite tm_subst_tm_tm_fresh_eq in K; auto
-   end.*)
-
 
 Lemma consistent_mutual:
   (forall S a A R,   Typing S a A R -> True) /\

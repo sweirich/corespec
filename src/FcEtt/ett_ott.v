@@ -71,8 +71,6 @@ Inductive sort : Set :=  (*r binding classifier *)
  | Tm (A:tm) (R:role)
  | Co (phi:constraint).
 
-Definition context : Set := list ( atom * sort ).
-
 Inductive sig_sort : Set :=  (*r signature classifier *)
  | Cs (A:tm)
  | Ax (a:tm) (A:tm) (R:role).
@@ -80,6 +78,8 @@ Inductive sig_sort : Set :=  (*r signature classifier *)
 Definition available_props : Type := atoms.
 
 Definition sig : Set := list (atom * sig_sort).
+
+Definition context : Set := list ( atom * sort ).
 
 Definition role_context : Set := list ( atom * role ).
 
@@ -219,22 +219,16 @@ with open_constraint_wrt_tm_rec (k:nat) (a5:tm) (phi5:constraint) : constraint :
   | (Eq a b A R) => Eq (open_tm_wrt_tm_rec k a5 a) (open_tm_wrt_tm_rec k a5 b) (open_tm_wrt_tm_rec k a5 A) R
 end.
 
-Definition open_sig_sort_wrt_co_rec (k:nat) (g5:co) (sig_sort5:sig_sort) : sig_sort :=
-  match sig_sort5 with
-  | (Cs A) => Cs (open_tm_wrt_co_rec k g5 A)
-  | (Ax a A R) => Ax (open_tm_wrt_co_rec k g5 a) (open_tm_wrt_co_rec k g5 A) R
-end.
-
 Definition open_sort_wrt_co_rec (k:nat) (g5:co) (sort5:sort) : sort :=
   match sort5 with
   | (Tm A R) => Tm (open_tm_wrt_co_rec k g5 A) R
   | (Co phi) => Co (open_constraint_wrt_co_rec k g5 phi)
 end.
 
-Definition open_sort_wrt_tm_rec (k:nat) (a5:tm) (sort5:sort) : sort :=
-  match sort5 with
-  | (Tm A R) => Tm (open_tm_wrt_tm_rec k a5 A) R
-  | (Co phi) => Co (open_constraint_wrt_tm_rec k a5 phi)
+Definition open_sig_sort_wrt_co_rec (k:nat) (g5:co) (sig_sort5:sig_sort) : sig_sort :=
+  match sig_sort5 with
+  | (Cs A) => Cs (open_tm_wrt_co_rec k g5 A)
+  | (Ax a A R) => Ax (open_tm_wrt_co_rec k g5 a) (open_tm_wrt_co_rec k g5 A) R
 end.
 
 Definition open_sig_sort_wrt_tm_rec (k:nat) (a5:tm) (sig_sort5:sig_sort) : sig_sort :=
@@ -243,19 +237,25 @@ Definition open_sig_sort_wrt_tm_rec (k:nat) (a5:tm) (sig_sort5:sig_sort) : sig_s
   | (Ax a A R) => Ax (open_tm_wrt_tm_rec k a5 a) (open_tm_wrt_tm_rec k a5 A) R
 end.
 
+Definition open_sort_wrt_tm_rec (k:nat) (a5:tm) (sort5:sort) : sort :=
+  match sort5 with
+  | (Tm A R) => Tm (open_tm_wrt_tm_rec k a5 A) R
+  | (Co phi) => Co (open_constraint_wrt_tm_rec k a5 phi)
+end.
+
 Definition open_brs_wrt_co g5 brs_6 := open_brs_wrt_co_rec 0 brs_6 g5.
 
 Definition open_tm_wrt_co g5 a5 := open_tm_wrt_co_rec 0 a5 g5.
 
 Definition open_brs_wrt_tm a5 brs_6 := open_brs_wrt_tm_rec 0 brs_6 a5.
 
-Definition open_sig_sort_wrt_co g5 sig_sort5 := open_sig_sort_wrt_co_rec 0 sig_sort5 g5.
-
 Definition open_sort_wrt_co g5 sort5 := open_sort_wrt_co_rec 0 sort5 g5.
+
+Definition open_sig_sort_wrt_co g5 sig_sort5 := open_sig_sort_wrt_co_rec 0 sig_sort5 g5.
 
 Definition open_co_wrt_co g_5 g__6 := open_co_wrt_co_rec 0 g__6 g_5.
 
-Definition open_sort_wrt_tm a5 sort5 := open_sort_wrt_tm_rec 0 sort5 a5.
+Definition open_sig_sort_wrt_tm a5 sig_sort5 := open_sig_sort_wrt_tm_rec 0 sig_sort5 a5.
 
 Definition open_constraint_wrt_co g5 phi5 := open_constraint_wrt_co_rec 0 phi5 g5.
 
@@ -263,7 +263,7 @@ Definition open_constraint_wrt_tm a5 phi5 := open_constraint_wrt_tm_rec 0 phi5 a
 
 Definition open_co_wrt_tm a5 g_5 := open_co_wrt_tm_rec 0 g_5 a5.
 
-Definition open_sig_sort_wrt_tm a5 sig_sort5 := open_sig_sort_wrt_tm_rec 0 sig_sort5 a5.
+Definition open_sort_wrt_tm a5 sort5 := open_sort_wrt_tm_rec 0 sort5 a5.
 
 Definition open_tm_wrt_tm a5 a_6 := open_tm_wrt_tm_rec 0 a_6 a5.
 
@@ -574,18 +574,6 @@ with fv_co_co_constraint (phi5:constraint) : vars :=
   | (Eq a b A R) => (fv_co_co_tm a) \u (fv_co_co_tm b) \u (fv_co_co_tm A)
 end.
 
-Definition fv_tm_tm_sig_sort (sig_sort5:sig_sort) : vars :=
-  match sig_sort5 with
-  | (Cs A) => (fv_tm_tm_tm A)
-  | (Ax a A R) => (fv_tm_tm_tm a) \u (fv_tm_tm_tm A)
-end.
-
-Definition fv_co_co_sig_sort (sig_sort5:sig_sort) : vars :=
-  match sig_sort5 with
-  | (Cs A) => (fv_co_co_tm A)
-  | (Ax a A R) => (fv_co_co_tm a) \u (fv_co_co_tm A)
-end.
-
 Definition fv_tm_tm_sort (sort5:sort) : vars :=
   match sort5 with
   | (Tm A R) => (fv_tm_tm_tm A)
@@ -596,6 +584,18 @@ Definition fv_co_co_sort (sort5:sort) : vars :=
   match sort5 with
   | (Tm A R) => (fv_co_co_tm A)
   | (Co phi) => (fv_co_co_constraint phi)
+end.
+
+Definition fv_tm_tm_sig_sort (sig_sort5:sig_sort) : vars :=
+  match sig_sort5 with
+  | (Cs A) => (fv_tm_tm_tm A)
+  | (Ax a A R) => (fv_tm_tm_tm a) \u (fv_tm_tm_tm A)
+end.
+
+Definition fv_co_co_sig_sort (sig_sort5:sig_sort) : vars :=
+  match sig_sort5 with
+  | (Cs A) => (fv_co_co_tm A)
+  | (Ax a A R) => (fv_co_co_tm a) \u (fv_co_co_tm A)
 end.
 
 (** substitutions *)
@@ -719,18 +719,6 @@ with co_subst_co_constraint (g5:co) (c5:covar) (phi5:constraint) {struct phi5} :
   | (Eq a b A R) => Eq (co_subst_co_tm g5 c5 a) (co_subst_co_tm g5 c5 b) (co_subst_co_tm g5 c5 A) R
 end.
 
-Definition tm_subst_tm_sig_sort (a5:tm) (x5:tmvar) (sig_sort5:sig_sort) : sig_sort :=
-  match sig_sort5 with
-  | (Cs A) => Cs (tm_subst_tm_tm a5 x5 A)
-  | (Ax a A R) => Ax (tm_subst_tm_tm a5 x5 a) (tm_subst_tm_tm a5 x5 A) R
-end.
-
-Definition co_subst_co_sig_sort (g5:co) (c5:covar) (sig_sort5:sig_sort) : sig_sort :=
-  match sig_sort5 with
-  | (Cs A) => Cs (co_subst_co_tm g5 c5 A)
-  | (Ax a A R) => Ax (co_subst_co_tm g5 c5 a) (co_subst_co_tm g5 c5 A) R
-end.
-
 Definition tm_subst_tm_sort (a5:tm) (x5:tmvar) (sort5:sort) : sort :=
   match sort5 with
   | (Tm A R) => Tm (tm_subst_tm_tm a5 x5 A) R
@@ -741,6 +729,18 @@ Definition co_subst_co_sort (g5:co) (c5:covar) (sort5:sort) : sort :=
   match sort5 with
   | (Tm A R) => Tm (co_subst_co_tm g5 c5 A) R
   | (Co phi) => Co (co_subst_co_constraint g5 c5 phi)
+end.
+
+Definition tm_subst_tm_sig_sort (a5:tm) (x5:tmvar) (sig_sort5:sig_sort) : sig_sort :=
+  match sig_sort5 with
+  | (Cs A) => Cs (tm_subst_tm_tm a5 x5 A)
+  | (Ax a A R) => Ax (tm_subst_tm_tm a5 x5 a) (tm_subst_tm_tm a5 x5 A) R
+end.
+
+Definition co_subst_co_sig_sort (g5:co) (c5:covar) (sig_sort5:sig_sort) : sig_sort :=
+  match sig_sort5 with
+  | (Cs A) => Cs (co_subst_co_tm g5 c5 A)
+  | (Ax a A R) => Ax (co_subst_co_tm g5 c5 a) (co_subst_co_tm g5 c5 A) R
 end.
 
 
@@ -852,6 +852,23 @@ Inductive SubRole : role -> role -> Prop :=    (* defn SubRole *)
      SubRole R2 R3 ->
      SubRole R1 R3.
 
+(* defns JPath *)
+Inductive Path : tyfam -> tm -> role -> Prop :=    (* defn Path *)
+ | Path_Const : forall (F:tyfam) (R:role) (a A:tm) (R1:role),
+      binds  F  (Ax  a A R1 )   toplevel   ->
+      not (  ( SubRole R1 R )  )  ->
+     Path F (a_Fam F) R
+ | Path_App : forall (F:tyfam) (a:tm) (rho:relflag) (R1:role) (b':tm) (R:role),
+     lc_tm b' ->
+     Path F a R ->
+     Path F  ( (a_App a rho R1 b') )  R
+ | Path_CApp : forall (F:tyfam) (a:tm) (R:role),
+     Path F a R ->
+     Path F  ( (a_CApp a g_Triv) )  R
+ | Path_Conv : forall (F:tyfam) (a:tm) (R1 R:role),
+     Path F a R ->
+     Path F  ( (a_Conv a R1 g_Triv) )  R.
+
 (* defns JValue *)
 Inductive CoercedValue : role -> tm -> Prop :=    (* defn CoercedValue *)
  | CV : forall (R:role) (a:tm),
@@ -896,6 +913,15 @@ with Value : role -> tm -> Prop :=    (* defn Value *)
       binds  F  (Ax  a A R1 )   toplevel   ->
       not (  ( SubRole R1 R )  )  ->
      Value R (a_Fam F)
+ | Value_App : forall (R:role) (a:tm) (rho:relflag) (R1:role) (b':tm) (F:tyfam),
+     lc_tm b' ->
+     Path F a R ->
+     Value R a ->
+     Value R  ( (a_App a rho R1 b') ) 
+ | Value_CApp : forall (R:role) (a:tm) (F:tyfam),
+     Path F a R ->
+     Value R a ->
+     Value R  ( (a_CApp a g_Triv) ) 
 with value_type : role -> tm -> Prop :=    (* defn value_type *)
  | value_type_Star : forall (R:role),
      value_type R a_Star
@@ -907,10 +933,10 @@ with value_type : role -> tm -> Prop :=    (* defn value_type *)
      lc_constraint phi ->
      lc_tm (a_CPi phi B) ->
      value_type R (a_CPi phi B)
- | value_type_Ax : forall (R:role) (F:tyfam) (a A:tm) (R1:role),
-      binds  F  (Ax  a A R1 )   toplevel   ->
-      not (  ( SubRole R1 R )  )  ->
-     value_type R (a_Fam F).
+ | value_type_Path : forall (R:role) (A:tm) (F:tyfam),
+     Path F A R ->
+     Value R A ->
+     value_type R A.
 
 (* defns Jconsistent *)
 Inductive consistent : tm -> tm -> role -> Prop :=    (* defn consistent *)
@@ -930,6 +956,10 @@ Inductive consistent : tm -> tm -> role -> Prop :=    (* defn consistent *)
      consistent  ( (a_CPi phi1 A1) )   ( (a_CPi phi2 A2) )  R
  | consistent_a_Fam : forall (F:tyfam) (R':role),
      consistent (a_Fam F) (a_Fam F) R'
+ | consistent_a_Path : forall (a1 a2:tm) (R:role) (F:tyfam),
+     Path F a1 R ->
+     Path F a2 R ->
+     consistent a1 a2 R
  | consistent_a_Step_R : forall (a b:tm) (R:role),
      lc_tm a ->
       not ( value_type R b )  ->
@@ -1574,6 +1604,6 @@ Inductive head_reduction : context -> tm -> tm -> role -> Prop :=    (* defn hea
 
 
 (** infrastructure *)
-Hint Constructors SubRole CoercedValue Value value_type consistent erased_tm RhoCheck Par MultiPar joins Beta reduction_in_one reduction PropWff Typing Iso DefEq Ctx Sig AnnPropWff AnnTyping AnnIso AnnDefEq AnnCtx AnnSig head_reduction lc_co lc_brs lc_tm lc_constraint lc_sort lc_sig_sort.
+Hint Constructors SubRole Path CoercedValue Value value_type consistent erased_tm RhoCheck Par MultiPar joins Beta reduction_in_one reduction PropWff Typing Iso DefEq Ctx Sig AnnPropWff AnnTyping AnnIso AnnDefEq AnnCtx AnnSig head_reduction lc_co lc_brs lc_tm lc_constraint lc_sort lc_sig_sort.
 
 
