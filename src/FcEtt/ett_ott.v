@@ -954,8 +954,6 @@ Inductive consistent : tm -> tm -> role -> Prop :=    (* defn consistent *)
      lc_constraint phi2 ->
      lc_tm (a_CPi phi2 A2) ->
      consistent  ( (a_CPi phi1 A1) )   ( (a_CPi phi2 A2) )  R
- | consistent_a_Fam : forall (F:tyfam) (R':role),
-     consistent (a_Fam F) (a_Fam F) R'
  | consistent_a_Path : forall (a1 a2:tm) (R:role) (F:tyfam),
      Path F a1 R ->
      Path F a2 R ->
