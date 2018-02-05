@@ -141,15 +141,15 @@
 \ottprodline{|}{ \gamma } {\textsf{S}}{}{}{}\ottprodnewline
 \ottprodline{|}{\gamma  \ottsym{\{}  \ottnt{a}  \ottsym{/}  \ottmv{x}  \ottsym{\}}} {\textsf{S}}{}{}{}}
 
-\newcommand{\ottsort}{
-\ottrulehead{\ottnt{sort}}{::=}{\ottcom{binding classifier}}\ottprodnewline
-\ottfirstprodline{|}{\ottkw{Tm} \, \ottnt{A} \, \ottnt{R}}{}{}{}{}\ottprodnewline
-\ottprodline{|}{\ottkw{Co} \, \phi}{}{}{}{}}
-
 \newcommand{\ottsigXXsort}{
 \ottrulehead{\ottnt{sig\_sort}}{::=}{\ottcom{signature classifier}}\ottprodnewline
 \ottfirstprodline{|}{\ottkw{Cs} \, \ottnt{A}}{}{}{}{}\ottprodnewline
 \ottprodline{|}{\ottkw{Ax} \, \ottnt{a} \, \ottnt{A} \, \ottnt{R}}{}{}{}{}}
+
+\newcommand{\ottsort}{
+\ottrulehead{\ottnt{sort}}{::=}{\ottcom{binding classifier}}\ottprodnewline
+\ottfirstprodline{|}{\ottkw{Tm} \, \ottnt{A} \, \ottnt{R}}{}{}{}{}\ottprodnewline
+\ottprodline{|}{\ottkw{Co} \, \phi}{}{}{}{}}
 
 \newcommand{\ottcontext}{
 \ottrulehead{\ottnt{context}  ,\ \Gamma}{::=}{\ottcom{contexts}}\ottprodnewline
@@ -264,6 +264,10 @@
 \ottrulehead{\ottnt{JSubRole}}{::=}{}\ottprodnewline
 \ottfirstprodline{|}{ \ottnt{R_{{\mathrm{1}}}}  \leq  \ottnt{R_{{\mathrm{2}}}} }{}{}{}{\ottcom{Subroling judgement}}}
 
+\newcommand{\ottJPath}{
+\ottrulehead{\ottnt{JPath}}{::=}{}\ottprodnewline
+\ottfirstprodline{|}{ \mathsf{Path}_{ \ottnt{R} }  \ottmv{F}   \ottnt{a} }{}{}{}{\ottcom{Type headed by constant}}}
+
 \newcommand{\ottJValue}{
 \ottrulehead{\ottnt{JValue}}{::=}{}\ottprodnewline
 \ottfirstprodline{|}{\ottkw{CoercedValue} \, \ottnt{R} \, \ottnt{A}}{}{}{}{\ottcom{Values with at most one coercion at the top}}\ottprodnewline
@@ -323,6 +327,7 @@
 \newcommand{\ottjudgement}{
 \ottrulehead{\ottnt{judgement}}{::=}{}\ottprodnewline
 \ottfirstprodline{|}{\ottnt{JSubRole}}{}{}{}{}\ottprodnewline
+\ottprodline{|}{\ottnt{JPath}}{}{}{}{}\ottprodnewline
 \ottprodline{|}{\ottnt{JValue}}{}{}{}{}\ottprodnewline
 \ottprodline{|}{\ottnt{Jconsistent}}{}{}{}{}\ottprodnewline
 \ottprodline{|}{\ottnt{Jerased}}{}{}{}{}\ottprodnewline
@@ -348,8 +353,8 @@
 \ottprodline{|}{\ottnt{tm}}{}{}{}{}\ottprodnewline
 \ottprodline{|}{\ottnt{brs}}{}{}{}{}\ottprodnewline
 \ottprodline{|}{\ottnt{co}}{}{}{}{}\ottprodnewline
-\ottprodline{|}{\ottnt{sort}}{}{}{}{}\ottprodnewline
 \ottprodline{|}{\ottnt{sig\_sort}}{}{}{}{}\ottprodnewline
+\ottprodline{|}{\ottnt{sort}}{}{}{}{}\ottprodnewline
 \ottprodline{|}{\ottnt{context}}{}{}{}{}\ottprodnewline
 \ottprodline{|}{\ottnt{sig}}{}{}{}{}\ottprodnewline
 \ottprodline{|}{\ottnt{available\_props}}{}{}{}{}\ottprodnewline
@@ -364,8 +369,8 @@
 \otttm\ottinterrule
 \ottbrs\ottinterrule
 \ottco\ottinterrule
-\ottsort\ottinterrule
 \ottsigXXsort\ottinterrule
+\ottsort\ottinterrule
 \ottcontext\ottinterrule
 \ottsig\ottinterrule
 \ottavailableXXprops\ottinterrule
@@ -373,6 +378,7 @@
 \ottterminals\ottinterrule
 \ottformula\ottinterrule
 \ottJSubRole\ottinterrule
+\ottJPath\ottinterrule
 \ottJValue\ottinterrule
 \ottJconsistent\ottinterrule
 \ottJerased\ottinterrule
@@ -421,6 +427,51 @@
 
 \newcommand{\ottdefnsJSubRole}{
 \ottdefnSubRole{}}
+
+% defns JPath
+%% defn Path
+\newcommand{\ottdrulePathXXConst}[1]{\ottdrule[#1]{%
+\ottpremise{\ottmv{F}  \sim  \ottnt{a}  \ottsym{:}  \ottnt{A}  \ottsym{/}  \ottnt{R_{{\mathrm{1}}}} \, \in \,  \Sigma_0 }%
+\ottpremise{ \neg  \ottsym{(}   \ottnt{R_{{\mathrm{1}}}}  \leq  \ottnt{R}   \ottsym{)} }%
+}{
+ \mathsf{Path}_{ \ottnt{R} }  \ottmv{F}   \ottmv{F} }{%
+{\ottdrulename{Path\_Const}}{}%
+}}
+
+
+\newcommand{\ottdrulePathXXApp}[1]{\ottdrule[#1]{%
+\ottpremise{ \mathsf{Path}_{ \ottnt{R} }  \ottmv{F}   \ottnt{a} }%
+}{
+ \mathsf{Path}_{ \ottnt{R} }  \ottmv{F}   \ottsym{(}   \ottnt{a} \  \ottnt{b'} ^{ \ottnt{R_{{\mathrm{1}}}} , \rho }   \ottsym{)} }{%
+{\ottdrulename{Path\_App}}{}%
+}}
+
+
+\newcommand{\ottdrulePathXXCApp}[1]{\ottdrule[#1]{%
+\ottpremise{ \mathsf{Path}_{ \ottnt{R} }  \ottmv{F}   \ottnt{a} }%
+}{
+ \mathsf{Path}_{ \ottnt{R} }  \ottmv{F}   \ottsym{(}  \ottnt{a}  \ottsym{[}  \bullet  \ottsym{]}  \ottsym{)} }{%
+{\ottdrulename{Path\_CApp}}{}%
+}}
+
+
+\newcommand{\ottdrulePathXXConv}[1]{\ottdrule[#1]{%
+\ottpremise{ \mathsf{Path}_{ \ottnt{R} }  \ottmv{F}   \ottnt{a} }%
+}{
+ \mathsf{Path}_{ \ottnt{R} }  \ottmv{F}   \ottsym{(}   \ottnt{a} \triangleright _{ \ottnt{R_{{\mathrm{1}}}} }  \bullet   \ottsym{)} }{%
+{\ottdrulename{Path\_Conv}}{}%
+}}
+
+\newcommand{\ottdefnPath}[1]{\begin{ottdefnblock}[#1]{$ \mathsf{Path}_{ \ottnt{R} }  \ottmv{F}   \ottnt{a} $}{\ottcom{Type headed by constant}}
+\ottusedrule{\ottdrulePathXXConst{}}
+\ottusedrule{\ottdrulePathXXApp{}}
+\ottusedrule{\ottdrulePathXXCApp{}}
+\ottusedrule{\ottdrulePathXXConv{}}
+\end{ottdefnblock}}
+
+
+\newcommand{\ottdefnsJPath}{
+\ottdefnPath{}}
 
 % defns JValue
 %% defn CoercedValue
@@ -520,6 +571,24 @@
 {\ottdrulename{Value\_Ax}}{}%
 }}
 
+
+\newcommand{\ottdruleValueXXApp}[1]{\ottdrule[#1]{%
+\ottpremise{ \mathsf{Path}_{ \ottnt{R} }  \ottmv{F}   \ottnt{a} }%
+\ottpremise{ \suppress{\mathsf{Value}_{ \ottnt{R} }\  \ottnt{a} } }%
+}{
+ \suppress{\mathsf{Value}_{ \ottnt{R} }\  \ottsym{(}   \ottnt{a} \  \ottnt{b'} ^{ \ottnt{R_{{\mathrm{1}}}} , \rho }   \ottsym{)} } }{%
+{\ottdrulename{Value\_App}}{}%
+}}
+
+
+\newcommand{\ottdruleValueXXCApp}[1]{\ottdrule[#1]{%
+\ottpremise{ \mathsf{Path}_{ \ottnt{R} }  \ottmv{F}   \ottnt{a} }%
+\ottpremise{ \suppress{\mathsf{Value}_{ \ottnt{R} }\  \ottnt{a} } }%
+}{
+ \suppress{\mathsf{Value}_{ \ottnt{R} }\  \ottsym{(}  \ottnt{a}  \ottsym{[}  \bullet  \ottsym{]}  \ottsym{)} } }{%
+{\ottdrulename{Value\_CApp}}{}%
+}}
+
 \newcommand{\ottdefnValue}[1]{\begin{ottdefnblock}[#1]{$ \suppress{\mathsf{Value}_{ \ottnt{R} }\  \ottnt{A} } $}{\ottcom{values}}
 \ottusedrule{\ottdruleValueXXStar{}}
 \ottusedrule{\ottdruleValueXXPi{}}
@@ -530,6 +599,8 @@
 \ottusedrule{\ottdruleValueXXCAbs{}}
 \ottusedrule{\ottdruleValueXXUCAbs{}}
 \ottusedrule{\ottdruleValueXXAx{}}
+\ottusedrule{\ottdruleValueXXApp{}}
+\ottusedrule{\ottdruleValueXXCApp{}}
 \end{ottdefnblock}}
 
 %% defn value_type
@@ -554,19 +625,19 @@
 }}
 
 
-\newcommand{\ottdrulevalueXXtypeXXAx}[1]{\ottdrule[#1]{%
-\ottpremise{\ottmv{F}  \sim  \ottnt{a}  \ottsym{:}  \ottnt{A}  \ottsym{/}  \ottnt{R_{{\mathrm{1}}}} \, \in \,  \Sigma_0 }%
-\ottpremise{ \neg  \ottsym{(}   \ottnt{R_{{\mathrm{1}}}}  \leq  \ottnt{R}   \ottsym{)} }%
+\newcommand{\ottdrulevalueXXtypeXXPath}[1]{\ottdrule[#1]{%
+\ottpremise{ \mathsf{Path}_{ \ottnt{R} }  \ottmv{F}   \ottnt{A} }%
+\ottpremise{ \suppress{\mathsf{Value}_{ \ottnt{R} }\  \ottnt{A} } }%
 }{
-\ottkw{ValueType} \, \ottnt{R} \, \ottmv{F}}{%
-{\ottdrulename{value\_type\_Ax}}{}%
+\ottkw{ValueType} \, \ottnt{R} \, \ottnt{A}}{%
+{\ottdrulename{value\_type\_Path}}{}%
 }}
 
 \newcommand{\ottdefnvalueXXtype}[1]{\begin{ottdefnblock}[#1]{$\ottkw{ValueType} \, \ottnt{R} \, \ottnt{A}$}{\ottcom{Types with head forms (erased language)}}
 \ottusedrule{\ottdrulevalueXXtypeXXStar{}}
 \ottusedrule{\ottdrulevalueXXtypeXXPi{}}
 \ottusedrule{\ottdrulevalueXXtypeXXCPi{}}
-\ottusedrule{\ottdrulevalueXXtypeXXAx{}}
+\ottusedrule{\ottdrulevalueXXtypeXXPath{}}
 \end{ottdefnblock}}
 
 
@@ -603,6 +674,15 @@
 }}
 
 
+\newcommand{\ottdruleconsistentXXaXXPath}[1]{\ottdrule[#1]{%
+\ottpremise{ \mathsf{Path}_{ \ottnt{R} }  \ottmv{F}   \ottnt{a_{{\mathrm{1}}}} }%
+\ottpremise{ \mathsf{Path}_{ \ottnt{R} }  \ottmv{F}   \ottnt{a_{{\mathrm{2}}}} }%
+}{
+\ottkw{consistent} \, \ottnt{a_{{\mathrm{1}}}} \, \ottnt{a_{{\mathrm{2}}}} \, \ottnt{R}}{%
+{\ottdrulename{consistent\_a\_Path}}{}%
+}}
+
+
 \newcommand{\ottdruleconsistentXXaXXStepXXR}[1]{\ottdrule[#1]{%
 \ottpremise{ \neg  \ottkw{ValueType} \, \ottnt{R} \, \ottnt{b} }%
 }{
@@ -623,6 +703,7 @@
 \ottusedrule{\ottdruleconsistentXXaXXPi{}}
 \ottusedrule{\ottdruleconsistentXXaXXCPi{}}
 \ottusedrule{\ottdruleconsistentXXaXXFam{}}
+\ottusedrule{\ottdruleconsistentXXaXXPath{}}
 \ottusedrule{\ottdruleconsistentXXaXXStepXXR{}}
 \ottusedrule{\ottdruleconsistentXXaXXStepXXL{}}
 \end{ottdefnblock}}
@@ -2144,6 +2225,7 @@
 
 \newcommand{\ottdefnss}{
 \ottdefnsJSubRole
+\ottdefnsJPath
 \ottdefnsJValue
 \ottdefnsJconsistent
 \ottdefnsJerased
@@ -2164,7 +2246,7 @@
 \ottall
 
 \begin{verbatim}
-Definition rules:        163 good    0 bad
-Definition rule clauses: 479 good    0 bad
+Definition rules:        170 good    0 bad
+Definition rule clauses: 497 good    0 bad
 \end{verbatim}
 \end{document}

@@ -242,17 +242,13 @@ parsing
 
 grammar
 
-sort :: '' ::= {{ com binding classifier }}
-   | Tm A R           ::   :: Tm
-   | Co phi           ::   :: Co
-
 sig_sort :: '' ::= {{ com signature classifier }}
    | Cs A            ::    :: Cs
    | Ax a A R        ::    :: Ax
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-grammar
+   
+sort :: '' ::= {{ com binding classifier }}
+   | Tm A R           ::   :: Tm
+   | Co phi           ::   :: Co
 
 context, G {{ tex \Gamma }} :: 'ctx_' ::= {{ com contexts }}
                                           {{ coq list ( atom * sort ) }}
@@ -268,7 +264,6 @@ context, G {{ tex \Gamma }} :: 'ctx_' ::= {{ com contexts }}
    | | G |           :: M  :: Erase   {{ coq (erase_context [[G]]) }}
    | ( G )           :: M  :: Paren   {{ coq ([[G]]) }}
    | (# G #)         :: M  :: SecretParen {{ coq [[G]] }} {{ tex [[G]] }}
-
 
 sig, S {{ tex \Sigma }} :: 'sig_' ::= {{ com signatures }} {{ coq list (atom * sig_sort) }}
    | emptyS         ::    :: Empty       {{ coq nil }}
@@ -290,15 +285,13 @@ available_props, D {{ tex \Delta }} :: 'D_' ::= {{ coq atoms }} {{ coq-universe 
    | D , c           ::    :: ConsCo  {{ coq (singleton [[c]] \u [[D]]) }}
    | dom G           :: M  :: DomG    {{ coq (dom [[G]]) }} {{ tex \widetilde {[[G]]} }}
    | ( D )           :: M  :: Paren   {{ coq ([[D]]) }}
-
-
+   
 role_context, W {{ tex \Omega }} :: 'rctx_' ::= {{ com role_contexts }}
                                           {{ coq list ( atom * role ) }}
    | empty           ::    :: Empty   {{ coq nil }}
    | W , x : R       ::    :: ConsTm  {{ coq (([[x]] ~ [[R]]) ++ [[W]]) }}
    | ( W )           :: M  :: Paren   {{ coq ([[W]]) }}
    | (# W #)         :: M  :: SecretParen {{ coq [[W]] }} {{ tex [[W]] }}
-
 
 
 substitutions
@@ -553,6 +546,33 @@ R2 <= R3
 --------- :: Trans
 R1 <= R3
 
+
+defns
+   JPath :: '' ::=
+   
+defn
+Path F a R  ::  :: Path :: 'Path_'
+{{ com Type headed by constant }}
+{{ tex \mathsf{Path}_{[[R]]} [[F]] [[a]] }}
+by
+
+F ~ a : A/R1 in toplevel
+not (R1 <= R)
+-------------------------- :: Const
+Path F F R
+
+Path F a R
+------------------------ :: App
+Path F (a rho R1 b') R
+
+Path F a R
+----------------  :: CApp
+Path F (a [o]) R
+
+Path F a R
+---------------------  :: Conv
+Path F (a |>R1 o) R
+
 defns
 JValue :: '' ::=
 
@@ -610,6 +630,16 @@ not (R1 <= R)
 ------------------------- :: Ax
 Value R F
 
+Path F a R
+Value R a
+--------------------- :: App
+Value R (a rho R1 b')
+
+Path F a R
+Value R a
+--------------------- :: CApp
+Value R (a [o])
+
 defn
 ValueType R A ::   :: value_type :: 'value_type_'
 {{ com Types with head forms (erased language) }}
@@ -624,10 +654,10 @@ ValueType R all rho x : A / R1 -> B
 -------------------- :: CPi
 ValueType R all c : phi. B
 
-F ~ a : A/R1 in toplevel
-not (R1 <= R)
-------------------------- :: Ax
-ValueType R F
+Path F A R
+Value R A 
+------------------------ :: Path
+ValueType R A
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -652,6 +682,11 @@ consistent (all c1:phi1. A1) (all c2 :phi2. A2) R
 
 -------------------------- :: Fam
 consistent F F R'
+
+Path F a1 R
+Path F a2 R
+------------------- :: Path
+consistent a1 a2 R
 
 not ValueType R b
 ---------------------- :: Step_R
