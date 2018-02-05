@@ -680,9 +680,6 @@ consistent (all rho x1:A1 / R -> B1) (all rho x2:A2 / R -> B2) R'
 ------------------------ :: CPi
 consistent (all c1:phi1. A1) (all c2 :phi2. A2) R
 
--------------------------- :: Fam
-consistent F F R'
-
 Path F a1 R
 Path F a2 R
 ------------------- :: Path
