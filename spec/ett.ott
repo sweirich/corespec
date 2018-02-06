@@ -123,6 +123,7 @@ tm, a, b, v, w, A, B :: 'a_' ::= {{ com types and kinds }}
    | Succ             :: S :: Succ   {{ coq 0 }} {{ tex \mathsf{S} }}
    | True             :: S :: True   {{ coq 0 }}
    | Fix              :: S :: Fix    {{ coq 0 }}
+   | Age              :: S :: Age    {{ coq 0 }}
    | a -> b           :: S :: Arrow  {{ coq (a_Pi [[a]] [[b]]) }}
    | phi => A         :: S :: CArrow {{ coq (a_CPi [[phi]] [[A]]) }}
    | a R b          :: S :: RelApp
@@ -552,8 +553,8 @@ defns
    
 defn
 Path F a R  ::  :: Path :: 'Path_'
-{{ com Type headed by constant }}
-{{ tex \mathsf{Path}_{[[R]]} [[F]] [[a]] }}
+{{ com Type headed by constant (partial function) }}
+{{ tex \mathsf{Path}_{[[R]]} [[a]] = [[F]] }}
 by
 
 F ~ a : A/R1 in toplevel
@@ -579,6 +580,7 @@ JValue :: '' ::=
 defn
 CoercedValue R A ::   :: CoercedValue :: ''
 {{ com Values with at most one coercion at the top }}
+{{ tex \suppress{\mathsf{CoercedValue}_{[[R]]}\ [[A]]} }}
 by
 
 Value R a
@@ -643,6 +645,7 @@ Value R (a [o])
 defn
 ValueType R A ::   :: value_type :: 'value_type_'
 {{ com Types with head forms (erased language) }}
+{{ tex \suppress{\mathsf{ValueType}_{[[R]]}\ [[A]]} }}
 by
 
 ------- :: Star
@@ -669,6 +672,7 @@ defns
 defn
    consistent a b R ::  :: consistent :: 'consistent_a_'
    {{ com (erased) types do not differ in their heads }}
+  {{ tex \suppress{\mathsf{consistent}_{[[R]]}\ [[a]] [[b]] } }}
 by
 
 ---------------------- :: Star
@@ -698,7 +702,7 @@ defns
 
 defn
   W |- erased_tm a R ::  :: erased_tm :: 'erased_a_'
-  {{ tex [[W]] \vDash erased\_tm \hspace{2pt} [[a]] \hspace{2pt} [[R]] }}
+  {{ tex [[W]] \vDash [[a]] : [[R]] }}
 by
 rctx_uniq W
 ------------------- :: Bullet
@@ -746,7 +750,7 @@ W |- erased_tm (a [o]) R
 
 rctx_uniq W
 F ~ a : A / R in toplevel
-------------------- :: Fam
+--------------------------- :: Fam
 W |- erased_tm F R1
 
 rctx_uniq W
@@ -1055,7 +1059,7 @@ G |= a1 [ o ] : B1 { o / c } / R'
 
 |= G
 F ~ a : A / R in toplevel
-[ empty |= A : TYPE / R1 ]
+ empty |= A : TYPE / R1 
 ------------------ :: Fam
 G |= F : A / R1
 
