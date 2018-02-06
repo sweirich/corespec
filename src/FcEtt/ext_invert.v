@@ -1112,7 +1112,6 @@ Qed.
 (* Could also be an exists form *)
 Lemma E_Pi2 : forall L G rho A B R R',
     (∀ x : atom, x `notin` L → Typing ([(x, Tm A R)] ++ G) (open_tm_wrt_tm B (a_Var_f x)) a_Star R') ->
-    SubRole R R' ->
     Typing G (a_Pi rho A R B) a_Star R'.
 Proof.
   intros.
@@ -1127,7 +1126,6 @@ Lemma E_Abs2 : ∀ (L : atoms) (G : context) (rho : relflag) (a A B : tm) R R',
     (∀ x : atom,
         x `notin` L → Typing ([(x, Tm A R)] ++ G) (open_tm_wrt_tm a (a_Var_f x)) (open_tm_wrt_tm B (a_Var_f x)) R')
     → (∀ x : atom, x `notin` L → RhoCheck rho x (open_tm_wrt_tm a (a_Var_f x)))
-    -> SubRole R R'
     → Typing G (a_UAbs rho R a) (a_Pi rho A R B) R'.
 Proof.
   intros.
