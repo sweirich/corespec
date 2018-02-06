@@ -1305,7 +1305,7 @@ with DefEq : context -> available_props -> tm -> tm -> tm -> role -> Prop :=    
      DefEq G D A A' a_Star R
  | E_CastCong : forall (G:context) (D:available_props) (a1:tm) (R2:role) (a2 B:tm) (R1:role) (A:tm),
      DefEq G D a1 a2 A R1 ->
-     DefEq G D A B a_Star R2 ->
+     DefEq G  (dom  G )  A B a_Star R2 ->
      Typing G B a_Star R1 ->
      DefEq G D (a_Conv a1 R2 g_Triv) (a_Conv a2 R2 g_Triv) B R1
 with Ctx : context -> Prop :=    (* defn Ctx *)
