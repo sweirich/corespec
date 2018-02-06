@@ -311,6 +311,7 @@ Proof. eapply typing_wff_iso_defeq_mutual;
     eapply Beta_tm_subst; eauto with lc.
   - eapply E_EqConv; eauto 2.
     eapply DefEq_weaken_available; eauto.
+  - eapply E_CastCong; eauto.
   - destruct  F; try done.
   - induction F; try done.
     simpl; simpl in H2.
@@ -481,7 +482,7 @@ Proof.
     eauto 2.
   - eapply E_IsoSnd; eauto 1.
     eapply H; eauto.
-  - eapply E_CastCong; eauto 2.
+  - eapply E_CastCong; eauto.
   - induction F; done.
   - induction F; try done.
     destruct a.
