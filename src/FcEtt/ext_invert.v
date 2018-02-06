@@ -670,7 +670,9 @@ Proof.
     rewrite <- (same_dom H2).
     apply H0; auto.
     eapply context_DefEq_weaken_available; eauto.
-  - intros. eapply con; eauto.
+  - intros. eapply con. eauto. eapply DefEq_weaken_available.
+    eapply H0. eauto. eapply context_DefEq_weaken_available; eauto.
+    eauto.
   - intros G x A R c H t H0 n G2 D x0 A0 R' H1 H2 H3.
     inversion H3; subst.
     + inversion H4; subst.
@@ -1052,7 +1054,6 @@ Lemma E_PiCong2 :  ∀ (L : atoms) (G : context) (D : available_props) rho (A1 B
           x `notin` L
           → DefEq ([(x, Tm A1 R)] ++ G) D (open_tm_wrt_tm B1 (a_Var_f x))
                   (open_tm_wrt_tm B2 (a_Var_f x)) a_Star R')
-    -> SubRole R R'
     → DefEq G D (a_Pi rho A1 R B1) (a_Pi rho A2 R B2) a_Star R'.
 Proof.
   intros.

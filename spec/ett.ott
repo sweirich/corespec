@@ -1212,7 +1212,7 @@ G ; D |= a ~ b : A/R == a' ~ b' : A'/R
 G ; D |= A == A' : TYPE/R
 
 G ; D |= a1 == a2 : A / R1
-G ; D |= A == B : TYPE / R2
+G ; dom G |= A == B : TYPE / R2
 G |= B : TYPE / R1
 ------------------------------------ :: CastCong
 G ; D |= a1 |> R2 o == a2 |> R2 o : B / R1
