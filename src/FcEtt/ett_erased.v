@@ -212,6 +212,7 @@ Proof.
     apply (@erased_a_CPi L); try solve [apply (H0 a b A R0); auto]; auto;
     pose H2 := H0 a b A R0 eq_refl; inversion H2 as [H21 [H22 H23]]; econstructor; eassumption.
   - econstructor. apply ctx_to_rctx_uniq; auto. eauto.
+  - econstructor; eauto. apply ctx_to_rctx_uniq; eauto.
 Qed.
 
 

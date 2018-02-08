@@ -38,6 +38,7 @@ Proof. intros W1 W2 W3 a a' R U H. generalize dependent W2.
           intros. rewrite <- app_assoc.
           eapply H1; eauto. simpl_env. auto.
         - econstructor; eauto.
+        - econstructor. eapply erased_app_rctx; eauto.
 Qed.
 
 (* ------------------------------------------ *)
@@ -68,7 +69,7 @@ Qed.
 Definition joins W a b R := exists c, multipar W a c R /\ multipar W b c R.
 
 Lemma Par_lc1 : forall W a a' R , Par W a a' R -> lc_tm a.
-  intros.  induction H; auto. eapply erased_lc; eauto.
+  intros.  induction H; auto; eapply erased_lc; eauto.
 Qed.
 
 (* FIXME: find a good place for this tactic. *)
@@ -116,7 +117,8 @@ Proof. intros W a a' R H. induction H; eauto.
         - inversion IHPar1; eauto.
         - inversion IHPar1; eauto.
         - inversion IHPar; eauto.
-Qed.
+        - econstructor. admit.
+Admitted.
 
 Lemma multipar_erased_tm_snd : forall W a a' R, multipar W a a' R ->
                                                erased_tm W a' R.
