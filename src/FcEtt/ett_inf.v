@@ -1,10 +1,11 @@
-Require Import Coq.Arith.Wf_nat.
 Require Import Coq.Logic.FunctionalExtensionality.
 Require Import Coq.Program.Equality.
 
 Require Export Metalib.Metatheory.
 Require Export Metalib.LibLNgen.
-Require Import ett_ott.
+
+Require Export ett_ott.
+
 (** NOTE: Auxiliary theorems are hidden in generated documentation.
     In general, there is a [_rec] version of every lemma involving
     [open] and [close]. *)
@@ -28,14 +29,14 @@ Definition relflag_mutrec :=
 Scheme role_ind' := Induction for role Sort Prop.
 
 Definition role_mutind :=
-  fun H1 H2 H3 =>
-  role_ind' H1 H2 H3.
+  fun H1 H2 H3 H4 =>
+  role_ind' H1 H2 H3 H4.
 
 Scheme role_rec' := Induction for role Sort Set.
 
 Definition role_mutrec :=
-  fun H1 H2 H3 =>
-  role_rec' H1 H2 H3.
+  fun H1 H2 H3 H4 =>
+  role_rec' H1 H2 H3 H4.
 
 Scheme tm_ind' := Induction for tm Sort Prop
   with brs_ind' := Induction for brs Sort Prop
@@ -43,11 +44,11 @@ Scheme tm_ind' := Induction for tm Sort Prop
   with constraint_ind' := Induction for constraint Sort Prop.
 
 Definition tm_brs_co_constraint_mutind :=
-  fun H1 H2 H3 H4 H5 H6 H7 H8 H9 H10 H11 H12 H13 H14 H15 H16 H17 H18 H19 H20 H21 H22 H23 H24 H25 H26 H27 H28 H29 H30 H31 H32 H33 H34 H35 H36 H37 H38 H39 H40 H41 H42 H43 H44 H45 H46 H47 H48 H49 H50 H51 =>
-  (conj (tm_ind' H1 H2 H3 H4 H5 H6 H7 H8 H9 H10 H11 H12 H13 H14 H15 H16 H17 H18 H19 H20 H21 H22 H23 H24 H25 H26 H27 H28 H29 H30 H31 H32 H33 H34 H35 H36 H37 H38 H39 H40 H41 H42 H43 H44 H45 H46 H47 H48 H49 H50 H51)
-  ((conj (brs_ind' H1 H2 H3 H4 H5 H6 H7 H8 H9 H10 H11 H12 H13 H14 H15 H16 H17 H18 H19 H20 H21 H22 H23 H24 H25 H26 H27 H28 H29 H30 H31 H32 H33 H34 H35 H36 H37 H38 H39 H40 H41 H42 H43 H44 H45 H46 H47 H48 H49 H50 H51)
-  ((conj (co_ind' H1 H2 H3 H4 H5 H6 H7 H8 H9 H10 H11 H12 H13 H14 H15 H16 H17 H18 H19 H20 H21 H22 H23 H24 H25 H26 H27 H28 H29 H30 H31 H32 H33 H34 H35 H36 H37 H38 H39 H40 H41 H42 H43 H44 H45 H46 H47 H48 H49 H50 H51)
-  (constraint_ind' H1 H2 H3 H4 H5 H6 H7 H8 H9 H10 H11 H12 H13 H14 H15 H16 H17 H18 H19 H20 H21 H22 H23 H24 H25 H26 H27 H28 H29 H30 H31 H32 H33 H34 H35 H36 H37 H38 H39 H40 H41 H42 H43 H44 H45 H46 H47 H48 H49 H50 H51)))))).
+  fun H1 H2 H3 H4 H5 H6 H7 H8 H9 H10 H11 H12 H13 H14 H15 H16 H17 H18 H19 H20 H21 H22 H23 H24 H25 H26 H27 H28 H29 H30 H31 H32 H33 H34 H35 H36 H37 H38 H39 H40 H41 H42 H43 H44 H45 H46 H47 H48 H49 H50 =>
+  (conj (tm_ind' H1 H2 H3 H4 H5 H6 H7 H8 H9 H10 H11 H12 H13 H14 H15 H16 H17 H18 H19 H20 H21 H22 H23 H24 H25 H26 H27 H28 H29 H30 H31 H32 H33 H34 H35 H36 H37 H38 H39 H40 H41 H42 H43 H44 H45 H46 H47 H48 H49 H50)
+  ((conj (brs_ind' H1 H2 H3 H4 H5 H6 H7 H8 H9 H10 H11 H12 H13 H14 H15 H16 H17 H18 H19 H20 H21 H22 H23 H24 H25 H26 H27 H28 H29 H30 H31 H32 H33 H34 H35 H36 H37 H38 H39 H40 H41 H42 H43 H44 H45 H46 H47 H48 H49 H50)
+  ((conj (co_ind' H1 H2 H3 H4 H5 H6 H7 H8 H9 H10 H11 H12 H13 H14 H15 H16 H17 H18 H19 H20 H21 H22 H23 H24 H25 H26 H27 H28 H29 H30 H31 H32 H33 H34 H35 H36 H37 H38 H39 H40 H41 H42 H43 H44 H45 H46 H47 H48 H49 H50)
+  (constraint_ind' H1 H2 H3 H4 H5 H6 H7 H8 H9 H10 H11 H12 H13 H14 H15 H16 H17 H18 H19 H20 H21 H22 H23 H24 H25 H26 H27 H28 H29 H30 H31 H32 H33 H34 H35 H36 H37 H38 H39 H40 H41 H42 H43 H44 H45 H46 H47 H48 H49 H50)))))).
 
 Scheme tm_rec' := Induction for tm Sort Set
   with brs_rec' := Induction for brs Sort Set
@@ -55,11 +56,11 @@ Scheme tm_rec' := Induction for tm Sort Set
   with constraint_rec' := Induction for constraint Sort Set.
 
 Definition tm_brs_co_constraint_mutrec :=
-  fun H1 H2 H3 H4 H5 H6 H7 H8 H9 H10 H11 H12 H13 H14 H15 H16 H17 H18 H19 H20 H21 H22 H23 H24 H25 H26 H27 H28 H29 H30 H31 H32 H33 H34 H35 H36 H37 H38 H39 H40 H41 H42 H43 H44 H45 H46 H47 H48 H49 H50 H51 =>
-  (pair ((pair ((pair (tm_rec' H1 H2 H3 H4 H5 H6 H7 H8 H9 H10 H11 H12 H13 H14 H15 H16 H17 H18 H19 H20 H21 H22 H23 H24 H25 H26 H27 H28 H29 H30 H31 H32 H33 H34 H35 H36 H37 H38 H39 H40 H41 H42 H43 H44 H45 H46 H47 H48 H49 H50 H51)
-  (brs_rec' H1 H2 H3 H4 H5 H6 H7 H8 H9 H10 H11 H12 H13 H14 H15 H16 H17 H18 H19 H20 H21 H22 H23 H24 H25 H26 H27 H28 H29 H30 H31 H32 H33 H34 H35 H36 H37 H38 H39 H40 H41 H42 H43 H44 H45 H46 H47 H48 H49 H50 H51)))
-  (co_rec' H1 H2 H3 H4 H5 H6 H7 H8 H9 H10 H11 H12 H13 H14 H15 H16 H17 H18 H19 H20 H21 H22 H23 H24 H25 H26 H27 H28 H29 H30 H31 H32 H33 H34 H35 H36 H37 H38 H39 H40 H41 H42 H43 H44 H45 H46 H47 H48 H49 H50 H51)))
-  (constraint_rec' H1 H2 H3 H4 H5 H6 H7 H8 H9 H10 H11 H12 H13 H14 H15 H16 H17 H18 H19 H20 H21 H22 H23 H24 H25 H26 H27 H28 H29 H30 H31 H32 H33 H34 H35 H36 H37 H38 H39 H40 H41 H42 H43 H44 H45 H46 H47 H48 H49 H50 H51)).
+  fun H1 H2 H3 H4 H5 H6 H7 H8 H9 H10 H11 H12 H13 H14 H15 H16 H17 H18 H19 H20 H21 H22 H23 H24 H25 H26 H27 H28 H29 H30 H31 H32 H33 H34 H35 H36 H37 H38 H39 H40 H41 H42 H43 H44 H45 H46 H47 H48 H49 H50 =>
+  (pair ((pair ((pair (tm_rec' H1 H2 H3 H4 H5 H6 H7 H8 H9 H10 H11 H12 H13 H14 H15 H16 H17 H18 H19 H20 H21 H22 H23 H24 H25 H26 H27 H28 H29 H30 H31 H32 H33 H34 H35 H36 H37 H38 H39 H40 H41 H42 H43 H44 H45 H46 H47 H48 H49 H50)
+  (brs_rec' H1 H2 H3 H4 H5 H6 H7 H8 H9 H10 H11 H12 H13 H14 H15 H16 H17 H18 H19 H20 H21 H22 H23 H24 H25 H26 H27 H28 H29 H30 H31 H32 H33 H34 H35 H36 H37 H38 H39 H40 H41 H42 H43 H44 H45 H46 H47 H48 H49 H50)))
+  (co_rec' H1 H2 H3 H4 H5 H6 H7 H8 H9 H10 H11 H12 H13 H14 H15 H16 H17 H18 H19 H20 H21 H22 H23 H24 H25 H26 H27 H28 H29 H30 H31 H32 H33 H34 H35 H36 H37 H38 H39 H40 H41 H42 H43 H44 H45 H46 H47 H48 H49 H50)))
+  (constraint_rec' H1 H2 H3 H4 H5 H6 H7 H8 H9 H10 H11 H12 H13 H14 H15 H16 H17 H18 H19 H20 H21 H22 H23 H24 H25 H26 H27 H28 H29 H30 H31 H32 H33 H34 H35 H36 H37 H38 H39 H40 H41 H42 H43 H44 H45 H46 H47 H48 H49 H50)).
 
 
 (* *********************************************************************** *)
@@ -74,7 +75,6 @@ Fixpoint close_tm_wrt_tm_rec (n1 : nat) (x1 : tmvar) (a1 : tm) {struct a1} : tm 
     | a_UAbs rho1 R1 b1 => a_UAbs rho1 R1 (close_tm_wrt_tm_rec (S n1) x1 b1)
     | a_App a2 rho1 R1 b1 => a_App (close_tm_wrt_tm_rec n1 x1 a2) rho1 R1 (close_tm_wrt_tm_rec n1 x1 b1)
     | a_Fam F1 => a_Fam F1
-    | a_Const T1 => a_Const T1
     | a_Pi rho1 A1 R1 B1 => a_Pi rho1 (close_tm_wrt_tm_rec n1 x1 A1) R1 (close_tm_wrt_tm_rec (S n1) x1 B1)
     | a_Conv a2 R1 g1 => a_Conv (close_tm_wrt_tm_rec n1 x1 a2) R1 (close_co_wrt_tm_rec n1 x1 g1)
     | a_CPi phi1 B1 => a_CPi (close_constraint_wrt_tm_rec n1 x1 phi1) (close_tm_wrt_tm_rec n1 x1 B1)
@@ -137,7 +137,6 @@ Fixpoint close_tm_wrt_co_rec (n1 : nat) (c1 : covar) (a1 : tm) {struct a1} : tm 
     | a_UAbs rho1 R1 b1 => a_UAbs rho1 R1 (close_tm_wrt_co_rec n1 c1 b1)
     | a_App a2 rho1 R1 b1 => a_App (close_tm_wrt_co_rec n1 c1 a2) rho1 R1 (close_tm_wrt_co_rec n1 c1 b1)
     | a_Fam F1 => a_Fam F1
-    | a_Const T1 => a_Const T1
     | a_Pi rho1 A1 R1 B1 => a_Pi rho1 (close_tm_wrt_co_rec n1 c1 A1) R1 (close_tm_wrt_co_rec n1 c1 B1)
     | a_Conv a2 R1 g1 => a_Conv (close_tm_wrt_co_rec n1 c1 a2) R1 (close_co_wrt_co_rec n1 c1 g1)
     | a_CPi phi1 B1 => a_CPi (close_constraint_wrt_co_rec n1 c1 phi1) (close_tm_wrt_co_rec (S n1) c1 B1)
@@ -221,6 +220,7 @@ Fixpoint size_role (R1 : role) {struct R1} : nat :=
   match R1 with
     | Nom => 1
     | Rep => 1
+    | Phm => 1
   end.
 
 Fixpoint size_tm (a1 : tm) {struct a1} : nat :=
@@ -232,7 +232,6 @@ Fixpoint size_tm (a1 : tm) {struct a1} : nat :=
     | a_UAbs rho1 R1 b1 => 1 + (size_relflag rho1) + (size_role R1) + (size_tm b1)
     | a_App a2 rho1 R1 b1 => 1 + (size_tm a2) + (size_relflag rho1) + (size_role R1) + (size_tm b1)
     | a_Fam F1 => 1
-    | a_Const T1 => 1
     | a_Pi rho1 A1 R1 B1 => 1 + (size_relflag rho1) + (size_tm A1) + (size_role R1) + (size_tm B1)
     | a_Conv a2 R1 g1 => 1 + (size_tm a2) + (size_role R1) + (size_co g1)
     | a_CPi phi1 B1 => 1 + (size_constraint phi1) + (size_tm B1)
@@ -313,8 +312,6 @@ Inductive degree_tm_wrt_tm : nat -> tm -> Prop :=
     degree_tm_wrt_tm n1 (a_App a1 rho1 R1 b1)
   | degree_wrt_tm_a_Fam : forall n1 F1,
     degree_tm_wrt_tm n1 (a_Fam F1)
-  | degree_wrt_tm_a_Const : forall n1 T1,
-    degree_tm_wrt_tm n1 (a_Const T1)
   | degree_wrt_tm_a_Pi : forall n1 rho1 A1 R1 B1,
     degree_tm_wrt_tm n1 A1 ->
     degree_tm_wrt_tm (S n1) B1 ->
@@ -484,8 +481,6 @@ Inductive degree_tm_wrt_co : nat -> tm -> Prop :=
     degree_tm_wrt_co n1 (a_App a1 rho1 R1 b1)
   | degree_wrt_co_a_Fam : forall n1 F1,
     degree_tm_wrt_co n1 (a_Fam F1)
-  | degree_wrt_co_a_Const : forall n1 T1,
-    degree_tm_wrt_co n1 (a_Const T1)
   | degree_wrt_co_a_Pi : forall n1 rho1 A1 R1 B1,
     degree_tm_wrt_co n1 A1 ->
     degree_tm_wrt_co n1 B1 ->
@@ -642,11 +637,11 @@ Scheme degree_tm_wrt_tm_ind' := Induction for degree_tm_wrt_tm Sort Prop
   with degree_constraint_wrt_tm_ind' := Induction for degree_constraint_wrt_tm Sort Prop.
 
 Definition degree_tm_wrt_tm_degree_brs_wrt_tm_degree_co_wrt_tm_degree_constraint_wrt_tm_mutind :=
-  fun H1 H2 H3 H4 H5 H6 H7 H8 H9 H10 H11 H12 H13 H14 H15 H16 H17 H18 H19 H20 H21 H22 H23 H24 H25 H26 H27 H28 H29 H30 H31 H32 H33 H34 H35 H36 H37 H38 H39 H40 H41 H42 H43 H44 H45 H46 H47 H48 H49 H50 H51 =>
-  (conj (degree_tm_wrt_tm_ind' H1 H2 H3 H4 H5 H6 H7 H8 H9 H10 H11 H12 H13 H14 H15 H16 H17 H18 H19 H20 H21 H22 H23 H24 H25 H26 H27 H28 H29 H30 H31 H32 H33 H34 H35 H36 H37 H38 H39 H40 H41 H42 H43 H44 H45 H46 H47 H48 H49 H50 H51)
-  ((conj (degree_brs_wrt_tm_ind' H1 H2 H3 H4 H5 H6 H7 H8 H9 H10 H11 H12 H13 H14 H15 H16 H17 H18 H19 H20 H21 H22 H23 H24 H25 H26 H27 H28 H29 H30 H31 H32 H33 H34 H35 H36 H37 H38 H39 H40 H41 H42 H43 H44 H45 H46 H47 H48 H49 H50 H51)
-  ((conj (degree_co_wrt_tm_ind' H1 H2 H3 H4 H5 H6 H7 H8 H9 H10 H11 H12 H13 H14 H15 H16 H17 H18 H19 H20 H21 H22 H23 H24 H25 H26 H27 H28 H29 H30 H31 H32 H33 H34 H35 H36 H37 H38 H39 H40 H41 H42 H43 H44 H45 H46 H47 H48 H49 H50 H51)
-  (degree_constraint_wrt_tm_ind' H1 H2 H3 H4 H5 H6 H7 H8 H9 H10 H11 H12 H13 H14 H15 H16 H17 H18 H19 H20 H21 H22 H23 H24 H25 H26 H27 H28 H29 H30 H31 H32 H33 H34 H35 H36 H37 H38 H39 H40 H41 H42 H43 H44 H45 H46 H47 H48 H49 H50 H51)))))).
+  fun H1 H2 H3 H4 H5 H6 H7 H8 H9 H10 H11 H12 H13 H14 H15 H16 H17 H18 H19 H20 H21 H22 H23 H24 H25 H26 H27 H28 H29 H30 H31 H32 H33 H34 H35 H36 H37 H38 H39 H40 H41 H42 H43 H44 H45 H46 H47 H48 H49 H50 =>
+  (conj (degree_tm_wrt_tm_ind' H1 H2 H3 H4 H5 H6 H7 H8 H9 H10 H11 H12 H13 H14 H15 H16 H17 H18 H19 H20 H21 H22 H23 H24 H25 H26 H27 H28 H29 H30 H31 H32 H33 H34 H35 H36 H37 H38 H39 H40 H41 H42 H43 H44 H45 H46 H47 H48 H49 H50)
+  ((conj (degree_brs_wrt_tm_ind' H1 H2 H3 H4 H5 H6 H7 H8 H9 H10 H11 H12 H13 H14 H15 H16 H17 H18 H19 H20 H21 H22 H23 H24 H25 H26 H27 H28 H29 H30 H31 H32 H33 H34 H35 H36 H37 H38 H39 H40 H41 H42 H43 H44 H45 H46 H47 H48 H49 H50)
+  ((conj (degree_co_wrt_tm_ind' H1 H2 H3 H4 H5 H6 H7 H8 H9 H10 H11 H12 H13 H14 H15 H16 H17 H18 H19 H20 H21 H22 H23 H24 H25 H26 H27 H28 H29 H30 H31 H32 H33 H34 H35 H36 H37 H38 H39 H40 H41 H42 H43 H44 H45 H46 H47 H48 H49 H50)
+  (degree_constraint_wrt_tm_ind' H1 H2 H3 H4 H5 H6 H7 H8 H9 H10 H11 H12 H13 H14 H15 H16 H17 H18 H19 H20 H21 H22 H23 H24 H25 H26 H27 H28 H29 H30 H31 H32 H33 H34 H35 H36 H37 H38 H39 H40 H41 H42 H43 H44 H45 H46 H47 H48 H49 H50)))))).
 
 Scheme degree_tm_wrt_co_ind' := Induction for degree_tm_wrt_co Sort Prop
   with degree_brs_wrt_co_ind' := Induction for degree_brs_wrt_co Sort Prop
@@ -654,11 +649,11 @@ Scheme degree_tm_wrt_co_ind' := Induction for degree_tm_wrt_co Sort Prop
   with degree_constraint_wrt_co_ind' := Induction for degree_constraint_wrt_co Sort Prop.
 
 Definition degree_tm_wrt_co_degree_brs_wrt_co_degree_co_wrt_co_degree_constraint_wrt_co_mutind :=
-  fun H1 H2 H3 H4 H5 H6 H7 H8 H9 H10 H11 H12 H13 H14 H15 H16 H17 H18 H19 H20 H21 H22 H23 H24 H25 H26 H27 H28 H29 H30 H31 H32 H33 H34 H35 H36 H37 H38 H39 H40 H41 H42 H43 H44 H45 H46 H47 H48 H49 H50 H51 =>
-  (conj (degree_tm_wrt_co_ind' H1 H2 H3 H4 H5 H6 H7 H8 H9 H10 H11 H12 H13 H14 H15 H16 H17 H18 H19 H20 H21 H22 H23 H24 H25 H26 H27 H28 H29 H30 H31 H32 H33 H34 H35 H36 H37 H38 H39 H40 H41 H42 H43 H44 H45 H46 H47 H48 H49 H50 H51)
-  ((conj (degree_brs_wrt_co_ind' H1 H2 H3 H4 H5 H6 H7 H8 H9 H10 H11 H12 H13 H14 H15 H16 H17 H18 H19 H20 H21 H22 H23 H24 H25 H26 H27 H28 H29 H30 H31 H32 H33 H34 H35 H36 H37 H38 H39 H40 H41 H42 H43 H44 H45 H46 H47 H48 H49 H50 H51)
-  ((conj (degree_co_wrt_co_ind' H1 H2 H3 H4 H5 H6 H7 H8 H9 H10 H11 H12 H13 H14 H15 H16 H17 H18 H19 H20 H21 H22 H23 H24 H25 H26 H27 H28 H29 H30 H31 H32 H33 H34 H35 H36 H37 H38 H39 H40 H41 H42 H43 H44 H45 H46 H47 H48 H49 H50 H51)
-  (degree_constraint_wrt_co_ind' H1 H2 H3 H4 H5 H6 H7 H8 H9 H10 H11 H12 H13 H14 H15 H16 H17 H18 H19 H20 H21 H22 H23 H24 H25 H26 H27 H28 H29 H30 H31 H32 H33 H34 H35 H36 H37 H38 H39 H40 H41 H42 H43 H44 H45 H46 H47 H48 H49 H50 H51)))))).
+  fun H1 H2 H3 H4 H5 H6 H7 H8 H9 H10 H11 H12 H13 H14 H15 H16 H17 H18 H19 H20 H21 H22 H23 H24 H25 H26 H27 H28 H29 H30 H31 H32 H33 H34 H35 H36 H37 H38 H39 H40 H41 H42 H43 H44 H45 H46 H47 H48 H49 H50 =>
+  (conj (degree_tm_wrt_co_ind' H1 H2 H3 H4 H5 H6 H7 H8 H9 H10 H11 H12 H13 H14 H15 H16 H17 H18 H19 H20 H21 H22 H23 H24 H25 H26 H27 H28 H29 H30 H31 H32 H33 H34 H35 H36 H37 H38 H39 H40 H41 H42 H43 H44 H45 H46 H47 H48 H49 H50)
+  ((conj (degree_brs_wrt_co_ind' H1 H2 H3 H4 H5 H6 H7 H8 H9 H10 H11 H12 H13 H14 H15 H16 H17 H18 H19 H20 H21 H22 H23 H24 H25 H26 H27 H28 H29 H30 H31 H32 H33 H34 H35 H36 H37 H38 H39 H40 H41 H42 H43 H44 H45 H46 H47 H48 H49 H50)
+  ((conj (degree_co_wrt_co_ind' H1 H2 H3 H4 H5 H6 H7 H8 H9 H10 H11 H12 H13 H14 H15 H16 H17 H18 H19 H20 H21 H22 H23 H24 H25 H26 H27 H28 H29 H30 H31 H32 H33 H34 H35 H36 H37 H38 H39 H40 H41 H42 H43 H44 H45 H46 H47 H48 H49 H50)
+  (degree_constraint_wrt_co_ind' H1 H2 H3 H4 H5 H6 H7 H8 H9 H10 H11 H12 H13 H14 H15 H16 H17 H18 H19 H20 H21 H22 H23 H24 H25 H26 H27 H28 H29 H30 H31 H32 H33 H34 H35 H36 H37 H38 H39 H40 H41 H42 H43 H44 H45 H46 H47 H48 H49 H50)))))).
 
 Hint Constructors degree_tm_wrt_tm : core lngen.
 
@@ -698,8 +693,6 @@ Inductive lc_set_tm : tm -> Set :=
     lc_set_tm (a_App a1 rho1 R1 b1)
   | lc_set_a_Fam : forall F1,
     lc_set_tm (a_Fam F1)
-  | lc_set_a_Const : forall T1,
-    lc_set_tm (a_Const T1)
   | lc_set_a_Pi : forall rho1 A1 R1 B1,
     lc_set_tm A1 ->
     (forall x1 : tmvar, lc_set_tm (open_tm_wrt_tm B1 (a_Var_f x1))) ->
@@ -853,11 +846,11 @@ Scheme lc_tm_ind' := Induction for lc_tm Sort Prop
   with lc_constraint_ind' := Induction for lc_constraint Sort Prop.
 
 Definition lc_tm_lc_brs_lc_co_lc_constraint_mutind :=
-  fun H1 H2 H3 H4 H5 H6 H7 H8 H9 H10 H11 H12 H13 H14 H15 H16 H17 H18 H19 H20 H21 H22 H23 H24 H25 H26 H27 H28 H29 H30 H31 H32 H33 H34 H35 H36 H37 H38 H39 H40 H41 H42 H43 H44 H45 H46 H47 H48 H49 =>
-  (conj (lc_tm_ind' H1 H2 H3 H4 H5 H6 H7 H8 H9 H10 H11 H12 H13 H14 H15 H16 H17 H18 H19 H20 H21 H22 H23 H24 H25 H26 H27 H28 H29 H30 H31 H32 H33 H34 H35 H36 H37 H38 H39 H40 H41 H42 H43 H44 H45 H46 H47 H48 H49)
-  ((conj (lc_brs_ind' H1 H2 H3 H4 H5 H6 H7 H8 H9 H10 H11 H12 H13 H14 H15 H16 H17 H18 H19 H20 H21 H22 H23 H24 H25 H26 H27 H28 H29 H30 H31 H32 H33 H34 H35 H36 H37 H38 H39 H40 H41 H42 H43 H44 H45 H46 H47 H48 H49)
-  ((conj (lc_co_ind' H1 H2 H3 H4 H5 H6 H7 H8 H9 H10 H11 H12 H13 H14 H15 H16 H17 H18 H19 H20 H21 H22 H23 H24 H25 H26 H27 H28 H29 H30 H31 H32 H33 H34 H35 H36 H37 H38 H39 H40 H41 H42 H43 H44 H45 H46 H47 H48 H49)
-  (lc_constraint_ind' H1 H2 H3 H4 H5 H6 H7 H8 H9 H10 H11 H12 H13 H14 H15 H16 H17 H18 H19 H20 H21 H22 H23 H24 H25 H26 H27 H28 H29 H30 H31 H32 H33 H34 H35 H36 H37 H38 H39 H40 H41 H42 H43 H44 H45 H46 H47 H48 H49)))))).
+  fun H1 H2 H3 H4 H5 H6 H7 H8 H9 H10 H11 H12 H13 H14 H15 H16 H17 H18 H19 H20 H21 H22 H23 H24 H25 H26 H27 H28 H29 H30 H31 H32 H33 H34 H35 H36 H37 H38 H39 H40 H41 H42 H43 H44 H45 H46 H47 H48 =>
+  (conj (lc_tm_ind' H1 H2 H3 H4 H5 H6 H7 H8 H9 H10 H11 H12 H13 H14 H15 H16 H17 H18 H19 H20 H21 H22 H23 H24 H25 H26 H27 H28 H29 H30 H31 H32 H33 H34 H35 H36 H37 H38 H39 H40 H41 H42 H43 H44 H45 H46 H47 H48)
+  ((conj (lc_brs_ind' H1 H2 H3 H4 H5 H6 H7 H8 H9 H10 H11 H12 H13 H14 H15 H16 H17 H18 H19 H20 H21 H22 H23 H24 H25 H26 H27 H28 H29 H30 H31 H32 H33 H34 H35 H36 H37 H38 H39 H40 H41 H42 H43 H44 H45 H46 H47 H48)
+  ((conj (lc_co_ind' H1 H2 H3 H4 H5 H6 H7 H8 H9 H10 H11 H12 H13 H14 H15 H16 H17 H18 H19 H20 H21 H22 H23 H24 H25 H26 H27 H28 H29 H30 H31 H32 H33 H34 H35 H36 H37 H38 H39 H40 H41 H42 H43 H44 H45 H46 H47 H48)
+  (lc_constraint_ind' H1 H2 H3 H4 H5 H6 H7 H8 H9 H10 H11 H12 H13 H14 H15 H16 H17 H18 H19 H20 H21 H22 H23 H24 H25 H26 H27 H28 H29 H30 H31 H32 H33 H34 H35 H36 H37 H38 H39 H40 H41 H42 H43 H44 H45 H46 H47 H48)))))).
 
 Scheme lc_set_tm_ind' := Induction for lc_set_tm Sort Prop
   with lc_set_brs_ind' := Induction for lc_set_brs Sort Prop
@@ -865,11 +858,11 @@ Scheme lc_set_tm_ind' := Induction for lc_set_tm Sort Prop
   with lc_set_constraint_ind' := Induction for lc_set_constraint Sort Prop.
 
 Definition lc_set_tm_lc_set_brs_lc_set_co_lc_set_constraint_mutind :=
-  fun H1 H2 H3 H4 H5 H6 H7 H8 H9 H10 H11 H12 H13 H14 H15 H16 H17 H18 H19 H20 H21 H22 H23 H24 H25 H26 H27 H28 H29 H30 H31 H32 H33 H34 H35 H36 H37 H38 H39 H40 H41 H42 H43 H44 H45 H46 H47 H48 H49 =>
-  (conj (lc_set_tm_ind' H1 H2 H3 H4 H5 H6 H7 H8 H9 H10 H11 H12 H13 H14 H15 H16 H17 H18 H19 H20 H21 H22 H23 H24 H25 H26 H27 H28 H29 H30 H31 H32 H33 H34 H35 H36 H37 H38 H39 H40 H41 H42 H43 H44 H45 H46 H47 H48 H49)
-  ((conj (lc_set_brs_ind' H1 H2 H3 H4 H5 H6 H7 H8 H9 H10 H11 H12 H13 H14 H15 H16 H17 H18 H19 H20 H21 H22 H23 H24 H25 H26 H27 H28 H29 H30 H31 H32 H33 H34 H35 H36 H37 H38 H39 H40 H41 H42 H43 H44 H45 H46 H47 H48 H49)
-  ((conj (lc_set_co_ind' H1 H2 H3 H4 H5 H6 H7 H8 H9 H10 H11 H12 H13 H14 H15 H16 H17 H18 H19 H20 H21 H22 H23 H24 H25 H26 H27 H28 H29 H30 H31 H32 H33 H34 H35 H36 H37 H38 H39 H40 H41 H42 H43 H44 H45 H46 H47 H48 H49)
-  (lc_set_constraint_ind' H1 H2 H3 H4 H5 H6 H7 H8 H9 H10 H11 H12 H13 H14 H15 H16 H17 H18 H19 H20 H21 H22 H23 H24 H25 H26 H27 H28 H29 H30 H31 H32 H33 H34 H35 H36 H37 H38 H39 H40 H41 H42 H43 H44 H45 H46 H47 H48 H49)))))).
+  fun H1 H2 H3 H4 H5 H6 H7 H8 H9 H10 H11 H12 H13 H14 H15 H16 H17 H18 H19 H20 H21 H22 H23 H24 H25 H26 H27 H28 H29 H30 H31 H32 H33 H34 H35 H36 H37 H38 H39 H40 H41 H42 H43 H44 H45 H46 H47 H48 =>
+  (conj (lc_set_tm_ind' H1 H2 H3 H4 H5 H6 H7 H8 H9 H10 H11 H12 H13 H14 H15 H16 H17 H18 H19 H20 H21 H22 H23 H24 H25 H26 H27 H28 H29 H30 H31 H32 H33 H34 H35 H36 H37 H38 H39 H40 H41 H42 H43 H44 H45 H46 H47 H48)
+  ((conj (lc_set_brs_ind' H1 H2 H3 H4 H5 H6 H7 H8 H9 H10 H11 H12 H13 H14 H15 H16 H17 H18 H19 H20 H21 H22 H23 H24 H25 H26 H27 H28 H29 H30 H31 H32 H33 H34 H35 H36 H37 H38 H39 H40 H41 H42 H43 H44 H45 H46 H47 H48)
+  ((conj (lc_set_co_ind' H1 H2 H3 H4 H5 H6 H7 H8 H9 H10 H11 H12 H13 H14 H15 H16 H17 H18 H19 H20 H21 H22 H23 H24 H25 H26 H27 H28 H29 H30 H31 H32 H33 H34 H35 H36 H37 H38 H39 H40 H41 H42 H43 H44 H45 H46 H47 H48)
+  (lc_set_constraint_ind' H1 H2 H3 H4 H5 H6 H7 H8 H9 H10 H11 H12 H13 H14 H15 H16 H17 H18 H19 H20 H21 H22 H23 H24 H25 H26 H27 H28 H29 H30 H31 H32 H33 H34 H35 H36 H37 H38 H39 H40 H41 H42 H43 H44 H45 H46 H47 H48)))))).
 
 Scheme lc_set_tm_rec' := Induction for lc_set_tm Sort Set
   with lc_set_brs_rec' := Induction for lc_set_brs Sort Set
@@ -877,11 +870,11 @@ Scheme lc_set_tm_rec' := Induction for lc_set_tm Sort Set
   with lc_set_constraint_rec' := Induction for lc_set_constraint Sort Set.
 
 Definition lc_set_tm_lc_set_brs_lc_set_co_lc_set_constraint_mutrec :=
-  fun H1 H2 H3 H4 H5 H6 H7 H8 H9 H10 H11 H12 H13 H14 H15 H16 H17 H18 H19 H20 H21 H22 H23 H24 H25 H26 H27 H28 H29 H30 H31 H32 H33 H34 H35 H36 H37 H38 H39 H40 H41 H42 H43 H44 H45 H46 H47 H48 H49 =>
-  (pair ((pair ((pair (lc_set_tm_rec' H1 H2 H3 H4 H5 H6 H7 H8 H9 H10 H11 H12 H13 H14 H15 H16 H17 H18 H19 H20 H21 H22 H23 H24 H25 H26 H27 H28 H29 H30 H31 H32 H33 H34 H35 H36 H37 H38 H39 H40 H41 H42 H43 H44 H45 H46 H47 H48 H49)
-  (lc_set_brs_rec' H1 H2 H3 H4 H5 H6 H7 H8 H9 H10 H11 H12 H13 H14 H15 H16 H17 H18 H19 H20 H21 H22 H23 H24 H25 H26 H27 H28 H29 H30 H31 H32 H33 H34 H35 H36 H37 H38 H39 H40 H41 H42 H43 H44 H45 H46 H47 H48 H49)))
-  (lc_set_co_rec' H1 H2 H3 H4 H5 H6 H7 H8 H9 H10 H11 H12 H13 H14 H15 H16 H17 H18 H19 H20 H21 H22 H23 H24 H25 H26 H27 H28 H29 H30 H31 H32 H33 H34 H35 H36 H37 H38 H39 H40 H41 H42 H43 H44 H45 H46 H47 H48 H49)))
-  (lc_set_constraint_rec' H1 H2 H3 H4 H5 H6 H7 H8 H9 H10 H11 H12 H13 H14 H15 H16 H17 H18 H19 H20 H21 H22 H23 H24 H25 H26 H27 H28 H29 H30 H31 H32 H33 H34 H35 H36 H37 H38 H39 H40 H41 H42 H43 H44 H45 H46 H47 H48 H49)).
+  fun H1 H2 H3 H4 H5 H6 H7 H8 H9 H10 H11 H12 H13 H14 H15 H16 H17 H18 H19 H20 H21 H22 H23 H24 H25 H26 H27 H28 H29 H30 H31 H32 H33 H34 H35 H36 H37 H38 H39 H40 H41 H42 H43 H44 H45 H46 H47 H48 =>
+  (pair ((pair ((pair (lc_set_tm_rec' H1 H2 H3 H4 H5 H6 H7 H8 H9 H10 H11 H12 H13 H14 H15 H16 H17 H18 H19 H20 H21 H22 H23 H24 H25 H26 H27 H28 H29 H30 H31 H32 H33 H34 H35 H36 H37 H38 H39 H40 H41 H42 H43 H44 H45 H46 H47 H48)
+  (lc_set_brs_rec' H1 H2 H3 H4 H5 H6 H7 H8 H9 H10 H11 H12 H13 H14 H15 H16 H17 H18 H19 H20 H21 H22 H23 H24 H25 H26 H27 H28 H29 H30 H31 H32 H33 H34 H35 H36 H37 H38 H39 H40 H41 H42 H43 H44 H45 H46 H47 H48)))
+  (lc_set_co_rec' H1 H2 H3 H4 H5 H6 H7 H8 H9 H10 H11 H12 H13 H14 H15 H16 H17 H18 H19 H20 H21 H22 H23 H24 H25 H26 H27 H28 H29 H30 H31 H32 H33 H34 H35 H36 H37 H38 H39 H40 H41 H42 H43 H44 H45 H46 H47 H48)))
+  (lc_set_constraint_rec' H1 H2 H3 H4 H5 H6 H7 H8 H9 H10 H11 H12 H13 H14 H15 H16 H17 H18 H19 H20 H21 H22 H23 H24 H25 H26 H27 H28 H29 H30 H31 H32 H33 H34 H35 H36 H37 H38 H39 H40 H41 H42 H43 H44 H45 H46 H47 H48)).
 
 Hint Constructors lc_tm : core lngen.
 
