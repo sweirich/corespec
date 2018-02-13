@@ -143,6 +143,11 @@ Proof.
   destruct (co_subst_co_tm_Value_mutual); auto.
 Qed.
 
+Lemma CoercedValue_Value_lc :
+  (forall R v, CoercedValue R v -> lc_tm v) /\
+  (forall R v, Value R v -> lc_tm v).
+Proof. apply CoercedValue_Value_mutual; intros; auto.
+Qed.
 
 
 (* ------------------------------------------ *)

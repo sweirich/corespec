@@ -737,61 +737,20 @@ Qed.
 
 Hint Rewrite tm_subst_cast.
 
-(* SCW: How is this possible? *)
+Lemma nom_bot : forall R, SubRole R Nom -> R = Nom.
+Proof. intros. dependent induction H; auto.
+Qed.
+
+Lemma phm_top : forall R, SubRole Phm R -> R = Phm.
+Proof. intros. dependent induction H; auto.
+Qed.
+
 Lemma rep_nsub_nom : ~ SubRole Rep Nom.
-Proof. intro. 
-Admitted.
-(*
-       remember Rep as R1.
-       remember Nom as R2.
-       induction H. inversion HeqR1.
-       subst. inversion HeqR2.
-       destruct R2; auto.
-Qed.*)
+Proof. intro. apply nom_bot in H. inversion H.
+Qed.
 
 Lemma sub_dec : forall R1 R2, SubRole R1 R2 \/ ~(SubRole R1 R2).
-Proof. Admitted. (* intros. destruct R1, R2; auto. right. apply rep_nsub_nom.
-Qed. *)
-
-(* Translate all uses of irrelevant arguments to phantom roles *)
-Fixpoint phantomize (a : tm) := 
-   match a with
-   | a_Star    => a_Star
-   | a_Var_b n => a_Var_b n
-   | a_Var_f x => a_Var_f x
-
-   | a_UAbs Rel R b   => a_UAbs Rel R (phantomize b)
-   | a_UAbs Irrel R b => a_UAbs Rel Phm (phantomize b)
-
-   | a_Abs Rel A R b   => a_Abs Rel (phantomize A) R   (phantomize b)
-   | a_Abs Irrel A R b => a_Abs Rel (phantomize A) Phm (phantomize b)
-
-   | a_App a Rel R b   => a_App (phantomize a) Rel R   (phantomize b)
-   | a_App a Irrel R b => a_App (phantomize a) Rel Phm (phantomize b)
-
-   | a_Pi Rel   A R B => a_Pi Rel (phantomize A) R (phantomize B)
-   | a_Pi Irrel A R B => a_Pi Rel (phantomize A) Phm (phantomize B)
-
-   | a_Fam F => a_Fam F
-
-   (* TODO: phantomize coercion proofs? *)
-   | a_Conv a r1 g => a_Conv (phantomize a) r1 g_Triv
-
-   | a_CPi phi B => a_CPi (phantomize_constraint phi) (phantomize B)
-   | a_CAbs phi b => a_CAbs (phantomize_constraint phi) (phantomize b)
-   | a_UCAbs b => a_UCAbs (phantomize b)
-   | a_CApp a g => a_CApp (phantomize a) g_Triv
-   | a_DataCon K => a_Star  (* a_DataCon K *)
-   | a_Case a brs => a_Star (* a_Case (phantomize a) (erase_brs brs) *)
-   | a_Bullet => a_Bullet
-   | a_Sub _ a => phantomize a r
-   end
-with phantomize_brs (x : brs) (r:role): brs := 
-   match x with
-   | br_None => br_None
-   | br_One k a y => br_One k (phantomize a) (phantomize_brs y)
-   end
-with phantomize_constraint (phi : constraint) (r:role): constraint :=
-   match phi with
-   | Eq A B A1 R => Eq (phantomize A) (phantomize B) (phantomize A1) R
-   end.
+Proof. intros. destruct R1, R2; auto. right. apply rep_nsub_nom.
+       right. intro. apply nom_bot in H. inversion H.
+       right. intro. apply phm_top in H. inversion H.
+Qed.
