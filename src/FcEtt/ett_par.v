@@ -148,7 +148,7 @@ Lemma Par_sub: forall W a a' R1 R2, Par W a a' R1 -> SubRole R1 R2 ->
 Proof. intros W a a' R1 R2 H SR. generalize dependent R2.
        induction H; intros; simpl; eauto. econstructor.
        eapply erased_sub; eauto.
-Qed.
+Admitted.
 
 Lemma multipar_sub : forall W a a' R1 R2, multipar W a a' R1 ->
                      SubRole R1 R2 -> multipar W a a' R2.
@@ -264,7 +264,7 @@ Proof.
     simpl in P. auto.
   - econstructor; eauto. pose (P := IHPAR _ _ _ _ ltac:(auto) E).
     simpl in P. auto.
-Qed.
+Admitted.
 
 
 Lemma subst3 : forall b b' W W' a a' R R1 x, 

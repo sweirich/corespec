@@ -643,9 +643,16 @@ Value R \ + x:A/R1. a
 --------------------- :: UAbsRel
 Value R \ + R1 x. a
 
-CoercedValue R a
+Value R a
 --------------------- :: UAbsIrrel
 Value R \ - R1 x. a
+
+
+Value R a
+not (R1 <= R)
+--------------------- :: UAbsIrrel2
+Value R \ - R1 x. a
+
 
 --------------------- :: CAbs
 Value R /\c:phi.a
@@ -670,6 +677,11 @@ Value R (a [o])
 
 --------------------- :: Bullet
 Value R []
+
+Value R1 a
+not (R1 <= R2)
+--------------------  :: Coerced
+Value R2 (a |>R1 o)
 
 defns
    JValueType :: '' ::=
@@ -882,12 +894,12 @@ W |- (a1 |> R o) =>  (a2 |> R o) / R1
 W |- a1 => (a2 |> R o) / R1
 W |- b1 => b2 / R2
 ---------------------------------------------------- :: Push
-W |- a1 R2 b1 => (a2 R2 (b2 |> R o)) |> R o / R1
+W |- a1 rho R2 b1 => (a2 rho R2 (b2 |> R o)) |> R o / R1
 
 W |- a1 => (a2 |> R o) / R1
 W |- b1 => (b2 |> R o) / R2
 ---------------------------------------------------- :: PushCombine
-W |- a1 R2 b1 => (a2 R2 (b2 |> R o)) |> R o / R1
+W |- a1 rho R2 b1 => (a2 rho R2 (b2 |> R o)) |> R o / R1
 
 W |- a1 => (a2 |> R o) / R1
 ---------------------------------------------------- :: CPush
@@ -961,6 +973,13 @@ by
 -------------------------  :: AbsTerm
 |= \- R x.a ~> \- R x.a' / R1
 
+
+|= a ~> a' / R1
+not (R <= R1)
+-------------------------  :: AbsTerm2
+|= \+ R x.a ~> \+ R x.a' / R1
+
+
 |= a ~> a' / R1
 -------------------------  :: AppLeft
 |= a rho R b ~> a' rho R b / R1
@@ -986,16 +1005,16 @@ R <= R1
 ------------------------------- :: Cong
 |= a |> R o ~> a' |> R o / R1
 
-CoercedValue R (v |> R1 o)
+Value R (v |> R1 o)
 R1 <= R2
 ------------------------------------ :: Combine
 |= (v |> R1 o) |> R2 o ~> v |> R2 o / R
 
-CoercedValue R2 (v1 |> R o)
+Value R2 (v1 |> R o)
 ------------------------------------ :: Push
 |= (v1 |> R o) rho R1 b ~> (v1 rho R1 (b |> R o)) |> R o / R2
 
-CoercedValue R1 (v1 |> R o)
+Value R1 (v1 |> R o)
 ------------------------------------ :: CPush
 |= (v1 |> R o) [o] ~> (v1 [o]) |> R o / R1
 
