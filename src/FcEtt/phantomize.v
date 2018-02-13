@@ -15,6 +15,7 @@
 
 
 Require Import FcEtt.ett_ind.
+Require Import FcEtt.ett_value.
 
 Set Bullet Behavior "Strict Subproofs".
 Set Implicit Arguments.
@@ -81,16 +82,115 @@ Definition phantomize_context (G : context) :=
    properties that we should prove here. 
 *)
 
-Lemma phantomize_lc_tm : forall a, lc_tm a -> lc_tm (phantomize a).
-Admitted.
-Lemma phantomize_open :
-  forall v b, (phantomize (open_tm_wrt_tm v b)) = 
-         open_tm_wrt_tm (phantomize v) (phantomize b).
-Admitted. 
+Lemma phantomize_open_rec : forall a,
+  (forall b k, phantomize (open_tm_wrt_tm_rec k a b) =
+               open_tm_wrt_tm_rec k (phantomize a) (phantomize b)) /\
+  (forall b k, phantomize_brs (open_brs_wrt_tm_rec k a b) =
+               open_brs_wrt_tm_rec k (phantomize a) (phantomize_brs b)) /\
+  (forall g:co, True) /\
+  (forall b k, phantomize_constraint (open_constraint_wrt_tm_rec k a b) =
+               open_constraint_wrt_tm_rec k (phantomize a) (phantomize_constraint b)).
+Proof. intro a.
+  eapply tm_brs_co_constraint_mutind;
+  intros; simpl; auto; try (rewrite H; try rewrite H0; auto).
+  case (lt_eq_lt_dec n k);intro P; simpl; auto. destruct P; auto.
+  all: f_equal; simpl; eauto 2.
+  all: destruct rho; try (rewrite H; rewrite H0); eauto.
+Qed.
+
+Lemma phantomize_open : forall a b,
+  phantomize (open_tm_wrt_tm a b) = open_tm_wrt_tm (phantomize a) (phantomize b).
+Proof.
+  intros a b.
+  case (phantomize_open_rec b).
+  eauto.
+Qed.
+
+Lemma phantomize_open_co_rec : forall a,
+  (forall b k, (open_tm_wrt_co_rec k a (phantomize b)) =
+                 phantomize (open_tm_wrt_co_rec k a b)) /\
+  (forall b k, open_brs_wrt_co_rec k a (phantomize_brs b) =
+                 phantomize_brs (open_brs_wrt_co_rec k a b)) /\
+  (forall g:co, True) /\
+  (forall b k, open_constraint_wrt_co_rec k a (phantomize_constraint b) =
+                 phantomize_constraint (open_constraint_wrt_co_rec k a b)).
+Proof.
+  intro a.
+  eapply tm_brs_co_constraint_mutind;
+  intros; simpl; auto; try (rewrite <- H; try rewrite <- H0; auto).
+  all: f_equal; eauto 2.
+  all: destruct rho; try (rewrite <- H; rewrite <- H0); eauto.
+Qed.
+
+Lemma phantomize_open_co : forall a b,
+  open_tm_wrt_co (phantomize b) a = phantomize (open_tm_wrt_co b a).
+Proof.
+  intros a b.
+  destruct (phantomize_open_co_rec a).
+  eauto.
+Qed.
+
+Lemma phantomize_open' : forall a b,
+  open_tm_wrt_tm (phantomize a) (phantomize b) = phantomize (open_tm_wrt_tm a b).
+Proof. intros. rewrite phantomize_open; auto.
+Qed.
+
+Lemma phantomize_lc :
+  (forall a, lc_tm a -> lc_tm (phantomize a)) /\
+  (forall b, lc_brs b -> lc_brs (phantomize_brs b)) /\
+  (forall (g:co) (l:lc_co g), True) /\
+  (forall b, lc_constraint b -> lc_constraint (phantomize_constraint b)).
+Proof. eapply lc_tm_lc_brs_lc_co_lc_constraint_mutind.
+  all: intros.
+  all: try solve [try destruct rho; simpl; eauto].
+  all: try destruct rho; simpl.
+  all: try (econstructor; auto; intro x; try (pose (P := H0 x));
+    try (pose (P := H x)); rewrite <- phantomize_open' in P; eauto; fail).
+  all: try destruct phi; simpl.
+  all: (econstructor; auto; intro; rewrite phantomize_open_co; auto).
+Qed.
 
 
 (* -------------------------------------------------------- *)
 (* Proofs that we actually care about.                      *)
+
+Lemma Path_phantomize:
+      forall F a R, Path F a R -> Path F (phantomize a) R.
+Proof. intros. induction H; simpl; eauto.
+       destruct rho; simpl. econstructor. apply phantomize_lc; auto. auto.
+       econstructor. apply phantomize_lc; auto. auto.
+Qed.
+
+Lemma CoercedValue_Value_phantomize:
+  (forall R v,  CoercedValue R v -> CoercedValue R (phantomize v)) /\
+  (forall R v, Value R v -> Value R (phantomize v)).
+Proof. apply CoercedValue_Value_mutual; eauto.
+       all: intros; simpl.
+        - eapply CC. auto.
+        - eapply CCV; eauto.
+        - destruct rho; econstructor.
+          apply phantomize_lc; auto.
+          apply phantomize_lc in l0; eauto.
+          apply phantomize_lc; auto.
+          apply phantomize_lc in l0; eauto.
+        - destruct phi. econstructor.
+          apply phantomize_lc; auto.
+          apply phantomize_lc in l0; eauto.
+        - econstructor. apply phantomize_lc; auto.
+          apply phantomize_lc in l0; eauto.
+        - econstructor. apply phantomize_lc in l; eauto.
+        - econstructor. pick fresh x. eapply lc_a_UAbs_exists with (x1 := x).
+          pose (P := H x). apply CoercedValue_Value_lc in P; auto.
+          rewrite phantomize_open in P. eauto.
+        - destruct phi. econstructor. apply phantomize_lc in l.
+          auto. apply phantomize_lc in l0. auto.
+        - econstructor. apply phantomize_lc in l. auto.
+        - econstructor; eauto.
+        - destruct rho. econstructor. apply phantomize_lc; auto.
+          eapply Path_phantomize; eauto. auto. econstructor.
+          apply phantomize_lc; auto. eapply Path_phantomize; eauto. auto.
+        - econstructor; auto. eapply Path_phantomize; eauto.
+Qed.
 
 Lemma phantomize_Beta :
   forall a b R, Beta a b R -> Beta (phantomize a) (phantomize b) R.
@@ -98,19 +198,35 @@ Proof.
   intros a b R H.
   destruct H; simpl.
   - destruct rho. rewrite phantomize_open.
-    econstructor. eapply phantomize_lc_tm. auto. econstructor.
-    admit.
+    econstructor. apply phantomize_lc. auto. econstructor.
+    inversion H0; subst. inversion H3; subst.
+    econstructor. intro x. pose (P := H2 x). apply phantomize_lc in P.
+    rewrite phantomize_open in P. auto.
     rewrite phantomize_open.
-    econstructor. admit. admit.
+    econstructor. apply phantomize_lc. auto.
+    apply CoercedValue_Value_phantomize in H0. eauto.
+  - rewrite <- phantomize_open_co. econstructor. apply phantomize_lc in H; auto.
   - admit.
-  - admit.
-  - econstructor.
+  - econstructor. apply phantomize_lc in H; auto.
 Admitted.
 
 Lemma phantomize_reduction_in_one :
   forall a b R, reduction_in_one a b R -> reduction_in_one (phantomize a) (phantomize b) R.
-Proof.
+Proof. intros. induction H; simpl; eauto.
+        - admit.
+        - apply phantomize_lc in H. destruct rho; econstructor; auto.
+        - apply phantomize_lc in H. rewrite phantomize_open.
+          apply CoercedValue_Value_phantomize in H0.
+          destruct rho; econstructor; auto.
+        - rewrite <- phantomize_open_co. apply phantomize_lc in H.
+          econstructor; auto.
+        - admit.
+        - apply CoercedValue_Value_phantomize in H. eapply E_Combine; auto.
+        - apply CoercedValue_Value_phantomize in H0. apply phantomize_lc in H.
+          destruct rho; econstructor; auto.
+        - apply CoercedValue_Value_phantomize in H. econstructor; auto.
 Admitted.
+
 
 Lemma phantomize_mutual :
   (forall G a A R, Typing G a A R ->
