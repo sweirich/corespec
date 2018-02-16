@@ -56,6 +56,7 @@ Proof.
     rewrite tm_subst_tm_tm_fresh_eq. eauto.
     move: (first context_fv_mutual _ _ _ _ h) => Fr. simpl in Fr.
     fsetdec.
+  - simpl. eauto using tm_subst_tm_tm_lc_tm.
 Qed.
 
 Lemma Beta_co_subst : forall a a' R b x, Beta a a' R -> lc_co b -> Beta (co_subst_co_tm b x a) (co_subst_co_tm b x a') R.
@@ -77,4 +78,5 @@ Proof.
     rewrite co_subst_co_tm_fresh_eq. eauto.
     move: (first context_fv_mutual _ _ _ _ h) => Fr. simpl in Fr.
     fsetdec.
+  - simpl. eauto using co_subst_co_tm_lc_tm.
 Qed.

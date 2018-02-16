@@ -184,6 +184,7 @@ Proof.
   unfold toplevel, erase_sig.
   unfold an_toplevel.
   econstructor; eauto.
+  eapply E_SubRole with (R1 := Nom). eauto.
   eapply FixTy_erase.
   eapply FixDef_FixTy_erase.
 Qed.

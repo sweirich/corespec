@@ -87,9 +87,9 @@ Proof.
   - lc_solve.
   - lc_solve.
   - lc_toplevel_inversion.
+(*  - inversion IHPar1. constructor; auto.
   - inversion IHPar1. constructor; auto.
-  - inversion IHPar1. constructor; auto.
-  - inversion IHPar. constructor; auto.
+  - inversion IHPar. constructor; auto. *)
 Qed.
 
 Hint Resolve Par_lc1 Par_lc2 : lc.
@@ -114,9 +114,9 @@ Proof. intros W a a' R H. induction H; eauto.
           erewrite co_subst_co_tm_intro; eauto.
           replace W with (nil ++ W); auto. eapply subst_co_erased; eauto.
         - eapply erased_sub. eapply toplevel_erased1; eauto. auto.
+(*        - inversion IHPar1; eauto.
         - inversion IHPar1; eauto.
-        - inversion IHPar1; eauto.
-        - inversion IHPar; eauto.
+        - inversion IHPar; eauto. *)
         - econstructor. admit.
 Admitted.
 
@@ -197,7 +197,7 @@ Proof.
      eapply Par_lc2; eauto. eapply Par_lc1; eauto.
    - econstructor; eauto.
    - econstructor; eauto.
-   - econstructor; eauto.
+(*    - econstructor; eauto. *)
 Qed.
 
 Lemma open1 : forall b W L a a' R, Par W a a' R
@@ -256,6 +256,8 @@ Proof.
     apply Typing_context_fv in H.
     split_hyp. simpl in *.
     fsetdec.
+Admitted.
+(*
   - pose (P := IHPAR _ _ _ _ ltac:(auto) E). simpl in P. auto.
   - econstructor; eauto 2. pose (P := IHPAR1 _ _ _ _ ltac:(auto) E).
     simpl in P. auto.
@@ -264,7 +266,7 @@ Proof.
     simpl in P. auto.
   - econstructor; eauto. pose (P := IHPAR _ _ _ _ ltac:(auto) E).
     simpl in P. auto.
-Admitted.
+Admitted. *)
 
 
 Lemma subst3 : forall b b' W W' a a' R R1 x, 
@@ -296,14 +298,18 @@ Proof.
     apply Typing_context_fv in H.
     split_hyp. simpl in *.
     fsetdec.
-  - pose (P := IHPar _ _ _ _ ltac:(auto) H0). simpl in P. auto.
+(*  - pose (P := IHPar _ _ _ _ ltac:(auto) H0). simpl in P. auto.
   - econstructor; eauto 2. pose (P := IHPar1 _ _ _ _ ltac:(auto) H1).
     simpl in P. auto.
   - eapply Par_PushCombine; eauto 2. pose (P := IHPar1 _ _ _ _ ltac:(auto) H1).
     simpl in P. auto. pose (P := IHPar2 _ _ _ _ ltac:(auto) H1).
     simpl in P. auto.
   - econstructor; eauto. pose (P := IHPar _ _ _ _ ltac:(auto) H0).
-    simpl in P. auto.
+    simpl in P. auto. *)
+  - econstructor; eauto. 
+    eapply subst_tm_erased; eauto.
+    eapply Par_erased_tm_fst. eauto.
+
 Qed.
 
 Lemma subst4 : forall b x, lc_co b ->
@@ -321,6 +327,8 @@ Proof.
     apply Typing_context_fv in H.
     split_hyp. simpl in *.
     fsetdec.
+  -  econstructor; eauto. 
+    eapply subst_co_erased; eauto.
 Qed.
 
 Lemma multipar_subst3 : forall b b' W W' a a' R R1 x, 
@@ -365,7 +373,7 @@ Hint Resolve erased_tm_open_tm_wrt_tm : erased.
 
 
 Lemma Par_Pi_exists: ∀ x W rho (A B A' B' : tm) R R',
-    x `notin` fv_tm_tm_tm B -> Par W A A' R
+    x `notin` fv_tm_tm_tm B -> Par W A A' R'
     → Par ([(x,R)] ++ W) (open_tm_wrt_tm B (a_Var_f x)) B' R'
     → Par W (a_Pi rho A R B) (a_Pi rho A' R (close_tm_wrt_tm x B')) R'.
 Proof.
@@ -382,10 +390,11 @@ Proof.
 Qed.
 
 Lemma Par_CPi_exists:  ∀ c W (A B a A' B' a' T T': tm) R R',
-       c `notin` fv_co_co_tm a -> Par W A A' R
-       → Par W B B' R -> Par W T T' R
+       c `notin` fv_co_co_tm a -> Par W A A' R'
+       → Par W B B' R' -> Par W T T' R'
          → Par W (open_tm_wrt_co a (g_Var_f c)) (a') R'
-         → Par W (a_CPi (Eq A B T R) a) (a_CPi (Eq A' B' T' R) (close_tm_wrt_co c a')) R'.
+         → Par W (a_CPi (Eq A B T R) a) (a_CPi (Eq A' B' T' R) 
+                                               (close_tm_wrt_co c a')) R'.
 Proof.
   intros c W A B a A' B' a' T T' R R' H H0 H1 h0 H2.
   apply (Par_CPi (singleton c)); auto.
@@ -456,7 +465,7 @@ Qed.
 
 Lemma multipar_Pi_exists: ∀ x W rho (A B A' B' : tm) R R',
        x `notin` fv_tm_tm_tm B ->
-       multipar W A A' R
+       multipar W A A' R'
        → multipar ([(x,R)] ++ W) (open_tm_wrt_tm B (a_Var_f x)) B' R'
        → multipar W (a_Pi rho A R B) (a_Pi rho A' R (close_tm_wrt_tm x B')) R'.
 Proof.
@@ -485,22 +494,26 @@ Qed.
 
 Lemma multipar_Pi_A_proj: ∀ W rho (A B A' B' : tm) R R',
     multipar W (a_Pi rho A R B) (a_Pi rho A' R B') R' ->
-    multipar W A A' R.
+    R' <> Phm ->
+    multipar W A A' R'.
 Proof.
-  intros W rho A B A' B' R R' h1.
+  intros W rho A B A' B' R R' h1 h2.
   dependent induction h1.
   - inversion H. constructor. auto.
-  - inversion H. subst. eapply IHh1; eauto.
-    apply mp_step with (b := A'0). auto.
-    eapply IHh1; eauto.
+  - inversion H. 
+    + subst. eapply IHh1; eauto.
+    + apply mp_step with (b := A'0). auto.
+      eapply IHh1; eauto.
+    + subst. contradiction.
 Qed.
 
 Lemma multipar_Pi_B_proj: ∀ W rho (A B A' B' : tm) R R',
     multipar W (a_Pi rho A R B) (a_Pi rho A' R B') R' →
+    R' <> Phm -> 
     exists L, forall x, x `notin` L -> 
       multipar ([(x,R)] ++ W) (open_tm_wrt_tm B (a_Var_f x)) (open_tm_wrt_tm B' (a_Var_f x)) R'.
 Proof.
-  intros W rho A B A' B' R R' h1.
+  intros W rho A B A' B' R R' h1 h2.
   dependent induction h1; eauto.
   - inversion H. subst. exists L. intros.
     constructor. auto.
@@ -508,14 +521,15 @@ Proof.
     eapply IHh1; eauto.
     destruct (IHh1 rho A'0 B'0 A' B' R) as [L0 h0]; auto.
     exists (L \u L0); eauto.
+    contradiction.
 Qed.
 
 
 Lemma multipar_CPi_exists:  ∀ c W (A B a T A' B' a' T': tm) R R',
        c `notin` fv_co_co_tm a ->
-       multipar W A A' R →
-       multipar W B B' R ->
-       multipar W T T' R →
+       multipar W A A' R' →
+       multipar W B B' R' ->
+       multipar W T T' R' →
        multipar W (open_tm_wrt_co a (g_Var_f c)) a' R' →
        multipar W (a_CPi (Eq A B T R) a) (a_CPi (Eq A' B' T' R) (close_tm_wrt_co c a')) R'.
 Proof.
@@ -557,10 +571,11 @@ Qed.
 
 Lemma multipar_CPi_B_proj:  ∀ W (A B a A' B' a' T T': tm) R1 R2 R',
     multipar W (a_CPi (Eq A B T R1) a) (a_CPi (Eq A' B' T' R2) a') R' →
+    R' <> Phm ->
     exists L, forall c, c `notin` L ->
       multipar W (open_tm_wrt_co a (g_Var_f c)) (open_tm_wrt_co a' (g_Var_f c)) R'.
 Proof.
-  intros W A B a A' B' a' T T' R1 R2 R' h1.
+  intros W A B a A' B' a' T T' R1 R2 R' h1 h2.
   dependent induction h1; eauto.
   - inversion H. subst. exists L. intros.
     constructor. auto.
@@ -568,26 +583,29 @@ Proof.
     eapply IHh1; eauto.
     destruct (IHh1 _ _ _ _ _ _ _ _ _ _ ltac:(auto) ltac:(auto)) as [L0 h0]; auto.
     exists (L \u L0); eauto.
+    contradiction.
 Qed.
 
 Lemma multipar_CPi_phi_proj:  ∀ W (A B a A' B' a' T T': tm) R R',
     multipar W (a_CPi (Eq A B T R) a) (a_CPi (Eq A' B' T' R) a') R' ->
-    multipar W A A' R 
-      /\ multipar W B B' R
-      /\ multipar W T T' R.
+    R' <> Phm ->
+    multipar W A A' R' 
+      /\ multipar W B B' R'
+      /\ multipar W T T' R'.
 Proof.
-  intros W A B a A' B' a' T T' R R' H.
+  intros W A B a A' B' a' T T' R R' H NE.
   dependent induction H; eauto.
   - inversion H; subst. split. constructor; auto.
     split. all:constructor; auto.
   - inversion H; subst.
     eapply IHmultipar; eauto.
-    destruct (IHmultipar _ _ _ _ _ _ _ _ _ ltac:(auto) ltac:(auto))
+    destruct (IHmultipar _ _ _ _ _ _ _ _ _ ltac:(auto) ltac:(auto) ltac:(auto))
     as [H1 [H2 H3]].
     repeat split.
     apply mp_step with (b := a'0); auto.
     apply mp_step with (b := b'); auto.
     apply mp_step with (b := A'0); auto.
+    contradiction.
 Qed.
 
 
@@ -662,8 +680,9 @@ Proof.
   eauto.
 Qed.
 
+(*
 Lemma multipar_Cast_exists : forall W a1 a2 R R', multipar W a1 a2 R ->
                multipar W (a_Conv a1 R' g_Triv) (a_Conv a2 R' g_Triv) R.
 Proof. intros. induction H. econstructor. econstructor. auto.
        econstructor. eapply Par_Cong; eauto. auto.
-Qed.
+Qed. *)

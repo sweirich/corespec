@@ -67,6 +67,9 @@ Proof.
   - eapply (E_AbsTerm (L \u {{x0}})); eauto. intros x Fr.
 
     subst_helper x x0 b0.
+  - econstructor; eauto.
+    instantiate (1:= L \u {{ x0}}) => x1 Fr.
+    subst_helper x1 x0 b0.    
   - autorewrite with subst_open; eauto.
     econstructor; eauto using tm_subst_tm_tm_lc_tm.
     match goal with | [ H0 : Value _ _ |- _ ] =>
@@ -80,10 +83,11 @@ Proof.
     end.
     move: (Typing_context_fv h0)  => ?. split_hyp.
     fsetdec.
+(*
   - eapply E_Combine; auto. eapply tm_subst_tm_tm_Value_mutual in H; eauto.
   - econstructor. eapply tm_subst_tm_tm_lc_tm; eauto.
     eapply tm_subst_tm_tm_Value_mutual in H0; eauto.
-  - econstructor; eapply tm_subst_tm_tm_Value_mutual in H; eauto.
+  - econstructor; eapply tm_subst_tm_tm_Value_mutual in H; eauto. *)
 Qed.
 
 
@@ -113,6 +117,9 @@ Lemma no_CoercedValue_Value_reduction :
 Proof.
   apply CoercedValue_Value_mutual; simpl; intros; eauto 2.
   all: intro NH; inversion NH; subst.
+  all: try solve [eapply H; eauto].
+Admitted.
+(*
   - eapply H; eauto.
   - inversion v.
   - eapply H; eauto.
@@ -130,7 +137,7 @@ Proof.
   - pose (Q := H a'); contradiction.
   - inversion p.
   - inversion v.
-Qed.
+Qed. *)
 
 Lemma no_Value_reduction :
    forall R a, Value R a -> forall b, not (reduction_in_one a b R).
@@ -149,9 +156,10 @@ Proof. intros. induction H.
         - apply IHPath in H0. inversion H0 as [P1 | P2].
           left. eauto. right. inversion P2 as [a' Q].
           exists (a_CApp a' g_Triv); eauto.
-        - apply IHPath in H0. inversion H0 as [P1 | P2].
+(*        - apply IHPath in H0. inversion H0 as [P1 | P2].
           left. eauto. right. inversion P2 as [a' Q].
-          exists (a_Conv a' R1 g_Triv); eauto.
+          exists (a_Conv a' R1 g_Triv); eauto. *)
+          
 Qed.
 
 
@@ -165,6 +173,8 @@ Proof.
   all: try solve [inversion 1 | econstructor; eauto]; eauto.
   all: intros.
   - destruct (H R' H0) as [H1 | H2]. left. econstructor; auto. auto.
+Admitted.
+(*
   - destruct (H R' H0) as [H1 | H2]. left. eapply CC; auto. right.
     inversion H2 as [a0 S]. exists (a_Conv a0 R1 g_Triv). econstructor. auto.
   - destruct (H R' H0) as [H2 | H3]. left. eapply CCV; eauto.
@@ -192,7 +202,7 @@ Proof.
     destruct p as [Q1 | Q2]. left. eauto. destruct Q2 as [a' Q].
     apply no_Value_reduction with (b := a') in P1. contradiction.
     destruct P2 as [a0 P]. right. exists (a_CApp a0 g_Triv). eauto.
-Qed.
+Qed. *)
 
 Lemma sub_red_one :
   forall R R' a a', reduction_in_one a a' R -> SubRole R R' ->
@@ -203,6 +213,7 @@ Proof. intros. induction H; eauto.
           apply E_AbsTerm_exists with (x := x).
           rewrite fv_tm_tm_tm_close_tm_wrt_tm. fsetdec.
           rewrite open_tm_wrt_tm_close_tm_wrt_tm. auto.
+        - admit.
         - apply IHreduction_in_one in H0. inversion H0 as [a'' P].
           exists (a_App a'' rho R b); auto.
         - apply IHreduction_in_one in H0. inversion H0 as [a'' P].
@@ -210,7 +221,7 @@ Proof. intros. induction H; eauto.
         - eapply sub_Value_mutual in H1; eauto.
           inversion H1. exists (open_tm_wrt_tm v a); auto.
           inversion H2 as [a'' P]. exists (a_App a'' rho R a); auto.
-        - apply IHreduction_in_one in H0. inversion H0 as [a'' P].
+(*        - apply IHreduction_in_one in H0. inversion H0 as [a'' P].
           exists (a_Conv a'' R g_Triv); auto.
         - eapply sub_Value_mutual in H; eauto. inversion H as [H2 | H3].
           exists (a_Conv v R2 g_Triv). eapply E_Combine; eauto.
@@ -222,8 +233,8 @@ Proof. intros. induction H; eauto.
         - eapply sub_Value_mutual in H; eauto. inversion H as [H2 | H3].
           exists (a_Conv (a_CApp v1 g_Triv) R g_Triv). econstructor; eauto.
           inversion H3 as [a0 S]. exists (a_CApp a0 g_Triv).
-          econstructor. auto.
-Qed.
+          econstructor. auto. *)
+Admitted.
 
 Ltac CoercedValue_no_red :=
      match goal with
@@ -235,9 +246,9 @@ Ltac CoercedValue_no_red :=
 
 (* The reduction relation is deterministic *)
 Lemma reduction_in_one_deterministic :
-  forall a a1 R, reduction_in_one a a1 R -> forall a2, reduction_in_one a a2 R -> a1 = a2.
+  forall a a1 R, R <> Phm -> reduction_in_one a a1 R -> forall a2, reduction_in_one a a2 R -> a1 = a2.
 Proof.
-  intros a a1 R H.
+  intros a a1 R NE H.
   induction H; intros a2 h0.
   all: inversion h0; subst.
   (* already equal *)
@@ -256,9 +267,10 @@ Proof.
     move: (H5 x ltac:(auto)) => h7.
     move: (H0 x ltac:(auto)) => h1.
     apply h1 in h7.
-    apply open_tm_wrt_tm_inj in h7; eauto. rewrite h7. auto.
+    apply open_tm_wrt_tm_inj in h7; eauto. rewrite h7. auto. auto.
+  - admit.
   - inversion H.
   - inversion H1.
   - have: (Ax a A R = Ax a2 A0 R2). eapply binds_unique; eauto using uniq_toplevel.
     move => h; inversion h; done.
-Qed.
+Admitted.

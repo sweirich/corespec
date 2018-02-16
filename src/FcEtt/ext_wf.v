@@ -37,8 +37,8 @@ Hint Resolve Value_lc CoercedValue_lc : lc.
 
 Lemma ctx_wff_mutual :
   (forall G0 a A R, Typing G0 a A R -> Ctx G0) /\
-  (forall G0 phi,   PropWff G0 phi -> Ctx G0) /\
-  (forall G0 D p1 p2, Iso G0 D p1 p2 -> Ctx G0) /\
+  (forall G0 phi R,   PropWff G0 phi R -> Ctx G0) /\
+  (forall G0 D p1 p2 R , Iso G0 D p1 p2 R -> Ctx G0) /\
   (forall G0 D A B T R,   DefEq G0 D A B T R -> Ctx G0) /\
   (forall G0, Ctx G0 -> True).
 Proof.
@@ -86,8 +86,8 @@ Hint Resolve Ctx_uniq.
 
 Lemma lc_mutual :
   (forall G0 a A R, Typing G0 a A R -> lc_tm a /\ lc_tm A) /\
-  (forall G0 phi, PropWff G0 phi -> lc_constraint phi) /\
-  (forall G0 D p1 p2, Iso G0 D p1 p2 -> lc_constraint p1 /\ lc_constraint p2) /\
+  (forall G0 phi R , PropWff G0 phi R -> lc_constraint phi) /\
+  (forall G0 D p1 p2 R , Iso G0 D p1 p2 R  -> lc_constraint p1 /\ lc_constraint p2) /\
   (forall G0 D A B T R, DefEq G0 D A B T R -> lc_tm A /\ lc_tm B /\ lc_tm T) /\
   (forall G0, Ctx G0 -> forall x s , binds x s G0 -> lc_sort s).
 Proof.
@@ -112,11 +112,11 @@ Proof.
   intros. apply (first lc_mutual) in H. destruct H. auto.
 Qed.
 
-Lemma Iso_lc1 : forall G0 D p1 p2, Iso G0 D p1 p2 -> lc_constraint p1.
+Lemma Iso_lc1 : forall G0 D p1 p2 R, Iso G0 D p1 p2 R -> lc_constraint p1.
 Proof.
   intros. apply (third lc_mutual) in H. destruct H. auto.
 Qed.
-Lemma Iso_lc2 : forall G0 D p1 p2, Iso G0 D p1 p2 -> lc_constraint p2.
+Lemma Iso_lc2 : forall G0 D p1 p2 R, Iso G0 D p1 p2  R-> lc_constraint p2.
 Proof.
   intros. apply (third lc_mutual) in H. destruct H. auto.
 Qed.
@@ -139,7 +139,10 @@ Hint Resolve Typing_lc1 Typing_lc2 Iso_lc1 Iso_lc2 DefEq_lc1 DefEq_lc2 DefEq_lc3
 Lemma Toplevel_lc : forall c s, binds c s toplevel -> lc_sig_sort s.
 Proof. induction Sig_toplevel.
        intros. inversion H. 
-       intros. destruct H3. inversion H3. subst.
+       intros.
+Admitted. 
+(*
+ destruct H2. inversion H2. subst.
        simpl in H0. eauto. eauto with lc.
        eauto.
-Qed.
+Qed. *)

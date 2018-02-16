@@ -124,6 +124,7 @@ Hint Resolve erased_lc : lc.
 Lemma erased_sub : forall W a R1 R2, erased_tm W a R1 -> SubRole R1 R2 ->
                                      erased_tm W a R2.
 Proof. intros W a R1 R2 H S. induction H; eauto.
+       econstructor; eauto.
 Qed.
 
 Lemma subst_tm_erased : forall W1 x R1 W2 a R b, 
@@ -178,7 +179,7 @@ Hint Resolve subst_tm_erased subst_co_erased : erased.
 
 Lemma erased_Pi_some_any: forall W x rho A R1 B R2,
        x `notin` fv_tm_tm_tm B ->
-       erased_tm W A R1 ->
+       erased_tm W A R2 ->
        erased_tm ([(x,R1)] ++ W) (open_tm_wrt_tm B (a_Var_f x)) R2 ->
        erased_tm W (a_Pi rho A R1 B) R2.
 Proof. intros. apply (erased_a_Pi (union (singleton x) (dom W))); eauto.
@@ -191,10 +192,10 @@ Qed.
 
 Lemma typing_erased_mutual:
     (forall G b A R, Typing G b A R -> erased_tm (ctx_to_rctx G) b R) /\
-    (forall G0 phi (H : PropWff G0 phi),
-        forall A B T R, phi = Eq A B T R -> erased_tm (ctx_to_rctx G0) A R /\ 
+    (forall G0 phi R  (H : PropWff G0 phi R),
+        forall A B T R1, phi = Eq A B T R1 -> erased_tm (ctx_to_rctx G0) A R /\ 
         erased_tm (ctx_to_rctx G0) B R /\ erased_tm (ctx_to_rctx G0) T R) /\
-     (forall G0 D p1 p2 (H : Iso G0 D p1 p2), True ) /\
+     (forall G0 D p1 p2 R (H : Iso G0 D p1 p2 R), True ) /\
      (forall G0 D A B T R (H : DefEq G0 D A B T R), True) /\
      (forall G0 (H : Ctx G0), True).
 Proof. 
@@ -206,13 +207,14 @@ Proof.
   - econstructor. apply ctx_to_rctx_uniq; eauto.
   - econstructor. apply ctx_to_rctx_uniq; eauto. 
     eapply ctx_to_rctx_binds_tm; eauto. auto.
-  - econstructor; eauto. econstructor. apply ctx_to_rctx_uniq.
-    eapply Typing_Ctx; eauto.
+  - econstructor; eauto. econstructor; eauto. apply ctx_to_rctx_uniq; eauto. 
   - destruct phi.
     apply (@erased_a_CPi L); try solve [apply (H0 a b A R0); auto]; auto;
-    pose H2 := H0 a b A R0 eq_refl; inversion H2 as [H21 [H22 H23]]; econstructor; eassumption.
+    pose H2 := H0 a b A R0 eq_refl; inversion H2 as [H21 [H22 H23]]. 
   - econstructor. apply ctx_to_rctx_uniq; auto. eauto.
   - econstructor; eauto. apply ctx_to_rctx_uniq; eauto.
+    Unshelve.
+    exact Phm.
 Qed.
 
 

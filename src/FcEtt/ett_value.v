@@ -55,13 +55,11 @@ Proof.
     instantiate (1 := L \u singleton x) => x0 h0.
     rewrite tm_subst_tm_tm_open_tm_wrt_tm_var; auto.
   - intros L R R1 a v H H2 b x H1.
-    econstructor; eauto.
-    instantiate (1 := L \u singleton x) => x0 h0.
-    rewrite tm_subst_tm_tm_open_tm_wrt_tm_var; auto.
+    admit.
   - intros. econstructor. apply tm_subst_tm_tm_lc_tm; auto.
     eapply Path_subst_tm; eauto. eauto.
   - intros. econstructor. eapply Path_subst_tm; eauto. eauto.
-Qed.
+Admitted.
 
 Lemma Value_tm_subst_tm_tm :
   (forall R v b x, Value R v -> lc_tm b -> Value R (tm_subst_tm_tm b x v)).
@@ -130,17 +128,18 @@ Proof.
     simpl in h0. auto. auto.
 
   - intros.
-    pick fresh y.
+    admit.
+(*    pick fresh y.
     eapply Value_UAbsIrrel_exists with (x:=y).
     eapply fv_tm_tm_tm_co_subst_co_tm_notin; eauto.
     move: (H y ltac:(eauto) b x H0) => h0.
     rewrite co_subst_co_tm_open_tm_wrt_tm in h0.
     simpl in h0. auto. auto.
-
+*)
   - intros. econstructor. apply co_subst_co_tm_lc_tm; auto.
     eapply Path_subst_co; eauto. eauto.
   - intros. econstructor. eapply Path_subst_co; eauto. eauto.
-Qed.
+Admitted.
 
 Lemma Value_co_subst_co_tm :
   (forall R v b x, Value R v -> lc_co b -> Value R (co_subst_co_tm b x v)).

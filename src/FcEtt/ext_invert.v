@@ -16,7 +16,7 @@ Set Bullet Behavior "Strict Subproofs".
 Set Implicit Arguments.
 
 
-Lemma binds_to_Typing: forall G T A R, Ctx G -> binds T (Tm A R) G -> Typing G A a_Star R.
+Lemma binds_to_Typing: forall G T A R, Ctx G -> binds T (Tm A R) G -> Typing G A a_Star Phm.
 Proof.
   induction G; try done.
   intros T A R H H0.
@@ -39,42 +39,44 @@ Proof.
 Qed.
 
 
+Check E_Pi.
+
 Lemma invert_a_Pi:
   forall G rho A0 A B0 R R',
     Typing G (a_Pi rho A0 R B0) A R' ->
-    DefEq G (dom G) A a_Star a_Star R' /\ 
+    DefEq G (dom G) A a_Star a_Star Rep /\ 
       (exists L, forall x, x `notin` L -> 
         Typing ([(x, Tm A0 R)] ++ G) (open_tm_wrt_tm B0 (a_Var_f x)) a_Star R') 
-          /\ Typing G A0 a_Star R.
+          /\ Typing G A0 a_Star R'.
 Proof.
   intros G rho A0 A B0 R R' h1.
   dependent induction h1; auto; try done.
   - pose P := IHh1 rho A0 B0 R eq_refl.
     inversion P as [H1 [H2 H3]]. repeat split; auto.
     inversion H2 as [L H5]. 
-    eapply E_Sub; eauto.
-    inversion H2 as [L H5]. 
     exists L. intros x Fr. eapply E_SubRole; eauto.
+    eapply E_SubRole; eauto.
   - repeat split; eauto.
   - destruct (IHh1_1 rho A0 B0 R) as (h1 & h2 & h3); try reflexivity.
     repeat split; eauto 1.
-    destruct R0; eapply E_Trans; eauto 2.
+    eapply E_Trans; eauto 2.
 Qed.
 
 Lemma invert_a_CPi: forall G phi A B0 R,
     Typing G (a_CPi phi B0) A R ->
-      DefEq G (dom G) A a_Star a_Star R /\ (exists L, forall c, c `notin` L -> Typing ([(c, Co phi)] ++ G) (open_tm_wrt_co B0 (g_Var_f c) ) a_Star R)  /\ PropWff G phi.
+      DefEq G (dom G) A a_Star a_Star Rep /\ 
+      (exists L, forall c, c `notin` L -> 
+                 Typing ([(c, Co phi)] ++ G) (open_tm_wrt_co B0 (g_Var_f c)) a_Star R)  
+      /\ PropWff G phi.
 Proof.
   intros G phi A B0 R h1.
   dependent induction h1; eauto 2; try done.
   - destruct (IHh1 phi B0) as [h2 [L h3]]; first by done.
     repeat split; eauto 1. inversion L as [L0 h4].
-    eapply E_Sub; eauto.
-    inversion L as [L0 h4].
     exists L0. intros. eapply E_SubRole. apply H. auto.
   - destruct (IHh1_1 phi B0) as [h2 [L h3]]; first by done.
     repeat split; eauto 1 using Typing_Ctx. 
-    destruct R; eapply E_Trans; eauto.
+    eapply E_Trans; eauto.
   - repeat split; eauto 2 using Typing_Ctx. apply E_Refl. 
     apply E_Star. apply PropWff_Ctx in H1. assumption.
 Qed.
@@ -82,8 +84,8 @@ Qed.
 
 Lemma invert_a_Fam : forall G F A R,
     Typing G (a_Fam F) A R ->
-    exists a B R', DefEq G (dom G) A B a_Star R /\
-           binds F (Ax a B R') toplevel /\ Typing nil B a_Star R.
+    exists a B R', DefEq G (dom G) A B a_Star Rep /\
+           binds F (Ax a B R') toplevel /\ Typing nil B a_Star Phm.
 Proof.
   intros G F A R H. dependent induction H.
   - destruct (IHTyping F) as (a & B1 & R' & h0 & h1 & h3); try done.
@@ -100,17 +102,18 @@ Proof.
 Qed.
 
 
-Lemma invert_a_Star: forall A G R, Typing G a_Star A R -> DefEq G (dom G) A a_Star a_Star R.
+Lemma invert_a_Star: forall A G R, Typing G a_Star A R -> DefEq G (dom G) A a_Star a_Star Rep.
 Proof.
   intros A G R H.
   dependent induction H; subst; eauto 2; try done.
   eauto.
-  eauto 4. eauto.
+  eauto 4. 
 Qed.
 
 
 Lemma invert_a_Var :
-  forall G x A R, Typing G (a_Var_f x) A R -> exists A' R', binds x (Tm A' R') G /\ DefEq G (dom G) A A' a_Star R /\ SubRole R' R.
+  forall G x A R, Typing G (a_Var_f x) A R -> 
+             exists A' R', binds x (Tm A' R') G /\ DefEq G (dom G) A A' a_Star Rep /\ SubRole R' R.
 Proof.
   intros G x A R H. dependent induction H. 
   - destruct (IHTyping x eq_refl) as (A0 & R0 & h1 & h2 & h3).
@@ -173,7 +176,7 @@ Ltac un_subst_tm :=
 
 (* --------------------------------------------------------------- *)
 
-Lemma Typing_regularity : forall e A G R, Typing G e A R -> Typing G A a_Star R.
+Lemma Typing_regularity : forall e A G R, Typing G e A R -> Typing G A a_Star Phm.
 Proof.
   intros e A G R H1.
   induction H1; intros; eauto.
@@ -208,7 +211,7 @@ Proof.
   destruct phi.
   inversion H.
   assert (Ctx G). eauto.
-  assert (Typing G A a_Star R). { eapply Typing_regularity; eauto. }
+  assert (Typing G A a_Star Phm). { eapply Typing_regularity; eauto. }
   apply E_PropCong; eauto.
 Qed.
 
@@ -225,19 +228,18 @@ Qed.
 
 (* --------------------------------------------------- *)
 
-
 Lemma invert_a_UAbs:
   forall G rho A R1 R b0,
     Typing G (a_UAbs rho R1 b0) A R
-    -> exists A1 B1, DefEq G (dom G) A (a_Pi rho A1 R1 B1) a_Star R
+    -> exists A1 B1, DefEq G (dom G) A (a_Pi rho A1 R1 B1) a_Star Rep
                /\ (exists L, forall x, x `notin` L ->
                             Typing ([(x, Tm A1 R1)] ++ G)
                                    (open_tm_wrt_tm b0 (a_Var_f x))
                                    (open_tm_wrt_tm B1 (a_Var_f x)) R
                             /\ Typing ([(x, Tm A1 R1)] ++ G)
-                                     (open_tm_wrt_tm B1 (a_Var_f x)) a_Star R
+                                     (open_tm_wrt_tm B1 (a_Var_f x)) a_Star Phm
                             /\ RhoCheck rho x (open_tm_wrt_tm b0 (a_Var_f x)))
-               /\ Typing G A1 a_Star R1.
+               /\ Typing G A1 a_Star Phm.
 Proof.
   intros G rho A R1 R b0.
   move e: (a_UAbs rho R1 b0) => t1.
@@ -253,13 +255,13 @@ Proof.
     + inversion e; subst. apply (E_Refl _ _ _ a_Star); auto.
       apply (E_Pi (L \u (dom G))); auto.
       intros x HH.
-      apply (@Typing_regularity (open_tm_wrt_tm a (a_Var_f x))); auto.
+      eapply (@Typing_regularity (open_tm_wrt_tm a (a_Var_f x))); auto.
     + inversion e; subst; clear e.
       split; auto.
       exists (L \u (dom G)).
       intros x HH.
       repeat split; auto.
-      apply (@Typing_regularity (open_tm_wrt_tm a (a_Var_f x))); auto.
+      eapply (@Typing_regularity (open_tm_wrt_tm a (a_Var_f x))); auto.
   -  destruct IHh0_1 as [A1 [B1 [h3 [L h2]]]]; auto.
      subst.
      exists A1, B1.
@@ -268,74 +270,76 @@ Proof.
      + split; auto.
 Qed.
 
+Check E_CAbs.
 
 Lemma invert_a_UCAbs: forall G A R b0,
     Typing G (a_UCAbs b0) A R ->
-    exists a b T R' B1 R'', PropWff G (Eq a b T R')
-                /\ DefEq G (dom G) A (a_CPi (Eq a b T R') B1) a_Star R /\
+    exists a b T R' B1, PropWff G (Eq a b T R')
+                /\ DefEq G (dom G) A (a_CPi (Eq a b T R') B1) a_Star Rep /\
                 (exists L, forall c, c `notin` L ->
                            Typing ([(c, Co (Eq a b T R'))] ++ G)
                                   (open_tm_wrt_co b0 (g_Var_f c))
-                                  (open_tm_wrt_co B1 (g_Var_f c)) R'' /\
+                                  (open_tm_wrt_co B1 (g_Var_f c)) R /\
                            Typing ([(c, Co (Eq a b T R'))] ++ G)
-                                  (open_tm_wrt_co B1 (g_Var_f c)) a_Star R'')
-                 /\ SubRole R'' R.
+                                  (open_tm_wrt_co B1 (g_Var_f c)) a_Star Phm).
 Proof.
   intros G A R b0.
   move e: (a_UCAbs b0) => t1.
   move => h0.
   induction h0; auto; try done.
-  - destruct (IHh0 e) as 
-    [a' [b' [T [R' [B2 [R'' [h3 [h4 [h5 h6]]]]]]]]].
-    exists a', b', T, R', B2, R''. split; auto.
-    split. eapply E_Sub; eauto. split. apply h5. eauto.
-  - destruct IHh0_1 as
-    [a' [b' [T [R' [B2 [R'' [h3 [h4 [[L h5] h6]]]]]]]]]; auto.
-    exists a', b', T, R', B2, R''.
+  - destruct (IHh0 e) as (a' & b' & T & R' & B2 & h3 & h4 & L & h5).
+    exists a', b', T, R', B2. split; auto.
+    split. eapply E_Sub; eauto. 
+    exists L. intros. 
+    move: (h5 c H0) => [h6 h7].
+    split. eapply E_SubRole; eauto. eauto. 
+  - destruct IHh0_1 as (a' & b' & T & R' & B2 & h3 & h4 & L & h5); auto.
+    exists a', b', T, R', B2.
     split; auto.
     split.
     + apply (E_Trans _ _ _ _ _ _ A); auto.
-    + split. exists L; auto. assumption.
-  - induction phi.
-    exists a0, b, A, R0, B, R.
+    + exists L. move => c Fr. 
+      move: (h5 c Fr) => [h6 h8].
+      split. eapply E_SubRole; eauto.  eauto.
+  - inversion e; subst. 
+    induction phi.
+    exists a0, b, A, R0, B.
     split; auto.
     split.
     + apply (E_Refl _ _ _ a_Star); auto.
       apply (E_CPi (L \u (dom G))); auto.
       intros c H2.
-      apply (@Typing_regularity (open_tm_wrt_co a (g_Var_f c))); auto.
-    + split. exists (L \u (dom G)).
-      inversion e; subst; clear e.
+      eapply (@Typing_regularity (open_tm_wrt_co a (g_Var_f c))); auto.
+    + exists (L \u (dom G)).
       intros c H2.
       split; auto.
-      apply (@Typing_regularity (open_tm_wrt_co a (g_Var_f c))); auto.
-      auto.
+      eapply (@Typing_regularity (open_tm_wrt_co a (g_Var_f c))); auto.
 Qed.
 
 
 Lemma invert_a_App_Rel : forall G a b C R R',
     Typing G (a_App a Rel R b) C R' ->
-    exists A B R'', Typing G a (a_Pi Rel A R B) R'' /\
+    exists A B, Typing G a (a_Pi Rel A R B) R' /\
            Typing G b A R /\
-           DefEq G (dom G) C (open_tm_wrt_tm B b) a_Star R' /\ SubRole R'' R'.
+           DefEq G (dom G) C (open_tm_wrt_tm B b) a_Star Rep.
 Proof.
   intros G a b C R R'.
   move e : (a_App a Rel R b) => t1.
   move => h1.
   induction h1; auto; try done.
-  - destruct (IHh1 e) as [A0 [B [R3 [h0 [h2 [h3 h4]]]]]].
-    exists A0, B, R3. repeat split; eauto 3.
-  - exists A, B, R'. inversion e; subst.
-    assert (h2 : Typing G (open_tm_wrt_tm B a0) a_Star R').
-    + (have: Typing G (a_Pi Rel A R0 B) a_Star R' by apply (Typing_regularity h1_1)) => h3.
+  - destruct (IHh1 e) as [A0 [B [h0 [h2 h3]]]].
+    exists A0, B. repeat split; eauto 3.
+  - exists A, B. inversion e; subst.
+    assert (h2 : Typing G (open_tm_wrt_tm B a0) a_Star Phm).
+    + (have: Typing G (a_Pi Rel A R0 B) a_Star Phm by apply (Typing_regularity h1_1)) => h3.
       destruct (invert_a_Pi h3) as [_ [[L h4] h5]].
       pick fresh x.
       rewrite (tm_subst_tm_tm_intro x); auto.
       replace a_Star with (tm_subst_tm_tm a0 x a_Star); auto.
       apply Typing_tm_subst with (A := A) (R := R0); auto.
     + repeat split; auto.
-  - destruct (IHh1_1 e) as [A0 [B0 [R1 [h3 [h2 [e2 s]]]]]].
-    exists A0, B0, R1.
+  - destruct (IHh1_1 e) as [A0 [B0 [h3 [h2 e2]]]].
+    exists A0, B0.
     repeat split; auto.
     apply (E_Trans _ _ _ _ _ _ A); auto.
 Qed.
