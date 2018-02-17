@@ -66,19 +66,19 @@ with co : Set :=  (*r explicit coercions *)
  | g_Left (g:co) (g':co)
  | g_Right (g:co) (g':co).
 
-Inductive sig_sort : Set :=  (*r signature classifier *)
- | Cs (A:tm) (R:role)
- | Ax (a:tm) (A:tm) (R:role).
-
 Inductive sort : Set :=  (*r binding classifier *)
  | Tm (A:tm) (R:role)
  | Co (phi:constraint).
 
+Inductive sig_sort : Set :=  (*r signature classifier *)
+ | Cs (A:tm) (R:role)
+ | Ax (a:tm) (A:tm) (R:role).
+
+Definition context : Set := list ( atom * sort ).
+
 Definition available_props : Type := atoms.
 
 Definition sig : Set := list (atom * sig_sort).
-
-Definition context : Set := list ( atom * sort ).
 
 Definition role_context : Set := list ( atom * role ).
 
@@ -430,6 +430,15 @@ with lc_constraint : constraint -> Prop :=    (* defn lc_constraint *)
      (lc_tm A) ->
      (lc_constraint (Eq a b A R)).
 
+(* defns LC_sort *)
+Inductive lc_sort : sort -> Prop :=    (* defn lc_sort *)
+ | lc_Tm : forall (A:tm) (R:role),
+     (lc_tm A) ->
+     (lc_sort (Tm A R))
+ | lc_Co : forall (phi:constraint),
+     (lc_constraint phi) ->
+     (lc_sort (Co phi)).
+
 (* defns LC_sig_sort *)
 Inductive lc_sig_sort : sig_sort -> Prop :=    (* defn lc_sig_sort *)
  | lc_Cs : forall (A:tm) (R:role),
@@ -439,15 +448,6 @@ Inductive lc_sig_sort : sig_sort -> Prop :=    (* defn lc_sig_sort *)
      (lc_tm a) ->
      (lc_tm A) ->
      (lc_sig_sort (Ax a A R)).
-
-(* defns LC_sort *)
-Inductive lc_sort : sort -> Prop :=    (* defn lc_sort *)
- | lc_Tm : forall (A:tm) (R:role),
-     (lc_tm A) ->
-     (lc_sort (Tm A R))
- | lc_Co : forall (phi:constraint),
-     (lc_constraint phi) ->
-     (lc_sort (Co phi)).
 (** free variables *)
 Fixpoint fv_tm_tm_co (g_5:co) : vars :=
   match g_5 with
@@ -905,11 +905,7 @@ with Value : role -> tm -> Prop :=    (* defn Value *)
      lc_tm (a_UAbs Rel R1 a) ->
      Value R (a_UAbs Rel R1 a)
  | Value_UAbsIrrel : forall (L:vars) (R R1:role) (a:tm),
-      ( forall x , x \notin  L  -> Value R  ( open_tm_wrt_tm a (a_Var_f x) )  )  ->
-     Value R (a_UAbs Irrel R1 a)
- | Value_UAbsIrrel2 : forall (L:vars) (R R1:role) (a:tm),
-      ( forall x , x \notin  L  -> Value R  ( open_tm_wrt_tm a (a_Var_f x) )  )  ->
-      not (  ( SubRole R1 R )  )  ->
+      ( forall x , x \notin  L  -> CoercedValue R  ( open_tm_wrt_tm a (a_Var_f x) )  )  ->
      Value R (a_UAbs Irrel R1 a)
  | Value_CAbs : forall (R:role) (phi:constraint) (a:tm),
      lc_constraint phi ->
@@ -933,13 +929,7 @@ with Value : role -> tm -> Prop :=    (* defn Value *)
      Value R  ( (a_CApp a g_Triv) ) 
  | Value_Bullet : forall (R:role),
      Value R a_Bullet
- | Value_Coerced : forall (R2:role) (a:tm) (R1:role),
-     Value R1 a ->
-      not (  ( SubRole R1 R2 )  )  ->
-     Value R2  ( (a_Conv a R1 g_Triv) ) .
-
-(* defns JValueType *)
-Inductive value_type : role -> tm -> Prop :=    (* defn value_type *)
+with value_type : role -> tm -> Prop :=    (* defn value_type *)
  | value_type_Star : forall (R:role),
      value_type R a_Star
  | value_type_Pi : forall (R:role) (rho:relflag) (A:tm) (R1:role) (B:tm),
@@ -1085,14 +1075,14 @@ Inductive Par : role_context -> tm -> tm -> role -> Prop :=    (* defn Par *)
  | Par_Combine : forall (W:role_context) (a1:tm) (R:role) (a2:tm) (R1:role),
      Par W a1  ( (a_Conv a2 R g_Triv) )  R1 ->
      Par W  ( (a_Conv a1 R g_Triv) )   ( (a_Conv a2 R g_Triv) )  R1
- | Par_Push : forall (W:role_context) (a1:tm) (rho:relflag) (R2:role) (b1 a2 b2:tm) (R R1:role),
+ | Par_Push : forall (W:role_context) (a1:tm) (R2:role) (b1 a2 b2:tm) (R R1:role),
      Par W a1  ( (a_Conv a2 R g_Triv) )  R1 ->
      Par W b1 b2 R2 ->
-     Par W (a_App a1 rho R2 b1) (a_Conv  ( (a_App a2 rho R2  ( (a_Conv b2 R g_Triv) ) ) )  R g_Triv) R1
- | Par_PushCombine : forall (W:role_context) (a1:tm) (rho:relflag) (R2:role) (b1 a2 b2:tm) (R R1:role),
+     Par W  (a_App  a1  Rel  R2   b1 )  (a_Conv  (  (a_App  a2  Rel  R2    ( (a_Conv b2 R g_Triv) )  )  )  R g_Triv) R1
+ | Par_PushCombine : forall (W:role_context) (a1:tm) (R2:role) (b1 a2 b2:tm) (R R1:role),
      Par W a1  ( (a_Conv a2 R g_Triv) )  R1 ->
      Par W b1  ( (a_Conv b2 R g_Triv) )  R2 ->
-     Par W (a_App a1 rho R2 b1) (a_Conv  ( (a_App a2 rho R2  ( (a_Conv b2 R g_Triv) ) ) )  R g_Triv) R1
+     Par W  (a_App  a1  Rel  R2   b1 )  (a_Conv  (  (a_App  a2  Rel  R2    ( (a_Conv b2 R g_Triv) )  )  )  R g_Triv) R1
  | Par_CPush : forall (W:role_context) (a1 a2:tm) (R R1:role),
      Par W a1  ( (a_Conv a2 R g_Triv) )  R1 ->
      Par W (a_CApp a1 g_Triv) (a_Conv  ( (a_CApp a2 g_Triv) )  R g_Triv) R1
@@ -1133,10 +1123,6 @@ with reduction_in_one : tm -> tm -> role -> Prop :=    (* defn reduction_in_one 
  | E_AbsTerm : forall (L:vars) (R:role) (a a':tm) (R1:role),
       ( forall x , x \notin  L  -> reduction_in_one  ( open_tm_wrt_tm a (a_Var_f x) )   ( open_tm_wrt_tm a' (a_Var_f x) )  R1 )  ->
      reduction_in_one (a_UAbs Irrel R a) (a_UAbs Irrel R a') R1
- | E_AbsTerm2 : forall (L:vars) (R:role) (a a':tm) (R1:role),
-      ( forall x , x \notin  L  -> reduction_in_one  ( open_tm_wrt_tm a (a_Var_f x) )   ( open_tm_wrt_tm a' (a_Var_f x) )  R1 )  ->
-      not (  ( SubRole R R1 )  )  ->
-     reduction_in_one (a_UAbs Rel R a) (a_UAbs Rel R a') R1
  | E_AppLeft : forall (a:tm) (rho:relflag) (R:role) (b a':tm) (R1:role),
      lc_tm b ->
      reduction_in_one a a' R1 ->
@@ -1159,15 +1145,15 @@ with reduction_in_one : tm -> tm -> role -> Prop :=    (* defn reduction_in_one 
      reduction_in_one a a' R1 ->
      reduction_in_one (a_Conv a R g_Triv) (a_Conv a' R g_Triv) R1
  | E_Combine : forall (v:tm) (R1 R2 R:role),
-     Value R  ( (a_Conv v R1 g_Triv) )  ->
+     CoercedValue R  ( (a_Conv v R1 g_Triv) )  ->
      SubRole R1 R2 ->
      reduction_in_one (a_Conv  ( (a_Conv v R1 g_Triv) )  R2 g_Triv) (a_Conv v R2 g_Triv) R
  | E_Push : forall (v1:tm) (R:role) (rho:relflag) (R1:role) (b:tm) (R2:role),
      lc_tm b ->
-     Value R2  ( (a_Conv v1 R g_Triv) )  ->
+     CoercedValue R2  ( (a_Conv v1 R g_Triv) )  ->
      reduction_in_one (a_App  ( (a_Conv v1 R g_Triv) )  rho R1 b) (a_Conv  ( (a_App v1 rho R1  ( (a_Conv b R g_Triv) ) ) )  R g_Triv) R2
  | E_CPush : forall (v1:tm) (R R1:role),
-     Value R1  ( (a_Conv v1 R g_Triv) )  ->
+     CoercedValue R1  ( (a_Conv v1 R g_Triv) )  ->
      reduction_in_one (a_CApp  ( (a_Conv v1 R g_Triv) )  g_Triv) (a_Conv  ( (a_CApp v1 g_Triv) )  R g_Triv) R1
 with reduction : tm -> tm -> role -> Prop :=    (* defn reduction *)
  | Equal : forall (a:tm) (R:role),
@@ -1632,6 +1618,6 @@ Inductive head_reduction : context -> tm -> tm -> role -> Prop :=    (* defn hea
 
 
 (** infrastructure *)
-Hint Constructors SubRole Path CoercedValue Value value_type consistent erased_tm RhoCheck Par MultiPar joins Beta reduction_in_one reduction PropWff Typing Iso DefEq Ctx Sig AnnPropWff AnnTyping AnnIso AnnDefEq AnnCtx AnnSig head_reduction lc_co lc_brs lc_tm lc_constraint lc_sig_sort lc_sort.
+Hint Constructors SubRole Path CoercedValue Value value_type consistent erased_tm RhoCheck Par MultiPar joins Beta reduction_in_one reduction PropWff Typing Iso DefEq Ctx Sig AnnPropWff AnnTyping AnnIso AnnDefEq AnnCtx AnnSig head_reduction lc_co lc_brs lc_tm lc_constraint lc_sort lc_sig_sort.
 
 
