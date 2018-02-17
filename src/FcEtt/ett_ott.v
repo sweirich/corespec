@@ -1203,16 +1203,11 @@ with Typing : context -> tm -> tm -> role -> Prop :=    (* defn Typing *)
      Typing G A a_Star Phm ->
      Typing G a_Bullet A Phm
 with Iso : context -> available_props -> constraint -> constraint -> role -> Prop :=    (* defn Iso *)
- | E_PropCong : forall (G:context) (D:available_props) (A1 B1 A:tm) (R1:role) (A2 B2:tm) (R:role),
+ | E_PropCong : forall (G:context) (D:available_props) (A1 B1 A:tm) (R1:role) (A2 B2 B:tm) (R:role),
      DefEq G D A1 A2 A R ->
-     DefEq G D B1 B2 A R ->
-     Typing G A a_Star Phm ->
-     Iso G D (Eq A1 B1 A R1) (Eq A2 B2 A R1) R
- | E_IsoConv : forall (G:context) (D:available_props) (A1 A2 A:tm) (R1:role) (B:tm) (R:role),
+     DefEq G D B1 B2 B R ->
      DefEq G D A B a_Star R ->
-     PropWff G (Eq A1 A2 A R1) R ->
-     PropWff G (Eq A1 A2 B R1) R ->
-     Iso G D (Eq A1 A2 A R1) (Eq A1 A2 B R1) R
+     Iso G D (Eq A1 B1 A R1) (Eq A2 B2 B R1) R
  | E_CPiFst : forall (G:context) (D:available_props) (a1 a2 A:tm) (R:role) (b1 b2 B:tm) (R':role) (B1 B2:tm),
      DefEq G D (a_CPi  ( (Eq a1 a2 A R) )  B1) (a_CPi  ( (Eq b1 b2 B R) )  B2) a_Star R' ->
      Iso G D (Eq a1 a2 A R) (Eq b1 b2 B R) R'
@@ -1293,11 +1288,10 @@ with DefEq : context -> available_props -> tm -> tm -> tm -> role -> Prop :=    
      DefEq G D a b A R ->
      Iso G D (Eq a b A R) (Eq a' b' A' R) Rep ->
      DefEq G D a' b' A' R
- | E_EqConv : forall (G:context) (D:available_props) (a b B:tm) (R2:role) (A:tm) (R1:role),
-     DefEq G D a b A R1 ->
-     DefEq G  (dom  G )  A B a_Star R2 ->
-      ( SubRole R1 R2 )  ->
-     DefEq G D a b B R2
+ | E_EqConv : forall (G:context) (D:available_props) (a b B:tm) (R:role) (A:tm),
+     DefEq G D a b A R ->
+     DefEq G  (dom  G )  A B a_Star Rep ->
+     DefEq G D a b B R
  | E_IsoSnd : forall (G:context) (D:available_props) (A A':tm) (R:role) (a b:tm) (R1:role) (a' b':tm),
      Iso G D (Eq a b A R1) (Eq a' b' A' R1) R ->
      DefEq G D A A' a_Star R

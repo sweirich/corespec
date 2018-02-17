@@ -122,9 +122,10 @@ Proof.
   all: try (move: H5 => /binds_cons_iff [[? [?]] | /= H5]; subst;
                        assert (y <> y); [fsetdec|done|fsetdec|done]).
   all: eauto 4.
+  - admit.
   - move: H2 => /binds_cons_iff [[? [?]] | /= H2]; subst;
                        assert (y <> y); [fsetdec|done|fsetdec|done].
-Qed.  (* strengthen_available_nocovar *)
+Admitted.  (* strengthen_available_nocovar *)
 
 Lemma DefEq_strengthen_available_tmvar :
   forall G D g A B R, DefEq G D g A B R ->  forall x A' R', binds x (Tm A' R') G ->

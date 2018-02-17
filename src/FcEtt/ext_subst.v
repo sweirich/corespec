@@ -205,7 +205,7 @@ Ltac eapply_E_subst :=
           eapply E_App      |
           eapply E_IApp     |
           eapply E_CApp     |
-          eapply E_IsoConv  |
+(*          eapply E_IsoConv  | *)
           eapply E_AppCong  |
           eapply E_IAppCong |
           eapply E_CAppCong |
