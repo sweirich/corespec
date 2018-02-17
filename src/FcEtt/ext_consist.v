@@ -53,19 +53,24 @@ Qed.
 
 
 Lemma a_Pi_head : forall W b A R rho B R',
-    Par W (a_Pi rho A R B) b R' -> exists A' B' L,
-      b = a_Pi rho A' R B' /\ Par W A A' R /\
+    Par W (a_Pi rho A R B) b R' -> 
+    R' <> Phm ->
+    exists A' B' L,
+      b = a_Pi rho A' R B' /\ Par W A A' R' /\
       (forall x, x `notin` L -> 
         Par([(x,R)] ++ W) (open_tm_wrt_tm B (a_Var_f x)) 
                                (open_tm_wrt_tm B' (a_Var_f x)) R').
 Proof.
-  intros. inversion H. subst.
-  inversion H0. subst.  exists A , B, L. split; auto.
-  subst. exists A', B', L.  split; auto.
+  intros.
+  inversion H; inversion H1; subst.
+  exists A , B, L. repeat split; eauto.
+  exists A', B', L.  split; auto.
+  contradiction.
 Qed.
 
 Lemma Par_Abs_inversion : forall W a b rho R R',
     Par W (a_UAbs rho R a) b R' ->
+    R' <> Phm ->
     exists a', b = (a_UAbs rho R a') /\
           forall x, x `notin` fv_tm_tm_tm a \u fv_tm_tm_tm a' \u dom W ->
          Par ([(x,R)] ++ W) (open_tm_wrt_tm a (a_Var_f x)) (open_tm_wrt_tm a' (a_Var_f x)) R'.
@@ -89,8 +94,10 @@ Proof.
     eapply subst2. simpl_env.
     eapply par_app_rctx; simpl_env.
     solve_uniq. auto. econstructor. solve_uniq. auto. auto.
+  + contradiction.
 Qed.
 
+(*
 Lemma Par_Cong_inversion : forall W a1 a2 R R',
       Par W (a_Conv a1 R' g_Triv) a2 R ->
       exists a3, a2 = a_Conv a3 R' g_Triv.
@@ -98,7 +105,7 @@ Proof. intros. inversion H; subst.
        - exists a1; auto.
        - exists a3; auto.
        - exists a3; auto.
-Qed.
+Qed. *)
 
 (* -------------------------------------------------------------------------------- *)
 
@@ -167,6 +174,12 @@ Ltac use_size_induction_open a0 x ac Par1 Par2 :=
     clear h0; clear h1; clear EQ1; clear EQ2
     end.
 
+Lemma eq_dec_role : forall (R1 R2:role), {R1 = R2} + {R1 <> R2}.
+  decide equality.
+Qed.
+Instance eq_dec_role_inst : EqDec_eq role := eq_dec_role.
+
+
 
 Lemma confluence_size : forall n a, size_tm a <= n ->  forall W a1 R, Par W a a1 R -> forall a2, Par W a a2 R -> exists b, Par W a1 b R /\ Par W a2 b R.
 Proof.
@@ -178,6 +191,8 @@ Proof.
   inversion P1; inversion P2; subst.
   all: try solve [invert_equality].
 
+
+
   (* 63 subgoals *)
   (* TODO: there may be a way to check the number of subgoals (and guard against a innvalid number) *)
 
@@ -186,11 +201,15 @@ Proof.
   all: try invert_syntactic_equality.
   all: simpl in SZ; destruct n; try solve [ inversion SZ ].
 
+  all: try (destruct (R == Phm); subst). 
+  all: try solve 
+      [exists a_Bullet; split; eapply Par_Bullet; eauto using Par_erased_tm_snd].
+
   - (* two betas *)
     use_size_induction a0 ac Par1 Par2.
     use_size_induction b bc Par3 Par4.
-    destruct (Par_Abs_inversion Par1) as [ax [EQ h0]]; subst;
-    destruct (Par_Abs_inversion Par2) as [ay [EQ2 h1]]; subst.
+    destruct (Par_Abs_inversion Par1) as [ax [EQ h0]]; subst; auto;
+    destruct (Par_Abs_inversion Par2) as [ay [EQ2 h1]]; subst; auto.
     inversion EQ2. subst.
     exists (open_tm_wrt_tm ay bc).
     split. pick fresh x; eapply open2. auto. eauto. eauto.
@@ -198,22 +217,22 @@ Proof.
   - (* app beta / app cong *)
     use_size_induction a0 ac Par1 Par2.
     use_size_induction b bc Par3 Par4.
-    destruct (Par_Abs_inversion Par1) as [ax [EQ h0]]; subst.
+    destruct (Par_Abs_inversion Par1) as [ax [EQ h0]]; subst; auto.
     exists (open_tm_wrt_tm ax bc). inversion Par1; subst.
      + split. pick fresh x; eapply open2. auto. eauto. eauto.
        eapply Par_Beta; eauto.
      + split. pick fresh x; eapply open2. auto. eauto. eauto.
        eapply Par_Beta; eauto.
-  - (* beta / push *)
+(*  - (* beta / push *)
     use_size_induction a0 ac Par1 Par2.
     inversion Par1; subst; inversion Par2.
   - (* beta / push combine *)
     use_size_induction a0 ac Par1 Par2.
-    inversion Par1; subst; inversion Par2.
+    inversion Par1; subst; inversion Par2. *)
   - (* app cong / app beta *)
     use_size_induction a0 ac Par1 Par2.
     use_size_induction b bc Par3 Par4.
-    destruct (Par_Abs_inversion Par2) as [ax [EQ h0]]; subst.
+    destruct (Par_Abs_inversion Par2) as [ax [EQ h0]]; subst; auto.
     exists (open_tm_wrt_tm ax bc). inversion Par2; subst.
      + split. eapply Par_Beta; eauto.
        pick fresh x; eapply open2. auto. eauto. eauto.
@@ -223,7 +242,7 @@ Proof.
     use_size_induction a0 ac Par1 Par2.
     use_size_induction b bc Par3 Par4.
     exists (a_App ac rho R1 bc). split; auto.
-  - (* app / push *)
+(*  - (* app / push *)
     use_size_induction a0 ac Par1 Par2.
     use_size_induction b bc Par3 Par4.
     inversion Par2; subst.
@@ -249,7 +268,7 @@ Proof.
        split. apply Par_PushCombine; auto. econstructor. econstructor; auto.
      + exists (a_Conv (a_App a2 Rel R1 (a_Conv b4 R3 g_Triv)) R3 g_Triv).
        split. apply Par_PushCombine; auto. apply Par_Combine.
-       apply Par_PushCombine; auto.
+       apply Par_PushCombine; auto. *)
   - (* two cbetas *)
     use_size_induction a0 ac Par1 Par2. inversion Par1; subst.
     + exists (open_tm_wrt_co a' g_Triv); split.
@@ -260,6 +279,7 @@ Proof.
       pick fresh c. eapply open3 with (c := c) (L := L); eauto.
       inversion Par2; subst. econstructor. eapply Par_erased_tm_snd. eauto.
       pick fresh c. eapply open3 with (c := c) (L := L); eauto.
+    + contradiction.
   - (* cbeta / capp cong *)
     use_size_induction a0 ac Par1 Par2.
     inversion Par1; subst.
@@ -269,9 +289,10 @@ Proof.
     + exists (open_tm_wrt_co a'1 g_Triv). split.
       pick fresh c. eapply open3 with (c := c) (L := L); eauto.
       econstructor. eauto.
-  - (* cbeta / cpush *)
+    + contradiction.
+(*  - (* cbeta / cpush *)
     use_size_induction a0 ac Par1 Par2.
-    inversion Par1; subst; inversion Par2.
+    inversion Par1; subst; inversion Par2. *)
   - (* capp cong / cbeta *)
     use_size_induction a0 ac Par1 Par2.
     inversion Par2; subst.
@@ -279,10 +300,11 @@ Proof.
       econstructor. eapply Par_erased_tm_snd. eauto.
     + exists (open_tm_wrt_co a'1 g_Triv). split. econstructor. eauto.
       pick fresh c. eapply open3 with (c := c) (L := L); eauto.
+    + contradiction.
   - (* capp cong / capp cong *)
     use_size_induction a0 ac Par1 Par2.
     exists (a_CApp ac g_Triv). auto.
-  - (* capp / cpush *)
+(*  - (* capp / cpush *)
     use_size_induction a0 ac Par1 Par2.
     inversion Par2; subst.
     + exists (a_Conv (a_CApp a4 g_Triv) R1 g_Triv). split.
@@ -290,7 +312,7 @@ Proof.
     + exists (a_Conv (a_CApp a2 g_Triv) R1 g_Triv). split.
       econstructor. auto. econstructor. econstructor. eauto.
     + exists (a_Conv (a_CApp a2 g_Triv) R1 g_Triv). split.
-      econstructor. auto. eapply Par_Combine. econstructor. eauto.
+      econstructor. auto. eapply Par_Combine. econstructor. eauto. *)
   - (* abs cong / abs cong *)
     pick fresh x.
     use_size_induction_open a0 x ac Par1 Par2.
@@ -320,7 +342,7 @@ Proof.
     eapply binds_unique; eauto using uniq_toplevel.
     inversion E. subst.
     exists a2. split; econstructor; eapply Par_erased_tm_snd; eauto.
-  - (* cong / cong *)
+(*  - (* cong / cong *)
    use_size_induction a0 ac Par1 Par2.
    exists (a_Conv ac R0 g_Triv). split; constructor; auto.
   - (* cong / combine *)
@@ -539,7 +561,7 @@ Proof.
         * exists (a_Conv (a_CApp a2 g_Triv) R0 g_Triv).
           split. apply Par_Combine. econstructor; eauto. econstructor; eauto.
         * exists (a_Conv (a_CApp a2 g_Triv) R0 g_Triv).
-          split; apply Par_Combine; econstructor; eauto.
+          split; apply Par_Combine; econstructor; eauto. *)
 Qed.
 
 Lemma confluence : forall W a a1 R, Par W a a1 R -> 
@@ -561,10 +583,11 @@ Lemma multipar_lc2 : forall W a b R, multipar W a b R -> lc_tm b.
 Proof. intros. eapply erased_lc; eapply multipar_erased_tm_snd; eauto.
 Qed.
 
-Lemma multipar_Star : forall W A B R, multipar W A B R -> A = a_Star -> B = a_Star.
+Lemma multipar_Star : forall W A B R, multipar W A B R -> R <> Phm -> A = a_Star -> B = a_Star.
 Proof.
-  intros W A B R H. induction H. auto.
+  intros W A B R H NE. induction H. auto.
   inversion H; intro K; auto; try inversion K.
+  subst; contradiction.
 Qed.
 
 
@@ -589,43 +612,50 @@ Proof.
 Qed.
 *)
 
-Lemma multipar_Pi : forall W rho A B R', multipar W A B R' -> 
+Lemma multipar_Pi : forall W rho A B R', multipar W A B R' -> R' <> Phm ->
       forall A1 R A2, A = a_Pi rho A1 R A2 -> exists B1 B2, B = (a_Pi rho B1 R B2).
 Proof.
-intros W rho A B R' H. induction H. intros. subst. exists A1, A2. auto.
+intros W rho A B R' H H0. induction H. intros. subst. exists A1, A2. auto.
 intros. subst.
-inversion H; subst; destruct (IHmultipar _ _ _ eq_refl) as [B1 [B2 EQ]]; auto;
-exists B1, B2; auto.
-Qed.
+inversion H; subst; try contradiction;
+destruct (IHmultipar H0 _ _ _ eq_refl) as (B1 & B2 & EQ); auto;
+  exists B1, B2; auto.
+Qed. 
 
-Lemma multipar_CPi : forall W A C R', multipar W A C R' -> 
+Lemma multipar_CPi : forall W A C R', multipar W A C R' -> R' <> Phm ->
         forall A1 A2 A3 R B, A = a_CPi (Eq A1 A2 A3 R) B -> exists B1 B2 B3 C2,
         C = (a_CPi (Eq B1 B2 B3 R) C2).
 Proof.
-  intros W A C R' H. induction H; intros; subst.
+  intros W A C R' H NE. induction H; intros; subst.
   exists A1, A2, A3, B. auto.
-  inversion H; subst; destruct (IHmultipar _ _ _ _ _ eq_refl) as [B1 [B2 [C2 EQ]]];
+  inversion H; subst; try contradiction;
+    destruct (IHmultipar NE _ _ _ _ _ eq_refl) as [B1 [B2 [C2 EQ]]];
     auto; exists B1, B2, C2; auto.
 Qed.
 
 Lemma multipar_UAbs : forall W rho R a b R',
     multipar W (a_UAbs rho R a) b R' ->
+    R' <> Phm ->
     (exists b2, b = (a_UAbs rho R b2)).
 Proof.
-  intros W rho R a b R' H. dependent induction H.
+  intros W rho R a b R' H h0. dependent induction H.
   - exists a. auto.
-  - destruct (Par_Abs_inversion H) as [a' [EQ _]]; subst.
+  - destruct (Par_Abs_inversion H) as [a' [EQ h1]]; subst; auto. clear H.
     destruct (IHmultipar _ _ a' eq_refl) as [b2 EQ2]; subst; clear IHmultipar.
+    auto.
     exists b2. auto.
 Qed.
 
-Lemma multipar_CAbs : forall W A C R', multipar W A C R' -> 
-        forall A1 A2 A3 R B, A = a_CAbs (Eq A1 A2 A3 R) B -> exists B1 B2 B3 C2,
+Lemma multipar_CAbs : forall W A C R', 
+    multipar W A C R' -> 
+    R' <> Phm ->
+    forall A1 A2 A3 R B, A = a_CAbs (Eq A1 A2 A3 R) B -> exists B1 B2 B3 C2,
         C = (a_CAbs (Eq B1 B2 B3 R) C2).
 Proof.
-  intros W A C R' H. induction H; intros; subst.
+  intros W A C R' H NE. induction H; intros; subst.
   exists A1, A2, A3, B. auto.
-  inversion H; subst; destruct (IHmultipar _ _ _ _ _ eq_refl) as [B1 [B2 [C2 EQ]]];
+  inversion H; subst; try contradiction;
+    destruct (IHmultipar NE _ _ _ _ _ eq_refl) as [B1 [B2 [C2 EQ]]];
     auto; exists B1, B2, C2; auto.
 Qed.
 
@@ -644,7 +674,7 @@ Qed.
 Lemma uniq_Path : forall F F' a R, Path F a R -> Path F' a R -> F = F'.
 Proof. intros. generalize dependent F'. induction H; intros; auto.
        inversion H1; subst. auto. inversion H1; subst. eauto.
-       inversion H0; subst. eauto. inversion H0; subst. eauto.
+       inversion H0; subst. eauto. 
 Qed.
 
 Lemma decide_Path : forall W a R, erased_tm W a R -> (exists F, Path F a R) \/
@@ -659,19 +689,21 @@ Proof.
     right. intros. intro. inversion H; subst. have Q: (Ax a A R = Ax a0 A0 R1).
     eapply binds_unique; eauto using uniq_toplevel.
     inversion Q. subst. contradiction. left. exists F. eauto.
-  - inversion E; subst. apply IHa in H4. destruct H4 as [[F h0]|n].
+(*  - inversion E; subst. apply IHa in H4. destruct H4 as [[F h0]|n].
     left. exists F. eauto. right. intros. intro. inversion H; subst.
-    pose (Q := n F). contradiction.
+    pose (Q := n F). contradiction. *)
   - inversion E; subst. apply IHa in H3. destruct H3 as [[F h0]|n].
     left. exists F. eauto. right. intros. intro. inversion H; subst.
     pose (Q := n F). contradiction.
 Qed.
 
-Lemma Par_Path : forall F a R W a', Path F a R -> Par W a a' R -> Path F a' R.
-Proof. intros. generalize dependent a'. induction H; intros.
-       - inversion H1; subst. eauto. have E: (Ax a A R1 = Ax a' A0 R2).
+Lemma Par_Path : forall F a R W a', R <> Phm -> Path F a R -> Par W a a' R -> Path F a' R.
+Proof. intros. generalize dependent a'. induction H0; intros.
+       - inversion H2; subst. eauto. have E: (Ax a A R1 = Ax a' A0 R2).
          eapply binds_unique; eauto using uniq_toplevel.
-         inversion E. subst. contradiction.
+         inversion E. subst. contradiction. contradiction.
+Admitted. 
+(* 
        - inversion H1; subst. eauto. apply IHPath in H9.
          inversion H9. apply IHPath in H9. econstructor; auto.
          apply Par_erased_tm_snd in H10. eapply erased_lc; eauto.
@@ -687,17 +719,20 @@ Proof. intros. generalize dependent a'. induction H; intros.
          apply IHPath in H3. inversion H3; subst. econstructor; auto.
        - inversion H0; subst. eauto. apply IHPath in H6. eauto.
          apply IHPath in H6. auto.
-Qed.
+Qed. *)
 
-Lemma multipar_Path :  forall F a R W a', Path F a R -> multipar W a a' R ->
+Lemma multipar_Path :  forall F a R W a', R<> Phm -> Path F a R -> multipar W a a' R ->
                        Path F a' R.
+Admitted. 
+(*
 Proof. intros. induction H0; auto. apply IHmultipar. eapply Par_Path; eauto.
-Qed.
+Qed. *)
 
 Lemma multipar_Path_join_head : forall F1 F2 W a1 a2 c R,
+      R <> Phm ->
       multipar W a1 c R -> multipar W a2 c R ->
       Path F1 a1 R -> Path F2 a2 R -> F1 = F2.
-Proof. intros. eapply multipar_Path in H; eauto.
+Proof. intros F1 F2 W a1 a2 c R ne. intros. eapply multipar_Path in H; eauto.
        eapply multipar_Path in H0; eauto. eapply uniq_Path; eauto.
 Qed.
 
