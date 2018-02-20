@@ -54,10 +54,6 @@ Proof.
     econstructor; eauto.
     instantiate (1 := L \u singleton x) => x0 h0.
     rewrite tm_subst_tm_tm_open_tm_wrt_tm_var; auto.
-  - intros L R R1 a v H H2 b x H1.
-    econstructor; eauto.
-    instantiate (1 := L \u singleton x) => x0 h0.
-    rewrite tm_subst_tm_tm_open_tm_wrt_tm_var; auto.
   - intros. econstructor. apply tm_subst_tm_tm_lc_tm; auto.
     eapply Path_subst_tm; eauto. eauto.
   - intros. econstructor. eapply Path_subst_tm; eauto. eauto.
@@ -81,14 +77,14 @@ Qed.
 
 Lemma Value_UAbsIrrel_exists : ∀ x (a : tm) R R1,
     x `notin` fv_tm a
-    → (Value R (open_tm_wrt_tm a (a_Var_f x)))
+    → (CoercedValue R (open_tm_wrt_tm a (a_Var_f x)))
     → Value R (a_UAbs Irrel R1 a).
 Proof.
   intros.
   eapply (Value_UAbsIrrel ({{x}})); eauto.
   intros.
   rewrite (tm_subst_tm_tm_intro x); eauto.
-  eapply Value_tm_subst_tm_tm; auto.
+  eapply CoercedValue_tm_subst_tm_tm; auto.
 Qed.
 (*
 Lemma Value_AbsIrrel_exists : ∀ x (A a : tm) R R1,
@@ -128,15 +124,6 @@ Proof.
     move: (H y ltac:(eauto) b x H0) => h0.
     rewrite co_subst_co_tm_open_tm_wrt_tm in h0.
     simpl in h0. auto. auto.
-
-  - intros.
-    pick fresh y.
-    eapply Value_UAbsIrrel_exists with (x:=y).
-    eapply fv_tm_tm_tm_co_subst_co_tm_notin; eauto.
-    move: (H y ltac:(eauto) b x H0) => h0.
-    rewrite co_subst_co_tm_open_tm_wrt_tm in h0.
-    simpl in h0. auto. auto.
-
   - intros. econstructor. apply co_subst_co_tm_lc_tm; auto.
     eapply Path_subst_co; eauto. eauto.
   - intros. econstructor. eapply Path_subst_co; eauto. eauto.
