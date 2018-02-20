@@ -29,14 +29,14 @@ Definition relflag_mutrec :=
 Scheme role_ind' := Induction for role Sort Prop.
 
 Definition role_mutind :=
-  fun H1 H2 H3 H4 =>
-  role_ind' H1 H2 H3 H4.
+  fun H1 H2 H3 =>
+  role_ind' H1 H2 H3.
 
 Scheme role_rec' := Induction for role Sort Set.
 
 Definition role_mutrec :=
-  fun H1 H2 H3 H4 =>
-  role_rec' H1 H2 H3 H4.
+  fun H1 H2 H3 =>
+  role_rec' H1 H2 H3.
 
 Scheme tm_ind' := Induction for tm Sort Prop
   with brs_ind' := Induction for brs Sort Prop
@@ -220,7 +220,6 @@ Fixpoint size_role (R1 : role) {struct R1} : nat :=
   match R1 with
     | Nom => 1
     | Rep => 1
-    | Phm => 1
   end.
 
 Fixpoint size_tm (a1 : tm) {struct a1} : nat :=

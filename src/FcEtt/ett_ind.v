@@ -339,7 +339,7 @@ Ltac ext_induction CON :=
       pose CON :=  E_CAbs       |
       pose CON :=  E_CApp       |
       pose CON :=  E_Fam        |
-      pose CON :=  E_TyCast     |
+(*      pose CON :=  E_TyCast     | *)
       pose CON :=  E_Wff        |
       pose CON :=  E_PropCong   |
       pose CON :=  E_IsoConv    |
@@ -363,7 +363,7 @@ Ltac ext_induction CON :=
       pose CON :=  E_Cast       |
       pose CON :=  E_EqConv     |
       pose CON :=  E_IsoSnd     |
-      pose CON :=  E_CastCong   |
+(*      pose CON :=  E_CastCong   | *)
       pose CON :=  E_Empty      |
       pose CON :=  E_ConsTm     |
       pose CON :=  E_ConsCo     ].
@@ -741,7 +741,7 @@ Lemma nom_bot : forall R, SubRole R Nom -> R = Nom.
 Proof. intros. dependent induction H; auto.
 Qed.
 
-Lemma phm_top : forall R, SubRole Phm R -> R = Phm.
+Lemma phm_top : forall R, SubRole Rep R -> R = Rep.
 Proof. intros. dependent induction H; auto.
 Qed.
 
@@ -751,6 +751,4 @@ Qed.
 
 Lemma sub_dec : forall R1 R2, SubRole R1 R2 \/ ~(SubRole R1 R2).
 Proof. intros. destruct R1, R2; auto. right. apply rep_nsub_nom.
-       right. intro. apply nom_bot in H. inversion H.
-       right. intro. apply phm_top in H. inversion H.
 Qed.

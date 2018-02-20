@@ -42,7 +42,7 @@ Qed.
 Lemma invert_a_Pi:
   forall G rho A0 A B0 R R',
     Typing G (a_Pi rho A0 R B0) A R' ->
-    DefEq G (dom G) A a_Star a_Star R' /\ 
+    DefEq G (dom G) A a_Star a_Star Rep /\ 
       (exists L, forall x, x `notin` L -> 
         Typing ([(x, Tm A0 R)] ++ G) (open_tm_wrt_tm B0 (a_Var_f x)) a_Star R') 
           /\ Typing G A0 a_Star R.
@@ -51,8 +51,6 @@ Proof.
   dependent induction h1; auto; try done.
   - pose P := IHh1 rho A0 B0 R eq_refl.
     inversion P as [H1 [H2 H3]]. repeat split; auto.
-    inversion H2 as [L H5]. 
-    eapply E_Sub; eauto.
     inversion H2 as [L H5]. 
     exists L. intros x Fr. eapply E_SubRole; eauto.
   - repeat split; eauto.
@@ -63,14 +61,12 @@ Qed.
 
 Lemma invert_a_CPi: forall G phi A B0 R,
     Typing G (a_CPi phi B0) A R ->
-      DefEq G (dom G) A a_Star a_Star R /\ (exists L, forall c, c `notin` L -> Typing ([(c, Co phi)] ++ G) (open_tm_wrt_co B0 (g_Var_f c) ) a_Star R)  /\ PropWff G phi.
+      DefEq G (dom G) A a_Star a_Star Rep /\ (exists L, forall c, c `notin` L -> Typing ([(c, Co phi)] ++ G) (open_tm_wrt_co B0 (g_Var_f c) ) a_Star R)  /\ PropWff G phi.
 Proof.
   intros G phi A B0 R h1.
   dependent induction h1; eauto 2; try done.
   - destruct (IHh1 phi B0) as [h2 [L h3]]; first by done.
     repeat split; eauto 1. inversion L as [L0 h4].
-    eapply E_Sub; eauto.
-    inversion L as [L0 h4].
     exists L0. intros. eapply E_SubRole. apply H. auto.
   - destruct (IHh1_1 phi B0) as [h2 [L h3]]; first by done.
     repeat split; eauto 1 using Typing_Ctx. 
@@ -82,7 +78,7 @@ Qed.
 
 Lemma invert_a_Fam : forall G F A R,
     Typing G (a_Fam F) A R ->
-    exists a B R', DefEq G (dom G) A B a_Star R /\
+    exists a B R', DefEq G (dom G) A B a_Star Rep /\
            binds F (Ax a B R') toplevel /\ Typing nil B a_Star R.
 Proof.
   intros G F A R H. dependent induction H.
@@ -100,7 +96,8 @@ Proof.
 Qed.
 
 
-Lemma invert_a_Star: forall A G R, Typing G a_Star A R -> DefEq G (dom G) A a_Star a_Star R.
+Lemma invert_a_Star: forall A G R, Typing G a_Star A R -> 
+                              DefEq G (dom G) A a_Star a_Star Rep.
 Proof.
   intros A G R H.
   dependent induction H; subst; eauto 2; try done.
@@ -110,7 +107,10 @@ Qed.
 
 
 Lemma invert_a_Var :
-  forall G x A R, Typing G (a_Var_f x) A R -> exists A' R', binds x (Tm A' R') G /\ DefEq G (dom G) A A' a_Star R /\ SubRole R' R.
+  forall G x A R, Typing G (a_Var_f x) A R -> 
+             exists A' R', binds x (Tm A' R') G 
+                      /\ DefEq G (dom G) A A' a_Star Rep
+                      /\ SubRole R' R.
 Proof.
   intros G x A R H. dependent induction H. 
   - destruct (IHTyping x eq_refl) as (A0 & R0 & h1 & h2 & h3).

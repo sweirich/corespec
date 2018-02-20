@@ -161,16 +161,16 @@ Proof.
   intros W c g a R lc H. generalize dependent g.
   induction H; intros; simpl; eauto.
   - eapply erased_a_Abs with (L := L).
-     intros x0 H1.
+     intros x0 h1.
      rewrite co_subst_co_tm_open_tm_wrt_tm_var; auto 2.
    - eapply erased_a_Pi with (L := L); eauto.
-     intros x0 H2.
+     intros x0 h2.
      rewrite co_subst_co_tm_open_tm_wrt_tm_var; auto 2.
    - eapply erased_a_CPi with (L := union L (singleton c)); eauto.
-     intros c0 H4.
+     intros c0 h4.
      rewrite co_subst_co_tm_open_tm_wrt_co_var; auto 2.
    - eapply erased_a_CAbs with (L := union L (singleton c)); eauto.
-     intros c0 H4.
+     intros c0 h4.
      rewrite co_subst_co_tm_open_tm_wrt_co_var; auto 2.
 Qed.
 
@@ -180,8 +180,10 @@ Lemma erased_Pi_some_any: forall W x rho A R1 B R2,
        x `notin` fv_tm_tm_tm B ->
        erased_tm W A R1 ->
        erased_tm ([(x,R1)] ++ W) (open_tm_wrt_tm B (a_Var_f x)) R2 ->
+       SubRole R1 R2 ->
        erased_tm W (a_Pi rho A R1 B) R2.
-Proof. intros. apply (erased_a_Pi (union (singleton x) (dom W))); eauto.
+Proof. intros. apply (erased_a_Pi (union (singleton x) (dom W)));
+                 eauto using erased_sub.
        intros. rewrite (tm_subst_tm_tm_intro x B (a_Var_f x0)); auto.
        replace ([(x0,R1)] ++ W) with (nil ++ [(x0,R1)] ++ W); auto.
        assert (uniq ([(x,R1)] ++ W)). {eapply rctx_uniq; eauto. }
@@ -191,10 +193,11 @@ Qed.
 
 Lemma typing_erased_mutual:
     (forall G b A R, Typing G b A R -> erased_tm (ctx_to_rctx G) b R) /\
-    (forall G0 phi (H : PropWff G0 phi),
-        forall A B T R, phi = Eq A B T R -> erased_tm (ctx_to_rctx G0) A R /\ 
-        erased_tm (ctx_to_rctx G0) B R /\ erased_tm (ctx_to_rctx G0) T R) /\
-     (forall G0 D p1 p2 (H : Iso G0 D p1 p2), True ) /\
+    (forall G0 phi R (H : PropWff G0 phi R),
+        forall A B T R', phi = Eq A B T R' -> erased_tm (ctx_to_rctx G0) A R' /\ 
+        erased_tm (ctx_to_rctx G0) B R' /\ erased_tm (ctx_to_rctx G0) T R'
+        /\ SubRole R' R) /\
+     (forall G0 D p1 p2 R (H : Iso G0 D p1 p2 R), True ) /\
      (forall G0 D A B T R (H : DefEq G0 D A B T R), True) /\
      (forall G0 (H : Ctx G0), True).
 Proof. 
@@ -202,17 +205,10 @@ Proof.
   simpl; auto.
   all : try solve [inversion H2; subst; auto].
   all : try solve [econstructor; eauto].
-  - eapply erased_sub; eauto.
-  - econstructor. apply ctx_to_rctx_uniq; eauto.
-  - econstructor. apply ctx_to_rctx_uniq; eauto. 
-    eapply ctx_to_rctx_binds_tm; eauto. auto.
-  - econstructor; eauto. econstructor. apply ctx_to_rctx_uniq.
-    eapply Typing_Ctx; eauto.
-  - destruct phi.
-    apply (@erased_a_CPi L); try solve [apply (H0 a b A R0); auto]; auto;
-    pose H2 := H0 a b A R0 eq_refl; inversion H2 as [H21 [H22 H23]]; econstructor; eassumption.
-  - econstructor. apply ctx_to_rctx_uniq; auto. eauto.
-  - econstructor; eauto. apply ctx_to_rctx_uniq; eauto.
+  all : try solve [eauto using erased_sub].
+  all : try solve [econstructor; eauto using ctx_to_rctx_uniq, ctx_to_rctx_binds_tm].
+  - destruct phi. move: (H0 a b A R0 eq_refl) => ?. split_hyp. clear H0.
+    apply (@erased_a_CPi L); eauto.
 Qed.
 
 
