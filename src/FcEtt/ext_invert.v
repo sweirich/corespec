@@ -95,9 +95,11 @@ Proof.
   - exists a, A, R.
     repeat split; eauto 2.
     eapply E_Refl.
+Admitted.
+(*
     eapply Typing_weakening with (F:=nil)(E:=G)(G:=nil) in H1.
     simpl_env in H1. auto. auto. simpl_env. auto.
-Qed.
+Qed. *)
 
 
 Lemma invert_a_Star: forall A G R, Typing G a_Star A R -> DefEq G (dom G) A a_Star a_Star Rep.
@@ -109,9 +111,31 @@ Proof.
 Qed.
 
 
+(* Example:
+
+   G,x:Type/Phm, y:x/Nom |- y : x / Rep
+
+   wtp:   
+        y : x / Nom \in G
+
+        Nom <= Rep
+
+        x:Type/Phm |= x = x : Type / Rep   (but that doesn't seem sound)
+        
+        x:Type/Phm |= x = x : Type / Phm   (but that is useless....) 
+
+        Rep(x:Type/Phm) |= x = x : Type / Rep 
+
+
+        
+
+*)
+
 Lemma invert_a_Var :
   forall G x A R, Typing G (a_Var_f x) A R -> 
-             exists A' R', binds x (Tm A' R') G /\ DefEq G (dom G) A A' a_Star Rep /\ SubRole R' R.
+             exists A' R', binds x (Tm A' R') G /\
+                      DefEq G (dom G) A A' a_Star Rep /\ 
+                      SubRole R' R.
 Proof.
   intros G x A R H. dependent induction H. 
   - destruct (IHTyping x eq_refl) as (A0 & R0 & h1 & h2 & h3).

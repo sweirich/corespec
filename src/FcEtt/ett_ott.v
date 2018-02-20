@@ -1218,7 +1218,7 @@ with DefEq : context -> available_props -> tm -> tm -> tm -> role -> Prop :=    
       AtomSetImpl.In  c   D  ->
      DefEq G D a b A R
  | E_Refl : forall (G:context) (D:available_props) (a A:tm) (R:role),
-     Typing G a A Phm ->
+     Typing G a A R ->
      DefEq G D a a A R
  | E_Sym : forall (G:context) (D:available_props) (a b A:tm) (R:role),
      DefEq G D b a A R ->

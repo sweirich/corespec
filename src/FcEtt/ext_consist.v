@@ -750,7 +750,7 @@ Inductive not_Path_head_form : tm -> Prop :=
    | not_head_CPi : forall phi b, not_Path_head_form (a_CPi phi b).
 Hint Constructors not_Path_head_form.
 
-Lemma Path_head_form_Path_consist : forall W F a b R, Path F a R ->
+Lemma Path_head_form_Path_consist : forall W F a b R, R <> Phm -> Path F a R ->
                        multipar W a b R -> consistent a b R.
 Proof. intros. eapply consistent_a_Path; eauto. eapply multipar_Path; eauto.
 Qed.
@@ -762,24 +762,25 @@ Proof. intros. eapply consistent_a_Step_L. auto.
        pose (Q := H1 F); contradiction.
 Qed.
 
-Lemma Path_head_form_consist : forall W a b R, Path_head_form a ->
+Lemma Path_head_form_consist : forall W a b R, R <> Phm -> Path_head_form a ->
                 multipar W a b R -> consistent a b R.
-Proof. intros. inversion H; subst.
-       all: (assert (H' := H0); apply multipar_erased_tm_fst in H';
+Proof. intros. inversion H0; subst.
+       all: (assert (H' := H1); apply multipar_erased_tm_fst in H';
        apply decide_Path in H'; inversion H' as [[F0 Q]|n]).
        all: try(eapply Path_head_form_Path_consist; eauto; fail).
-       all: try(apply multipar_lc2 in H0;
+       all: try(apply multipar_lc2 in H1;
             eapply Path_head_form_no_Path_consist; eauto; fail).
 Qed.
 
-Lemma Path_head_form_join_consist : forall W a b R, joins W a b R ->
+Lemma Path_head_form_join_consist : forall W a b R, R <> Phm -> joins W a b R ->
              Path_head_form a -> Path_head_form b -> consistent a b R.
-Proof. intros. destruct H as (t & MSL & MSR).
+Proof. intros. destruct H0 as (t & MSL & MSR).
        assert (P := MSL); assert (Q := MSR).
        apply multipar_erased_tm_fst in P. apply multipar_erased_tm_fst in Q.
        apply decide_Path in P. apply decide_Path in Q.
        inversion P as [[F1 S]|n]. inversion Q as [[F2 S']|n'].
-       assert (F1 = F2). eapply multipar_Path_join_head. eapply MSL.
+       assert (F1 = F2). eapply multipar_Path_join_head. eauto 1.
+       eapply MSL.
        eapply MSR. auto. auto. subst. eauto.
        apply multipar_lc1 in MSL. apply consist_sym.
        eapply Path_head_form_no_Path_consist; eauto.
@@ -787,28 +788,28 @@ Proof. intros. destruct H as (t & MSL & MSR).
 Qed.
 
 
-Lemma Path_head_not_head_join_consist : forall W a b R, joins W a b R ->
+Lemma Path_head_not_head_join_consist : forall W a b R, R <> Phm -> joins W a b R ->
              Path_head_form a -> not_Path_head_form b -> consistent a b R.
-Proof. intros. destruct H as (t & MSL & MSR).
+Proof. intros. destruct H0 as (t & MSL & MSR).
     assert (P := MSL). apply multipar_erased_tm_fst in P.
     apply decide_Path in P. inversion P as [[F S]|n].
-    eapply multipar_Path in MSL; eauto. inversion H1; subst.
-    destruct (multipar_Pi MSR eq_refl) as (b1 & b2 & Q); subst.
+    eapply multipar_Path in MSL; eauto. inversion H2; subst.
+    destruct (multipar_Pi MSR H eq_refl) as (b1 & b2 & Q); subst.
     inversion MSL. destruct phi; subst.
-    destruct (multipar_CPi MSR eq_refl) as (b1 & b2 & B & C & Q). subst.
+    destruct (multipar_CPi MSR H eq_refl) as (b1 & b2 & B & C & Q). subst.
     inversion MSL. apply multipar_lc1 in MSR.
     apply Path_head_form_no_Path_consist; eauto.
 Qed.
 
-Lemma Path_not_head_head_join_consist : forall W a b R, joins W a b R ->
+Lemma Path_not_head_head_join_consist : forall W a b R, R <> Phm -> joins W a b R ->
              not_Path_head_form a -> Path_head_form b -> consistent a b R.
-Proof. intros. destruct H as (t & MSL & MSR).
+Proof. intros. destruct H0 as (t & MSL & MSR).
     assert (Q := MSR). apply multipar_erased_tm_fst in Q.
     apply decide_Path in Q. inversion Q as [[F S]|n].
-    eapply multipar_Path in MSR; eauto. inversion H0; subst.
-    destruct (multipar_Pi MSL eq_refl) as (b1 & b2 & U); subst.
+    eapply multipar_Path in MSR; eauto. inversion H1; subst.
+    destruct (multipar_Pi MSL H eq_refl) as (b1 & b2 & U); subst.
     inversion MSR. destruct phi; subst.
-    destruct (multipar_CPi MSL eq_refl) as (b' & b2 & B & C & U). subst.
+    destruct (multipar_CPi MSL H eq_refl) as (b' & b2 & B & C & U). subst.
     inversion MSR. apply multipar_lc1 in MSL.
     apply consist_sym. apply Path_head_form_no_Path_consist; eauto.
 Qed.
@@ -829,8 +830,8 @@ Qed.
 
 (* Proof that joinability implies consistency. *)
 
-Ltac step_left := eapply consistent_a_Step_R; [eapply joins_lc_fst; eauto |intro N; inversion N; subst; inversion H]; fail.
-Ltac step_right := eapply consistent_a_Step_L; [eapply joins_lc_snd; eauto | intro N; inversion N; subst; inversion H]; fail.
+Ltac step_left := eapply consistent_a_Step_R; [eapply joins_lc_fst; eauto |intro N; inversion N; subst; inversion H0]; fail.
+Ltac step_right := eapply consistent_a_Step_L; [eapply joins_lc_snd; eauto | intro N; inversion N; subst; inversion H0]; fail.
 
 (* look for a multipar involving a head form and apply the appropriate lemma for that
    head form. Note: for paths, the lemma has already been applied so we only need
@@ -849,10 +850,10 @@ Ltac multipar_step :=
     apply multipar_Const in SIDE; auto; rename SIDE into EQ *)
   end.
 
-Lemma join_consistent : forall W a b R, joins W a b R -> consistent a b R.
+Lemma join_consistent : forall W a b R, R <> Phm -> joins W a b R -> consistent a b R.
 Proof.
-  intros. assert (H' := H).
-  destruct H as (TT & MSL & MSR).
+  intros. assert (H' := H0).
+  destruct H0 as (TT & MSL & MSR).
   destruct a; try step_right; destruct b; try step_left; auto.
   all: try multipar_step; try (multipar_step; inversion EQ).
   all: try (apply consist_sym; eapply Path_head_form_consist; eauto; fail).
@@ -860,6 +861,8 @@ Proof.
   all: try (eapply Path_head_form_join_consist; eauto; fail).
   all: try (eapply Path_head_not_head_join_consist; eauto; fail).
   all: try (eapply Path_not_head_head_join_consist; eauto; fail).
+Admitted.
+(*
   - destruct (multipar_Pi MSL eq_refl) as [c1 [c2 EQ]].
     inversion EQ; subst. econstructor. apply joins_lc_fst in H'.
     inversion H'; auto. eapply joins_lc_fst; eauto. apply joins_lc_snd in H'.
@@ -869,7 +872,7 @@ Proof.
     apply joins_lc_fst in H'. inversion H'; auto. 
     eapply joins_lc_fst; eauto. apply joins_lc_snd in H'.
     inversion H'; auto. eapply joins_lc_snd; eauto.
-Qed.
+Qed. *)
 
 (*
 
@@ -1114,22 +1117,40 @@ Ltac subst_tm_erased_open x :=
 
 Lemma consistent_mutual:
   (forall S a A R,   Typing S a A R -> True) /\
-  (forall S phi,   PropWff S phi -> True) /\
-  (forall S D p1 p2, Iso S D p1 p2 -> Good S D -> (forall A1 B1 T1 A2 B2 T2 R,
+  (forall S phi R,     PropWff S phi R -> True) /\
+  (forall S D p1 p2 R1, Iso S D p1 p2 R1 -> R1 <> Phm -> Good S D -> (forall A1 B1 T1 A2 B2 T2 R,
                      p1 = Eq A1 B1 T1 R -> p2 = Eq A2 B2 T2 R ->
-    (joins (ctx_to_rctx S) A1 A2 R /\ joins (ctx_to_rctx S) B1 B2 R /\ 
-     joins (ctx_to_rctx S) T1 T2 R))) /\
-  (forall S D A B T R,   DefEq S D A B T R -> Good S D -> joins(ctx_to_rctx S) A B R) /\
+    (joins (ctx_to_rctx S) A1 A2 R1 /\ joins (ctx_to_rctx S) B1 B2 R1 /\ 
+     joins (ctx_to_rctx S) T1 T2 R1))) /\
+  (forall S D A B T R,   DefEq S D A B T R -> R <> Phm -> Good S D -> joins(ctx_to_rctx S) A B R) /\
   (forall S,       Ctx S -> True).
 Proof.
   apply typing_wff_iso_defeq_mutual; eauto; try done.
-  - intros.
+  - (* PropCong *)
+    intros.
+    invert_syntactic_equality.
+    split; eauto.
+  - (* CPiFst *)
+    intros.
+    invert_syntactic_equality.
+    destruct (H H0 H1) as [T [P1 P2]]. 
+    destruct (multipar_CPi P1 H0 eq_refl) as [Ax [Bx [Tx [By EQ]]]].
+    subst. pose K1 := multipar_CPi_phi_proj P1 H0.
+    pose K2 := multipar_CPi_phi_proj P2 H0.
+    inversion K1 as [K11 [K12 K13]].
+    inversion K2 as [K21 [K22 K23]].
+    repeat split; unfold joins.
+    exists Ax; split; auto.
+    exists Bx; split; auto.
+    exists Tx; split; auto.
+(*  - intros.
     inversion H2; subst.
     inversion H3; subst.
     repeat split; eauto. unfold joins.
     exists T2; eauto. apply DefEq_regularity in d0. inversion d0; subst.
-    split; econstructor; eapply Typing_erased; eauto.
-  - intros. inversion H3; subst.
+    split; econstructor; eapply Typing_erased; eauto. 
+  - intros. 
+    inversion H3; subst.
     inversion H4; subst.
     eapply typing_erased_mutual in p; eauto; inversion p as [px [py pz]].
     repeat split; eauto.
@@ -1145,8 +1166,8 @@ Proof.
     inversion H1; subst. inversion H2; subst. repeat split; unfold joins.
     exists Ax; split; auto.
     exists Bx; split; auto.
-    exists Tx; split; auto.
-  - intros. edestruct H0; eauto. inversion H1.
+    exists Tx; split; auto. *)
+  - intros. edestruct H1; eauto. inversion H2.
     exists x; split; apply par_multipar; auto.
   - (* refl *)
     intros.
