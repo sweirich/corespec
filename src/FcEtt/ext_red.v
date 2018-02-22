@@ -15,27 +15,27 @@ Require Import FcEtt.tactics.
 Require Export FcEtt.ext_invert.
 
 Require Export FcEtt.ext_red_one.
-
+Require Export FcEtt.ext_weak.
 Require Export FcEtt.ext_subst.
-
+Require Import FcEtt.ett_erased.
 
 Set Bullet Behavior "Strict Subproofs".
 Set Implicit Arguments.
 
 
-Lemma Beta_preservation : forall a b R, Beta a b R -> forall G A R, Typing G a A R -> Typing G b A R.
+Lemma Beta_preservation : forall a b R, Beta a b R -> forall G A, Typing G a A R -> Typing G b A R.
 Proof.
-  intros a b R B. destruct B; intros G A0 R' TH.
+  intros a b R B. destruct B; intros G A0 TH.
   - have CT: Ctx G by eauto.
-    have RA: Typing G A0 a_Star R' by eauto using Typing_regularity.
+    have RA: Typing G A0 a_Star R1 by eauto using Typing_regularity.
     destruct rho.
     + destruct (invert_a_App_Rel TH) as (A & B & TB & DE & h).
       destruct (invert_a_UAbs TB) as (A1 & B1 & DE2 & [L TB1] & TA1 ).
       eapply E_Conv with (A := (open_tm_wrt_tm B1 b)); eauto 2.
       pick fresh x.
       move: (TB1 x ltac:(auto)) =>  [T1 [T2 RC]].
-      rewrite (tm_subst_tm_tm_intro x v); eauto.
-      rewrite (tm_subst_tm_tm_intro x B1); eauto.
+      rewrite (tm_subst_tm_tm_intro x v); eauto 2. 
+      rewrite (tm_subst_tm_tm_intro x B1); eauto 2.
       
       eapply Typing_tm_subst with (A:=A1); eauto 2.
       eapply E_Conv with (A := A); eauto 2. 
@@ -49,8 +49,8 @@ Proof.
       pick fresh x.
       move: (TB1 x ltac:(auto)) =>  [T1 [T2 RC]].
       inversion RC. subst.
-      rewrite (tm_subst_tm_tm_intro x v); eauto.
-      rewrite (tm_subst_tm_tm_intro x B1); eauto.
+      rewrite (tm_subst_tm_tm_intro x v); eauto 2.
+      rewrite (tm_subst_tm_tm_intro x B1); eauto 2.
       rewrite (tm_subst_tm_tm_fresh_eq _ _ _ H1).
       rewrite - (tm_subst_tm_tm_fresh_eq _ b0 x H1).
       eapply Typing_tm_subst with (A:=A1); eauto 2.
@@ -59,7 +59,7 @@ Proof.
       eapply E_Trans with (a1 := open_tm_wrt_tm B b0). auto.
       eapply E_PiSnd; eauto using E_Refl.
    - have CT: Ctx G by eauto.
-     have RA: Typing G A0 a_Star R' by eauto using Typing_regularity.
+     have RA: Typing G A0 a_Star R by eauto using Typing_regularity.
      destruct (invert_a_CApp TH) as (eq & a1 & b1 & A1 & R1 & B1 & h0 & h1 & h2 ).
      destruct (invert_a_UCAbs h0) as (a2 & b2 & A2 & R3 & B2 & h4 & h5 & [L h6] ).
      pick fresh c.
@@ -75,28 +75,27 @@ Proof.
      eapply E_CPiSnd; eauto 2.
    - destruct (invert_a_Fam TH) as (b & B & R2 & h1 & h2 & h3).
      assert (Ax a A R = Ax b B R2). eapply binds_unique; eauto using uniq_toplevel.
-     inversion H0. subst.
+     inversion H1. subst. clear H1.
      eapply E_Conv with (A := B).
-     eapply toplevel_closed in h1.
-     eapply Typing_weakening with (F:=nil)(G:=nil)(E:=G) in h1.
-     simpl_env in h1. eauto.
-     auto. simpl_env. eauto.
+     eapply toplevel_closed in h2.
+     eapply Typing_weakening with (F:=nil)(G:=nil)(E:=G) in h2; simpl_env in *; auto.
+     eapply E_SubRole; eauto 1.
+     eauto 2.
      eapply E_Sym. eauto.
-     move: (DefEq_regularity h0) => h4.
-     inversion h4.
-     auto.
+     eapply Typing_regularity. 
+     eauto.
      Unshelve. exact (dom G). exact (dom G).
 Qed.
 
 
 Lemma E_Beta2 :  ∀ (G : context) (D : available_props) (a1 a2 B : tm) R,
-       Typing G a1 B R → Beta a1 a2 → DefEq G D a1 a2 B R.
+       Typing G a1 B R → Beta a1 a2 R → DefEq G D a1 a2 B R.
 Proof.
   intros; eapply E_Beta; eauto.
   eapply Beta_preservation; eauto.
 Qed.
 
-Lemma Par_fv_preservation: forall G D x a b, Par G D a b ->
+Lemma Par_fv_preservation: forall W x a b R, Par W a b R ->
                                         x `notin` fv_tm_tm_tm a ->
                                         x `notin` fv_tm_tm_tm b.
 Proof.
@@ -154,9 +153,10 @@ Proof.
     fsetdec.
     have h2: x `notin` fv_tm_tm_tm (open_tm_wrt_co a' (g_Var_f c0)). eauto.
     move: (fv_tm_tm_tm_open_tm_wrt_co_lower a' (g_Var_f c0)) => h3.
-    have h4: x `notin` fv_tm_tm_tm a'. fsetdec.
-
+    have h4: x `notin` fv_tm_tm_tm a'. fsetdec.    
     move => h1.
+Admitted.
+(*
     apply AtomSetFacts.union_iff in h1.
     case: h1 => h1; eauto.
     apply AtomSetFacts.union_iff in h1.
@@ -168,41 +168,54 @@ Proof.
     simpl in *.
     fsetdec.
 Qed.
+*)
 
-
-Lemma reduction_in_Par : forall a a', reduction_in_one a a' -> forall G D, Par G D a a'.
+Lemma reduction_in_Par : forall a a' R, reduction_in_one a a' R -> forall W, erased_tm W a R -> Par W a a' R.
 Proof.
-  induction 1; intros; eauto.
-  - eapply Par_Beta; eauto using Value_lc.
+  induction 1; intros.
+  all: try inversion H1; subst; eauto.
+  all: try inversion H0; subst; eauto.
+  - pick fresh x and apply Par_Abs.
+    eapply H0; eauto 2.
 Qed.
 
 
 
 
-Lemma reduction_in_one_fv_preservation: forall x a b, reduction_in_one a b ->
+Lemma reduction_in_one_fv_preservation: forall x a b R W , reduction_in_one a b R -> erased_tm W a R ->
                                         x `notin` fv_tm_tm_tm a ->
                                         x `notin` fv_tm_tm_tm b.
 Proof.
   intros.
   eapply Par_fv_preservation; eauto.
   eapply reduction_in_Par; eauto.
-  Unshelve. exact nil. exact {}.
 Qed.
 
-Lemma reduction_rhocheck : forall a a' rho x, reduction_in_one a a' -> RhoCheck rho x a -> RhoCheck rho x a'.
+Lemma reduction_rhocheck : forall a a' rho x R W, 
+    reduction_in_one a a' R -> erased_tm W a R -> RhoCheck rho x a -> RhoCheck rho x a'.
 Proof.
-  move=> a a' [] x Red RC.
-  - inversion RC.  eauto using reduction_in_one_lc.
-  - inversion RC.  eauto using reduction_in_one_fv_preservation.
+  intros.
+  inversion H1; subst.
+  -  eauto using reduction_in_one_lc.
+  -  eauto using reduction_in_one_fv_preservation.
 Qed.
 
-Lemma reduction_preservation : forall a a', reduction_in_one a a' -> forall G A R, Typing G a A R -> Typing G a' A R.
+Lemma reduction_preservation : forall a a' R, reduction_in_one a a' R -> forall G A, 
+      Typing G a A R -> Typing G a' A R.
 Proof.
   (* TODO: clean and make more robust *)
-  move=> a a' r.
+  move=> a a' R r.
   induction r.
-  all: move=> G A_ R' tpga.
-  - depind tpga; try eauto.
+  all: move=> G A_ tpga.
+  - move: (Typing_regularity tpga) => h0.
+    autoinv.
+    eapply E_Conv with (A := (a_Pi Irrel x R x0)); auto.
+    pick fresh y and apply E_Abs; auto.
+    apply_first_hyp; auto.
+    apply H2. auto.
+    eapply reduction_rhocheck; eauto.
+    eapply Typing_erased.
+depind tpga; try eauto.
     + eapply E_Abs with (L := L `union` L0); try eassumption.
       all: move=> x xLL0.
       all: autofresh_fixed x.

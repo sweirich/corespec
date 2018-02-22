@@ -357,6 +357,7 @@ Lemma invert_a_App_Irrel : forall G a b C R R',
     Typing G (a_App a Irrel R b) C R' ->
     exists A B b0, Typing G a (a_Pi Irrel A R B) R' /\
               Typing G b0 A R /\
+              b = a_Bullet /\
               DefEq G (dom G) C (open_tm_wrt_tm B b0) a_Star Rep.
 Proof.
   intros G a b C R R'.

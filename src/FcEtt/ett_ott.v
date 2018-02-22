@@ -1092,17 +1092,9 @@ with reduction_in_one : tm -> tm -> role -> Prop :=    (* defn reduction_in_one 
  | E_CAppLeft : forall (a a':tm) (R:role),
      reduction_in_one a a' R ->
      reduction_in_one (a_CApp a g_Triv) (a_CApp a' g_Triv) R
- | E_AppAbs : forall (rho:relflag) (R:role) (v a:tm) (R1:role),
-     lc_tm a ->
-     Value R1  ( (a_UAbs rho R v) )  ->
-     reduction_in_one (a_App  ( (a_UAbs rho R v) )  rho R a)  (open_tm_wrt_tm  v   a )  R1
- | E_CAppCAbs : forall (b:tm) (R:role),
-     lc_tm (a_UCAbs b) ->
-     reduction_in_one (a_CApp  ( (a_UCAbs b) )  g_Triv)  (open_tm_wrt_co  b   g_Triv )  R
- | E_Axiom : forall (F:const) (a:tm) (R1:role) (A:tm) (R:role),
-      binds  F  ( (Ax a A R) )   toplevel   ->
-     SubRole R R1 ->
-     reduction_in_one (a_Fam F) a R1
+ | E_Prim : forall (a b:tm) (R:role),
+     Beta a b R ->
+     reduction_in_one a b R
 with reduction : tm -> tm -> role -> Prop :=    (* defn reduction *)
  | Equal : forall (a:tm) (R:role),
      lc_tm a ->
@@ -1338,11 +1330,11 @@ with AnnTyping : context -> tm -> tm -> role -> Prop :=    (* defn AnnTyping *)
      AnnTyping G a1  ( (a_CPi (Eq a b A1 R) B) )  R' ->
      AnnDefEq G  (dom  G )  g a b R ->
      AnnTyping G (a_CApp a1 g)  (open_tm_wrt_co  B   g )  R'
- | An_Fam : forall (G:context) (F:const) (A:tm) (R:role) (a:tm),
+ | An_Fam : forall (G:context) (F:const) (A:tm) (R1:role) (a:tm) (R:role),
      AnnCtx G ->
       binds  F  ( (Ax a A R) )   an_toplevel   ->
-      ( AnnTyping  nil  A a_Star R )  ->
-     AnnTyping G (a_Fam F) A R
+     AnnTyping  nil  A a_Star R1 ->
+     AnnTyping G (a_Fam F) A R1
  | An_SubRole : forall (G:context) (R1:role) (a A:tm) (R2:role),
      SubRole R1 R2 ->
      AnnTyping G a A R1 ->

@@ -957,17 +957,21 @@ by
 |= a [o]  ~> a' [o] / R
 
 
-Value R1 (\rho R x. v)
-----------------------------------  :: AppAbs
-|= (\rho R x.v) rho R a ~> v { a / x} / R1
+|= a > b / R
+----------------------------- :: Prim
+|= a ~> b / R
 
---------------------------------  :: CAppCAbs
-|= (/\c .b) [o] ~> b { o / c} / R
+% Value R1 (\rho R x. v)
+% ----------------------------------  :: AppAbs
+% |= (\rho R x.v) rho R a ~> v { a / x} / R1
 
-F ~ a : A/R in toplevel
-R <= R1
--------------------- :: Axiom
-|= F ~> a / R1
+% --------------------------------  :: CAppCAbs
+% |= (/\c .b) [o] ~> b { o / c} / R
+
+% F ~ a : A/R in toplevel
+% R <= R1
+% -------------------- :: Axiom
+% |= F ~> a / R1
 
 % |= a ~> a' / R1
 % ------------------------------- :: Cong
@@ -1350,9 +1354,9 @@ G |- a1 [ g ] : B { g / c } / R'
 
 |- G
 F ~ a : A/R in an_toplevel
-[ empty |- A : TYPE/R ]
+empty |- A : TYPE/R1
 ----------------------- :: Fam
-G |- F : A/R
+G |- F : A/R1
 
 R1 <= R2
 G |- a : A / R1
