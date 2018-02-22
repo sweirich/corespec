@@ -639,7 +639,7 @@ Proof.
   - intros L G1 phi a B R t H p H0 D G2 H1 H2.
     apply (E_CAbs (L \u (dom G2))); auto.
     intros c H3.
-    eapply H; eauto 2. admit.
+    eapply H; eauto 3.
     eapply Factor_Eqcontext_co; eauto 2.
     eapply refl_iso; eauto.
     eapply refl_iso; eauto.
@@ -663,9 +663,8 @@ Proof.
     intros phi' [h0 h1].
     destruct phi' as [A' B'].
     eapply (E_Assn _ D) in h0; auto.
-    eapply sym_iso in h1. 
-    assert (R0 = R). { inversion h1; auto. } subst.
-    eapply E_Cast; eauto.
+    eapply sym_iso in h1.
+    eapply E_Cast; eauto 1.
   - intros. eauto 4.
   - intros. eauto 4.
   - intros L. intros.
@@ -739,7 +738,7 @@ Proof.
       pose K := Typing_weakening.
       rewrite_env (nil ++ [(c, Co Phi2) ] ++ G0).
       apply (K _ _ _ _ h0); auto.
-Admitted.
+Qed.
 
 Lemma context_DefEq_typing:
   forall G1  a A R,
@@ -810,8 +809,7 @@ Proof.
             apply E_Refl; eauto.
             eapply (@context_DefEq_typing ([(x, Tm A2 R)] ++ G)); eauto.
             eapply Typing_regularity; eauto 2.
-Admitted.
-(*
+            eapply E_SubRole with (R1 := R'); eauto 1.
             apply H0; auto.
             apply Factor_Eqcontext_tm; eauto.
             apply refl_context_defeq; auto.
@@ -823,6 +821,7 @@ Admitted.
          ++ apply (E_Pi (L \u (dom G))); eauto.
             intros x H4.
             eapply Typing_regularity; eauto 2.
+            eapply E_SubRole with (R1 := R'); eauto 1.
             apply H0; eauto.
       -- apply (E_Pi (L \u (dom G))); eauto.
          intros x H4.
@@ -909,7 +908,8 @@ Admitted.
            apply E_Refl; eauto.
            eapply (@context_DefEq_typing ([(c, Co (Eq a0 b0 A R0))] ++ G)); eauto.
            eapply Typing_regularity; eauto 2.
-           apply H; eauto 4.
+           eapply E_SubRole with (R1 := R); eauto 1.
+           eapply H; eauto 4.
            apply Factor_Eqcontext_co; eauto 4.
            apply refl_context_defeq; eauto 4.
            all: apply refl_iso; eauto 4.
@@ -917,15 +917,17 @@ Admitted.
            intros c H3.
            eapply (@context_DefEq_typing ([(c, Co (Eq a0 b0 A R0))] ++ G)); eauto.
            eapply Typing_regularity; eauto 2.
+           eapply E_SubRole with (R1 := R); eauto 1.
            apply H; eauto.
-           apply Factor_Eqcontext_co; eauto 4.
+           apply Factor_Eqcontext_co; eauto 3.
            apply refl_context_defeq; eauto 4.
            all: apply refl_iso; eauto.
-        -- apply (E_CPi (L \u dom G)); eauto.
+        -- apply (E_CPi (L \u dom G)); eauto 3.
            intros c H3.
            eapply Typing_regularity; eauto 2.
+           eapply E_SubRole with (R1 := R); eauto 1.
            apply H; auto.
-      * apply (E_CPi (L \u (dom G))); eauto.
+      * apply (E_CPi (L \u (dom G))); eauto 3.
         intros c H3.
         destruct (H c); auto.
         eapply Typing_regularity; eauto.
@@ -957,12 +959,12 @@ Admitted.
       simpl in K.
       destruct eq_dec; try congruence.
       rewrite co_subst_co_tm_fresh_eq in K; auto.
-  - intros G D a' b' A' R' a b A R d H i.
+  - intros.
     split_hyp.
     inversion H1; subst.
     (have: Ctx G by eauto) => h0.
-    eauto.
-  - intros G D a b B R2 A R1 d H d0 H0 S.
+    eauto. 
+  - intros.
     split_hyp; auto.
     split; eapply E_Conv; eauto.
   - intros G D A A' a b R a' b' i H.
@@ -972,11 +974,11 @@ Admitted.
     split; auto.
     Unshelve. exact (dom G). exact (dom G).
     auto. auto. auto.
-  - intros.
+(*  - intros.
     pcess_hyps.
     split;
-    eapply E_TyCast; eauto 3 using DefEq_weaken_available.
-Qed. *)
+    eapply E_TyCast; eauto 3 using DefEq_weaken_available. *)
+Qed.
 
 Lemma DefEq_regularity :
   forall G D A B T R, DefEq G D A B T R -> PropWff G (Eq A B T R).
