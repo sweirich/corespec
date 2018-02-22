@@ -180,7 +180,6 @@ Lemma erased_Pi_some_any: forall W x rho A R1 B R2,
        x `notin` fv_tm_tm_tm B ->
        erased_tm W A R1 ->
        erased_tm ([(x,R1)] ++ W) (open_tm_wrt_tm B (a_Var_f x)) R2 ->
-       SubRole R1 R2 ->
        erased_tm W (a_Pi rho A R1 B) R2.
 Proof. intros. apply (erased_a_Pi (union (singleton x) (dom W)));
                  eauto using erased_sub.
@@ -193,11 +192,10 @@ Qed.
 
 Lemma typing_erased_mutual:
     (forall G b A R, Typing G b A R -> erased_tm (ctx_to_rctx G) b R) /\
-    (forall G0 phi R (H : PropWff G0 phi R),
+    (forall G0 phi  (H : PropWff G0 phi ),
         forall A B T R', phi = Eq A B T R' -> erased_tm (ctx_to_rctx G0) A R' /\ 
-        erased_tm (ctx_to_rctx G0) B R' /\ erased_tm (ctx_to_rctx G0) T R'
-        /\ SubRole R' R) /\
-     (forall G0 D p1 p2 R (H : Iso G0 D p1 p2 R), True ) /\
+        erased_tm (ctx_to_rctx G0) B R' /\ erased_tm (ctx_to_rctx G0) T R') /\
+     (forall G0 D p1 p2  (H : Iso G0 D p1 p2 ), True ) /\
      (forall G0 D A B T R (H : DefEq G0 D A B T R), True) /\
      (forall G0 (H : Ctx G0), True).
 Proof. 

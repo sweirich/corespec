@@ -78,12 +78,12 @@ Proof.
     | [H : binds ?c ?phi ?G |- _ ] =>
       move:  (toplevel_closed H) => h0
     end.
-    move: (Typing_context_fv h0)  => ?. split_hyp.
+    show_fresh.
     fsetdec.
-  - eapply E_Combine; auto. eapply tm_subst_tm_tm_Value_mutual in H; eauto.
+(*  - eapply E_Combine; auto. eapply tm_subst_tm_tm_Value_mutual in H; eauto.
   - econstructor. eapply tm_subst_tm_tm_lc_tm; eauto.
     eapply tm_subst_tm_tm_Value_mutual in H0; eauto.
-  - econstructor; eapply tm_subst_tm_tm_Value_mutual in H; eauto.
+  - econstructor; eapply tm_subst_tm_tm_Value_mutual in H; eauto. *)
 Qed.
 
 
@@ -113,6 +113,8 @@ Lemma no_CoercedValue_Value_reduction :
 Proof.
   apply CoercedValue_Value_mutual; simpl; intros; eauto 2.
   all: intro NH; inversion NH; subst.
+Admitted.
+(*
   - eapply H; eauto.
   - inversion v.
   - eapply H; eauto.
@@ -130,7 +132,7 @@ Proof.
   - pose (Q := H a'); contradiction.
   - inversion p.
   - inversion v.
-Qed.
+Qed. *)
 
 Lemma no_Value_reduction :
    forall R a, Value R a -> forall b, not (reduction_in_one a b R).
@@ -149,9 +151,9 @@ Proof. intros. induction H.
         - apply IHPath in H0. inversion H0 as [P1 | P2].
           left. eauto. right. inversion P2 as [a' Q].
           exists (a_CApp a' g_Triv); eauto.
-        - apply IHPath in H0. inversion H0 as [P1 | P2].
+(*        - apply IHPath in H0. inversion H0 as [P1 | P2].
           left. eauto. right. inversion P2 as [a' Q].
-          exists (a_Conv a' R1 g_Triv); eauto.
+          exists (a_Conv a' R1 g_Triv); eauto. *)
 Qed.
 
 
@@ -166,7 +168,10 @@ Proof.
   all: intros.
   - destruct (H R' H0) as [H1 | H2]. left. econstructor; auto. auto.
   - destruct (H R' H0) as [H1 | H2]. left. eapply CC; auto. right.
-    inversion H2 as [a0 S]. exists (a_Conv a0 R1 g_Triv). econstructor. auto.
+    inversion H2 as [a0 S]. exists (a_Conv a0 R1 g_Triv). 
+Admitted.
+(*
+econstructor. auto.
   - destruct (H R' H0) as [H2 | H3]. left. eapply CCV; eauto.
     right. inversion H3 as [a0 S]. exists (a_Conv a0 R2 g_Triv); eauto.
   - pick fresh x. destruct (H x ltac:(auto) R' H0) as [H1 | [a0 H2]].
@@ -192,7 +197,7 @@ Proof.
     destruct p as [Q1 | Q2]. left. eauto. destruct Q2 as [a' Q].
     apply no_Value_reduction with (b := a') in P1. contradiction.
     destruct P2 as [a0 P]. right. exists (a_CApp a0 g_Triv). eauto.
-Qed.
+Qed. *)
 
 Lemma sub_red_one :
   forall R R' a a', reduction_in_one a a' R -> SubRole R R' ->
@@ -210,7 +215,7 @@ Proof. intros. induction H; eauto.
         - eapply sub_Value_mutual in H1; eauto.
           inversion H1. exists (open_tm_wrt_tm v a); auto.
           inversion H2 as [a'' P]. exists (a_App a'' rho R a); auto.
-        - apply IHreduction_in_one in H0. inversion H0 as [a'' P].
+(*        - apply IHreduction_in_one in H0. inversion H0 as [a'' P].
           exists (a_Conv a'' R g_Triv); auto.
         - eapply sub_Value_mutual in H; eauto. inversion H as [H2 | H3].
           exists (a_Conv v R2 g_Triv). eapply E_Combine; eauto.
@@ -222,7 +227,7 @@ Proof. intros. induction H; eauto.
         - eapply sub_Value_mutual in H; eauto. inversion H as [H2 | H3].
           exists (a_Conv (a_CApp v1 g_Triv) R g_Triv). econstructor; eauto.
           inversion H3 as [a0 S]. exists (a_CApp a0 g_Triv).
-          econstructor. auto.
+          econstructor. auto. *)
 Qed.
 
 Ltac CoercedValue_no_red :=

@@ -55,8 +55,8 @@ Ltac E_pick_fresh x :=
 (* Can replace set with an equivalent *)
 Lemma respects_atoms_eq_mutual :
   (forall G a A R,     Typing  G a A R       -> True) /\
-  (forall G phi R,     PropWff G phi R      -> True) /\
-  (forall G D p1 p2 R, Iso G D p1 p2 R -> forall D', D [=] D' -> Iso G D' p1 p2 R) /\
+  (forall G phi ,     PropWff G phi       -> True) /\
+  (forall G D p1 p2 , Iso G D p1 p2  -> forall D', D [=] D' -> Iso G D' p1 p2 ) /\
   (forall G D A B T R,   DefEq G D A B T R -> forall D', D [=] D' -> DefEq G D' A B T R) /\
   (forall G,           Ctx G           -> True).
 Proof.
@@ -107,9 +107,9 @@ Ltac binds_cons :=
 
 Lemma strengthen_available_noncovar:
   (forall G1  a A R,    Typing G1 a A R -> True) /\
-  (forall G1  phi R,    PropWff G1 phi R -> True) /\
-  (forall G1 D p1 p2 R, Iso G1 D p1 p2 R -> forall x, not (exists phi, binds x (Co phi) G1) ->
-                 Iso G1 (remove x D) p1 p2 R) /\
+  (forall G1  phi ,    PropWff G1 phi  -> True) /\
+  (forall G1 D p1 p2 , Iso G1 D p1 p2  -> forall x, not (exists phi, binds x (Co phi) G1) ->
+                 Iso G1 (remove x D) p1 p2 ) /\
   (forall G1 D A B A1 R, DefEq G1 D A B A1 R ->  forall x, not (exists phi, binds x (Co phi) G1) ->
                  DefEq G1 (remove x D) A B A1 R) /\
   (forall G1 ,        Ctx G1 -> True).
@@ -145,8 +145,8 @@ Qed.
 
 Lemma weaken_available_mutual:
   (forall G1  a A R,   Typing G1 a A R -> True) /\
-  (forall G1  phi R,   PropWff G1 phi R -> True) /\
-  (forall G1 D p1 p2 R, Iso G1 D p1 p2 R -> forall D', D [<=] D' -> Iso G1 D' p1 p2 R) /\
+  (forall G1  phi ,   PropWff G1 phi  -> True) /\
+  (forall G1 D p1 p2 , Iso G1 D p1 p2  -> forall D', D [<=] D' -> Iso G1 D' p1 p2 ) /\
   (forall G1 D A B T R,   DefEq G1 D A B T R -> forall D', D [<=] D' -> DefEq G1 D' A B T R) /\
   (forall G1 ,       Ctx G1 -> True).
 Proof.
@@ -162,9 +162,9 @@ Qed.
 
 Lemma remove_available_mutual:
   (forall G1  a A R,   Typing G1 a A R -> True) /\
-  (forall G1  phi R,   PropWff G1 phi R -> True) /\
-  (forall G1 D p1 p2 R, Iso G1 D p1 p2 R ->
-                   Iso G1 (AtomSetImpl.inter D (dom G1)) p1 p2 R) /\
+  (forall G1  phi ,   PropWff G1 phi  -> True) /\
+  (forall G1 D p1 p2 , Iso G1 D p1 p2  ->
+                   Iso G1 (AtomSetImpl.inter D (dom G1)) p1 p2 ) /\
   (forall G1 D A B T R,   DefEq G1 D A B T R ->
                    DefEq G1 (AtomSetImpl.inter D (dom G1)) A B T R) /\
   (forall G1 ,       Ctx G1 -> True).
@@ -208,7 +208,7 @@ Proof.
 Qed.
 
 Lemma Iso_weaken_available :
-  forall G D A B R, Iso G D A B R -> Iso G (dom G) A B R.
+  forall G D A B , Iso G D A B  -> Iso G (dom G) A B .
 Proof.
   intros G D. intros.
   remember (AtomSetImpl.inter D (dom G)) as D'.
@@ -219,28 +219,13 @@ Qed.
 
 Hint Resolve DefEq_weaken_available Iso_weaken_available.
 
-Lemma Wff_Sub : forall G phi R R', PropWff G phi R -> SubRole R R' -> PropWff G phi R'.
-Proof.
-  intros. inversion H.
-  eapply E_Wff; eauto using E_SubRole.
-Qed.
-
-Lemma Iso_Sub : forall G D phi1 phi2 R R', Iso G D phi1 phi2 R -> SubRole R R' -> 
-                                    Iso G D phi1 phi2 R'.
-Proof.
-  intros. inversion H.
-  econstructor; eauto using E_Sub.
-  econstructor; eauto using Wff_Sub.
-  econstructor; eauto using E_Sub.
-Qed.
-
 Lemma typing_weakening_mutual:
   (forall G0 a A R,   Typing G0 a A R ->
      forall E F G, (G0 = F ++ G) -> Ctx (F ++ E ++ G) -> Typing (F ++ E ++ G) a A R) /\
-  (forall G0 phi R,   PropWff G0 phi R ->
-     forall E F G, (G0 = F ++ G) -> Ctx (F ++ E ++ G) -> PropWff (F ++ E ++ G) phi R) /\
-  (forall G0 D p1 p2 R, Iso G0 D p1 p2 R ->
-     forall E F G, (G0 = F ++ G) -> Ctx (F ++ E ++ G) -> Iso (F ++ E ++ G) D p1 p2 R) /\
+  (forall G0 phi ,   PropWff G0 phi  ->
+     forall E F G, (G0 = F ++ G) -> Ctx (F ++ E ++ G) -> PropWff (F ++ E ++ G) phi ) /\
+  (forall G0 D p1 p2 , Iso G0 D p1 p2  ->
+     forall E F G, (G0 = F ++ G) -> Ctx (F ++ E ++ G) -> Iso (F ++ E ++ G) D p1 p2 ) /\
   (forall G0 D A B T R,   DefEq G0 D A B T R ->
      forall E F G, (G0 = F ++ G) -> Ctx (F ++ E ++ G) -> DefEq (F ++ E ++ G) D A B T R) /\
   (forall G0,       Ctx G0 ->
@@ -254,8 +239,8 @@ Proof.
   all: try solve [eapply CON; eauto 2].
   all: try solve [eapply CON; eauto 2; eapply DefEq_weaken_available; eauto 2].
   all: E_pick_fresh y; try auto_rew_env; apply_first_hyp; 
-                  try simpl_env; eauto 3 using E_SubRole, Wff_Sub, Iso_Sub.
-  all: econstructor; eauto 3 using E_SubRole, Wff_Sub.
+                  try simpl_env; eauto 3 using E_SubRole.
+  all: econstructor; eauto 3 using E_SubRole.
   (*
   eapply E_LeftRel with (b:=b)(b':=b'); eauto 2;
     try eapply DefEq_weaken_available; eauto 2.

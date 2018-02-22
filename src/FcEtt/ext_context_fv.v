@@ -47,10 +47,10 @@ Theorem context_fv_mutual :
       fv_tm_tm_tm a [<=] dom G /\ fv_co_co_tm a [<=] dom G /\
       fv_tm_tm_tm A [<=] dom G /\ fv_co_co_tm A [<=] dom G)
   /\
-  (forall G phi R (H : PropWff G phi R),
+  (forall G phi  (H : PropWff G phi ),
       fv_tm_tm_constraint phi [<=] dom G /\ fv_co_co_constraint phi [<=] dom G)
   /\
-  (forall G D p1 p2 R (H : Iso G D p1 p2 R),
+  (forall G D p1 p2  (H : Iso G D p1 p2 ),
       fv_tm_tm_constraint p1 [<=] dom G /\ fv_co_co_constraint p1 [<=] dom G /\
       fv_tm_tm_constraint p2 [<=] dom G /\ fv_co_co_constraint p2 [<=] dom G)
   /\

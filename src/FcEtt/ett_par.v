@@ -147,7 +147,6 @@ Lemma Par_sub: forall W a a' R1 R2, Par W a a' R1 -> SubRole R1 R2 ->
 Proof. intros W a a' R1 R2 H SR. generalize dependent R2.
        induction H; intros; simpl; eauto. econstructor.
        eapply erased_sub; eauto.
-       econstructor; eauto.
 Qed.
 
 Lemma multipar_sub : forall W a a' R1 R2, multipar W a a' R1 ->
@@ -180,18 +179,18 @@ Proof.
      eapply Par_lc2; eauto. eapply Par_lc1; eauto.
    - econstructor; eauto.
    - eapply Par_Pi with (L := union (singleton x) L); eauto.
-     intros x0 H1.
+     intros x0 h1.
      rewrite tm_subst_tm_tm_open_tm_wrt_tm_var; auto 1.
      rewrite tm_subst_tm_tm_open_tm_wrt_tm_var; auto 1.
      rewrite <- app_assoc. eapply H0; eauto.
      eapply Par_lc2; eauto. eapply Par_lc1; eauto.
    - eapply Par_CPi with (L := union L (singleton x)); eauto.
-     intros c H1.
+     intros c h1.
      rewrite tm_subst_tm_tm_open_tm_wrt_co_var; auto 1.
      rewrite tm_subst_tm_tm_open_tm_wrt_co_var; auto 1. eapply H0; eauto.
      eapply Par_lc2; eauto. eapply Par_lc1; eauto.
    - eapply Par_CAbs with (L := union L (singleton x)); eauto.
-     intros c H1.
+     intros c h1.
      rewrite tm_subst_tm_tm_open_tm_wrt_co_var; auto 1.
      rewrite tm_subst_tm_tm_open_tm_wrt_co_var; auto 1. eapply H0; eauto.
      eapply Par_lc2; eauto. eapply Par_lc1; eauto.
@@ -284,7 +283,7 @@ Proof.
     rewrite <- app_assoc. eapply H0. auto. simpl_env; auto.
     auto. eapply Par_lc2; eauto. eapply Par_lc1; eauto.
   - eapply Par_Pi with (L := union (singleton x) L); eauto.
-    intros x0 H3.
+    intros x0 h3.
     rewrite tm_subst_tm_tm_open_tm_wrt_tm_var; auto 1.
     rewrite tm_subst_tm_tm_open_tm_wrt_tm_var; auto 1.
     rewrite <- app_assoc. eapply H1; eauto. simpl_env; auto.
@@ -364,7 +363,7 @@ Hint Resolve erased_tm_open_tm_wrt_tm : erased.
 
 
 Lemma Par_Pi_exists: ∀ x W rho (A B A' B' : tm) R R',
-    x `notin` fv_tm_tm_tm B -> Par W A A' R'
+    x `notin` fv_tm_tm_tm B -> Par W A A' R
     → Par ([(x,R)] ++ W) (open_tm_wrt_tm B (a_Var_f x)) B' R'
     → Par W (a_Pi rho A R B) (a_Pi rho A' R (close_tm_wrt_tm x B')) R'.
 Proof.
@@ -381,14 +380,14 @@ Proof.
 Qed.
 
 Lemma Par_CPi_exists:  ∀ c W (A B a A' B' a' T T': tm) R R',
-       c `notin` fv_co_co_tm a -> Par W A A' R'
-       → Par W B B' R' -> Par W T T' R'
+       c `notin` fv_co_co_tm a -> Par W A A' R
+       → Par W B B' R -> Par W T T' R
          → Par W (open_tm_wrt_co a (g_Var_f c)) (a') R'
          → Par W (a_CPi (Eq A B T R) a) (a_CPi (Eq A' B' T' R) (close_tm_wrt_co c a')) R'.
 Proof.
-  intros c W A B a A' B' a' T T' R R' H H0 H1 h0 H2.
+  intros c W A B a A' B' a' T T' R R' H H0 H1 H2 H3.
   apply (Par_CPi (singleton c)); auto.
-  intros c0 H3.
+  intros c0 h3.
   rewrite -co_subst_co_tm_spec.
   rewrite (co_subst_co_tm_intro c  a (g_Var_f c0));  auto.
   apply subst4; auto.
@@ -455,7 +454,7 @@ Qed.
 
 Lemma multipar_Pi_exists: ∀ x W rho (A B A' B' : tm) R R',
        x `notin` fv_tm_tm_tm B ->
-       multipar W A A' R'
+       multipar W A A' R
        → multipar ([(x,R)] ++ W) (open_tm_wrt_tm B (a_Var_f x)) B' R'
        → multipar W (a_Pi rho A R B) (a_Pi rho A' R (close_tm_wrt_tm x B')) R'.
 Proof.
@@ -464,7 +463,7 @@ Proof.
   - dependent induction H0; eauto.
     erewrite close_tm_wrt_tm_open_tm_wrt_tm; eauto.
     constructor. eapply erased_Pi_some_any; eauto.
-    apply (@mp_step _ _ _ (a_Pi rho a R (close_tm_wrt_tm x b))); auto.
+    apply mp_step with (b := a_Pi rho a R (close_tm_wrt_tm x b)); auto.
     + eapply Par_Pi_exists; eauto.
     + apply IHmultipar; auto.
       * rewrite fv_tm_tm_tm_close_tm_wrt_tm_rec.
@@ -478,13 +477,13 @@ Proof.
     replace ([(x0,R)] ++ W) with (nil ++ [(x0,R)] ++ W); auto.
     eapply subst_tm_erased. simpl_env. apply erased_app_rctx.
     solve_uniq. eapply multipar_erased_tm_fst; eauto.
-    econstructor. solve_uniq. auto. auto.
+    econstructor. solve_uniq. auto. auto. 
 Qed.
 
 
 Lemma multipar_Pi_A_proj: ∀ W rho (A B A' B' : tm) R R',
     multipar W (a_Pi rho A R B) (a_Pi rho A' R B') R' ->
-    multipar W A A' R'.
+    multipar W A A' R.
 Proof.
   intros W rho A B A' B' R R' h1.
   dependent induction h1.
@@ -512,9 +511,9 @@ Qed.
 
 Lemma multipar_CPi_exists:  ∀ c W (A B a T A' B' a' T': tm) R R',
        c `notin` fv_co_co_tm a ->
-       multipar W A A' R' →
-       multipar W B B' R' ->
-       multipar W T T' R' →
+       multipar W A A' R →
+       multipar W B B' R ->
+       multipar W T T' R →
        multipar W (open_tm_wrt_co a (g_Var_f c)) a' R' →
        multipar W (a_CPi (Eq A B T R) a) (a_CPi (Eq A' B' T' R) (close_tm_wrt_co c a')) R'.
 Proof.
@@ -571,9 +570,9 @@ Qed.
 
 Lemma multipar_CPi_phi_proj:  ∀ W (A B a A' B' a' T T': tm) R R',
     multipar W (a_CPi (Eq A B T R) a) (a_CPi (Eq A' B' T' R) a') R' ->
-    multipar W A A' R' 
-      /\ multipar W B B' R'
-      /\ multipar W T T' R'.
+    multipar W A A' R 
+      /\ multipar W B B' R
+      /\ multipar W T T' R.
 Proof.
   intros W A B a A' B' a' T T' R R' H.
   dependent induction H; eauto.
