@@ -568,21 +568,23 @@ Proof.
     exists (L \u L0); eauto.
 Qed.
 
-Lemma multipar_CPi_phi_proj:  ∀ W (A B a A' B' a' T T': tm) R R',
-    multipar W (a_CPi (Eq A B T R) a) (a_CPi (Eq A' B' T' R) a') R' ->
-    multipar W A A' R 
+Lemma multipar_CPi_phi_proj:  ∀ W (A B a A' B' a' T T': tm) R R1 R',
+    multipar W (a_CPi (Eq A B T R) a) (a_CPi (Eq A' B' T' R1) a') R' ->
+    R = R1
+      /\ multipar W A A' R 
       /\ multipar W B B' R
       /\ multipar W T T' R.
 Proof.
-  intros W A B a A' B' a' T T' R R' H.
+  intros W A B a A' B' a' T T' R R1 R' H.
   dependent induction H; eauto.
   - inversion H; subst. split. constructor; auto.
     split. all:constructor; auto.
   - inversion H; subst.
     eapply IHmultipar; eauto.
-    destruct (IHmultipar _ _ _ _ _ _ _ _ _ ltac:(auto) ltac:(auto))
-    as [H1 [H2 H3]].
+    destruct (IHmultipar _ _ _ _ _ _ _ _ _ _ ltac:(auto) ltac:(auto))
+    as [EQ [H1 [H2 H3]]]. subst.
     repeat split.
+    auto.
     apply mp_step with (b := a'0); auto.
     apply mp_step with (b := b'); auto.
     apply mp_step with (b := A'0); auto.

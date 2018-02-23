@@ -1077,10 +1077,10 @@ Ltac subst_tm_erased_open x :=
 Lemma consistent_mutual:
   (forall S a A R,   Typing S a A R -> True) /\
   (forall S phi,   PropWff S phi -> True) /\
-  (forall S D p1 p2, Iso S D p1 p2 -> Good S D -> (forall A1 B1 T1 A2 B2 T2 R,
-                     p1 = Eq A1 B1 T1 R -> p2 = Eq A2 B2 T2 R ->
-    (joins (ctx_to_rctx S) A1 A2 R /\ joins (ctx_to_rctx S) B1 B2 R /\ 
-     joins (ctx_to_rctx S) T1 T2 R))) /\
+  (forall S D p1 p2, Iso S D p1 p2 -> Good S D -> (forall A1 B1 T1 A2 B2 T2 R1 R2,
+                     p1 = Eq A1 B1 T1 R1 -> p2 = Eq A2 B2 T2 R2 ->
+    (R1 = R2 /\ joins (ctx_to_rctx S) A1 A2 R1 /\ joins (ctx_to_rctx S) B1 B2 R1 /\ 
+     joins (ctx_to_rctx S) T1 T2 R1))) /\
   (forall S D A B T R,   DefEq S D A B T R -> Good S D -> joins(ctx_to_rctx S) A B R) /\
   (forall S,       Ctx S -> True).
 Proof.
@@ -1098,13 +1098,15 @@ Proof.
     all: unfold joins.
     exists A3; split; econstructor; eauto.
     exists B2; split; econstructor; eauto.
-  - intros. destruct (H H0) as [T [P1 P2]]. subst.
+  - intros. destruct (H H0) as [T [P1 P2]]. 
+    inversion H1. inversion H2.
+    subst.
     destruct (multipar_CPi P1 eq_refl) as [Ax [Bx [Tx [By EQ]]]].
-    subst. pose K1 := multipar_CPi_phi_proj P1.
+    subst. 
+    pose K1 := multipar_CPi_phi_proj P1.
     pose K2 := multipar_CPi_phi_proj P2.
-    inversion K1 as [K11 [K12 K13]].
-    inversion K2 as [K21 [K22 K23]].
-    inversion H1; subst. inversion H2; subst. repeat split; unfold joins.
+    split_hyp. subst.
+    repeat split; unfold joins.
     exists Ax; split; auto.
     exists Bx; split; auto.
     exists Tx; split; auto.
@@ -1167,7 +1169,7 @@ Proof.
     exists (tm_subst_tm_tm ax x (open_tm_wrt_tm Bx (a_Var_f x))); split;
     eapply multipar_subst3; simpl_env; eauto.
   - (* cpi-cong *)
-    intros. destruct (H H4 a1 b1 A1 a2 b2 A2 R eq_refl eq_refl) as [J1 [J2 J3]].
+    intros. destruct (H H4 a1 b1 A1 a2 b2 A2 R R eq_refl eq_refl) as [_ [J1 [J2 J3]]].
     inversion J1 as [ax [P1 P2]]. inversion J2 as [bx [P3 P4]].
     inversion J3 as [Ax [P5 P6]].
     pick fresh c. destruct (H0 c ltac:(auto)) as [Bx [P7 P8]].
@@ -1189,13 +1191,14 @@ Proof.
     rewrite (co_subst_co_tm_intro c B2); auto.
     exists (co_subst_co_tm g_Triv c (open_tm_wrt_co E (g_Var_f c))); split;
     apply multipar_subst4; auto.
-  - intros. destruct (H0 H1 a b A a' b' A' R eq_refl eq_refl) as (P1 & P2 & P3).
+  - intros. destruct (H0 H1 a b A a' b' A' R R' eq_refl eq_refl) as (EQ & P1 & P2 & P3).
+    subst.
     apply join_transitive with (b := a); eauto.
     apply join_symmetry; auto.
     apply join_transitive with (b := b); eauto.
 (*  - intros. destruct (H H1) as [t [P1 P2]].
     exists t; split; eapply multipar_sub; eauto. *)
-  - intros. destruct (H H0 a b A a' b' A' R1 eq_refl eq_refl) as (P1 & P2 & P3).
+  - intros. destruct (H H0 a b A a' b' A' R1 R1 eq_refl eq_refl) as (_ & P1 & P2 & P3).
     auto.
 (*  - intros. destruct (H H2) as [T [P1 P2]].
     exists (a_Conv T R2 g_Triv); split; apply multipar_Cast_exists; auto. *)
