@@ -669,22 +669,12 @@ Proof. intros. generalize dependent a'. induction H; intros.
        - inversion H1; subst. eauto. have E: (Ax a A R1 = Ax a' A0 R2).
          eapply binds_unique; eauto using uniq_toplevel.
          inversion E. subst. contradiction.
-(*       - inversion H1; subst. eauto. apply IHPath in H9.
+       - inversion H1; subst. eauto. apply IHPath in H9.
          inversion H9. apply IHPath in H9. econstructor; auto.
          apply Par_erased_tm_snd in H10. eapply erased_lc; eauto.
-         apply IHPath in H9. inversion H9; subst. econstructor.
-         econstructor; auto. econstructor; auto.
-         apply Par_erased_tm_snd in H10. eapply erased_lc; eauto.
-         apply IHPath in H9. inversion H9; subst. econstructor.
-         econstructor; auto. econstructor; auto.
-         apply Par_erased_tm_snd in H10. inversion H10; subst.
-         eapply erased_lc; eauto.          
        - inversion H0; subst. eauto. apply IHPath in H3. inversion H3.
          apply IHPath in H3. econstructor; auto.
-         apply IHPath in H3. inversion H3; subst. econstructor; auto.
-       - inversion H0; subst. eauto. apply IHPath in H6. eauto.
-         apply IHPath in H6. auto. *)
-Admitted.
+Qed.
 
 Lemma multipar_Path :  forall F a R W a', Path F a R -> multipar W a a' R ->
                        Path F a' R.
