@@ -865,18 +865,7 @@ Inductive Path : const -> tm -> role -> Prop :=    (* defn Path *)
      Path F  ( (a_CApp a g_Triv) )  R.
 
 (* defns JValue *)
-Inductive CoercedValue : role -> tm -> Prop :=    (* defn CoercedValue *)
- | CV : forall (R:role) (a:tm),
-     Value R a ->
-     CoercedValue R a
- | CC : forall (R:role) (a:tm) (R1:role),
-     Value R a ->
-     CoercedValue R  ( (a_Conv a R1 g_Triv) ) 
- | CCV : forall (R:role) (a:tm) (R1 R2:role),
-     CoercedValue R  ( (a_Conv a R1 g_Triv) )  ->
-      not (  ( SubRole R1 R2 )  )  ->
-     CoercedValue R  ( (a_Conv  ( (a_Conv a R1 g_Triv) )  R2 g_Triv) ) 
-with Value : role -> tm -> Prop :=    (* defn Value *)
+Inductive Value : role -> tm -> Prop :=    (* defn Value *)
  | Value_Star : forall (R:role),
      Value R a_Star
  | Value_Pi : forall (R:role) (rho:relflag) (A:tm) (R1:role) (B:tm),
@@ -895,7 +884,7 @@ with Value : role -> tm -> Prop :=    (* defn Value *)
      lc_tm (a_UAbs Rel R1 a) ->
      Value R (a_UAbs Rel R1 a)
  | Value_UAbsIrrel : forall (L:vars) (R R1:role) (a:tm),
-      ( forall x , x \notin  L  -> CoercedValue R  ( open_tm_wrt_tm a (a_Var_f x) )  )  ->
+      ( forall x , x \notin  L  -> Value R  ( open_tm_wrt_tm a (a_Var_f x) )  )  ->
      Value R (a_UAbs Irrel R1 a)
  | Value_CAbs : forall (R:role) (phi:constraint) (a:tm),
      lc_constraint phi ->
@@ -1543,6 +1532,6 @@ Inductive head_reduction : context -> tm -> tm -> role -> Prop :=    (* defn hea
 
 
 (** infrastructure *)
-Hint Constructors SubRole Path CoercedValue Value value_type consistent erased_tm RhoCheck Par MultiPar joins Beta reduction_in_one reduction PropWff Typing Iso DefEq Ctx Sig AnnPropWff AnnTyping AnnIso AnnDefEq AnnCtx AnnSig head_reduction lc_co lc_brs lc_tm lc_constraint lc_sig_sort lc_sort.
+Hint Constructors SubRole Path Value value_type consistent erased_tm RhoCheck Par MultiPar joins Beta reduction_in_one reduction PropWff Typing Iso DefEq Ctx Sig AnnPropWff AnnTyping AnnIso AnnDefEq AnnCtx AnnSig head_reduction lc_co lc_brs lc_tm lc_constraint lc_sig_sort lc_sort.
 
 
