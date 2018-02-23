@@ -154,7 +154,9 @@ Proof.
     eapply E_EqConv. eauto.
     pose K := fourth tm_substitution_mutual _ _ _ _ _ _ d _ _ _ _ H3.
     eapply DefEq_weaken_available.
-    apply K. auto. destruct R; auto.
+    apply K. auto.
+    move: (DefEq_regularity h0) => h2. inversion h2. subst.
+    auto.
   - (* cpi *)
     intros L G phi B R t H p H0 G1 G2 x A1 R' a1 a2 D H1 H2 H3.
     destruct phi; subst. simpl.
@@ -206,12 +208,12 @@ Proof.
     eapply E_Refl.
     eapply E_Fam; eauto 2.
     eapply (fifth tm_substitution_mutual); eauto.
-  - intros. simpl. assert (tm_subst_tm_tm a1 x a_Star = a_Star). eauto.
+(*  - intros. simpl. assert (tm_subst_tm_tm a1 x a_Star = a_Star). eauto.
     eapply E_CastCong. subst.
     eapply (H _ _ x _ _ _ _ _ eq_refl H3 H4); eauto 2. rewrite <- H5.
     eapply (fourth tm_substitution_mutual) in d; [idtac|apply H3|eauto].
     eapply DefEq_weaken_available in d.
-    eauto. eauto. rewrite <- H5. eapply (first tm_substitution_mutual); eauto.
+    eauto. eauto. rewrite <- H5. eapply (first tm_substitution_mutual); eauto. *)
   - intros G a b A R t H t0 H0 t1 H1 G1 G2 x A1 R' a1 a2 D H2 H3 H4.
     simpl.
     pose K1 := H G1 G2 _ _ _ _ _ _ H2 H3 H4. clearbody K1. clear H.
@@ -239,7 +241,9 @@ Proof.
     { eapply E_IsoConv; eauto 2.
       eapply E_Wff; eauto 2.
       eapply E_Conv; eauto 2.
+      eapply E_Sub; eauto 2.
       eapply E_Conv; eauto 2.
+      eapply E_Sub; eauto 2.
     }
     eapply trans_iso. eapply H. auto.
 Qed.
