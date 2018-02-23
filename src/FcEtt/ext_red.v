@@ -214,14 +214,17 @@ Proof.
     apply_first_hyp; auto.
     apply H2. auto.
     eapply reduction_rhocheck; eauto.
-    eapply Typing_erased.
-depind tpga; try eauto.
-    + eapply E_Abs with (L := L `union` L0); try eassumption.
-      all: move=> x xLL0.
-      all: autofresh_fixed x.
-      all: eauto using reduction_rhocheck.
-  - depind tpga; subst; eauto.
-  - depind tpga; subst; eauto.
+    eapply Typing_erased; eauto.
+    eapply H2. auto.
+    eapply H2. auto.
+  - move: (Typing_regularity tpga) => h0. 
+    autoinv. 
+    eapply E_Conv with (A := (open_tm_wrt_tm x0 b)); auto.
+    eapply E_App; eauto.
+    eapply E_Conv with (A := (open_tm_wrt_tm x0 x1)); auto.
+    eapply E_IApp; eauto.
+    
+
   - destruct rho.
     + apply invert_a_App_Rel in tpga.
       pcess_hyps.

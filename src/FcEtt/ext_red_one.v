@@ -18,6 +18,7 @@ Set Bullet Behavior "Strict Subproofs".
 Lemma reduction_in_one_lc : forall a a' R, reduction_in_one a a' R -> lc_tm a -> lc_tm a'.
 Proof.
   induction 1; intros; lc_solve.
+  eapply Beta_lc.
 Qed.
 
 (* ------------------------------------------------------------ *)
