@@ -17,20 +17,13 @@ Require Import FcEtt.toplevel.
   *)
 
 
-Lemma CoercedValue_Value_lc_mutual: (forall R A, CoercedValue R A -> lc_tm A) /\
-                                    (forall R A, Value R A -> lc_tm A).
-Proof.
-  apply CoercedValue_Value_mutual; eauto.
-Qed.
 
 Lemma Value_lc : forall R A, Value R A -> lc_tm A.
-  destruct (CoercedValue_Value_lc_mutual); auto.
-Qed.
-Lemma CoercedValue_lc : forall R A, CoercedValue R A -> lc_tm A.
-  destruct (CoercedValue_Value_lc_mutual); auto.
+Proof. intros; induction H; eauto.
 Qed.
 
-Hint Resolve Value_lc CoercedValue_lc : lc.
+
+Hint Resolve Value_lc : lc.
 
 
 (* -------------------------------- *)
@@ -139,10 +132,7 @@ Hint Resolve Typing_lc1 Typing_lc2 Iso_lc1 Iso_lc2 DefEq_lc1 DefEq_lc2 DefEq_lc3
 Lemma Toplevel_lc : forall c s, binds c s toplevel -> lc_sig_sort s.
 Proof. induction Sig_toplevel.
        intros. inversion H. 
-       intros. 
-Admitted.
-(*
-destruct H3. inversion H3. subst.
+       intros. destruct H1. inversion H1. subst.
        simpl in H0. eauto. eauto with lc.
        eauto.
-Qed. *)
+Qed.

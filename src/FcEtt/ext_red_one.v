@@ -13,11 +13,13 @@ Require Import FcEtt.ext_wf.
 Set Implicit Arguments.
 Set Bullet Behavior "Strict Subproofs".
 
-
+Lemma beta_lc : forall a b R, Beta a b R -> lc_tm a -> lc_tm b.
+Proof. induction 1; intros; lc_solve.
+Qed.
 
 Lemma reduction_in_one_lc : forall a a' R, reduction_in_one a a' R -> lc_tm a -> lc_tm a'.
 Proof.
-  induction 1; intros; lc_solve.
+   induction 1; intros; try (eapply beta_lc; eauto; fail); lc_solve.
 Qed.
 
 (* ------------------------------------------------------------ *)
@@ -56,6 +58,20 @@ Ltac lc_subst_case x0 b0  :=
 
 (* ------------------------------------------------- *)
 
+Lemma subst_beta : forall a a' R,
+  Beta a a' R -> forall b x, lc_tm b ->
+  Beta (tm_subst_tm_tm b x a)
+                   (tm_subst_tm_tm b x a') R.
+Proof. intros a a' R H. induction H; intros b0 x0 LC; simpl.
+        - autorewrite with subst_open; eauto.
+          econstructor; eauto using tm_subst_tm_tm_lc_tm.
+          eapply Value_tm_subst_tm_tm with (x := x0) in H0; eauto.
+        - lc_subst_case x0 b0.
+        - rewrite tm_subst_tm_tm_fresh_eq.
+          econstructor; eauto.
+          pose (P := toplevel_closed H). show_fresh. fsetdec.
+Qed.
+
 Lemma subst_reduction_in_one : forall a a' R,
   reduction_in_one a a' R -> forall b x, lc_tm b ->
   reduction_in_one (tm_subst_tm_tm b x a)
@@ -67,23 +83,7 @@ Proof.
   - eapply (E_AbsTerm (L \u {{x0}})); eauto. intros x Fr.
 
     subst_helper x x0 b0.
-  - autorewrite with subst_open; eauto.
-    econstructor; eauto using tm_subst_tm_tm_lc_tm.
-    match goal with | [ H0 : Value _ _ |- _ ] =>
-    eapply Value_tm_subst_tm_tm in H0; eauto end.
-  - lc_subst_case x0 b0.
-  - rewrite tm_subst_tm_tm_fresh_eq.
-    eapply E_Axiom; eauto.
-    match goal with
-    | [H : binds ?c ?phi ?G |- _ ] =>
-      move:  (toplevel_closed H) => h0
-    end.
-    show_fresh.
-    fsetdec.
-(*  - eapply E_Combine; auto. eapply tm_subst_tm_tm_Value_mutual in H; eauto.
-  - econstructor. eapply tm_subst_tm_tm_lc_tm; eauto.
-    eapply tm_subst_tm_tm_Value_mutual in H0; eauto.
-  - econstructor; eapply tm_subst_tm_tm_Value_mutual in H; eauto. *)
+  - eapply E_Prim. eapply subst_beta; eauto.
 Qed.
 
 
@@ -107,37 +107,24 @@ Proof. intros F a R H. induction H; eauto.
 Qed.
 
 (* Coerced values and values are terminal. *)
-Lemma no_CoercedValue_Value_reduction :
-  (forall R a, CoercedValue R a -> forall b, not (reduction_in_one a b R)) /\
-  (forall R a, Value R a -> forall b, not (reduction_in_one a b R)).
-Proof.
-  apply CoercedValue_Value_mutual; simpl; intros; eauto 2.
+Lemma no_Value_reduction : forall R a, Value R a ->
+          forall b, not (reduction_in_one a b R).
+Proof. intros R a H. induction H; simpl; intros; eauto 2.
   all: intro NH; inversion NH; subst.
-Admitted.
-(*
-  - eapply H; eauto.
-  - inversion v.
-  - eapply H; eauto.
-  - contradiction.
+  all: try (inversion H1; fail).
+  all: try (inversion H0; fail).
+  - inversion H.
   - pick fresh x.
-    move: (H x ltac:(auto)) => h0.
-    move: (H4 x ltac:(auto)) => h5.
+    move: (H0 x ltac:(auto)) => h0.
+    move: (H5 x ltac:(auto)) => h5.
     eapply h0; eauto.
-  - inversion H0. inversion b.
-    rewrite H2 in H; inversion H; subst; auto.
-    inversion H2. inversion H.
-  - pose (Q := H a'); contradiction.
-  - inversion p.
-  - inversion v.
-  - pose (Q := H a'); contradiction.
-  - inversion p.
-  - inversion v.
-Qed. *)
-
-Lemma no_Value_reduction :
-   forall R a, Value R a -> forall b, not (reduction_in_one a b R).
-Proof.
-  apply no_CoercedValue_Value_reduction.
+  - inversion H1. subst. assert (P : Ax a A R1 = Ax b A0 R2).
+    eapply binds_unique; eauto using uniq_toplevel. inversion P.
+    subst. contradiction.
+  - pose (Q := IHValue a'); contradiction.
+  - inversion H2; subst. inversion H0.
+  - pose (Q := IHValue a'); contradiction.
+  - inversion H1; subst. inversion H.
 Qed.
 
 Lemma sub_Path : forall F a R1 R2, Path F a R1 -> SubRole R1 R2 ->
@@ -151,57 +138,48 @@ Proof. intros. induction H.
         - apply IHPath in H0. inversion H0 as [P1 | P2].
           left. eauto. right. inversion P2 as [a' Q].
           exists (a_CApp a' g_Triv); eauto.
-(*        - apply IHPath in H0. inversion H0 as [P1 | P2].
-          left. eauto. right. inversion P2 as [a' Q].
-          exists (a_Conv a' R1 g_Triv); eauto. *)
 Qed.
 
 
-Lemma sub_Value_mutual :
-  (forall R v,  CoercedValue R v -> forall R', SubRole R R' ->
-           CoercedValue R' v \/ exists a, reduction_in_one v a R') /\
-  (forall R v, Value R v -> forall R', SubRole R R' ->
-           Value R' v \/ exists a, reduction_in_one v a R').
-Proof.
-  apply CoercedValue_Value_mutual; simpl.
-  all: try solve [inversion 1 | econstructor; eauto]; eauto.
-  all: intros.
-  - destruct (H R' H0) as [H1 | H2]. left. econstructor; auto. auto.
-  - destruct (H R' H0) as [H1 | H2]. left. eapply CC; auto. right.
-    inversion H2 as [a0 S]. exists (a_Conv a0 R1 g_Triv). 
-Admitted.
-(*
-econstructor. auto.
-  - destruct (H R' H0) as [H2 | H3]. left. eapply CCV; eauto.
-    right. inversion H3 as [a0 S]. exists (a_Conv a0 R2 g_Triv); eauto.
-  - pick fresh x. destruct (H x ltac:(auto) R' H0) as [H1 | [a0 H2]].
+Lemma sub_Value :
+  forall R v, Value R v -> forall R', SubRole R R' ->
+           Value R' v \/ exists a, reduction_in_one v a R'.
+Proof. intros R v H. induction H; simpl; auto. all: intros.
+  - pick fresh x. destruct (H0 x ltac:(auto) R' H1) as [H2 | [a0 H3]].
     left. econstructor. intros. rewrite (tm_subst_tm_tm_intro x); auto.
-    apply CoercedValue_tm_subst_tm_tm; auto.
+    apply Value_tm_subst_tm_tm; auto.
     right. pick fresh y.
-    apply subst_reduction_in_one with (x := x) (b := a_Var_f y) in H2; auto.
-    rewrite tm_subst_tm_tm_open_tm_wrt_tm in H2; auto.
-    rewrite tm_subst_tm_tm_fresh_eq in H2; auto.
+    apply subst_reduction_in_one with (x := x) (b := a_Var_f y) in H3; auto.
+    rewrite tm_subst_tm_tm_open_tm_wrt_tm in H3; auto.
+    rewrite tm_subst_tm_tm_fresh_eq in H3; auto.
     assert (tm_subst_tm_tm (a_Var_f y) x (a_Var_f x) = a_Var_f y).
-    unfold tm_subst_tm_tm; default_simp. rewrite H1 in H2.
+    unfold tm_subst_tm_tm; default_simp. rewrite H2 in H3.
     exists (a_UAbs Irrel R1 (close_tm_wrt_tm y (tm_subst_tm_tm (a_Var_f y) x a0))).
     apply E_AbsTerm_exists with (x := y); auto.
     apply notin_union_3; auto. rewrite fv_tm_tm_tm_close_tm_wrt_tm. auto.
     rewrite open_tm_wrt_tm_close_tm_wrt_tm; auto.
-  - destruct (sub_dec R1 R') as [H1 | H2]. right. exists a; econstructor; eauto.
+  - destruct (sub_dec R1 R') as [H2 | H3]. right. exists a; econstructor; eauto.
     left; econstructor; eauto. Unshelve. all:auto.
-  - eapply sub_Path in p; eauto. destruct (H R' H0) as [P1 | P2].
-    destruct p as [Q1 | Q2]. left. eauto. destruct Q2 as [a' Q].
+  - eapply sub_Path in H0; eauto. destruct (IHValue R' H2) as [P1 | P2].
+    destruct H0 as [Q1 | Q2]. left. eauto. destruct Q2 as [a' Q].
     apply no_Value_reduction with (b := a') in P1. contradiction.
     destruct P2 as [a0 P]. right. exists (a_App a0 rho R1 b'). eauto.
-  - eapply sub_Path in p; eauto. destruct (H R' H0) as [P1 | P2].
-    destruct p as [Q1 | Q2]. left. eauto. destruct Q2 as [a' Q].
+  - eapply sub_Path in H; eauto. destruct (IHValue R' H1) as [P1 | P2].
+    destruct H as [Q1 | Q2]. left. eauto. destruct Q2 as [a' Q].
     apply no_Value_reduction with (b := a') in P1. contradiction.
     destruct P2 as [a0 P]. right. exists (a_CApp a0 g_Triv). eauto.
-Qed. *)
+Qed.
+
+Lemma sub_beta :
+      forall R R' a a', Beta a a' R -> SubRole R R' -> Beta a a' R'.
+Proof. intros. induction H; eauto. inversion H1; subst. econstructor; eauto.
+       econstructor; eauto. apply sub_Value with (R' := R') in H1; auto.
+       inversion H1. econstructor; auto. inversion H2.
+       inversion H3; subst.
 
 Lemma sub_red_one :
   forall R R' a a', reduction_in_one a a' R -> SubRole R R' ->
-                    exists a'', reduction_in_one a a'' R'.
+                                    reduction_in_one a a' R'.
 Proof. intros. induction H; eauto.
         - pick fresh x. destruct (H1 x) as [a'' P]; auto.
           exists (a_UAbs Irrel R (close_tm_wrt_tm x a'')).
