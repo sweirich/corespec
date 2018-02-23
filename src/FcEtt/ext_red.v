@@ -147,30 +147,26 @@ Proof.
     apply K. auto.
     apply fv_tm_tm_tm_open_tm_wrt_co_lower; auto.
   - pick fresh c0 for L.
-    have: x `notin` fv_tm_tm_tm (open_tm_wrt_co a (g_Var_f c0)) => h0.
+    have: x `notin` fv_tm_tm_tm (open_tm_wrt_co B (g_Var_f c0)) => h0.
     apply fv_tm_tm_tm_open_tm_wrt_co_upper in h0.
     apply AtomSetFacts.union_iff in h0.
     case:h0; eauto => h0.
     simpl in h0.
     fsetdec.
-    have h2: x `notin` fv_tm_tm_tm (open_tm_wrt_co a' (g_Var_f c0)). eauto.
-    move: (fv_tm_tm_tm_open_tm_wrt_co_lower a' (g_Var_f c0)) => h3.
-    have h4: x `notin` fv_tm_tm_tm a'. fsetdec.    
+    have h2: x `notin` fv_tm_tm_tm (open_tm_wrt_co B' (g_Var_f c0)). eauto.
+    move: (fv_tm_tm_tm_open_tm_wrt_co_lower B' (g_Var_f c0)) => h3.
+    have h4: x `notin` fv_tm_tm_tm a'. fsetdec.
     move => h1.
-Admitted.
-(*
     apply AtomSetFacts.union_iff in h1.
     case: h1 => h1; eauto.
     apply AtomSetFacts.union_iff in h1.
     case: h1 => h1; eauto.
-    fsetdec.
     fsetdec.
   - apply toplevel_closed in H.
     move: (Typing_context_fv H) => ?. split_hyp.
     simpl in *.
     fsetdec.
 Qed.
-*)
 
 Lemma reduction_in_Par : forall a a' R, reduction_in_one a a' R ->
                                    forall W, erased_tm W a R -> Par W a a' R.
