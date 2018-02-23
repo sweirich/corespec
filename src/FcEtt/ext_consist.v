@@ -1274,7 +1274,6 @@ Proof.
   - apply invert_a_UCAbs in H0; eauto.
     destruct H0 as [a0 [b [T [R1 [B1 [R2 [Q [P _]]]]]]]].
     impossible_defeq. inversion H7.
-  - inversion H0.
 Qed.
 
 
@@ -1295,6 +1294,7 @@ Proof.
   inversion H0; subst; eauto.
   - apply invert_a_Star in H; eauto.
     impossible_defeq.
+    inversion H5.
   - eapply invert_a_Pi in H; eauto.
     destruct H as [H _]; eauto.
     impossible_defeq. inversion H7.
@@ -1310,7 +1310,7 @@ Proof.
     impossible_defeq. inversion H7.
   - assert False. eapply no_aCAbs. eauto 2. done.
   - eapply invert_a_UCAbs in H; eauto.
-    destruct H as [a [b [T [R1 [B1 [_ [_ [H _]]]]]]]]; eauto.
+    destruct H as [a [b [T [R1 [B1 [_ [H _]]]]]]]; eauto.
     impossible_defeq. inversion H7.
 Qed.
 
@@ -1321,7 +1321,7 @@ Proof.
   intros G a phi B R C H H0.
   inversion H0; subst; eauto.
   - apply invert_a_Star in H; eauto.
-    impossible_defeq.
+    impossible_defeq. inversion H6.
   - eapply invert_a_Pi in H; eauto.
     destruct H as [H _]; eauto.
     impossible_defeq. inversion H8.
@@ -1357,11 +1357,11 @@ Qed.
 
 Lemma progress : forall G a A R, Typing G a A R ->
                           irrelevant G (dom G) a ->
-                          CoercedValue R a \/ exists a', reduction_in_one a a' R.
+                          Value R a \/ exists a', reduction_in_one a a' R.
 Proof. intros. assert (lc_tm a). {eapply Typing_lc1; eauto. }
        induction H; eauto; try done.
   - destruct (IHTyping H0 H1) as [H3 | H4].
-    eapply sub_Value_mutual; eauto.
+    eapply sub_Value; eauto.
     inversion H4. right. eapply sub_red_one; eauto.
   - unfold irrelevant in *.
     apply H0 in H2. simpl in H2. fsetdec.
@@ -1381,7 +1381,7 @@ Proof. intros. assert (lc_tm a). {eapply Typing_lc1; eauto. }
       ++ eauto.
       ++ simpl. eapply Good_add_tm_2; eauto using Typing_erased. }
       inversion H1; auto.
-      -- left. econstructor.
+      -- left.
          eapply Value_UAbsIrrel_exists with (x := x); eauto.
       -- right. exists (a_UAbs Irrel R (close_tm_wrt_tm x a')).
          eapply E_AbsTerm_exists with (x := x).
@@ -1392,53 +1392,32 @@ Proof. intros. assert (lc_tm a). {eapply Typing_lc1; eauto. }
     inversion H1; subst. destruct IHTyping1 as [V | [b' h0]]; auto 1.
     + unfold irrelevant in H0. inversion H0. split; auto.
       intros. pose (Q := H3 x A0 R0 H8). simpl in Q. eauto.
-    + inversion V; subst. apply canonical_forms_Pi in H; auto.
+    + apply canonical_forms_Pi in H; auto.
       destruct H as [[a1 e1] | [F Q]]; subst. right.
       exists (open_tm_wrt_tm a1 a); eauto.
-      left. econstructor. econstructor; eauto.
-      right. exists (a_Conv (a_App a0 Rel R (a_Conv a R1 g_Triv)) R1 g_Triv).
-      econstructor; auto. right.
-      exists (a_Conv (a_App (a_Conv a0 R1 g_Triv) Rel R (a_Conv a R2 g_Triv)) R2 g_Triv).
-      econstructor; eauto.
+      left. eauto. 
     + right. exists (a_App b' Rel R a); eauto.
   - inversion H1; subst. unfold irrelevant in H0. inversion H0.
     case IHTyping1; auto.
     + split; auto. intros. pose (Q := H3 x A0 R0 H6). simpl in Q. eauto.
-    + move => h1. inversion h1; subst. apply canonical_forms_Pi in H; auto.
-      destruct H as [[a1 e1] | [F Q]]; subst. right.
-      exists (open_tm_wrt_tm a1 a_Bullet); eauto.
-      left. econstructor. econstructor; eauto.
-      right. exists (a_Conv (a_App a0 Irrel R (a_Conv a_Bullet R1 g_Triv)) R1 g_Triv).
-      econstructor; auto. right.
-      exists (a_Conv (a_App (a_Conv a0 R1 g_Triv) Irrel R (a_Conv a_Bullet R2 g_Triv)) R2 g_Triv).
-      econstructor; eauto.
+    + move => h1.  apply canonical_forms_Pi in H; auto.
+      destruct H as [[a1 e1] | [F Q]]; subst. 
+      right.
+      exists (open_tm_wrt_tm a1 a_Bullet); eauto.      
+
+      left. eauto. 
     + move => h1. destruct h1 as [b' h0]. right.
       exists (a_App b' Irrel R a_Bullet); eauto.
   - left. constructor; eauto. inversion H1; auto.
   - inversion H1; subst. unfold irrelevant in H0. inversion H0.
     case IHTyping; auto.
     + split; auto. intros. pose (Q := H3 x A0 R0 H7). simpl in Q. eauto.
-    + move => h1. inversion h1; subst. apply canonical_forms_CPi in H; auto.
+    + move => h1.  apply canonical_forms_CPi in H; auto.
       destruct H as [[a2 e1] | [F Q]]; subst. right.
       exists (open_tm_wrt_co a2 g_Triv); eauto.
-      left. econstructor. econstructor; eauto.
-      right. exists (a_Conv (a_CApp a0 g_Triv) R1 g_Triv). econstructor.
-      inversion H5; auto. right.
-      exists (a_Conv (a_CApp (a_Conv a0 R1 g_Triv) g_Triv) R2 g_Triv).
-      econstructor. auto.
+      left. eauto.
     + intros H8. destruct H8 as [a' h0]. right.
       exists (a_CApp a' g_Triv); eauto.
   - destruct (sub_dec R R1) as [S1 | S2]. right; exists a; econstructor; eauto.
-    left; econstructor; econstructor; eauto.
-  - inversion H1; subst. unfold irrelevant in H0. inversion H0.
-    case IHTyping1; auto.
-     + split; auto. intros. pose (Q := H4 x A R H7). simpl in Q. eauto.
-     + move => h1. inversion h1; subst. left. auto.
-       destruct (sub_dec R0 R2) as [S1 | S2]. right. exists (a_Conv a0 R2 g_Triv).
-       eapply E_Combine; eauto. left. auto.
-       destruct (sub_dec R3 R2) as [S1 | S2].
-       right. exists (a_Conv (a_Conv a0 R0 g_Triv) R2 g_Triv).
-       eapply E_Combine; eauto. eauto.
-     + move => h1. destruct h1 as [b' h0]. right.
-       exists (a_Conv b' R2 g_Triv); eauto.
+    left. eauto. 
 Qed.
