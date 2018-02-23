@@ -596,24 +596,6 @@ Path F (a [o]) R
 defns
 JValue :: '' ::=
 
-defn
-CoercedValue R A ::   :: CoercedValue :: ''
-{{ com Values with at most one coercion at the top }}
-{{ tex \mathsf{CoercedValue}_{[[R]]}\ [[A]] }}
-by
-
-Value R a
------------------ :: CV
-CoercedValue R a
-
-Value R a
----------------------- :: CC
-CoercedValue R (a |>R1 o)
-
-CoercedValue R (a |>R1 o)
-not (R1 <= R2)
------------------------------------ :: CCV
-CoercedValue R ((a |>R1 o) |>R2 o)
 
 defn
 Value R A  ::   :: Value    :: 'Value_'
@@ -636,7 +618,7 @@ Value R \ + x:A/R1. a
 --------------------- :: UAbsRel
 Value R \ + R1 x. a
 
-CoercedValue R a
+Value R a
 --------------------- :: UAbsIrrel
 Value R \ - R1 x. a
 
