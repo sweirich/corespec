@@ -637,15 +637,6 @@ Qed.
 
 (* Properties of Path *)
 
-Lemma Path_lc : forall F a R, Path F a R -> lc_tm a.
-Proof. intros. induction H; eauto.
-Qed.
-
-Lemma uniq_Path : forall F F' a R, Path F a R -> Path F' a R -> F = F'.
-Proof. intros. generalize dependent F'. induction H; intros; auto.
-       inversion H1; subst. auto. inversion H1; subst. eauto.
-       inversion H0; subst. eauto. 
-Qed.
 
 Lemma decide_Path : forall W a R, erased_tm W a R -> (exists F, Path F a R) \/
                                      (forall F, not (Path F a R)).
@@ -663,6 +654,7 @@ Proof.
     left. exists F. eauto. right. intros. intro. inversion H; subst.
     pose (Q := n F). contradiction.
 Qed.
+
 
 Lemma Par_Path : forall F a R W a', Path F a R -> Par W a a' R -> Path F a' R.
 Proof. intros. generalize dependent a'. induction H; intros.

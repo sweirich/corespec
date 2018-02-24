@@ -628,23 +628,27 @@ Value R /\c:phi.a
 --------------------- :: UCAbs
 Value R /\c .a
 
-F ~ a : A/R1 in toplevel
-not (R1 <= R)
-------------------------- :: Ax
-Value R F
+% F ~ a : A/R1 in toplevel
+% not (R1 <= R)
+% ------------------------- :: Ax
+% Value R F
 
-Path F a R
-Value R a
---------------------- :: App
-Value R (a rho R1 b')
+% Path F a R
+% Value R a
+% --------------------- :: App
+% Value R (a rho R1 b')
 
-Path F a R
-Value R a
---------------------- :: CApp
-Value R (a [o])
+% Path F a R
+% Value R a
+% --------------------- :: CApp
+% Value R (a [o])
 
 % --------------------- :: Bullet
 % Value R []
+
+Path F a R 
+--------------- :: Path
+Value R a 
 
 defns
    JValueType :: '' ::=

@@ -107,24 +107,31 @@ Proof. intros F a R H. induction H; eauto.
 Qed.
 
 (* Coerced values and values are terminal. *)
+Lemma no_Path_reduction : forall R a F, Path F a R -> forall b, not (reduction_in_one a b R).
+Proof. 
+  intros R a F H. induction H; simpl; intros.
+  all : intros NH; inversion NH; subst.
+  - inversion H1. subst. assert (P : Ax a A R1 = Ax b A0 R2).
+    eapply binds_unique; eauto using uniq_toplevel. inversion P.
+    subst. contradiction.
+  - pose (Q := IHPath a'); contradiction.
+  - inversion H1; subst. inversion H0.
+  - pose (Q := IHPath a'); contradiction.
+  - inversion H0; subst. inversion H.
+Qed.
+
 Lemma no_Value_reduction : forall R a, Value R a ->
           forall b, not (reduction_in_one a b R).
 Proof. intros R a H. induction H; simpl; intros; eauto 2.
   all: intro NH; inversion NH; subst.
   all: try (inversion H1; fail).
   all: try (inversion H0; fail).
+  all: try solve [eapply no_Path_reduction; eauto 3].
   - inversion H.
   - pick fresh x.
     move: (H0 x ltac:(auto)) => h0.
     move: (H5 x ltac:(auto)) => h5.
     eapply h0; eauto.
-  - inversion H1. subst. assert (P : Ax a A R1 = Ax b A0 R2).
-    eapply binds_unique; eauto using uniq_toplevel. inversion P.
-    subst. contradiction.
-  - pose (Q := IHValue a'); contradiction.
-  - inversion H2; subst. inversion H0.
-  - pose (Q := IHValue a'); contradiction.
-  - inversion H1; subst. inversion H.
 Qed.
 
 Lemma sub_Path : forall F a R1 R2, Path F a R1 -> SubRole R1 R2 ->
@@ -165,16 +172,8 @@ Proof. intros R v H. induction H; simpl; auto. all: intros.
     apply E_AbsTerm_exists with (x := y); auto.
     apply notin_union_3; auto. rewrite fv_tm_tm_tm_close_tm_wrt_tm. auto.
     rewrite open_tm_wrt_tm_close_tm_wrt_tm; auto.
-  - destruct (sub_dec R1 R') as [H2 | H3]. right. exists a; econstructor; eauto.
-    left; econstructor; eauto. Unshelve. all:auto.
-  - eapply sub_Path in H0; eauto. destruct (IHValue R' H2) as [P1 | P2].
-    destruct H0 as [Q1 | Q2]. left. eauto. destruct Q2 as [a' Q].
-    apply no_Value_reduction with (b := a') in P1. contradiction.
-    destruct P2 as [a0 P]. right. exists (a_App a0 rho R1 b'). eauto.
-  - eapply sub_Path in H; eauto. destruct (IHValue R' H1) as [P1 | P2].
-    destruct H as [Q1 | Q2]. left. eauto. destruct Q2 as [a' Q].
-    apply no_Value_reduction with (b := a') in P1. contradiction.
-    destruct P2 as [a0 P]. right. exists (a_CApp a0 g_Triv). eauto.
+  - edestruct sub_Path; eauto 3.
+    Unshelve. all: auto.
 Qed.
 
 
@@ -182,9 +181,7 @@ Lemma nsub_Value :
   forall R v, Value R v -> forall R', SubRole R' R -> Value R' v.
 Proof. intros R v H. induction H; simpl; auto. all: intros.
   - pick fresh x. eapply Value_UAbsIrrel with (L := L). intros. eauto.
-  - econstructor. eauto. intro. eapply H0. eauto.
   - eapply nsub_Path in H0; eauto.
-  - eapply nsub_Path in H; eauto.
 Qed.
 
 

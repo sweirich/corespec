@@ -42,6 +42,7 @@ Proof.
   all: try solve [inversion 1 | econstructor; eauto]; eauto.
   all: try solve [intros;
                   eauto using tm_subst_tm_tm_lc_tm,
+                  Path_subst_tm,
                   tm_subst_tm_constraint_lc_constraint,
                   tm_subst_tm_co_lc_co].
   all: try solve [intros;
@@ -53,9 +54,6 @@ Proof.
     econstructor; eauto.
     instantiate (1 := L \u singleton x) => x0 h0.
     rewrite tm_subst_tm_tm_open_tm_wrt_tm_var; auto.
-  - intros. econstructor. apply tm_subst_tm_tm_lc_tm; auto.
-    eapply Path_subst_tm; eauto. eauto.
-  - intros. econstructor. eapply Path_subst_tm; eauto. eauto.
 Qed.
 
 (* ------------------------------------------------- *)
@@ -80,7 +78,7 @@ Proof.
   all: try solve [intros;
                   eauto using co_subst_co_tm_lc_tm,
                   co_subst_co_constraint_lc_constraint,
-                  co_subst_co_co_lc_co].
+                  co_subst_co_co_lc_co, Path_subst_co].
   all: try solve [intros;
     constructor; eauto using co_subst_co_tm_lc_tm,
                               co_subst_co_constraint_lc_constraint;
@@ -93,13 +91,10 @@ Proof.
     move: (H0 y ltac:(eauto) b x H1) => h0.
     rewrite co_subst_co_tm_open_tm_wrt_tm in h0.
     simpl in h0. auto. auto.
-  - intros. econstructor. apply co_subst_co_tm_lc_tm; auto.
-    eapply Path_subst_co; eauto. eauto.
-  - intros. econstructor. eapply Path_subst_co; eauto. eauto.
 Qed.
 
 Lemma CoercedValue_Value_lc : forall R v, Value R v -> lc_tm v.
-Proof. intros; induction H; auto.
+Proof. intros; induction H; eauto using Path_lc.
 Qed.
 
 

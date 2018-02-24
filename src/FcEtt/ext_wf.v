@@ -16,14 +16,22 @@ Require Import FcEtt.toplevel.
    -- all components are locally closed in any judgement
   *)
 
+Lemma Path_lc : forall F a R, Path F a R -> lc_tm a.
+Proof. intros. induction H; eauto.
+Qed.
 
+Lemma uniq_Path : forall F F' a R, Path F a R -> Path F' a R -> F = F'.
+Proof. intros. generalize dependent F'. induction H; intros; auto.
+       inversion H1; subst. auto. inversion H1; subst. eauto.
+       inversion H0; subst. eauto. 
+Qed.
 
 Lemma Value_lc : forall R A, Value R A -> lc_tm A.
-Proof. intros; induction H; eauto.
+Proof. intros; induction H; eauto using Path_lc.
 Qed.
 
 
-Hint Resolve Value_lc : lc.
+Hint Resolve Value_lc Path_lc : lc.
 
 
 (* -------------------------------- *)

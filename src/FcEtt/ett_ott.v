@@ -893,19 +893,9 @@ Inductive Value : role -> tm -> Prop :=    (* defn Value *)
  | Value_UCAbs : forall (R:role) (a:tm),
      lc_tm (a_UCAbs a) ->
      Value R (a_UCAbs a)
- | Value_Ax : forall (R:role) (F:const) (a A:tm) (R1:role),
-      binds  F  ( (Ax a A R1) )   toplevel   ->
-      not (  ( SubRole R1 R )  )  ->
-     Value R (a_Fam F)
- | Value_App : forall (R:role) (a:tm) (rho:relflag) (R1:role) (b':tm) (F:const),
-     lc_tm b' ->
+ | Value_Path : forall (R:role) (a:tm) (F:const),
      Path F a R ->
-     Value R a ->
-     Value R  ( (a_App a rho R1 b') ) 
- | Value_CApp : forall (R:role) (a:tm) (F:const),
-     Path F a R ->
-     Value R a ->
-     Value R  ( (a_CApp a g_Triv) ) .
+     Value R a.
 
 (* defns JValueType *)
 Inductive value_type : role -> tm -> Prop :=    (* defn value_type *)
