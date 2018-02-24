@@ -140,6 +140,13 @@ Proof. intros. induction H.
           exists (a_CApp a' g_Triv); eauto.
 Qed.
 
+Lemma nsub_Path : forall F a R1 R2, Path F a R1 -> SubRole R2 R1 ->
+                        Path F a R2.
+Proof. intros. induction H.
+        - destruct (sub_dec R1 R2) as [P1 | P2]. eauto. eauto.
+        - apply IHPath in H0. eauto.
+        - apply IHPath in H0. eauto.
+Qed.
 
 Lemma sub_Value :
   forall R v, Value R v -> forall R', SubRole R R' ->
@@ -168,6 +175,16 @@ Proof. intros R v H. induction H; simpl; auto. all: intros.
     destruct H as [Q1 | Q2]. left. eauto. destruct Q2 as [a' Q].
     apply no_Value_reduction with (b := a') in P1. contradiction.
     destruct P2 as [a0 P]. right. exists (a_CApp a0 g_Triv). eauto.
+Qed.
+
+
+Lemma nsub_Value :
+  forall R v, Value R v -> forall R', SubRole R' R -> Value R' v.
+Proof. intros R v H. induction H; simpl; auto. all: intros.
+  - pick fresh x. eapply Value_UAbsIrrel with (L := L). intros. eauto.
+  - econstructor. eauto. intro. eapply H0. eauto.
+  - eapply nsub_Path in H0; eauto.
+  - eapply nsub_Path in H; eauto.
 Qed.
 
 
@@ -210,6 +227,13 @@ Proof. intros. induction H; eauto.
          eexists. eauto.
 Qed.
 
+(* This does not hold in E_AppLeft case. *)
+Lemma nsub_red_one :
+  forall R R' a a', reduction_in_one a a' R -> 
+               SubRole R' R -> Value R' a \/
+               exists a'', reduction_in_one a a'' R'.
+Proof.
+Abort.
 
 Ltac Value_no_red :=
      match goal with

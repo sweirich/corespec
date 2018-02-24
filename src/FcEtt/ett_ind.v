@@ -738,7 +738,7 @@ Lemma nom_bot : forall R, SubRole R Nom -> R = Nom.
 Proof. intros. dependent induction H; auto.
 Qed.
 
-Lemma phm_top : forall R, SubRole Rep R -> R = Rep.
+Lemma rep_top : forall R, SubRole Rep R -> R = Rep.
 Proof. intros. dependent induction H; auto.
 Qed.
 
@@ -748,4 +748,9 @@ Qed.
 
 Lemma sub_dec : forall R1 R2, SubRole R1 R2 \/ ~(SubRole R1 R2).
 Proof. intros. destruct R1, R2; auto. right. apply rep_nsub_nom.
+Qed.
+
+Lemma nsub_sub : forall R1 R2, ~(SubRole R1 R2) -> SubRole R2 R1.
+Proof. intros. destruct R1, R2; auto. assert False. apply H; auto.
+       inversion H0.
 Qed.

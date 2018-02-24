@@ -1328,6 +1328,8 @@ Proof.
   - assert False. eapply no_aCAbs. eauto 2. done.
 Qed.
 
+
+
 Definition irrelevant G D (a : tm) :=
   (forall x A R, binds x (Tm A R) G -> x `notin` fv_tm_tm_tm a) /\ Good G D.
 
@@ -1393,7 +1395,7 @@ Proof. intros. assert (lc_tm a). {eapply Typing_lc1; eauto. }
     + move => h1.  apply canonical_forms_Pi in H; auto.
       destruct H as [[a1 e1] | [F Q]]; subst. 
       right.
-      exists (open_tm_wrt_tm a1 a_Bullet); eauto.      
+      exists (open_tm_wrt_tm a1 a_Bullet); eauto.
 
       left. eauto. 
     + move => h1. destruct h1 as [b' h0]. right.
@@ -1411,3 +1413,125 @@ Proof. intros. assert (lc_tm a). {eapply Typing_lc1; eauto. }
   - destruct (sub_dec R R1) as [S1 | S2]. right; exists a; econstructor; eauto.
     left. eauto. 
 Qed.
+
+
+(* Generalizing progress *)
+
+Lemma canonical_forms_Pi' : forall G rho a A R B R' R'', Good G (dom G) ->
+    Typing G a (a_Pi rho A R B) R' -> Value R'' a ->
+    (exists a1, a = a_UAbs rho R a1) \/ (exists F, Path F a R'').
+Proof.
+  intros G rho a A R B R' R'' C H H0.
+  inversion H0; subst; eauto.
+  - apply invert_a_Star in H; eauto.
+    impossible_defeq.
+    inversion H5.
+  - eapply invert_a_Pi in H; eauto.
+    destruct H as [H _]; eauto.
+    impossible_defeq. inversion H7.
+  - eapply invert_a_CPi in H; eauto.
+    destruct H as [H _].
+    impossible_defeq. inversion H7.
+  - assert False. eapply no_aAbs. eauto 2. done.
+  - eapply invert_a_UAbs in H; eauto.
+    destruct H as (A1 & A2 & H & _); eauto.
+    impossible_defeq. inversion H7.
+  - eapply invert_a_UAbs in H; eauto.
+    destruct H as (A1 & B1 & H & _); eauto.
+    impossible_defeq. inversion H7.
+  - assert False. eapply no_aCAbs. eauto 2. done.
+  - eapply invert_a_UCAbs in H; eauto.
+    destruct H as [a [b [T [R1 [B1 [_ [H _]]]]]]]; eauto.
+    impossible_defeq. inversion H7.
+Qed.
+
+
+Lemma canonical_forms_CPi' : forall G a phi B R R', Good G (dom G) ->
+    Typing G a (a_CPi phi B) R -> Value R' a ->
+    (exists a1, a = a_UCAbs a1) \/ (exists F, Path F a R').
+Proof.
+  intros G a phi B R R' C H H0.
+  inversion H0; subst; eauto.
+  - apply invert_a_Star in H; eauto.
+    impossible_defeq. inversion H6.
+  - eapply invert_a_Pi in H; eauto.
+    destruct H as [H _]; eauto.
+    impossible_defeq. inversion H8.
+  - eapply invert_a_CPi in H; eauto.
+    destruct H as [H _].
+    impossible_defeq. inversion H8.
+  - assert False. eapply no_aAbs. eauto 2. done.
+  - eapply invert_a_UAbs in H; eauto.
+    destruct H as [A1 [A2 [R'' [H _]]]]; eauto.
+    impossible_defeq. inversion H7.
+  - eapply invert_a_UAbs in H; eauto.
+    destruct H as [A1 [A2 [R'' [H _]]]]; eauto.
+    impossible_defeq. inversion H7.
+  - assert False. eapply no_aCAbs. eauto 2. done.
+Qed.
+
+
+Lemma progress' : forall G a A R, Typing G a A R ->
+                          irrelevant G (dom G) a -> forall R',
+                          Value R' a \/ exists a', reduction_in_one a a' R'.
+Proof. intros G a A R H H0. assert (lc_tm a). {eapply Typing_lc1; eauto. }
+       induction H; eauto; try done. all: intros.
+  - unfold irrelevant in *.
+    apply H0 in H2. simpl in H2. fsetdec.
+  - left; econstructor; auto.
+    inversion H1; auto.
+  - destruct rho. 
+    + left. constructor; eauto.
+    + pick fresh x. assert (x `notin` L). auto. move: (H4 x H5) => h0.
+      inversion h0. subst. edestruct (H2 x H5) as [V | [a' S]].
+      { unfold irrelevant in H0. split_hyp.
+      have ctx: (Ctx ([(x, Tm A R)] ++ G)) by eauto.
+      move: (Ctx_uniq ctx) => u. inversion u. subst.
+      split. intros. apply binds_cons_uniq_1 in H8. destruct H8.
+      ++ split_hyp. subst. auto.
+      ++ split_hyp. eapply notin_sub; [idtac|eapply fv_tm_tm_tm_open_tm_wrt_tm_upper].
+         simpl in *. pose (Q := H0 x0 A0 R0 H8). apply notin_union_3; auto.
+      ++ eauto.
+      ++ simpl. eapply Good_add_tm_2; eauto using Typing_erased. }
+      inversion H1; auto.
+      -- left.
+         eapply Value_UAbsIrrel_exists with (x := x); eauto.
+      -- right. exists (a_UAbs Irrel R (close_tm_wrt_tm x a')).
+         eapply E_AbsTerm_exists with (x := x).
+         { eapply notin_union; auto.
+           simpl. rewrite fv_tm_tm_tm_close_tm_wrt_tm. auto. }
+         rewrite open_tm_wrt_tm_close_tm_wrt_tm. auto.
+  - unfold irrelevant in H0. inversion H0.
+    inversion H1; subst. assert (irrelevant G (dom G) b).
+    unfold irrelevant in H0. inversion H0. split; auto.
+    intros. pose (Q := H3 x A0 R0 H8). simpl in Q. eauto.
+    destruct (IHTyping1 H5 H7 R'0) as [V | [b' h0]]; auto 1.
+    eapply canonical_forms_Pi' in H; eauto.
+    destruct H as [[a1 e1] | [F Q]]; subst. right.
+    exists (open_tm_wrt_tm a1 a); eauto.
+    left. econstructor; eauto. right. exists (a_App b' Rel R a); eauto.
+  - unfold irrelevant in H0. inversion H0.
+    inversion H1; subst. assert (irrelevant G (dom G) b).
+    unfold irrelevant in H0. inversion H0. split; auto.
+    intros. pose (Q := H3 x A0 R0 H8). simpl in Q. eauto.
+    destruct (IHTyping1 H5 H7 R'0) as [V | [b' h0]]; auto 1.
+    eapply canonical_forms_Pi' in H; eauto.
+    destruct H as [[a1 e1] | [F Q]]; subst. right.
+    exists (open_tm_wrt_tm a1 a_Bullet); eauto.
+    left. econstructor; eauto. right.
+    exists (a_App b' Irrel R a_Bullet); eauto.
+  - left. constructor; eauto. inversion H1; auto.
+  - unfold irrelevant in H0. inversion H0.
+    inversion H1; subst. assert (irrelevant G (dom G) a1).
+    unfold irrelevant in H0. inversion H0. split; auto.
+    intros. pose (Q := H3 x A0 R0 H9). simpl in Q. eauto.
+    destruct (IHTyping H5 H7 R'0) as [V | [b' h0]]; auto 1.
+    eapply canonical_forms_CPi' in H; eauto.
+    destruct H as [[a2 e1] | [F Q]]; subst. right.
+    exists (open_tm_wrt_co a2 g_Triv); eauto.
+    left. econstructor; eauto. right. exists (a_CApp b' g_Triv); eauto.
+  - destruct (sub_dec R R') as [S1 | S2]. right; exists a.
+    econstructor; econstructor; eauto.
+    left. eauto. 
+Qed.
+
