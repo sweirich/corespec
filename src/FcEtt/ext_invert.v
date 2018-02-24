@@ -416,7 +416,7 @@ Inductive context_DefEq : available_props -> context -> context -> Prop :=
 | Nul_Eqcontext: forall D, context_DefEq D nil nil
 | Factor_Eqcontext_tm: forall G1 G2 D A A' R x,
     context_DefEq D G1 G2 ->
-    DefEq G1 D A A' a_Star R ->
+    DefEq G1 D A A' a_Star Rep ->
     DefEq G2 D A A' a_Star R ->
     context_DefEq D ([(x, Tm A R)] ++ G1) ([(x, Tm A' R)] ++ G2)
 | Factor_Eqcontext_co: forall D G1 G2 Phi1 Phi2 c,
@@ -763,20 +763,15 @@ Proof.
       apply (E_Conv _ _ _ _ ((a_Pi rho A2 R B))); auto.
       -- apply (E_Abs (L \u dom G)); eauto.
          intros x H4.
-         eapply (@context_DefEq_typing ([(x, Tm A2 R)] ++ G)); eauto.
          apply H0; auto.
-         apply Factor_Eqcontext_tm; eauto.
-         apply refl_context_defeq; auto.
       -- apply (E_PiCong (L \u (dom G))); auto.
          ++ intros x H4.
-            apply E_Refl; eauto.
-            eapply (@context_DefEq_typing ([(x, Tm A2 R)] ++ G)); eauto.
-            eapply Typing_regularity; eauto 2.
-            eapply E_SubRole with (R1 := R'); eauto 1.
-            apply H0; auto.
-            apply Factor_Eqcontext_tm; eauto.
-            apply refl_context_defeq; auto.
-         ++ apply (E_Pi (L \u (dom G))); eauto.
+            apply E_Refl; eauto 3.
+            move: (H0 x ltac:(auto)) => [h0 h1].
+            eapply Typing_regularity. 
+            eapply E_SubRole with (R1:=R'). auto.
+            eauto.
+         ++ apply (E_Pi (L \u (dom G))); eauto 2.
             intros x H4.
             have: x `notin` L; auto => h0.
             destruct (H0 x h0).
@@ -860,31 +855,19 @@ Proof.
     + apply (E_Conv _ _ _ _ ((a_CPi phi1 B))); auto.
       * apply (E_CAbs (L \u (dom G))); eauto.
         intros c H3.
-        eapply (@context_DefEq_typing ([(c, Co phi1)] ++ G)); eauto.
         apply H; eauto.
-        apply Factor_Eqcontext_co; eauto 2.
-        apply refl_context_defeq; eauto.
-        all: apply refl_iso; eauto.
       * destruct phi1. apply (E_CPiCong (L \u (dom G))); auto.
         -- apply refl_iso; auto.
         -- intros c H3.
-           apply E_Refl; eauto.
-           eapply (@context_DefEq_typing ([(c, Co (Eq a0 b0 A R0))] ++ G)); eauto.
+           apply E_Refl; eauto 2. 
            eapply Typing_regularity; eauto 2.
            eapply E_SubRole with (R1 := R); eauto 1.
            eapply H; eauto 4.
-           apply Factor_Eqcontext_co; eauto 4.
-           apply refl_context_defeq; eauto 4.
-           all: apply refl_iso; eauto 4.
-        -- apply (E_CPi (L \u dom G)); eauto.
+        -- apply (E_CPi (L \u dom G)); eauto 2.
            intros c H3.
-           eapply (@context_DefEq_typing ([(c, Co (Eq a0 b0 A R0))] ++ G)); eauto.
            eapply Typing_regularity; eauto 2.
            eapply E_SubRole with (R1 := R); eauto 1.
            apply H; eauto.
-           apply Factor_Eqcontext_co; eauto 3.
-           apply refl_context_defeq; eauto 4.
-           all: apply refl_iso; eauto.
         -- apply (E_CPi (L \u dom G)); eauto 3.
            intros c H3.
            eapply Typing_regularity; eauto 2.
@@ -935,8 +918,7 @@ Proof.
     inversion H0; subst.
     inversion H; subst.
     split; auto.
-    Unshelve. exact (dom G). exact (dom G).
-    auto. auto. auto.
+    Unshelve. all: auto.
 (*  - intros.
     pcess_hyps.
     split;
@@ -1054,7 +1036,6 @@ Lemma iso_cong : forall G D A A' B B' T T' R,
 
 
 (* ----------------------------------------------------------------------------- *)
-
 Lemma E_PiCong2 :  ∀ (L : atoms) (G : context) (D : available_props) rho (A1 B1 A2 B2 : tm) R R',
     DefEq G D A1 A2 a_Star R
     → (∀ x : atom,
