@@ -416,7 +416,7 @@ Inductive context_DefEq : available_props -> context -> context -> Prop :=
 | Nul_Eqcontext: forall D, context_DefEq D nil nil
 | Factor_Eqcontext_tm: forall G1 G2 D A A' R x,
     context_DefEq D G1 G2 ->
-    DefEq G1 D A A' a_Star Rep ->
+    DefEq G1 D A A' a_Star R ->
     DefEq G2 D A A' a_Star R ->
     context_DefEq D ([(x, Tm A R)] ++ G1) ([(x, Tm A' R)] ++ G2)
 | Factor_Eqcontext_co: forall D G1 G2 Phi1 Phi2 c,
