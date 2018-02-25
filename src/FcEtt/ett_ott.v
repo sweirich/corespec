@@ -31,7 +31,7 @@ with tm : Set :=  (*r types and kinds *)
  | a_UCAbs (b:tm)
  | a_CApp (a:tm) (g:co)
  | a_Bullet : tm
- | a_Pattern (R:role) (a':tm) (a:tm) (b:tm)
+ | a_Pattern (a':tm) (a:tm) (b:tm)
  | a_DataCon (K:datacon)
  | a_Case (a:tm) (brs5:brs)
  | a_Sub (R:role) (a:tm)
@@ -143,7 +143,7 @@ with open_tm_wrt_co_rec (k:nat) (g5:co) (a5:tm) {struct a5}: tm :=
   | (a_UCAbs b) => a_UCAbs (open_tm_wrt_co_rec (S k) g5 b)
   | (a_CApp a g) => a_CApp (open_tm_wrt_co_rec k g5 a) (open_co_wrt_co_rec k g5 g)
   | a_Bullet => a_Bullet 
-  | (a_Pattern R a' a b) => a_Pattern R (open_tm_wrt_co_rec k g5 a') (open_tm_wrt_co_rec k g5 a) (open_tm_wrt_co_rec k g5 b)
+  | (a_Pattern a' a b) => a_Pattern (open_tm_wrt_co_rec k g5 a') (open_tm_wrt_co_rec k g5 a) (open_tm_wrt_co_rec k g5 b)
   | (a_DataCon K) => a_DataCon K
   | (a_Case a brs5) => a_Case (open_tm_wrt_co_rec k g5 a) (open_brs_wrt_co_rec k g5 brs5)
   | (a_Sub R a) => a_Sub R (open_tm_wrt_co_rec k g5 a)
@@ -208,7 +208,7 @@ with open_tm_wrt_tm_rec (k:nat) (a5:tm) (a_6:tm) {struct a_6}: tm :=
   | (a_UCAbs b) => a_UCAbs (open_tm_wrt_tm_rec k a5 b)
   | (a_CApp a g) => a_CApp (open_tm_wrt_tm_rec k a5 a) (open_co_wrt_tm_rec k a5 g)
   | a_Bullet => a_Bullet 
-  | (a_Pattern R a' a b) => a_Pattern R (open_tm_wrt_tm_rec k a5 a') (open_tm_wrt_tm_rec k a5 a) (open_tm_wrt_tm_rec k a5 b)
+  | (a_Pattern a' a b) => a_Pattern (open_tm_wrt_tm_rec k a5 a') (open_tm_wrt_tm_rec k a5 a) (open_tm_wrt_tm_rec k a5 b)
   | (a_DataCon K) => a_DataCon K
   | (a_Case a brs5) => a_Case (open_tm_wrt_tm_rec k a5 a) (open_brs_wrt_tm_rec k a5 brs5)
   | (a_Sub R a) => a_Sub R (open_tm_wrt_tm_rec k a5 a)
@@ -416,11 +416,11 @@ with lc_tm : tm -> Prop :=    (* defn lc_tm *)
      (lc_tm (a_CApp a g))
  | lc_a_Bullet : 
      (lc_tm a_Bullet)
- | lc_a_Pattern : forall (R:role) (a' a b:tm),
+ | lc_a_Pattern : forall (a' a b:tm),
      (lc_tm a') ->
      (lc_tm a) ->
      (lc_tm b) ->
-     (lc_tm (a_Pattern R a' a b))
+     (lc_tm (a_Pattern a' a b))
  | lc_a_DataCon : forall (K:datacon),
      (lc_tm (a_DataCon K))
  | lc_a_Case : forall (a:tm) (brs5:brs),
@@ -506,7 +506,7 @@ with fv_tm_tm_tm (a5:tm) : vars :=
   | (a_UCAbs b) => (fv_tm_tm_tm b)
   | (a_CApp a g) => (fv_tm_tm_tm a) \u (fv_tm_tm_co g)
   | a_Bullet => {}
-  | (a_Pattern R a' a b) => (fv_tm_tm_tm a') \u (fv_tm_tm_tm a) \u (fv_tm_tm_tm b)
+  | (a_Pattern a' a b) => (fv_tm_tm_tm a') \u (fv_tm_tm_tm a) \u (fv_tm_tm_tm b)
   | (a_DataCon K) => {}
   | (a_Case a brs5) => (fv_tm_tm_tm a) \u (fv_tm_tm_brs brs5)
   | (a_Sub R a) => (fv_tm_tm_tm a)
@@ -566,7 +566,7 @@ with fv_co_co_tm (a5:tm) : vars :=
   | (a_UCAbs b) => (fv_co_co_tm b)
   | (a_CApp a g) => (fv_co_co_tm a) \u (fv_co_co_co g)
   | a_Bullet => {}
-  | (a_Pattern R a' a b) => (fv_co_co_tm a') \u (fv_co_co_tm a) \u (fv_co_co_tm b)
+  | (a_Pattern a' a b) => (fv_co_co_tm a') \u (fv_co_co_tm a) \u (fv_co_co_tm b)
   | (a_DataCon K) => {}
   | (a_Case a brs5) => (fv_co_co_tm a) \u (fv_co_co_brs brs5)
   | (a_Sub R a) => (fv_co_co_tm a)
@@ -651,7 +651,7 @@ with tm_subst_tm_tm (a5:tm) (x5:tmvar) (a_6:tm) {struct a_6} : tm :=
   | (a_UCAbs b) => a_UCAbs (tm_subst_tm_tm a5 x5 b)
   | (a_CApp a g) => a_CApp (tm_subst_tm_tm a5 x5 a) (tm_subst_tm_co a5 x5 g)
   | a_Bullet => a_Bullet 
-  | (a_Pattern R a' a b) => a_Pattern R (tm_subst_tm_tm a5 x5 a') (tm_subst_tm_tm a5 x5 a) (tm_subst_tm_tm a5 x5 b)
+  | (a_Pattern a' a b) => a_Pattern (tm_subst_tm_tm a5 x5 a') (tm_subst_tm_tm a5 x5 a) (tm_subst_tm_tm a5 x5 b)
   | (a_DataCon K) => a_DataCon K
   | (a_Case a brs5) => a_Case (tm_subst_tm_tm a5 x5 a) (tm_subst_tm_brs a5 x5 brs5)
   | (a_Sub R a) => a_Sub R (tm_subst_tm_tm a5 x5 a)
@@ -711,7 +711,7 @@ with co_subst_co_tm (g5:co) (c5:covar) (a5:tm) {struct a5} : tm :=
   | (a_UCAbs b) => a_UCAbs (co_subst_co_tm g5 c5 b)
   | (a_CApp a g) => a_CApp (co_subst_co_tm g5 c5 a) (co_subst_co_co g5 c5 g)
   | a_Bullet => a_Bullet 
-  | (a_Pattern R a' a b) => a_Pattern R (co_subst_co_tm g5 c5 a') (co_subst_co_tm g5 c5 a) (co_subst_co_tm g5 c5 b)
+  | (a_Pattern a' a b) => a_Pattern (co_subst_co_tm g5 c5 a') (co_subst_co_tm g5 c5 a) (co_subst_co_tm g5 c5 b)
   | (a_DataCon K) => a_DataCon K
   | (a_Case a brs5) => a_Case (co_subst_co_tm g5 c5 a) (co_subst_co_brs g5 c5 brs5)
   | (a_Sub R a) => a_Sub R (co_subst_co_tm g5 c5 a)
@@ -788,7 +788,7 @@ Fixpoint erase_tm (a : tm) (r : role) : tm :=
    | a_DataCon K => a_Star  (* a_DataCon K *)
    | a_Case a brs => a_Star (* a_Case (erase_tm a) (erase_brs brs) *)
    | a_Bullet => a_Bullet
-   | a_Pattern R a' a b => a_Pattern R (erase_tm a' R) (erase_tm a R) (erase_tm b R)
+   | a_Pattern a' a b => a_Pattern (erase_tm a' r) (erase_tm a r) (erase_tm b r)
    | a_Sub _ a => erase_tm a r
    end
 with erase_brs (x : brs) (r:role): brs :=
@@ -996,11 +996,11 @@ Inductive erased_tm : role_context -> tm -> role -> Prop :=    (* defn erased_tm
       uniq  W  ->
       binds  F  ( (Ax a A R) )   toplevel   ->
      erased_tm W (a_Fam F) R1
- | erased_a_Pattern : forall (W:role_context) (R:role) (F:const) (a b:tm) (R':role),
-     erased_tm W (a_Fam F) R' ->
-     erased_tm W a R ->
-     erased_tm W b R ->
-     erased_tm W  ( (a_Pattern R (a_Fam F) a b) )  R.
+ | erased_a_Pattern : forall (W:role_context) (F:const) (a b:tm) (R1:role) (a0 A:tm) (R':role),
+      binds  F  ( (Ax a0 A R') )   toplevel   ->
+     erased_tm W a R1 ->
+     erased_tm W b R1 ->
+     erased_tm W  ( (a_Pattern (a_Fam F) a b) )  R1.
 
 (* defns JChk *)
 Inductive RhoCheck : relflag -> tmvar -> tm -> Prop :=    (* defn RhoCheck *)
@@ -1051,21 +1051,23 @@ Inductive Par : role_context -> tm -> tm -> role -> Prop :=    (* defn Par *)
      SubRole R1 R ->
       uniq  W  ->
      Par W (a_Fam F) a R
- | Par_Pattern : forall (W:role_context) (R:role) (F:const) (a b a' b':tm),
-     Par W a a' R ->
-     Par W b b' R ->
-     Par W (a_Pattern R (a_Fam F) a b) (a_Pattern R (a_Fam F) a' b') R
- | Par_PatternTrue : forall (W:role_context) (R:role) (F:const) (a b a':tm),
-     lc_tm b ->
-     Par W a a' R ->
-     Path F a' R ->
-     Par W (a_Pattern R (a_Fam F) a b) a' R
- | Par_PatternFalse : forall (W:role_context) (R:role) (F:const) (a b b' a':tm),
-     Par W a a' R ->
-     Par W b b' R ->
-     Value R a' ->
-      not (  ( Path F a' R )  )  ->
-     Par W (a_Pattern R (a_Fam F) a b) b' R
+ | Par_Pattern : forall (W:role_context) (F:const) (a b a' b':tm) (R0:role) (a0 A:tm) (R':role),
+      binds  F  ( (Ax a0 A R') )   toplevel   ->
+     Par W a a' R0 ->
+     Par W b b' R0 ->
+     Par W (a_Pattern (a_Fam F) a b) (a_Pattern (a_Fam F) a' b') R0
+ | Par_PatternTrue : forall (W:role_context) (F:const) (a b a':tm) (R0:role) (b':tm),
+     Par W a a' R0 ->
+     Par W b b' R0 ->
+     Path F a' R0 ->
+     Par W (a_Pattern (a_Fam F) a b) a' R0
+ | Par_PatternFalse : forall (W:role_context) (F:const) (a b b':tm) (R0:role) (a' a0 A:tm) (R':role),
+     Par W a a' R0 ->
+     Par W b b' R0 ->
+      binds  F  ( (Ax a0 A R') )   toplevel   ->
+     Value R0 a' ->
+      not (  ( Path F a' R0 )  )  ->
+     Par W (a_Pattern (a_Fam F) a b) b' R0
 with MultiPar : role_context -> tm -> tm -> role -> Prop :=    (* defn MultiPar *)
  | MP_Refl : forall (W:role_context) (a:tm) (R:role),
      lc_tm a ->
@@ -1093,15 +1095,16 @@ Inductive Beta : tm -> tm -> role -> Prop :=    (* defn Beta *)
       binds  F  ( (Ax a A R) )   toplevel   ->
      SubRole R R1 ->
      Beta (a_Fam F) a R1
- | Beta_PatternTrue : forall (R:role) (F:const) (a b:tm),
+ | Beta_PatternTrue : forall (F:const) (a b:tm) (R0:role),
      lc_tm b ->
-     Path F a R ->
-     Beta (a_Pattern R (a_Fam F) a b) a R
- | Beta_PatternFalse : forall (R:role) (F:const) (a b:tm),
+     Path F a R0 ->
+     Beta (a_Pattern (a_Fam F) a b) a R0
+ | Beta_PatternFalse : forall (F:const) (a b:tm) (R0:role) (a0 A:tm) (R':role),
      lc_tm b ->
-     Value R a ->
-      not (  ( Path F a R )  )  ->
-     Beta (a_Pattern R (a_Fam F) a b) b R
+     Value R0 a ->
+      binds  F  ( (Ax a0 A R') )   toplevel   ->
+      not (  ( Path F a R0 )  )  ->
+     Beta (a_Pattern (a_Fam F) a b) b R0
 with reduction_in_one : tm -> tm -> role -> Prop :=    (* defn reduction_in_one *)
  | E_AbsTerm : forall (L:vars) (R:role) (a a':tm) (R1:role),
       ( forall x , x \notin  L  -> reduction_in_one  ( open_tm_wrt_tm a (a_Var_f x) )   ( open_tm_wrt_tm a' (a_Var_f x) )  R1 )  ->
@@ -1113,10 +1116,10 @@ with reduction_in_one : tm -> tm -> role -> Prop :=    (* defn reduction_in_one 
  | E_CAppLeft : forall (a a':tm) (R:role),
      reduction_in_one a a' R ->
      reduction_in_one (a_CApp a g_Triv) (a_CApp a' g_Triv) R
- | E_Pattern : forall (R:role) (F:const) (a b a':tm),
+ | E_Pattern : forall (F:const) (a b a':tm) (R0:role),
      lc_tm b ->
-     reduction_in_one a a' R ->
-     reduction_in_one (a_Pattern R (a_Fam F) a b) (a_Pattern R (a_Fam F) a' b) R
+     reduction_in_one a a' R0 ->
+     reduction_in_one (a_Pattern (a_Fam F) a b) (a_Pattern (a_Fam F) a' b) R0
  | E_Prim : forall (a b:tm) (R:role),
      Beta a b R ->
      reduction_in_one a b R
@@ -1187,11 +1190,11 @@ with Typing : context -> tm -> tm -> role -> Prop :=    (* defn Typing *)
       binds  F  ( (Ax a A R) )   toplevel   ->
      Typing  nil  A a_Star R1 ->
      Typing G (a_Fam F) A R1
- | E_Pat : forall (G:context) (R:role) (F:const) (a b A:tm) (R':role),
-     Typing G (a_Fam F) a_Star R' ->
-     Typing G a A R ->
-     Typing G b A R ->
-     Typing G (a_Pattern R (a_Fam F) a b) A R
+ | E_Pat : forall (G:context) (F:const) (a b A:tm) (R1:role) (a0:tm) (R':role),
+      binds  F  ( (Ax a0 A R') )   toplevel   ->
+     Typing G a A R1 ->
+     Typing G b A R1 ->
+     Typing G (a_Pattern (a_Fam F) a b) A R1
 with Iso : context -> available_props -> constraint -> constraint -> Prop :=    (* defn Iso *)
  | E_PropCong : forall (G:context) (D:available_props) (A1 B1 A:tm) (R:role) (A2 B2:tm),
      DefEq G D A1 A2 A R ->
@@ -1290,11 +1293,11 @@ with DefEq : context -> available_props -> tm -> tm -> tm -> role -> Prop :=    
  | E_IsoSnd : forall (G:context) (D:available_props) (A A':tm) (R1:role) (a b a' b':tm),
      Iso G D (Eq a b A R1) (Eq a' b' A' R1) ->
      DefEq G D A A' a_Star R1
- | E_PatCong : forall (G:context) (D:available_props) (R:role) (F:const) (a b a' b' A:tm) (R':role),
-     Typing G (a_Fam F) a_Star R' ->
-     DefEq G D a a' A R ->
-     DefEq G D b b' A R ->
-     DefEq G D (a_Pattern R (a_Fam F) a b) (a_Pattern R (a_Fam F) a' b') A R
+ | E_PatCong : forall (G:context) (D:available_props) (F:const) (a b a' b' A:tm) (R1:role) (a0:tm) (R':role),
+      binds  F  ( (Ax a0 A R') )   toplevel   ->
+     DefEq G D a a' A R1 ->
+     DefEq G D b b' A R1 ->
+     DefEq G D (a_Pattern (a_Fam F) a b) (a_Pattern (a_Fam F) a' b') A R1
 with Ctx : context -> Prop :=    (* defn Ctx *)
  | E_Empty : 
      Ctx  nil 

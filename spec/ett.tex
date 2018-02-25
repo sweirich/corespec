@@ -76,7 +76,7 @@
 \ottprodline{|}{ \mathrm{\Lambda} \ottmv{c} . \ottnt{b} }{}{\textsf{bind}\; \ottmv{c}\; \textsf{in}\; \ottnt{b}}{}{}\ottprodnewline
 \ottprodline{|}{\ottnt{a}  \ottsym{[}  \gamma  \ottsym{]}}{}{}{}{}\ottprodnewline
 \ottprodline{|}{\Box}{}{}{}{}\ottprodnewline
-\ottprodline{|}{\ottkw{ifPath} \, \ottnt{R} \, \ottnt{a'} \, \ottnt{a} \, \ottnt{b}}{}{}{}{}\ottprodnewline
+\ottprodline{|}{\ottkw{ifPath} \, \ottnt{a'} \, \ottnt{a} \, \ottnt{b}}{}{}{}{}\ottprodnewline
 \ottprodline{|}{\ottmv{K}}{}{}{}{}\ottprodnewline
 \ottprodline{|}{\ottkw{match} \, \ottnt{a} \, \ottkw{with} \, \ottnt{brs}}{}{}{}{}\ottprodnewline
 \ottprodline{|}{\ottkw{sub} \, \ottnt{R} \, \ottnt{a}}{}{}{}{}\ottprodnewline
@@ -750,11 +750,11 @@
 
 
 \newcommand{\ottdruleerasedXXaXXPattern}[1]{\ottdrule[#1]{%
-\ottpremise{ \Omega  \vDash  \ottmv{F}  :  \ottnt{R'} }%
-\ottpremise{ \Omega  \vDash  \ottnt{a}  :  \ottnt{R} }%
-\ottpremise{ \Omega  \vDash  \ottnt{b}  :  \ottnt{R} }%
+\ottpremise{\ottmv{F} \,  \sim  \ottnt{a_{{\mathrm{0}}}}  :  \ottnt{A}  /  \ottnt{R'}  \, \in \,  \Sigma_0 }%
+\ottpremise{ \Omega  \vDash  \ottnt{a}  :  \ottnt{R_{{\mathrm{1}}}} }%
+\ottpremise{ \Omega  \vDash  \ottnt{b}  :  \ottnt{R_{{\mathrm{1}}}} }%
 }{
- \Omega  \vDash  \ottsym{(}  \ottkw{ifPath} \, \ottnt{R} \, \ottmv{F} \, \ottnt{a} \, \ottnt{b}  \ottsym{)}  :  \ottnt{R} }{%
+ \Omega  \vDash  \ottsym{(}  \ottkw{ifPath} \, \ottmv{F} \, \ottnt{a} \, \ottnt{b}  \ottsym{)}  :  \ottnt{R_{{\mathrm{1}}}} }{%
 {\ottdrulename{erased\_a\_Pattern}}{}%
 }}
 
@@ -893,30 +893,33 @@
 
 
 \newcommand{\ottdruleParXXPattern}[1]{\ottdrule[#1]{%
-\ottpremise{ \Omega  \vDash  \ottnt{a}   \Rightarrow _{ \ottnt{R} }  \ottnt{a'} }%
-\ottpremise{ \Omega  \vDash  \ottnt{b}   \Rightarrow _{ \ottnt{R} }  \ottnt{b'} }%
+\ottpremise{\ottmv{F} \,  \sim  \ottnt{a_{{\mathrm{0}}}}  :  \ottnt{A}  /  \ottnt{R'}  \, \in \,  \Sigma_0 }%
+\ottpremise{ \Omega  \vDash  \ottnt{a}   \Rightarrow _{ \ottnt{R_{{\mathrm{0}}}} }  \ottnt{a'} }%
+\ottpremise{ \Omega  \vDash  \ottnt{b}   \Rightarrow _{ \ottnt{R_{{\mathrm{0}}}} }  \ottnt{b'} }%
 }{
- \Omega  \vDash  \ottkw{ifPath} \, \ottnt{R} \, \ottmv{F} \, \ottnt{a} \, \ottnt{b}   \Rightarrow _{ \ottnt{R} }  \ottkw{ifPath} \, \ottnt{R} \, \ottmv{F} \, \ottnt{a'} \, \ottnt{b'} }{%
+ \Omega  \vDash  \ottkw{ifPath} \, \ottmv{F} \, \ottnt{a} \, \ottnt{b}   \Rightarrow _{ \ottnt{R_{{\mathrm{0}}}} }  \ottkw{ifPath} \, \ottmv{F} \, \ottnt{a'} \, \ottnt{b'} }{%
 {\ottdrulename{Par\_Pattern}}{}%
 }}
 
 
 \newcommand{\ottdruleParXXPatternTrue}[1]{\ottdrule[#1]{%
-\ottpremise{ \Omega  \vDash  \ottnt{a}   \Rightarrow _{ \ottnt{R} }  \ottnt{a'} }%
-\ottpremise{ \mathsf{Path}_{ \ottnt{R} }\  \ottnt{a'}  =  \ottmv{F} }%
+\ottpremise{ \Omega  \vDash  \ottnt{a}   \Rightarrow _{ \ottnt{R_{{\mathrm{0}}}} }  \ottnt{a'} }%
+\ottpremise{ \Omega  \vDash  \ottnt{b}   \Rightarrow _{ \ottnt{R_{{\mathrm{0}}}} }  \ottnt{b'} }%
+\ottpremise{ \mathsf{Path}_{ \ottnt{R_{{\mathrm{0}}}} }\  \ottnt{a'}  =  \ottmv{F} }%
 }{
- \Omega  \vDash  \ottkw{ifPath} \, \ottnt{R} \, \ottmv{F} \, \ottnt{a} \, \ottnt{b}   \Rightarrow _{ \ottnt{R} }  \ottnt{a'} }{%
+ \Omega  \vDash  \ottkw{ifPath} \, \ottmv{F} \, \ottnt{a} \, \ottnt{b}   \Rightarrow _{ \ottnt{R_{{\mathrm{0}}}} }  \ottnt{a'} }{%
 {\ottdrulename{Par\_PatternTrue}}{}%
 }}
 
 
 \newcommand{\ottdruleParXXPatternFalse}[1]{\ottdrule[#1]{%
-\ottpremise{ \Omega  \vDash  \ottnt{a}   \Rightarrow _{ \ottnt{R} }  \ottnt{a'} }%
-\ottpremise{ \Omega  \vDash  \ottnt{b}   \Rightarrow _{ \ottnt{R} }  \ottnt{b'} }%
-\ottpremise{ \mathsf{Value}_{ \ottnt{R} }\  \ottnt{a'} }%
-\ottpremise{ \neg  \ottsym{(}   \mathsf{Path}_{ \ottnt{R} }\  \ottnt{a'}  =  \ottmv{F}   \ottsym{)} }%
+\ottpremise{ \Omega  \vDash  \ottnt{a}   \Rightarrow _{ \ottnt{R_{{\mathrm{0}}}} }  \ottnt{a'} }%
+\ottpremise{ \Omega  \vDash  \ottnt{b}   \Rightarrow _{ \ottnt{R_{{\mathrm{0}}}} }  \ottnt{b'} }%
+\ottpremise{\ottmv{F} \,  \sim  \ottnt{a_{{\mathrm{0}}}}  :  \ottnt{A}  /  \ottnt{R'}  \, \in \,  \Sigma_0 }%
+\ottpremise{ \mathsf{Value}_{ \ottnt{R_{{\mathrm{0}}}} }\  \ottnt{a'} }%
+\ottpremise{ \neg  \ottsym{(}   \mathsf{Path}_{ \ottnt{R_{{\mathrm{0}}}} }\  \ottnt{a'}  =  \ottmv{F}   \ottsym{)} }%
 }{
- \Omega  \vDash  \ottkw{ifPath} \, \ottnt{R} \, \ottmv{F} \, \ottnt{a} \, \ottnt{b}   \Rightarrow _{ \ottnt{R} }  \ottnt{b'} }{%
+ \Omega  \vDash  \ottkw{ifPath} \, \ottmv{F} \, \ottnt{a} \, \ottnt{b}   \Rightarrow _{ \ottnt{R_{{\mathrm{0}}}} }  \ottnt{b'} }{%
 {\ottdrulename{Par\_PatternFalse}}{}%
 }}
 
@@ -1001,18 +1004,19 @@
 
 
 \newcommand{\ottdruleBetaXXPatternTrue}[1]{\ottdrule[#1]{%
-\ottpremise{ \mathsf{Path}_{ \ottnt{R} }\  \ottnt{a}  =  \ottmv{F} }%
+\ottpremise{ \mathsf{Path}_{ \ottnt{R_{{\mathrm{0}}}} }\  \ottnt{a}  =  \ottmv{F} }%
 }{
-\vDash  \ottkw{ifPath} \, \ottnt{R} \, \ottmv{F} \, \ottnt{a} \, \ottnt{b}  \ottsym{>}  \ottnt{a}  \ottsym{/}  \ottnt{R}}{%
+\vDash  \ottkw{ifPath} \, \ottmv{F} \, \ottnt{a} \, \ottnt{b}  \ottsym{>}  \ottnt{a}  \ottsym{/}  \ottnt{R_{{\mathrm{0}}}}}{%
 {\ottdrulename{Beta\_PatternTrue}}{}%
 }}
 
 
 \newcommand{\ottdruleBetaXXPatternFalse}[1]{\ottdrule[#1]{%
-\ottpremise{ \mathsf{Value}_{ \ottnt{R} }\  \ottnt{a} }%
-\ottpremise{ \neg  \ottsym{(}   \mathsf{Path}_{ \ottnt{R} }\  \ottnt{a}  =  \ottmv{F}   \ottsym{)} }%
+\ottpremise{ \mathsf{Value}_{ \ottnt{R_{{\mathrm{0}}}} }\  \ottnt{a} }%
+\ottpremise{\ottmv{F} \,  \sim  \ottnt{a_{{\mathrm{0}}}}  :  \ottnt{A}  /  \ottnt{R'}  \, \in \,  \Sigma_0 }%
+\ottpremise{ \neg  \ottsym{(}   \mathsf{Path}_{ \ottnt{R_{{\mathrm{0}}}} }\  \ottnt{a}  =  \ottmv{F}   \ottsym{)} }%
 }{
-\vDash  \ottkw{ifPath} \, \ottnt{R} \, \ottmv{F} \, \ottnt{a} \, \ottnt{b}  \ottsym{>}  \ottnt{b}  \ottsym{/}  \ottnt{R}}{%
+\vDash  \ottkw{ifPath} \, \ottmv{F} \, \ottnt{a} \, \ottnt{b}  \ottsym{>}  \ottnt{b}  \ottsym{/}  \ottnt{R_{{\mathrm{0}}}}}{%
 {\ottdrulename{Beta\_PatternFalse}}{}%
 }}
 
@@ -1050,9 +1054,9 @@
 
 
 \newcommand{\ottdruleEXXPattern}[1]{\ottdrule[#1]{%
-\ottpremise{\vDash  \ottnt{a}  \leadsto  \ottnt{a'}  \ottsym{/}  \ottnt{R}}%
+\ottpremise{\vDash  \ottnt{a}  \leadsto  \ottnt{a'}  \ottsym{/}  \ottnt{R_{{\mathrm{0}}}}}%
 }{
-\vDash  \ottkw{ifPath} \, \ottnt{R} \, \ottmv{F} \, \ottnt{a} \, \ottnt{b}  \leadsto  \ottkw{ifPath} \, \ottnt{R} \, \ottmv{F} \, \ottnt{a'} \, \ottnt{b}  \ottsym{/}  \ottnt{R}}{%
+\vDash  \ottkw{ifPath} \, \ottmv{F} \, \ottnt{a} \, \ottnt{b}  \leadsto  \ottkw{ifPath} \, \ottmv{F} \, \ottnt{a'} \, \ottnt{b}  \ottsym{/}  \ottnt{R_{{\mathrm{0}}}}}{%
 {\ottdrulename{E\_Pattern}}{}%
 }}
 
@@ -1224,11 +1228,11 @@
 
 
 \newcommand{\ottdruleEXXPat}[1]{\ottdrule[#1]{%
-\ottpremise{\Gamma  \vDash  \ottmv{F}  \ottsym{:}   \star   \ottsym{/}  \ottnt{R'}}%
-\ottpremise{\Gamma  \vDash  \ottnt{a}  \ottsym{:}  \ottnt{A}  \ottsym{/}  \ottnt{R}}%
-\ottpremise{\Gamma  \vDash  \ottnt{b}  \ottsym{:}  \ottnt{A}  \ottsym{/}  \ottnt{R}}%
+\ottpremise{\ottmv{F} \,  \sim  \ottnt{a_{{\mathrm{0}}}}  :  \ottnt{A}  /  \ottnt{R'}  \, \in \,  \Sigma_0 }%
+\ottpremise{\Gamma  \vDash  \ottnt{a}  \ottsym{:}  \ottnt{A}  \ottsym{/}  \ottnt{R_{{\mathrm{1}}}}}%
+\ottpremise{\Gamma  \vDash  \ottnt{b}  \ottsym{:}  \ottnt{A}  \ottsym{/}  \ottnt{R_{{\mathrm{1}}}}}%
 }{
-\Gamma  \vDash  \ottkw{ifPath} \, \ottnt{R} \, \ottmv{F} \, \ottnt{a} \, \ottnt{b}  \ottsym{:}  \ottnt{A}  \ottsym{/}  \ottnt{R}}{%
+\Gamma  \vDash  \ottkw{ifPath} \, \ottmv{F} \, \ottnt{a} \, \ottnt{b}  \ottsym{:}  \ottnt{A}  \ottsym{/}  \ottnt{R_{{\mathrm{1}}}}}{%
 {\ottdrulename{E\_Pat}}{}%
 }}
 
@@ -1462,11 +1466,11 @@
 
 
 \newcommand{\ottdruleEXXPatCong}[1]{\ottdrule[#1]{%
-\ottpremise{\Gamma  \vDash  \ottmv{F}  \ottsym{:}   \star   \ottsym{/}  \ottnt{R'}}%
-\ottpremise{\Gamma  \ottsym{;}  \Delta  \vDash  \ottnt{a}  \equiv  \ottnt{a'}  \ottsym{:}  \ottnt{A}  \ottsym{/}  \ottnt{R}}%
-\ottpremise{\Gamma  \ottsym{;}  \Delta  \vDash  \ottnt{b}  \equiv  \ottnt{b'}  \ottsym{:}  \ottnt{A}  \ottsym{/}  \ottnt{R}}%
+\ottpremise{\ottmv{F} \,  \sim  \ottnt{a_{{\mathrm{0}}}}  :  \ottnt{A}  /  \ottnt{R'}  \, \in \,  \Sigma_0 }%
+\ottpremise{\Gamma  \ottsym{;}  \Delta  \vDash  \ottnt{a}  \equiv  \ottnt{a'}  \ottsym{:}  \ottnt{A}  \ottsym{/}  \ottnt{R_{{\mathrm{1}}}}}%
+\ottpremise{\Gamma  \ottsym{;}  \Delta  \vDash  \ottnt{b}  \equiv  \ottnt{b'}  \ottsym{:}  \ottnt{A}  \ottsym{/}  \ottnt{R_{{\mathrm{1}}}}}%
 }{
-\Gamma  \ottsym{;}  \Delta  \vDash  \ottkw{ifPath} \, \ottnt{R} \, \ottmv{F} \, \ottnt{a} \, \ottnt{b}  \equiv  \ottkw{ifPath} \, \ottnt{R} \, \ottmv{F} \, \ottnt{a'} \, \ottnt{b'}  \ottsym{:}  \ottnt{A}  \ottsym{/}  \ottnt{R}}{%
+\Gamma  \ottsym{;}  \Delta  \vDash  \ottkw{ifPath} \, \ottmv{F} \, \ottnt{a} \, \ottnt{b}  \equiv  \ottkw{ifPath} \, \ottmv{F} \, \ottnt{a'} \, \ottnt{b'}  \ottsym{:}  \ottnt{A}  \ottsym{/}  \ottnt{R_{{\mathrm{1}}}}}{%
 {\ottdrulename{E\_PatCong}}{}%
 }}
 
@@ -2145,6 +2149,6 @@
 
 \begin{verbatim}
 Definition rules:        158 good    0 bad
-Definition rule clauses: 473 good    0 bad
+Definition rule clauses: 477 good    0 bad
 \end{verbatim}
 \end{document}

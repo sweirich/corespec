@@ -93,9 +93,16 @@ Qed.
 
 Hint Resolve Par_lc1 Par_lc2 : lc.
 
+Lemma Path_binds_toplevel : forall F a R, Path F a R -> exists a0 A0 R0,
+                                   binds F (Ax a0 A0 R0) toplevel.
+Proof. intros. induction H. exists a, A, R1; auto. auto. auto.
+Qed.
+
 Lemma Par_erased_tm_fst : forall W a a' R, Par W a a' R -> 
                                                erased_tm W a R.
 Proof. intros W a a' R H. induction H; eauto.
+       apply Path_binds_toplevel in H1. inversion H1 as [a0 [A0 [R1 P]]].
+       econstructor; eauto.
 Qed.
 
 Lemma multipar_erased_tm_fst: forall W a a' R, multipar W a a' R -> 
@@ -146,7 +153,7 @@ Lemma Par_sub: forall W a a' R1 R2, Par W a a' R1 -> SubRole R1 R2 ->
                                       Par W a a' R2.
 Proof. intros W a a' R1 R2 H SR. generalize dependent R2.
        induction H; intros; simpl; eauto. econstructor.
-       eapply erased_sub; eauto.
+       eapply erased_sub; eauto. econstructor.
 Qed.
 
 Lemma multipar_sub : forall W a a' R1 R2, multipar W a a' R1 ->
@@ -163,7 +170,7 @@ Proof.
   dependent induction ET; intros; simpl; auto.
    - constructor. constructor. eapply uniq_remove_mid; eauto.
    - constructor. constructor. eapply uniq_remove_mid; eauto.
-   - destruct (x0 == x); auto. 
+   - destruct (x0 == x); auto.
      + subst. assert (P:R = R1).
        eapply binds_mid_eq; eauto. subst. replace W with (nil ++ W); eauto.
        rewrite app_assoc. eapply par_app_rctx.

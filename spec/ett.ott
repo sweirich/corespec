@@ -79,7 +79,7 @@ tm, a, b, v, w, A, B :: 'a_' ::= {{ com types and kinds }}
      {{ tex [[/\]][[c]].[[b]] }}
    | a [ g ]            ::   :: CApp
    | []                 ::   :: Bullet
-   | ifPath R a' a b    ::   :: Pattern
+   | ifPath a' a b    ::   :: Pattern
 
    %% currently unused but ready for extension
    | K                ::   :: DataCon
@@ -480,7 +480,7 @@ Fixpoint erase_tm (a : tm) (r : role) : tm :=
    | a_DataCon K => a_Star  (* a_DataCon K *)
    | a_Case a brs => a_Star (* a_Case (erase_tm a) (erase_brs brs) *)
    | a_Bullet => a_Bullet
-   | a_Pattern R a' a b => a_Pattern R (erase_tm a' R) (erase_tm a R) (erase_tm b R)
+   | a_Pattern a' a b => a_Pattern (erase_tm a' r) (erase_tm a r) (erase_tm b r)
    | a_Sub _ a => erase_tm a r
    end
 with erase_brs (x : brs) (r:role): brs :=
@@ -591,10 +591,6 @@ Path F a R
 ----------------  :: CApp
 Path F (a [o]) R
 
-% Path F a R
-% ---------------------  :: Conv
-% Path F (a |>R1 o) R
-
 defns
 JValue :: '' ::=
 
@@ -629,24 +625,6 @@ Value R /\c:phi.a
 
 --------------------- :: UCAbs
 Value R /\c .a
-
-% F ~ a : A/R1 in toplevel
-% not (R1 <= R)
-% ------------------------- :: Ax
-% Value R F
-
-% Path F a R
-% Value R a
-% --------------------- :: App
-% Value R (a rho R1 b')
-
-% Path F a R
-% Value R a
-% --------------------- :: CApp
-% Value R (a [o])
-
-% --------------------- :: Bullet
-% Value R []
 
 Path F a R 
 --------------- :: Path
@@ -710,8 +688,6 @@ not ValueType R a
 ---------------------- :: Step_L
 consistent a b R
 
-% --------------------- :: Bullet
-% consistent [] [] R
 
 defns
   Jerased :: '' ::=
@@ -769,15 +745,12 @@ F ~ a : A / R in toplevel
 --------------------------- :: Fam
 W |- erased_tm F R1
 
-W |- erased_tm F R'
-W |- erased_tm a R
-W |- erased_tm b R
+F ~ a0 : A / R' in toplevel
+W |- erased_tm a R1
+W |- erased_tm b R1
 ----------------------------------- :: Pattern
-W |- erased_tm (ifPath R F a b) R
+W |- erased_tm (ifPath F a b) R1
 
-% W |- erased_tm a R
-% ---------------------------- :: Conv
-% W |- erased_tm (a |> R1 o) R
 
 defns
 JChk :: '' ::=
@@ -856,45 +829,25 @@ rctx_uniq W
 -------------------------------- :: Axiom
 W |- F => a / R
 
- W |- a => a' / R
- W |- b => b' / R
---------------------------------------------- :: Pattern
- W |- ifPath R F a b => ifPath R F a' b' / R
+ F ~ a0 : A / R' in toplevel
+ W |- a => a' / R0
+ W |- b => b' / R0
+---------------------------------------------- :: Pattern
+ W |- ifPath F a b => ifPath F a' b' / R0
 
- W |- a => a' / R
- Path F a' R
+ W |- a => a' / R0
+ W |- b => b' / R0
+ Path F a' R0
 ---------------------------------------------- :: PatternTrue
- W |- ifPath R F a b => a' / R
+ W |- ifPath F a b => a' / R0
 
- W |- a => a' / R
- W |- b => b' / R
- Value R a'
- not (Path F a' R)
+ W |- a => a' / R0
+ W |- b => b' / R0
+ F ~ a0 : A / R' in toplevel
+ Value R0 a'
+ not (Path F a' R0)
 ------------------------------------------------ :: PatternFalse
- W |- ifPath R F a b => b' / R
-
-% W |- a1 => a2 / R1
-% --------------------------------------- :: Cong
-% W |- a1 |> R o => a2 |> R o / R1
-
-
-% W |- a1 => (a2 |> R o)  / R1
-% ------------------------------------  :: Combine
-% W |- (a1 |> R o) =>  (a2 |> R o) / R1
-
-% W |- a1 => (a2 |> R o) / R1
-% W |- b1 => b2 / R2
-% ---------------------------------------------------- :: Push
-% W |- a1 R2 b1 => (a2 R2 (b2 |> R o)) |> R o / R1
-
-% W |- a1 => (a2 |> R o) / R1
-% W |- b1 => (b2 |> R o) / R2
-% ---------------------------------------------------- :: PushCombine
-% W |- a1 R2 b1 => (a2 R2 (b2 |> R o)) |> R o / R1
-
-% W |- a1 => (a2 |> R o) / R1
-% ---------------------------------------------------- :: CPush
-% W |- a1 [o] => (a2 [o]) |> R o / R1
+ W |- ifPath F a b => b' / R0
 
 
 defn
@@ -948,14 +901,15 @@ R <= R1
 -------------------------------- :: Axiom
 |= F > a / R1
 
-Path F a R
+Path F a R0
 --------------------------------- :: PatternTrue
-|= ifPath R F a b > a / R
+|= ifPath F a b > a / R0
 
-Value R a
-not (Path F a R)
+Value R0 a
+F ~ a0 : A / R' in toplevel
+not (Path F a R0)
 ---------------------------------- :: PatternFalse
-|= ifPath R F a b > b / R
+|= ifPath F a b > b / R0
 
 defn
  |= a ~> b / R ::   :: reduction_in_one :: 'E_'
@@ -974,42 +928,14 @@ by
 -----------------------------   :: CAppLeft
 |= a [o]  ~> a' [o] / R
 
-|= a ~> a' / R
+|= a ~> a' / R0
 ----------------------------------------- :: Pattern
-|= ifPath R F a b ~> ifPath R F a' b / R
+|= ifPath F a b ~> ifPath F a' b / R0
 
 |= a > b / R
 ----------------------------- :: Prim
 |= a ~> b / R
 
-% Value R1 (\rho R x. v)
-% ----------------------------------  :: AppAbs
-% |= (\rho R x.v) rho R a ~> v { a / x} / R1
-
-% --------------------------------  :: CAppCAbs
-% |= (/\c .b) [o] ~> b { o / c} / R
-
-% F ~ a : A/R in toplevel
-% R <= R1
-% -------------------- :: Axiom
-% |= F ~> a / R1
-
-% |= a ~> a' / R1
-% ------------------------------- :: Cong
-% |= a |> R o ~> a' |> R o / R1
-
-% CoercedValue R (v |> R1 o)
-% R1 <= R2
-% ------------------------------------ :: Combine
-% |= (v |> R1 o) |> R2 o ~> v |> R2 o / R
-
-% CoercedValue R2 (v1 |> R o)
-% ------------------------------------ :: Push
-% |= (v1 |> R o) rho R1 b ~> (v1 rho R1 (b |> R o)) |> R o / R2
-
-% CoercedValue R1 (v1 |> R o)
-% ------------------------------------ :: CPush
-% |= (v1 |> R o) [o] ~> (v1 [o]) |> R o / R1
 
 defn
 
@@ -1112,17 +1038,12 @@ F ~ a : A / R in toplevel
 ------------------ :: Fam
 G |= F : A / R1
 
-G |= F : TYPE / R'
-G |= a : A / R
-G |= b : A / R
+F ~ a0 : A / R' in toplevel
+G |= a : A / R1
+G |= b : A / R1
 ----------------------------- :: Pat
-G |= ifPath R F a b : A / R
+G |= ifPath F a b : A / R1
 
-% G |= a : A1 / R1
-% G ; dom G |= A1 == A2 : TYPE / R2
-% [ G |= A2 : TYPE / R1 ]
-% ------------------------- :: TyCast
-% G |= a |> R2 o : A2 / R1
 
 defn
 G ; D |= phi1 == phi2  ::    :: Iso :: 'E_'
@@ -1265,17 +1186,11 @@ G ; D |= a ~ b : A/R1 == a' ~ b' : A'/R1
 --------------------------------------------- :: IsoSnd
 G ; D |= A == A' : TYPE/R1
 
-G     |= F : TYPE / R'
-G ; D |= a == a' : A / R
-G ; D |= b == b' : A / R
+F ~ a0 : A / R' in toplevel
+G ; D |= a == a' : A / R1
+G ; D |= b == b' : A / R1
 ------------------------------------------------------ :: PatCong
-G ; D |= ifPath R F a b == ifPath R F a' b' : A / R
-
-% G ; D |= a1 == a2 : A / R1
-% G ; dom G |= A == B : TYPE / R2
-% G |= B : TYPE / R1
-% ------------------------------------ :: CastCong
-% G ; D |= a1 |> R2 o == a2 |> R2 o : B / R1
+G ; D |= ifPath F a b == ifPath F a' b' : A / R1
 
 defn
 |= G ::    :: Ctx  :: 'E_'

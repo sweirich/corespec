@@ -81,7 +81,7 @@ Fixpoint close_tm_wrt_tm_rec (n1 : nat) (x1 : tmvar) (a1 : tm) {struct a1} : tm 
     | a_UCAbs b1 => a_UCAbs (close_tm_wrt_tm_rec n1 x1 b1)
     | a_CApp a2 g1 => a_CApp (close_tm_wrt_tm_rec n1 x1 a2) (close_co_wrt_tm_rec n1 x1 g1)
     | a_Bullet => a_Bullet
-    | a_Pattern R1 a2 a3 b1 => a_Pattern R1 (close_tm_wrt_tm_rec n1 x1 a2) (close_tm_wrt_tm_rec n1 x1 a3) (close_tm_wrt_tm_rec n1 x1 b1)
+    | a_Pattern a2 a3 b1 => a_Pattern (close_tm_wrt_tm_rec n1 x1 a2) (close_tm_wrt_tm_rec n1 x1 a3) (close_tm_wrt_tm_rec n1 x1 b1)
     | a_DataCon K1 => a_DataCon K1
     | a_Case a2 brs1 => a_Case (close_tm_wrt_tm_rec n1 x1 a2) (close_brs_wrt_tm_rec n1 x1 brs1)
     | a_Sub R1 a2 => a_Sub R1 (close_tm_wrt_tm_rec n1 x1 a2)
@@ -144,7 +144,7 @@ Fixpoint close_tm_wrt_co_rec (n1 : nat) (c1 : covar) (a1 : tm) {struct a1} : tm 
     | a_UCAbs b1 => a_UCAbs (close_tm_wrt_co_rec (S n1) c1 b1)
     | a_CApp a2 g1 => a_CApp (close_tm_wrt_co_rec n1 c1 a2) (close_co_wrt_co_rec n1 c1 g1)
     | a_Bullet => a_Bullet
-    | a_Pattern R1 a2 a3 b1 => a_Pattern R1 (close_tm_wrt_co_rec n1 c1 a2) (close_tm_wrt_co_rec n1 c1 a3) (close_tm_wrt_co_rec n1 c1 b1)
+    | a_Pattern a2 a3 b1 => a_Pattern (close_tm_wrt_co_rec n1 c1 a2) (close_tm_wrt_co_rec n1 c1 a3) (close_tm_wrt_co_rec n1 c1 b1)
     | a_DataCon K1 => a_DataCon K1
     | a_Case a2 brs1 => a_Case (close_tm_wrt_co_rec n1 c1 a2) (close_brs_wrt_co_rec n1 c1 brs1)
     | a_Sub R1 a2 => a_Sub R1 (close_tm_wrt_co_rec n1 c1 a2)
@@ -239,7 +239,7 @@ Fixpoint size_tm (a1 : tm) {struct a1} : nat :=
     | a_UCAbs b1 => 1 + (size_tm b1)
     | a_CApp a2 g1 => 1 + (size_tm a2) + (size_co g1)
     | a_Bullet => 1
-    | a_Pattern R1 a2 a3 b1 => 1 + (size_role R1) + (size_tm a2) + (size_tm a3) + (size_tm b1)
+    | a_Pattern a2 a3 b1 => 1 + (size_tm a2) + (size_tm a3) + (size_tm b1)
     | a_DataCon K1 => 1
     | a_Case a2 brs1 => 1 + (size_tm a2) + (size_brs brs1)
     | a_Sub R1 a2 => 1 + (size_role R1) + (size_tm a2)
@@ -338,11 +338,11 @@ Inductive degree_tm_wrt_tm : nat -> tm -> Prop :=
     degree_tm_wrt_tm n1 (a_CApp a1 g1)
   | degree_wrt_tm_a_Bullet : forall n1,
     degree_tm_wrt_tm n1 (a_Bullet)
-  | degree_wrt_tm_a_Pattern : forall n1 R1 a1 a2 b1,
+  | degree_wrt_tm_a_Pattern : forall n1 a1 a2 b1,
     degree_tm_wrt_tm n1 a1 ->
     degree_tm_wrt_tm n1 a2 ->
     degree_tm_wrt_tm n1 b1 ->
-    degree_tm_wrt_tm n1 (a_Pattern R1 a1 a2 b1)
+    degree_tm_wrt_tm n1 (a_Pattern a1 a2 b1)
   | degree_wrt_tm_a_DataCon : forall n1 K1,
     degree_tm_wrt_tm n1 (a_DataCon K1)
   | degree_wrt_tm_a_Case : forall n1 a1 brs1,
@@ -512,11 +512,11 @@ Inductive degree_tm_wrt_co : nat -> tm -> Prop :=
     degree_tm_wrt_co n1 (a_CApp a1 g1)
   | degree_wrt_co_a_Bullet : forall n1,
     degree_tm_wrt_co n1 (a_Bullet)
-  | degree_wrt_co_a_Pattern : forall n1 R1 a1 a2 b1,
+  | degree_wrt_co_a_Pattern : forall n1 a1 a2 b1,
     degree_tm_wrt_co n1 a1 ->
     degree_tm_wrt_co n1 a2 ->
     degree_tm_wrt_co n1 b1 ->
-    degree_tm_wrt_co n1 (a_Pattern R1 a1 a2 b1)
+    degree_tm_wrt_co n1 (a_Pattern a1 a2 b1)
   | degree_wrt_co_a_DataCon : forall n1 K1,
     degree_tm_wrt_co n1 (a_DataCon K1)
   | degree_wrt_co_a_Case : forall n1 a1 brs1,
@@ -729,11 +729,11 @@ Inductive lc_set_tm : tm -> Set :=
     lc_set_tm (a_CApp a1 g1)
   | lc_set_a_Bullet :
     lc_set_tm (a_Bullet)
-  | lc_set_a_Pattern : forall R1 a1 a2 b1,
+  | lc_set_a_Pattern : forall a1 a2 b1,
     lc_set_tm a1 ->
     lc_set_tm a2 ->
     lc_set_tm b1 ->
-    lc_set_tm (a_Pattern R1 a1 a2 b1)
+    lc_set_tm (a_Pattern a1 a2 b1)
   | lc_set_a_DataCon : forall K1,
     lc_set_tm (a_DataCon K1)
   | lc_set_a_Case : forall a1 brs1,
