@@ -79,6 +79,7 @@ tm, a, b, v, w, A, B :: 'a_' ::= {{ com types and kinds }}
      {{ tex [[/\]][[c]].[[b]] }}
    | a [ g ]            ::   :: CApp
    | []                 ::   :: Bullet
+   | ifPath R a' a b    ::   :: Pattern
 
    %% currently unused but ready for extension
    | K                ::   :: DataCon
@@ -767,6 +768,12 @@ F ~ a : A / R in toplevel
 --------------------------- :: Fam
 W |- erased_tm F R1
 
+W |- erased_tm F R'
+W |- erased_tm a R
+W |- erased_tm b R
+----------------------------------- :: Pattern
+W |- erased_tm (ifPath R F a b) R
+
 % W |- erased_tm a R
 % ---------------------------- :: Conv
 % W |- erased_tm (a |> R1 o) R
@@ -848,6 +855,22 @@ rctx_uniq W
 -------------------------------- :: Axiom
 W |- F => a / R
 
+ W |- a => a' / R
+ W |- b => b' / R
+--------------------------------------------- :: Pattern
+ W |- ifPath R F a b => ifPath R F a' b' / R
+
+ W |- a => a' / R
+ Path F a' R
+---------------------------------------------- :: PatternTrue
+ W |- ifPath R F a b => a' / R
+
+ W |- a => a' / R
+ W |- b => b' / R
+ Value R a'
+ not (Path F a' R)
+------------------------------------------------ :: PatternFalse
+ W |- ifPath R F a b => b' / R
 
 % W |- a1 => a2 / R1
 % --------------------------------------- :: Cong
@@ -924,6 +947,14 @@ R <= R1
 -------------------------------- :: Axiom
 |= F > a / R1
 
+Path F a R
+--------------------------------- :: PatternTrue
+|= ifPath R F a b > a / R
+
+Value R a
+not (Path F a R)
+---------------------------------- :: PatternFalse
+|= ifPath R F a b > b / R
 
 defn
  |= a ~> b / R ::   :: reduction_in_one :: 'E_'
@@ -942,6 +973,9 @@ by
 -----------------------------   :: CAppLeft
 |= a [o]  ~> a' [o] / R
 
+|= a ~> a' / R
+----------------------------------------- :: Pattern
+|= ifPath R F a b ~> ifPath R F a' b / R
 
 |= a > b / R
 ----------------------------- :: Prim
@@ -1076,6 +1110,12 @@ F ~ a : A / R in toplevel
  empty |= A : TYPE / R1
 ------------------ :: Fam
 G |= F : A / R1
+
+G |= F : TYPE / R'
+G |= a : A / R
+G |= b : A / R
+----------------------------- :: Pat
+G |= ifPath R F a b : A / R
 
 % G |= a : A1 / R1
 % G ; dom G |= A1 == A2 : TYPE / R2
@@ -1223,6 +1263,12 @@ G ; D |= a == b : B/R
 G ; D |= a ~ b : A/R1 == a' ~ b' : A'/R1 
 --------------------------------------------- :: IsoSnd
 G ; D |= A == A' : TYPE/R1
+
+G     |= F : TYPE / R'
+G ; D |= a == a' : A / R
+G ; D |= b == b' : A / R
+------------------------------------------------------ :: PatCong
+G ; D |= ifPath R F a b == ifPath R F a' b' : A / R
 
 % G ; D |= a1 == a2 : A / R1
 % G ; dom G |= A == B : TYPE / R2

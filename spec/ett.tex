@@ -76,6 +76,7 @@
 \ottprodline{|}{ \mathrm{\Lambda} \ottmv{c} . \ottnt{b} }{}{\textsf{bind}\; \ottmv{c}\; \textsf{in}\; \ottnt{b}}{}{}\ottprodnewline
 \ottprodline{|}{\ottnt{a}  \ottsym{[}  \gamma  \ottsym{]}}{}{}{}{}\ottprodnewline
 \ottprodline{|}{\Box}{}{}{}{}\ottprodnewline
+\ottprodline{|}{\ottkw{ifPath} \, \ottnt{R} \, \ottnt{a'} \, \ottnt{a} \, \ottnt{b}}{}{}{}{}\ottprodnewline
 \ottprodline{|}{\ottmv{K}}{}{}{}{}\ottprodnewline
 \ottprodline{|}{\ottkw{match} \, \ottnt{a} \, \ottkw{with} \, \ottnt{brs}}{}{}{}{}\ottprodnewline
 \ottprodline{|}{\ottkw{sub} \, \ottnt{R} \, \ottnt{a}}{}{}{}{}\ottprodnewline
@@ -533,30 +534,11 @@
 }}
 
 
-\newcommand{\ottdruleValueXXAx}[1]{\ottdrule[#1]{%
-\ottpremise{\ottmv{F} \,  \sim  \ottnt{a}  :  \ottnt{A}  /  \ottnt{R_{{\mathrm{1}}}}  \, \in \,  \Sigma_0 }%
-\ottpremise{ \neg  \ottsym{(}   \ottnt{R_{{\mathrm{1}}}}  \leq  \ottnt{R}   \ottsym{)} }%
-}{
- \mathsf{Value}_{ \ottnt{R} }\  \ottmv{F} }{%
-{\ottdrulename{Value\_Ax}}{}%
-}}
-
-
-\newcommand{\ottdruleValueXXApp}[1]{\ottdrule[#1]{%
+\newcommand{\ottdruleValueXXPath}[1]{\ottdrule[#1]{%
 \ottpremise{ \mathsf{Path}_{ \ottnt{R} }\  \ottnt{a}  =  \ottmv{F} }%
-\ottpremise{ \mathsf{Value}_{ \ottnt{R} }\  \ottnt{a} }%
 }{
- \mathsf{Value}_{ \ottnt{R} }\  \ottsym{(}   \ottnt{a} \  \ottnt{b'} ^{ \ottnt{R_{{\mathrm{1}}}} , \rho }   \ottsym{)} }{%
-{\ottdrulename{Value\_App}}{}%
-}}
-
-
-\newcommand{\ottdruleValueXXCApp}[1]{\ottdrule[#1]{%
-\ottpremise{ \mathsf{Path}_{ \ottnt{R} }\  \ottnt{a}  =  \ottmv{F} }%
-\ottpremise{ \mathsf{Value}_{ \ottnt{R} }\  \ottnt{a} }%
-}{
- \mathsf{Value}_{ \ottnt{R} }\  \ottsym{(}  \ottnt{a}  \ottsym{[}  \bullet  \ottsym{]}  \ottsym{)} }{%
-{\ottdrulename{Value\_CApp}}{}%
+ \mathsf{Value}_{ \ottnt{R} }\  \ottnt{a} }{%
+{\ottdrulename{Value\_Path}}{}%
 }}
 
 \newcommand{\ottdefnValue}[1]{\begin{ottdefnblock}[#1]{$ \mathsf{Value}_{ \ottnt{R} }\  \ottnt{A} $}{\ottcom{values}}
@@ -568,9 +550,7 @@
 \ottusedrule{\ottdruleValueXXUAbsIrrel{}}
 \ottusedrule{\ottdruleValueXXCAbs{}}
 \ottusedrule{\ottdruleValueXXUCAbs{}}
-\ottusedrule{\ottdruleValueXXAx{}}
-\ottusedrule{\ottdruleValueXXApp{}}
-\ottusedrule{\ottdruleValueXXCApp{}}
+\ottusedrule{\ottdruleValueXXPath{}}
 \end{ottdefnblock}}
 
 
@@ -768,6 +748,16 @@
 {\ottdrulename{erased\_a\_Fam}}{}%
 }}
 
+
+\newcommand{\ottdruleerasedXXaXXPattern}[1]{\ottdrule[#1]{%
+\ottpremise{ \Omega  \vDash  \ottmv{F}  :  \ottnt{R'} }%
+\ottpremise{ \Omega  \vDash  \ottnt{a}  :  \ottnt{R} }%
+\ottpremise{ \Omega  \vDash  \ottnt{b}  :  \ottnt{R} }%
+}{
+ \Omega  \vDash  \ottsym{(}  \ottkw{ifPath} \, \ottnt{R} \, \ottmv{F} \, \ottnt{a} \, \ottnt{b}  \ottsym{)}  :  \ottnt{R} }{%
+{\ottdrulename{erased\_a\_Pattern}}{}%
+}}
+
 \newcommand{\ottdefnerasedXXtm}[1]{\begin{ottdefnblock}[#1]{$ \Omega  \vDash  \ottnt{a}  :  \ottnt{R} $}{}
 \ottusedrule{\ottdruleerasedXXaXXBullet{}}
 \ottusedrule{\ottdruleerasedXXaXXStar{}}
@@ -779,6 +769,7 @@
 \ottusedrule{\ottdruleerasedXXaXXCAbs{}}
 \ottusedrule{\ottdruleerasedXXaXXCApp{}}
 \ottusedrule{\ottdruleerasedXXaXXFam{}}
+\ottusedrule{\ottdruleerasedXXaXXPattern{}}
 \end{ottdefnblock}}
 
 
@@ -900,6 +891,35 @@
 {\ottdrulename{Par\_Axiom}}{}%
 }}
 
+
+\newcommand{\ottdruleParXXPattern}[1]{\ottdrule[#1]{%
+\ottpremise{ \Omega  \vDash  \ottnt{a}   \Rightarrow _{ \ottnt{R} }  \ottnt{a'} }%
+\ottpremise{ \Omega  \vDash  \ottnt{b}   \Rightarrow _{ \ottnt{R} }  \ottnt{b'} }%
+}{
+ \Omega  \vDash  \ottkw{ifPath} \, \ottnt{R} \, \ottmv{F} \, \ottnt{a} \, \ottnt{b}   \Rightarrow _{ \ottnt{R} }  \ottkw{ifPath} \, \ottnt{R} \, \ottmv{F} \, \ottnt{a'} \, \ottnt{b'} }{%
+{\ottdrulename{Par\_Pattern}}{}%
+}}
+
+
+\newcommand{\ottdruleParXXPatternTrue}[1]{\ottdrule[#1]{%
+\ottpremise{ \Omega  \vDash  \ottnt{a}   \Rightarrow _{ \ottnt{R} }  \ottnt{a'} }%
+\ottpremise{ \mathsf{Path}_{ \ottnt{R} }\  \ottnt{a'}  =  \ottmv{F} }%
+}{
+ \Omega  \vDash  \ottkw{ifPath} \, \ottnt{R} \, \ottmv{F} \, \ottnt{a} \, \ottnt{b}   \Rightarrow _{ \ottnt{R} }  \ottnt{a'} }{%
+{\ottdrulename{Par\_PatternTrue}}{}%
+}}
+
+
+\newcommand{\ottdruleParXXPatternFalse}[1]{\ottdrule[#1]{%
+\ottpremise{ \Omega  \vDash  \ottnt{a}   \Rightarrow _{ \ottnt{R} }  \ottnt{a'} }%
+\ottpremise{ \Omega  \vDash  \ottnt{b}   \Rightarrow _{ \ottnt{R} }  \ottnt{b'} }%
+\ottpremise{ \mathsf{Value}_{ \ottnt{R} }\  \ottnt{a'} }%
+\ottpremise{ \neg  \ottsym{(}   \mathsf{Path}_{ \ottnt{R} }\  \ottnt{a'}  =  \ottmv{F}   \ottsym{)} }%
+}{
+ \Omega  \vDash  \ottkw{ifPath} \, \ottnt{R} \, \ottmv{F} \, \ottnt{a} \, \ottnt{b}   \Rightarrow _{ \ottnt{R} }  \ottnt{b'} }{%
+{\ottdrulename{Par\_PatternFalse}}{}%
+}}
+
 \newcommand{\ottdefnPar}[1]{\begin{ottdefnblock}[#1]{$ \Omega  \vDash  \ottnt{a}   \Rightarrow _{ \ottnt{R} }  \ottnt{b} $}{\ottcom{parallel reduction (implicit language)}}
 \ottusedrule{\ottdruleParXXRefl{}}
 \ottusedrule{\ottdruleParXXBeta{}}
@@ -911,6 +931,9 @@
 \ottusedrule{\ottdruleParXXCAbs{}}
 \ottusedrule{\ottdruleParXXCPi{}}
 \ottusedrule{\ottdruleParXXAxiom{}}
+\ottusedrule{\ottdruleParXXPattern{}}
+\ottusedrule{\ottdruleParXXPatternTrue{}}
+\ottusedrule{\ottdruleParXXPatternFalse{}}
 \end{ottdefnblock}}
 
 %% defn MultiPar
@@ -976,10 +999,29 @@
 {\ottdrulename{Beta\_Axiom}}{}%
 }}
 
+
+\newcommand{\ottdruleBetaXXPatternTrue}[1]{\ottdrule[#1]{%
+\ottpremise{ \mathsf{Path}_{ \ottnt{R} }\  \ottnt{a}  =  \ottmv{F} }%
+}{
+\vDash  \ottkw{ifPath} \, \ottnt{R} \, \ottmv{F} \, \ottnt{a} \, \ottnt{b}  \ottsym{>}  \ottnt{a}  \ottsym{/}  \ottnt{R}}{%
+{\ottdrulename{Beta\_PatternTrue}}{}%
+}}
+
+
+\newcommand{\ottdruleBetaXXPatternFalse}[1]{\ottdrule[#1]{%
+\ottpremise{ \mathsf{Value}_{ \ottnt{R} }\  \ottnt{a} }%
+\ottpremise{ \neg  \ottsym{(}   \mathsf{Path}_{ \ottnt{R} }\  \ottnt{a}  =  \ottmv{F}   \ottsym{)} }%
+}{
+\vDash  \ottkw{ifPath} \, \ottnt{R} \, \ottmv{F} \, \ottnt{a} \, \ottnt{b}  \ottsym{>}  \ottnt{b}  \ottsym{/}  \ottnt{R}}{%
+{\ottdrulename{Beta\_PatternFalse}}{}%
+}}
+
 \newcommand{\ottdefnBeta}[1]{\begin{ottdefnblock}[#1]{$\vDash  \ottnt{a}  \ottsym{>}  \ottnt{b}  \ottsym{/}  \ottnt{R}$}{\ottcom{primitive reductions on erased terms}}
 \ottusedrule{\ottdruleBetaXXAppAbs{}}
 \ottusedrule{\ottdruleBetaXXCAppCAbs{}}
 \ottusedrule{\ottdruleBetaXXAxiom{}}
+\ottusedrule{\ottdruleBetaXXPatternTrue{}}
+\ottusedrule{\ottdruleBetaXXPatternFalse{}}
 \end{ottdefnblock}}
 
 %% defn reduction_in_one
@@ -1007,6 +1049,14 @@
 }}
 
 
+\newcommand{\ottdruleEXXPattern}[1]{\ottdrule[#1]{%
+\ottpremise{\vDash  \ottnt{a}  \leadsto  \ottnt{a'}  \ottsym{/}  \ottnt{R}}%
+}{
+\vDash  \ottkw{ifPath} \, \ottnt{R} \, \ottmv{F} \, \ottnt{a} \, \ottnt{b}  \leadsto  \ottkw{ifPath} \, \ottnt{R} \, \ottmv{F} \, \ottnt{a'} \, \ottnt{b}  \ottsym{/}  \ottnt{R}}{%
+{\ottdrulename{E\_Pattern}}{}%
+}}
+
+
 \newcommand{\ottdruleEXXPrim}[1]{\ottdrule[#1]{%
 \ottpremise{\vDash  \ottnt{a}  \ottsym{>}  \ottnt{b}  \ottsym{/}  \ottnt{R}}%
 }{
@@ -1018,6 +1068,7 @@
 \ottusedrule{\ottdruleEXXAbsTerm{}}
 \ottusedrule{\ottdruleEXXAppLeft{}}
 \ottusedrule{\ottdruleEXXCAppLeft{}}
+\ottusedrule{\ottdruleEXXPattern{}}
 \ottusedrule{\ottdruleEXXPrim{}}
 \end{ottdefnblock}}
 
@@ -1171,6 +1222,16 @@
 {\ottdrulename{E\_Fam}}{}%
 }}
 
+
+\newcommand{\ottdruleEXXPat}[1]{\ottdrule[#1]{%
+\ottpremise{\Gamma  \vDash  \ottmv{F}  \ottsym{:}   \star   \ottsym{/}  \ottnt{R'}}%
+\ottpremise{\Gamma  \vDash  \ottnt{a}  \ottsym{:}  \ottnt{A}  \ottsym{/}  \ottnt{R}}%
+\ottpremise{\Gamma  \vDash  \ottnt{b}  \ottsym{:}  \ottnt{A}  \ottsym{/}  \ottnt{R}}%
+}{
+\Gamma  \vDash  \ottkw{ifPath} \, \ottnt{R} \, \ottmv{F} \, \ottnt{a} \, \ottnt{b}  \ottsym{:}  \ottnt{A}  \ottsym{/}  \ottnt{R}}{%
+{\ottdrulename{E\_Pat}}{}%
+}}
+
 \newcommand{\ottdefnTyping}[1]{\begin{ottdefnblock}[#1]{$\Gamma  \vDash  \ottnt{a}  \ottsym{:}  \ottnt{A}  \ottsym{/}  \ottnt{R}$}{\ottcom{typing}}
 \ottusedrule{\ottdruleEXXSubRole{}}
 \ottusedrule{\ottdruleEXXStar{}}
@@ -1184,6 +1245,7 @@
 \ottusedrule{\ottdruleEXXCAbs{}}
 \ottusedrule{\ottdruleEXXCApp{}}
 \ottusedrule{\ottdruleEXXFam{}}
+\ottusedrule{\ottdruleEXXPat{}}
 \end{ottdefnblock}}
 
 %% defn Iso
@@ -1398,6 +1460,16 @@
 {\ottdrulename{E\_IsoSnd}}{}%
 }}
 
+
+\newcommand{\ottdruleEXXPatCong}[1]{\ottdrule[#1]{%
+\ottpremise{\Gamma  \vDash  \ottmv{F}  \ottsym{:}   \star   \ottsym{/}  \ottnt{R'}}%
+\ottpremise{\Gamma  \ottsym{;}  \Delta  \vDash  \ottnt{a}  \equiv  \ottnt{a'}  \ottsym{:}  \ottnt{A}  \ottsym{/}  \ottnt{R}}%
+\ottpremise{\Gamma  \ottsym{;}  \Delta  \vDash  \ottnt{b}  \equiv  \ottnt{b'}  \ottsym{:}  \ottnt{A}  \ottsym{/}  \ottnt{R}}%
+}{
+\Gamma  \ottsym{;}  \Delta  \vDash  \ottkw{ifPath} \, \ottnt{R} \, \ottmv{F} \, \ottnt{a} \, \ottnt{b}  \equiv  \ottkw{ifPath} \, \ottnt{R} \, \ottmv{F} \, \ottnt{a'} \, \ottnt{b'}  \ottsym{:}  \ottnt{A}  \ottsym{/}  \ottnt{R}}{%
+{\ottdrulename{E\_PatCong}}{}%
+}}
+
 \newcommand{\ottdefnDefEq}[1]{\begin{ottdefnblock}[#1]{$\Gamma  \ottsym{;}  \Delta  \vDash  \ottnt{a}  \equiv  \ottnt{b}  \ottsym{:}  \ottnt{A}  \ottsym{/}  \ottnt{R}$}{\ottcom{definitional equality}}
 \ottusedrule{\ottdruleEXXAssn{}}
 \ottusedrule{\ottdruleEXXRefl{}}
@@ -1418,6 +1490,7 @@
 \ottusedrule{\ottdruleEXXCast{}}
 \ottusedrule{\ottdruleEXXEqConv{}}
 \ottusedrule{\ottdruleEXXIsoSnd{}}
+\ottusedrule{\ottdruleEXXPatCong{}}
 \end{ottdefnblock}}
 
 %% defn Ctx
@@ -2071,7 +2144,7 @@
 \ottall
 
 \begin{verbatim}
-Definition rules:        151 good    0 bad
-Definition rule clauses: 450 good    0 bad
+Definition rules:        158 good    0 bad
+Definition rule clauses: 473 good    0 bad
 \end{verbatim}
 \end{document}
