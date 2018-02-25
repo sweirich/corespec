@@ -480,6 +480,7 @@ Fixpoint erase_tm (a : tm) (r : role) : tm :=
    | a_DataCon K => a_Star  (* a_DataCon K *)
    | a_Case a brs => a_Star (* a_Case (erase_tm a) (erase_brs brs) *)
    | a_Bullet => a_Bullet
+   | a_Pattern R a' a b => a_Pattern R (erase_tm a' R) (erase_tm a R) (erase_tm b R)
    | a_Sub _ a => erase_tm a r
    end
 with erase_brs (x : brs) (r:role): brs :=
