@@ -79,7 +79,7 @@ tm, a, b, v, w, A, B :: 'a_' ::= {{ com types and kinds }}
      {{ tex [[/\]][[c]].[[b]] }}
    | a [ g ]            ::   :: CApp
    | []                 ::   :: Bullet
-   | ifPath a' a b    ::   :: Pattern
+   | ifPath R a' a b1 b2   ::   :: Pattern
 
    %% currently unused but ready for extension
    | K                ::   :: DataCon
@@ -480,7 +480,7 @@ Fixpoint erase_tm (a : tm) (r : role) : tm :=
    | a_DataCon K => a_Star  (* a_DataCon K *)
    | a_Case a brs => a_Star (* a_Case (erase_tm a) (erase_brs brs) *)
    | a_Bullet => a_Bullet
-   | a_Pattern a' a b => a_Pattern (erase_tm a' r) (erase_tm a r) (erase_tm b r)
+   | a_Pattern R a' a b1 b2 => a_Pattern R (erase_tm a' r) (erase_tm a r) (erase_tm b1 r) (erase_tm b2 r)
    | a_Sub _ a => erase_tm a r
    end
 with erase_brs (x : brs) (r:role): brs :=
@@ -746,10 +746,11 @@ F ~ a : A / R in toplevel
 W |- erased_tm F R1
 
 F ~ a0 : A / R' in toplevel
-W |- erased_tm a R1
-W |- erased_tm b R1
------------------------------------ :: Pattern
-W |- erased_tm (ifPath F a b) R1
+W |- erased_tm a R
+W |- erased_tm b1 R1
+W |- erased_tm b2 R1
+--------------------------------------- :: Pattern
+W |- erased_tm (ifPath R F a b1 b2) R1
 
 
 defns
@@ -830,24 +831,27 @@ rctx_uniq W
 W |- F => a / R
 
  F ~ a0 : A / R' in toplevel
- W |- a => a' / R0
- W |- b => b' / R0
----------------------------------------------- :: Pattern
- W |- ifPath F a b => ifPath F a' b' / R0
+ W |- a => a' / R
+ W |- b1 => b1' / R0
+ W |- b2 => b2' / R0
+------------------------------------------------------- :: Pattern
+ W |- ifPath R F a b1 b2 => ifPath R F a' b1' b2' / R0
 
- W |- a => a' / R0
- W |- b => b' / R0
- Path F a' R0
+ W |- a => a' / R
+ W |- b1 => b1' / R0
+ W |- b2 => b2' / R0
+ Path F a' R
 ---------------------------------------------- :: PatternTrue
- W |- ifPath F a b => a' / R0
+ W |- ifPath R F a b1 b2 => b1' / R0
 
- W |- a => a' / R0
- W |- b => b' / R0
  F ~ a0 : A / R' in toplevel
- Value R0 a'
- not (Path F a' R0)
+ W |- a => a' / R
+ W |- b1 => b1' / R0
+ W |- b2 => b2' / R0
+ Value R a'
+ not (Path F a' R)
 ------------------------------------------------ :: PatternFalse
- W |- ifPath F a b => b' / R0
+ W |- ifPath R F a b1 b2 => b2' / R0
 
 
 defn
@@ -901,15 +905,15 @@ R <= R1
 -------------------------------- :: Axiom
 |= F > a / R1
 
-Path F a R0
+Path F a R
 --------------------------------- :: PatternTrue
-|= ifPath F a b > a / R0
+|= ifPath R F a b1 b2 > b1 / R0
 
-Value R0 a
 F ~ a0 : A / R' in toplevel
-not (Path F a R0)
+Value R a
+not (Path F a R)
 ---------------------------------- :: PatternFalse
-|= ifPath F a b > b / R0
+|= ifPath R F a b1 b2 > b2 / R0
 
 defn
  |= a ~> b / R ::   :: reduction_in_one :: 'E_'
@@ -928,9 +932,9 @@ by
 -----------------------------   :: CAppLeft
 |= a [o]  ~> a' [o] / R
 
-|= a ~> a' / R0
------------------------------------------ :: Pattern
-|= ifPath F a b ~> ifPath F a' b / R0
+|= a ~> a' / R
+------------------------------------------------- :: Pattern
+|= ifPath R F a b1 b2 ~> ifPath R F a' b1 b2 / R0
 
 |= a > b / R
 ----------------------------- :: Prim
@@ -1038,11 +1042,12 @@ F ~ a : A / R in toplevel
 ------------------ :: Fam
 G |= F : A / R1
 
-F ~ a0 : A / R' in toplevel
-G |= a : A / R1
-G |= b : A / R1
------------------------------ :: Pat
-G |= ifPath F a b : A / R1
+F ~ a0 : A0 / R' in toplevel
+G |= a : A / R
+G |= b1 : B / R0
+G |= b2 : B / R0
+---------------------------------- :: Pat
+G |= ifPath R F a b1 b2 : B / R0
 
 
 defn
@@ -1186,11 +1191,12 @@ G ; D |= a ~ b : A/R1 == a' ~ b' : A'/R1
 --------------------------------------------- :: IsoSnd
 G ; D |= A == A' : TYPE/R1
 
-F ~ a0 : A / R' in toplevel
-G ; D |= a == a' : A / R1
-G ; D |= b == b' : A / R1
------------------------------------------------------- :: PatCong
-G ; D |= ifPath F a b == ifPath F a' b' : A / R1
+F ~ a0 : A0 / R' in toplevel
+G ; D |= a == a' : A / R
+G ; D |= b1 == b1' : B / R0
+G ; D |= b2 == b2' : B / R0
+------------------------------------------------------------- :: PatCong
+G ; D |= ifPath R F a b1 b2 == ifPath R F a' b1' b2' : B / R0
 
 defn
 |= G ::    :: Ctx  :: 'E_'
