@@ -10,11 +10,7 @@ Require Export FcEtt.ett_ind.
 Require Export FcEtt.ext_context_fv.
 
 Require Import FcEtt.ext_wf.
-Import ext_wf.
-(*
-Require Import FcEtt.fc_wf.
-Import fc_wf.
-*)
+Require Import FcEtt.ett_path.
 
 Require Import FcEtt.utils.
 Require Export FcEtt.toplevel.
@@ -22,7 +18,8 @@ Require Import FcEtt.ett_value.
 
 Lemma Beta_lc1 : forall a a' R, Beta a a' R -> lc_tm a.
   intros.  induction H; auto.
-  eapply Value_lc in H0. eauto.
+  eapply Value_lc in H0. eauto. econstructor; eauto.
+  eapply Path_lc; eauto. econstructor; eauto. eapply Value_lc; eauto.
 Qed.
 
 Lemma Beta_lc2 : forall a a' R, Beta a a' R -> lc_tm a'.
@@ -56,6 +53,10 @@ Proof.
     rewrite tm_subst_tm_tm_fresh_eq. eauto.
     move: (first context_fv_mutual _ _ _ _ h) => Fr. simpl in Fr.
     fsetdec.
+  - simpl. econstructor; eauto with lngen lc. apply Path_subst; auto.
+  - simpl. eapply Beta_PatternFalse; eauto with lngen lc.
+    apply Value_tm_subst_tm_tm; auto. intro. apply H4.
+    eapply subst_Path; eauto.
 Qed.
 
 Lemma Beta_co_subst : forall a a' R b x, Beta a a' R -> lc_co b -> Beta (co_subst_co_tm b x a) (co_subst_co_tm b x a') R.
@@ -77,4 +78,8 @@ Proof.
     rewrite co_subst_co_tm_fresh_eq. eauto.
     move: (first context_fv_mutual _ _ _ _ h) => Fr. simpl in Fr.
     fsetdec.
+  - simpl. econstructor; eauto with lngen lc. apply Path_subst_co; auto.
+  - simpl. eapply Beta_PatternFalse; eauto with lngen lc.
+    apply Value_co_subst_co_tm; auto. intro. apply H4.
+    eapply subst_co_Path; eauto.
 Qed.

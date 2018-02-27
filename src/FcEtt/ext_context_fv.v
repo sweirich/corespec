@@ -192,6 +192,13 @@ Proof.
 
   all: try solve [ destruct (H0 _ _ b0); simpl in *; eauto].
   all: try solve [ destruct (H _ _ _ b); simpl in *; eauto].
+  all: match goal with 
+      [ H1 : ?y `in` union ?A ?B,
+        H2 : forall a, a `in` ?A -> a `in` ?C,
+        H3 : forall b, b `in` ?B -> b `in` ?C |- ?y `in` ?C ] =>
+        apply union_iff in H1; inversion H1 as [P | Q];
+        [apply H2; auto | apply H3; auto]
+       end.
 
 Qed.
 

@@ -124,6 +124,7 @@ Proof.
   all: eauto 4.
   - move: H2 => /binds_cons_iff [[? [?]] | /= H2]; subst;
                        assert (y <> y); [fsetdec|done|fsetdec|done].
+  - eapply E_PatCong; eauto.
 Qed.  (* strengthen_available_nocovar *)
 
 Lemma DefEq_strengthen_available_tmvar :

@@ -160,6 +160,8 @@ Ltac lc_inversion c :=
     inversion H; clear H
   | [ H : lc_tm (a_CApp _ _) |- _ ] =>
     inversion H; clear H
+  | [ H : lc_tm (a_Pattern _ _ _ _ _) |- _ ] =>
+    inversion H; clear H
   | [ H : lc_tm (a_Case _ _) |- _ ] =>
     inversion H; clear H
  end.
@@ -247,6 +249,8 @@ Ltac invert_syntactic_equality :=
   | [ H : a_CApp _ _  = a_CApp _ _ |- _ ] =>
     inversion H; subst; clear H
   | [ H : a_CPi _ _ = a_CPi _ _ |- _ ] =>
+    inversion H; subst; clear H
+  | [ H : a_Pattern _ _ _ _ _ = a_Pattern _ _ _ _ _ |- _ ] =>
     inversion H; subst; clear H
   | [ H : Eq _ _ _ _ = Eq _ _ _ _ |- _ ] =>
     inversion H; subst; clear H
@@ -336,7 +340,7 @@ Ltac ext_induction CON :=
       pose CON :=  E_CAbs       |
       pose CON :=  E_CApp       |
       pose CON :=  E_Fam        |
-(*      pose CON :=  E_TyCast     | *)
+      pose CON :=  E_Pat        |
       pose CON :=  E_Wff        |
       pose CON :=  E_PropCong   |
       pose CON :=  E_IsoConv    |
@@ -360,7 +364,7 @@ Ltac ext_induction CON :=
       pose CON :=  E_Cast       |
       pose CON :=  E_EqConv     |
       pose CON :=  E_IsoSnd     |
-(*      pose CON :=  E_CastCong   | *)
+      pose CON :=  E_PatCong   |
       pose CON :=  E_Empty      |
       pose CON :=  E_ConsTm     |
       pose CON :=  E_ConsCo     ].

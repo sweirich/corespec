@@ -14,6 +14,7 @@ Require Export FcEtt.ext_context_fv.
 
 Require Import FcEtt.ext_wf.
 Require Import FcEtt.ett_erased.
+Require Import FcEtt.ett_path.
 Import ext_wf.
 
 
@@ -93,15 +94,10 @@ Qed.
 
 Hint Resolve Par_lc1 Par_lc2 : lc.
 
-Lemma Path_binds_toplevel : forall F a R, Path F a R -> exists a0 A0 R0,
-                                   binds F (Ax a0 A0 R0) toplevel.
-Proof. intros. induction H. exists a, A, R1; auto. auto. auto.
-Qed.
-
 Lemma Par_erased_tm_fst : forall W a a' R, Par W a a' R -> 
                                                erased_tm W a R.
 Proof. intros W a a' R H. induction H; eauto.
-       apply Path_binds_toplevel in H1. inversion H1 as [a0 [A0 [R1 P]]].
+       apply Path_binds_toplevel in H2. inversion H2 as [a0 [A0 [R1 P]]].
        econstructor; eauto.
 Qed.
 
@@ -153,8 +149,8 @@ Lemma Par_sub: forall W a a' R1 R2, Par W a a' R1 -> SubRole R1 R2 ->
                                       Par W a a' R2.
 Proof. intros W a a' R1 R2 H SR. generalize dependent R2.
        induction H; intros; simpl; eauto. econstructor.
-       eapply erased_sub; eauto. admit.
-Admitted.
+       eapply erased_sub; eauto.
+Qed.
 
 Lemma multipar_sub : forall W a a' R1 R2, multipar W a a' R1 ->
                      SubRole R1 R2 -> multipar W a a' R2.
@@ -203,6 +199,7 @@ Proof.
      eapply Par_lc2; eauto. eapply Par_lc1; eauto.
    - econstructor; eauto.
    - econstructor; eauto.
+   - econstructor; eauto.
 Qed.
 
 Lemma open1 : forall b W L a a' R, Par W a a' R
@@ -218,7 +215,6 @@ Proof.
   constructor; auto. eapply Par_rctx_uniq; eauto.
   auto.
 Qed.
-
 
 Lemma subst2 : forall b W W' a a' R R1 x, 
           Par (W ++ [(x,R1)] ++ W') a a' R -> 
@@ -261,14 +257,11 @@ Proof.
     apply Typing_context_fv in H.
     split_hyp. simpl in *.
     fsetdec.
-(*  - pose (P := IHPAR _ _ _ _ ltac:(auto) E). simpl in P. auto.
-  - econstructor; eauto 2. pose (P := IHPAR1 _ _ _ _ ltac:(auto) E).
-    simpl in P. auto.
-  - eapply Par_PushCombine; eauto 2. pose (P := IHPAR1 _ _ _ _ ltac:(auto) E).
-    simpl in P. auto. pose (P := IHPAR2 _ _ _ _ ltac:(auto) E).
-    simpl in P. auto.
-  - econstructor; eauto. pose (P := IHPAR _ _ _ _ ltac:(auto) E).
-    simpl in P. auto. *)
+  - eapply Par_PatternTrue; eauto. eapply Path_subst; eauto.
+    eapply erased_lc; eauto.
+  - eapply Par_PatternFalse; eauto.
+    eapply Value_tm_subst_tm_tm; eauto. eapply erased_lc; eauto.
+    intro. eapply subst_Path in H2; eauto. eapply erased_lc; eauto.
 Qed.
 
 
@@ -301,14 +294,12 @@ Proof.
     apply Typing_context_fv in H.
     split_hyp. simpl in *.
     fsetdec.
-(*  - pose (P := IHPar _ _ _ _ ltac:(auto) H0). simpl in P. auto.
-  - econstructor; eauto 2. pose (P := IHPar1 _ _ _ _ ltac:(auto) H1).
-    simpl in P. auto.
-  - eapply Par_PushCombine; eauto 2. pose (P := IHPar1 _ _ _ _ ltac:(auto) H1).
-    simpl in P. auto. pose (P := IHPar2 _ _ _ _ ltac:(auto) H1).
-    simpl in P. auto.
-  - econstructor; eauto. pose (P := IHPar _ _ _ _ ltac:(auto) H0).
-    simpl in P. auto. *)
+  - econstructor; eauto.
+  - eapply Par_PatternTrue; eauto. eapply Path_subst; eauto.
+    eapply Par_lc2; eauto.
+  - eapply Par_PatternFalse; eauto.
+    eapply Value_tm_subst_tm_tm; eauto. eapply Par_lc2; eauto.
+    intro. eapply subst_Path in H6; eauto. eapply Par_lc2; eauto.
 Qed.
 
 Lemma subst4 : forall b x, lc_co b ->
@@ -326,6 +317,9 @@ Proof.
     apply Typing_context_fv in H.
     split_hyp. simpl in *.
     fsetdec.
+  - eapply Par_PatternTrue; eauto. eapply Path_subst_co; eauto.
+  - eapply Par_PatternFalse; eauto. eapply Value_co_subst_co_tm; eauto.
+    intro. apply H1. eapply subst_co_Path; eauto.
 Qed.
 
 Lemma multipar_subst3 : forall b b' W W' a a' R R1 x, 
@@ -668,10 +662,3 @@ Proof.
   rewrite h0.
   eauto.
 Qed.
-
-(*
-Lemma multipar_Cast_exists : forall W a1 a2 R R', multipar W a1 a2 R ->
-               multipar W (a_Conv a1 R' g_Triv) (a_Conv a2 R' g_Triv) R.
-Proof. intros. induction H. econstructor. econstructor. auto.
-       econstructor. eapply Par_Cong; eauto. auto.
-Qed. *)
