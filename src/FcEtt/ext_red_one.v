@@ -8,7 +8,8 @@ Require Export FcEtt.ett_inf.
 Require Export FcEtt.ett_ind.
 Require Export FcEtt.ett_par.
 Require Import FcEtt.ext_wf.
-(* Require Export FcEtt.erase_syntax. *)
+Require Export FcEtt.ett_value.
+Require Import FcEtt.ett_path.
 
 Set Implicit Arguments.
 Set Bullet Behavior "Strict Subproofs".
@@ -19,7 +20,7 @@ Qed.
 
 Lemma reduction_in_one_lc : forall a a' R, reduction_in_one a a' R -> lc_tm a -> lc_tm a'.
 Proof.
-   induction 1; intros; try (eapply beta_lc; eauto; fail); lc_solve.
+   induction 1; intros; try (eapply beta_lc; eauto 1; fail); lc_solve.
 Qed.
 
 (* ------------------------------------------------------------ *)
@@ -70,6 +71,10 @@ Proof. intros a a' R H. induction H; intros b0 x0 LC; simpl.
         - rewrite tm_subst_tm_tm_fresh_eq.
           econstructor; eauto.
           pose (P := toplevel_closed H). show_fresh. fsetdec.
+        - econstructor; eauto with lngen lc. apply Path_subst; auto.
+        - eapply Beta_PatternFalse; eauto with lngen lc.
+          apply Value_tm_subst_tm_tm; auto. intro. apply H3.
+          eapply subst_Path; eauto.
 Qed.
 
 Lemma subst_reduction_in_one : forall a a' R,
@@ -101,58 +106,18 @@ Proof.
   eapply subst_reduction_in_one; auto.
 Qed.
 
-Lemma Path_role_less : forall F a R, Path F a R -> exists a1 A1 R1,
-                          binds F (Ax a1 A1 R1) toplevel /\ ~(SubRole R1 R).
-Proof. intros F a R H. induction H; eauto.
-Qed.
-
-(* Coerced values and values are terminal. *)
-Lemma no_Path_reduction : forall R a F, Path F a R -> forall b, not (reduction_in_one a b R).
-Proof. 
-  intros R a F H. induction H; simpl; intros.
-  all : intros NH; inversion NH; subst.
-  - inversion H1. subst. assert (P : Ax a A R1 = Ax b A0 R2).
-    eapply binds_unique; eauto using uniq_toplevel. inversion P.
-    subst. contradiction.
-  - pose (Q := IHPath a'); contradiction.
-  - inversion H1; subst. inversion H0.
-  - pose (Q := IHPath a'); contradiction.
-  - inversion H0; subst. inversion H.
-Qed.
-
 Lemma no_Value_reduction : forall R a, Value R a ->
           forall b, not (reduction_in_one a b R).
 Proof. intros R a H. induction H; simpl; intros; eauto 2.
   all: intro NH; inversion NH; subst.
   all: try (inversion H1; fail).
   all: try (inversion H0; fail).
-  all: try solve [eapply no_Path_reduction; eauto 3].
+  all: try solve [eapply no_Path_reduction; eauto 1].
   - inversion H.
   - pick fresh x.
     move: (H0 x ltac:(auto)) => h0.
     move: (H5 x ltac:(auto)) => h5.
     eapply h0; eauto.
-Qed.
-
-Lemma sub_Path : forall F a R1 R2, Path F a R1 -> SubRole R1 R2 ->
-                        Path F a R2 \/ (exists a', reduction_in_one a a' R2).
-Proof. intros. induction H.
-        - destruct (sub_dec R1 R2) as [P1 | P2].
-          right. exists a. eauto. left. eauto.
-        - apply IHPath in H0. inversion H0 as [P1 | P2].
-          left. eauto. right. inversion P2 as [a' Q].
-          exists (a_App a' rho R1 b'); eauto.
-        - apply IHPath in H0. inversion H0 as [P1 | P2].
-          left. eauto. right. inversion P2 as [a' Q].
-          exists (a_CApp a' g_Triv); eauto.
-Qed.
-
-Lemma nsub_Path : forall F a R1 R2, Path F a R1 -> SubRole R2 R1 ->
-                        Path F a R2.
-Proof. intros. induction H.
-        - destruct (sub_dec R1 R2) as [P1 | P2]. eauto. eauto.
-        - apply IHPath in H0. eauto.
-        - apply IHPath in H0. eauto.
 Qed.
 
 Lemma sub_Value :
@@ -250,6 +215,7 @@ Proof.
   all: auto.
   have: (Ax a A R = Ax a2 A0 R2). eapply binds_unique; eauto using uniq_toplevel.
     move => h; inversion h; done.
+  contradiction. contradiction.
 Qed.
 
 (* The reduction relation is deterministic *)
@@ -261,14 +227,14 @@ Proof.
   all: inversion h0; subst.
 
   (* two beta reductions *)
-  all: try solve [eapply Beta_deterministic; eauto].
+  all: try solve [eapply Beta_deterministic; eauto 1].
   (* invert other beta reductions *)
   all: try match goal with [ H1 : Beta ?a ?b ?R |- _ ] => inversion H1; subst end.
   (* follows by induction *)
-  all: try solve [erewrite IHreduction_in_one; eauto].
+  all: try solve [erewrite IHreduction_in_one; eauto 1].
 
   (* impossible case, reduction of value *)
-  all: try solve [(have: False by eapply no_Value_reduction; eauto); done].
+  all: try solve [(have: False by eapply no_Value_reduction; eauto 1); done].
   all: try solve [(have: False; try done; inversion H; inversion H1)].
   all: try solve [(have: False; try done; inversion H0; inversion H1)].
 
@@ -278,4 +244,8 @@ Proof.
     move: (H0 x ltac:(auto)) => h1.
     apply h1 in h7.
     apply open_tm_wrt_tm_inj in h7; eauto. rewrite h7. auto.
+  - apply Value_Path in H12. apply no_Value_reduction in H1; eauto.
+    inversion H1.
+  - apply Value_Path in H12. apply no_Value_reduction in H2; eauto.
+    inversion H2.
 Qed.

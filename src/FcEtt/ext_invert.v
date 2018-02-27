@@ -613,11 +613,11 @@ Proof.
     eapply H0. auto.
     eapply context_DefEq_weaken_available. eauto.
   - intros. eapply con; eauto 2.
-(*    eapply DefEq_weaken_available. 
+(*    eapply DefEq_weaken_available.
     apply H0; eauto.
-    eapply context_DefEq_weaken_available; eauto. 
+    eapply context_DefEq_weaken_available; eauto. *)
   - intros G a b A R t H t0 H0 t1 H1 D G2 H2 H3.
-    apply E_Wff; eauto. *)
+    apply E_Wff; eauto.
   - intros. eauto 4.
   - intros.
     eapply E_IsoConv; eauto.
@@ -670,9 +670,7 @@ Proof.
     apply_first_hyp; auto.
     eapply context_DefEq_weaken_available; eauto.
     eapply S; eauto.
-(*  - intros. eapply con. eauto. eapply DefEq_weaken_available.
-    eapply H0. eauto. eapply context_DefEq_weaken_available; eauto.
-    eauto. *)
+  - intros. eapply con; eauto.
   - intros G x A R c H t H0 n G2 D x0 A0 R' H1 H2 H3.
     inversion H3; subst.
     + inversion H4; subst.
@@ -918,11 +916,9 @@ Proof.
     inversion H0; subst.
     inversion H; subst.
     split; auto.
-    Unshelve. all: auto.
-(*  - intros.
+  - intros.
     pcess_hyps.
-    split;
-    eapply E_TyCast; eauto 3 using DefEq_weaken_available. *)
+    split; eapply E_Pat; eauto.
 Qed.
 
 Lemma DefEq_regularity :

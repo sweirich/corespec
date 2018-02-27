@@ -9,7 +9,6 @@ Require Export FcEtt.ett_ind.
 
 Require Export FcEtt.beta.
 Require Export FcEtt.ext_wf.
-Require Export FcEtt.ett_value.
 Require Import FcEtt.ext_weak.
 
 Set Bullet Behavior "Strict Subproofs".
@@ -416,7 +415,7 @@ Proof.
   - eapply E_Conv; eauto 3.
   -  have h0: Typing nil a A R by eapply toplevel_closed; eauto.
     erewrite (tm_subst_co_fresh_1 _ h0); eauto.
-(*  - eapply E_TyCast; try eapply DefEq_weaken_available; eauto. *)
+  - eapply E_Pat; try eapply DefEq_weaken_available; eauto.
   - apply (E_Wff _ _ _  (co_subst_co_tm g_Triv c A)); eauto 3.
   - apply E_PropCong; eauto 3.
   - eapply E_CPiFst; eauto 3.
@@ -469,7 +468,7 @@ Proof.
     eauto 2.
   - eapply E_IsoSnd; eauto 1.
     eapply H; eauto.
-(*  - eapply E_CastCong; eauto. *)
+  - eapply E_PatCong; eauto.
   - induction F; done.
   - induction F; try done.
     destruct a.

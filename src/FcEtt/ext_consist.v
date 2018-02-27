@@ -91,14 +91,6 @@ Proof.
     solve_uniq. auto. econstructor. solve_uniq. auto. auto.
 Qed.
 
-Lemma Par_Cong_inversion : forall W a1 a2 R R',
-      Par W (a_Conv a1 R' g_Triv) a2 R ->
-      exists a3, a2 = a_Conv a3 R' g_Triv.
-Proof. intros. inversion H; subst.
-       - exists a1; auto.
-(*       - exists a3; auto.
-       - exists a3; auto. *)
-Qed.
 
 (* -------------------------------------------------------------------------------- *)
 
@@ -204,12 +196,6 @@ Proof.
        eapply Par_Beta; eauto.
      + split. pick fresh x; eapply open2. auto. eauto. eauto.
        eapply Par_Beta; eauto.
-(*  - (* beta / push *)
-    use_size_induction a0 ac Par1 Par2.
-    inversion Par1; subst; inversion Par2.
-    - (* beta / push combine *)
-    use_size_induction a0 ac Par1 Par2.
-    inversion Par1; subst; inversion Par2. *)
   - (* app cong / app beta *)
     use_size_induction a0 ac Par1 Par2.
     use_size_induction b bc Par3 Par4.
@@ -223,33 +209,6 @@ Proof.
     use_size_induction a0 ac Par1 Par2.
     use_size_induction b bc Par3 Par4.
     exists (a_App ac rho R1 bc). split; auto.
-(*  - (* app / push *)
-    use_size_induction a0 ac Par1 Par2.
-    use_size_induction b bc Par3 Par4.
-    inversion Par2; subst.
-     + exists (a_Conv (a_App a4 Rel R1 (a_Conv bc R3 g_Triv)) R3 g_Triv).
-       split. apply Par_Push; auto. apply Par_Cong. apply Par_App; auto.
-       apply Par_Refl. apply Par_erased_tm_fst in Par2. inversion Par2.
-       auto.
-     + exists (a_Conv (a_App a2 Rel R1 (a_Conv bc R3 g_Triv)) R3 g_Triv).
-       split. apply Par_Push; auto. apply Par_Cong. apply Par_App; auto.
-     + exists (a_Conv (a_App a2 Rel R1 (a_Conv bc R3 g_Triv)) R3 g_Triv).
-       split. econstructor; auto. apply Par_Combine. apply Par_PushCombine.
-       auto. econstructor. auto.
-  - (* app / push combine *)
-    use_size_induction a0 ac Par1 Par2.
-    use_size_induction b bc Par3 Par4.
-    pose (P := Par_Cong_inversion Par4).
-    inversion P as [b4 Q]. subst.
-    inversion Par2; subst.
-     + exists (a_Conv (a_App a4 Rel R1 (a_Conv b4 R3 g_Triv)) R3 g_Triv).
-       split. apply Par_PushCombine; auto. econstructor.
-       econstructor. inversion H1; subst; auto. auto.
-     + exists (a_Conv (a_App a2 Rel R1 (a_Conv b4 R3 g_Triv)) R3 g_Triv).
-       split. apply Par_PushCombine; auto. econstructor. econstructor; auto.
-     + exists (a_Conv (a_App a2 Rel R1 (a_Conv b4 R3 g_Triv)) R3 g_Triv).
-       split. apply Par_PushCombine; auto. apply Par_Combine.
-       apply Par_PushCombine; auto. *)
   - (* two cbetas *)
     use_size_induction a0 ac Par1 Par2. inversion Par1; subst.
     + exists (open_tm_wrt_co a' g_Triv); split.
@@ -269,9 +228,6 @@ Proof.
     + exists (open_tm_wrt_co a'1 g_Triv). split.
       pick fresh c. eapply open3 with (c := c) (L := L); eauto.
       econstructor. eauto.
-(*  - (* cbeta / cpush *)
-    use_size_induction a0 ac Par1 Par2.
-    inversion Par1; subst; inversion Par2. *)
   - (* capp cong / cbeta *)
     use_size_induction a0 ac Par1 Par2.
     inversion Par2; subst.
@@ -282,15 +238,6 @@ Proof.
   - (* capp cong / capp cong *)
     use_size_induction a0 ac Par1 Par2.
     exists (a_CApp ac g_Triv). auto.
-(*  - (* capp / cpush *)
-    use_size_induction a0 ac Par1 Par2.
-    inversion Par2; subst.
-    + exists (a_Conv (a_CApp a4 g_Triv) R1 g_Triv). split.
-      econstructor. auto. econstructor. eapply Par_erased_tm_snd. eauto.
-    + exists (a_Conv (a_CApp a2 g_Triv) R1 g_Triv). split.
-      econstructor. auto. econstructor. econstructor. eauto.
-    + exists (a_Conv (a_CApp a2 g_Triv) R1 g_Triv). split.
-      econstructor. auto. eapply Par_Combine. econstructor. eauto. *)
   - (* abs cong / abs cong *)
     pick fresh x.
     use_size_induction_open a0 x ac Par1 Par2.
@@ -320,13 +267,21 @@ Proof.
     eapply binds_unique; eauto using uniq_toplevel.
     inversion E. subst.
     exists a2. split; econstructor; eapply Par_erased_tm_snd; eauto.
-(*  - (* cong / cong *)
-   use_size_induction a0 ac Par1 Par2.
-   exists (a_Conv ac R0 g_Triv). split; constructor; auto.
-  - (* cong / combine *)
-   use_size_induction a0 ac Par1 Par2.
-   inversion Par2; exists ac; subst; split; eauto.
-  - (* combine / cong *)
+    (* Patterns *)
+  - use_size_induction a0 ac Par1 Par2.
+    use_size_induction b1 b1c Par3 Par4.
+    use_size_induction b2 b2c Par5 Par6.
+    exists (a_Pattern R0 (a_Fam F) ac b1c b2c).
+    split; econstructor; eauto.
+  - use_size_induction a0 ac Par1 Par2.
+    use_size_induction b1 b1c Par3 Par4.
+    use_size_induction b2 b2c Par5 Par6.
+    eapply Par_Path in H10; eauto.
+  - use_size_induction a0 ac Par1 Par2.
+    use_size_induction b1 b1c Par3 Par4.
+    use_size_induction b2 b2c Par5 Par6.
+    assert (~ Path F ac R0). intro. apply H12.
+    eapply Par_Path in H10; eauto.
    use_size_induction a0 ac Par1 Par2.
    inversion Par1; exists ac; subst; split; eauto.
   - (* combine / combine *)
@@ -633,52 +588,7 @@ Lemma consist_sym : forall a b R, consistent a b R -> consistent b a R.
 Proof. intros. induction H; eauto.
 Qed.
 
-(* ----------------------------------------------------------------- *)
-
-(* Properties of Path *)
-
-
-Lemma decide_Path : forall W a R, erased_tm W a R -> (exists F, Path F a R) \/
-                                     (forall F, not (Path F a R)).
-Proof.
-  induction a; intros R' E.
-  all: try solve [right; move => F h1; inversion h1].
-  - inversion E; subst. apply IHa1 in H5. destruct H5 as [[F h0]|n].
-    left. exists F. econstructor; auto. eapply erased_lc; eauto.
-    right. intros. intro. inversion H; subst. pose (Q := n F). contradiction.
-  - inversion E; subst. destruct (sub_dec R R') as [P1 | P2].
-    right. intros. intro. inversion H; subst. have Q: (Ax a A R = Ax a0 A0 R1).
-    eapply binds_unique; eauto using uniq_toplevel.
-    inversion Q. subst. contradiction. left. exists F. eauto.
-  - inversion E; subst. apply IHa in H3. destruct H3 as [[F h0]|n].
-    left. exists F. eauto. right. intros. intro. inversion H; subst.
-    pose (Q := n F). contradiction.
-Qed.
-
-
-Lemma Par_Path : forall F a R W a', Path F a R -> Par W a a' R -> Path F a' R.
-Proof. intros. generalize dependent a'. induction H; intros.
-       - inversion H1; subst. eauto. have E: (Ax a A R1 = Ax a' A0 R2).
-         eapply binds_unique; eauto using uniq_toplevel.
-         inversion E. subst. contradiction.
-       - inversion H1; subst. eauto. apply IHPath in H9.
-         inversion H9. apply IHPath in H9. econstructor; auto.
-         apply Par_erased_tm_snd in H10. eapply erased_lc; eauto.
-       - inversion H0; subst. eauto. apply IHPath in H3. inversion H3.
-         apply IHPath in H3. econstructor; auto.
-Qed.
-
-Lemma multipar_Path :  forall F a R W a', Path F a R -> multipar W a a' R ->
-                       Path F a' R.
-Proof. intros. induction H0; auto. apply IHmultipar. eapply Par_Path; eauto.
-Qed.
-
-Lemma multipar_Path_join_head : forall F1 F2 W a1 a2 c R,
-      multipar W a1 c R -> multipar W a2 c R ->
-      Path F1 a1 R -> Path F2 a2 R -> F1 = F2.
-Proof. intros. eapply multipar_Path in H; eauto.
-       eapply multipar_Path in H0; eauto. eapply uniq_Path; eauto.
-Qed.
+(* --------------------------------------------------- *)
 
 (* Paths and consistency *)
 

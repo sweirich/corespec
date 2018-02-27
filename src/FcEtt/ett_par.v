@@ -662,3 +662,50 @@ Proof.
   rewrite h0.
   eauto.
 Qed.
+
+(* Properties of Path and Value *)
+
+Lemma Par_Path : forall F a R W a', Path F a R -> Par W a a' R -> Path F a' R.
+Proof. intros. generalize dependent a'. induction H; intros.
+       - inversion H1; subst. eauto. have E: (Ax a A R1 = Ax a' A0 R2).
+         eapply binds_unique; eauto using uniq_toplevel.
+         inversion E. subst. contradiction.
+       - inversion H1; subst. eauto. apply IHPath in H9.
+         inversion H9. apply IHPath in H9. econstructor; auto.
+         apply Par_erased_tm_snd in H10. eapply erased_lc; eauto.
+       - inversion H0; subst. eauto. apply IHPath in H3. inversion H3.
+         apply IHPath in H3. econstructor; auto.
+Qed.
+
+Lemma Value_par_Value : forall R v W v', Value R v -> Par W v v' R -> Value R v'.
+Proof. intros. generalize dependent W. generalize dependent v'.
+       induction H; intros.
+        - inversion H0; subst. auto.
+        - inversion H1; subst. auto.
+          apply Par_lc2 in H1. econstructor.
+          inversion H1; auto. auto.
+        - inversion H1; subst. auto.
+          apply Par_lc2 in H1. econstructor.
+          inversion H1; auto. auto.
+        - inversion H1; subst. auto.
+        - inversion H0; subst. auto.
+          apply Par_lc2 in H0. econstructor. auto.
+        - inversion H1; subst. eauto. eapply Value_UAbsIrrel with (L := L \u L0).
+          intros. eapply H0. auto. eapply H8; eauto.
+        - inversion H1; subst. auto.
+        - inversion H0; subst. auto. econstructor.
+          eapply Par_lc2; eauto.
+        - eapply Value_Path. eapply Par_Path; eauto.
+Qed.
+
+Lemma multipar_Path :  forall F a R W a', Path F a R -> multipar W a a' R ->
+                       Path F a' R.
+Proof. intros. induction H0; auto. apply IHmultipar. eapply Par_Path; eauto.
+Qed.
+
+Lemma multipar_Path_join_head : forall F1 F2 W a1 a2 c R,
+      multipar W a1 c R -> multipar W a2 c R ->
+      Path F1 a1 R -> Path F2 a2 R -> F1 = F2.
+Proof. intros. eapply multipar_Path in H; eauto.
+       eapply multipar_Path in H0; eauto. eapply uniq_Path; eauto.
+Qed.
