@@ -409,6 +409,23 @@ Proof.
     simpl; eauto.
 Qed.
 
+Lemma invert_a_Pattern : forall G R F a b1 b2 B R',
+      Typing G (a_Pattern R (a_Fam F) a b1 b2) B R' ->
+      exists A B0 a0 A0 R0, binds F (Ax a0 A0 R0) toplevel /\
+             Typing G a A R /\ Typing G b1 B0 R' /\ Typing G b2 B0 R' /\
+                               DefEq G (dom G) B B0 a_Star Rep.
+Proof. intros. dependent induction H.
+        - destruct (IHTyping R F a b1 b2 ltac:(auto)) as
+          [A0 [B0 [a1 [A1 [R' [P1 [P2 [P3 [P4 P5]]]]]]]]].
+          exists A0, B0, a1, A1, R'. repeat split; eauto.
+        - destruct (IHTyping1 R F a b1 b2 ltac:(auto)) as
+          [A0 [B0 [a1 [A1 [R' [P1 [P2 [P3 [P4 P5]]]]]]]]].
+          exists A0, B0, a1, A1, R'. repeat split; eauto.
+        - exists A, B, a0, A0, R'. repeat split. auto. auto.
+          auto. auto. eapply E_Refl. eapply Typing_regularity.
+          eapply E_SubRole with (R1 := R0); eauto 1.
+Qed.
+
 
 (* --------------------------------------------------- *)
 

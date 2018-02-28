@@ -208,12 +208,7 @@ Proof.
     eapply E_Refl.
     eapply E_Fam; eauto 2.
     eapply (fifth tm_substitution_mutual); eauto.
-(*  - intros. simpl. assert (tm_subst_tm_tm a1 x a_Star = a_Star). eauto.
-    eapply E_CastCong. subst.
-    eapply (H _ _ x _ _ _ _ _ eq_refl H3 H4); eauto 2. rewrite <- H5.
-    eapply (fourth tm_substitution_mutual) in d; [idtac|apply H3|eauto].
-    eapply DefEq_weaken_available in d.
-    eauto. eauto. rewrite <- H5. eapply (first tm_substitution_mutual); eauto. *)
+  - intros. simpl. eapply E_PatCong; eauto.
   - intros G a b A R t H t0 H0 t1 H1 G1 G2 x A1 R' a1 a2 D H2 H3 H4.
     simpl.
     pose K1 := H G1 G2 _ _ _ _ _ _ H2 H3 H4. clearbody K1. clear H.

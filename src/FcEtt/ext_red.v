@@ -86,6 +86,8 @@ Proof.
      eapply E_Sym. eauto.
      eapply Typing_regularity. 
      eauto.
+   - dependent induction TH; eauto.
+   - dependent induction TH; eauto.
      Unshelve. exact (dom G). exact (dom G).
 Qed.
 
@@ -166,6 +168,9 @@ Proof.
     move: (Typing_context_fv H) => ?. split_hyp.
     simpl in *.
     fsetdec.
+  - eauto.
+  - eauto.
+  - eauto.
 Qed.
 
 Lemma reduction_in_Par : forall a a' R, reduction_in_one a a' R ->
@@ -177,6 +182,8 @@ Proof.
   - inversion H1.
     pick fresh x and apply Par_Abs.
     eapply H0; eauto 2.
+  - inversion H2; subst.
+    eauto.
   - inversion H; subst.
     + inversion H0; subst.
       eapply Par_Beta; eauto.
@@ -184,6 +191,8 @@ Proof.
       eapply Par_CBeta; eauto.
     + inversion H0; subst.
       eapply Par_Axiom; eauto.
+    + inversion H0; subst. eapply Par_PatternTrue; eauto.
+    + inversion H0; subst. eapply Par_PatternFalse; eauto.
 Qed.
 
 
@@ -234,6 +243,10 @@ Proof.
     autoinv; subst.
     eapply E_Conv with (A:= (open_tm_wrt_co x3 g_Triv)); auto.
     eapply E_CApp; eauto.
+  - apply invert_a_Pattern in tpga.
+    inversion tpga as [A [B0 [a0 [A0 [R1 [P1 [P2 [P3 [P4 P5]]]]]]]]].
+    eapply E_Pat. eauto. eauto. eapply E_Conv. eauto. eauto. admit.
+    eapply E_Conv. eauto. eauto. admit.
   - eapply Beta_preservation; eauto.
-Qed.
+Admitted.
 
