@@ -1198,6 +1198,50 @@ G ; D |= b2 == b2' : B / R0
 ------------------------------------------------------------- :: PatCong
 G ; D |= ifPath R F a b1 b2 == ifPath R F a' b1' b2' : B / R0
 
+ Path F a R'
+ Path F a' R'
+ G |= a : all +x:A / R1 -> B / R'
+ G |= b : A / R1
+ G |= a' : all +x:A / R1 -> B / R'
+ G |= b' : A / R1
+ G ; D |= a + R1 b == a' + R1 b' : B { b / x } / R'
+ G ; dom G |= B {b/x} == B {b'/x} : TYPE / R0
+ --------------------------------------------------- :: LeftRel
+ G ; D |= a == a' : all + x: A / R1 -> B / R'
+
+ Path F a R'
+ Path F a' R'
+ G |= a : all -x:A/R1 -> B/R'
+ G |= b : A/R1
+ G |= a' : all -x:A/R1 -> B/R'
+ G |= b' : A/R1
+ G ; D |= a - R1 [] == a' - R1 [] : B { b / x }/R'
+ G ; dom G |= B {b/x} == B {b'/x} : TYPE/R0
+ ------------------------------------------------- :: LeftIrrel
+ G ; D |= a == a' : all -x: A/R1 -> B/R'
+
+
+ Path F a R'
+ Path F a' R'
+ G |= a : all +x:A/R1 -> B/R'
+ G |= b : A/R1
+ G |= a' : all +x:A/R1 -> B/R'
+ G |= b' : A/R1
+ G ; D |= a + R1 b == a' + R1 b' : B { b / x }/R'
+ G ; dom G |= B {b/x} == B {b'/x} : TYPE/R0
+ ------------------------------------------------ :: Right
+ G ; D |= b == b' : A/R1
+
+
+ Path F a R'
+ Path F a' R'
+ G |= a  : all c:(a1 ~ a2:A/R1). B/R'
+ G |= a' : all c:(a1 ~ a2:A/R1). B/R'
+ G ; dom G |= a1 == a2 : A/R1
+ G ; D |= a [o] == a' [o] : B {o/c}/R'
+ --------------------------------------------- :: CLeft
+ G ; D |= a == a' : all c:(a1 ~ a2:A/R1). B/R'
+
 defn
 |= G ::    :: Ctx  :: 'E_'
 {{ com context wellformedness }}

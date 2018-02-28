@@ -1480,6 +1480,64 @@
 {\ottdrulename{E\_PatCong}}{}%
 }}
 
+
+\newcommand{\ottdruleEXXLeftRel}[1]{\ottdrule[#1]{%
+\ottpremise{ \mathsf{Path}_{ \ottnt{R'} }\  \ottnt{a}  =  \ottmv{F} }%
+\ottpremise{ \mathsf{Path}_{ \ottnt{R'} }\  \ottnt{a'}  =  \ottmv{F} }%
+\ottpremise{\Gamma  \vDash  \ottnt{a}  \ottsym{:}   \mathrm{\Pi}^ \ottsym{+} \ottmv{x} \!:\! \ottnt{A} / \ottnt{R_{{\mathrm{1}}}} \to \ottnt{B}   \ottsym{/}  \ottnt{R'}}%
+\ottpremise{\Gamma  \vDash  \ottnt{b}  \ottsym{:}  \ottnt{A}  \ottsym{/}  \ottnt{R_{{\mathrm{1}}}}}%
+\ottpremise{\Gamma  \vDash  \ottnt{a'}  \ottsym{:}   \mathrm{\Pi}^ \ottsym{+} \ottmv{x} \!:\! \ottnt{A} / \ottnt{R_{{\mathrm{1}}}} \to \ottnt{B}   \ottsym{/}  \ottnt{R'}}%
+\ottpremise{\Gamma  \vDash  \ottnt{b'}  \ottsym{:}  \ottnt{A}  \ottsym{/}  \ottnt{R_{{\mathrm{1}}}}}%
+\ottpremise{\Gamma  \ottsym{;}  \Delta  \vDash   \ottnt{a} \  \ottnt{b} ^{ \ottnt{R_{{\mathrm{1}}}} , \ottsym{+} }   \equiv   \ottnt{a'} \  \ottnt{b'} ^{ \ottnt{R_{{\mathrm{1}}}} , \ottsym{+} }   \ottsym{:}  \ottnt{B}  \ottsym{\{}  \ottnt{b}  \ottsym{/}  \ottmv{x}  \ottsym{\}}  \ottsym{/}  \ottnt{R'}}%
+\ottpremise{\Gamma  \ottsym{;}   \widetilde { \Gamma }   \vDash  \ottnt{B}  \ottsym{\{}  \ottnt{b}  \ottsym{/}  \ottmv{x}  \ottsym{\}}  \equiv  \ottnt{B}  \ottsym{\{}  \ottnt{b'}  \ottsym{/}  \ottmv{x}  \ottsym{\}}  \ottsym{:}   \star   \ottsym{/}  \ottnt{R_{{\mathrm{0}}}}}%
+}{
+\Gamma  \ottsym{;}  \Delta  \vDash  \ottnt{a}  \equiv  \ottnt{a'}  \ottsym{:}   \mathrm{\Pi}^ \ottsym{+} \ottmv{x} \!:\! \ottnt{A} / \ottnt{R_{{\mathrm{1}}}} \to \ottnt{B}   \ottsym{/}  \ottnt{R'}}{%
+{\ottdrulename{E\_LeftRel}}{}%
+}}
+
+
+\newcommand{\ottdruleEXXLeftIrrel}[1]{\ottdrule[#1]{%
+\ottpremise{ \mathsf{Path}_{ \ottnt{R'} }\  \ottnt{a}  =  \ottmv{F} }%
+\ottpremise{ \mathsf{Path}_{ \ottnt{R'} }\  \ottnt{a'}  =  \ottmv{F} }%
+\ottpremise{\Gamma  \vDash  \ottnt{a}  \ottsym{:}   \mathrm{\Pi}^ \ottsym{-} \ottmv{x} \!:\! \ottnt{A} / \ottnt{R_{{\mathrm{1}}}} \to \ottnt{B}   \ottsym{/}  \ottnt{R'}}%
+\ottpremise{\Gamma  \vDash  \ottnt{b}  \ottsym{:}  \ottnt{A}  \ottsym{/}  \ottnt{R_{{\mathrm{1}}}}}%
+\ottpremise{\Gamma  \vDash  \ottnt{a'}  \ottsym{:}   \mathrm{\Pi}^ \ottsym{-} \ottmv{x} \!:\! \ottnt{A} / \ottnt{R_{{\mathrm{1}}}} \to \ottnt{B}   \ottsym{/}  \ottnt{R'}}%
+\ottpremise{\Gamma  \vDash  \ottnt{b'}  \ottsym{:}  \ottnt{A}  \ottsym{/}  \ottnt{R_{{\mathrm{1}}}}}%
+\ottpremise{\Gamma  \ottsym{;}  \Delta  \vDash   \ottnt{a} \  \Box ^{ \ottnt{R_{{\mathrm{1}}}} , \ottsym{-} }   \equiv   \ottnt{a'} \  \Box ^{ \ottnt{R_{{\mathrm{1}}}} , \ottsym{-} }   \ottsym{:}  \ottnt{B}  \ottsym{\{}  \ottnt{b}  \ottsym{/}  \ottmv{x}  \ottsym{\}}  \ottsym{/}  \ottnt{R'}}%
+\ottpremise{\Gamma  \ottsym{;}   \widetilde { \Gamma }   \vDash  \ottnt{B}  \ottsym{\{}  \ottnt{b}  \ottsym{/}  \ottmv{x}  \ottsym{\}}  \equiv  \ottnt{B}  \ottsym{\{}  \ottnt{b'}  \ottsym{/}  \ottmv{x}  \ottsym{\}}  \ottsym{:}   \star   \ottsym{/}  \ottnt{R_{{\mathrm{0}}}}}%
+}{
+\Gamma  \ottsym{;}  \Delta  \vDash  \ottnt{a}  \equiv  \ottnt{a'}  \ottsym{:}   \mathrm{\Pi}^ \ottsym{-} \ottmv{x} \!:\! \ottnt{A} / \ottnt{R_{{\mathrm{1}}}} \to \ottnt{B}   \ottsym{/}  \ottnt{R'}}{%
+{\ottdrulename{E\_LeftIrrel}}{}%
+}}
+
+
+\newcommand{\ottdruleEXXRight}[1]{\ottdrule[#1]{%
+\ottpremise{ \mathsf{Path}_{ \ottnt{R'} }\  \ottnt{a}  =  \ottmv{F} }%
+\ottpremise{ \mathsf{Path}_{ \ottnt{R'} }\  \ottnt{a'}  =  \ottmv{F} }%
+\ottpremise{\Gamma  \vDash  \ottnt{a}  \ottsym{:}   \mathrm{\Pi}^ \ottsym{+} \ottmv{x} \!:\! \ottnt{A} / \ottnt{R_{{\mathrm{1}}}} \to \ottnt{B}   \ottsym{/}  \ottnt{R'}}%
+\ottpremise{\Gamma  \vDash  \ottnt{b}  \ottsym{:}  \ottnt{A}  \ottsym{/}  \ottnt{R_{{\mathrm{1}}}}}%
+\ottpremise{\Gamma  \vDash  \ottnt{a'}  \ottsym{:}   \mathrm{\Pi}^ \ottsym{+} \ottmv{x} \!:\! \ottnt{A} / \ottnt{R_{{\mathrm{1}}}} \to \ottnt{B}   \ottsym{/}  \ottnt{R'}}%
+\ottpremise{\Gamma  \vDash  \ottnt{b'}  \ottsym{:}  \ottnt{A}  \ottsym{/}  \ottnt{R_{{\mathrm{1}}}}}%
+\ottpremise{\Gamma  \ottsym{;}  \Delta  \vDash   \ottnt{a} \  \ottnt{b} ^{ \ottnt{R_{{\mathrm{1}}}} , \ottsym{+} }   \equiv   \ottnt{a'} \  \ottnt{b'} ^{ \ottnt{R_{{\mathrm{1}}}} , \ottsym{+} }   \ottsym{:}  \ottnt{B}  \ottsym{\{}  \ottnt{b}  \ottsym{/}  \ottmv{x}  \ottsym{\}}  \ottsym{/}  \ottnt{R'}}%
+\ottpremise{\Gamma  \ottsym{;}   \widetilde { \Gamma }   \vDash  \ottnt{B}  \ottsym{\{}  \ottnt{b}  \ottsym{/}  \ottmv{x}  \ottsym{\}}  \equiv  \ottnt{B}  \ottsym{\{}  \ottnt{b'}  \ottsym{/}  \ottmv{x}  \ottsym{\}}  \ottsym{:}   \star   \ottsym{/}  \ottnt{R_{{\mathrm{0}}}}}%
+}{
+\Gamma  \ottsym{;}  \Delta  \vDash  \ottnt{b}  \equiv  \ottnt{b'}  \ottsym{:}  \ottnt{A}  \ottsym{/}  \ottnt{R_{{\mathrm{1}}}}}{%
+{\ottdrulename{E\_Right}}{}%
+}}
+
+
+\newcommand{\ottdruleEXXCLeft}[1]{\ottdrule[#1]{%
+\ottpremise{ \mathsf{Path}_{ \ottnt{R'} }\  \ottnt{a}  =  \ottmv{F} }%
+\ottpremise{ \mathsf{Path}_{ \ottnt{R'} }\  \ottnt{a'}  =  \ottmv{F} }%
+\ottpremise{\Gamma  \vDash  \ottnt{a}  \ottsym{:}   \forall \ottmv{c} \!:\! \ottsym{(}   \ottnt{a_{{\mathrm{1}}}}   \sim _{ \ottnt{A} / \ottnt{R_{{\mathrm{1}}}} }  \ottnt{a_{{\mathrm{2}}}}   \ottsym{)} . \ottnt{B}   \ottsym{/}  \ottnt{R'}}%
+\ottpremise{\Gamma  \vDash  \ottnt{a'}  \ottsym{:}   \forall \ottmv{c} \!:\! \ottsym{(}   \ottnt{a_{{\mathrm{1}}}}   \sim _{ \ottnt{A} / \ottnt{R_{{\mathrm{1}}}} }  \ottnt{a_{{\mathrm{2}}}}   \ottsym{)} . \ottnt{B}   \ottsym{/}  \ottnt{R'}}%
+\ottpremise{\Gamma  \ottsym{;}   \widetilde { \Gamma }   \vDash  \ottnt{a_{{\mathrm{1}}}}  \equiv  \ottnt{a_{{\mathrm{2}}}}  \ottsym{:}  \ottnt{A}  \ottsym{/}  \ottnt{R_{{\mathrm{1}}}}}%
+\ottpremise{\Gamma  \ottsym{;}  \Delta  \vDash  \ottnt{a}  \ottsym{[}  \bullet  \ottsym{]}  \equiv  \ottnt{a'}  \ottsym{[}  \bullet  \ottsym{]}  \ottsym{:}  \ottnt{B}  \ottsym{\{}  \bullet  \ottsym{/}  \ottmv{c}  \ottsym{\}}  \ottsym{/}  \ottnt{R'}}%
+}{
+\Gamma  \ottsym{;}  \Delta  \vDash  \ottnt{a}  \equiv  \ottnt{a'}  \ottsym{:}   \forall \ottmv{c} \!:\! \ottsym{(}   \ottnt{a_{{\mathrm{1}}}}   \sim _{ \ottnt{A} / \ottnt{R_{{\mathrm{1}}}} }  \ottnt{a_{{\mathrm{2}}}}   \ottsym{)} . \ottnt{B}   \ottsym{/}  \ottnt{R'}}{%
+{\ottdrulename{E\_CLeft}}{}%
+}}
+
 \newcommand{\ottdefnDefEq}[1]{\begin{ottdefnblock}[#1]{$\Gamma  \ottsym{;}  \Delta  \vDash  \ottnt{a}  \equiv  \ottnt{b}  \ottsym{:}  \ottnt{A}  \ottsym{/}  \ottnt{R}$}{\ottcom{definitional equality}}
 \ottusedrule{\ottdruleEXXAssn{}}
 \ottusedrule{\ottdruleEXXRefl{}}
@@ -1501,6 +1559,10 @@
 \ottusedrule{\ottdruleEXXEqConv{}}
 \ottusedrule{\ottdruleEXXIsoSnd{}}
 \ottusedrule{\ottdruleEXXPatCong{}}
+\ottusedrule{\ottdruleEXXLeftRel{}}
+\ottusedrule{\ottdruleEXXLeftIrrel{}}
+\ottusedrule{\ottdruleEXXRight{}}
+\ottusedrule{\ottdruleEXXCLeft{}}
 \end{ottdefnblock}}
 
 %% defn Ctx
@@ -2154,7 +2216,7 @@
 \ottall
 
 \begin{verbatim}
-Definition rules:        158 good    0 bad
-Definition rule clauses: 483 good    0 bad
+Definition rules:        162 good    0 bad
+Definition rule clauses: 517 good    0 bad
 \end{verbatim}
 \end{document}
