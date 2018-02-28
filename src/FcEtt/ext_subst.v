@@ -9,6 +9,7 @@ Require Export FcEtt.ett_ind.
 
 Require Export FcEtt.beta.
 Require Export FcEtt.ext_wf.
+Require Import FcEtt.ett_path.
 Require Import FcEtt.ext_weak.
 
 Set Bullet Behavior "Strict Subproofs".
@@ -300,7 +301,39 @@ Proof. eapply typing_wff_iso_defeq_mutual;
     eapply Beta_tm_subst; eauto with lc.
   - eapply E_EqConv; eauto 2.
     eapply DefEq_weaken_available; eauto.
-(*  - eapply E_CastCong; eauto. *)
+  - eapply E_LeftRel with (b := tm_subst_tm_tm a0 x b)
+                          (b':= tm_subst_tm_tm a0 x b'); eauto 2.
+    eapply Path_subst; eauto 2 with lc.
+    eapply Path_subst; eauto 2 with lc.
+    autorewrite with open_subst; eauto 2 with lc.
+    autorewrite with open_subst; eauto 2 with lc.
+    eapply DefEq_weaken_available; eauto 2.
+  - eapply E_LeftIrrel with (b := tm_subst_tm_tm a0 x b)
+                          (b':= tm_subst_tm_tm a0 x b'); eauto 2.
+    eapply Path_subst; eauto 2 with lc.
+    eapply Path_subst; eauto 2 with lc.
+    autorewrite with open_subst; eauto 2 with lc.
+    eapply H3; eauto.
+    autorewrite with open_subst; eauto 2 with lc.
+    eapply DefEq_weaken_available; eauto 2.
+  - eapply E_Right with (a := tm_subst_tm_tm a0 x a)
+                        (a':= tm_subst_tm_tm a0 x a'); eauto 2.
+    eapply Path_subst; eauto 2 with lc.
+    eapply Path_subst; eauto 2 with lc.
+    eapply H; eauto 2.
+    eapply H1; eauto 2.
+    autorewrite with open_subst; eauto 2 with lc.
+    autorewrite with open_subst; eauto 2 with lc.
+    eapply DefEq_weaken_available; eauto 2.
+  - eapply E_CLeft; eauto 2.
+    eapply Path_subst; eauto 2 with lc.
+    eapply Path_subst; eauto 2 with lc.
+    eapply H; eauto 2.
+    eapply H0; eauto 2.
+    eapply DefEq_weaken_available; eauto 2.
+    replace g_Triv with (tm_subst_tm_co a0 x g_Triv).
+    autorewrite with open_subst; eauto 2 with lc.
+    auto.
   - destruct  F; try done.
   - induction F; try done.
     simpl; simpl in H2.
@@ -469,6 +502,39 @@ Proof.
   - eapply E_IsoSnd; eauto 1.
     eapply H; eauto.
   - eapply E_PatCong; eauto.
+  - eapply E_LeftRel with (b := co_subst_co_tm g_Triv c b) (b':= co_subst_co_tm g_Triv c b'); eauto 2.
+    eapply Path_subst_co; eauto 2 with lc.
+    eapply Path_subst_co; eauto 2 with lc.
+    autorewrite with open_subst; eauto 2 with lc.
+    autorewrite with open_subst; eauto 2 with lc.
+    eapply DefEq_weaken_available; eauto 2.
+
+  - eapply E_LeftIrrel with (b := co_subst_co_tm g_Triv c b)
+                              (b':= co_subst_co_tm g_Triv c b'); eauto 2.
+    eapply Path_subst_co; eauto 2 with lc.
+    eapply Path_subst_co; eauto 2 with lc.
+    autorewrite with open_subst; eauto 2 with lc.
+    eapply H3; eauto.
+    autorewrite with open_subst; eauto 2 with lc.
+    eapply DefEq_weaken_available; eauto 2.
+  - eapply E_Right with (a := co_subst_co_tm g_Triv c a)
+                        (a':= co_subst_co_tm g_Triv c a'); eauto 2.
+    eapply Path_subst_co; eauto 2 with lc.
+    eapply Path_subst_co; eauto 2 with lc.
+    eapply H; eauto 2.
+    eapply H1; eauto 2.
+    autorewrite with open_subst; eauto 2 with lc.
+    autorewrite with open_subst; eauto 2 with lc.
+    eapply DefEq_weaken_available; eauto 2.
+  - eapply E_CLeft; eauto 2.
+    eapply Path_subst_co; eauto 2 with lc.
+    eapply Path_subst_co; eauto 2 with lc.
+    eapply H; eauto 2.
+    eapply H0; eauto 2.
+    eapply DefEq_weaken_available; eauto 2.
+    replace g_Triv with (co_subst_co_co g_Triv c g_Triv).
+    autorewrite with open_subst; eauto 2 with lc.
+    auto.
   - induction F; done.
   - induction F; try done.
     destruct a.

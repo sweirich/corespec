@@ -1308,6 +1308,44 @@ with DefEq : context -> available_props -> tm -> tm -> tm -> role -> Prop :=    
      DefEq G D b1 b1' B R0 ->
      DefEq G D b2 b2' B R0 ->
      DefEq G D (a_Pattern R (a_Fam F) a b1 b2) (a_Pattern R (a_Fam F) a' b1' b2') B R0
+ | E_LeftRel : forall (G:context) (D:available_props) (a a' A:tm) (R1:role) (B:tm) (R':role) (F:const) (b b':tm) (R0:role),
+     Path F a R' ->
+     Path F a' R' ->
+     Typing G a (a_Pi Rel A R1 B) R' ->
+     Typing G b A R1 ->
+     Typing G a' (a_Pi Rel A R1 B) R' ->
+     Typing G b' A R1 ->
+     DefEq G D (a_App a Rel R1 b) (a_App a' Rel R1 b')  (open_tm_wrt_tm  B   b )  R' ->
+     DefEq G  (dom  G )   (open_tm_wrt_tm  B   b )   (open_tm_wrt_tm  B   b' )  a_Star R0 ->
+     DefEq G D a a' (a_Pi Rel A R1 B) R'
+ | E_LeftIrrel : forall (G:context) (D:available_props) (a a' A:tm) (R1:role) (B:tm) (R':role) (F:const) (b b':tm) (R0:role),
+     Path F a R' ->
+     Path F a' R' ->
+     Typing G a (a_Pi Irrel A R1 B) R' ->
+     Typing G b A R1 ->
+     Typing G a' (a_Pi Irrel A R1 B) R' ->
+     Typing G b' A R1 ->
+     DefEq G D (a_App a Irrel R1 a_Bullet) (a_App a' Irrel R1 a_Bullet)  (open_tm_wrt_tm  B   b )  R' ->
+     DefEq G  (dom  G )   (open_tm_wrt_tm  B   b )   (open_tm_wrt_tm  B   b' )  a_Star R0 ->
+     DefEq G D a a' (a_Pi Irrel A R1 B) R'
+ | E_Right : forall (G:context) (D:available_props) (b b' A:tm) (R1:role) (F:const) (a:tm) (R':role) (a' B:tm) (R0:role),
+     Path F a R' ->
+     Path F a' R' ->
+     Typing G a (a_Pi Rel A R1 B) R' ->
+     Typing G b A R1 ->
+     Typing G a' (a_Pi Rel A R1 B) R' ->
+     Typing G b' A R1 ->
+     DefEq G D (a_App a Rel R1 b) (a_App a' Rel R1 b')  (open_tm_wrt_tm  B   b )  R' ->
+     DefEq G  (dom  G )   (open_tm_wrt_tm  B   b )   (open_tm_wrt_tm  B   b' )  a_Star R0 ->
+     DefEq G D b b' A R1
+ | E_CLeft : forall (G:context) (D:available_props) (a a' a1 a2 A:tm) (R1:role) (B:tm) (R':role) (F:const),
+     Path F a R' ->
+     Path F a' R' ->
+     Typing G a (a_CPi  ( (Eq a1 a2 A R1) )  B) R' ->
+     Typing G a' (a_CPi  ( (Eq a1 a2 A R1) )  B) R' ->
+     DefEq G  (dom  G )  a1 a2 A R1 ->
+     DefEq G D (a_CApp a g_Triv) (a_CApp a' g_Triv)  (open_tm_wrt_co  B   g_Triv )  R' ->
+     DefEq G D a a' (a_CPi  ( (Eq a1 a2 A R1) )  B) R'
 with Ctx : context -> Prop :=    (* defn Ctx *)
  | E_Empty : 
      Ctx  nil 

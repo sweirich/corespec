@@ -688,6 +688,22 @@ Proof.
     eapply context_DefEq_weaken_available; eauto.
     eapply S; eauto.
   - intros. eapply con; eauto.
+  - intros.
+    eapply E_LeftRel with (b:=b)(b':=b'); eauto 2.
+    erewrite <- same_dom; eauto 2.
+    eauto using context_DefEq_weaken_available.
+  - intros.
+    eapply E_LeftIrrel with (b:=b)(b':=b'); eauto 2.
+    erewrite <- same_dom; eauto 2.
+    eauto using context_DefEq_weaken_available.
+  - intros.
+    eapply E_Right with (a:=a)(a':=a'); eauto 2.
+    erewrite <- same_dom; eauto 2.
+    eauto using context_DefEq_weaken_available.
+  - intros.
+    eapply E_CLeft; eauto 2.
+    erewrite <- same_dom; eauto 2.
+    eauto using context_DefEq_weaken_available.
   - intros G x A R c H t H0 n G2 D x0 A0 R' H1 H2 H3.
     inversion H3; subst.
     + inversion H4; subst.

@@ -62,13 +62,9 @@ Lemma respects_atoms_eq_mutual :
 Proof.
   ext_induction CON; intros; subst; eauto 2.
   all: try solve [eapply CON; eauto 2; try fsetdec].
-
-  (* these are hard to find. *)
-  (*
   eapply E_LeftRel with (b:=b)(b':=b'); eauto 2.
   eapply E_LeftIrrel with (b:=b)(b':=b'); eauto 2.
   eapply E_Right with (a:=a)(a':=a'); eauto 2.
-  *)
 Qed.
 
 Definition Iso_respects_atoms_eq   := third  respects_atoms_eq_mutual.
@@ -154,11 +150,9 @@ Proof.
   ext_induction CON.
   all: try done.
   all: intros; try solve [eapply CON; eauto 2].
-  (*
   - eapply E_LeftRel   with (b := b) (b' := b'); eauto 2.
   - eapply E_LeftIrrel with (b:=b) (b' := b'); eauto 2.
   - eapply E_Right     with (a:=a)(a':=a'); eauto 2.
-  *)
 Qed.
 
 Lemma remove_available_mutual:
@@ -238,19 +232,16 @@ Proof.
   (* TODO: move E_LeftRel etc. first using ensure_case *)
 
   all: try solve [eapply CON; eauto 2].
-  all: try solve [eapply CON; eauto 2; eapply DefEq_weaken_available; eauto 2].
-  all: E_pick_fresh y; try auto_rew_env; apply_first_hyp; 
+  all: try solve [eapply CON; eauto 2; eapply DefEq_weaken_available; eauto 2]. 
+  all: try E_pick_fresh y; try auto_rew_env; try apply_first_hyp; 
                   try simpl_env; eauto 3 using E_SubRole.
-  all: econstructor; eauto 3 using E_SubRole.
-  (*
+  (*all: econstructor; eauto 3 using E_SubRole. *)
   eapply E_LeftRel with (b:=b)(b':=b'); eauto 2;
     try eapply DefEq_weaken_available; eauto 2.
   eapply E_LeftIrrel with (b:=b)(b':=b'); eauto 2;
     try eapply DefEq_weaken_available; eauto 2.
   eapply E_Right with (a:=a)(a':=a'); eauto 2;
     try eapply DefEq_weaken_available; eauto 2.
-  *)
-  Unshelve.
 Qed.
 
 
@@ -258,7 +249,7 @@ Definition Typing_weakening  := first  typing_weakening_mutual.
 Definition PropWff_weakening := second typing_weakening_mutual.
 Definition Iso_weakening     := third  typing_weakening_mutual.
 Definition DefEq_weakening   := fourth typing_weakening_mutual.
-Definition Ctx_weakening     := fifth  typing_weakening_mutual.
+Definition Ctx_weakening     := fifth  typing_weakening_mutual. 
 
 
 (*
