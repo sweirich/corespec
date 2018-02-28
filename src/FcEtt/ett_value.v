@@ -74,7 +74,3 @@ Proof.
     rewrite co_subst_co_tm_open_tm_wrt_tm in h0.
     simpl in h0. auto. auto.
 Qed.
-
-Lemma Value_lc : forall R v, Value R v -> lc_tm v.
-Proof. intros; induction H; eauto using Path_lc.
-Qed.

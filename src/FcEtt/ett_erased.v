@@ -21,8 +21,6 @@ Import ext_wf.
 
 Require Export FcEtt.toplevel.
 
-Require Export FcEtt.ett_value.
-
 
 Lemma rctx_uniq : forall W a R, erased_tm W a R -> uniq W.
 Proof. intros W a R H. induction H; eauto.

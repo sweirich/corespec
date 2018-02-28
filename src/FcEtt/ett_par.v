@@ -677,6 +677,20 @@ Proof. intros. generalize dependent a'. induction H; intros.
          apply IHPath in H3. econstructor; auto.
 Qed.
 
+Lemma Path_Par : forall F a R W a', Value R a' -> Path F a R -> Par W a' a R -> Path F a' R.
+Proof. intros. induction H.
+          - inversion H1; subst. inversion H0.
+          - inversion H1; subst. inversion H0. inversion H0.
+          - inversion H1; subst. inversion H0. inversion H0.
+          - inversion H1; subst. inversion H0.
+          - inversion H1; subst. inversion H0. inversion H0.
+          - inversion H1; subst. inversion H0. inversion H0.
+          - inversion H1; subst. inversion H0.
+          - inversion H1; subst. inversion H0. inversion H0.
+          - eapply Par_Path in H1; eauto. assert (F = F0).
+            eapply uniq_Path; eauto. subst. auto.
+Qed.
+
 Lemma Value_par_Value : forall R v W v', Value R v -> Par W v v' R -> Value R v'.
 Proof. intros. generalize dependent W. generalize dependent v'.
        induction H; intros.

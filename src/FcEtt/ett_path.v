@@ -10,10 +10,6 @@ Require Import FcEtt.toplevel.
 Require Import FcEtt.ett_erased.
 Require Import FcEtt.ext_wf.
 
-Lemma Path_lc : forall F a R, Path F a R -> lc_tm a.
-Proof. intros. induction H; auto.
-Qed.
-
 Lemma Path_binds_toplevel : forall F a R, Path F a R -> exists a0 A0 R0,
                                    binds F (Ax a0 A0 R0) toplevel.
 Proof. intros. induction H. exists a, A, R1; auto. auto. auto.
@@ -104,4 +100,22 @@ Proof.
   - inversion E; subst. apply IHa in H3. destruct H3 as [[F h0]|n].
     left. exists F. eauto. right. intros. intro. inversion H; subst.
     pose (Q := n F). contradiction.
+Qed.
+
+Lemma Path_dec : forall W a R F, erased_tm W a R -> Path F a R \/ ~Path F a R.
+Proof. induction a; intros R' E.
+       all: try solve [right; move => h1; inversion h1].
+        - intros. inversion H; subst. pose (P := IHa1 R' E H6).
+          inversion P as [P1 | P2]. left; econstructor.
+          eapply erased_lc; eauto. auto. right. intro.
+          inversion H0; subst. contradiction.
+        - intros. inversion H; subst. pose (P := sub_dec R R').
+          inversion P as [P1 | P2]. right. intro.  inversion H0; subst.
+          assert (Ax a A R = Ax a0 A0 R1). eapply binds_unique; eauto.
+          eapply uniq_toplevel. inversion H2; subst. contradiction.
+          destruct (E == F). subst. left. eauto. right. intro.
+          inversion H0; subst. contradiction.
+        - intros. inversion H; subst. pose (P := IHa R' E H4).
+          inversion P as [P1 | P2]. left; eauto.
+          right. intro. inversion H0; subst. contradiction.
 Qed.
