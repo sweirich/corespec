@@ -170,7 +170,7 @@ Proof.
   all: intros; try solve [eapply CON; eauto 2].
   (* only binding constructors left *)
   all: eapply (CON (L \u dom G \u D)); auto;
-    intros;
+    intros; eauto 1;
     eapply (fourth respects_atoms_eq_mutual);
     [match goal with [H0 : forall x, x `notin` ?L -> DefEq _ (AtomSetImpl.inter _ _) _ _ _ _ |- _ ] => eapply H0 end; auto|
     auto; simpl; fsetdec].

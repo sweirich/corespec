@@ -55,7 +55,7 @@ Qed.
 
 Lemma a_Pi_head : forall W b A R rho B R',
     Par W (a_Pi rho A R B) b R' -> exists A' B' L,
-      b = a_Pi rho A' R B' /\ Par W A A' R /\
+      b = a_Pi rho A' R B' /\ Par W A A' R' /\
       (forall x, x `notin` L -> 
         Par([(x,R)] ++ W) (open_tm_wrt_tm B (a_Var_f x)) 
                                (open_tm_wrt_tm B' (a_Var_f x)) R').
@@ -255,7 +255,9 @@ Proof.
     use_size_induction_open a0 c ac Par1 Par2.
     exists (a_UCAbs (close_tm_wrt_co c ac)).
     split; apply (@Par_CAbs_exists c); eauto.
-  - (* cpi cong / cpi cong *)
+  - (* cpi cong / cpi cong *) 
+    apply Par_sub with (R2 := Rep) in H; auto.
+    apply Par_sub with (R2 := Rep) in H7; auto.
     use_size_induction A AC Par1 Par2.
     use_size_induction a0 aC Par3 Par4.
     use_size_induction b bC Par5 Par6.
@@ -956,7 +958,7 @@ Lemma consistent_mutual:
   (forall S D p1 p2, Iso S D p1 p2 -> Good S D -> (forall A1 B1 T1 A2 B2 T2 R1 R2,
                      p1 = Eq A1 B1 T1 R1 -> p2 = Eq A2 B2 T2 R2 ->
     (R1 = R2 /\ joins (ctx_to_rctx S) A1 A2 R1 /\ joins (ctx_to_rctx S) B1 B2 R1 /\ 
-     joins (ctx_to_rctx S) T1 T2 R1))) /\
+     joins (ctx_to_rctx S) T1 T2 Rep))) /\
   (forall S D A B T R,   DefEq S D A B T R -> Good S D -> joins(ctx_to_rctx S) A B R) /\
   (forall S,       Ctx S -> True).
 Proof.
@@ -974,6 +976,8 @@ Proof.
     all: unfold joins.
     exists A3; split; econstructor; eauto.
     exists B2; split; econstructor; eauto.
+    apply H in H2. unfold joins in H2. inversion H2 as [c [P1 P2]].
+    exists c; split; eapply multipar_sub; eauto.
   - intros. destruct (H H0) as [T [P1 P2]]. 
     inversion H1. inversion H2.
     subst.
@@ -1289,7 +1293,7 @@ Proof. intros. assert (lc_tm a). {eapply Typing_lc1; eauto. }
       split. intros. apply binds_cons_uniq_1 in H8. destruct H8.
       ++ split_hyp. subst. auto.
       ++ split_hyp. eapply notin_sub; [idtac|eapply fv_tm_tm_tm_open_tm_wrt_tm_upper].
-         simpl in *. pose (Q := H0 x0 A0 R0 H8). apply notin_union_3; auto.
+         simpl in *. eauto.
       ++ eauto.
       ++ simpl. eapply Good_add_tm_2; eauto using Typing_erased. }
       inversion H1; auto.
@@ -1423,7 +1427,7 @@ Proof. intros G a A R H H0. assert (lc_tm a). {eapply Typing_lc1; eauto. }
       split. intros. apply binds_cons_uniq_1 in H8. destruct H8.
       ++ split_hyp. subst. auto.
       ++ split_hyp. eapply notin_sub; [idtac|eapply fv_tm_tm_tm_open_tm_wrt_tm_upper].
-         simpl in *. pose (Q := H0 x0 A0 R0 H8). apply notin_union_3; auto.
+         simpl in *. eauto.
       ++ eauto.
       ++ simpl. eapply Good_add_tm_2; eauto using Typing_erased. }
       inversion H1; auto.

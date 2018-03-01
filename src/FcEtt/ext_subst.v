@@ -258,13 +258,13 @@ Proof. eapply typing_wff_iso_defeq_mutual;
     + apply binds_remove_mid in b; auto.
       destruct (binds_app_1 _ _ _ _ _ b).
       (* after x *)
-      eapply E_Var; eauto.
+      eapply E_Var; eauto 2.
       eapply binds_app_2.
       assert (EQ : tm_subst_tm_sort a x0 (Tm A R) = Tm (tm_subst_tm_tm a x0 A) R). auto.
       rewrite <- EQ.
       eapply binds_map_2. auto.
       (* before x *)
-      eapply E_Var; eauto.
+      eapply E_Var; eauto 2.
       apply Ctx_strengthen in c.
       assert (EQ: tm_subst_tm_tm a x0 A = A). eapply tm_subst_fresh_1.
       eapply E_Var.
@@ -272,13 +272,13 @@ Proof. eapply typing_wff_iso_defeq_mutual;
       rewrite EQ.
       eauto.
   - (* conversion *)
-    eapply E_Conv; try eapply DefEq_weaken_available; eauto. 
+    eapply E_Conv; try eapply DefEq_weaken_available; eauto 3. 
   -
     have h0: Typing nil a A R by eauto using toplevel_closed.
     eapply E_Fam with (a:= tm_subst_tm_tm a0 x a); eauto.
     erewrite (tm_subst_fresh_2 _ h0); auto.
-    erewrite (tm_subst_fresh_1 _ h0); auto. eauto.
-    erewrite (tm_subst_fresh_1 _ h0); auto.
+    erewrite (tm_subst_fresh_1 _ h0); auto. eauto. eauto. eauto.
+    erewrite (tm_subst_fresh_1 _ h0); eauto.
 (*  - eapply E_TyCast; try eapply DefEq_weaken_available; eauto. *)
   - destruct (c == x).
     + subst.
@@ -341,7 +341,7 @@ Proof. eapply typing_wff_iso_defeq_mutual;
     destruct a0.
     destruct s.
     + simpl.
-      apply E_ConsTm; auto.
+      eapply E_ConsTm; auto.
       * simpl in H2.
         inversion H2.
         apply (H _ _ _ _ H1); auto.
@@ -449,7 +449,7 @@ Proof.
   -  have h0: Typing nil a A R by eapply toplevel_closed; eauto.
     erewrite (tm_subst_co_fresh_1 _ h0); eauto.
   - eapply E_Pat; try eapply DefEq_weaken_available; eauto.
-  - apply (E_Wff _ _ _  (co_subst_co_tm g_Triv c A)); eauto 3.
+  - eapply (E_Wff _ _ _ (co_subst_co_tm g_Triv c A)); eauto 3.
   - apply E_PropCong; eauto 3.
   - eapply E_CPiFst; eauto 3.
     eapply H; eauto.
@@ -540,13 +540,13 @@ Proof.
     destruct a.
     destruct s; try inversion H1.
     + simpl.
-      apply E_ConsTm; auto.
+      eapply E_ConsTm; auto.
       * simpl in H1.
         inversion H1.
-        apply (H _ D _ _ A1 A2 T R'); auto. 
+        apply (H _ D _ _ A1 A2 T R'0); auto.
       * simpl in H0.
         inversion H1; subst; clear H1.
-        apply (H0 _ D A1 A2 T R' _ _); auto.
+        apply (H0 _ D A1 A2 T R'0 _ _); auto.
       * inversion H1; subst; clear H1.
         auto.
   - inversion H1; subst; clear H1.
@@ -590,7 +590,7 @@ Proof.
   inversion AC; subst.
   assert (TV : Typing ([(x,Tm A R')] ++ G) (a_Var_f x) A R'); eauto.
   assert (CTX : Ctx ([(x1,Tm A R')] ++ [(x, Tm A R')] ++ G)).
-  econstructor; auto.
+  econstructor; eauto.
   pose M1 := (Typing_weakening H7 [(x,Tm A R')] nil G).
   simpl_env in M1; eapply M1; eauto.
 
@@ -603,7 +603,7 @@ Proof.
   repeat rewrite tm_subst_tm_tm_fresh_eq in K2.
   auto.
   eauto.
-  eauto.
+  eauto. Unshelve. exact (dom G). 
 Qed.
 
 Lemma DefEq_swap : forall x1 x G A1 D b1 b2 B R' R,
@@ -622,7 +622,7 @@ Proof.
   assert (TV : Typing ([(x,Tm A1 R')] ++ G) (a_Var_f x) A1 R').
   { econstructor; eauto. }
   assert (CTX : Ctx ([(x1,Tm A1 R')] ++ [(x, Tm A1 R')] ++ G)).
-  { econstructor; auto.
+  { econstructor; eauto.
   pose M1 := (Typing_weakening H7 [(x,Tm A1 R')] nil G).
   simpl_env in M1; eapply M1; eauto. }
 
@@ -641,7 +641,7 @@ Qed.
 Lemma E_Pi_exists : forall x (G : context) (rho : relflag) (A B : tm) R R',
       x `notin` dom G \u fv_tm_tm_tm B
       -> Typing ([(x, Tm A R)] ++ G) (open_tm_wrt_tm B (a_Var_f x)) a_Star R'
-      -> Typing G A a_Star R
+      -> Typing G A a_Star R'
       -> Typing G (a_Pi rho A R B) a_Star R'.
 Proof.
   intros.
@@ -655,12 +655,12 @@ Lemma E_Abs_exists :  forall x (G : context) (rho : relflag) (a A B : tm) R R',
     x `notin` fv_tm_tm_tm a \u fv_tm_tm_tm B
     -> Typing ([(x, Tm A R)] ++ G) (open_tm_wrt_tm a (a_Var_f x)) 
                  (open_tm_wrt_tm B (a_Var_f x)) R'
-    -> Typing G A a_Star R
+    -> Typing G A a_Star Rep
     -> RhoCheck rho x (open_tm_wrt_tm a (a_Var_f x))
     -> Typing G (a_UAbs rho R a) (a_Pi rho A R B) R'.
 Proof.
   intros.
-  pick fresh y and apply E_Abs; auto.
+  pick fresh y and apply E_Abs; eauto 2.
   eapply (@Typing_swap x); eauto.
   eapply rho_swap with (x := x); eauto.
 Qed.

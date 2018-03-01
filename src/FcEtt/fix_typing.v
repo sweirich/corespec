@@ -141,7 +141,7 @@ Proof.
   eauto.
   eauto.
   use_binder E_Pi W.
-  eauto.
+  eauto. Unshelve. all: exact Rep.
 Qed.
 
 Lemma FixDef_FixTy_erase :
@@ -155,7 +155,7 @@ Proof.
   { eapply E_App_intro; eauto.
     { eapply E_App_intro; simpl; eauto.
       { eapply E_IApp_intro with (a := (a_Var_f X)); simpl; eauto.
-        pose (K := @E_Fam _ Fix (erase_tm FixTy Nom) Nom (erase_tm FixDef Nom) Nom H1).
+        pose (K := @E_Fam _ Fix (erase_tm FixTy Nom) Nom (erase_tm FixDef Nom) Nom Nom H1).
         unfold toplevel, erase_sig in K.
         apply binds_map with 
           (f:=fun s : sig_sort => erase_csort s Nom) in H.
@@ -175,7 +175,7 @@ Proof.
       unfold open_tm_wrt_tm. simpl. eauto.
     }
   }
-  use_binder E_Pi Z; eauto.
+  use_binder E_Pi Z; eauto. Unshelve. all: exact Rep.
 Qed.
 
 

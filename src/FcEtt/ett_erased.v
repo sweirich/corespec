@@ -176,7 +176,7 @@ Hint Resolve subst_tm_erased subst_co_erased : erased.
 
 Lemma erased_Pi_some_any: forall W x rho A R1 B R2,
        x `notin` fv_tm_tm_tm B ->
-       erased_tm W A R1 ->
+       erased_tm W A R2 ->
        erased_tm ([(x,R1)] ++ W) (open_tm_wrt_tm B (a_Var_f x)) R2 ->
        erased_tm W (a_Pi rho A R1 B) R2.
 Proof. intros. apply (erased_a_Pi (union (singleton x) (dom W)));
@@ -192,7 +192,7 @@ Lemma typing_erased_mutual:
     (forall G b A R, Typing G b A R -> erased_tm (ctx_to_rctx G) b R) /\
     (forall G0 phi  (H : PropWff G0 phi ),
         forall A B T R', phi = Eq A B T R' -> erased_tm (ctx_to_rctx G0) A R' /\ 
-        erased_tm (ctx_to_rctx G0) B R' /\ erased_tm (ctx_to_rctx G0) T R') /\
+        erased_tm (ctx_to_rctx G0) B R' /\ erased_tm (ctx_to_rctx G0) T Rep) /\
      (forall G0 D p1 p2  (H : Iso G0 D p1 p2 ), True ) /\
      (forall G0 D A B T R (H : DefEq G0 D A B T R), True) /\
      (forall G0 (H : Ctx G0), True).
@@ -204,7 +204,8 @@ Proof.
   all : try solve [eauto using erased_sub].
   all : try solve [econstructor; eauto using ctx_to_rctx_uniq, ctx_to_rctx_binds_tm].
   - destruct phi. move: (H0 a b A R0 eq_refl) => ?. split_hyp. clear H0.
-    apply (@erased_a_CPi L); eauto.
+    eapply (@erased_a_CPi L); eauto.
+  - inversion H2; subst. eapply erased_sub. eauto. eauto.
 Qed.
 
 

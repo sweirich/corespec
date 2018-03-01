@@ -978,13 +978,13 @@ Inductive erased_tm : role_context -> tm -> role -> Prop :=    (* defn erased_tm
      erased_tm W b R1 ->
      erased_tm W  ( (a_App a rho R1 b) )  R
  | erased_a_Pi : forall (L:vars) (W:role_context) (rho:relflag) (A:tm) (R1:role) (B:tm) (R:role),
-     erased_tm W A R1 ->
+     erased_tm W A R ->
       ( forall x , x \notin  L  -> erased_tm  (( x  ~  R1 ) ++  W )   ( open_tm_wrt_tm B (a_Var_f x) )  R )  ->
      erased_tm W  ( (a_Pi rho A R1 B) )  R
- | erased_a_CPi : forall (L:vars) (W:role_context) (a b A:tm) (R1:role) (B:tm) (R:role),
+ | erased_a_CPi : forall (L:vars) (W:role_context) (a b A:tm) (R1:role) (B:tm) (R R0:role),
      erased_tm W a R1 ->
      erased_tm W b R1 ->
-     erased_tm W A R1 ->
+     erased_tm W A R0 ->
       ( forall c , c \notin  L  -> erased_tm W  ( open_tm_wrt_co B (g_Var_f c) )  R )  ->
      erased_tm W  ( (a_CPi (Eq a b A R1) B) )  R
  | erased_a_CAbs : forall (L:vars) (W:role_context) (b:tm) (R:role),
@@ -1036,14 +1036,14 @@ Inductive Par : role_context -> tm -> tm -> role -> Prop :=    (* defn Par *)
       ( forall x , x \notin  L  -> Par  (( x  ~  R1 ) ++  W )   ( open_tm_wrt_tm a (a_Var_f x) )   ( open_tm_wrt_tm a' (a_Var_f x) )  R )  ->
      Par W (a_UAbs rho R1 a) (a_UAbs rho R1 a') R
  | Par_Pi : forall (L:vars) (W:role_context) (rho:relflag) (A:tm) (R1:role) (B A' B':tm) (R:role),
-     Par W A A' R1 ->
+     Par W A A' R ->
       ( forall x , x \notin  L  -> Par  (( x  ~  R1 ) ++  W )   ( open_tm_wrt_tm B (a_Var_f x) )   ( open_tm_wrt_tm B' (a_Var_f x) )  R )  ->
      Par W (a_Pi rho A R1 B) (a_Pi rho A' R1 B') R
  | Par_CAbs : forall (L:vars) (W:role_context) (a a':tm) (R:role),
       ( forall c , c \notin  L  -> Par W  ( open_tm_wrt_co a (g_Var_f c) )   ( open_tm_wrt_co a' (g_Var_f c) )  R )  ->
      Par W (a_UCAbs a) (a_UCAbs a') R
- | Par_CPi : forall (L:vars) (W:role_context) (a b A:tm) (R1:role) (B a' b' A' B':tm) (R:role),
-     Par W A A' R1 ->
+ | Par_CPi : forall (L:vars) (W:role_context) (a b A:tm) (R1:role) (B a' b' A' B':tm) (R R0:role),
+     Par W A A' R0 ->
      Par W a a' R1 ->
      Par W b b' R1 ->
       ( forall c , c \notin  L  -> Par W  ( open_tm_wrt_co B (g_Var_f c) )   ( open_tm_wrt_co B' (g_Var_f c) )  R )  ->
@@ -1142,10 +1142,10 @@ with reduction : tm -> tm -> role -> Prop :=    (* defn reduction *)
 
 (* defns Jett *)
 Inductive PropWff : context -> constraint -> Prop :=    (* defn PropWff *)
- | E_Wff : forall (G:context) (a b A:tm) (R:role),
+ | E_Wff : forall (G:context) (a b A:tm) (R R0:role),
      Typing G a A R ->
      Typing G b A R ->
-      ( Typing G A a_Star R )  ->
+      ( Typing G A a_Star R0 )  ->
      PropWff G (Eq a b A R)
 with Typing : context -> tm -> tm -> role -> Prop :=    (* defn Typing *)
  | E_SubRole : forall (G:context) (a A:tm) (R2 R1:role),
@@ -1161,11 +1161,11 @@ with Typing : context -> tm -> tm -> role -> Prop :=    (* defn Typing *)
      Typing G (a_Var_f x) A R
  | E_Pi : forall (L:vars) (G:context) (rho:relflag) (A:tm) (R:role) (B:tm) (R':role),
       ( forall x , x \notin  L  -> Typing  (( x ~ Tm  A R ) ++  G )   ( open_tm_wrt_tm B (a_Var_f x) )  a_Star R' )  ->
-      ( Typing G A a_Star R )  ->
+     Typing G A a_Star R' ->
      Typing G (a_Pi rho A R B) a_Star R'
- | E_Abs : forall (L:vars) (G:context) (rho:relflag) (R:role) (a A B:tm) (R':role),
+ | E_Abs : forall (L:vars) (G:context) (rho:relflag) (R:role) (a A B:tm) (R' R0:role),
       ( forall x , x \notin  L  -> Typing  (( x ~ Tm  A R ) ++  G )   ( open_tm_wrt_tm a (a_Var_f x) )   ( open_tm_wrt_tm B (a_Var_f x) )  R' )  ->
-      ( Typing G A a_Star R )  ->
+      ( Typing G A a_Star R0 )  ->
       ( forall x , x \notin  L  -> RhoCheck rho x  ( open_tm_wrt_tm a (a_Var_f x) )  )  ->
      Typing G (a_UAbs rho R a)  ( (a_Pi rho A R B) )  R'
  | E_App : forall (G:context) (b:tm) (R:role) (a B:tm) (R':role) (A:tm),
@@ -1176,10 +1176,10 @@ with Typing : context -> tm -> tm -> role -> Prop :=    (* defn Typing *)
      Typing G b (a_Pi Irrel A R B) R' ->
      Typing G a A R ->
      Typing G (a_App b Irrel R a_Bullet)  (open_tm_wrt_tm  B   a )  R'
- | E_Conv : forall (G:context) (a B:tm) (R:role) (A:tm),
+ | E_Conv : forall (G:context) (a B:tm) (R:role) (A:tm) (R0:role),
      Typing G a A R ->
      DefEq G  (dom  G )  A B a_Star Rep ->
-     Typing G B a_Star R ->
+      ( Typing G B a_Star R0 )  ->
      Typing G a B R
  | E_CPi : forall (L:vars) (G:context) (phi:constraint) (B:tm) (R:role),
       ( forall c , c \notin  L  -> Typing  (( c ~ Co  phi ) ++  G )   ( open_tm_wrt_co B (g_Var_f c) )  a_Star R )  ->
@@ -1193,10 +1193,10 @@ with Typing : context -> tm -> tm -> role -> Prop :=    (* defn Typing *)
      Typing G a1 (a_CPi  ( (Eq a b A R) )  B1) R' ->
      DefEq G  (dom  G )  a b A R ->
      Typing G (a_CApp a1 g_Triv)  (open_tm_wrt_co  B1   g_Triv )  R'
- | E_Fam : forall (G:context) (F:const) (A:tm) (R1:role) (a:tm) (R:role),
+ | E_Fam : forall (G:context) (F:const) (A:tm) (R1:role) (a:tm) (R R0:role),
      Ctx G ->
       binds  F  ( (Ax a A R) )   toplevel   ->
-     Typing  nil  A a_Star R1 ->
+     Typing  nil  A a_Star R0 ->
      Typing G (a_Fam F) A R1
  | E_Pat : forall (G:context) (R:role) (F:const) (a b1 b2 B:tm) (R0:role) (a0 A0:tm) (R':role) (A:tm),
       binds  F  ( (Ax a0 A0 R') )   toplevel   ->
@@ -1209,8 +1209,8 @@ with Iso : context -> available_props -> constraint -> constraint -> Prop :=    
      DefEq G D A1 A2 A R ->
      DefEq G D B1 B2 A R ->
      Iso G D (Eq A1 B1 A R) (Eq A2 B2 A R)
- | E_IsoConv : forall (G:context) (D:available_props) (A1 A2 A:tm) (R:role) (B:tm),
-     DefEq G D A B a_Star R ->
+ | E_IsoConv : forall (G:context) (D:available_props) (A1 A2 A:tm) (R:role) (B:tm) (R0:role),
+     DefEq G D A B a_Star R0 ->
      PropWff G (Eq A1 A2 A R) ->
      PropWff G (Eq A1 A2 B R) ->
      Iso G D (Eq A1 A2 A R) (Eq A1 A2 B R)
@@ -1243,15 +1243,15 @@ with DefEq : context -> available_props -> tm -> tm -> tm -> role -> Prop :=    
      Beta a1 a2 R ->
      DefEq G D a1 a2 B R
  | E_PiCong : forall (L:vars) (G:context) (D:available_props) (rho:relflag) (A1:tm) (R:role) (B1 A2 B2:tm) (R':role),
-     DefEq G D A1 A2 a_Star R ->
+     DefEq G D A1 A2 a_Star R' ->
       ( forall x , x \notin  L  -> DefEq  (( x ~ Tm  A1 R ) ++  G )  D  ( open_tm_wrt_tm B1 (a_Var_f x) )   ( open_tm_wrt_tm B2 (a_Var_f x) )  a_Star R' )  ->
-      ( Typing G A1 a_Star R )  ->
+      ( Typing G A1 a_Star R' )  ->
       ( Typing G (a_Pi rho A1 R B1) a_Star R' )  ->
       ( Typing G (a_Pi rho A2 R B2) a_Star R' )  ->
      DefEq G D  ( (a_Pi rho A1 R B1) )   ( (a_Pi rho A2 R B2) )  a_Star R'
- | E_AbsCong : forall (L:vars) (G:context) (D:available_props) (rho:relflag) (R:role) (b1 b2 A1 B:tm) (R':role),
+ | E_AbsCong : forall (L:vars) (G:context) (D:available_props) (rho:relflag) (R:role) (b1 b2 A1 B:tm) (R' R0:role),
       ( forall x , x \notin  L  -> DefEq  (( x ~ Tm  A1 R ) ++  G )  D  ( open_tm_wrt_tm b1 (a_Var_f x) )   ( open_tm_wrt_tm b2 (a_Var_f x) )   ( open_tm_wrt_tm B (a_Var_f x) )  R' )  ->
-      ( Typing G A1 a_Star R )  ->
+      ( Typing G A1 a_Star R0 )  ->
       ( forall x , x \notin  L  -> RhoCheck rho x  ( open_tm_wrt_tm b1 (a_Var_f x) )  )  ->
       ( forall x , x \notin  L  -> RhoCheck rho x  ( open_tm_wrt_tm b2 (a_Var_f x) )  )  ->
      DefEq G D  ( (a_UAbs rho R b1) )   ( (a_UAbs rho R b2) )   ( (a_Pi rho A1 R B) )  R'
@@ -1263,9 +1263,9 @@ with DefEq : context -> available_props -> tm -> tm -> tm -> role -> Prop :=    
      DefEq G D a1 b1  ( (a_Pi Irrel A R B) )  R' ->
      Typing G a A R ->
      DefEq G D (a_App a1 Irrel R a_Bullet) (a_App b1 Irrel R a_Bullet)  (  (open_tm_wrt_tm  B   a )  )  R'
- | E_PiFst : forall (G:context) (D:available_props) (A1 A2:tm) (R:role) (rho:relflag) (B1 B2:tm) (R':role),
+ | E_PiFst : forall (G:context) (D:available_props) (A1 A2:tm) (R':role) (rho:relflag) (R:role) (B1 B2:tm),
      DefEq G D (a_Pi rho A1 R B1) (a_Pi rho A2 R B2) a_Star R' ->
-     DefEq G D A1 A2 a_Star R
+     DefEq G D A1 A2 a_Star R'
  | E_PiSnd : forall (G:context) (D:available_props) (B1 a1 B2 a2:tm) (R':role) (rho:relflag) (A1:tm) (R:role) (A2:tm),
      DefEq G D (a_Pi rho A1 R B1) (a_Pi rho A2 R B2) a_Star R' ->
      DefEq G D a1 a2 A1 R ->
@@ -1294,14 +1294,14 @@ with DefEq : context -> available_props -> tm -> tm -> tm -> role -> Prop :=    
      DefEq G D a b A R ->
      Iso G D (Eq a b A R) (Eq a' b' A' R') ->
      DefEq G D a' b' A' R'
- | E_EqConv : forall (G:context) (D:available_props) (a b B:tm) (R:role) (A:tm),
+ | E_EqConv : forall (G:context) (D:available_props) (a b B:tm) (R:role) (A:tm) (R0:role),
      DefEq G D a b A R ->
      DefEq G  (dom  G )  A B a_Star Rep ->
-     Typing G B a_Star R ->
+      ( Typing G B a_Star R0 )  ->
      DefEq G D a b B R
- | E_IsoSnd : forall (G:context) (D:available_props) (A A':tm) (R1:role) (a b a' b':tm),
+ | E_IsoSnd : forall (G:context) (D:available_props) (A A' a b:tm) (R1:role) (a' b':tm),
      Iso G D (Eq a b A R1) (Eq a' b' A' R1) ->
-     DefEq G D A A' a_Star R1
+     DefEq G D A A' a_Star Rep
  | E_PatCong : forall (G:context) (D:available_props) (R:role) (F:const) (a b1 b2 a' b1' b2' B:tm) (R0:role) (a0 A0:tm) (R':role) (A:tm),
       binds  F  ( (Ax a0 A0 R') )   toplevel   ->
      DefEq G D a a' A R ->
@@ -1349,9 +1349,9 @@ with DefEq : context -> available_props -> tm -> tm -> tm -> role -> Prop :=    
 with Ctx : context -> Prop :=    (* defn Ctx *)
  | E_Empty : 
      Ctx  nil 
- | E_ConsTm : forall (G:context) (x:tmvar) (A:tm) (R:role),
+ | E_ConsTm : forall (G:context) (x:tmvar) (A:tm) (R R':role),
      Ctx G ->
-     Typing G A a_Star R ->
+     Typing G A a_Star R' ->
       ~ AtomSetImpl.In  x  (dom  G )  ->
      Ctx  (( x ~ Tm  A R ) ++  G ) 
  | E_ConsCo : forall (G:context) (c:covar) (phi:constraint),
@@ -1416,10 +1416,10 @@ with AnnTyping : context -> tm -> tm -> role -> Prop :=    (* defn AnnTyping *)
      AnnTyping G a1  ( (a_CPi (Eq a b A1 R) B) )  R' ->
      AnnDefEq G  (dom  G )  g a b R ->
      AnnTyping G (a_CApp a1 g)  (open_tm_wrt_co  B   g )  R'
- | An_Fam : forall (G:context) (F:const) (A:tm) (R1:role) (a:tm) (R:role),
+ | An_Fam : forall (G:context) (F:const) (A:tm) (R1:role) (a:tm) (R R0:role),
      AnnCtx G ->
       binds  F  ( (Ax a A R) )   an_toplevel   ->
-     AnnTyping  nil  A a_Star R1 ->
+     AnnTyping  nil  A a_Star R0 ->
      AnnTyping G (a_Fam F) A R1
  | An_SubRole : forall (G:context) (R1:role) (a A:tm) (R2:role),
      SubRole R1 R2 ->

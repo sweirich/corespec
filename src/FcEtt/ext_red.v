@@ -28,7 +28,7 @@ Lemma Beta_preservation : forall a b R, Beta a b R ->
 Proof.
   intros a b R B. destruct B; intros G A0 TH.
   - have CT: Ctx G by eauto.
-    have RA: Typing G A0 a_Star R1 by eauto using Typing_regularity.
+    have RA: Typing G A0 a_Star Rep by eauto using Typing_regularity.
     destruct rho.
     + destruct (invert_a_App_Rel TH) as (A & B & TB & DE & h).
       destruct (invert_a_UAbs TB) as (A1 & B1 & DE2 & [L TB1] & TA1 ).
@@ -39,10 +39,9 @@ Proof.
       rewrite (tm_subst_tm_tm_intro x B1); eauto 2.
       
       eapply Typing_tm_subst with (A:=A1); eauto 2.
-      eapply E_Conv with (A := A); eauto 2. 
-      eapply E_Sub with (R1 := R). 
-      eapply E_PiFst; eauto 1. auto.
-      eapply E_Trans with (a1:= open_tm_wrt_tm B b); eauto. 
+      eapply E_Conv with (A := A); eauto 2.
+      eapply E_Sym.
+      eapply E_Trans with (a1:= open_tm_wrt_tm B b); eauto 3.
 
     + destruct (invert_a_App_Irrel TH) as (A & B & b0 & Tb & Tb2 & EQ & DE ).
       subst.
@@ -61,7 +60,7 @@ Proof.
       eapply E_Trans with (a1 := open_tm_wrt_tm B b0). auto.
       eapply E_PiSnd; eauto using E_Refl.
    - have CT: Ctx G by eauto.
-     have RA: Typing G A0 a_Star R by eauto using Typing_regularity.
+     have RA: Typing G A0 a_Star Rep by eauto using Typing_regularity.
      destruct (invert_a_CApp TH) as (eq & a1 & b1 & A1 & R1 & B1 & h0 & h1 & h2 ).
      destruct (invert_a_UCAbs h0) as (a2 & b2 & A2 & R3 & B2 & h4 & h5 & [L h6] ).
      pick fresh c.
@@ -228,25 +227,27 @@ Proof.
     eapply E_Conv with (A := (a_Pi Irrel x R x0)); auto.
     pick fresh y and apply E_Abs; auto.
     apply_first_hyp; auto.
-    apply H2. auto.
+    apply H2. auto. eauto.
     eapply reduction_rhocheck; eauto.
     eapply Typing_erased; eauto.
     eapply H2. auto.
-    eapply H2. auto.
+    eapply H2. auto. eauto.
   - move: (Typing_regularity tpga) => h0. 
     autoinv; subst.
     eapply E_Conv with (A := (open_tm_wrt_tm x0 b)); auto.
-    eapply E_App; eauto.
+    eapply E_App; eauto. eauto.
     eapply E_Conv with (A := (open_tm_wrt_tm x0 x1)); auto.
-    eapply E_IApp; eauto.
+    eapply E_IApp; eauto. eauto.
   - move: (Typing_regularity tpga) => h0. 
     autoinv; subst.
     eapply E_Conv with (A:= (open_tm_wrt_co x3 g_Triv)); auto.
-    eapply E_CApp; eauto.
+    eapply E_CApp; eauto. eauto.
   - apply invert_a_Pattern in tpga.
     inversion tpga as [A [B0 [a0 [A0 [R1 [P1 [P2 [P3 [P4 P5]]]]]]]]].
-    eapply E_Pat. eauto. eauto. eapply E_Conv. eauto. eauto. admit.
-    eapply E_Conv. eauto. eauto. admit.
+    eapply E_Pat. eauto. eauto. eapply E_Conv. eauto. eauto.
+    eapply DefEqIso_regularity. eapply E_Sym. eauto.
+    eapply E_Conv. eauto. eauto.
+    eapply DefEqIso_regularity. eapply E_Sym. eauto.
   - eapply Beta_preservation; eauto.
-Admitted.
+Qed.
 

@@ -80,7 +80,7 @@ Proof.
     eapply (DefEq_lc H4).
     eapply (DefEq_lc H4).
   - (* abs *)
-    intros L G rho R a A B R' H H0 H1 H2 RC G1 G2 x A1 R0 a1 a2 D H3 H4 H5.
+    intros L G rho R a A B R' R'' H H0 H1 H2 RC G1 G2 x A1 R0 a1 a2 D H3 H4 H5.
     subst. simpl.
     eapply (E_AbsCong (L \u singleton x \u fv_tm_tm_tm a1 \u fv_tm_tm_tm a2)); eauto 2.
     + intros x0 Fr. assert (FrL: x0 `notin` L). auto.
@@ -145,7 +145,7 @@ Proof.
     eapply (first tm_substitution_mutual); eauto.
     eapply (DefEq_lc H4).
   - (* conv *)
-    intros G a B R A t H d H0 t0 H1 G1 G2 x A1 R' a1 a2 D H2 H3 H4.
+    intros G a B R A R0 t H d H0 t0 H1 G1 G2 x A1 R' a1 a2 D H2 H3 H4.
     subst.
     move: (@H1 G1 G2 x A1 R' a1 a2 D eq_refl H3 H4) => h0.
     clear H1.
@@ -156,7 +156,7 @@ Proof.
     eapply DefEq_weaken_available.
     apply K. auto.
     move: (DefEq_regularity h0) => h2. inversion h2. subst.
-    auto.
+    auto. eauto.
   - (* cpi *)
     intros L G phi B R t H p H0 G1 G2 x A1 R' a1 a2 D H1 H2 H3.
     destruct phi; subst. simpl.
@@ -203,13 +203,13 @@ Proof.
   - intros. simpl. subst G.
     move: (toplevel_closed b) => h0.
     move: (Typing_regularity h0) => h1.
-    have CNil: Ctx [(x, Tm A R)]. econstructor; auto.
+    have CNil: Ctx [(x, Tm A R)]. econstructor; auto. eauto.
     rewrite (tm_subst_fresh_2 _ h1 CNil). clear CNil.
     eapply E_Refl.
     eapply E_Fam; eauto 2.
     eapply (fifth tm_substitution_mutual); eauto.
   - intros. simpl. eapply E_PatCong; eauto.
-  - intros G a b A R t H t0 H0 t1 H1 G1 G2 x A1 R' a1 a2 D H2 H3 H4.
+  - intros G a b A R R0 t H t0 H0 t1 H1 G1 G2 x A1 R' a1 a2 D H2 H3 H4.
     simpl.
     pose K1 := H G1 G2 _ _ _ _ _ _ H2 H3 H4. clearbody K1. clear H.
     pose K2 := H0 _ _ _ _ _ _ _ _ H2 H3 H4. clearbody K2. clear H0.
