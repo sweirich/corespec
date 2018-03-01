@@ -1,6 +1,7 @@
 Require Import Metalib.Metatheory.
 Require Import FcEtt.ett_ott.
 Require Import FcEtt.ett_inf.
+Require Import FcEtt.param.
 
 Set Bullet Behavior "Strict Subproofs".
 Set Implicit Arguments.
@@ -119,7 +120,7 @@ Ltac use_binder f x :=
 Lemma E_App_intro :
   forall (G : context) (b : tm) (R R' : role)(a B A C : tm),
        Typing G b (a_Pi Rel A R B) R' -> (open_tm_wrt_tm B a) = C ->
-       Typing G a A R -> Typing G (a_App b Rel R a) C R'.
+       Typing G a A (param R R') -> Typing G (a_App b Rel R a) C R'.
 Proof.
   intros. subst.  eapply E_App; eauto.
 Qed.
@@ -127,7 +128,7 @@ Qed.
 Lemma E_IApp_intro :
   forall (G : context) (b : tm) (a B A C : tm) (R R' : role),
        Typing G b (a_Pi Irrel A R B) R' -> (open_tm_wrt_tm B a) = C ->
-       Typing G a A R -> Typing G (a_App b Irrel R a_Bullet) C R'.
+       Typing G a A (param R R') -> Typing G (a_App b Irrel R a_Bullet) C R'.
 Proof.
   intros. subst.  eapply E_IApp; eauto.
 Qed.
@@ -162,6 +163,7 @@ Proof.
         apply K in H.
         clear K.
         simpl in H.
+        rewrite param_same.
         apply H.
 
         { simpl.

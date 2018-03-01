@@ -16,7 +16,7 @@ Require Import FcEtt.ext_wf.
 Require Import FcEtt.ett_erased.
 Require Import FcEtt.ett_path.
 Import ext_wf.
-
+Require Import FcEtt.param.
 
 
 (* Require Import FcEtt.erase_syntax. *)
@@ -112,14 +112,12 @@ Proof. intros W a a' R H. induction H; eauto.
         - inversion IHPar1; subst. pick fresh x.
           erewrite tm_subst_tm_tm_intro; eauto.
           replace W with (nil ++ W); auto. eapply subst_tm_erased; eauto.
+          eapply erased_sub with (R1 := (param R1 R)); auto.
+          apply param_sub1; auto.
         - inversion IHPar; subst. pick fresh c.
           erewrite co_subst_co_tm_intro; eauto.
           replace W with (nil ++ W); auto. eapply subst_co_erased; eauto.
         - eapply erased_sub. eapply toplevel_erased1; eauto. auto.
-(*        - inversion IHPar1; eauto.
-        - inversion IHPar1; eauto.
-        - inversion IHPar; eauto.
-        - econstructor. admit. *)
 Qed.
 
 Lemma multipar_erased_tm_snd : forall W a a' R, multipar W a a' R ->
@@ -148,7 +146,7 @@ Hint Resolve Par_erased_tm_fst Par_erased_tm_snd : erased.
 Lemma Par_sub: forall W a a' R1 R2, Par W a a' R1 -> SubRole R1 R2 ->
                                       Par W a a' R2.
 Proof. intros W a a' R1 R2 H SR. generalize dependent R2.
-       induction H; intros; simpl; eauto. econstructor.
+       induction H; intros; simpl; eauto using param_covariant. econstructor.
        eapply erased_sub; eauto.
 Qed.
 

@@ -14,7 +14,7 @@ Require Export FcEtt.ext_context_fv.
 
 Require Import FcEtt.ext_wf.
 Import ext_wf.
-
+Require Import FcEtt.param.
 
 
 (* Require Import FcEtt.erase_syntax. *)
@@ -121,7 +121,8 @@ Hint Resolve erased_lc : lc.
 
 Lemma erased_sub : forall W a R1 R2, erased_tm W a R1 -> SubRole R1 R2 ->
                                      erased_tm W a R2.
-Proof. intros W a R1 R2 H S. induction H; eauto.
+Proof. intros W a R1 R2 H S. generalize dependent R2. induction H; intros; eauto.
+       econstructor. auto. auto using param_covariant.
 Qed.
 
 Lemma subst_tm_erased : forall W1 x R1 W2 a R b, 

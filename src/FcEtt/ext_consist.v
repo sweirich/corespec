@@ -13,6 +13,7 @@ Require Export FcEtt.ett_par.
 Require Import FcEtt.ext_wf.
 Require Import FcEtt.ext_invert.
 Require Import FcEtt.ext_red_one.
+Require Import FcEtt.param.
 
 Set Implicit Arguments.
 Set Bullet Behavior "Strict Subproofs".
@@ -186,16 +187,19 @@ Proof.
     destruct (Par_Abs_inversion Par2) as [ay [EQ2 h1]]; subst.
     inversion EQ2. subst.
     exists (open_tm_wrt_tm ay bc).
-    split. pick fresh x; eapply open2. auto. eauto. eauto.
-    pick fresh x; eapply open2; eauto.
+    split. pick fresh x; eapply open2. auto. eauto.
+    eauto using Par_sub, param_sub1.
+    pick fresh x; eapply open2; eauto using Par_sub, param_sub1.
   - (* app beta / app cong *)
     use_size_induction a0 ac Par1 Par2.
     use_size_induction b bc Par3 Par4.
     destruct (Par_Abs_inversion Par1) as [ax [EQ h0]]; subst.
     exists (open_tm_wrt_tm ax bc). inversion Par1; subst.
-     + split. pick fresh x; eapply open2. auto. eauto. eauto.
+     + split. pick fresh x; eapply open2. auto. eauto.
+       eauto using Par_sub, param_sub1.
        eapply Par_Beta; eauto.
-     + split. pick fresh x; eapply open2. auto. eauto. eauto.
+     + split. pick fresh x; eapply open2. auto. eauto.
+       eauto using Par_sub, param_sub1.
        eapply Par_Beta; eauto.
   - (* app cong / app beta *)
     use_size_induction a0 ac Par1 Par2.
@@ -203,9 +207,9 @@ Proof.
     destruct (Par_Abs_inversion Par2) as [ax [EQ h0]]; subst.
     exists (open_tm_wrt_tm ax bc). inversion Par2; subst.
      + split. eapply Par_Beta; eauto.
-       pick fresh x; eapply open2. auto. eauto. eauto.
+       pick fresh x; eapply open2. auto. eauto. eauto using Par_sub, param_sub1.
      + split. eapply Par_Beta; eauto. 
-       pick fresh x; eapply open2. auto. eauto. eauto.
+       pick fresh x; eapply open2. auto. eauto. eauto using Par_sub, param_sub1.
   - (* app cong / app cong *)
     use_size_induction a0 ac Par1 Par2.
     use_size_induction b bc Par3 Par4.
@@ -344,20 +348,6 @@ Proof.
   inversion H; auto; try inversion K.
 Qed.
 
-(*
-Lemma Par_Const : forall W T b R,
-    Par W (a_Const T) b R -> b = a_Const T.
-Proof.
-  intros. dependent induction H; eauto.
-Qed.
-
-Lemma multipar_Const : forall W T b R,
-    multipar W (a_Const T) b R ->
-    (b = a_Const T).
-Proof.
-  intros W T b R H. dependent induction H; eauto using Par_Const.
-Qed.
-*)
 
 Lemma multipar_Pi : forall W rho A B R', multipar W A B R' -> 
       forall A1 R A2, A = a_Pi rho A1 R A2 -> exists B1 B2, B = (a_Pi rho B1 R B2).
@@ -527,7 +517,7 @@ Proof. intros. generalize dependent a'. induction H; intros.
 Qed.
 
 Lemma Path_par_app_snd : forall W F rho a b a' b' R R1, Path F a R ->
-      Par W (a_App a rho R1 b) (a_App a' rho R1 b') R -> Par W b b' R1.
+      Par W (a_App a rho R1 b) (a_App a' rho R1 b') R -> Par W b b' (param R1 R).
 Proof. intros. generalize dependent a'. induction H; intros.
         - inversion H1; subst. inversion H7; subst. eauto.
           eapply Par_Path in H9; eauto.
@@ -601,7 +591,8 @@ Proof. intros. dependent induction H0.
 Qed.
 
 Lemma Path_multipar_app_snd : forall W F rho a b a' b' R R1, Path F a R ->
-     multipar W (a_App a rho R1 b) (a_App a' rho R1 b') R -> multipar W b b' R1.
+      multipar W (a_App a rho R1 b) (a_App a' rho R1 b') R ->
+      multipar W b b' (param R1 R).
 Proof. intros. dependent induction H0.
         - inversion H0; subst. eauto.
         - pose (H2 := H1).
@@ -808,10 +799,10 @@ Qed.
 
 
 Lemma multipar_app_left:
-  forall rho R R' a a' c' W, erased_tm W a R -> multipar W a' c' R' ->
+  forall rho R R' a a' c' W, erased_tm W a R -> multipar W a' c' (param R' R) ->
                       multipar W (a_App a rho R' a') (a_App a rho R' c') R.
 Proof.
-  induction 2; eauto; try done.
+  intros. dependent induction H0; eauto; try done.
 Qed.
 
 Lemma multipar_capp_left: forall a a' W R, multipar W a a' R ->
@@ -834,7 +825,7 @@ Proof.
 Qed.
 
 Lemma multipar_app_lr: forall rho R R' a a' c c' W,
-                       multipar W a c R -> multipar W  a' c' R' ->
+                       multipar W a c R -> multipar W  a' c' (param R' R) ->
                        multipar W (a_App a rho R' a') (a_App c rho R' c') R.
 Proof. intros. induction H.
   eapply multipar_app_left; auto.
@@ -843,7 +834,7 @@ Proof. intros. induction H.
 Qed.
 
 Lemma join_app: forall rho R R' a a' b b' W, joins W a b R ->
-                       joins W a' b' R' ->
+                       joins W a' b' (param R' R) ->
                        joins W (a_App a rho R' a') (a_App b rho R' b') R.
 Proof.
   unfold joins.
@@ -1047,7 +1038,7 @@ Proof.
     rewrite (tm_subst_tm_tm_intro x B2); auto.
     replace (ctx_to_rctx G) with (nil ++ (ctx_to_rctx G)); auto.
     exists (tm_subst_tm_tm ax x (open_tm_wrt_tm Bx (a_Var_f x))); split;
-    eapply multipar_subst3; simpl_env; eauto.
+    eapply multipar_subst3; simpl_env; eauto using param_sub1, multipar_sub.
   - (* cpi-cong *)
     intros. destruct (H H4 a1 b1 A1 a2 b2 A2 R R eq_refl eq_refl) as [_ [J1 [J2 J3]]].
     inversion J1 as [ax [P1 P2]]. inversion J2 as [bx [P3 P4]].
@@ -1288,7 +1279,7 @@ Proof. intros. assert (lc_tm a). {eapply Typing_lc1; eauto. }
     + pick fresh x. assert (x `notin` L). auto. move: (H4 x H5) => h0.
       inversion h0. subst. destruct (H2 x H5) as [V | [a' S]].
       { unfold irrelevant in H0. split_hyp.
-      have ctx: (Ctx ([(x, Tm A R)] ++ G)) by eauto.
+      have ctx: (Ctx ([(x, Tm A R)] ++ G)) by eauto 3.
       move: (Ctx_uniq ctx) => u. inversion u. subst.
       split. intros. apply binds_cons_uniq_1 in H8. destruct H8.
       ++ split_hyp. subst. auto.
@@ -1422,7 +1413,7 @@ Proof. intros G a A R H H0. assert (lc_tm a). {eapply Typing_lc1; eauto. }
     + pick fresh x. assert (x `notin` L). auto. move: (H4 x H5) => h0.
       inversion h0. subst. edestruct (H2 x H5) as [V | [a' S]].
       { unfold irrelevant in H0. split_hyp.
-      have ctx: (Ctx ([(x, Tm A R)] ++ G)) by eauto.
+      have ctx: (Ctx ([(x, Tm A R)] ++ G)) by eauto 3.
       move: (Ctx_uniq ctx) => u. inversion u. subst.
       split. intros. apply binds_cons_uniq_1 in H8. destruct H8.
       ++ split_hyp. subst. auto.

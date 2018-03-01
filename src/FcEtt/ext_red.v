@@ -18,6 +18,7 @@ Require Export FcEtt.ext_red_one.
 Require Export FcEtt.ext_weak.
 Require Export FcEtt.ext_subst.
 Require Import FcEtt.ett_erased.
+Require Import FcEtt.param.
 
 Set Bullet Behavior "Strict Subproofs".
 Set Implicit Arguments.
@@ -39,9 +40,11 @@ Proof.
       rewrite (tm_subst_tm_tm_intro x B1); eauto 2.
       
       eapply Typing_tm_subst with (A:=A1); eauto 2.
-      eapply E_Conv with (A := A); eauto 2.
+      eapply E_Conv with (A := A); eauto 2 using E_SubRole, param_sub1.
       eapply E_Sym.
       eapply E_Trans with (a1:= open_tm_wrt_tm B b); eauto 3.
+      eapply E_PiSnd; eauto 1.
+      eapply E_Refl; eauto using param_covariant.
 
     + destruct (invert_a_App_Irrel TH) as (A & B & b0 & Tb & Tb2 & EQ & DE ).
       subst.
@@ -55,10 +58,10 @@ Proof.
       rewrite (tm_subst_tm_tm_fresh_eq _ _ _ H1).
       rewrite - (tm_subst_tm_tm_fresh_eq _ b0 x H1).
       eapply Typing_tm_subst with (A:=A1); eauto 2.
-      eapply E_Conv with (A:=A); eauto using E_PiFst.
+      eapply E_Conv with (A:=A); eauto using E_PiFst, param_sub1.
       eapply E_Sym.
       eapply E_Trans with (a1 := open_tm_wrt_tm B b0). auto.
-      eapply E_PiSnd; eauto using E_Refl.
+      eapply E_PiSnd; eauto using E_Refl, param_covariant.
    - have CT: Ctx G by eauto.
      have RA: Typing G A0 a_Star Rep by eauto using Typing_regularity.
      destruct (invert_a_CApp TH) as (eq & a1 & b1 & A1 & R1 & B1 & h0 & h1 & h2 ).
