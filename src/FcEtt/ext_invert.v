@@ -42,7 +42,7 @@ Qed.
 Lemma invert_a_Pi:
   forall G rho A0 A B0 R R',
     Typing G (a_Pi rho A0 R B0) A R' ->
-    DefEq G (dom G) A a_Star a_Star R' /\ 
+    DefEq G (dom G) A a_Star a_Star Rep /\ 
       (exists L, forall x, x `notin` L -> 
         Typing ([(x, Tm A0 R)] ++ G) (open_tm_wrt_tm B0 (a_Var_f x)) a_Star R') 
           /\ Typing G A0 a_Star R.
@@ -51,26 +51,21 @@ Proof.
   dependent induction h1; auto; try done.
   - pose P := IHh1 rho A0 B0 R eq_refl.
     inversion P as [H1 [H2 H3]]. repeat split; auto.
-    inversion H2 as [L H5]. 
-    eapply E_Sub; eauto.
-    inversion H2 as [L H5]. 
-    exists L. intros x Fr. eapply E_SubRole; eauto.
+    inversion H2 as [L H5]. exists L. intros. eapply E_SubRole; eauto.
   - repeat split; eauto.
   - destruct (IHh1_1 rho A0 B0 R) as (h1 & h2 & h3); try reflexivity.
     repeat split; eauto 1.
-    destruct R0; eapply E_Trans; eauto 2.
+    destruct R0; eapply E_Trans; eauto.
 Qed.
 
 Lemma invert_a_CPi: forall G phi A B0 R,
     Typing G (a_CPi phi B0) A R ->
-      DefEq G (dom G) A a_Star a_Star R /\ (exists L, forall c, c `notin` L -> Typing ([(c, Co phi)] ++ G) (open_tm_wrt_co B0 (g_Var_f c) ) a_Star R)  /\ PropWff G phi.
+      DefEq G (dom G) A a_Star a_Star Rep /\ (exists L, forall c, c `notin` L -> Typing ([(c, Co phi)] ++ G) (open_tm_wrt_co B0 (g_Var_f c) ) a_Star R)  /\ PropWff G phi.
 Proof.
   intros G phi A B0 R h1.
   dependent induction h1; eauto 2; try done.
   - destruct (IHh1 phi B0) as [h2 [L h3]]; first by done.
     repeat split; eauto 1. inversion L as [L0 h4].
-    eapply E_Sub; eauto.
-    inversion L as [L0 h4].
     exists L0. intros. eapply E_SubRole. apply H. auto.
   - destruct (IHh1_1 phi B0) as [h2 [L h3]]; first by done.
     repeat split; eauto 1 using Typing_Ctx. 
@@ -400,36 +395,6 @@ Proof.
     simpl; eauto.
 Qed.
 
-(*
-Lemma invert_a_Conv : forall G a A R1 R2,
-     Typing G (a_Conv a R2 g_Triv) A R1 ->
-      exists B R0, Typing G a B R0 /\ DefEq G (dom G) A B a_Star R2 /\ SubRole R0 R2.
-Proof. intros. dependent induction H.
-        - destruct (IHTyping _ _ eq_refl) as [B [R3 [H1 [H2 H3]]]].
-          exists B, R3. repeat split; auto. 
-        - destruct (IHTyping1 _ _ eq_refl) as [C [R3 [H4 [H2 H3]]]].
-          exists C, R3. repeat split; auto. apply E_Sym in H0.
-          apply E_Trans with (a1 := A); eapply E_Sub; eauto.
-          destruct R; auto. destruct R4; auto.
-        - exists A1, R0, R1. repeat split; auto.
-Qed.*)
-
-Definition max (r1 : role) (r2 : role) : role :=
-  match r1 , r2 with
-  | _, Phm   => Phm
-  | Phm, _   => Phm
-  | _, Rep   => Rep
-  | Rep, _   => Rep
-  | Nom, Nom => Nom
-  end.
-
-Lemma max_left : forall r1 r2, SubRole r1 (max r1 r2).
-Proof. destruct r1; destruct r2; simpl; auto.
-Qed.
-Lemma max_right : forall r1 r2, SubRole r2 (max r1 r2).
-Proof. destruct r1; destruct r2; simpl; auto.
-Qed.
-
 Lemma invert_a_Conv : forall G a A R1 R2,
      Typing G (a_Conv a R1 g_Triv) A R2 ->
       exists B R3 R4, Typing G a B R3 /\ DefEq G (dom G) A B a_Star R4 /\
@@ -438,9 +403,9 @@ Proof. intros. dependent induction H.
         - destruct (IHTyping _ _ eq_refl) as [B [R3 [R4 [H1 [H2 H3]]]]].
           exists B, R3, R4. repeat split; auto. apply Trans with R0; auto.
         - destruct (IHTyping1 _ _ eq_refl) as [C [R3 [R4 [H' [H2 H3]]]]].
-          exists C, R3, (max R R4). repeat split; auto. apply E_Sym in H0.
+          exists C, R3, Rep. repeat split; auto. apply E_Sym in H0.
           apply E_Trans with (a1 := A); eapply E_Sub; eauto.
-          eapply max_left. eapply max_right.
+          destruct R; auto. destruct R4; auto.
         - exists A1, R0, R1. repeat split; auto.
 Qed.
 
@@ -1243,7 +1208,7 @@ Proof.
   inversion h1. auto.
 Qed.
 
-Lemma E_Fam2 : ∀ (G : context) F (A a : tm) R,
+Lemma E_Fam2 : ∀ (G : context) (F : tyfam) (A a : tm) R,
        Ctx G
        → binds F (Ax a A R) toplevel → Typing G (a_Fam F) A R.
 Proof.

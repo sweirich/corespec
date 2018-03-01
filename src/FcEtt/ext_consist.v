@@ -574,7 +574,6 @@ Proof.
   inversion H; auto; try inversion K.
 Qed.
 
-(*
 Lemma Par_Const : forall W T b R,
     Par W (a_Const T) b R -> b = a_Const T.
 Proof.
@@ -587,7 +586,6 @@ Lemma multipar_Const : forall W T b R,
 Proof.
   intros W T b R H. dependent induction H; eauto using Par_Const.
 Qed.
-*)
 
 Lemma multipar_Pi : forall W rho A B R', multipar W A B R' -> 
       forall A1 R A2, A = a_Pi rho A1 R A2 -> exists B1 B2, B = (a_Pi rho B1 R B2).
@@ -810,8 +808,8 @@ Ltac multipar_step :=
   | [ SIDE : multipar _ (a_CPi ?phi _) _ _ |- _ ] =>
     try (destruct phi); destruct (multipar_CPi SIDE eq_refl)
       as (B1' & B2' & C1' & C2' &  EQ); clear SIDE; subst
-(*  | [ SIDE : multipar _ (a_Const ?T) _ _ |- _ ] =>
-    apply multipar_Const in SIDE; auto; rename SIDE into EQ *)
+  | [ SIDE : multipar _ (a_Const ?T) _ _ |- _ ] =>
+    apply multipar_Const in SIDE; auto; rename SIDE into EQ
   end.
 
 Lemma join_consistent : forall W a b R, joins W a b R -> consistent a b R.

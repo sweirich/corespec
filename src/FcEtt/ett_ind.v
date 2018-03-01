@@ -238,6 +238,8 @@ Ltac invert_syntactic_equality :=
     inversion H; subst; clear H
   | [ H : a_Fam _  = a_Fam _ |- _ ] =>
     inversion H; subst; clear H
+  | [ H : a_Const _  = a_Const _ |- _ ] =>
+    inversion H; subst; clear H
   | [ H : a_Conv _ _ _ = a_Conv _ _ _ |- _ ] =>
     inversion H; subst; clear H
   | [ H : a_UCAbs _ = a_UCAbs _ |- _ ] =>
@@ -737,19 +739,16 @@ Qed.
 
 Hint Rewrite tm_subst_cast.
 
-Lemma nom_bot : forall R, SubRole R Nom -> R = Nom.
-Proof. intros. dependent induction H; auto.
-Qed.
-
-Lemma phm_top : forall R, SubRole Phm R -> R = Phm.
-Proof. intros. dependent induction H; auto.
-Qed.
-
 Lemma rep_nsub_nom : ~ SubRole Rep Nom.
-Proof. intro. apply nom_bot in H. inversion H.
+Proof. intro. 
+       remember Rep as R1.
+       remember Nom as R2.
+       induction H. inversion HeqR1.
+       subst. inversion HeqR2.
+       destruct R2; auto.
 Qed.
 
 Lemma sub_dec : forall R1 R2, SubRole R1 R2 \/ ~(SubRole R1 R2).
-Proof. Admitted. (* intros. destruct R1, R2; auto. right. apply rep_nsub_nom.
-Qed. *)
+Proof. intros. destruct R1, R2; auto. right. apply rep_nsub_nom.
+Qed.
 

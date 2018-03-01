@@ -16,9 +16,11 @@ metavar covar, c ::=
 
 metavar datacon, K ::= {{ coq atom }}
 
-metavar const, T, F ::= {{ coq atom }}
+metavar const, T ::= {{ coq atom }}
   {{ lex Alphanum }}
 
+metavar tyfam, F ::= {{ coq atom }}
+  {{ lex Alphanum }}
 
 indexvar index, i ::=
   {{ tex \mathit{[[index]]} }} {{ com indices }} {{ coq nat }}
@@ -31,7 +33,6 @@ grammar
 role, R :: '' ::= {{ com Role }}
    | Nom  ::    :: Nom
    | Rep  ::    :: Rep
-   | Phm  ::    :: Phm
    | min R1 R2  :: S :: Min
      {{ coq (min [[R1]][[R2]]) }}
      {{ tex [[R1]] \cap [[R2]] }}
@@ -63,6 +64,7 @@ tm, a, b, v, w, A, B :: 'a_' ::= {{ com types and kinds }}
    | a rho R b            ::   :: App
      {{ tex [[a]]\ [[b]]^{[[R]],[[rho]]}  }}
    | F                  ::   :: Fam
+   | T                  ::   :: Const
    | all rho x : A / R -> B ::   :: Pi (+ bind x in B +)
      {{ tex \mathrm{\Pi}^[[rho]][[x]]\!:\![[A]]/[[R]][[->]][[B]] }}
    | a |> R g             ::   :: Conv
@@ -241,14 +243,6 @@ parsing
 
 grammar
 
-role_context, W {{ tex \Omega }} :: 'rctx_' ::= {{ com role_contexts }}
-                                          {{ coq list ( atom * role ) }}
-   | empty           ::    :: Empty   {{ coq nil }}
-   | W , x : R       ::    :: ConsTm  {{ coq (([[x]] ~ [[R]]) ++ [[W]]) }}
-   | ( W )           :: M  :: Paren   {{ coq ([[W]]) }}
-   | (# W #)         :: M  :: SecretParen {{ coq [[W]] }} {{ tex [[W]] }}
-
-
 sig_sort :: '' ::= {{ com signature classifier }}
    | Cs A            ::    :: Cs
    | Ax a A R        ::    :: Ax
@@ -286,7 +280,6 @@ sig, S {{ tex \Sigma }} :: 'sig_' ::= {{ com signatures }} {{ coq list (atom * s
      {{ coq an_toplevel }}
      {{ tex \Sigma_1 }}
    | | S |          :: M  :: Erase  {{ coq (erase_sig [[S]]) }}
-   | S , F sig_sort :: M  :: Fake {{ coq [[F]]~[[sig_sort]] ++ [[S]] }}  
 
 available_props, D {{ tex \Delta }} :: 'D_' ::= {{ coq atoms }} {{ coq-universe Type }}
    | emptyD          ::    :: Empty   {{ coq AtomSetImpl.empty }} {{ tex \varnothing }}
@@ -294,6 +287,12 @@ available_props, D {{ tex \Delta }} :: 'D_' ::= {{ coq atoms }} {{ coq-universe 
    | dom G           :: M  :: DomG    {{ coq (dom [[G]]) }} {{ tex \widetilde {[[G]]} }}
    | ( D )           :: M  :: Paren   {{ coq ([[D]]) }}
    
+role_context, W {{ tex \Omega }} :: 'rctx_' ::= {{ com role_contexts }}
+                                          {{ coq list ( atom * role ) }}
+   | empty           ::    :: Empty   {{ coq nil }}
+   | W , x : R       ::    :: ConsTm  {{ coq (([[x]] ~ [[R]]) ++ [[W]]) }}
+   | ( W )           :: M  :: Paren   {{ coq ([[W]]) }}
+   | (# W #)         :: M  :: SecretParen {{ coq [[W]] }} {{ tex [[W]] }}
 
 
 substitutions
@@ -431,30 +430,16 @@ embed {{ coq
 
 Definition min (r1 : role) (r2 : role) : role :=
   match r1 , r2 with
-  | Nom, _   => Nom
+  | Nom, _ => Nom
   | _  , Nom => Nom
-  | Rep, _   => Rep
-  | _ , Rep  => Rep
-  | Phm, Phm => Phm
+  | Rep, Rep => Rep
   end.
-
-Definition max (r1 : role) (r2 : role) : role :=
-  match r1 , r2 with
-  | _, Phm   => Phm
-  | Phm, _   => Phm
-  | _, Rep   => Rep
-  | Rep, _   => Rep
-  | Nom, Nom => Nom
-  end.
-
 
 Definition lte_role (r1 : role) (r2 : role) : bool :=
   match r1 , r2 with
-  | Nom, _   => true
+  | Nom, _ => true
+  | Rep, Rep => true
   | Rep, Nom => false
-  | Rep, _   => true
-  | Phm, Phm => true
-  | _, _     => false
   end.
 
 Fixpoint erase_tm (a : tm) (r : role) : tm :=
@@ -466,6 +451,7 @@ Fixpoint erase_tm (a : tm) (r : role) : tm :=
    | a_UAbs rho R b => a_UAbs rho R (erase_tm b r)
    | a_App a Rel R b => a_App (erase_tm a r) Rel R (erase_tm b R)
    | a_App a Irrel R b => a_App (erase_tm a r) Irrel R a_Bullet
+   | a_Const T => a_Const T
    | a_Fam F => a_Fam F
    | a_Pi rho A R B => a_Pi rho (erase_tm A R) R (erase_tm B r)
    | a_Conv a r1 g => if (lte_role r1 r) then
@@ -549,12 +535,8 @@ R1 <= R2  ::  :: SubRole :: ''
 {{ tex [[R1]] \leq [[R2]] }}
 by
 
------------- :: NomBot
-Nom <= R
-
-
------------- :: PhmTop
-R <= Phm
+------------ :: NomRep
+Nom <= Rep
 
 
 ------------ :: Refl
@@ -572,7 +554,7 @@ defns
 defn
 Path F a R  ::  :: Path :: 'Path_'
 {{ com Type headed by constant (partial function) }}
-{{ tex \mathsf{Path}_{[[R]]}\ [[a]] = [[F]] }}
+{{ tex \mathsf{Path}_{[[R]]} [[a]] = [[F]] }}
 by
 
 F ~ a : A/R1 in toplevel
@@ -770,6 +752,10 @@ rctx_uniq W
 F ~ a : A / R in toplevel
 --------------------------- :: Fam
 W |- erased_tm F R1
+
+rctx_uniq W
+------------------- :: Const
+W |- erased_tm T R
 
 W |- erased_tm a R
 ---------------------------- :: Conv

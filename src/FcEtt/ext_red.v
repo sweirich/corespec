@@ -21,9 +21,9 @@ Set Bullet Behavior "Strict Subproofs".
 Set Implicit Arguments.
 
 
-Lemma Beta_preservation : forall a b R, Beta a b R -> forall G A R, Typing G a A R -> Typing G b A R.
+Lemma Beta_preservation : forall a b, Beta a b -> forall G A R, Typing G a A R -> Typing G b A R.
 Proof.
-  intros a b R B. destruct B; intros G A0 R' TH.
+  intros a b B. destruct B; intros G A0 R' TH.
   - have CT: Ctx G by eauto.
     have RA: Typing G A0 a_Star R' by eauto using Typing_regularity.
     destruct rho.
