@@ -1038,7 +1038,7 @@ G |= a1 [ o ] : B1 { o / c } / R'
 
 |= G
 F ~ a : A / R in toplevel
- empty |= A : TYPE / R0
+ empty |= A : TYPE / R0 
 ------------------------- :: Fam
 G |= F : A / R1
 
