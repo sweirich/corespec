@@ -84,7 +84,7 @@ tm, a, b, v, w, A, B :: 'a_' ::= {{ com types and kinds }}
    | a [ g ]            ::   :: CApp
    | []                 ::   :: Bullet
    | ifPath R a' a b1 b2   ::   :: Pattern
-
+	  {{ tex [[case]]_{[[R]]}\ [[a]]\ [[of]]\ [[a']] [[=>]] [[b1]] \| \_ [[=>]] [[b2]] }} 
    %% currently unused but ready for extension
    | K                ::   :: DataCon
    | match a with brs ::   :: Case
@@ -132,6 +132,7 @@ tm, a, b, v, w, A, B :: 'a_' ::= {{ com types and kinds }}
    | Fix              :: S :: Fix    {{ coq 0 }}
    | Age              :: S :: Age    {{ coq 0 }}
    | a -> b           :: S :: Arrow  {{ coq (a_Pi [[a]] [[b]]) }}
+   | a / R -> b       :: S :: RArrow {{ coq (a_Pi [[a]] [[b]]) }}
    | phi => A         :: S :: CArrow {{ coq (a_CPi [[phi]] [[A]]) }}
    | a b              :: S :: RelApp
      {{ coq (a_App [[a]] Rel Nom [[b]]) }}
