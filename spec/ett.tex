@@ -705,7 +705,7 @@
 
 
 \newcommand{\ottdruleerasedXXaXXPi}[1]{\ottdrule[#1]{%
-\ottpremise{ \Omega  \vDash  \ottnt{A}  :  \ottnt{R_{{\mathrm{1}}}} }%
+\ottpremise{ \Omega  \vDash  \ottnt{A}  :  \ottnt{R} }%
 \ottpremise{ \Omega  \ottsym{,}  \ottmv{x}  \ottsym{:}  \ottnt{R_{{\mathrm{1}}}}  \vDash  \ottnt{B}  :  \ottnt{R} }%
 }{
  \Omega  \vDash  \ottsym{(}   \mathrm{\Pi}^ \rho \ottmv{x} \!:\! \ottnt{A} / \ottnt{R_{{\mathrm{1}}}} \to \ottnt{B}   \ottsym{)}  :  \ottnt{R} }{%
@@ -716,7 +716,7 @@
 \newcommand{\ottdruleerasedXXaXXCPi}[1]{\ottdrule[#1]{%
 \ottpremise{ \Omega  \vDash  \ottnt{a}  :  \ottnt{R_{{\mathrm{1}}}} }%
 \ottpremise{ \Omega  \vDash  \ottnt{b}  :  \ottnt{R_{{\mathrm{1}}}} }%
-\ottpremise{ \Omega  \vDash  \ottnt{A}  :  \ottnt{R_{{\mathrm{1}}}} }%
+\ottpremise{ \Omega  \vDash  \ottnt{A}  :  \ottnt{R_{{\mathrm{0}}}} }%
 \ottpremise{ \Omega  \vDash  \ottnt{B}  :  \ottnt{R} }%
 }{
  \Omega  \vDash  \ottsym{(}   \forall \ottmv{c} \!:\!  \ottnt{a}   \sim _{ \ottnt{A} / \ottnt{R_{{\mathrm{1}}}} }  \ottnt{b}  . \ottnt{B}   \ottsym{)}  :  \ottnt{R} }{%
@@ -856,7 +856,7 @@
 
 
 \newcommand{\ottdruleParXXPi}[1]{\ottdrule[#1]{%
-\ottpremise{ \Omega  \vDash  \ottnt{A}   \Rightarrow _{ \ottnt{R_{{\mathrm{1}}}} }  \ottnt{A'} }%
+\ottpremise{ \Omega  \vDash  \ottnt{A}   \Rightarrow _{ \ottnt{R} }  \ottnt{A'} }%
 \ottpremise{ \Omega  \ottsym{,}  \ottmv{x}  \ottsym{:}  \ottnt{R_{{\mathrm{1}}}}  \vDash  \ottnt{B}   \Rightarrow _{ \ottnt{R} }  \ottnt{B'} }%
 }{
  \Omega  \vDash   \mathrm{\Pi}^ \rho \ottmv{x} \!:\! \ottnt{A} / \ottnt{R_{{\mathrm{1}}}} \to \ottnt{B}    \Rightarrow _{ \ottnt{R} }   \mathrm{\Pi}^ \rho \ottmv{x} \!:\! \ottnt{A'} / \ottnt{R_{{\mathrm{1}}}} \to \ottnt{B'}  }{%
@@ -873,7 +873,7 @@
 
 
 \newcommand{\ottdruleParXXCPi}[1]{\ottdrule[#1]{%
-\ottpremise{ \Omega  \vDash  \ottnt{A}   \Rightarrow _{ \ottnt{R_{{\mathrm{1}}}} }  \ottnt{A'} }%
+\ottpremise{ \Omega  \vDash  \ottnt{A}   \Rightarrow _{ \ottnt{R_{{\mathrm{0}}}} }  \ottnt{A'} }%
 \ottpremise{ \Omega  \vDash  \ottnt{a}   \Rightarrow _{ \ottnt{R_{{\mathrm{1}}}} }  \ottnt{a'} }%
 \ottpremise{ \Omega  \vDash  \ottnt{b}   \Rightarrow _{ \ottnt{R_{{\mathrm{1}}}} }  \ottnt{b'} }%
 \ottpremise{ \Omega  \vDash  \ottnt{B}   \Rightarrow _{ \ottnt{R} }  \ottnt{B'} }%
@@ -1110,7 +1110,7 @@
 \newcommand{\ottdruleEXXWff}[1]{\ottdrule[#1]{%
 \ottpremise{\Gamma  \vDash  \ottnt{a}  \ottsym{:}  \ottnt{A}  \ottsym{/}  \ottnt{R}}%
 \ottpremise{\Gamma  \vDash  \ottnt{b}  \ottsym{:}  \ottnt{A}  \ottsym{/}  \ottnt{R}}%
-\ottpremise{ \suppress{ \Gamma  \vDash  \ottnt{A}  \ottsym{:}   \star   \ottsym{/}  \ottnt{R} } }%
+\ottpremise{ \suppress{ \Gamma  \vDash  \ottnt{A}  \ottsym{:}   \star   \ottsym{/}  \ottnt{R_{{\mathrm{0}}}} } }%
 }{
 \Gamma  \vDash   \ottnt{a}   \sim _{ \ottnt{A} / \ottnt{R} }  \ottnt{b}  \, \ \mathsf{ok}}{%
 {\ottdrulename{E\_Wff}}{}%
@@ -1149,7 +1149,7 @@
 
 \newcommand{\ottdruleEXXPi}[1]{\ottdrule[#1]{%
 \ottpremise{\Gamma  \ottsym{,}  \ottmv{x}  \ottsym{:}  \ottnt{A}  \ottsym{/}  \ottnt{R}  \vDash  \ottnt{B}  \ottsym{:}   \star   \ottsym{/}  \ottnt{R'}}%
-\ottpremise{ \suppress{ \Gamma  \vDash  \ottnt{A}  \ottsym{:}   \star   \ottsym{/}  \ottnt{R} } }%
+\ottpremise{\Gamma  \vDash  \ottnt{A}  \ottsym{:}   \star   \ottsym{/}  \ottnt{R'}}%
 }{
 \Gamma  \vDash   \mathrm{\Pi}^ \rho \ottmv{x} \!:\! \ottnt{A} / \ottnt{R} \to \ottnt{B}   \ottsym{:}   \star   \ottsym{/}  \ottnt{R'}}{%
 {\ottdrulename{E\_Pi}}{}%
@@ -1158,7 +1158,7 @@
 
 \newcommand{\ottdruleEXXAbs}[1]{\ottdrule[#1]{%
 \ottpremise{\Gamma  \ottsym{,}  \ottmv{x}  \ottsym{:}  \ottnt{A}  \ottsym{/}  \ottnt{R}  \vDash  \ottnt{a}  \ottsym{:}  \ottnt{B}  \ottsym{/}  \ottnt{R'}}%
-\ottpremise{ \suppress{ \Gamma  \vDash  \ottnt{A}  \ottsym{:}   \star   \ottsym{/}  \ottnt{R} } }%
+\ottpremise{ \suppress{ \Gamma  \vDash  \ottnt{A}  \ottsym{:}   \star   \ottsym{/}  \ottnt{R_{{\mathrm{0}}}} } }%
 \ottpremise{ ( \rho  = +) \vee ( \ottmv{x} \not\in\mathsf{fv}\;  \ottnt{a} ) }%
 }{
 \Gamma  \vDash   \mathrm{\lambda}^{ \ottnt{R} , \rho } \ottmv{x} . \ottnt{a}   \ottsym{:}  \ottsym{(}   \mathrm{\Pi}^ \rho \ottmv{x} \!:\! \ottnt{A} / \ottnt{R} \to \ottnt{B}   \ottsym{)}  \ottsym{/}  \ottnt{R'}}{%
@@ -1187,7 +1187,7 @@
 \newcommand{\ottdruleEXXConv}[1]{\ottdrule[#1]{%
 \ottpremise{\Gamma  \vDash  \ottnt{a}  \ottsym{:}  \ottnt{A}  \ottsym{/}  \ottnt{R}}%
 \ottpremise{\Gamma  \ottsym{;}   \widetilde { \Gamma }   \vDash  \ottnt{A}  \equiv  \ottnt{B}  \ottsym{:}   \star   \ottsym{/}  \ottkw{Rep}}%
-\ottpremise{\Gamma  \vDash  \ottnt{B}  \ottsym{:}   \star   \ottsym{/}  \ottnt{R}}%
+\ottpremise{ \suppress{ \Gamma  \vDash  \ottnt{B}  \ottsym{:}   \star   \ottsym{/}  \ottnt{R_{{\mathrm{0}}}} } }%
 }{
 \Gamma  \vDash  \ottnt{a}  \ottsym{:}  \ottnt{B}  \ottsym{/}  \ottnt{R}}{%
 {\ottdrulename{E\_Conv}}{}%
@@ -1224,7 +1224,7 @@
 \newcommand{\ottdruleEXXFam}[1]{\ottdrule[#1]{%
 \ottpremise{\vDash  \Gamma}%
 \ottpremise{\ottmv{F} \,  \sim  \ottnt{a}  :  \ottnt{A}  /  \ottnt{R}  \, \in \,  \Sigma_0 }%
-\ottpremise{\varnothing  \vDash  \ottnt{A}  \ottsym{:}   \star   \ottsym{/}  \ottnt{R_{{\mathrm{1}}}}}%
+\ottpremise{\varnothing  \vDash  \ottnt{A}  \ottsym{:}   \star   \ottsym{/}  \ottnt{R_{{\mathrm{0}}}}}%
 }{
 \Gamma  \vDash  \ottmv{F}  \ottsym{:}  \ottnt{A}  \ottsym{/}  \ottnt{R_{{\mathrm{1}}}}}{%
 {\ottdrulename{E\_Fam}}{}%
@@ -1268,7 +1268,7 @@
 
 
 \newcommand{\ottdruleEXXIsoConv}[1]{\ottdrule[#1]{%
-\ottpremise{\Gamma  \ottsym{;}  \Delta  \vDash  \ottnt{A}  \equiv  \ottnt{B}  \ottsym{:}   \star   \ottsym{/}  \ottnt{R}}%
+\ottpremise{\Gamma  \ottsym{;}  \Delta  \vDash  \ottnt{A}  \equiv  \ottnt{B}  \ottsym{:}   \star   \ottsym{/}  \ottnt{R_{{\mathrm{0}}}}}%
 \ottpremise{\Gamma  \vDash   \ottnt{A_{{\mathrm{1}}}}   \sim _{ \ottnt{A} / \ottnt{R} }  \ottnt{A_{{\mathrm{2}}}}  \, \ \mathsf{ok}}%
 \ottpremise{\Gamma  \vDash   \ottnt{A_{{\mathrm{1}}}}   \sim _{ \ottnt{B} / \ottnt{R} }  \ottnt{A_{{\mathrm{2}}}}  \, \ \mathsf{ok}}%
 }{
@@ -1346,9 +1346,9 @@
 
 
 \newcommand{\ottdruleEXXPiCong}[1]{\ottdrule[#1]{%
-\ottpremise{\Gamma  \ottsym{;}  \Delta  \vDash  \ottnt{A_{{\mathrm{1}}}}  \equiv  \ottnt{A_{{\mathrm{2}}}}  \ottsym{:}   \star   \ottsym{/}  \ottnt{R}}%
+\ottpremise{\Gamma  \ottsym{;}  \Delta  \vDash  \ottnt{A_{{\mathrm{1}}}}  \equiv  \ottnt{A_{{\mathrm{2}}}}  \ottsym{:}   \star   \ottsym{/}  \ottnt{R'}}%
 \ottpremise{\Gamma  \ottsym{,}  \ottmv{x}  \ottsym{:}  \ottnt{A_{{\mathrm{1}}}}  \ottsym{/}  \ottnt{R}  \ottsym{;}  \Delta  \vDash  \ottnt{B_{{\mathrm{1}}}}  \equiv  \ottnt{B_{{\mathrm{2}}}}  \ottsym{:}   \star   \ottsym{/}  \ottnt{R'}}%
-\ottpremise{ \suppress{ \Gamma  \vDash  \ottnt{A_{{\mathrm{1}}}}  \ottsym{:}   \star   \ottsym{/}  \ottnt{R} } }%
+\ottpremise{ \suppress{ \Gamma  \vDash  \ottnt{A_{{\mathrm{1}}}}  \ottsym{:}   \star   \ottsym{/}  \ottnt{R'} } }%
 \ottpremise{ \suppress{ \Gamma  \vDash   \mathrm{\Pi}^ \rho \ottmv{x} \!:\! \ottnt{A_{{\mathrm{1}}}} / \ottnt{R} \to \ottnt{B_{{\mathrm{1}}}}   \ottsym{:}   \star   \ottsym{/}  \ottnt{R'} } }%
 \ottpremise{ \suppress{ \Gamma  \vDash   \mathrm{\Pi}^ \rho \ottmv{x} \!:\! \ottnt{A_{{\mathrm{2}}}} / \ottnt{R} \to \ottnt{B_{{\mathrm{2}}}}   \ottsym{:}   \star   \ottsym{/}  \ottnt{R'} } }%
 }{
@@ -1359,7 +1359,7 @@
 
 \newcommand{\ottdruleEXXAbsCong}[1]{\ottdrule[#1]{%
 \ottpremise{\Gamma  \ottsym{,}  \ottmv{x}  \ottsym{:}  \ottnt{A_{{\mathrm{1}}}}  \ottsym{/}  \ottnt{R}  \ottsym{;}  \Delta  \vDash  \ottnt{b_{{\mathrm{1}}}}  \equiv  \ottnt{b_{{\mathrm{2}}}}  \ottsym{:}  \ottnt{B}  \ottsym{/}  \ottnt{R'}}%
-\ottpremise{ \suppress{ \Gamma  \vDash  \ottnt{A_{{\mathrm{1}}}}  \ottsym{:}   \star   \ottsym{/}  \ottnt{R} } }%
+\ottpremise{ \suppress{ \Gamma  \vDash  \ottnt{A_{{\mathrm{1}}}}  \ottsym{:}   \star   \ottsym{/}  \ottnt{R_{{\mathrm{0}}}} } }%
 \ottpremise{ ( \rho  = +) \vee ( \ottmv{x} \not\in\mathsf{fv}\;  \ottnt{b_{{\mathrm{1}}}} ) }%
 \ottpremise{ ( \rho  = +) \vee ( \ottmv{x} \not\in\mathsf{fv}\;  \ottnt{b_{{\mathrm{2}}}} ) }%
 }{
@@ -1389,7 +1389,7 @@
 \newcommand{\ottdruleEXXPiFst}[1]{\ottdrule[#1]{%
 \ottpremise{\Gamma  \ottsym{;}  \Delta  \vDash   \mathrm{\Pi}^ \rho \ottmv{x} \!:\! \ottnt{A_{{\mathrm{1}}}} / \ottnt{R} \to \ottnt{B_{{\mathrm{1}}}}   \equiv   \mathrm{\Pi}^ \rho \ottmv{x} \!:\! \ottnt{A_{{\mathrm{2}}}} / \ottnt{R} \to \ottnt{B_{{\mathrm{2}}}}   \ottsym{:}   \star   \ottsym{/}  \ottnt{R'}}%
 }{
-\Gamma  \ottsym{;}  \Delta  \vDash  \ottnt{A_{{\mathrm{1}}}}  \equiv  \ottnt{A_{{\mathrm{2}}}}  \ottsym{:}   \star   \ottsym{/}  \ottnt{R}}{%
+\Gamma  \ottsym{;}  \Delta  \vDash  \ottnt{A_{{\mathrm{1}}}}  \equiv  \ottnt{A_{{\mathrm{2}}}}  \ottsym{:}   \star   \ottsym{/}  \ottnt{R'}}{%
 {\ottdrulename{E\_PiFst}}{}%
 }}
 
@@ -1455,7 +1455,7 @@
 \newcommand{\ottdruleEXXEqConv}[1]{\ottdrule[#1]{%
 \ottpremise{\Gamma  \ottsym{;}  \Delta  \vDash  \ottnt{a}  \equiv  \ottnt{b}  \ottsym{:}  \ottnt{A}  \ottsym{/}  \ottnt{R}}%
 \ottpremise{\Gamma  \ottsym{;}   \widetilde { \Gamma }   \vDash  \ottnt{A}  \equiv  \ottnt{B}  \ottsym{:}   \star   \ottsym{/}  \ottkw{Rep}}%
-\ottpremise{\Gamma  \vDash  \ottnt{B}  \ottsym{:}   \star   \ottsym{/}  \ottnt{R}}%
+\ottpremise{ \suppress{ \Gamma  \vDash  \ottnt{B}  \ottsym{:}   \star   \ottsym{/}  \ottnt{R_{{\mathrm{0}}}} } }%
 }{
 \Gamma  \ottsym{;}  \Delta  \vDash  \ottnt{a}  \equiv  \ottnt{b}  \ottsym{:}  \ottnt{B}  \ottsym{/}  \ottnt{R}}{%
 {\ottdrulename{E\_EqConv}}{}%
@@ -1465,7 +1465,7 @@
 \newcommand{\ottdruleEXXIsoSnd}[1]{\ottdrule[#1]{%
 \ottpremise{\Gamma  \ottsym{;}  \Delta  \vDash   \ottnt{a}   \sim _{ \ottnt{A} / \ottnt{R_{{\mathrm{1}}}} }  \ottnt{b}   \equiv   \ottnt{a'}   \sim _{ \ottnt{A'} / \ottnt{R_{{\mathrm{1}}}} }  \ottnt{b'} }%
 }{
-\Gamma  \ottsym{;}  \Delta  \vDash  \ottnt{A}  \equiv  \ottnt{A'}  \ottsym{:}   \star   \ottsym{/}  \ottnt{R_{{\mathrm{1}}}}}{%
+\Gamma  \ottsym{;}  \Delta  \vDash  \ottnt{A}  \equiv  \ottnt{A'}  \ottsym{:}   \star   \ottsym{/}  \ottkw{Rep}}{%
 {\ottdrulename{E\_IsoSnd}}{}%
 }}
 
@@ -1575,7 +1575,7 @@
 
 \newcommand{\ottdruleEXXConsTm}[1]{\ottdrule[#1]{%
 \ottpremise{\vDash  \Gamma}%
-\ottpremise{\Gamma  \vDash  \ottnt{A}  \ottsym{:}   \star   \ottsym{/}  \ottnt{R}}%
+\ottpremise{\Gamma  \vDash  \ottnt{A}  \ottsym{:}   \star   \ottsym{/}  \ottnt{R'}}%
 \ottpremise{\ottmv{x} \, \not\in \, \mathsf{dom} \, \Gamma}%
 }{
 \vDash  \Gamma  \ottsym{,}  \ottmv{x}  \ottsym{:}  \ottnt{A}  \ottsym{/}  \ottnt{R}}{%
@@ -1731,7 +1731,7 @@
 \newcommand{\ottdruleAnXXFam}[1]{\ottdrule[#1]{%
 \ottpremise{\vdash  \Gamma}%
 \ottpremise{\ottmv{F} \,  \sim  \ottnt{a}  :  \ottnt{A}  /  \ottnt{R}  \, \in \,  \Sigma_1 }%
-\ottpremise{\varnothing  \vdash  \ottnt{A}  \ottsym{:}   \star   \ottsym{/}  \ottnt{R_{{\mathrm{1}}}}}%
+\ottpremise{\varnothing  \vdash  \ottnt{A}  \ottsym{:}   \star   \ottsym{/}  \ottnt{R_{{\mathrm{0}}}}}%
 }{
 \Gamma  \vdash  \ottmv{F}  \ottsym{:}  \ottnt{A}  \ottsym{/}  \ottnt{R_{{\mathrm{1}}}}}{%
 {\ottdrulename{An\_Fam}}{}%
