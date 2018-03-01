@@ -250,9 +250,8 @@ role_context, W {{ tex \Omega }} :: 'rctx_' ::= {{ com role_contexts }}
 
 
 sig_sort :: '' ::= {{ com signature classifier }}
-   | : A / R         ::    :: Cs
-   | ~ a : A / R     ::    :: Ax
-     {{ tex \sim [[a]] : [[A]] / [[R]] }}
+   | Cs A            ::    :: Cs
+   | Ax a A R        ::    :: Ax
    
 sort :: '' ::= {{ com binding classifier }}
    | Tm A R           ::   :: Tm
@@ -273,23 +272,21 @@ context, G {{ tex \Gamma }} :: 'ctx_' ::= {{ com contexts }}
    | ( G )           :: M  :: Paren   {{ coq ([[G]]) }}
    | (# G #)         :: M  :: SecretParen {{ coq [[G]] }} {{ tex [[G]] }}
 
-sig, S {{ tex \Sigma }} :: 'sig_' ::= 
-	  {{ com signatures }} 
-	  {{ coq list (atom * sig_sort) }}
-   | emptyS         ::    :: Empty       
-	  {{ coq nil }}
+sig, S {{ tex \Sigma }} :: 'sig_' ::= {{ com signatures }} {{ coq list (atom * sig_sort) }}
+   | emptyS         ::    :: Empty       {{ coq nil }}
      {{ tex \varnothing }}
-   | S , F sig_sort ::    :: Cons
-	  {{ coq (([[F]]~[[sig_sort]])++[[S]]) }}  
-	  {{ tex [[S]] \cup \{[[F]][[sig_sort]]\} }}
+   | S , T : A / R    ::    :: ConsCs      {{ coq (([[T]]~ Cs[[A]][[R]])++[[S]]) }}
+     {{ tex [[S]] \cup \{[[T]] : [[A]]/[[R]]\} }}
+   | S , F ~ a : A / R  ::    :: ConsAx      {{ coq (([[F]]~ Ax[[a]][[A]][[R]])++[[S]]) }}
+     {{ tex [[S]] \cup \{[[F]]\sim[[a]] : [[A]]/[[R]]\} }}
    | toplevel       :: M  :: Toplevel
      {{ coq toplevel }}
      {{ tex \Sigma_0 }}
    | an_toplevel    :: M  :: AnToplevel
      {{ coq an_toplevel }}
      {{ tex \Sigma_1 }}
-   | | S |          :: M  :: Erase  
-	  {{ coq (erase_sig [[S]]) }}
+   | | S |          :: M  :: Erase  {{ coq (erase_sig [[S]]) }}
+   | S , F sig_sort :: M  :: Fake {{ coq [[F]]~[[sig_sort]] ++ [[S]] }}  
 
 available_props, D {{ tex \Delta }} :: 'D_' ::= {{ coq atoms }} {{ coq-universe Type }}
    | emptyD          ::    :: Empty   {{ coq AtomSetImpl.empty }} {{ tex \varnothing }}
@@ -368,8 +365,11 @@ formula, Fm {{tex \psi}} :: 'formula_' ::=
   | c : phi  in G         ::   :: inGP
     {{ coq binds [[c]] (Co [[phi]]) [[G]] }}
 
-  | F sig_sort in S             ::   :: inGFam
-    {{ coq binds [[F]] ([[sig_sort]]) [[S]] }}
+  | T : A / R in S             ::   :: inGF
+    {{ coq binds [[T]] (Cs [[A]] [[R]]) [[S]] }}
+
+  | F ~ a : A / R in S             ::   :: inGFam
+    {{ coq binds [[F]] (Ax [[a]][[A]][[R]]) [[S]] }}
 
   | K : T G in S               ::   :: inSD
     {{ coq binds [[K]] ([[T]],[[G]]) [[S]] }}
@@ -386,7 +386,6 @@ formula, Fm {{tex \psi}} :: 'formula_' ::=
     {{ coq ~ AtomSetImpl.In [[x]] (dom [[G]]) }}
   | rctx_uniq W              ::   :: uniqWx
     {{ coq uniq [[W]] }}
-	 {{ tex \emph{uniq}([[W]]) }}
   | c notin dom G            ::   :: notInGc
     {{ coq ~ AtomSetImpl.In [[c]] (dom [[G]]) }}
   | T notin dom S            ::   :: notInST
@@ -448,6 +447,7 @@ Definition max (r1 : role) (r2 : role) : role :=
   | Nom, Nom => Nom
   end.
 
+
 Definition lte_role (r1 : role) (r2 : role) : bool :=
   match r1 , r2 with
   | Nom, _   => true
@@ -499,7 +499,7 @@ end.
 
 Definition erase_csort s r :=
  match s with
- | Cs a R  => Cs (erase_tm a r) R
+ | Cs a   => Cs (erase_tm a r)
  | Ax a A R => Ax (erase_tm a r) (erase_tm A r) R
 end.
 
@@ -660,9 +660,6 @@ Value R a
 --------------------- :: CApp
 Value R (a [o])
 
---------------------- :: Bullet
-Value R []
-
 defn
 ValueType R A ::   :: value_type :: 'value_type_'
 {{ com Types with head forms (erased language) }}
@@ -717,9 +714,6 @@ consistent a b R
 not ValueType R a
 ---------------------- :: Step_L
 consistent a b R
-
---------------------- :: Bullet
-consistent [] [] R
 
 defns
   Jerased :: '' ::=
@@ -882,9 +876,6 @@ W |- a1 => (a2 |> R o) / R1
 ---------------------------------------------------- :: CPush
 W |- a1 [o] => (a2 [o]) |> R o / R1
 
-W |- erased_tm a Phm
--------------------------------- :: Bullet
-W |- a => [] / Phm
 
 defn
 W |- a =>* b / R ::   :: MultiPar :: 'MP_'
@@ -933,13 +924,9 @@ Value R1 (\rho R x. v)
 
 
 F ~ a : A/R in toplevel
-R <= R1 
 -------------------------------- :: Axiom
-|= F > a / R1
+|= F > a / R
 
-
------------------------------- :: Bullet
-|= a > [] / Phm
 
 defn
  |= a ~> b / R ::   :: reduction_in_one :: 'E_'
@@ -1096,10 +1083,6 @@ G ; dom G |= A1 == A2 : TYPE / R2
 ------------------------- :: TyCast
 G |= a |> R2 o : A2 / R1
 
-
-G |= A : TYPE / Phm
-------------------------- :: Bullet
-G |= [] : A / Phm
 
 defn
 G ; D |= phi1 == phi2  ::    :: Iso :: 'E_'
