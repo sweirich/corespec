@@ -768,6 +768,10 @@ Definition lte_role (r1 : role) (r2 : role) : bool :=
   | Rep, Rep => true
   end.
 
+Parameter str : bool.
+Definition param (r1 : role) (r2 : role) := 
+  if str then r1 else min r1 r2.
+
 Fixpoint erase_tm (a : tm) (r : role) : tm :=
    match a with
    | a_Star    => a_Star
@@ -975,7 +979,7 @@ Inductive erased_tm : role_context -> tm -> role -> Prop :=    (* defn erased_tm
      erased_tm W  ( (a_UAbs rho R1 a) )  R
  | erased_a_App : forall (W:role_context) (a:tm) (rho:relflag) (R1:role) (b:tm) (R:role),
      erased_tm W a R ->
-     erased_tm W b R1 ->
+     erased_tm W b  (  (param R1   R )  )  ->
      erased_tm W  ( (a_App a rho R1 b) )  R
  | erased_a_Pi : forall (L:vars) (W:role_context) (rho:relflag) (A:tm) (R1:role) (B:tm) (R:role),
      erased_tm W A R ->
@@ -1020,11 +1024,11 @@ Inductive Par : role_context -> tm -> tm -> role -> Prop :=    (* defn Par *)
      Par W a a R
  | Par_Beta : forall (W:role_context) (a:tm) (rho:relflag) (R1:role) (b a' b':tm) (R:role),
      Par W a  ( (a_UAbs rho R1 a') )  R ->
-     Par W b b' R1 ->
+     Par W b b'  (param R1   R )  ->
      Par W (a_App a rho R1 b)  (open_tm_wrt_tm  a'   b' )  R
  | Par_App : forall (W:role_context) (a:tm) (rho:relflag) (R1:role) (b a' b':tm) (R:role),
      Par W a a' R ->
-     Par W b b' R1 ->
+     Par W b b'  (param R1   R )  ->
      Par W (a_App a rho R1 b) (a_App a' rho R1 b') R
  | Par_CBeta : forall (W:role_context) (a a':tm) (R:role),
      Par W a  ( (a_UCAbs a') )  R ->
@@ -1170,11 +1174,11 @@ with Typing : context -> tm -> tm -> role -> Prop :=    (* defn Typing *)
      Typing G (a_UAbs rho R a)  ( (a_Pi rho A R B) )  R'
  | E_App : forall (G:context) (b:tm) (R:role) (a B:tm) (R':role) (A:tm),
      Typing G b (a_Pi Rel A R B) R' ->
-     Typing G a A R ->
+     Typing G a A  (param R   R' )  ->
      Typing G (a_App b Rel R a)  (open_tm_wrt_tm  B   a )  R'
  | E_IApp : forall (G:context) (b:tm) (R:role) (B a:tm) (R':role) (A:tm),
      Typing G b (a_Pi Irrel A R B) R' ->
-     Typing G a A R ->
+     Typing G a A  (param R   R' )  ->
      Typing G (a_App b Irrel R a_Bullet)  (open_tm_wrt_tm  B   a )  R'
  | E_Conv : forall (G:context) (a B:tm) (R:role) (A:tm) (R0:role),
      Typing G a A R ->
@@ -1257,18 +1261,18 @@ with DefEq : context -> available_props -> tm -> tm -> tm -> role -> Prop :=    
      DefEq G D  ( (a_UAbs rho R b1) )   ( (a_UAbs rho R b2) )   ( (a_Pi rho A1 R B) )  R'
  | E_AppCong : forall (G:context) (D:available_props) (a1:tm) (R:role) (a2 b1 b2 B:tm) (R':role) (A:tm),
      DefEq G D a1 b1  ( (a_Pi Rel A R B) )  R' ->
-     DefEq G D a2 b2 A R ->
+     DefEq G D a2 b2 A  (param R   R' )  ->
      DefEq G D (a_App a1 Rel R a2) (a_App b1 Rel R b2)  (  (open_tm_wrt_tm  B   a2 )  )  R'
  | E_IAppCong : forall (G:context) (D:available_props) (a1:tm) (R:role) (b1 B a:tm) (R':role) (A:tm),
      DefEq G D a1 b1  ( (a_Pi Irrel A R B) )  R' ->
-     Typing G a A R ->
+     Typing G a A  (param R   R' )  ->
      DefEq G D (a_App a1 Irrel R a_Bullet) (a_App b1 Irrel R a_Bullet)  (  (open_tm_wrt_tm  B   a )  )  R'
  | E_PiFst : forall (G:context) (D:available_props) (A1 A2:tm) (R':role) (rho:relflag) (R:role) (B1 B2:tm),
      DefEq G D (a_Pi rho A1 R B1) (a_Pi rho A2 R B2) a_Star R' ->
      DefEq G D A1 A2 a_Star R'
  | E_PiSnd : forall (G:context) (D:available_props) (B1 a1 B2 a2:tm) (R':role) (rho:relflag) (A1:tm) (R:role) (A2:tm),
      DefEq G D (a_Pi rho A1 R B1) (a_Pi rho A2 R B2) a_Star R' ->
-     DefEq G D a1 a2 A1 R ->
+     DefEq G D a1 a2 A1  (param R   R' )  ->
      DefEq G D  (open_tm_wrt_tm  B1   a1 )   (open_tm_wrt_tm  B2   a2 )  a_Star R'
  | E_CPiCong : forall (L:vars) (G:context) (D:available_props) (a1 b1 A1:tm) (R:role) (A a2 b2 A2 B:tm) (R':role),
      Iso G D (Eq a1 b1 A1 R) (Eq a2 b2 A2 R) ->
@@ -1312,9 +1316,9 @@ with DefEq : context -> available_props -> tm -> tm -> tm -> role -> Prop :=    
      Path F a R' ->
      Path F a' R' ->
      Typing G a (a_Pi Rel A R1 B) R' ->
-     Typing G b A R1 ->
+     Typing G b A  (param R1   R' )  ->
      Typing G a' (a_Pi Rel A R1 B) R' ->
-     Typing G b' A R1 ->
+     Typing G b' A  (param R1   R' )  ->
      DefEq G D (a_App a Rel R1 b) (a_App a' Rel R1 b')  (open_tm_wrt_tm  B   b )  R' ->
      DefEq G  (dom  G )   (open_tm_wrt_tm  B   b )   (open_tm_wrt_tm  B   b' )  a_Star R0 ->
      DefEq G D a a' (a_Pi Rel A R1 B) R'
@@ -1322,22 +1326,22 @@ with DefEq : context -> available_props -> tm -> tm -> tm -> role -> Prop :=    
      Path F a R' ->
      Path F a' R' ->
      Typing G a (a_Pi Irrel A R1 B) R' ->
-     Typing G b A R1 ->
+     Typing G b A  (param R1   R' )  ->
      Typing G a' (a_Pi Irrel A R1 B) R' ->
-     Typing G b' A R1 ->
+     Typing G b' A  (param R1   R' )  ->
      DefEq G D (a_App a Irrel R1 a_Bullet) (a_App a' Irrel R1 a_Bullet)  (open_tm_wrt_tm  B   b )  R' ->
      DefEq G  (dom  G )   (open_tm_wrt_tm  B   b )   (open_tm_wrt_tm  B   b' )  a_Star R0 ->
      DefEq G D a a' (a_Pi Irrel A R1 B) R'
- | E_Right : forall (G:context) (D:available_props) (b b' A:tm) (R1:role) (F:const) (a:tm) (R':role) (a' B:tm) (R0:role),
+ | E_Right : forall (G:context) (D:available_props) (b b' A:tm) (R1 R':role) (F:const) (a a' B:tm) (R0:role),
      Path F a R' ->
      Path F a' R' ->
      Typing G a (a_Pi Rel A R1 B) R' ->
-     Typing G b A R1 ->
+     Typing G b A  (param R1   R' )  ->
      Typing G a' (a_Pi Rel A R1 B) R' ->
-     Typing G b' A R1 ->
+     Typing G b' A  (param R1   R' )  ->
      DefEq G D (a_App a Rel R1 b) (a_App a' Rel R1 b')  (open_tm_wrt_tm  B   b )  R' ->
      DefEq G  (dom  G )   (open_tm_wrt_tm  B   b )   (open_tm_wrt_tm  B   b' )  a_Star R0 ->
-     DefEq G D b b' A R1
+     DefEq G D b b' A  (param R1   R' ) 
  | E_CLeft : forall (G:context) (D:available_props) (a a' a1 a2 A:tm) (R1:role) (B:tm) (R':role) (F:const),
      Path F a R' ->
      Path F a' R' ->

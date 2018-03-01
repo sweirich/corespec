@@ -34,6 +34,10 @@ role, R :: '' ::= {{ com Role }}
    | min R1 R2  :: S :: Min
      {{ coq (min [[R1]][[R2]]) }}
      {{ tex [[R1]] \cap [[R2]] }}
+   | param R1 R2 :: S :: Param
+     {{ coq (param[[R1]] [[R2]]) }}
+   | ( R ) ::  S :: RParen
+     {{ coq ([[R]]) }}
 
 
 relflag, rho {{ tex \rho }} :: '' ::= {{ com relevance flag }}
@@ -459,6 +463,10 @@ Definition lte_role (r1 : role) (r2 : role) : bool :=
   | Rep, Rep => true
   end.
 
+Parameter str : bool.
+Definition param (r1 : role) (r2 : role) := 
+  if str then r1 else min r1 r2.
+
 Fixpoint erase_tm (a : tm) (r : role) : tm :=
    match a with
    | a_Star    => a_Star
@@ -716,7 +724,7 @@ W |- erased_tm (\rho R1 x.a) R
 
 %% Note, this is not quite right, but it is ok.
 W |- erased_tm a R
-W |- erased_tm b R1
+W |- erased_tm b (param R1 R)
 ----------------------------- :: App
 W |- erased_tm (a rho R1 b) R
 
@@ -786,12 +794,12 @@ W |- a => a  / R
 
 
 W |- a => (\rho R1 x.a') / R
-W |- b => b' / R1
+W |- b => b' / param R1 R
 ---------------------------------------- :: Beta
 W |- a rho R1 b => a' { b' / x } / R
 
 W |- a => a' / R
-W |- b => b' / R1
+W |- b => b' / param R1 R
 ------------------------------------------- :: App
 W |- a rho R1 b => a' rho R1 b' / R
 
@@ -1005,12 +1013,12 @@ rho => check x in a
 G |= \ rho R x . a : ( all rho x:A / R -> B ) / R'
 
 G |= b : all+ x : A / R -> B / R'
-G |= a : A / R
+G |= a : A / param R R'
 ------------------------------------- :: App
 G |= b + R a : B { a / x } / R'
 
 G |= b : all - x : A / R -> B / R'
-G |= a : A / R
+G |= a : A / param R R'
 ------------------------------------- :: IApp
 G |= b - R [] : B { a / x } / R'
 
@@ -1128,13 +1136,13 @@ rho => check x in b2
 G ; D |=  (\ rho R x. b1) == (\ rho R x. b2) : (all rho x:A1/R -> B)/R'
 
 G ; D |= a1 == b1 : (all + x:A/R -> B)/R'
-G ; D |= a2 == b2 : A/R
+G ; D |= a2 == b2 : A/param R R'
 -------------------------------------- :: AppCong
 G ; D |= a1 + R a2 == b1 + R b2 : (B { a2 / x })/R'
 
 
 G ; D |= a1 == b1 : (all - x:A/R -> B)/R'
-G |= a : A/R
+G |= a : A/param R R'
 ------------------------------------------ :: IAppCong
 G ; D |= a1 - R [] == b1 - R [] : (B { a / x })/R'
 
@@ -1144,7 +1152,7 @@ G ; D |= all rho x:A1/R -> B1 == all rho x:A2/R -> B2 : TYPE/R'
 G ; D |=  A1 == A2 : TYPE/ R'
 
 G ; D |= all rho x:A1/R -> B1 == all rho x:A2/R -> B2 : TYPE/R'
-G ; D |= a1 == a2 : A1/R
+G ; D |= a1 == a2 : A1/param R R'
 ------------------------------------------- :: PiSnd
 G ; D |=  B1 {a1 /x}  == B2 {a2/x} : TYPE/R'
 
@@ -1201,9 +1209,9 @@ G ; D |= ifPath R F a b1 b2 == ifPath R F a' b1' b2' : B / R0
  Path F a R'
  Path F a' R'
  G |= a : all +x:A / R1 -> B / R'
- G |= b : A / R1
+ G |= b : A / param R1 R'
  G |= a' : all +x:A / R1 -> B / R'
- G |= b' : A / R1
+ G |= b' : A / param R1 R'
  G ; D |= a + R1 b == a' + R1 b' : B { b / x } / R'
  G ; dom G |= B {b/x} == B {b'/x} : TYPE / R0
  --------------------------------------------------- :: LeftRel
@@ -1212,9 +1220,9 @@ G ; D |= ifPath R F a b1 b2 == ifPath R F a' b1' b2' : B / R0
  Path F a R'
  Path F a' R'
  G |= a : all -x:A/R1 -> B/R'
- G |= b : A/R1
+ G |= b : A/param R1 R'
  G |= a' : all -x:A/R1 -> B/R'
- G |= b' : A/R1
+ G |= b' : A/param R1 R'
  G ; D |= a - R1 [] == a' - R1 [] : B { b / x }/R'
  G ; dom G |= B {b/x} == B {b'/x} : TYPE/R0
  ------------------------------------------------- :: LeftIrrel
@@ -1224,13 +1232,13 @@ G ; D |= ifPath R F a b1 b2 == ifPath R F a' b1' b2' : B / R0
  Path F a R'
  Path F a' R'
  G |= a : all +x:A/R1 -> B/R'
- G |= b : A/R1
+ G |= b : A/param R1 R'
  G |= a' : all +x:A/R1 -> B/R'
- G |= b' : A/R1
+ G |= b' : A/param R1 R'
  G ; D |= a + R1 b == a' + R1 b' : B { b / x }/R'
  G ; dom G |= B {b/x} == B {b'/x} : TYPE/R0
  ------------------------------------------------ :: Right
- G ; D |= b == b' : A/R1
+ G ; D |= b == b' : A/param R1 R' 
 
 
  Path F a R'

@@ -10,6 +10,7 @@ Require Import FcEtt.ext_subst.
 
 Require Import FcEtt.utils.
 Require Import FcEtt.notations.
+Require Import FcEtt.param.
 
 Set Bullet Behavior "Strict Subproofs".
 Set Implicit Arguments.
@@ -188,12 +189,14 @@ Proof.
     rewrite (tm_subst_tm_tm_intro x); auto.
     un_subst_tm.
     eapply Typing_tm_subst; eauto.
+    eapply E_SubRole; eauto using param_sub1.
   - apply invert_a_Pi in IHTyping1; eauto.
     destruct IHTyping1 as [h2 [[L h3] h4]].
     pick_fresh x.
     rewrite (tm_subst_tm_tm_intro x); auto.
     un_subst_tm.
     eapply Typing_tm_subst; eauto.
+    eapply E_SubRole; eauto using param_sub1.
   - apply invert_a_CPi in IHTyping; eauto using Typing_Ctx.
     destruct IHTyping as [h2 [[L h3] _]].
     pick_fresh c.
@@ -327,7 +330,7 @@ Qed.
 Lemma invert_a_App_Rel : forall G a b C R R',
     Typing G (a_App a Rel R b) C R' ->
     exists A B, Typing G a (a_Pi Rel A R B) R' /\
-           Typing G b A R /\
+           Typing G b A (param R R') /\
            DefEq G (dom G) C (open_tm_wrt_tm B b) a_Star Rep.
 Proof.
   intros G a b C R R'.
@@ -335,7 +338,7 @@ Proof.
   move => h1.
   induction h1; auto; try done.
   - destruct (IHh1 e) as [A0 [B [R3 [h0 h2]]]].
-    exists A0, B. repeat split; eauto 3.
+    exists A0, B. repeat split; eauto 3 using param_covariant.
   - exists A, B. inversion e; subst.
     assert (h2 : Typing G (open_tm_wrt_tm B a0) a_Star Rep).
     + (have: Typing G (a_Pi Rel A R0 B) a_Star Rep by apply (Typing_regularity h1_1)) => h3.
@@ -343,7 +346,7 @@ Proof.
       pick fresh x.
       rewrite (tm_subst_tm_tm_intro x); auto.
       replace a_Star with (tm_subst_tm_tm a0 x a_Star); auto.
-      apply Typing_tm_subst with (A := A) (R := R0); auto.
+      apply Typing_tm_subst with (A := A) (R := R0); eauto using param_sub1.
     + repeat split; auto.
   - destruct (IHh1_1 e) as [A0 [B0 [R2 [h3 h2]]]].
     exists A0, B0.
@@ -354,7 +357,7 @@ Qed.
 Lemma invert_a_App_Irrel : forall G a b C R R',
     Typing G (a_App a Irrel R b) C R' ->
     exists A B b0, Typing G a (a_Pi Irrel A R B) R' /\
-              Typing G b0 A R /\
+              Typing G b0 A (param R R') /\
               b = a_Bullet /\
               DefEq G (dom G) C (open_tm_wrt_tm B b0) a_Star Rep.
 Proof.
@@ -363,7 +366,7 @@ Proof.
   move => h1.
   induction h1; auto; try done.
   - destruct (IHh1 e) as [A0 [B [b0 [R3 [h0 [h2 h3]]]]]].
-    exists A0, B, b0. repeat split; eauto 3.
+    exists A0, B, b0. repeat split; eauto 3 using param_covariant.
   - exists A, B, a0. inversion e; subst.
     assert (h2 : Typing G (open_tm_wrt_tm B a0) a_Star Rep).
     + (have: Typing G (a_Pi Irrel A R0 B) a_Star Rep by apply (Typing_regularity h1_1)) => h3.
@@ -371,7 +374,7 @@ Proof.
       pick fresh x.
       rewrite (tm_subst_tm_tm_intro x); auto.
       replace a_Star with (tm_subst_tm_tm a0 x a_Star); auto.
-      apply Typing_tm_subst with (A := A) (R := R0); auto.
+      apply Typing_tm_subst with (A := A) (R := R0); eauto using param_sub1.
     + repeat split; auto.
   - destruct (IHh1_1 e) as [A0 [B0 [b0 [R2 [h3 [h2 h4]]]]]].
     exists A0, B0, b0.
@@ -821,18 +824,21 @@ Proof.
     apply E_Refl; auto.
     eapply Typing_regularity; eauto.
     apply E_Sym.
-    eapply DefEq_weaken_available. destruct R; eauto.
+    eapply DefEq_weaken_available.
+    eapply E_Sub. eauto. eauto using param_covariant.
     apply Typing_regularity in H; auto.
-    apply invert_a_Pi in H; eauto.
+    apply invert_a_Pi in H; eauto 2.
     destruct H as [_ [[L h0] _]].
     pick_fresh x.
     have: x `notin` L; auto => h1.
+    eapply E_SubRole with (R2 := R) in H0. 
     pose K := Typing_tm_subst (h0 x h1) H0.
     clearbody K.
     repeat rewrite tm_subst_tm_tm_open_tm_wrt_tm in K; try solve [apply (Typing_lc H0); eauto].
     simpl in K.
     destruct eq_dec; try congruence.
     rewrite tm_subst_tm_tm_fresh_eq in K; auto. eauto.
+    eapply param_sub1.
   - intros G D A1 A2 B1 B2 R' d R H h0 h1 _.
     split_hyp.
     (have: Ctx G by eauto) => CTX.
@@ -852,17 +858,19 @@ Proof.
       destruct H as [_ [[L h0] _]].
       pick_fresh x.
       have: x `notin` L; auto => h1.
+      apply E_SubRole with (R2 := R) in H0.
       pose K := Typing_tm_subst (h0 x h1) H0.
       clearbody K.
       repeat rewrite tm_subst_tm_tm_open_tm_wrt_tm in K; try solve [apply (Typing_lc H0); eauto].
       simpl in K.
       destruct eq_dec; try congruence.
-      rewrite tm_subst_tm_tm_fresh_eq in K; auto.
+      rewrite tm_subst_tm_tm_fresh_eq in K; auto. eapply param_sub1.
     + apply invert_a_Pi in H2; eauto.
       destruct H2 as [_ [[L h0] hi]].
       pick_fresh x.
       have: x `notin` L; auto => h1.
       eapply (E_Conv _ _ A2) in H1; eauto 2.
+      apply E_SubRole with (R2 := R) in H1; try apply param_sub1; auto.
       pose K := Typing_tm_subst (h0 x h1) H1.
       clearbody K.
       repeat rewrite tm_subst_tm_tm_open_tm_wrt_tm in K; try solve [apply (Typing_lc H1); eauto].
