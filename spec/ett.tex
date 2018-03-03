@@ -78,7 +78,7 @@
 \ottprodline{|}{ \mathrm{\Lambda} \ottmv{c} . \ottnt{b} }{}{\textsf{bind}\; \ottmv{c}\; \textsf{in}\; \ottnt{b}}{}{}\ottprodnewline
 \ottprodline{|}{\ottnt{a}  \ottsym{[}  \gamma  \ottsym{]}}{}{}{}{}\ottprodnewline
 \ottprodline{|}{\Box}{}{}{}{}\ottprodnewline
-\ottprodline{|}{\ottkw{ifPath} \, \ottnt{R} \, \ottnt{a'} \, \ottnt{a} \, \ottnt{b_{{\mathrm{1}}}} \, \ottnt{b_{{\mathrm{2}}}}}{}{}{}{}\ottprodnewline
+\ottprodline{|}{ case_{ \ottnt{R} }\  \ottnt{a} \ of \  \ottnt{a'}  \rightarrow  \ottnt{b_{{\mathrm{1}}}}  \| \_ \rightarrow  \ottnt{b_{{\mathrm{2}}}} }{}{}{}{}\ottprodnewline
 \ottprodline{|}{\ottmv{K}}{}{}{}{}\ottprodnewline
 \ottprodline{|}{\ottkw{match} \, \ottnt{a} \, \ottkw{with} \, \ottnt{brs}}{}{}{}{}\ottprodnewline
 \ottprodline{|}{\ottkw{sub} \, \ottnt{R} \, \ottnt{a}}{}{}{}{}\ottprodnewline
@@ -99,6 +99,7 @@
 \ottprodline{|}{\ottkw{Fix}} {\textsf{S}}{}{}{}\ottprodnewline
 \ottprodline{|}{\ottkw{Age}} {\textsf{S}}{}{}{}\ottprodnewline
 \ottprodline{|}{\ottnt{a}  \to  \ottnt{b}} {\textsf{S}}{}{}{}\ottprodnewline
+\ottprodline{|}{\ottnt{a}  \ottsym{/}  \ottnt{R}  \to  \ottnt{b}} {\textsf{S}}{}{}{}\ottprodnewline
 \ottprodline{|}{\phi  \Rightarrow  \ottnt{A}} {\textsf{S}}{}{}{}\ottprodnewline
 \ottprodline{|}{ \ottnt{a} \  \ottnt{b} } {\textsf{S}}{}{}{}\ottprodnewline
 \ottprodline{|}{ \lambda  \ottmv{x} . \ottnt{a} } {\textsf{S}}{}{}{}\ottprodnewline
@@ -154,7 +155,7 @@
 
 \newcommand{\ottsigXXsort}{
 \ottrulehead{\ottnt{sig\_sort}}{::=}{\ottcom{signature classifier}}\ottprodnewline
-\ottfirstprodline{|}{\ottsym{:}  \ottnt{A}  \ottsym{/}  \ottnt{R}}{}{}{}{}\ottprodnewline
+\ottfirstprodline{|}{\ottsym{:}  \ottnt{A}}{}{}{}{}\ottprodnewline
 \ottprodline{|}{ \sim  \ottnt{a}  :  \ottnt{A}  /  \ottnt{R} }{}{}{}{}}
 
 \newcommand{\ottsort}{
@@ -282,8 +283,8 @@
 \ottrulehead{\ottnt{Jconsistent}}{::=}{}\ottprodnewline
 \ottfirstprodline{|}{ \suppress{\mathsf{consistent}_{ \ottnt{R} }\  \ottnt{a}   \ottnt{b}  } }{}{}{}{\ottcom{(erased) types do not differ in their heads}}}
 
-\newcommand{\ottJerased}{
-\ottrulehead{\ottnt{Jerased}}{::=}{}\ottprodnewline
+\newcommand{\ottJroleing}{
+\ottrulehead{\ottnt{Jroleing}}{::=}{}\ottprodnewline
 \ottfirstprodline{|}{ \Omega  \vDash  \ottnt{a}  :  \ottnt{R} }{}{}{}{}}
 
 \newcommand{\ottJChk}{
@@ -335,7 +336,7 @@
 \ottprodline{|}{\ottnt{JValue}}{}{}{}{}\ottprodnewline
 \ottprodline{|}{\ottnt{JValueType}}{}{}{}{}\ottprodnewline
 \ottprodline{|}{\ottnt{Jconsistent}}{}{}{}{}\ottprodnewline
-\ottprodline{|}{\ottnt{Jerased}}{}{}{}{}\ottprodnewline
+\ottprodline{|}{\ottnt{Jroleing}}{}{}{}{}\ottprodnewline
 \ottprodline{|}{\ottnt{JChk}}{}{}{}{}\ottprodnewline
 \ottprodline{|}{\ottnt{Jpar}}{}{}{}{}\ottprodnewline
 \ottprodline{|}{\ottnt{Jbeta}}{}{}{}{}\ottprodnewline
@@ -386,7 +387,7 @@
 \ottJValue\ottinterrule
 \ottJValueType\ottinterrule
 \ottJconsistent\ottinterrule
-\ottJerased\ottinterrule
+\ottJroleing\ottinterrule
 \ottJChk\ottinterrule
 \ottJpar\ottinterrule
 \ottJbeta\ottinterrule
@@ -443,6 +444,14 @@
 
 % defns JPath
 %% defn Path
+\newcommand{\ottdrulePathXXAbsConst}[1]{\ottdrule[#1]{%
+\ottpremise{\ottmv{F} \, \ottsym{:}  \ottnt{A} \, \in \,  \Sigma_0 }%
+}{
+ \mathsf{Path}_{ \ottnt{R} }\  \ottmv{F}  =  \ottmv{F} }{%
+{\ottdrulename{Path\_AbsConst}}{}%
+}}
+
+
 \newcommand{\ottdrulePathXXConst}[1]{\ottdrule[#1]{%
 \ottpremise{\ottmv{F} \,  \sim  \ottnt{a}  :  \ottnt{A}  /  \ottnt{R_{{\mathrm{1}}}}  \, \in \,  \Sigma_0 }%
 \ottpremise{ \neg  \ottsym{(}   \ottnt{R_{{\mathrm{1}}}}  \leq  \ottnt{R}   \ottsym{)} }%
@@ -468,6 +477,7 @@
 }}
 
 \newcommand{\ottdefnPath}[1]{\begin{ottdefnblock}[#1]{$ \mathsf{Path}_{ \ottnt{R} }\  \ottnt{a}  =  \ottmv{F} $}{\ottcom{Type headed by constant (partial function)}}
+\ottusedrule{\ottdrulePathXXAbsConst{}}
 \ottusedrule{\ottdrulePathXXConst{}}
 \ottusedrule{\ottdrulePathXXApp{}}
 \ottusedrule{\ottdrulePathXXCApp{}}
@@ -583,10 +593,9 @@
 
 
 \newcommand{\ottdrulevalueXXtypeXXPath}[1]{\ottdrule[#1]{%
-\ottpremise{ \mathsf{Path}_{ \ottnt{R} }\  \ottnt{A}  =  \ottmv{F} }%
-\ottpremise{ \mathsf{Value}_{ \ottnt{R} }\  \ottnt{A} }%
+\ottpremise{ \mathsf{Path}_{ \ottnt{R} }\  \ottnt{a}  =  \ottmv{F} }%
 }{
- \mathsf{ValueType}_{ \ottnt{R} }\  \ottnt{A} }{%
+ \mathsf{ValueType}_{ \ottnt{R} }\  \ottnt{a} }{%
 {\ottdrulename{value\_type\_Path}}{}%
 }}
 
@@ -661,123 +670,133 @@
 \newcommand{\ottdefnsJconsistent}{
 \ottdefnconsistent{}}
 
-% defns Jerased
-%% defn erased_tm
-\newcommand{\ottdruleerasedXXaXXBullet}[1]{\ottdrule[#1]{%
+% defns Jroleing
+%% defn roleing
+\newcommand{\ottdruleroleXXaXXBullet}[1]{\ottdrule[#1]{%
 \ottpremise{ \emph{uniq}( \Omega ) }%
 }{
  \Omega  \vDash  \Box  :  \ottnt{R} }{%
-{\ottdrulename{erased\_a\_Bullet}}{}%
+{\ottdrulename{role\_a\_Bullet}}{}%
 }}
 
 
-\newcommand{\ottdruleerasedXXaXXStar}[1]{\ottdrule[#1]{%
+\newcommand{\ottdruleroleXXaXXStar}[1]{\ottdrule[#1]{%
 \ottpremise{ \emph{uniq}( \Omega ) }%
 }{
  \Omega  \vDash   \star   :  \ottnt{R} }{%
-{\ottdrulename{erased\_a\_Star}}{}%
+{\ottdrulename{role\_a\_Star}}{}%
 }}
 
 
-\newcommand{\ottdruleerasedXXaXXVar}[1]{\ottdrule[#1]{%
+\newcommand{\ottdruleroleXXaXXVar}[1]{\ottdrule[#1]{%
 \ottpremise{ \emph{uniq}( \Omega ) }%
 \ottpremise{\ottmv{x}  \ottsym{:}  \ottnt{R} \, \in \, \Omega}%
 \ottpremise{ \ottnt{R}  \leq  \ottnt{R_{{\mathrm{1}}}} }%
 }{
  \Omega  \vDash  \ottmv{x}  :  \ottnt{R_{{\mathrm{1}}}} }{%
-{\ottdrulename{erased\_a\_Var}}{}%
+{\ottdrulename{role\_a\_Var}}{}%
 }}
 
 
-\newcommand{\ottdruleerasedXXaXXAbs}[1]{\ottdrule[#1]{%
+\newcommand{\ottdruleroleXXaXXAbs}[1]{\ottdrule[#1]{%
 \ottpremise{ \Omega  \ottsym{,}  \ottmv{x}  \ottsym{:}  \ottnt{R_{{\mathrm{1}}}}  \vDash  \ottnt{a}  :  \ottnt{R} }%
 }{
  \Omega  \vDash  \ottsym{(}   \mathrm{\lambda}^{ \ottnt{R_{{\mathrm{1}}}} , \rho } \ottmv{x} . \ottnt{a}   \ottsym{)}  :  \ottnt{R} }{%
-{\ottdrulename{erased\_a\_Abs}}{}%
+{\ottdrulename{role\_a\_Abs}}{}%
 }}
 
 
-\newcommand{\ottdruleerasedXXaXXApp}[1]{\ottdrule[#1]{%
+\newcommand{\ottdruleroleXXaXXApp}[1]{\ottdrule[#1]{%
 \ottpremise{ \Omega  \vDash  \ottnt{a}  :  \ottnt{R} }%
 \ottpremise{ \Omega  \vDash  \ottnt{b}  :  \ottsym{(}  \ottkw{param} \, \ottnt{R_{{\mathrm{1}}}} \, \ottnt{R}  \ottsym{)} }%
 }{
  \Omega  \vDash  \ottsym{(}   \ottnt{a} \  \ottnt{b} ^{ \ottnt{R_{{\mathrm{1}}}} , \rho }   \ottsym{)}  :  \ottnt{R} }{%
-{\ottdrulename{erased\_a\_App}}{}%
+{\ottdrulename{role\_a\_App}}{}%
 }}
 
 
-\newcommand{\ottdruleerasedXXaXXPi}[1]{\ottdrule[#1]{%
+\newcommand{\ottdruleroleXXaXXPi}[1]{\ottdrule[#1]{%
 \ottpremise{ \Omega  \vDash  \ottnt{A}  :  \ottnt{R} }%
 \ottpremise{ \Omega  \ottsym{,}  \ottmv{x}  \ottsym{:}  \ottnt{R_{{\mathrm{1}}}}  \vDash  \ottnt{B}  :  \ottnt{R} }%
 }{
  \Omega  \vDash  \ottsym{(}   \mathrm{\Pi}^ \rho \ottmv{x} \!:\! \ottnt{A} / \ottnt{R_{{\mathrm{1}}}} \to \ottnt{B}   \ottsym{)}  :  \ottnt{R} }{%
-{\ottdrulename{erased\_a\_Pi}}{}%
+{\ottdrulename{role\_a\_Pi}}{}%
 }}
 
 
-\newcommand{\ottdruleerasedXXaXXCPi}[1]{\ottdrule[#1]{%
+\newcommand{\ottdruleroleXXaXXCPi}[1]{\ottdrule[#1]{%
 \ottpremise{ \Omega  \vDash  \ottnt{a}  :  \ottnt{R_{{\mathrm{1}}}} }%
 \ottpremise{ \Omega  \vDash  \ottnt{b}  :  \ottnt{R_{{\mathrm{1}}}} }%
 \ottpremise{ \Omega  \vDash  \ottnt{A}  :  \ottnt{R_{{\mathrm{0}}}} }%
 \ottpremise{ \Omega  \vDash  \ottnt{B}  :  \ottnt{R} }%
 }{
  \Omega  \vDash  \ottsym{(}   \forall \ottmv{c} \!:\!  \ottnt{a}   \sim _{ \ottnt{A} / \ottnt{R_{{\mathrm{1}}}} }  \ottnt{b}  . \ottnt{B}   \ottsym{)}  :  \ottnt{R} }{%
-{\ottdrulename{erased\_a\_CPi}}{}%
+{\ottdrulename{role\_a\_CPi}}{}%
 }}
 
 
-\newcommand{\ottdruleerasedXXaXXCAbs}[1]{\ottdrule[#1]{%
+\newcommand{\ottdruleroleXXaXXCAbs}[1]{\ottdrule[#1]{%
 \ottpremise{ \Omega  \vDash  \ottnt{b}  :  \ottnt{R} }%
 }{
  \Omega  \vDash  \ottsym{(}   \mathrm{\Lambda} \ottmv{c} . \ottnt{b}   \ottsym{)}  :  \ottnt{R} }{%
-{\ottdrulename{erased\_a\_CAbs}}{}%
+{\ottdrulename{role\_a\_CAbs}}{}%
 }}
 
 
-\newcommand{\ottdruleerasedXXaXXCApp}[1]{\ottdrule[#1]{%
+\newcommand{\ottdruleroleXXaXXCApp}[1]{\ottdrule[#1]{%
 \ottpremise{ \Omega  \vDash  \ottnt{a}  :  \ottnt{R} }%
 }{
  \Omega  \vDash  \ottsym{(}  \ottnt{a}  \ottsym{[}  \bullet  \ottsym{]}  \ottsym{)}  :  \ottnt{R} }{%
-{\ottdrulename{erased\_a\_CApp}}{}%
+{\ottdrulename{role\_a\_CApp}}{}%
 }}
 
 
-\newcommand{\ottdruleerasedXXaXXFam}[1]{\ottdrule[#1]{%
+\newcommand{\ottdruleroleXXaXXConst}[1]{\ottdrule[#1]{%
+\ottpremise{ \emph{uniq}( \Omega ) }%
+\ottpremise{\ottmv{F} \, \ottsym{:}  \ottnt{A} \, \in \,  \Sigma_0 }%
+}{
+ \Omega  \vDash  \ottmv{F}  :  \ottnt{R} }{%
+{\ottdrulename{role\_a\_Const}}{}%
+}}
+
+
+\newcommand{\ottdruleroleXXaXXFam}[1]{\ottdrule[#1]{%
 \ottpremise{ \emph{uniq}( \Omega ) }%
 \ottpremise{\ottmv{F} \,  \sim  \ottnt{a}  :  \ottnt{A}  /  \ottnt{R}  \, \in \,  \Sigma_0 }%
 }{
  \Omega  \vDash  \ottmv{F}  :  \ottnt{R_{{\mathrm{1}}}} }{%
-{\ottdrulename{erased\_a\_Fam}}{}%
+{\ottdrulename{role\_a\_Fam}}{}%
 }}
 
 
-\newcommand{\ottdruleerasedXXaXXPattern}[1]{\ottdrule[#1]{%
-\ottpremise{\ottmv{F} \,  \sim  \ottnt{a_{{\mathrm{0}}}}  :  \ottnt{A}  /  \ottnt{R'}  \, \in \,  \Sigma_0 }%
+\newcommand{\ottdruleroleXXaXXPattern}[1]{\ottdrule[#1]{%
+\ottpremise{\ottmv{F} \, \ottnt{sig\_sort} \, \in \,  \Sigma_0 }%
 \ottpremise{ \Omega  \vDash  \ottnt{a}  :  \ottnt{R} }%
 \ottpremise{ \Omega  \vDash  \ottnt{b_{{\mathrm{1}}}}  :  \ottnt{R_{{\mathrm{1}}}} }%
 \ottpremise{ \Omega  \vDash  \ottnt{b_{{\mathrm{2}}}}  :  \ottnt{R_{{\mathrm{1}}}} }%
 }{
- \Omega  \vDash  \ottsym{(}  \ottkw{ifPath} \, \ottnt{R} \, \ottmv{F} \, \ottnt{a} \, \ottnt{b_{{\mathrm{1}}}} \, \ottnt{b_{{\mathrm{2}}}}  \ottsym{)}  :  \ottnt{R_{{\mathrm{1}}}} }{%
-{\ottdrulename{erased\_a\_Pattern}}{}%
+ \Omega  \vDash  \ottsym{(}   case_{ \ottnt{R} }\  \ottnt{a} \ of \  \ottmv{F}  \rightarrow  \ottnt{b_{{\mathrm{1}}}}  \| \_ \rightarrow  \ottnt{b_{{\mathrm{2}}}}   \ottsym{)}  :  \ottnt{R_{{\mathrm{1}}}} }{%
+{\ottdrulename{role\_a\_Pattern}}{}%
 }}
 
-\newcommand{\ottdefnerasedXXtm}[1]{\begin{ottdefnblock}[#1]{$ \Omega  \vDash  \ottnt{a}  :  \ottnt{R} $}{}
-\ottusedrule{\ottdruleerasedXXaXXBullet{}}
-\ottusedrule{\ottdruleerasedXXaXXStar{}}
-\ottusedrule{\ottdruleerasedXXaXXVar{}}
-\ottusedrule{\ottdruleerasedXXaXXAbs{}}
-\ottusedrule{\ottdruleerasedXXaXXApp{}}
-\ottusedrule{\ottdruleerasedXXaXXPi{}}
-\ottusedrule{\ottdruleerasedXXaXXCPi{}}
-\ottusedrule{\ottdruleerasedXXaXXCAbs{}}
-\ottusedrule{\ottdruleerasedXXaXXCApp{}}
-\ottusedrule{\ottdruleerasedXXaXXFam{}}
-\ottusedrule{\ottdruleerasedXXaXXPattern{}}
+\newcommand{\ottdefnroleing}[1]{\begin{ottdefnblock}[#1]{$ \Omega  \vDash  \ottnt{a}  :  \ottnt{R} $}{}
+\ottusedrule{\ottdruleroleXXaXXBullet{}}
+\ottusedrule{\ottdruleroleXXaXXStar{}}
+\ottusedrule{\ottdruleroleXXaXXVar{}}
+\ottusedrule{\ottdruleroleXXaXXAbs{}}
+\ottusedrule{\ottdruleroleXXaXXApp{}}
+\ottusedrule{\ottdruleroleXXaXXPi{}}
+\ottusedrule{\ottdruleroleXXaXXCPi{}}
+\ottusedrule{\ottdruleroleXXaXXCAbs{}}
+\ottusedrule{\ottdruleroleXXaXXCApp{}}
+\ottusedrule{\ottdruleroleXXaXXConst{}}
+\ottusedrule{\ottdruleroleXXaXXFam{}}
+\ottusedrule{\ottdruleroleXXaXXPattern{}}
 \end{ottdefnblock}}
 
 
-\newcommand{\ottdefnsJerased}{
-\ottdefnerasedXXtm{}}
+\newcommand{\ottdefnsJroleing}{
+\ottdefnroleing{}}
 
 % defns JChk
 %% defn RhoCheck
@@ -896,12 +915,12 @@
 
 
 \newcommand{\ottdruleParXXPattern}[1]{\ottdrule[#1]{%
-\ottpremise{\ottmv{F} \,  \sim  \ottnt{a_{{\mathrm{0}}}}  :  \ottnt{A}  /  \ottnt{R'}  \, \in \,  \Sigma_0 }%
+\ottpremise{\ottmv{F} \, \ottnt{sig\_sort} \, \in \,  \Sigma_0 }%
 \ottpremise{ \Omega  \vDash  \ottnt{a}   \Rightarrow _{ \ottnt{R} }  \ottnt{a'} }%
 \ottpremise{ \Omega  \vDash  \ottnt{b_{{\mathrm{1}}}}   \Rightarrow _{ \ottnt{R_{{\mathrm{0}}}} }  \ottnt{b'_{{\mathrm{1}}}} }%
 \ottpremise{ \Omega  \vDash  \ottnt{b_{{\mathrm{2}}}}   \Rightarrow _{ \ottnt{R_{{\mathrm{0}}}} }  \ottnt{b'_{{\mathrm{2}}}} }%
 }{
- \Omega  \vDash  \ottkw{ifPath} \, \ottnt{R} \, \ottmv{F} \, \ottnt{a} \, \ottnt{b_{{\mathrm{1}}}} \, \ottnt{b_{{\mathrm{2}}}}   \Rightarrow _{ \ottnt{R_{{\mathrm{0}}}} }  \ottkw{ifPath} \, \ottnt{R} \, \ottmv{F} \, \ottnt{a'} \, \ottnt{b'_{{\mathrm{1}}}} \, \ottnt{b'_{{\mathrm{2}}}} }{%
+ \Omega  \vDash   case_{ \ottnt{R} }\  \ottnt{a} \ of \  \ottmv{F}  \rightarrow  \ottnt{b_{{\mathrm{1}}}}  \| \_ \rightarrow  \ottnt{b_{{\mathrm{2}}}}    \Rightarrow _{ \ottnt{R_{{\mathrm{0}}}} }   case_{ \ottnt{R} }\  \ottnt{a'} \ of \  \ottmv{F}  \rightarrow  \ottnt{b'_{{\mathrm{1}}}}  \| \_ \rightarrow  \ottnt{b'_{{\mathrm{2}}}}  }{%
 {\ottdrulename{Par\_Pattern}}{}%
 }}
 
@@ -912,20 +931,20 @@
 \ottpremise{ \Omega  \vDash  \ottnt{b_{{\mathrm{2}}}}   \Rightarrow _{ \ottnt{R_{{\mathrm{0}}}} }  \ottnt{b'_{{\mathrm{2}}}} }%
 \ottpremise{ \mathsf{Path}_{ \ottnt{R} }\  \ottnt{a'}  =  \ottmv{F} }%
 }{
- \Omega  \vDash  \ottkw{ifPath} \, \ottnt{R} \, \ottmv{F} \, \ottnt{a} \, \ottnt{b_{{\mathrm{1}}}} \, \ottnt{b_{{\mathrm{2}}}}   \Rightarrow _{ \ottnt{R_{{\mathrm{0}}}} }  \ottnt{b'_{{\mathrm{1}}}} }{%
+ \Omega  \vDash   case_{ \ottnt{R} }\  \ottnt{a} \ of \  \ottmv{F}  \rightarrow  \ottnt{b_{{\mathrm{1}}}}  \| \_ \rightarrow  \ottnt{b_{{\mathrm{2}}}}    \Rightarrow _{ \ottnt{R_{{\mathrm{0}}}} }  \ottnt{b'_{{\mathrm{1}}}} }{%
 {\ottdrulename{Par\_PatternTrue}}{}%
 }}
 
 
 \newcommand{\ottdruleParXXPatternFalse}[1]{\ottdrule[#1]{%
-\ottpremise{\ottmv{F} \,  \sim  \ottnt{a_{{\mathrm{0}}}}  :  \ottnt{A}  /  \ottnt{R'}  \, \in \,  \Sigma_0 }%
+\ottpremise{\ottmv{F} \, \ottnt{sig\_sort} \, \in \,  \Sigma_0 }%
 \ottpremise{ \Omega  \vDash  \ottnt{a}   \Rightarrow _{ \ottnt{R} }  \ottnt{a'} }%
 \ottpremise{ \Omega  \vDash  \ottnt{b_{{\mathrm{1}}}}   \Rightarrow _{ \ottnt{R_{{\mathrm{0}}}} }  \ottnt{b'_{{\mathrm{1}}}} }%
 \ottpremise{ \Omega  \vDash  \ottnt{b_{{\mathrm{2}}}}   \Rightarrow _{ \ottnt{R_{{\mathrm{0}}}} }  \ottnt{b'_{{\mathrm{2}}}} }%
 \ottpremise{ \mathsf{Value}_{ \ottnt{R} }\  \ottnt{a'} }%
 \ottpremise{ \neg  \ottsym{(}   \mathsf{Path}_{ \ottnt{R} }\  \ottnt{a'}  =  \ottmv{F}   \ottsym{)} }%
 }{
- \Omega  \vDash  \ottkw{ifPath} \, \ottnt{R} \, \ottmv{F} \, \ottnt{a} \, \ottnt{b_{{\mathrm{1}}}} \, \ottnt{b_{{\mathrm{2}}}}   \Rightarrow _{ \ottnt{R_{{\mathrm{0}}}} }  \ottnt{b'_{{\mathrm{2}}}} }{%
+ \Omega  \vDash   case_{ \ottnt{R} }\  \ottnt{a} \ of \  \ottmv{F}  \rightarrow  \ottnt{b_{{\mathrm{1}}}}  \| \_ \rightarrow  \ottnt{b_{{\mathrm{2}}}}    \Rightarrow _{ \ottnt{R_{{\mathrm{0}}}} }  \ottnt{b'_{{\mathrm{2}}}} }{%
 {\ottdrulename{Par\_PatternFalse}}{}%
 }}
 
@@ -1012,17 +1031,17 @@
 \newcommand{\ottdruleBetaXXPatternTrue}[1]{\ottdrule[#1]{%
 \ottpremise{ \mathsf{Path}_{ \ottnt{R} }\  \ottnt{a}  =  \ottmv{F} }%
 }{
-\vDash  \ottkw{ifPath} \, \ottnt{R} \, \ottmv{F} \, \ottnt{a} \, \ottnt{b_{{\mathrm{1}}}} \, \ottnt{b_{{\mathrm{2}}}}  \ottsym{>}  \ottnt{b_{{\mathrm{1}}}}  \ottsym{/}  \ottnt{R_{{\mathrm{0}}}}}{%
+\vDash   case_{ \ottnt{R} }\  \ottnt{a} \ of \  \ottmv{F}  \rightarrow  \ottnt{b_{{\mathrm{1}}}}  \| \_ \rightarrow  \ottnt{b_{{\mathrm{2}}}}   \ottsym{>}  \ottnt{b_{{\mathrm{1}}}}  \ottsym{/}  \ottnt{R_{{\mathrm{0}}}}}{%
 {\ottdrulename{Beta\_PatternTrue}}{}%
 }}
 
 
 \newcommand{\ottdruleBetaXXPatternFalse}[1]{\ottdrule[#1]{%
-\ottpremise{\ottmv{F} \,  \sim  \ottnt{a_{{\mathrm{0}}}}  :  \ottnt{A}  /  \ottnt{R'}  \, \in \,  \Sigma_0 }%
+\ottpremise{\ottmv{F} \, \ottnt{sig\_sort} \, \in \,  \Sigma_0 }%
 \ottpremise{ \mathsf{Value}_{ \ottnt{R} }\  \ottnt{a} }%
 \ottpremise{ \neg  \ottsym{(}   \mathsf{Path}_{ \ottnt{R} }\  \ottnt{a}  =  \ottmv{F}   \ottsym{)} }%
 }{
-\vDash  \ottkw{ifPath} \, \ottnt{R} \, \ottmv{F} \, \ottnt{a} \, \ottnt{b_{{\mathrm{1}}}} \, \ottnt{b_{{\mathrm{2}}}}  \ottsym{>}  \ottnt{b_{{\mathrm{2}}}}  \ottsym{/}  \ottnt{R_{{\mathrm{0}}}}}{%
+\vDash   case_{ \ottnt{R} }\  \ottnt{a} \ of \  \ottmv{F}  \rightarrow  \ottnt{b_{{\mathrm{1}}}}  \| \_ \rightarrow  \ottnt{b_{{\mathrm{2}}}}   \ottsym{>}  \ottnt{b_{{\mathrm{2}}}}  \ottsym{/}  \ottnt{R_{{\mathrm{0}}}}}{%
 {\ottdrulename{Beta\_PatternFalse}}{}%
 }}
 
@@ -1062,7 +1081,7 @@
 \newcommand{\ottdruleEXXPattern}[1]{\ottdrule[#1]{%
 \ottpremise{\vDash  \ottnt{a}  \leadsto  \ottnt{a'}  \ottsym{/}  \ottnt{R}}%
 }{
-\vDash  \ottkw{ifPath} \, \ottnt{R} \, \ottmv{F} \, \ottnt{a} \, \ottnt{b_{{\mathrm{1}}}} \, \ottnt{b_{{\mathrm{2}}}}  \leadsto  \ottkw{ifPath} \, \ottnt{R} \, \ottmv{F} \, \ottnt{a'} \, \ottnt{b_{{\mathrm{1}}}} \, \ottnt{b_{{\mathrm{2}}}}  \ottsym{/}  \ottnt{R_{{\mathrm{0}}}}}{%
+\vDash   case_{ \ottnt{R} }\  \ottnt{a} \ of \  \ottmv{F}  \rightarrow  \ottnt{b_{{\mathrm{1}}}}  \| \_ \rightarrow  \ottnt{b_{{\mathrm{2}}}}   \leadsto   case_{ \ottnt{R} }\  \ottnt{a'} \ of \  \ottmv{F}  \rightarrow  \ottnt{b_{{\mathrm{1}}}}  \| \_ \rightarrow  \ottnt{b_{{\mathrm{2}}}}   \ottsym{/}  \ottnt{R_{{\mathrm{0}}}}}{%
 {\ottdrulename{E\_Pattern}}{}%
 }}
 
@@ -1223,6 +1242,16 @@
 }}
 
 
+\newcommand{\ottdruleEXXConst}[1]{\ottdrule[#1]{%
+\ottpremise{\vDash  \Gamma}%
+\ottpremise{\ottmv{F} \, \ottsym{:}  \ottnt{A} \, \in \,  \Sigma_0 }%
+\ottpremise{\varnothing  \vDash  \ottnt{A}  \ottsym{:}   \star   \ottsym{/}  \ottnt{R_{{\mathrm{0}}}}}%
+}{
+\Gamma  \vDash  \ottmv{F}  \ottsym{:}  \ottnt{A}  \ottsym{/}  \ottnt{R_{{\mathrm{1}}}}}{%
+{\ottdrulename{E\_Const}}{}%
+}}
+
+
 \newcommand{\ottdruleEXXFam}[1]{\ottdrule[#1]{%
 \ottpremise{\vDash  \Gamma}%
 \ottpremise{\ottmv{F} \,  \sim  \ottnt{a}  :  \ottnt{A}  /  \ottnt{R}  \, \in \,  \Sigma_0 }%
@@ -1234,12 +1263,12 @@
 
 
 \newcommand{\ottdruleEXXPat}[1]{\ottdrule[#1]{%
-\ottpremise{\ottmv{F} \,  \sim  \ottnt{a_{{\mathrm{0}}}}  :  \ottnt{A_{{\mathrm{0}}}}  /  \ottnt{R'}  \, \in \,  \Sigma_0 }%
+\ottpremise{\ottmv{F} \, \ottnt{sig\_sort} \, \in \,  \Sigma_0 }%
 \ottpremise{\Gamma  \vDash  \ottnt{a}  \ottsym{:}  \ottnt{A}  \ottsym{/}  \ottnt{R}}%
 \ottpremise{\Gamma  \vDash  \ottnt{b_{{\mathrm{1}}}}  \ottsym{:}  \ottnt{B}  \ottsym{/}  \ottnt{R_{{\mathrm{0}}}}}%
 \ottpremise{\Gamma  \vDash  \ottnt{b_{{\mathrm{2}}}}  \ottsym{:}  \ottnt{B}  \ottsym{/}  \ottnt{R_{{\mathrm{0}}}}}%
 }{
-\Gamma  \vDash  \ottkw{ifPath} \, \ottnt{R} \, \ottmv{F} \, \ottnt{a} \, \ottnt{b_{{\mathrm{1}}}} \, \ottnt{b_{{\mathrm{2}}}}  \ottsym{:}  \ottnt{B}  \ottsym{/}  \ottnt{R_{{\mathrm{0}}}}}{%
+\Gamma  \vDash   case_{ \ottnt{R} }\  \ottnt{a} \ of \  \ottmv{F}  \rightarrow  \ottnt{b_{{\mathrm{1}}}}  \| \_ \rightarrow  \ottnt{b_{{\mathrm{2}}}}   \ottsym{:}  \ottnt{B}  \ottsym{/}  \ottnt{R_{{\mathrm{0}}}}}{%
 {\ottdrulename{E\_Pat}}{}%
 }}
 
@@ -1255,6 +1284,7 @@
 \ottusedrule{\ottdruleEXXCPi{}}
 \ottusedrule{\ottdruleEXXCAbs{}}
 \ottusedrule{\ottdruleEXXCApp{}}
+\ottusedrule{\ottdruleEXXConst{}}
 \ottusedrule{\ottdruleEXXFam{}}
 \ottusedrule{\ottdruleEXXPat{}}
 \end{ottdefnblock}}
@@ -1473,12 +1503,12 @@
 
 
 \newcommand{\ottdruleEXXPatCong}[1]{\ottdrule[#1]{%
-\ottpremise{\ottmv{F} \,  \sim  \ottnt{a_{{\mathrm{0}}}}  :  \ottnt{A_{{\mathrm{0}}}}  /  \ottnt{R'}  \, \in \,  \Sigma_0 }%
+\ottpremise{\ottmv{F} \, \ottnt{sig\_sort} \, \in \,  \Sigma_0 }%
 \ottpremise{\Gamma  \ottsym{;}  \Delta  \vDash  \ottnt{a}  \equiv  \ottnt{a'}  \ottsym{:}  \ottnt{A}  \ottsym{/}  \ottnt{R}}%
 \ottpremise{\Gamma  \ottsym{;}  \Delta  \vDash  \ottnt{b_{{\mathrm{1}}}}  \equiv  \ottnt{b'_{{\mathrm{1}}}}  \ottsym{:}  \ottnt{B}  \ottsym{/}  \ottnt{R_{{\mathrm{0}}}}}%
 \ottpremise{\Gamma  \ottsym{;}  \Delta  \vDash  \ottnt{b_{{\mathrm{2}}}}  \equiv  \ottnt{b'_{{\mathrm{2}}}}  \ottsym{:}  \ottnt{B}  \ottsym{/}  \ottnt{R_{{\mathrm{0}}}}}%
 }{
-\Gamma  \ottsym{;}  \Delta  \vDash  \ottkw{ifPath} \, \ottnt{R} \, \ottmv{F} \, \ottnt{a} \, \ottnt{b_{{\mathrm{1}}}} \, \ottnt{b_{{\mathrm{2}}}}  \equiv  \ottkw{ifPath} \, \ottnt{R} \, \ottmv{F} \, \ottnt{a'} \, \ottnt{b'_{{\mathrm{1}}}} \, \ottnt{b'_{{\mathrm{2}}}}  \ottsym{:}  \ottnt{B}  \ottsym{/}  \ottnt{R_{{\mathrm{0}}}}}{%
+\Gamma  \ottsym{;}  \Delta  \vDash   case_{ \ottnt{R} }\  \ottnt{a} \ of \  \ottmv{F}  \rightarrow  \ottnt{b_{{\mathrm{1}}}}  \| \_ \rightarrow  \ottnt{b_{{\mathrm{2}}}}   \equiv   case_{ \ottnt{R} }\  \ottnt{a'} \ of \  \ottmv{F}  \rightarrow  \ottnt{b'_{{\mathrm{1}}}}  \| \_ \rightarrow  \ottnt{b'_{{\mathrm{2}}}}   \ottsym{:}  \ottnt{B}  \ottsym{/}  \ottnt{R_{{\mathrm{0}}}}}{%
 {\ottdrulename{E\_PatCong}}{}%
 }}
 
@@ -1613,6 +1643,16 @@
 }}
 
 
+\newcommand{\ottdruleSigXXConsConst}[1]{\ottdrule[#1]{%
+\ottpremise{\vDash  \Sigma}%
+\ottpremise{\varnothing  \vDash  \ottnt{A}  \ottsym{:}   \star   \ottsym{/}  \ottnt{R'}}%
+\ottpremise{\ottmv{F} \, \not\in \, \mathsf{dom} \, \Sigma}%
+}{
+\vDash   \Sigma  \cup \{ \ottmv{F} \ottsym{:}  \ottnt{A} \} }{%
+{\ottdrulename{Sig\_ConsConst}}{}%
+}}
+
+
 \newcommand{\ottdruleSigXXConsAx}[1]{\ottdrule[#1]{%
 \ottpremise{\vDash  \Sigma}%
 \ottpremise{\varnothing  \vDash  \ottnt{a}  \ottsym{:}  \ottnt{A}  \ottsym{/}  \ottnt{R'}}%
@@ -1624,6 +1664,7 @@
 
 \newcommand{\ottdefnSig}[1]{\begin{ottdefnblock}[#1]{$\vDash  \Sigma$}{\ottcom{signature wellformedness}}
 \ottusedrule{\ottdruleSigXXEmpty{}}
+\ottusedrule{\ottdruleSigXXConsConst{}}
 \ottusedrule{\ottdruleSigXXConsAx{}}
 \end{ottdefnblock}}
 
@@ -2200,7 +2241,7 @@
 \ottdefnsJValue
 \ottdefnsJValueType
 \ottdefnsJconsistent
-\ottdefnsJerased
+\ottdefnsJroleing
 \ottdefnsJChk
 \ottdefnsJpar
 \ottdefnsJbeta
@@ -2218,7 +2259,7 @@
 \ottall
 
 \begin{verbatim}
-Definition rules:        162 good    0 bad
-Definition rule clauses: 517 good    0 bad
+Definition rules:        166 good    0 bad
+Definition rule clauses: 529 good    0 bad
 \end{verbatim}
 \end{document}

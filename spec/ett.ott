@@ -84,7 +84,7 @@ tm, a, b, v, w, A, B :: 'a_' ::= {{ com types and kinds }}
    | a [ g ]            ::   :: CApp
    | []                 ::   :: Bullet
    | ifPath R a' a b1 b2   ::   :: Pattern
-	  {{ tex [[case]]_{[[R]]}\ [[a]]\ [[of]]\ [[a']] [[=>]] [[b1]] \| \_ [[=>]] [[b2]] }} 
+	  {{ tex case_{[[R]]}\ [[a]]\ of \ [[a']] \rightarrow [[b1]] \| \_ \rightarrow [[b2]] }} 
    %% currently unused but ready for extension
    | K                ::   :: DataCon
    | match a with brs ::   :: Case
@@ -263,7 +263,7 @@ role_context, W {{ tex \Omega }} :: 'rctx_' ::= {{ com role_contexts }}
 
 
 sig_sort :: '' ::= {{ com signature classifier }}
-   | : A / R         ::    :: Cs
+   | : A         ::    :: Cs
    | ~ a : A / R     ::    :: Ax
      {{ tex \sim [[a]] : [[A]] / [[R]] }}
    
@@ -511,7 +511,7 @@ end.
 
 Definition erase_csort s r :=
  match s with
- | Cs a R  => Cs (erase_tm a r) R
+ | Cs a  => Cs (erase_tm a r)
  | Ax a A R => Ax (erase_tm a r) (erase_tm A r) R
 end.
 
@@ -587,6 +587,10 @@ Path F a R  ::  :: Path :: 'Path_'
 {{ tex \mathsf{Path}_{[[R]]}\ [[a]] = [[F]] }}
 by
 
+ F : A in toplevel
+---------------------- :: AbsConst
+ Path F F R
+
 F ~ a : A/R1 in toplevel
 not (R1 <= R)
 -------------------------- :: Const
@@ -657,10 +661,9 @@ ValueType R all rho x : A / R1 -> B
 -------------------- :: CPi
 ValueType R all c : phi. B
 
-Path F A R
-Value R A 
+Path F a R 
 ------------------------ :: Path
-ValueType R A
+ValueType R a
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -699,67 +702,72 @@ consistent a b R
 
 
 defns
-  Jerased :: '' ::=
+  Jroleing :: '' ::=
 
 defn
-  W |- erased_tm a R ::  :: erased_tm :: 'erased_a_'
+  W |- a : R ::  :: roleing :: 'role_a_'
   {{ tex [[W]] \vDash [[a]] : [[R]] }}
 by
 rctx_uniq W
 ------------------- :: Bullet
-W |- erased_tm [] R
+W |- [] : R
 
 rctx_uniq W
 ---------------------  :: Star
-W |- erased_tm TYPE R
+W |- TYPE : R
 
 rctx_uniq W
 x : R in W
 R <= R1
 ------------------------------- :: Var
-W |- erased_tm x R1
+W |- x : R1
 
-W , x : R1 |- erased_tm a R
+W , x : R1 |-  a : R
 ------------------------------------ :: Abs
-W |- erased_tm (\rho R1 x.a) R
+W |- (\rho R1 x.a) : R
 
 %% Note, this is not quite right, but it is ok.
-W |- erased_tm a R
-W |- erased_tm b (param R1 R)
+W |- a : R
+W |- b : (param R1 R)
 ----------------------------- :: App
-W |- erased_tm (a rho R1 b) R
+W |- (a rho R1 b) : R
 
-W |- erased_tm A R
-W , x : R1 |- erased_tm B R
+W |- A : R
+W , x : R1 |- B : R
 ---------------------------------------- :: Pi
-W |- erased_tm (all rho x:A / R1 -> B) R
+W |- (all rho x:A / R1 -> B) : R
 
-W |- erased_tm a R1
-W |- erased_tm b R1
-W |- erased_tm A R0
-W |- erased_tm B R
+W |- a : R1
+W |- b : R1
+W |- A : R0
+W |- B : R
 ----------------------------------------------- :: CPi
-W |- erased_tm (all c:a ~ b : A / R1. B) R
+W |- (all c:a ~ b : A / R1. B) : R
 
-W |- erased_tm b R
+W |- b : R
 ---------------------------------- :: CAbs
-W |- erased_tm (/\c. b) R
+W |- (/\c. b) : R
 
-W |- erased_tm a R
+W |- a : R
 ------------------------- :: CApp
-W |- erased_tm (a [o]) R
+W |- (a [o]) : R
+
+rctx_uniq W
+F : A in toplevel
+--------------------------- :: Const
+W |- F : R
 
 rctx_uniq W
 F ~ a : A / R in toplevel
 --------------------------- :: Fam
-W |- erased_tm F R1
+W |- F : R1
 
-F ~ a0 : A / R' in toplevel
-W |- erased_tm a R
-W |- erased_tm b1 R1
-W |- erased_tm b2 R1
+F sig_sort in toplevel
+W |- a : R
+W |- b1 : R1
+W |- b2 : R1
 --------------------------------------- :: Pattern
-W |- erased_tm (ifPath R F a b1 b2) R1
+W |- (ifPath R F a b1 b2) : R1
 
 
 defns
@@ -789,7 +797,7 @@ defn
 {{ tex [[W]] \vDash [[a]] [[=>]]_{[[R]]} [[b]] }}
 {{ com parallel reduction (implicit language) }}
 by
-W |- erased_tm a R
+W |- a : R
 ------------------------- :: Refl
 W |- a => a  / R
 
@@ -839,7 +847,7 @@ rctx_uniq W
 -------------------------------- :: Axiom
 W |- F => a / R
 
- F ~ a0 : A / R' in toplevel
+ F sig_sort in toplevel
  W |- a => a' / R
  W |- b1 => b1' / R0
  W |- b2 => b2' / R0
@@ -853,7 +861,7 @@ W |- F => a / R
 ---------------------------------------------- :: PatternTrue
  W |- ifPath R F a b1 b2 => b1' / R0
 
- F ~ a0 : A / R' in toplevel
+ F sig_sort in toplevel
  W |- a => a' / R
  W |- b1 => b1' / R0
  W |- b2 => b2' / R0
@@ -918,7 +926,7 @@ Path F a R
 --------------------------------- :: PatternTrue
 |= ifPath R F a b1 b2 > b1 / R0
 
-F ~ a0 : A / R' in toplevel
+F sig_sort in toplevel
 Value R a
 not (Path F a R)
 ---------------------------------- :: PatternFalse
@@ -1046,12 +1054,18 @@ G ; dom G |= a == b : A / R
 G |= a1 [ o ] : B1 { o / c } / R'
 
 |= G
+F : A in toplevel
+empty |= A : TYPE / R0 
+------------------------- :: Const
+G |= F : A / R1
+
+|= G
 F ~ a : A / R in toplevel
- empty |= A : TYPE / R0 
+empty |= A : TYPE / R0 
 ------------------------- :: Fam
 G |= F : A / R1
 
-F ~ a0 : A0 / R' in toplevel
+F sig_sort in toplevel
 G |= a : A / R
 G |= b1 : B / R0
 G |= b2 : B / R0
@@ -1200,7 +1214,7 @@ G ; D |= a ~ b : A/R1 == a' ~ b' : A'/R1
 --------------------------------------------- :: IsoSnd
 G ; D |= A == A' : TYPE/Rep
 
-F ~ a0 : A0 / R' in toplevel
+F sig_sort in toplevel
 G ; D |= a == a' : A / R
 G ; D |= b1 == b1' : B / R0
 G ; D |= b2 == b2' : B / R0
@@ -1215,7 +1229,7 @@ G ; D |= ifPath R F a b1 b2 == ifPath R F a' b1' b2' : B / R0
  G |= b' : A / param R1 R'
  G ; D |= a + R1 b == a' + R1 b' : B { b / x } / R'
  G ; dom G |= B {b/x} == B {b'/x} : TYPE / R0
- --------------------------------------------------- :: LeftRel
+--------------------------------------------------- :: LeftRel
  G ; D |= a == a' : all + x: A / R1 -> B / R'
 
  Path F a R'
@@ -1226,7 +1240,7 @@ G ; D |= ifPath R F a b1 b2 == ifPath R F a' b1' b2' : B / R0
  G |= b' : A/param R1 R'
  G ; D |= a - R1 [] == a' - R1 [] : B { b / x }/R'
  G ; dom G |= B {b/x} == B {b'/x} : TYPE/R0
- ------------------------------------------------- :: LeftIrrel
+------------------------------------------------- :: LeftIrrel
  G ; D |= a == a' : all -x: A/R1 -> B/R'
 
 
@@ -1238,7 +1252,7 @@ G ; D |= ifPath R F a b1 b2 == ifPath R F a' b1' b2' : B / R0
  G |= b' : A/param R1 R'
  G ; D |= a + R1 b == a' + R1 b' : B { b / x }/R'
  G ; dom G |= B {b/x} == B {b'/x} : TYPE/R0
- ------------------------------------------------ :: Right
+------------------------------------------------ :: Right
  G ; D |= b == b' : A/param R1 R' 
 
 
@@ -1248,7 +1262,7 @@ G ; D |= ifPath R F a b1 b2 == ifPath R F a' b1' b2' : B / R0
  G |= a' : all c:(a1 ~ a2:A/R1). B/R'
  G ; dom G |= a1 == a2 : A/R1
  G ; D |= a [o] == a' [o] : B {o/c}/R'
- --------------------------------------------- :: CLeft
+--------------------------------------------- :: CLeft
  G ; D |= a == a' : all c:(a1 ~ a2:A/R1). B/R'
 
 defn
@@ -1282,6 +1296,12 @@ by
 
 ------------ :: Empty
 |= emptyS
+
+|= S
+empty |= A : TYPE/R'
+F notin dom S
+---------------- :: ConsConst
+|= S, F : A
 
 |= S
 empty |= a : A/R'
