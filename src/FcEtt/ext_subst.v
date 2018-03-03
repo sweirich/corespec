@@ -85,6 +85,20 @@ Proof.
   show_fresh.
 Qed.
 
+Lemma tm_subst_co_fresh_2 :
+forall G A R a0 c s,
+  Typing G A a_Star R -> Ctx ((c ~ s) ++ G) -> co_subst_co_tm a0 c A = A.
+Proof.
+  intros G A R a0 x s H H0.
+  destruct s.
+  - apply co_subst_co_tm_fresh_eq.
+    inversion H0; subst; clear H0.
+    show_fresh.
+  - apply co_subst_co_tm_fresh_eq.
+    inversion H0; subst; clear H0.
+    show_fresh.
+Qed.
+
 Lemma co_subst_fresh :
 forall G phi  a0 x s,
   PropWff G phi -> Ctx ((x ~ s) ++ G) -> tm_subst_tm_constraint a0 x phi = phi.
@@ -273,13 +287,15 @@ Proof. eapply typing_wff_iso_defeq_mutual;
       eauto.
   - (* conversion *)
     eapply E_Conv; try eapply DefEq_weaken_available; eauto 3. 
-  -
-    have h0: Typing nil a A R by eauto using toplevel_closed.
-    eapply E_Fam with (a:= tm_subst_tm_tm a0 x a); eauto.
+  - have h0: Typing nil A a_Star Rep by eauto using toplevel_closed.
+    eapply E_Const. eauto 2.
+    erewrite (tm_subst_fresh_2 _ h0); auto. eauto 2.
+    erewrite (tm_subst_fresh_2 _ h0); eauto 2.
+  - have h0: Typing nil a A R by eauto using toplevel_closed.
+    eapply E_Fam with (a:= tm_subst_tm_tm a0 x a); eauto 2.
     erewrite (tm_subst_fresh_2 _ h0); auto.
-    erewrite (tm_subst_fresh_1 _ h0); auto. eauto. eauto. eauto.
-    erewrite (tm_subst_fresh_1 _ h0); eauto.
-(*  - eapply E_TyCast; try eapply DefEq_weaken_available; eauto. *)
+    erewrite (tm_subst_fresh_1 _ h0); auto. eauto 1. eauto 2. eauto 2.
+    erewrite (tm_subst_fresh_1 _ h0); eauto 2.
   - destruct (c == x).
     + subst.
       apply binds_mid_eq in b0; auto; try done.
@@ -298,7 +314,7 @@ Proof. eapply typing_wff_iso_defeq_mutual;
          repeat rewrite tm_subst_tm_tm_fresh_eq; auto.
          all: show_fresh.
   - eapply E_Beta; eauto.
-    eapply Beta_tm_subst; eauto with lc.
+    eapply Beta_tm_subst; eauto 2 with lc.
   - eapply E_EqConv; eauto 2.
     eapply DefEq_weaken_available; eauto.
   - eapply E_LeftRel with (b := tm_subst_tm_tm a0 x b)
@@ -446,7 +462,10 @@ Proof.
       have: Typing G0 (a_Var_f x) A R; auto => h1.
       move: (Typing_context_fv h1) => ?. split_hyp. auto.
   - eapply E_Conv; eauto 3.
-  -  have h0: Typing nil a A R by eapply toplevel_closed; eauto.
+  - have h0: Typing nil A a_Star Rep by eauto using toplevel_closed.
+    eapply E_Const. eauto 2. erewrite tm_subst_co_fresh_2; eauto 2.
+    erewrite tm_subst_co_fresh_2; eauto 2.
+  - have h0: Typing nil a A R by eapply toplevel_closed; eauto.
     erewrite (tm_subst_co_fresh_1 _ h0); eauto.
   - eapply E_Pat; try eapply DefEq_weaken_available; eauto.
   - eapply (E_Wff _ _ _ (co_subst_co_tm g_Triv c A)); eauto 3.

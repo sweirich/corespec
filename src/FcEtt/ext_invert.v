@@ -81,17 +81,26 @@ Qed.
 
 Lemma invert_a_Fam : forall G F A R,
     Typing G (a_Fam F) A R ->
-    exists a B R', DefEq G (dom G) A B a_Star Rep /\
-           binds F (Ax a B R') toplevel /\ Typing nil B a_Star Rep.
+    (exists B, DefEq G (dom G) A B a_Star Rep /\
+           binds F (Cs B) toplevel /\ Typing nil B a_Star Rep) \/
+    (exists a B R', DefEq G (dom G) A B a_Star Rep /\
+           binds F (Ax a B R') toplevel /\ Typing nil B a_Star Rep).
 Proof.
   intros G F A R H. dependent induction H.
-  - destruct (IHTyping F) as (a & B1 & R' & h0 & h1 & h3); try done.
-    exists a, B1, R' . repeat split; eauto.
-  - destruct (IHTyping1 F) as (a & B1 & R' & h0 & h1 & h3); try done.
-    exists a, B1, R' . repeat split; eauto 2.
+  - destruct (IHTyping F) as [(B & h1 & h2 & h3) | (a & B1 & R' & h0 & h1 & h3)]; try done.
+    left. exists B. repeat split; eauto.
+    right. exists a, B1, R' . repeat split; eauto.
+  - destruct (IHTyping1 F) as [(B1 & h1 & h2 & h3) |(a & B1 & R' & h0 & h1 & h3)]; try done.
+    left. exists B1. repeat split; eauto 2.
     eapply E_Trans with (a1 := A).
     eapply E_Sym. auto. auto.
-  - exists a, A, R.
+    right. exists a, B1, R' . repeat split; eauto 2.
+    eapply E_Trans with (a1 := A).
+    eapply E_Sym. auto. auto.
+  - left. exists A. repeat split; eauto 2. eapply E_Refl; eauto 1.
+    eapply Typing_weakening with (F:=nil)(E:=G)(G:=nil) in H1.
+    simpl_env in H1. eauto. auto. simpl_env. auto.
+  - right. exists a, A, R.
     repeat split; eauto 2.
     eapply E_SubRole with (R2 := Rep) in H1.
     eapply E_Refl.
@@ -203,6 +212,8 @@ Proof.
     rewrite (co_subst_co_tm_intro c); auto.
     un_subst_tm.
     eapply Typing_co_subst; eauto.
+  - eapply Typing_weakening with (F:=nil)(G := nil) in H1.
+    simpl_env in H1. eauto. auto. simpl_env. auto.
   - eapply Typing_weakening with (F:=nil)(G := nil) in H1.
     simpl_env in H1. eauto. auto. simpl_env. auto.
 Qed.
@@ -415,17 +426,16 @@ Qed.
 
 Lemma invert_a_Pattern : forall G R F a b1 b2 B R',
       Typing G (a_Pattern R (a_Fam F) a b1 b2) B R' ->
-      exists A B0 a0 A0 R0, binds F (Ax a0 A0 R0) toplevel /\
-             Typing G a A R /\ Typing G b1 B0 R' /\ Typing G b2 B0 R' /\
-                               DefEq G (dom G) B B0 a_Star Rep.
+      exists A s B0, binds F s toplevel /\ Typing G a A R /\
+         Typing G b1 B0 R' /\ Typing G b2 B0 R' /\ DefEq G (dom G) B B0 a_Star Rep.
 Proof. intros. dependent induction H.
         - destruct (IHTyping R F a b1 b2 ltac:(auto)) as
-          [A0 [B0 [a1 [A1 [R' [P1 [P2 [P3 [P4 P5]]]]]]]]].
-          exists A0, B0, a1, A1, R'. repeat split; eauto.
+          [A0 [s [B0 [P1 [P2 [P3 [P4 P5]]]]]]].
+          exists A0, s, B0. repeat split; eauto.
         - destruct (IHTyping1 R F a b1 b2 ltac:(auto)) as
-          [A0 [B0 [a1 [A1 [R' [P1 [P2 [P3 [P4 P5]]]]]]]]].
-          exists A0, B0, a1, A1, R'. repeat split; eauto.
-        - exists A, B, a0, A0, R'. repeat split. auto. auto.
+          [A0 [s [B0 [P1 [P2 [P3 [P4 P5]]]]]]].
+          exists A0, s, B0. repeat split; eauto.
+        - exists A, sig_sort5, B. repeat split. auto. auto.
           auto. auto. eapply E_Refl. eapply Typing_regularity.
           eapply E_SubRole with (R1 := R0); eauto 1.
 Qed.

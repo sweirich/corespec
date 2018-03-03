@@ -22,7 +22,10 @@ Qed.
 
 Lemma uniq_Path : forall F F' a R, Path F a R -> Path F' a R -> F = F'.
 Proof. intros. generalize dependent F'. induction H; intros; auto.
-       inversion H1; subst. auto. inversion H1; subst. eauto.
+       inversion H0; auto.
+       inversion H1; subst. assert (Ax a A R1 = Cs A0).
+       eapply binds_unique; eauto using uniq_toplevel. inversion H2.
+       auto. inversion H1; subst. eauto.
        inversion H0; subst. eauto. 
 Qed.
 
@@ -139,8 +142,11 @@ Hint Resolve Typing_lc1 Typing_lc2 Iso_lc1 Iso_lc2 DefEq_lc1 DefEq_lc2 DefEq_lc3
 
 Lemma Toplevel_lc : forall c s, binds c s toplevel -> lc_sig_sort s.
 Proof. induction Sig_toplevel.
-       intros. inversion H. 
-       intros. destruct H1. inversion H1. subst.
-       simpl in H0. eauto. eauto with lc.
-       eauto.
+       - intros. inversion H.
+       - intros. destruct H1. inversion H1. subst.
+         simpl in H0. eauto. eauto with lc.
+         eauto.
+       - intros. destruct H1. inversion H1. subst.
+         simpl in H0. eauto. eauto with lc.
+         eauto.
 Qed.

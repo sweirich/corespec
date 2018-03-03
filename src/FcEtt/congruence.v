@@ -201,6 +201,12 @@ Proof.
     eauto.
     eapply (Typing_lc H2).
   - intros. simpl. subst G.
+    eapply E_Refl.
+    eapply E_Const.
+    eapply (fifth tm_substitution_mutual); eauto 2.
+    erewrite tm_subst_fresh_2; auto; eauto 2.
+    erewrite tm_subst_fresh_2; eauto 2.
+  - intros. simpl. subst G.
     move: (toplevel_closed b) => h0.
     move: (Typing_regularity h0) => h1.
     have CNil: Ctx [(x, Tm A R)]. econstructor; auto. eauto.
@@ -240,5 +246,5 @@ Proof.
       eapply E_Conv; eauto 2.
       eapply E_Sub; eauto 2.
     }
-    eapply trans_iso. eapply H. auto.
+    eapply trans_iso. eapply H. auto. Unshelve. all: exact Rep.
 Qed.

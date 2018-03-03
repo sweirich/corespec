@@ -339,6 +339,7 @@ Ltac ext_induction CON :=
       pose CON :=  E_CPi        |
       pose CON :=  E_CAbs       |
       pose CON :=  E_CApp       |
+      pose CON :=  E_Const      |
       pose CON :=  E_Fam        |
       pose CON :=  E_Pat        |
       pose CON :=  E_Wff        |

@@ -17,7 +17,7 @@ Require Export FcEtt.ext_invert.
 Require Export FcEtt.ext_red_one.
 Require Export FcEtt.ext_weak.
 Require Export FcEtt.ext_subst.
-Require Import FcEtt.ett_erased.
+Require Import FcEtt.ett_roleing.
 Require Import FcEtt.param.
 
 Set Bullet Behavior "Strict Subproofs".
@@ -77,7 +77,9 @@ Proof.
      eapply E_Sym.
      eapply E_Trans with (a1 := open_tm_wrt_co B1 g_Triv). auto.
      eapply E_CPiSnd; eauto 2.
-   - destruct (invert_a_Fam TH) as (b & B & R2 & h1 & h2 & h3).
+   - destruct (invert_a_Fam TH) as [(b & h1 & h2 & h3) | (b & B & R2 & h1 & h2 & h3)].
+     assert (Cs b = Ax a A R). eapply binds_unique; eauto using uniq_toplevel.
+     inversion H1.
      assert (Ax a A R = Ax b B R2). eapply binds_unique; eauto using uniq_toplevel.
      inversion H1. subst. clear H1.
      eapply E_Conv with (A := B).
@@ -176,7 +178,7 @@ Proof.
 Qed.
 
 Lemma reduction_in_Par : forall a a' R, reduction_in_one a a' R ->
-                                   forall W, erased_tm W a R -> Par W a a' R.
+                                   forall W, roleing W a R -> Par W a a' R.
 Proof.
   induction 1; intros.
   all: try solve [inversion H1; subst; eauto].
@@ -191,8 +193,8 @@ Proof.
       eapply Par_Beta; eauto.
     + inversion H0; subst.
       eapply Par_CBeta; eauto.
-    + inversion H0; subst.
-      eapply Par_Axiom; eauto.
+    + inversion H; subst.
+      eapply Par_Axiom; eauto. eapply rctx_uniq in H0. auto.
     + inversion H0; subst. eapply Par_PatternTrue; eauto.
     + inversion H0; subst. eapply Par_PatternFalse; eauto.
 Qed.
@@ -200,7 +202,7 @@ Qed.
 
 
 
-Lemma reduction_in_one_fv_preservation: forall x a b R W , reduction_in_one a b R -> erased_tm W a R ->
+Lemma reduction_in_one_fv_preservation: forall x a b R W , reduction_in_one a b R -> roleing W a R ->
                                         x `notin` fv_tm_tm_tm a ->
                                         x `notin` fv_tm_tm_tm b.
 Proof.
@@ -210,7 +212,7 @@ Proof.
 Qed.
 
 Lemma reduction_rhocheck : forall a a' rho x R W, 
-    reduction_in_one a a' R -> erased_tm W a R -> RhoCheck rho x a -> RhoCheck rho x a'.
+    reduction_in_one a a' R -> roleing W a R -> RhoCheck rho x a -> RhoCheck rho x a'.
 Proof.
   intros.
   inversion H1; subst.
@@ -232,7 +234,7 @@ Proof.
     apply_first_hyp; auto.
     apply H2. auto. eauto.
     eapply reduction_rhocheck; eauto.
-    eapply Typing_erased; eauto.
+    eapply Typing_roleing; eauto.
     eapply H2. auto.
     eapply H2. auto. eauto.
   - move: (Typing_regularity tpga) => h0. 
@@ -246,7 +248,7 @@ Proof.
     eapply E_Conv with (A:= (open_tm_wrt_co x3 g_Triv)); auto.
     eapply E_CApp; eauto. eauto.
   - apply invert_a_Pattern in tpga.
-    inversion tpga as [A [B0 [a0 [A0 [R1 [P1 [P2 [P3 [P4 P5]]]]]]]]].
+    inversion tpga as [A [s [B [P1 [P2 [P3 [P4 P5]]]]]]].
     eapply E_Pat. eauto. eauto. eapply E_Conv. eauto. eauto.
     eapply DefEqIso_regularity. eapply E_Sym. eauto.
     eapply E_Conv. eauto. eauto.

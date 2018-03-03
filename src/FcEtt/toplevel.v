@@ -32,10 +32,26 @@ Proof.
   have st: Sig toplevel by apply Sig_toplevel.
   induction st.
   - intros. inversion H.
+  - intros. eapply IHst. inversion H1; subst.
+    inversion H2. eauto.
   - intros.
     match goal with [ H : binds ?F _ _ |- _ ] => inversion H end.
     match goal with [ H : (_,_) = (_,_) |- _ ] => inversion H end.
     subst. eauto. eauto.
+Qed.
+
+Lemma toplevel_closed_const : forall F A, binds F (Cs A) toplevel ->
+                                 Typing nil A a_Star Rep.
+Proof.
+  have st: Sig toplevel by apply Sig_toplevel.
+  induction st.
+  - intros. inversion H.
+  - intros.
+    match goal with [ H : binds ?F _ _ |- _ ] => inversion H end.
+    match goal with [ H : (_,_) = (_,_) |- _ ] => inversion H end.
+    subst. eauto. eauto.
+  - intros. eapply IHst. inversion H1; subst.
+    inversion H2. eauto.
 Qed.
 
 
