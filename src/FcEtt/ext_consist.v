@@ -1128,8 +1128,11 @@ Proof.
     unfold joins in *.
     have p: Par (ctx_to_rctx G) a1 a2 R.
     { inversion b; subst; apply Typing_erased in t; inversion t; subst.
-      econstructor; econstructor; eauto. econstructor; econstructor; eauto.
-      econstructor; eauto.
+      all: try solve [econstructor; eauto].
+      eapply Par_Combine.
+      admit.
+      destruct rho. econstructor; eauto. 
+      admit.
       }
     exists a2; split; econstructor; eauto.
     econstructor. all: eapply Par_erased_tm_snd; eauto.
@@ -1190,6 +1193,8 @@ Proof.
     rewrite (co_subst_co_tm_intro c B2); auto.
     exists (co_subst_co_tm g_Triv c (open_tm_wrt_co E (g_Var_f c))); split;
     apply multipar_subst4; auto.
+Admitted.
+(*
   - intros. destruct (H0 H1 a b A a' b' A' R eq_refl eq_refl) as (P1 & P2 & P3).
     apply join_transitive with (b := a); eauto.
     apply join_symmetry; auto.
@@ -1200,8 +1205,7 @@ Proof.
     auto.
   - intros. destruct (H H2) as [T [P1 P2]].
     exists (a_Conv T R2 g_Triv); split; apply multipar_Cast_exists; auto.
-Qed.
-
+Admitted. *)
 
 Lemma defeq_joins: forall S D A B T R, DefEq S D A B T R -> Good S D ->
                                          joins (ctx_to_rctx S) A B R.

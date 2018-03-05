@@ -21,16 +21,22 @@ Require Export FcEtt.toplevel.
 Require Import FcEtt.ett_value.
 
 Lemma Beta_lc1 : forall a a' R, Beta a a' R -> lc_tm a.
-  intros.  induction H; auto.
-  eapply Value_lc in H0. eauto.
+  intros.  induction H; eauto using Value_lc, CoercedValue_lc.
 Qed.
 
 Lemma Beta_lc2 : forall a a' R, Beta a a' R -> lc_tm a'.
-intros.  induction H; auto.
+intros.  induction H; eauto using Value_lc, CoercedValue_lc.
 - apply Value_lc in H0. inversion H0.
   apply lc_body_tm_wrt_tm; auto.
 - inversion H. apply lc_body_tm_wrt_co; auto.
 - apply Toplevel_lc in H. inversion H. auto.
+- inversion H; subst; eauto using Value_lc, CoercedValue_lc. 
+  inversion H1; subst; eauto using Value_lc.
+- inversion H0; subst; eauto using Value_lc, CoercedValue_lc. 
+   inversion H1; subst; eauto using Value_lc.
+-  inversion H; subst; eauto using Value_lc.
+  inversion H0; subst; eauto using Value_lc, CoercedValue_lc. 
+  inversion H3; subst; eauto using Value_lc, CoercedValue_lc. 
 Qed.
 
 Lemma cf : forall A B (f : A -> B) (a b : A),  a = b -> f a = f b.
@@ -56,7 +62,8 @@ Proof.
     rewrite tm_subst_tm_tm_fresh_eq. eauto.
     move: (first context_fv_mutual _ _ _ _ h) => Fr. simpl in Fr.
     fsetdec.
-Qed.
+  - 
+Admitted.
 
 Lemma Beta_co_subst : forall a a' R b x, Beta a a' R -> lc_co b -> Beta (co_subst_co_tm b x a) (co_subst_co_tm b x a') R.
 Proof.
@@ -77,4 +84,4 @@ Proof.
     rewrite co_subst_co_tm_fresh_eq. eauto.
     move: (first context_fv_mutual _ _ _ _ h) => Fr. simpl in Fr.
     fsetdec.
-Qed.
+Admitted.

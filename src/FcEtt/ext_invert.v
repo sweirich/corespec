@@ -395,6 +395,43 @@ Proof.
     simpl; eauto.
 Qed.
 
+Lemma max1 : forall R1 R2, SubRole R1 (max R1 R2).
+intros. destruct R1; destruct R2; simpl; auto.
+Qed.
+Lemma max2 : forall R1 R2, SubRole R2 (max R1 R2).
+intros. destruct R1; destruct R2; simpl; auto.
+Qed.
+
+Lemma max_cov1 : forall R1 R2 R3, SubRole R2 R3 -> SubRole (max R2 R1) (max R3 R1).
+intros R1 R2 R3 H. destruct R1; destruct R2; destruct R3; simpl; auto.
+Qed.
+
+Lemma max_cov2 : forall R1 R2 R3, SubRole R2 R3 -> SubRole (max R1 R2) (max R1 R3).
+intros R1 R2 R3 H. destruct R1; destruct R2; destruct R3; simpl; auto.
+Qed.
+
+
+Lemma invert_a_Conv2
+     : ∀ (G : context) (a A : tm) (R1 R2 : role),
+       Typing G (a_Conv a R1 g_Triv) A R2
+       → ∃ (B : tm),
+         Typing G a B R2 ∧ DefEq G (dom G) A B a_Star (max R2 R1).
+Proof.
+  intros G a A R1 R2 H. dependent induction H.
+  - edestruct IHTyping as (B0 & h); eauto. split_hyp.
+    exists B0. repeat split; auto.
+    eapply E_SubRole; eauto. 
+    eapply E_Sub; eauto using max2. 
+    apply max_cov1; auto.
+  - edestruct IHTyping1 as (B0 & h); eauto. split_hyp.
+    exists B0. repeat split; auto.
+    eapply E_Trans with (a1 := A). eapply E_Sym. 
+    eapply E_Sub; eauto using max1.  auto.
+  - exists A1. 
+    repeat split; auto.
+Qed.
+
+(*
 Lemma invert_a_Conv : forall G a A R1 R2,
      Typing G (a_Conv a R1 g_Triv) A R2 ->
       exists B R3 R4, Typing G a B R3 /\ DefEq G (dom G) A B a_Star R4 /\
@@ -408,6 +445,7 @@ Proof. intros. dependent induction H.
           destruct R; auto. destruct R4; auto.
         - exists A1, R0, R1. repeat split; auto.
 Qed.
+*)
 
 (* --------------------------------------------------- *)
 
@@ -627,7 +665,6 @@ Proof.
     destruct phi' as [A' B'].
     eapply (E_Assn _ D) in h0; auto.
     eapply sym_iso in h1. 
-    assert (R0 = R). { inversion h1; auto. } subst.
     eapply E_Cast; eauto.
   - intros. eauto 4.
   - intros. eauto 4.
@@ -917,7 +954,7 @@ Proof.
       simpl in K.
       destruct eq_dec; try congruence.
       rewrite co_subst_co_tm_fresh_eq in K; auto.
-  - intros G D a' b' A' R' a b A R d H i.
+  - intros G. intros.
     split_hyp.
     inversion H1; subst.
     (have: Ctx G by eauto) => h0.
@@ -1298,7 +1335,7 @@ Ltac autoinv :=
     | [H : _ ⊨ a_CApp _ _        : _ / _ |- _] => eapply invert_a_CApp in H; pcess_hyps
     | [H : _ ⊨ a_UAbs _ _ _      : _ / _ |- _] => eapply invert_a_UAbs in H; pcess_hyps
     | [H : _ ⊨ a_UCAbs _         : _ / _ |- _] => eapply invert_a_UCAbs in H; pcess_hyps
-    | [H : _ ⊨ a_Conv _ _ _      : _ / _ |- _] => eapply invert_a_Conv in H; pcess_hyps
+    | [H : _ ⊨ a_Conv _ _ _      : _ / _ |- _] => eapply invert_a_Conv2 in H; pcess_hyps
   (* TODO *)
   end.
 

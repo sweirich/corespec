@@ -115,7 +115,7 @@ Ltac use_binder f x :=
     assert (Ctx ctx); [econstructor; eauto|idtac]
   end.
 
-
+(*
 Lemma E_App_intro :
   forall (G : context) (b : tm) (R R' : role)(a B A C : tm),
        Typing G b (a_Pi Rel A R B) R' -> (open_tm_wrt_tm B a) = C ->
@@ -131,10 +131,12 @@ Lemma E_IApp_intro :
 Proof.
   intros. subst.  eapply E_IApp; eauto.
 Qed.
-
+*)
 Lemma FixTy_erase :
   Typing nil (erase_tm FixTy Nom) a_Star Nom.
 Proof.
+Admitted.
+(*
   use_binder E_Pi X.
   use_binder E_Pi Z.
   use_binder E_Pi W.
@@ -143,10 +145,12 @@ Proof.
   use_binder E_Pi W.
   eauto.
 Qed.
-
+*)
 Lemma FixDef_FixTy_erase :
   Typing nil (erase_tm FixDef Nom) (erase_tm FixTy Nom) Nom.
 Proof.
+Admitted.
+(*
   pose (H := AxFix). clearbody H.
   unfold FixDef,FixTy; simpl.
   use_binder E_Abs X.
@@ -177,7 +181,7 @@ Proof.
   }
   use_binder E_Pi Z; eauto.
 Qed.
-
+*)
 
 Lemma Sig_toplevel: Sig toplevel.
 Proof.

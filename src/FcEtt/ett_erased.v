@@ -121,9 +121,15 @@ Qed.
 
 Hint Resolve erased_lc : lc.
 
-Lemma erased_sub : forall W a R1 R2, erased_tm W a R1 -> SubRole R1 R2 ->
+Lemma min_cov2 : forall R1 R2 R2', SubRole R2 R2' -> SubRole (min R1 R2) (min R1 R2').
+intros; unfold min; destruct R1; destruct R2; destruct R2'; auto.
+Qed.
+
+(* Lemma mon_sub2: forall R1 R2, SubRole (min R1 R2) R2. *)
+
+Lemma erased_sub : forall W a R1, erased_tm W a R1 -> forall R2, SubRole R1 R2 ->
                                      erased_tm W a R2.
-Proof. intros W a R1 R2 H S. induction H; eauto.
+Proof. intros W a R1 H. induction H; intros; eauto using min_cov2.
 Qed.
 
 Lemma subst_tm_erased : forall W1 x R1 W2 a R b, 
@@ -206,7 +212,9 @@ Proof.
   - econstructor. apply ctx_to_rctx_uniq; eauto.
   - econstructor. apply ctx_to_rctx_uniq; eauto. 
     eapply ctx_to_rctx_binds_tm; eauto. auto.
-  - econstructor; eauto. econstructor. apply ctx_to_rctx_uniq.
+  - econstructor; eauto using erased_sub, min_cov2. 
+    econstructor.
+    apply ctx_to_rctx_uniq.
     eapply Typing_Ctx; eauto.
   - destruct phi.
     apply (@erased_a_CPi L); try solve [apply (H0 a b A R0); auto]; auto;

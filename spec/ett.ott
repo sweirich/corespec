@@ -36,6 +36,9 @@ role, R :: '' ::= {{ com Role }}
    | min R1 R2  :: S :: Min
      {{ coq (min [[R1]][[R2]]) }}
      {{ tex [[R1]] \cap [[R2]] }}
+   | max R1 R2  :: S :: Max
+     {{ coq (max [[R1]][[R2]]) }}
+     {{ tex [[R1]] \cup [[R2]] }}
 
 
 relflag, rho {{ tex \rho }} :: '' ::= {{ com relevance flag }}
@@ -244,8 +247,8 @@ parsing
 grammar
 
 sig_sort :: '' ::= {{ com signature classifier }}
-   | Cs A            ::    :: Cs
-   | Ax a A R        ::    :: Ax
+   | : A            ::    :: Cs
+   | ~ a : A / R    ::    :: Ax
    
 sort :: '' ::= {{ com binding classifier }}
    | Tm A R           ::   :: Tm
@@ -269,11 +272,8 @@ context, G {{ tex \Gamma }} :: 'ctx_' ::= {{ com contexts }}
 sig, S {{ tex \Sigma }} :: 'sig_' ::= {{ com signatures }} {{ coq list (atom * sig_sort) }}
    | emptyS         ::    :: Empty       {{ coq nil }}
      {{ tex \varnothing }}
-   | S , T : A / R    ::    :: ConsCs      {{ coq (([[T]]~ Cs[[A]][[R]])++[[S]]) }}
-     {{ tex [[S]] \cup \{[[T]] : [[A]]/[[R]]\} }}
-   | S , F ~ a : A / R  ::    :: ConsAx      {{ coq (([[F]]~ Ax[[a]][[A]][[R]])++[[S]]) }}
-     {{ tex [[S]] \cup \{[[F]]\sim[[a]] : [[A]]/[[R]]\} }}
-   | toplevel       :: M  :: Toplevel
+   | S , F sig_sort    ::    :: ConsAx      {{ coq (([[F]]~ [[sig_sort]])++[[S]]) }}
+   | toplevel        :: M  :: Toplevel
      {{ coq toplevel }}
      {{ tex \Sigma_0 }}
    | an_toplevel    :: M  :: AnToplevel
@@ -434,6 +434,14 @@ Definition min (r1 : role) (r2 : role) : role :=
   | _  , Nom => Nom
   | Rep, Rep => Rep
   end.
+
+Definition max R1 R2 :=
+  match R1, R2 with 
+    | Rep, _ => Rep 
+    | Nom, Rep => Rep 
+    | Nom, Nom => Nom
+  end.
+
 
 Definition lte_role (r1 : role) (r2 : role) : bool :=
   match r1 , r2 with
@@ -724,7 +732,7 @@ W |- erased_tm (\rho R1 x.a) R
 
 %% Note, this is not quite right, but it is ok.
 W |- erased_tm a R
-W |- erased_tm b R1
+W |- erased_tm b R1 
 ----------------------------- :: App
 W |- erased_tm (a rho R1 b) R
 
@@ -758,7 +766,7 @@ rctx_uniq W
 W |- erased_tm T R
 
 W |- erased_tm a R
----------------------------- :: Conv
+---------------------------- :: TyCast
 W |- erased_tm (a |> R1 o) R
 
 defns
@@ -913,11 +921,27 @@ F ~ a : A/R in toplevel
 -------------------------------- :: Axiom
 |= F > a / R
 
+CoercedValue R (v |> R1 o)
+R1 <= R2
+------------------------------------ :: Combine
+|= (v |> R1 o) |> R2 o > v |> R2 o / R
+
+CoercedValue R2 (v1 |> R o)
+------------------------------------ :: Push
+|= (v1 |> R o) rho R1 b > (v1 rho R1 (b |> R o)) |> R o / R2
+
+CoercedValue R1 (v1 |> R o)
+------------------------------------ :: CPush
+|= (v1 |> R o) [o] > (v1 [o]) |> R o / R1
 
 defn
  |= a ~> b / R ::   :: reduction_in_one :: 'E_'
 {{ com single-step head reduction for implicit language }}
 by
+
+|= a > b / R 
+---------------- :: Prim
+|= a ~> b / R
 
 |= a ~> a' / R1
 -------------------------  :: AbsTerm
@@ -932,34 +956,10 @@ by
 |= a [o]  ~> a' [o] / R
 
 
-Value R1 (\rho R x. v)
-----------------------------------  :: AppAbs
-|= (\rho R x.v) rho R a ~> v { a / x} / R1
-
---------------------------------  :: CAppCAbs
-|= (/\c .b) [o] ~> b { o / c} / R
-
-F ~ a : A/R in toplevel
-R <= R1
--------------------- :: Axiom
-|= F ~> a / R1
-
 |= a ~> a' / R1
 ------------------------------- :: Cong
 |= a |> R o ~> a' |> R o / R1
 
-CoercedValue R (v |> R1 o)
-R1 <= R2
------------------------------------- :: Combine
-|= (v |> R1 o) |> R2 o ~> v |> R2 o / R
-
-CoercedValue R2 (v1 |> R o)
------------------------------------- :: Push
-|= (v1 |> R o) rho R1 b ~> (v1 rho R1 (b |> R o)) |> R o / R2
-
-CoercedValue R1 (v1 |> R o)
------------------------------------- :: CPush
-|= (v1 |> R o) [o] ~> (v1 [o]) |> R o / R1
 
 defn
 
@@ -1013,25 +1013,25 @@ x:A / R in G
 ------------------ :: Var
 G |= x : A / R
 
-%% 2nd premise is redundant, but convenient for IH
+
 G, x:A / R |= B : TYPE / R'
-[ G |= A : TYPE / R ]
+G |= A : TYPE / R 
 ----------------------------------------- :: Pi
 G |= all rho x:A / R -> B : TYPE / R'
 
-G, x:A / R  |= a : B / R'
-[ G |= A : TYPE / R ]
+G, x:A / R |= a : B / R'
+G |= A : TYPE / R 
 rho => check x in a
 ---------------------------------- :: Abs
 G |= \ rho R x . a : ( all rho x:A / R -> B ) / R'
 
 G |= b : all+ x : A / R -> B / R'
-G |= a : A / R
+G |= a : A / R 
 ------------------------------------- :: App
 G |= b + R a : B { a / x } / R'
 
 G |= b : all - x : A / R -> B / R'
-G |= a : A / R
+G |= a : A / R 
 ------------------------------------- :: IApp
 G |= b - R [] : B { a / x } / R'
 
@@ -1064,7 +1064,7 @@ F ~ a : A / R in toplevel
 G |= F : A / R1
 
 G |= a : A1 / R1
-G ; dom G |= A1 == A2 : TYPE / R2
+G ; dom G |= A1 == A2 : TYPE / max R1 R2
 [ G |= A2 : TYPE / R1 ]
 ------------------------- :: TyCast
 G |= a |> R2 o : A2 / R1
@@ -1086,9 +1086,9 @@ G |= A1 ~ A2 : B / R ok
 -------------------------------------------- :: IsoConv
 G ; D |= A1 ~ A2 : A / R == A1 ~ A2 : B / R
 
-G ; D |= all c:(a1 ~ a2 : A/R). B1 == all c:(b1 ~ b2 : B/R). B2 : TYPE / R'
+G ; D |= all c:(a1 ~ a2 : A/R1). B1 == all c:(b1 ~ b2 : B/R2). B2 : TYPE / R'
 ---------------------------------------------------------------------------- :: CPiFst
-G ; D |=  a1 ~ a2 : A/R == b1 ~ b2 : B/R
+G ; D |=  a1 ~ a2 : A/R1 == b1 ~ b2 : B/R2
 
 
 defn
@@ -1132,7 +1132,7 @@ G ; D |= a1 == a2 : B / R
 G ; D |=  A1 == A2 : TYPE/R
 G, x:A1/R; D |= B1 == B2 : TYPE/R'
 %% this needed by weakening IH
-[G |= A1 : TYPE/R]
+[G |= A1 : TYPE/ R ]
 %% these two needed by regularity
 [G |= all rho x:A1/R -> B1 : TYPE/R']
 [G |= all rho x:A2/R -> B2 : TYPE/R']
@@ -1148,13 +1148,13 @@ rho => check x in b2
 G ; D |=  (\ rho R x. b1) == (\ rho R x. b2) : (all rho x:A1/R -> B)/R'
 
 G ; D |= a1 == b1 : (all + x:A/R -> B)/R'
-G ; D |= a2 == b2 : A/R
+G ; D |= a2 == b2 : A/R 
 -------------------------------------- :: AppCong
 G ; D |= a1 + R a2 == b1 + R b2 : (B { a2 / x })/R'
 
 
 G ; D |= a1 == b1 : (all - x:A/R -> B)/R'
-G |= a : A/R
+G |= a : A/ R
 ------------------------------------------ :: IAppCong
 G ; D |= a1 - R [] == b1 - R [] : (B { a / x })/R'
 
@@ -1197,9 +1197,9 @@ G ; D |=  B1 { o / c} == B2 { o / c } : TYPE/R0
 %% Other rules
 
 G ; D |= a == b : A/R
-G ; D |= a ~ b : A/R == a' ~ b' : A'/R
+G ; D |= a ~ b : A/R == a' ~ b' : A'/R'
 -------------------------------------- :: Cast
-G ; D |= a' == b' : A'/R
+G ; D |= a' == b' : A'/R'
 
 G ; D |= a == b : A/R1
 G ; dom G |= A == B : TYPE/R2
@@ -1212,7 +1212,7 @@ G ; D |= a ~ b : A/R == a' ~ b' : A'/R
 G ; D |= A == A' : TYPE/R
 
 G ; D |= a1 == a2 : A / R1
-G ; dom G |= A == B : TYPE / R2
+G ; dom G |= A == B : TYPE / max R1 R2
 G |= B : TYPE / R1
 ------------------------------------ :: CastCong
 G ; D |= a1 |> R2 o == a2 |> R2 o : B / R1

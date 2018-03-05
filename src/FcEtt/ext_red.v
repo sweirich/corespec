@@ -14,21 +14,21 @@ Require Import FcEtt.tactics.
 
 Require Export FcEtt.ext_invert.
 
-Require Export FcEtt.ext_red_one.
-
+Require Export FcEtt.ext_subst.
+Require Export FcEtt.ext_weak.
 
 Set Bullet Behavior "Strict Subproofs".
 Set Implicit Arguments.
 
 
-Lemma Beta_preservation : forall a b, Beta a b -> forall G A R, Typing G a A R -> Typing G b A R.
+Lemma Beta_preservation : forall a b R, Beta a b R  -> forall G A, Typing G a A R -> Typing G b A R.
 Proof.
-  intros a b B. destruct B; intros G A0 R' TH.
+  intros a b R B. destruct B; intros G A0 TH.
   - have CT: Ctx G by eauto.
-    have RA: Typing G A0 a_Star R' by eauto using Typing_regularity.
+    have RA: Typing G A0 a_Star R1 by eauto using Typing_regularity.
     destruct rho.
-    + destruct (invert_a_App_Rel TH) as (A & B & R1 & TB & Tb & DE & SR1).
-      destruct (invert_a_UAbs TB) as (A1 & B1 & DE2 & [L TB1] & TA1 & SR2).
+    + destruct (invert_a_App_Rel TH) as (A & B & R2 & TB & Tb & DE & SR1).
+      destruct (invert_a_UAbs TB) as (A1 & B1 & DE2 & [L TB1] & TA1).
       eapply E_Conv with (A := (open_tm_wrt_tm B1 b)); eauto 2.
       pick fresh x.
       move: (TB1 x ltac:(auto)) =>  [T1 [T2 RC]].
@@ -36,10 +36,14 @@ Proof.
       rewrite (tm_subst_tm_tm_intro x B1); eauto.
       eapply Typing_tm_subst with (A:=A1); eauto 2.
       eapply E_Conv with (A := A); eauto 2 using E_PiFst.
-      eapply E_Trans with (a1:= open_tm_wrt_tm B b); eauto using E_PiSnd, E_Refl, E_Sym.
-
-    + destruct (invert_a_App_Irrel TH) as (A & B & b0 & R1 & Tb & Tb2 & DE & SR1).
-      destruct (invert_a_UAbs Tb) as (A1 & B1 & DE2 & [L TB1] & TA1 & SR2).
+      eapply E_Trans with (a1:= open_tm_wrt_tm B b); eauto 1.
+      eapply E_Sub with (R1:=R2); eauto 1.
+      eapply E_Sym.
+      eapply E_PiSnd; eauto 1.
+      eapply E_Refl; auto.
+      eapply E_Sym. auto.
+    + destruct (invert_a_App_Irrel TH) as (A & B & b0 & R2 & Tb & Tb2 & DE & SR1).
+      destruct (invert_a_UAbs Tb) as (A1 & B1 & DE2 & [L TB1] & TA1 ).
       eapply E_Conv with (A := (open_tm_wrt_tm B1 b0)); eauto 2.
       pick fresh x.
       move: (TB1 x ltac:(auto)) =>  [T1 [T2 RC]].
@@ -54,13 +58,15 @@ Proof.
       eapply E_Trans with (a1 := open_tm_wrt_tm B b0). auto.
       eapply E_PiSnd; eauto using E_Refl.
    - have CT: Ctx G by eauto.
-     have RA: Typing G A0 a_Star R' by eauto using Typing_regularity.
+     have RA: Typing G A0 a_Star R by eauto using Typing_regularity.
      destruct (invert_a_CApp TH) as (eq & a1 & b1 & A1 & R1 & B1 & R2 & h0 & h1 & h2 & h3).
      destruct (invert_a_UCAbs h0) as (a2 & b2 & A2 & R3 & B2 & R4 & h4 & h5 & [L h6] & h7).
      pick fresh c.
      move: (h6 c ltac:(auto)) => [T1 T2].
-     have? : DefEq G (dom G) a2 b2 A2 R3. eauto using E_CPiFst, E_Cast.
-
+     have? : DefEq G (dom G) a2 b2 A2 R3. 
+     eapply E_Cast. eapply h1.
+     eapply E_CPiFst.
+     eauto.
      eapply E_Conv with (A:= (open_tm_wrt_co B2 g_Triv)); eauto 2.
      rewrite (co_subst_co_tm_intro c a'); eauto.
      rewrite (co_subst_co_tm_intro c B2); eauto.
@@ -68,7 +74,7 @@ Proof.
      eapply E_Sym.
      eapply E_Trans with (a1 := open_tm_wrt_co B1 g_Triv). auto.
      eapply E_CPiSnd; eauto 2.
-   - destruct (invert_a_Fam TH) as (b & B & R1 & h0 & h1 & h2 & h3).
+   - destruct (invert_a_Fam TH) as (b & B & R1 & h0 & h1 & h2).
      assert (Ax a A R = Ax b B R1). eapply binds_unique; eauto using uniq_toplevel.
      inversion H0. subst.
      eapply E_Conv with (A := B).
@@ -81,7 +87,34 @@ Proof.
      inversion h4.
      auto.
      Unshelve. exact (dom G). exact (dom G).
+   - destruct (invert_a_Conv2 TH) as (b & h1 & h).
+     destruct (invert_a_Conv2 h1) as (b' & h1' & h'). 
+     eapply E_TyCast; eauto 3. 
+     eapply E_Sym. 
+     eapply E_Trans with (a1:= b); eauto 1.
+     eapply E_Sub; eauto using max_cov2.
+     eapply Typing_regularity. eauto.
+   - destruct rho.
+     
+ Lemma invert_a_App_Rel2
+     : ∀ (G : context) (a b C : tm) (R R' : role),
+       Typing G (a_App a Rel R b) C R'
+       → ∃ (A B : tm),
+         Typing G a (a_Pi Rel A R B) R'
+         ∧ Typing G b A R
+           ∧ DefEq G (dom G) C (open_tm_wrt_tm B b) a_Star R'.
+Proof.
+Admitted.
+
+     * destruct (invert_a_App_Rel2 TH) as (A2 & B2 & h1 & h). split_hyp.
+       destruct (invert_a_Conv2 h1) as (B' & h2 & h).
+       eapply E_TyCast with (A1 := (open_tm_wrt_tm B2 (a_Conv b R g_Triv))).
+       eapply E_App. eapply E_Conv. eapply E_SubRole. eauto 1. eauto 1.
+       eapply E_Sym. 
 Qed.
+
+
+Check invert_a_Conv.
 
 
 Lemma E_Beta2 :  ∀ (G : context) (D : available_props) (a1 a2 B : tm) R,
