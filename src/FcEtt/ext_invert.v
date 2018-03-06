@@ -211,7 +211,8 @@ Proof.
     pick_fresh c.
     rewrite (co_subst_co_tm_intro c); auto.
     un_subst_tm.
-    eapply Typing_co_subst; eauto.
+    eapply Typing_co_subst. eauto.
+    eapply E_Sub; eauto using param_sub1.
   - eapply Typing_weakening with (F:=nil)(G := nil) in H1.
     simpl_env in H1. eauto. auto. simpl_env. auto.
   - eapply Typing_weakening with (F:=nil)(G := nil) in H1.
@@ -397,14 +398,14 @@ Lemma invert_a_CApp : forall G a g A R,
     Typing G (a_CApp a g) A R ->
     g = g_Triv /\
     exists a1 b1 A1 R1 B, Typing G a (a_CPi (Eq a1 b1 A1 R1) B) R /\
-             DefEq G (dom G) a1 b1 A1 R1 /\
+             DefEq G (dom G) a1 b1 A1 (param R1 R) /\
              DefEq G (dom G) A (open_tm_wrt_co B g_Triv) a_Star Rep. 
 Proof.
   intros G a g A R H.
   dependent induction H.
   - destruct (IHTyping a g eq_refl) as (p & a1 & b1 & A1 & R3 & BB & Ta & Dab & DAB).
     split; auto. exists a1, b1, A1, R3, BB. repeat split; auto.
-    eapply E_SubRole; eauto.
+    eapply E_SubRole; eauto. eapply E_Sub; eauto using param_covariant.
   - destruct (IHTyping1 a g eq_refl) as (p & a1 & b1 & A1 & R3 & BB & Ta & Dab & DAB).
     split; first by done.
     exists a1, b1, A1, R3, BB.
@@ -421,7 +422,7 @@ Proof.
     move: (h4 x ltac:(auto)) => h6.
     eapply Typing_co_subst  in h6. simpl in h6.
     rewrite (co_subst_co_tm_intro x); eauto.
-    simpl; eauto.
+    eauto using param_sub1.
 Qed.
 
 Lemma invert_a_Pattern : forall G R F a b1 b2 B R',
@@ -934,8 +935,9 @@ Proof.
     destruct H as [_ [[L0 ty0] _]].
     destruct H4 as [_ [[L1 ty1] _]].
     pick_fresh c.
-    repeat split; eauto.
+    repeat split.
     + have: c `notin` L0; auto => h0.
+      apply E_Sub with (R2 := R) in d0; auto using param_sub1.
       pose K := Typing_co_subst (ty0 c h0) d0.
       clearbody K.
       repeat rewrite co_subst_co_tm_open_tm_wrt_co in K; auto.
@@ -943,6 +945,7 @@ Proof.
       destruct eq_dec; try congruence.
       rewrite co_subst_co_tm_fresh_eq in K; auto.
     + have: c `notin` L1; auto => h0.
+      apply E_Sub with (R2 := R') in d1; auto using param_sub1.
       pose K := Typing_co_subst (ty1 c h0) d1.
       clearbody K.
       repeat rewrite co_subst_co_tm_open_tm_wrt_co in K; auto.

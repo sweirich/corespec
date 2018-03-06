@@ -1,4 +1,11 @@
+Set Bullet Behavior "Strict Subproofs".
+Set Implicit Arguments.
 
+Require Import Omega.
+
+Require Export FcEtt.imports.
+Require Import FcEtt.utils.
+Require Export FcEtt.tactics.
 Require Export FcEtt.ett_ott.
 Require Export FcEtt.ett_ind.
 

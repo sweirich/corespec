@@ -69,14 +69,19 @@ Proof.
      pick fresh c.
      move: (h6 c ltac:(auto)) => [T1 T2].
      have? : DefEq G (dom G) a2 b2 A2 R3. 
-     eauto using E_CPiFst, E_Cast.
+     apply E_CPiFst in h5. apply E_Cast in h5. auto.
+     eapply E_Sub; eauto using param_sub1.
      eapply E_Conv with (A:= (open_tm_wrt_co B2 g_Triv)); eauto 2.
      rewrite (co_subst_co_tm_intro c a'); eauto.
      rewrite (co_subst_co_tm_intro c B2); eauto.
      eapply Typing_co_subst; eauto.
      eapply E_Sym.
      eapply E_Trans with (a1 := open_tm_wrt_co B1 g_Triv). auto.
-     eapply E_CPiSnd; eauto 2.
+     eapply E_CPiSnd; eauto 2. eapply E_Sub with (R1 := param R1 R).
+     auto. apply param_covariant; auto.
+     apply E_CPiFst in h5. apply E_Cast in h5.
+     eapply E_Sub with (R1 := param R3 R3). rewrite param_same.
+     auto. apply param_covariant; auto. eapply E_Sub; eauto using param_sub1.
    - destruct (invert_a_Fam TH) as [(b & h1 & h2 & h3) | (b & B & R2 & h1 & h2 & h3)].
      assert (Cs b = Ax a A R). eapply binds_unique; eauto using uniq_toplevel.
      inversion H1.

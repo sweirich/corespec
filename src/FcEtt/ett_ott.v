@@ -1201,7 +1201,7 @@ with Typing : context -> tm -> tm -> role -> Prop :=    (* defn Typing *)
      Typing G (a_UCAbs a) (a_CPi phi B) R
  | E_CApp : forall (G:context) (a1 B1:tm) (R':role) (a b A:tm) (R:role),
      Typing G a1 (a_CPi  ( (Eq a b A R) )  B1) R' ->
-     DefEq G  (dom  G )  a b A R ->
+     DefEq G  (dom  G )  a b A  (param R   R' )  ->
      Typing G (a_CApp a1 g_Triv)  (open_tm_wrt_co  B1   g_Triv )  R'
  | E_Const : forall (G:context) (F:const) (A:tm) (R1 R0:role),
      Ctx G ->
@@ -1298,12 +1298,12 @@ with DefEq : context -> available_props -> tm -> tm -> tm -> role -> Prop :=    
      DefEq G D  ( (a_UCAbs a) )   ( (a_UCAbs b) )  (a_CPi phi1 B) R
  | E_CAppCong : forall (G:context) (D:available_props) (a1 b1 B:tm) (R':role) (a b A:tm) (R:role),
      DefEq G D a1 b1  ( (a_CPi  ( (Eq a b A R) )  B) )  R' ->
-     DefEq G  (dom  G )  a b A R ->
+     DefEq G  (dom  G )  a b A  (param R   R' )  ->
      DefEq G D (a_CApp a1 g_Triv) (a_CApp b1 g_Triv)  (  (open_tm_wrt_co  B   g_Triv )  )  R'
  | E_CPiSnd : forall (G:context) (D:available_props) (B1 B2:tm) (R0:role) (a1 a2 A:tm) (R:role) (a1' a2' A':tm) (R':role),
      DefEq G D (a_CPi  ( (Eq a1 a2 A R) )  B1) (a_CPi  ( (Eq a1' a2' A' R') )  B2) a_Star R0 ->
-     DefEq G  (dom  G )  a1 a2 A R ->
-     DefEq G  (dom  G )  a1' a2' A' R' ->
+     DefEq G  (dom  G )  a1 a2 A  (param R   R0 )  ->
+     DefEq G  (dom  G )  a1' a2' A'  (param R'   R0 )  ->
      DefEq G D  (open_tm_wrt_co  B1   g_Triv )   (open_tm_wrt_co  B2   g_Triv )  a_Star R0
  | E_Cast : forall (G:context) (D:available_props) (a' b' A':tm) (R':role) (a b A:tm) (R:role),
      DefEq G D a b A R ->
@@ -1358,7 +1358,7 @@ with DefEq : context -> available_props -> tm -> tm -> tm -> role -> Prop :=    
      Path F a' R' ->
      Typing G a (a_CPi  ( (Eq a1 a2 A R1) )  B) R' ->
      Typing G a' (a_CPi  ( (Eq a1 a2 A R1) )  B) R' ->
-     DefEq G  (dom  G )  a1 a2 A R1 ->
+     DefEq G  (dom  G )  a1 a2 A  (param R1   R' )  ->
      DefEq G D (a_CApp a g_Triv) (a_CApp a' g_Triv)  (open_tm_wrt_co  B   g_Triv )  R' ->
      DefEq G D a a' (a_CPi  ( (Eq a1 a2 A R1) )  B) R'
 with Ctx : context -> Prop :=    (* defn Ctx *)
