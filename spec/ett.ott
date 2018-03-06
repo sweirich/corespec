@@ -1049,7 +1049,7 @@ G, c:phi |= a : B / R
 G |= /\ c . a : all c:phi. B / R
 
 G |= a1 : all c : (a ~ b : A / R) . B1 / R'
-G ; dom G |= a == b : A / R
+G ; dom G |= a == b : A / param R R'
 ------------------------------------------- :: CApp
 G |= a1 [ o ] : B1 { o / c } / R'
 
@@ -1083,7 +1083,7 @@ G ; D |= B1 == B2 : A / R
 --------------------------------------------- :: PropCong
 G ; D |= A1 ~ B1 : A /R  == A2 ~ B2 : A /R
 
-G ; D |= A == B : TYPE / R0
+G ; D |= A == B : TYPE / R0 
 G |= A1 ~ A2 : A / R ok 
 G |= A1 ~ A2 : B / R ok 
 -------------------------------------------- :: IsoConv
@@ -1187,13 +1187,13 @@ G, c: phi1 ; D |= a == b : B/R
 G ; D |=  (/\c . a) == (/\ c . b) : all c:phi1. B/R
 
 G ; D |= a1 == b1 : (all c:(a ~ b : A/R). B)/R'
-G ; dom G |= a == b : A/R
+G ; dom G |= a == b : A/param R R'
 -------------------------------------- :: CAppCong
 G ; D |= a1 [o] == b1 [o] : (B { o / c })/R'
 
 G ; D |= all c:(a1 ~ a2 : A/R). B1 == all c:(a1'~ a2' : A'/R'). B2 : TYPE/R0
-G ; dom G |= a1 == a2 : A/R
-G ; dom G |= a1' == a2' : A'/R'
+G ; dom G |= a1 == a2 : A/param R R0
+G ; dom G |= a1' == a2' : A'/param R' R0
 ---------------------------------------------- :: CPiSnd
 G ; D |=  B1 { o / c} == B2 { o / c } : TYPE/R0
 
@@ -1260,7 +1260,7 @@ G ; D |= ifPath R F a b1 b2 == ifPath R F a' b1' b2' : B / R0
  Path F a' R'
  G |= a  : all c:(a1 ~ a2:A/R1). B/R'
  G |= a' : all c:(a1 ~ a2:A/R1). B/R'
- G ; dom G |= a1 == a2 : A/R1
+ G ; dom G |= a1 == a2 : A/param R1 R'
  G ; D |= a [o] == a' [o] : B {o/c}/R'
 --------------------------------------------- :: CLeft
  G ; D |= a == a' : all c:(a1 ~ a2:A/R1). B/R'

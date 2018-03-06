@@ -1235,7 +1235,7 @@
 
 \newcommand{\ottdruleEXXCApp}[1]{\ottdrule[#1]{%
 \ottpremise{\Gamma  \vDash  \ottnt{a_{{\mathrm{1}}}}  \ottsym{:}   \forall \ottmv{c} \!:\! \ottsym{(}   \ottnt{a}   \sim _{ \ottnt{A} / \ottnt{R} }  \ottnt{b}   \ottsym{)} . \ottnt{B_{{\mathrm{1}}}}   \ottsym{/}  \ottnt{R'}}%
-\ottpremise{\Gamma  \ottsym{;}   \widetilde { \Gamma }   \vDash  \ottnt{a}  \equiv  \ottnt{b}  \ottsym{:}  \ottnt{A}  \ottsym{/}  \ottnt{R}}%
+\ottpremise{\Gamma  \ottsym{;}   \widetilde { \Gamma }   \vDash  \ottnt{a}  \equiv  \ottnt{b}  \ottsym{:}  \ottnt{A}  \ottsym{/}  \ottkw{param} \, \ottnt{R} \, \ottnt{R'}}%
 }{
 \Gamma  \vDash  \ottnt{a_{{\mathrm{1}}}}  \ottsym{[}  \bullet  \ottsym{]}  \ottsym{:}  \ottnt{B_{{\mathrm{1}}}}  \ottsym{\{}  \bullet  \ottsym{/}  \ottmv{c}  \ottsym{\}}  \ottsym{/}  \ottnt{R'}}{%
 {\ottdrulename{E\_CApp}}{}%
@@ -1458,7 +1458,7 @@
 
 \newcommand{\ottdruleEXXCAppCong}[1]{\ottdrule[#1]{%
 \ottpremise{\Gamma  \ottsym{;}  \Delta  \vDash  \ottnt{a_{{\mathrm{1}}}}  \equiv  \ottnt{b_{{\mathrm{1}}}}  \ottsym{:}  \ottsym{(}   \forall \ottmv{c} \!:\! \ottsym{(}   \ottnt{a}   \sim _{ \ottnt{A} / \ottnt{R} }  \ottnt{b}   \ottsym{)} . \ottnt{B}   \ottsym{)}  \ottsym{/}  \ottnt{R'}}%
-\ottpremise{\Gamma  \ottsym{;}   \widetilde { \Gamma }   \vDash  \ottnt{a}  \equiv  \ottnt{b}  \ottsym{:}  \ottnt{A}  \ottsym{/}  \ottnt{R}}%
+\ottpremise{\Gamma  \ottsym{;}   \widetilde { \Gamma }   \vDash  \ottnt{a}  \equiv  \ottnt{b}  \ottsym{:}  \ottnt{A}  \ottsym{/}  \ottkw{param} \, \ottnt{R} \, \ottnt{R'}}%
 }{
 \Gamma  \ottsym{;}  \Delta  \vDash  \ottnt{a_{{\mathrm{1}}}}  \ottsym{[}  \bullet  \ottsym{]}  \equiv  \ottnt{b_{{\mathrm{1}}}}  \ottsym{[}  \bullet  \ottsym{]}  \ottsym{:}  \ottsym{(}  \ottnt{B}  \ottsym{\{}  \bullet  \ottsym{/}  \ottmv{c}  \ottsym{\}}  \ottsym{)}  \ottsym{/}  \ottnt{R'}}{%
 {\ottdrulename{E\_CAppCong}}{}%
@@ -1467,8 +1467,8 @@
 
 \newcommand{\ottdruleEXXCPiSnd}[1]{\ottdrule[#1]{%
 \ottpremise{\Gamma  \ottsym{;}  \Delta  \vDash   \forall \ottmv{c} \!:\! \ottsym{(}   \ottnt{a_{{\mathrm{1}}}}   \sim _{ \ottnt{A} / \ottnt{R} }  \ottnt{a_{{\mathrm{2}}}}   \ottsym{)} . \ottnt{B_{{\mathrm{1}}}}   \equiv   \forall \ottmv{c} \!:\! \ottsym{(}   \ottnt{a'_{{\mathrm{1}}}}   \sim _{ \ottnt{A'} / \ottnt{R'} }  \ottnt{a'_{{\mathrm{2}}}}   \ottsym{)} . \ottnt{B_{{\mathrm{2}}}}   \ottsym{:}   \star   \ottsym{/}  \ottnt{R_{{\mathrm{0}}}}}%
-\ottpremise{\Gamma  \ottsym{;}   \widetilde { \Gamma }   \vDash  \ottnt{a_{{\mathrm{1}}}}  \equiv  \ottnt{a_{{\mathrm{2}}}}  \ottsym{:}  \ottnt{A}  \ottsym{/}  \ottnt{R}}%
-\ottpremise{\Gamma  \ottsym{;}   \widetilde { \Gamma }   \vDash  \ottnt{a'_{{\mathrm{1}}}}  \equiv  \ottnt{a'_{{\mathrm{2}}}}  \ottsym{:}  \ottnt{A'}  \ottsym{/}  \ottnt{R'}}%
+\ottpremise{\Gamma  \ottsym{;}   \widetilde { \Gamma }   \vDash  \ottnt{a_{{\mathrm{1}}}}  \equiv  \ottnt{a_{{\mathrm{2}}}}  \ottsym{:}  \ottnt{A}  \ottsym{/}  \ottkw{param} \, \ottnt{R} \, \ottnt{R_{{\mathrm{0}}}}}%
+\ottpremise{\Gamma  \ottsym{;}   \widetilde { \Gamma }   \vDash  \ottnt{a'_{{\mathrm{1}}}}  \equiv  \ottnt{a'_{{\mathrm{2}}}}  \ottsym{:}  \ottnt{A'}  \ottsym{/}  \ottkw{param} \, \ottnt{R'} \, \ottnt{R_{{\mathrm{0}}}}}%
 }{
 \Gamma  \ottsym{;}  \Delta  \vDash  \ottnt{B_{{\mathrm{1}}}}  \ottsym{\{}  \bullet  \ottsym{/}  \ottmv{c}  \ottsym{\}}  \equiv  \ottnt{B_{{\mathrm{2}}}}  \ottsym{\{}  \bullet  \ottsym{/}  \ottmv{c}  \ottsym{\}}  \ottsym{:}   \star   \ottsym{/}  \ottnt{R_{{\mathrm{0}}}}}{%
 {\ottdrulename{E\_CPiSnd}}{}%
@@ -1563,7 +1563,7 @@
 \ottpremise{ \mathsf{Path}_{ \ottnt{R'} }\  \ottnt{a'}  =  \ottmv{F} }%
 \ottpremise{\Gamma  \vDash  \ottnt{a}  \ottsym{:}   \forall \ottmv{c} \!:\! \ottsym{(}   \ottnt{a_{{\mathrm{1}}}}   \sim _{ \ottnt{A} / \ottnt{R_{{\mathrm{1}}}} }  \ottnt{a_{{\mathrm{2}}}}   \ottsym{)} . \ottnt{B}   \ottsym{/}  \ottnt{R'}}%
 \ottpremise{\Gamma  \vDash  \ottnt{a'}  \ottsym{:}   \forall \ottmv{c} \!:\! \ottsym{(}   \ottnt{a_{{\mathrm{1}}}}   \sim _{ \ottnt{A} / \ottnt{R_{{\mathrm{1}}}} }  \ottnt{a_{{\mathrm{2}}}}   \ottsym{)} . \ottnt{B}   \ottsym{/}  \ottnt{R'}}%
-\ottpremise{\Gamma  \ottsym{;}   \widetilde { \Gamma }   \vDash  \ottnt{a_{{\mathrm{1}}}}  \equiv  \ottnt{a_{{\mathrm{2}}}}  \ottsym{:}  \ottnt{A}  \ottsym{/}  \ottnt{R_{{\mathrm{1}}}}}%
+\ottpremise{\Gamma  \ottsym{;}   \widetilde { \Gamma }   \vDash  \ottnt{a_{{\mathrm{1}}}}  \equiv  \ottnt{a_{{\mathrm{2}}}}  \ottsym{:}  \ottnt{A}  \ottsym{/}  \ottkw{param} \, \ottnt{R_{{\mathrm{1}}}} \, \ottnt{R'}}%
 \ottpremise{\Gamma  \ottsym{;}  \Delta  \vDash  \ottnt{a}  \ottsym{[}  \bullet  \ottsym{]}  \equiv  \ottnt{a'}  \ottsym{[}  \bullet  \ottsym{]}  \ottsym{:}  \ottnt{B}  \ottsym{\{}  \bullet  \ottsym{/}  \ottmv{c}  \ottsym{\}}  \ottsym{/}  \ottnt{R'}}%
 }{
 \Gamma  \ottsym{;}  \Delta  \vDash  \ottnt{a}  \equiv  \ottnt{a'}  \ottsym{:}   \forall \ottmv{c} \!:\! \ottsym{(}   \ottnt{a_{{\mathrm{1}}}}   \sim _{ \ottnt{A} / \ottnt{R_{{\mathrm{1}}}} }  \ottnt{a_{{\mathrm{2}}}}   \ottsym{)} . \ottnt{B}   \ottsym{/}  \ottnt{R'}}{%
