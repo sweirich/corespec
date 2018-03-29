@@ -134,57 +134,49 @@ brs :: 'br_' ::=    {{ com case branches }}
    | brs { g / c }    :: S :: SubstC {{ coq (open_brs_wrt_co [[c brs]] [[g]]) }}
    | ( brs )          :: S :: Paren  {{ coq ([[brs]]) }}
 
+
+
 co, g {{ tex \gamma }} :: 'g_' ::= {{ com explicit coercions }}
-   | o                    ::   :: Triv
-   | c                    ::   :: Var
-   | red a b              ::   :: Beta
+   | o                      ::   :: Triv
+   | c                      ::   :: Var
+   | red a b                ::   :: Beta
 
-   | refl a               ::   :: Refl
-   | refl2 a b g          ::   :: Refl2
-     {{ tex ([[a]]\mathrel{|\!\!=\!\!|}_{[[g]]}[[b]]) }}
-   | sym g                ::   :: Sym
-   | g1 ; g2              ::   :: Trans
-   | sub g                ::   :: Sub
+   | refl a                 ::   :: Refl
+   | refl2 a b g            ::   :: Refl2
 
-   | all rho R x : g1 -> g2 ::   :: PiCong (+ bind x in g2 +)
-     {{ tex \mathrm{\Pi}^{[[R]],[[rho]]}[[x]]\!:\![[g1]].[[g2]] }}
+   | sym g                  ::   :: Sym
+   | g1 ; g2                ::   :: Trans
 
-   | \ rho R x : g1 . g2    ::   :: AbsCong (+ bind x in g2 +)
-     {{ tex \mathrm{\lambda}^{[[R]],[[rho]]}[[x]]\!:\![[g1]].[[g2]] }}
+   | sub g                  ::   :: Sub
+
+   | all rho R x : g1 -> g2 ::   :: PiCong
+
+   | \ rho R x : g1 . g2    ::   :: AbsCong
 
    | g1 rho R g2            ::   :: AppCong
-     {{ tex [[g1]]\ [[g2]]^{[[R]],[[rho]]} }}
 
-   | piFst g              ::   :: PiFst
-   | cpiFst g             ::   :: CPiFst
-   | isoSnd g            ::   :: IsoSnd
-   | g1 @ g2              ::   :: PiSnd
+   | piFst g                ::   :: PiFst
+   | cpiFst g               ::   :: CPiFst
+   | isoSnd g               ::   :: IsoSnd
+   | g1 @ g2                ::   :: PiSnd
 
-   | all c : g1 . g3      ::   :: CPiCong (+ bind c in g3 +)
-     {{ tex [[all]][[c]]\!:\![[g1]].[[g3]] }}
+   | all c : g1 . g3        ::   :: CPiCong
 
-   | \ c : g1 . g3 @ g4   ::   :: CAbsCong (+ bind c in g3 +)
-     {{ tex \mathrm{\lambda}[[c]]\!:\![[g1]].[[g3]][[@]][[g4]] }}
+   | \ c : g1 . g3 @ g4     ::   :: CAbsCong
 
-   | g ( g1 , g2 )        ::   :: CAppCong
-   | g @ ( g1 , g2 )      ::   :: CPiSnd
-     {{ tex [[g]] [[@]] ([[g1]] \sim [[g2]]) }}
-   | g1 |> R g2           ::   :: Cast
-     {{ tex [[g1]] [[|>]]_{[[R]]} [[g2]] }}
-   | g1 ~ A  g2       ::   :: EqCong
-     {{ tex [[g1]] [[~]]_{[[A]]} [[g2]] }}
-   | conv phi1 phi2 g     ::   :: IsoConv
-     {{ tex [[conv]]\ [[phi1]]\sim_[[g]] [[phi2]] }}
+   | g ( g1 , g2 )          ::   :: CAppCong
+   | g @ ( g1 , g2 )        ::   :: CPiSnd
+   | g1 |> R g2             ::   :: Cast
+   | g1 ~ A  g2             ::   :: EqCong
+   | conv phi1 phi2 g       ::   :: IsoConv
 
-   | eta a                ::   :: Eta
-   | left g g'            ::   :: Left
-   | right g g'           ::   :: Right
+   | eta a                  ::   :: Eta
+   | left g g'              ::   :: Left
+   | right g g'             ::   :: Right
 
-   | ( g )                :: S :: Paren   {{ coq ([[g]]) }}
-   | (# g #)              :: S :: SecretParen
-     {{ coq [[g]] }} {{ tex [[g]] }}
-   | g { a / x }          :: S :: TSubst
-     {{ coq open_co_wrt_tm [[x g]] [[a]] }}
+   | ( g )                  :: S :: Paren
+   | (# g #)                :: S :: SecretParen
+   | g { a / x }            :: S :: TSubst
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -1752,6 +1744,14 @@ homs 'a_'
   :: UCAbs (+ bind c in b +)
 
 
+%%__ Coercions __%%
+homs 'g_'
+  :: PiCong   (+ bind x in g2 +)
+  :: AbsCong  (+ bind x in g2 +)
+  :: CPiCong  (+ bind c in g3 +)
+  :: CAbsCong (+ bind c in g3 +)
+
+
 
 %%%%____ Formatting ____%%%%
 
@@ -1828,6 +1828,21 @@ homs 'a_'
   :: RelPi
 
 
+%%__ Coercions __%%
+homs 'g_'
+  :: Refl2      {{ tex ([[a]]\mathrel{|\!\!=\!\!|}_{[[g]]}[[b]])               }}
+  :: PiCong     {{ tex \mathrm{\Pi}^{[[R]],[[rho]]}[[x]]\!:\![[g1]].[[g2]]     }}
+  :: AbsCong    {{ tex \mathrm{\lambda}^{[[R]],[[rho]]}[[x]]\!:\![[g1]].[[g2]] }}
+  :: AppCong    {{ tex [[g1]]\ [[g2]]^{[[R]],[[rho]]}                          }}
+  :: CPiCong    {{ tex [[all]][[c]]\!:\![[g1]].[[g3]]                          }}
+  :: CAbsCong   {{ tex \mathrm{\lambda}[[c]]\!:\![[g1]].[[g3]][[@]][[g4]]      }}
+  :: CPiSnd     {{ tex [[g]] [[@]] ([[g1]] \sim [[g2]])                        }}
+  :: Cast       {{ tex [[g1]] [[|>]]_{[[R]]} [[g2]]                            }}
+  :: EqCong     {{ tex [[g1]] [[~]]_{[[A]]} [[g2]]                             }}
+  :: IsoConv    {{ tex [[conv]]\ [[phi1]]\sim_[[g]] [[phi2]]                   }}
+  :: SecretParen {{ tex [[g]] }}
+
+
 %%%%____ Coq translation ____%%%%
 
 
@@ -1879,6 +1894,14 @@ homs 'a_'
   :: RelAbs        {{ coq (a_Abs Rel [[A]] [[a]])                  }}
   :: RelPi         {{ coq (a_Pi  Rel [[A]] [[B]])                  }}
   :: If            {{ coq 0                                        }}
+
+
+%%__ Coercions __%%
+homs 'g_'
+  :: Paren         {{ coq ([[g]])                                  }}
+  :: SecretParen   {{ coq [[g]]                                    }}
+  :: TSubst        {{ coq open_co_wrt_tm [[x g]] [[a]]             }}
+
 
 
 %%%%____ Comments ____%%%%
