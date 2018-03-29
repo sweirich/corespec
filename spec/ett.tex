@@ -47,8 +47,8 @@
 \ottfirstprodline{|}{\ottsym{+}}{}{}{}{}\ottprodnewline
 \ottprodline{|}{\ottsym{-}}{}{}{}{}}
 
-\newcommand{\ottnu}{
-\ottrulehead{\nu}{::=}{}\ottprodnewline
+\newcommand{\ottappflag}{
+\ottrulehead{\ottnt{appflag}  ,\ \nu}{::=}{\ottcom{applicative flag}}\ottprodnewline
 \ottfirstprodline{|}{\ottnt{R}}{}{}{}{}\ottprodnewline
 \ottprodline{|}{\rho}{}{}{}{}}
 
@@ -56,6 +56,7 @@
 \ottrulehead{\ottnt{role}  ,\ \ottnt{R}}{::=}{\ottcom{Role}}\ottprodnewline
 \ottfirstprodline{|}{\ottkw{Nom}}{}{}{}{}\ottprodnewline
 \ottprodline{|}{\ottkw{Rep}}{}{}{}{}\ottprodnewline
+\ottprodline{|}{\ottkw{Phm}}{}{}{}{}\ottprodnewline
 \ottprodline{|}{ \ottnt{R_{{\mathrm{1}}}}  \cap  \ottnt{R_{{\mathrm{2}}}} } {\textsf{S}}{}{}{}\ottprodnewline
 \ottprodline{|}{\ottkw{param} \, \ottnt{R_{{\mathrm{1}}}} \, \ottnt{R_{{\mathrm{2}}}}} {\textsf{S}}{}{}{}\ottprodnewline
 \ottprodline{|}{\ottsym{app\_role}  \nu} {\textsf{S}}{}{}{}\ottprodnewline
@@ -76,13 +77,13 @@
 \ottprodline{|}{ \mathrm{\lambda}^ \rho \ottmv{x} \!:\! \ottnt{A} . \ottnt{b} }{}{\textsf{bind}\; \ottmv{x}\; \textsf{in}\; \ottnt{b}}{}{}\ottprodnewline
 \ottprodline{|}{ \mathrm{\lambda}^{ \rho } \ottmv{x} . \ottnt{b} }{}{\textsf{bind}\; \ottmv{x}\; \textsf{in}\; \ottnt{b}}{}{}\ottprodnewline
 \ottprodline{|}{ \ottnt{a} \  \ottnt{b} ^ \nu }{}{}{}{}\ottprodnewline
-\ottprodline{|}{\ottmv{F}}{}{}{}{}\ottprodnewline
 \ottprodline{|}{ \mathrm{\Pi}^ \rho \ottmv{x} \!:\! \ottnt{A} \to \ottnt{B} }{}{\textsf{bind}\; \ottmv{x}\; \textsf{in}\; \ottnt{B}}{}{}\ottprodnewline
-\ottprodline{|}{ \ottnt{a} \triangleright _{ \ottnt{R} }  \gamma }{}{}{}{}\ottprodnewline
-\ottprodline{|}{ \forall \ottmv{c} \!:\! \phi . \ottnt{B} }{}{\textsf{bind}\; \ottmv{c}\; \textsf{in}\; \ottnt{B}}{}{}\ottprodnewline
 \ottprodline{|}{ \mathrm{\Lambda} \ottmv{c} \!:\! \phi . \ottnt{b} }{}{\textsf{bind}\; \ottmv{c}\; \textsf{in}\; \ottnt{b}}{}{}\ottprodnewline
 \ottprodline{|}{ \mathrm{\Lambda} \ottmv{c} . \ottnt{b} }{}{\textsf{bind}\; \ottmv{c}\; \textsf{in}\; \ottnt{b}}{}{}\ottprodnewline
 \ottprodline{|}{\ottnt{a}  \ottsym{[}  \gamma  \ottsym{]}}{}{}{}{}\ottprodnewline
+\ottprodline{|}{ \forall \ottmv{c} \!:\! \phi . \ottnt{B} }{}{\textsf{bind}\; \ottmv{c}\; \textsf{in}\; \ottnt{B}}{}{}\ottprodnewline
+\ottprodline{|}{ \ottnt{a} \triangleright _{ \ottnt{R} }  \gamma }{}{}{}{}\ottprodnewline
+\ottprodline{|}{\ottmv{F}}{}{}{}{}\ottprodnewline
 \ottprodline{|}{\Box}{}{}{}{}\ottprodnewline
 \ottprodline{|}{ case_{ \ottnt{R} }\  \ottnt{a} \ of \  \ottnt{a'}  \rightarrow  \ottnt{b_{{\mathrm{1}}}}  \| \_ \rightarrow  \ottnt{b_{{\mathrm{2}}}} }{}{}{}{}\ottprodnewline
 \ottprodline{|}{ caseR  \ottnt{a_{{\mathrm{1}}}}  of  \ottnt{a_{{\mathrm{2}}}}  \rightarrow  \ottnt{b_{{\mathrm{1}}}}  \| \_ \rightarrow  \ottnt{b_{{\mathrm{2}}}} }{}{}{}{}\ottprodnewline
@@ -90,8 +91,8 @@
 \ottprodline{|}{\ottkw{match} \, \ottnt{a} \, \ottkw{with} \, \ottnt{brs}}{}{}{}{}\ottprodnewline
 \ottprodline{|}{\ottkw{sub} \, \ottnt{R} \, \ottnt{a}}{}{}{}{}\ottprodnewline
 \ottprodline{|}{\ottnt{a}  \ottsym{\{}  \ottnt{b}  \ottsym{/}  \ottmv{x}  \ottsym{\}}} {\textsf{S}}{}{}{}\ottprodnewline
-\ottprodline{|}{ \ottnt{a} } {\textsf{S}}{}{}{}\ottprodnewline
 \ottprodline{|}{\ottnt{a}  \ottsym{\{}  \gamma  \ottsym{/}  \ottmv{c}  \ottsym{\}}} {\textsf{S}}{}{}{}\ottprodnewline
+\ottprodline{|}{ \ottnt{a} } {\textsf{S}}{}{}{}\ottprodnewline
 \ottprodline{|}{ \ottnt{a} } {\textsf{S}}{}{}{}\ottprodnewline
 \ottprodline{|}{\ottsym{(}  \ottnt{a}  \ottsym{)}} {\textsf{S}}{}{}{}\ottprodnewline
 \ottprodline{|}{ \ottnt{a} } {\textsf{S}}{}{}{\ottcom{parsing precedence is hard}}\ottprodnewline
@@ -106,7 +107,6 @@
 \ottprodline{|}{\ottkw{Fix}} {\textsf{S}}{}{}{}\ottprodnewline
 \ottprodline{|}{\ottkw{Age}} {\textsf{S}}{}{}{}\ottprodnewline
 \ottprodline{|}{\ottnt{a}  \to  \ottnt{b}} {\textsf{S}}{}{}{}\ottprodnewline
-\ottprodline{|}{\ottnt{a}  \ottsym{/}  \ottnt{R}  \to  \ottnt{b}} {\textsf{S}}{}{}{}\ottprodnewline
 \ottprodline{|}{\phi  \Rightarrow  \ottnt{A}} {\textsf{S}}{}{}{}\ottprodnewline
 \ottprodline{|}{ \ottnt{a} \  \ottnt{b} } {\textsf{S}}{}{}{}\ottprodnewline
 \ottprodline{|}{ \lambda  \ottmv{x} . \ottnt{a} } {\textsf{S}}{}{}{}\ottprodnewline
@@ -287,7 +287,7 @@
 
 \newcommand{\ottJPat}{
 \ottrulehead{\ottnt{JPat}}{::=}{}\ottprodnewline
-\ottfirstprodline{|}{\Gamma  \vDash  \ottnt{a}  \ottsym{:}  \ottnt{A} \, \ottkw{pat} \, \ottnt{R}  \ottsym{@}  \ottnt{Rs}}{}{}{}{\ottcom{Pattern judgment}}}
+\ottfirstprodline{|}{\Gamma  \vDash  \ottnt{a}  \ottsym{:}  \ottnt{A} \, \ottkw{pat} \, \ottsym{@}  \ottnt{Rs}}{}{}{}{\ottcom{Pattern judgment}}}
 
 \newcommand{\ottJValue}{
 \ottrulehead{\ottnt{JValue}}{::=}{}\ottprodnewline
@@ -356,7 +356,7 @@
 \ottprodline{|}{\ottmv{const}}{}{}{}{}\ottprodnewline
 \ottprodline{|}{\mathit{index}}{}{}{}{}\ottprodnewline
 \ottprodline{|}{\ottnt{relflag}}{}{}{}{}\ottprodnewline
-\ottprodline{|}{\nu}{}{}{}{}\ottprodnewline
+\ottprodline{|}{\ottnt{appflag}}{}{}{}{}\ottprodnewline
 \ottprodline{|}{\ottnt{role}}{}{}{}{}\ottprodnewline
 \ottprodline{|}{\ottnt{constraint}}{}{}{}{}\ottprodnewline
 \ottprodline{|}{\ottnt{tm}}{}{}{}{}\ottprodnewline
@@ -374,7 +374,7 @@
 
 \newcommand{\ottgrammar}{\ottgrammartabular{
 \ottrelflag\ottinterrule
-\ottnu\ottinterrule
+\ottappflag\ottinterrule
 \ottrole\ottinterrule
 \ottconstraint\ottinterrule
 \otttm\ottinterrule
@@ -499,7 +499,7 @@
 \newcommand{\ottdrulePatXXAbsConst}[1]{\ottdrule[#1]{%
 \ottpremise{\ottmv{F} \, \ottsym{:}  \ottnt{A}  \ottsym{@}  \ottnt{Rs} \, \in \,  \Sigma_0 }%
 }{
-\varnothing  \vDash  \ottmv{F}  \ottsym{:}  \ottnt{A} \, \ottkw{pat} \, \ottnt{R}  \ottsym{@}  \ottnt{Rs}}{%
+\varnothing  \vDash  \ottmv{F}  \ottsym{:}  \ottnt{A} \, \ottkw{pat} \, \ottsym{@}  \ottnt{Rs}}{%
 {\ottdrulename{Pat\_AbsConst}}{}%
 }}
 
@@ -508,30 +508,30 @@
 \ottpremise{\ottmv{F} \,  \sim  \ottnt{a}  :  \ottnt{A}  /  \ottnt{R_{{\mathrm{1}}}}  @  \ottnt{Rs}  \, \in \,  \Sigma_0 }%
 \ottpremise{ \neg  \ottsym{(}   \ottnt{R_{{\mathrm{1}}}}  \leq  \ottnt{R}   \ottsym{)} }%
 }{
-\varnothing  \vDash  \ottmv{F}  \ottsym{:}  \ottnt{A} \, \ottkw{pat} \, \ottnt{R}  \ottsym{@}  \ottnt{Rs}}{%
+\varnothing  \vDash  \ottmv{F}  \ottsym{:}  \ottnt{A} \, \ottkw{pat} \, \ottsym{@}  \ottnt{R}  \ottsym{,}  \ottnt{Rs}}{%
 {\ottdrulename{Pat\_Const}}{}%
 }}
 
 
 \newcommand{\ottdrulePatXXApp}[1]{\ottdrule[#1]{%
-\ottpremise{\Gamma  \vDash  \ottnt{a}  \ottsym{:}   \mathrm{\Pi}^ \rho \ottmv{y} \!:\! \ottnt{A_{{\mathrm{1}}}} \to \ottnt{B_{{\mathrm{1}}}}  \, \ottkw{pat} \, \ottnt{R}  \ottsym{@}  \ottnt{R_{{\mathrm{1}}}}  \ottsym{,}  \ottnt{Rs}}%
+\ottpremise{\Gamma  \vDash  \ottnt{a}  \ottsym{:}   \mathrm{\Pi}^ \rho \ottmv{y} \!:\! \ottnt{A_{{\mathrm{1}}}} \to \ottnt{B_{{\mathrm{1}}}}  \, \ottkw{pat} \, \ottsym{@}  \ottnt{R_{{\mathrm{1}}}}  \ottsym{,}  \ottnt{Rs}}%
 \ottpremise{\ottsym{\{}  \ottmv{y}  \ottsym{/}  \ottmv{x}  \ottsym{\}}  \ottnt{B}  \ottsym{=}  \ottnt{B_{{\mathrm{1}}}}}%
 \ottpremise{\ottsym{app\_role}  \nu  \ottsym{=}  \ottnt{R_{{\mathrm{1}}}}}%
 }{
-\Gamma  \ottsym{,}  \ottmv{x}  \ottsym{:}  \ottnt{A_{{\mathrm{1}}}}  \vDash  \ottsym{(}   \ottnt{a} \  \ottmv{x} ^ \nu   \ottsym{)}  \ottsym{:}  \ottnt{B} \, \ottkw{pat} \, \ottnt{R}  \ottsym{@}  \ottnt{Rs}}{%
+\Gamma  \ottsym{,}  \ottmv{x}  \ottsym{:}  \ottnt{A_{{\mathrm{1}}}}  \vDash  \ottsym{(}   \ottnt{a} \  \ottmv{x} ^ \nu   \ottsym{)}  \ottsym{:}  \ottnt{B} \, \ottkw{pat} \, \ottsym{@}  \ottnt{Rs}}{%
 {\ottdrulename{Pat\_App}}{}%
 }}
 
 
 \newcommand{\ottdrulePatXXCApp}[1]{\ottdrule[#1]{%
-\ottpremise{\Gamma  \vDash  \ottnt{a}  \ottsym{:}   \forall \ottmv{c_{{\mathrm{1}}}} \!:\! \phi . \ottnt{B_{{\mathrm{1}}}}  \, \ottkw{pat} \, \ottnt{R}  \ottsym{@}  \ottnt{Rs}}%
+\ottpremise{\Gamma  \vDash  \ottnt{a}  \ottsym{:}   \forall \ottmv{c_{{\mathrm{1}}}} \!:\! \phi . \ottnt{B_{{\mathrm{1}}}}  \, \ottkw{pat} \, \ottsym{@}  \ottnt{Rs}}%
 \ottpremise{\ottsym{\{}  \ottmv{c_{{\mathrm{1}}}}  \ottsym{/}  \ottmv{c}  \ottsym{\}}  \ottnt{B}  \ottsym{=}  \ottnt{B_{{\mathrm{1}}}}}%
 }{
-\Gamma  \ottsym{,}  \ottmv{c}  \ottsym{:}  \phi  \vDash  \ottsym{(}  \ottnt{a}  \ottsym{[}  \bullet  \ottsym{]}  \ottsym{)}  \ottsym{:}  \ottnt{B} \, \ottkw{pat} \, \ottnt{R}  \ottsym{@}  \ottnt{Rs}}{%
+\Gamma  \ottsym{,}  \ottmv{c}  \ottsym{:}  \phi  \vDash  \ottsym{(}  \ottnt{a}  \ottsym{[}  \bullet  \ottsym{]}  \ottsym{)}  \ottsym{:}  \ottnt{B} \, \ottkw{pat} \, \ottsym{@}  \ottnt{Rs}}{%
 {\ottdrulename{Pat\_CApp}}{}%
 }}
 
-\newcommand{\ottdefnPat}[1]{\begin{ottdefnblock}[#1]{$\Gamma  \vDash  \ottnt{a}  \ottsym{:}  \ottnt{A} \, \ottkw{pat} \, \ottnt{R}  \ottsym{@}  \ottnt{Rs}$}{\ottcom{Pattern judgment}}
+\newcommand{\ottdefnPat}[1]{\begin{ottdefnblock}[#1]{$\Gamma  \vDash  \ottnt{a}  \ottsym{:}  \ottnt{A} \, \ottkw{pat} \, \ottsym{@}  \ottnt{Rs}$}{\ottcom{Pattern judgment}}
 \ottusedrule{\ottdrulePatXXAbsConst{}}
 \ottusedrule{\ottdrulePatXXConst{}}
 \ottusedrule{\ottdrulePatXXApp{}}
@@ -1331,7 +1331,7 @@
 
 \newcommand{\ottdruleEXXcase}[1]{\ottdrule[#1]{%
 \ottpremise{\Gamma  \vDash  \ottnt{a_{{\mathrm{1}}}}  \ottsym{:}  \ottnt{A}}%
-\ottpremise{\Gamma'  \vDash  \ottnt{a_{{\mathrm{2}}}}  \ottsym{:}  \ottnt{A} \, \ottkw{pat} \, \ottnt{R}  \ottsym{@}  \ottnt{Rs}}%
+\ottpremise{\Gamma'  \vDash  \ottnt{a_{{\mathrm{2}}}}  \ottsym{:}  \ottnt{A} \, \ottkw{pat} \, \ottsym{@}  \ottnt{R}  \ottsym{,}  \ottnt{Rs}}%
 \ottpremise{ \Gamma ,  \ottsym{(}  \Gamma'  \ottsym{,}  \ottmv{c}  \ottsym{:}  \phi_{{\mathrm{1}}}  \ottsym{)}   \vDash  \ottnt{b_{{\mathrm{1}}}}  \ottsym{:}  \ottnt{B}}%
 \ottpremise{\Gamma  \vDash  \ottnt{b_{{\mathrm{2}}}}  \ottsym{:}  \ottnt{B}}%
 \ottpremise{\phi_{{\mathrm{1}}}  \ottsym{=}  \ottsym{(}   \ottnt{a_{{\mathrm{1}}}}   \sim _{ \ottnt{A} / \ottnt{R} }  \ottnt{a_{{\mathrm{2}}}}   \ottsym{)}}%
