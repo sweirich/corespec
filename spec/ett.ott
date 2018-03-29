@@ -59,70 +59,70 @@ constraint, phi {{ tex \phi }} :: '' ::= {{ com props }}
 
 
 tm, a, b, v, w, A, B :: 'a_' ::= {{ com types and kinds }}
-   | TYPE                 ::   :: Star
+  | TYPE                 ::   :: Star
 
-   | x                    ::   :: Var
-   | \ rho x : A . b      ::   :: Abs
-   | \ rho x . b          ::   :: UAbs
-   | a nu b               ::   :: App
-   | all rho x : A -> B   ::   :: Pi
+  | x                    ::   :: Var
+  | \ rho x : A . b      ::   :: Abs
+  | \ rho x . b          ::   :: UAbs
+  | a nu b               ::   :: App
+  | all rho x : A -> B   ::   :: Pi
 
-   | /\ c : phi . b       ::   :: CAbs
-   | /\ c  . b            ::   :: UCAbs
-   | a [ g ]              ::   :: CApp
-   | all c : phi . B      ::   :: CPi
+  | /\ c : phi . b       ::   :: CAbs
+  | /\ c  . b            ::   :: UCAbs
+  | a [ g ]              ::   :: CApp
+  | all c : phi . B      ::   :: CPi
 
-   | a |> R g             ::   :: Conv
+  | a |> R g             ::   :: Conv
 
-   | F                    ::   :: Fam
+  | F                    ::   :: Fam
 
-   | []                   ::   :: Bullet
+  | []                   ::   :: Bullet
 
-   | ifPath R a' a b1 b2  ::   :: Pattern
-   | caseR a1 of a2 => b1 | => b2 :: :: Pattern2
+  | ifPath R a' a b1 b2  ::   :: Pattern
+  | caseR a1 of a2 => b1 | => b2 :: :: Pattern2
 
-   %% currently unused but ready for extension
-   | K                    ::   :: DataCon
-   | match a with brs     ::   :: Case
+  %% currently unused but ready for extension
+  | K                    ::   :: DataCon
+  | match a with brs     ::   :: Case
 
 	%% change the role in an annotated term
-   | sub R a              ::    :: Sub
+  | sub R a              ::    :: Sub
 
-   %% standard substitution, using open
-   | a { b / x }          :: S :: Subst
-   | a { g / c }          :: S :: SubstC
+  %% standard substitution, using open
+  | a { b / x }          :: S :: Subst
+  | a { g / c }          :: S :: SubstC
 
-   %% this is a hack for when a substitution {x/x} is necessary for the
-   %% locally nameless backend to generate the correct code, but we don't
-   %% want this substitution to show in the tex output
-   | a {{{ b / x }}}      :: S :: SecretSubst
-   | a {{{ g / c }}}      :: S :: SecretSubstC
+  %% this is a hack for when a substitution {x/x} is necessary for the
+  %% locally nameless backend to generate the correct code, but we don't
+  %% want this substitution to show in the tex output
+  | a {{{ b / x }}}      :: S :: SecretSubst
+  | a {{{ g / c }}}      :: S :: SecretSubstC
 
 
-   | ( a )                :: S :: Paren
-   %% Ott parsing precedence is hard
-   | (# a #)              :: S :: SecretParen
+  | ( a )                :: S :: Paren
+  %% Ott parsing precedence is hard
+  | (# a #)              :: S :: SecretParen
 
-   |  | a | R             :: S :: Erase
+  |  | a | R             :: S :: Erase
 
-   %% abbreviations for examples
-   | Int                  :: S :: Int
-   | Bool                 :: S :: Bool
-   | Nat                  :: S :: Nat
-   | Vec                  :: S :: Vec
-   | 0                    :: S :: Zero
-   | Succ                 :: S :: Succ
-   | True                 :: S :: True
-   | Fix                  :: S :: Fix
-   | Age                  :: S :: Age
-   | a -> b               :: S :: Arrow
-   | a / R -> b           :: S :: RArrow
-   | phi => A             :: S :: CArrow
-   | a b                  :: S :: RelApp
-   | \ x . a              :: S :: RelUAbs
-   | \ x : A . a          :: S :: RelAbs
-   | all x : A -> B       :: S :: RelPi
-   | if phi then a else b :: S :: If
+  %% abbreviations for examples
+  | Int                  :: S :: Int
+  | Bool                 :: S :: Bool
+  | Nat                  :: S :: Nat
+  | Vec                  :: S :: Vec
+  | 0                    :: S :: Zero
+  | Succ                 :: S :: Succ
+  | True                 :: S :: True
+  | Fix                  :: S :: Fix
+  | Age                  :: S :: Age
+  | a -> b               :: S :: Arrow
+  | a / R -> b           :: S :: RArrow
+  | phi => A             :: S :: CArrow
+  | a b                  :: S :: RelApp
+  | \ x . a              :: S :: RelUAbs
+  | \ x : A . a          :: S :: RelAbs
+  | all x : A -> B       :: S :: RelPi
+  | if phi then a else b :: S :: If
 
 
 
@@ -1826,8 +1826,6 @@ homs 'a_'
   :: RelUAbs {{ tex \lambda [[x]].[[a]]           }}
   :: RelAbs  {{ tex \lambda [[x]]\!:\![[A]].[[a]] }}
   :: RelPi
-
-
 
 
 %%%%____ Coq translation ____%%%%
