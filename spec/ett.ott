@@ -29,38 +29,30 @@ indexvar index, i ::=
 grammar
 
 relflag, rho {{ tex \rho }} :: '' ::= {{ com relevance flag }}
-   | +             ::   :: Rel
-   | -             ::   :: Irrel
+  | +             ::   :: Rel
+  | -             ::   :: Irrel
 
-nu {{tex \nu}} :: '' ::= 
-   | R   ::  :: Role
-   | rho ::  :: Rho
+appflag, nu {{ tex \nu }} :: '' ::= {{ com applicative flag }}
+  | R   ::  :: Role
+  | rho ::  :: Rho
 
 role, R :: '' ::= {{ com Role }}
-   | Nom  ::    :: Nom
-   | Rep  ::    :: Rep
-   | min R1 R2  :: S :: Min
-     {{ coq (min [[R1]][[R2]]) }}
-     {{ tex [[R1]] \cap [[R2]] }}
-   | param R1 R2 :: S :: Param
-     {{ coq (param[[R1]] [[R2]]) }}
-   | app_role nu :: S :: App
-	  {{ coq (app_role [[nu]]) }}
-   | ( R ) ::  S :: RParen
-     {{ coq ([[R]]) }}
+  | Nom         ::   :: Nom
+  | Rep         ::   :: Rep
+  | Phm         ::   :: Phm
+  | min R1 R2   :: S :: Min
+  %% FIXME: I don't think we need param anymore, do we?
+  | param R1 R2 :: S :: Param
+  | app_role nu :: S :: App   % FIXME: not sure what this stands for
+  | ( R )       :: S :: RParen
+
 
 constraint, phi {{ tex \phi }} :: '' ::= {{ com props }}
-   | a ~ b : A / R   ::   :: Eq
-     {{ tex [[a]] [[~]]_{[[A]]/[[R]]} [[b]] }}
-   | ( phi )          :: S :: Paren
-     {{ coq ([[phi]]) }}
-   | phi { b / x }    :: S :: Subst
-     {{ coq (open_constraint_wrt_tm [[x b]] [[phi]]) }}
-   | | phi |          :: S :: Erase
-     {{ coq (erase_constraint [[phi]]) }}
-   | a ~ b / R       :: S :: EqNoType
-	  {{ coq 0 }}
-	  {{ tex [[a]] [[~]]_{[[R]]} [[b]] }}
+  | a ~ b : A / R    ::   :: Eq
+  | ( phi )          :: S :: Paren
+  | phi { b / x }    :: S :: Subst
+  | | phi |          :: S :: Erase
+  | a ~ b / R        :: S :: EqNoType
 
 
 
@@ -276,7 +268,7 @@ sig_sort :: '' ::= {{ com signature classifier }}
    | : A @ Rs            ::    :: Cs
    | ~ a : A / R @ Rs    ::    :: Ax
      {{ tex \sim [[a]] : [[A]] / [[R]] @ [[Rs]] }}
-   
+
 sort :: '' ::= {{ com binding classifier }}
    | Tm A             ::   :: Tm
    | Co phi           ::   :: Co
@@ -296,14 +288,14 @@ context, G {{ tex \Gamma }} :: 'ctx_' ::= {{ com contexts }}
    | ( G )           :: M  :: Paren   {{ coq ([[G]]) }}
    | (# G #)         :: M  :: SecretParen {{ coq [[G]] }} {{ tex [[G]] }}
 
-sig, S {{ tex \Sigma }} :: 'sig_' ::= 
-	  {{ com signatures }} 
+sig, S {{ tex \Sigma }} :: 'sig_' ::=
+	  {{ com signatures }}
 	  {{ coq list (atom * sig_sort) }}
-   | emptyS         ::    :: Empty       
+   | emptyS         ::    :: Empty
 	  {{ coq nil }}
      {{ tex \varnothing }}
    | S , F sig_sort ::    :: Cons
-	  {{ coq (([[F]]~[[sig_sort]])++[[S]]) }}  
+	  {{ coq (([[F]]~[[sig_sort]])++[[S]]) }}
 	  {{ tex [[S]] \cup \{[[F]][[sig_sort]]\} }}
    | toplevel       :: M  :: Toplevel
      {{ coq toplevel }}
@@ -311,7 +303,7 @@ sig, S {{ tex \Sigma }} :: 'sig_' ::=
    | an_toplevel    :: M  :: AnToplevel
      {{ coq an_toplevel }}
      {{ tex \Sigma_1 }}
-   | | S |          :: M  :: Erase  
+   | | S |          :: M  :: Erase
 	  {{ coq (erase_sig [[S]]) }}
 
 available_props, D {{ tex \Delta }} :: 'D_' ::= {{ coq atoms }} {{ coq-universe Type }}
@@ -319,7 +311,7 @@ available_props, D {{ tex \Delta }} :: 'D_' ::= {{ coq atoms }} {{ coq-universe 
    | D , c           ::    :: ConsCo  {{ coq (singleton [[c]] \u [[D]]) }}
    | dom G           :: M  :: DomG    {{ coq (dom [[G]]) }} {{ tex \widetilde {[[G]]} }}
    | ( D )           :: M  :: Paren   {{ coq ([[D]]) }}
-   
+
 
 
 substitutions
@@ -460,7 +452,7 @@ embed {{ coq
 Definition app_role (rr : nu) : role :=
   match rr with
   | Rho _ => Nom
-  | Role r => r 
+  | Role r => r
   end.
 
 Definition min (r1 : role) (r2 : role) : role :=
@@ -485,7 +477,7 @@ Definition lte_role (r1 : role) (r2 : role) : bool :=
   end.
 
 Parameter str : bool.
-Definition param (r1 : role) (r2 : role) := 
+Definition param (r1 : role) (r2 : role) :=
   if str then r1 else min r1 r2.
 
 Fixpoint erase_tm (a : tm) (r : role) : tm :=
@@ -525,7 +517,7 @@ with erase_constraint (phi : constraint) (r:role): constraint :=
 
 Definition erase_sort s r :=
  match s with
- | Tm a => Tm (erase_tm a r) 
+ | Tm a => Tm (erase_tm a r)
  | Co p => Co (erase_constraint p r)
 end.
 
@@ -601,7 +593,7 @@ R1 <= R3
 
 defns
    JPath :: '' ::=
-   
+
 defn
 Path F a R @ Rs  ::  :: Path :: 'Path_'
 {{ com Type headed by constant (partial function) }}
@@ -648,7 +640,7 @@ G |= a : all rho y: A1 -> B1 pat R @ R1,Rs
 {y/x}B = B1
 app_role nu = R1
 ------------------------------------------- :: App
-G , x : A1 |= (a nu x) : B pat R @ Rs 
+G , x : A1 |= (a nu x) : B pat R @ Rs
 
 G |= a : all c1: phi. B1 pat R @ Rs
 {c1/c}B = B1
@@ -691,7 +683,7 @@ Value R /\c .a
 
 Path F a R @ Rs
 --------------- :: Path
-Value R a 
+Value R a
 
 defns
    JValueType :: '' ::=
@@ -739,7 +731,7 @@ consistent (all rho x1:A1 -> B1) (all rho x2:A2 -> B2) R'
 consistent (all c1:phi1. A1) (all c2 :phi2. A2) R
 
 Path F a1 R @ Rs
-Path F a2 R @ Rs 
+Path F a2 R @ Rs
 ------------------- :: Path
 consistent a1 a2 R
 
@@ -968,7 +960,7 @@ Value R1 (\rho x. v)
 
 
 F ~ a : A/R @ Rs in toplevel
-R <= R1 
+R <= R1
 -------------------------------- :: Axiom
 |= F > a / R1
 
@@ -1034,11 +1026,11 @@ G |= phi ok ::    :: PropWff :: 'E_'
 {{ com Prop wellformedness }}
 by
 
-G |= a : A 
-G |= b : A 
+G |= a : A
+G |= b : A
 [ G |= A : TYPE  ]
 ---------------------------  :: Wff
-G |= a ~ b : A / R ok 
+G |= a ~ b : A / R ok
 
 defn
 
@@ -1048,57 +1040,57 @@ by
 
 |= G
 ---------------------  :: Star
-G |= TYPE : TYPE 
+G |= TYPE : TYPE
 
 |= G
 x:A in G
 ------------------ :: Var
-G |= x : A 
+G |= x : A
 
-G, x:A |= B : TYPE 
-G |= A : TYPE 
+G, x:A |= B : TYPE
+G |= A : TYPE
 ----------------------------------------- :: Pi
-G |= all rho x:A -> B : TYPE 
+G |= all rho x:A -> B : TYPE
 
-G, x:A  |= a : B 
+G, x:A  |= a : B
 [ G |= A : TYPE  ]
 rho => check x in a
 ---------------------------------- :: Abs
-G |= \ rho x . a : ( all rho x:A -> B ) 
+G |= \ rho x . a : ( all rho x:A -> B )
 
-G |= b : all+ x : A -> B 
-G |= a : A 
+G |= b : all+ x : A -> B
+G |= a : A
 ------------------------------------- :: App
-G |= b + a : B { a / x } 
+G |= b + a : B { a / x }
 
-G |= b : all+ x : A -> B 
-G |= a : A 
+G |= b : all+ x : A -> B
+G |= a : A
 Path F a R @ Rs
 ------------------------------------- :: TApp
-G |= b R a : B { a / x } 
+G |= b R a : B { a / x }
 
 
-G |= b : all - x : A -> B 
+G |= b : all - x : A -> B
 G |= a : A
 ------------------------------------- :: IApp
-G |= b - [] : B { a / x } 
+G |= b - [] : B { a / x }
 
 
-G |= a : A 
+G |= a : A
 G ; dom G |= A == B : TYPE / Rep
 [ G |= B : TYPE ]
 ----------------------------- :: Conv
 G |= a : B
 
-G, c : phi |= B : TYPE 
+G, c : phi |= B : TYPE
 [ G |= phi ok ]
 -------------------------------- :: CPi
-G |= all c:phi. B : TYPE 
+G |= all c:phi. B : TYPE
 
 G, c:phi |= a : B
 [ G |= phi ok ]
 ------------------------------------------------- :: CAbs
-G |= /\ c . a : all c:phi. B 
+G |= /\ c . a : all c:phi. B
 
 G |= a1 : all c : (a ~ b : A / R) . B1
 G ; dom G |= a == b : A / R
@@ -1107,13 +1099,13 @@ G |= a1 [ o ] : B1 { o / c }
 
 |= G
 F : A @ Rs in toplevel
-empty |= A : TYPE 
+empty |= A : TYPE
 ------------------------- :: Const
 G |= F : A
 
 |= G
 F ~ a : A / R1 @ Rs in toplevel
-empty |= A : TYPE 
+empty |= A : TYPE
 ------------------------- :: Fam
 G |= F : A
 
@@ -1144,15 +1136,15 @@ G ; D |= B1 == B2 : A / R
 --------------------------------------------- :: PropCong
 G ; D |= A1 ~ B1 : A /R  == A2 ~ B2 : A /R
 
-G ; D |= A == B : TYPE / R0 
-G |= A1 ~ A2 : A / R ok 
-G |= A1 ~ A2 : B / R ok 
+G ; D |= A == B : TYPE / R0
+G |= A1 ~ A2 : A / R ok
+G |= A1 ~ A2 : B / R ok
 -------------------------------------------- :: IsoConv
-G ; D |= A1 ~ A2 : A / R == A1 ~ A2 : B / R 
+G ; D |= A1 ~ A2 : A / R == A1 ~ A2 : B / R
 
 G ; D |= all c:(a1 ~ a2 : A/R1). B1 == all c:(b1 ~ b2 : B/R2). B2 : TYPE / R'
 ---------------------------------------------------------------------------- :: CPiFst
-G ; D |=  a1 ~ a2 : A/R1 == b1 ~ b2 : B/R2 
+G ; D |=  a1 ~ a2 : A/R1 == b1 ~ b2 : B/R2
 
 
 defn
@@ -1167,7 +1159,7 @@ c in D
 -------------------- :: Assn
 G ; D |= a == b : A / R
 
-G |= a : A 
+G |= a : A
 ------------------------- :: Refl
 G ; D |= a == a : A / Nom
 
@@ -1234,7 +1226,7 @@ G ; D |=  B1 {a1 /x}  == B2 {a2/x} : TYPE/R'
 
 %% Rules related to Coercion Abstraction
 
-G ; D |= a1 ~ b1 : A1/R == a2 ~ b2 : A2/R  
+G ; D |= a1 ~ b1 : A1/R == a2 ~ b2 : A2/R
 G, c: a1 ~ b1 : A1/R ; D |= A == B : TYPE/R'
 [G |= a1 ~ b1 : A1/R ok  ]
 [G |= all c: a1 ~ b1 : A1/R. A : TYPE ]
@@ -1261,7 +1253,7 @@ G ; D |=  B1 { o / c} == B2 { o / c } : TYPE/R0
 %% Other rules
 
 G ; D |= a == b : A/R
-G ; D |= a ~ b : A/R == a' ~ b' : A'/R' 
+G ; D |= a ~ b : A/R == a' ~ b' : A'/R'
 ------------------------------------------------ :: Cast
 G ; D |= a' == b' : A'/R'
 
@@ -1271,7 +1263,7 @@ G ; dom G |= A == B : TYPE/Rep
 -------------------------------------- :: EqConv
 G ; D |= a == b : B/R
 
-G ; D |= a ~ b : A/R1 == a' ~ b' : A'/R1 
+G ; D |= a ~ b : A/R1 == a' ~ b' : A'/R1
 --------------------------------------------- :: IsoSnd
 G ; D |= A == A' : TYPE/Rep
 
@@ -1284,10 +1276,10 @@ G ; D |= ifPath R F a b1 b2 == ifPath R F a' b1' b2' : B / R0
 
  Path F a R' @ R, Rs
  Path F a' R' @ R , Rs
- G |= a : all +x:A  -> B 
- G |= b : A 
+ G |= a : all +x:A  -> B
+ G |= b : A
  G |= a' : all +x:A  -> B
- G |= b' : A 
+ G |= b' : A
  G ; D |= a R1 b == a' R1 b' : B { b / x } / R'
  G ; dom G |= B {b/x} == B {b'/x} : TYPE / R'
 --------------------------------------------------- :: LeftRel
@@ -1314,7 +1306,7 @@ G ; D |= ifPath R F a b1 b2 == ifPath R F a' b1' b2' : B / R0
  G ; D |= a + b == a' + b' : B { b / x }/R'
  G ; dom G |= B {b/x} == B {b'/x} : TYPE/R0
 ------------------------------------------------ :: Right
- G ; D |= b == b' : A/param R1 R' 
+ G ; D |= b == b' : A/param R1 R'
 
 
  Path F a R' @ R, Rs
@@ -1335,13 +1327,13 @@ by
 |= empty
 
 |= G
-G |= A : TYPE 
+G |= A : TYPE
 x notin dom G
 --------------------- :: ConsTm
 |= G, x : A
 
 |= G
-G |= phi ok 
+G |= phi ok
 c notin dom G
 -------------------- :: ConsCo
 |= G, c: phi
@@ -1376,103 +1368,103 @@ F notin dom S
 
 % defns
 % Jann :: '' ::=
-% 
+%
 % defn
 % G |- phi ok ::   :: AnnPropWff :: 'An_'
 % {{ com prop wellformedness }}
 % by
-% 
+%
 % G |- a : A/R
 % G |- b : B/R
 % |A|R = |B|R
 % ------------------------- :: Wff
 % G |- a ~ b : A/R  ok
-% 
+%
 % defn
 % G |- a : A / R ::  :: AnnTyping :: 'An_'
 % {{ com typing }}
 % by
-% 
+%
 % |- G
 % ------------  :: Star
 % G |- TYPE : TYPE/R
-% 
+%
 % |- G
 % x : A/R in G
 % ----------- :: Var
 % G |- x : A/R
-% 
+%
 % G, x:A/R |- B : TYPE/R'
 % [ G |- A : TYPE/R ]
 % ------------------------------------ :: Pi
 % G |- all rho x:A/R -> B : TYPE/R'
-% 
+%
 % [ G |- A : TYPE/R ]
 % G, x:A/R |- a : B/R'
 % rho => check x in | a |R'
 % R <= R'
 % ---------------------------------- :: Abs
 % G |- \ rho x : A/R. a : (all rho x:A/R -> B)/R'
-% 
+%
 % G |- b : (all rho x:A/R -> B)/R'
 % G |- a : A/R
 % ------------------------------------- :: App
 % G |- b rho R a : (B { a / x })/R'
-% 
+%
 % G |- a : A/R
 % G ; dom G |- g : A ~ B : R
 % G |- B : TYPE/R
 % ----------------------------- :: Conv
 % G |- a |>R g : B/R
-% 
+%
 % [ G |- phi ok ]
 % G, c : phi |- B : TYPE/R
 % -------------------------------- :: CPi
 % G |- all c:phi. B : TYPE/R
-% 
+%
 % [ G |- phi ok ]
 % G, c:phi |- a : B/R
 % ------------------------------------------------- :: CAbs
 % G |- /\ c: phi. a : (all c:phi. B)/R
-% 
+%
 % G |- a1 : (all c : a ~ b : A1/R. B)/ R'
 % G ; dom G |- g : a ~ b : R
 % ------------------------------------- :: CApp
 % G |- a1 [ g ] : B { g / c } / R'
-% 
+%
 % |- G
 % F ~ a : A/R in an_toplevel
 % empty |- A : TYPE/R0
 % ----------------------- :: Fam
 % G |- F : A/R1
-% 
+%
 % R1 <= R2
 % G |- a : A / R1
 % ----------------- :: SubRole
 % G |- sub R1 a : A / R2
-% 
-% 
+%
+%
 % defn
 % G ; D |- g : phi1 == phi2 ::  :: AnnIso :: 'An_'
 % {{ tex [[G]];[[D]][[|-]] [[g]] : [[phi1]] \sim [[phi2]] }}
 % {{ com coercion between props }}
 % by
-% 
+%
 % G ; D |- g1 : A1 ~ A2 : R
 % G ; D |- g2 : B1 ~ B2 : R
 % G |- A1 ~ B1 : A/R ok
 % G |- A2 ~ B2 : A/R ok
 % ------------------------------------------------------------ :: PropCong
 % G ; D |- (g1 ~A g2) : (A1 ~ B1 : A/R) == (A2 ~ B2 : A/R)
-% 
+%
 % G ; D |- g : all c:phi1. A2 ~ all c:phi2. B2 : R
 % --------------------------------------- :: CPiFst
 % G ; D |- cpiFst g : phi1 == phi2
-% 
+%
 % G ; D |- g : phi1 == phi2
 % ---------------------------- :: IsoSym
 % G ; D |- sym g : phi2 == phi1
-% 
+%
 % G; D |- g : A ~ B : R
 % G |- a1 ~ a2 : A/R ok
 % G |- a1' ~ a2' : B/R ok
@@ -1480,39 +1472,39 @@ F notin dom S
 % |a2|R = |a2'|R
 % -------------------------------------- :: IsoConv
 % G ; D |- conv (a1 ~ a2 : A/R) (a1' ~ a2' : B/R) g : (a1 ~ a2 : A/R) == (a1' ~ a2' : B/R)
-% 
-% 
+%
+%
 % defn
 % G ; D |- g : A ~ B : R ::  :: AnnDefEq :: 'An_'
 % {{ com coercion between types }}
 % {{ tex [[G]]; [[D]] \vdash [[g]] [[:]] [[A]] \sim_[[R]] [[B]] }}
 % by
-% 
+%
 % |- G
 % c: a ~ b : A/R in G
 % c in D
 % ------------------- :: Assn
 % G ; D |- c : a ~ b : R
-% 
+%
 % G |- a : A/R
 % ----------------------------- :: Refl
 % G ; D |- refl a : a ~ a : R
-% 
+%
 % G |- a : A/R
 % G |- b : B/R
 % |a|R = |b|R
 % G ; dom G |- g : A ~ B : R
 % ----------------------------- :: EraseEq
 % G ; D |- refl2 a b g : a ~ b : R
-% 
-% 
+%
+%
 % G |- b : B/R
 % G |- a : A/R
 % [ G ; dom G |- g1 : B ~ A : R ]
 % G ; D |- g : b ~ a : R
 % -------------------------- :: Sym
 % G ; D |- sym g : a ~ b : R
-% 
+%
 % G ; D |- g1 : a ~ a1 : R
 % G ; D |- g2 : a1 ~ b : R
 % [ G |- a : A/R ]
@@ -1520,16 +1512,16 @@ F notin dom S
 % [ G ; dom G |- g3 : A ~ A1 : R ]
 % ------------------------------------- :: Trans
 % G ; D |- (g1 ; g2) : a ~ b : R
-% 
-% 
+%
+%
 % G |- a1 : B0/R
 % G |- a2 : B1/R
 % |B0|R = |B1|R
 % |= |a1|R > |a2|R / R
 % --------------------------------  :: Beta
 % G ; D |- red a1 a2 : a1 ~ a2 : R
-% 
-% 
+%
+%
 % %% Note: need to include {x/x} to emphasize that x is free in B2 for
 % %% the locally nameless backend.
 % %% Need all three assns, so that we know A1, A2, B1, B2, B3 all have kind TYPE
@@ -1542,7 +1534,7 @@ F notin dom S
 % [R <= R']
 % ---------------------------------------------------------- :: PiCong
 % G ; D |- all rho R x:g1 -> g2 : (all rho x:A1/R -> B1) ~ (all rho x:A2/R -> B3) : R'
-% 
+%
 % G ; D |- g1 : A1 ~ A2 : R
 % G, x : A1/R ; D |- g2 : b1 ~ (# b2 {{{x / x}}} #) : R'
 % b3 = b2 { x |>R' sym g1 / x }
@@ -1554,7 +1546,7 @@ F notin dom S
 % [R <= R' ]
 % ------------------------------------------------------------------ :: AbsCong
 % G ; D |- (\rho R x:g1. g2) : (\ rho x:A1/R. b1) ~ (\ rho x :A2/R. b3) : R'
-% 
+%
 % % really want heterogenous equality here.
 % %% NOTE: we know that G |- g3 : A ~ B  must hold (b/c reg), but adding it as
 % %% an extra assumption for the erasure proof.
@@ -1565,20 +1557,20 @@ F notin dom S
 % [ G ; dom G |- g3 : A ~ B : R' ]
 % -------------------------------------- :: AppCong
 % G ; D |- g1 rho R g2 : a1 rho R a2 ~ b1 rho R b2 : R'
-% 
-% 
+%
+%
 % G ; D |- g : all rho x:A1/R -> B1 ~ all rho x:A2/R -> B2 : R'
 % --------------------------------------- :: PiFst
 % G ; D |- piFst g : A1 ~ A2 : R
-% 
+%
 % G ; D |- g1 : all rho x:A1/R -> B1  ~ all rho x:A2/R -> B2 : R'
 % G ; D |- g2 : a1 ~ a2 : R
 % G |- a1 : A1/R
 % G |- a2 : A2/R
 % --------------------------------------- :: PiSnd
 % G ; D |- g1 @ g2 : (# B1 {a1 /x} #) ~ (# B2 {a2/x} #) : R'
-% 
-% 
+%
+%
 % G ; D |- g1 : a1 ~ b1 : A1/R == a2 ~ b2 : A2/R
 % G, c:a1 ~ b1 : A1/R ; D |- g3 : B1 ~ (# B2 {{{c/c}}} #) : R'
 % B3 = B2 { c |>R' sym g1 / c }
@@ -1587,8 +1579,8 @@ F notin dom S
 % G |- all c:a1 ~ b1 : A1/R . B2 : TYPE/R'
 % ----------------------------------------------------- :: CPiCong
 % G ; D |- (all c: g1. g3) : (all c:a1 ~ b1 : A1/R. B1) ~ (all c:a2 ~ b2 : A2/R. B3) : R
-% 
-% 
+%
+%
 % G ; D |- g1 : b0 ~ b1 : A1/R == b2 ~ b3 : A2/R
 % G, c:b0 ~ b1 : A1/R ; D |- g3 : a1 ~ (# a2{{{c/c}}} #) : R'
 % a3 = a2 { c |>R' sym g1 / c }
@@ -1602,8 +1594,8 @@ F notin dom S
 % G ; dom G |- g4 : all c:b0 ~ b1 : A1/R. B1 ~ all c:phi2. B2 : R'
 % ---------------------------------------------------------------- :: CAbsCong
 % G ; D |- (\ c: g1. g3 @ g4) : (/\ c:b0 ~ b1 : A1/R. a1) ~ (/\ c:b2 ~ b3 : A2/R. a3) : R'
-% 
-% 
+%
+%
 % G ; D |- g1 : a1 ~ b1 : R
 % G ; dom G |- g2 : a2 ~ b2 : R'
 % G ; dom G |- g3 : a3 ~ b3 : R'
@@ -1612,73 +1604,73 @@ F notin dom S
 % [ G ; dom G |- g4 : A ~ B : R ]
 % -------------------------------------- :: CAppCong
 % G ; D |- g1 (g2, g3) : a1 [ g2 ]  ~ b1 [ g3 ] : R
-% 
-% 
+%
+%
 % G ; D |- g1 : (all c1:a~a':A/R. B1) ~ (all c2:b~b':B/R'. B2) : R0
 % G ; dom G |- g2 : a~a' : R
 % G ; dom G |- g3 : b~b' : R'
 % -------------------------------------------------- :: CPiSnd
 % G ; D |- g1 @ (g2, g3) : B1 { g2 / c1 } ~ B2 { g3 / c2 } : R0
-% 
-% 
+%
+%
 % G ; D |- g1 : a~a' : R1
 % G ; D |- g2 : a~a' :A/R1 == b~b' : B/R1
 % --------------------------------------- :: Cast
 % G ; D |- g1 |>R1 g2 : b~b' : R1
-% 
-% 
+%
+%
 % G ; D |- g : (a~a' : A/R) == (b~b' : B/R)
 % ---------------------------------- :: IsoSnd
 % G ; D |- isoSnd g : A ~ B : R
-% 
+%
 % G ; D |- g : a ~ b : R1
 % R1 <= R2
 % ---------------------------------------- :: Sub
 % G ; D |- sub g : a ~ b : R2
-% 
+%
 % %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% 
+%
 % defn
 % |- G ::      :: AnnCtx :: 'An_'
 % {{ com context wellformedness }}
 % by
-% 
-% 
+%
+%
 % ---------- :: Empty
 % |- empty
-% 
+%
 % |- G
 % G |- A : TYPE/R
 % x notin dom G
 % --------------------- :: ConsTm
 % |- G, x : A/R
-% 
+%
 % |- G
 % G |- phi ok
 % c notin dom G
 % -------------------- :: ConsCo
 % |- G, c:phi
-% 
+%
 % defn
 % |- S ::    :: AnnSig :: 'An_Sig_'
 % {{ com signature wellformedness }}
 % by
-% 
+%
 % ------------ :: Empty
 % |- emptyS
-% 
-% 
+%
+%
 % |- S
 % empty |- A : TYPE/R
 % empty |- a : A/R
 % F notin dom S
 % ---------------- :: ConsAx
 % |- S, F ~ a  : A/R
-% 
-% 
+%
+%
 % defns
 %   Jred :: '' ::=
-% 
+%
 % defn
 % G |- a ~>h b / R ::   :: head_reduction :: 'An_'
 % {{ com single-step, weak head reduction to
@@ -1687,68 +1679,68 @@ F notin dom S
 % % two push rules. We need to read the coercion proofs
 % % to know what type annotations to use after the push.
 % by
-% 
+%
 % G |- a ~>h a' / R1
 % -------------------------  :: AppLeft
 % G |- a rho R b ~>h a' rho R b  / R1
-% 
+%
 % Value R (\rho x:A/R.w)
 % -----------------------------------------  :: AppAbs
 % G |- (\rho x:A/R.w) rho R a ~>h w { a / x} / R
-% 
-% 
+%
+%
 % G |- a  ~>h a' / R
 % -----------------------------   :: CAppLeft
 % G |- a [g]  ~>h a' [g] / R
-% 
-% 
+%
+%
 % ------------------------------------  :: CAppCAbs
 % G |- (/\c:phi.b) [g] ~>h b { g / c} / R
-% 
+%
 % G |- A : TYPE/R
 % G, x : A/R |- b ~>h b' / R1
 % ------------------------------------------- :: AbsTerm
 % G |- (\- x:A/R. b) ~>h (\- x:A/R. b') /R1
-% 
-% 
+%
+%
 % F ~ a : A/R in an_toplevel
 % ------------------------- :: Axiom
 % G |- F ~>h a / R
-% 
-% 
+%
+%
 % G |- a ~>h a' / R
 % ---------------------------- :: ConvTerm
 %  G |- a |>R1 g ~>h a' |>R1 g / R
-% 
-% 
+%
+%
 % Value R v
 % ------------------------------------- :: Combine
 % G |- (v |>R2 g1) |>R2 g2 ~>h v |>R2 (g1 ; g2) / R
-% 
+%
 % % Not used (or needed)
-% 
+%
 % %   G ; dom G |- g : all rho x1:A1 -> B1 ~ all rho x2:A2 -> B2
 % %   a1 = a { x2 |> sym (piFst g) / x1 }
 % %   g2 = g @ refl2 (# x2 |> sym (piFst g) #) x2 (# piFst g #)
 % % ------------------------------------------------------------------------- :: Push
 % %   G |- ( (\rho x1:A1.a) |> g ) rho b ~>h (\rho x2:A2. (a1 |> g2)) rho b
-% 
+%
 % %   G ; dom G |- g : all c1:phi1. A1 ~ all c2:phi2. A2
 % %   a1 = a { c2 |> sym (cpiFst g)  / c1 }
 % %   g2 = g @ (c2 |> sym (cpiFst g), c2)
 % % ------------------------------------------------------------------ :: CPush
 % %   G |- ( (/\c1:phi1.a) |> g ) [g1] ~>h (/\c2:phi2. (a1 |> g2)) [g1]
-% 
-% 
-% 
+%
+%
+%
 % Value R v
 % G ; dom G |- g : all rho x1: A1/R -> B1 ~ all rho x2: A2/R -> B2 : R'
 % b' = b |>R' sym (piFst g)
 % g' = g @ refl2 b' b (piFst g)
 % ---------------------------------------------------------- :: Push
 % G |- (v |>R' g) rho R b ~>h ((v rho R b') |>R' g') / R
-% 
-% 
+%
+%
 % % Value R v
 % % G ; dom G |- g : all c1:a1 ~ b1 : B1/R. A1 ~ all c2:a2 ~ b2 : B2/R. A2 : R'
 % % g1' = g1 |>R' sym (cpiFst g)
@@ -1756,3 +1748,44 @@ F notin dom S
 % % -------------------------------------------------------- :: CPush
 % % G |- (v |>R' g) [g1] ~>h ((v [g1']) |>R' g') / R
 % %
+
+
+
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%% Homs (binders, formatting, etc) %%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% TODO: move these in different files
+
+%%%%____ Formatting ____%%%%
+
+%%__ Roles
+homs ''
+  :: Min      {{ tex [[R1]] \cap [[R2]]              }}
+
+%%__ Constraints
+homs ''
+  :: Eq       {{ tex [[a]] [[~]]_{[[A]]/[[R]]} [[b]] }}
+  :: EqNoType {{ tex [[a]] [[~]]_{[[R]]} [[b]]       }}
+
+
+
+%%%%____ Coq translation ____%%%%
+
+%%__ Roles
+homs ''
+  :: Min           {{ coq (min [[R1]][[R2]])                       }}
+  :: Param         {{ coq (param[[R1]] [[R2]])                     }}
+  :: App           {{ coq (app_role [[nu]])                        }}
+  :: RParen        {{ coq ([[R]])                                  }}
+
+
+%%__ Constraints
+homs ''
+  :: Paren         {{ coq ([[phi]])                                }}
+  :: Subst         {{ coq (open_constraint_wrt_tm [[x b]] [[phi]]) }}
+  :: Erase         {{ coq (erase_constraint [[phi]])               }}
+  :: EqNoType      {{ coq 0                                        }}
