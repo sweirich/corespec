@@ -14,14 +14,18 @@ metavar covar, c ::=
   {{ com coercion variables }}
   {{ lex alphanum }}
 
-metavar datacon, K ::= {{ coq atom }}
+metavar datacon, K ::=
+  {{ coq atom }}
 
-metavar const, T, F ::= {{ coq atom }}
+metavar const, T, F ::=
+  {{ coq atom }}
   {{ lex Alphanum }}
 
 
 indexvar index, i ::=
-  {{ tex \mathit{[[index]]} }} {{ com indices }} {{ coq nat }}
+  {{ tex \mathit{[[index]]} }}
+  {{ com indices }}
+  {{ coq nat }}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% GRAMMAR
