@@ -120,7 +120,6 @@ tm, a, b, v, w, A, B :: 'a_' ::= {{ com types and kinds }}
   | Fix                  :: S :: Fix
   | Age                  :: S :: Age
   | a -> b               :: S :: Arrow
-  | a / R -> b           :: S :: RArrow
   | phi => A             :: S :: CArrow
   | a b                  :: S :: RelApp
   | \ x . a              :: S :: RelUAbs
@@ -597,29 +596,29 @@ defns
 JPat :: '' ::=
 
 defn
-G |= a : A pat R @ Rs ::  :: Pat :: 'Pat_'
+G |= a : A pat @ Rs ::  :: Pat :: 'Pat_'
 {{ com Pattern judgment }}
 by
 
 F : A @ Rs in toplevel
 --------------------------- :: AbsConst
-empty |= F : A pat R @ Rs
+empty |= F : A pat @ Rs
 
 F ~ a : A/R1 @ Rs in toplevel
 not (R1 <= R)
 -------------------------- :: Const
-empty |= F : A pat R @ Rs
+empty |= F : A pat @ R,Rs
 
-G |= a : all rho y: A1 -> B1 pat R @ R1,Rs
+G |= a : all rho y: A1 -> B1 pat @ R1,Rs
 {y/x}B = B1
 app_role nu = R1
 ------------------------------------------- :: App
-G , x : A1 |= (a nu x) : B pat R @ Rs
+G , x : A1 |= (a nu x) : B pat @ Rs
 
-G |= a : all c1: phi. B1 pat R @ Rs
+G |= a : all c1: phi. B1 pat @ Rs
 {c1/c}B = B1
 ------------------------------------------- :: CApp
-G , c:phi |= (a [o]) : B pat R @ Rs
+G , c:phi |= (a [o]) : B pat @ Rs
 
 defns
 JValue :: '' ::=
@@ -1091,7 +1090,7 @@ G |= b2 : B
 G |= ifPath R F a b1 b2 : B
 
 G  |= a1 : A
-G' |= a2 : A pat R @ Rs
+G' |= a2 : A pat @ R,Rs
 G ++ (G', c:phi1) |= b1 : B
 G  |= b2 : B
 phi1 = (a1 ~ a2 : A/R)
