@@ -32,9 +32,11 @@ relflag, rho {{ tex \rho }} :: '' ::= {{ com relevance flag }}
   | +             ::   :: Rel
   | -             ::   :: Irrel
 
+
 appflag, nu {{ tex \nu }} :: '' ::= {{ com applicative flag }}
   | R   ::  :: Role
   | rho ::  :: Rho
+
 
 role, R :: '' ::= {{ com Role }}
   | Nom         ::   :: Nom
@@ -52,100 +54,76 @@ constraint, phi {{ tex \phi }} :: '' ::= {{ com props }}
   | ( phi )          :: S :: Paren
   | phi { b / x }    :: S :: Subst
   | | phi |          :: S :: Erase
-  | a ~ b / R        :: S :: EqNoType
+  | a ~ b / R        :: S :: EqNT
 
 
 
 tm, a, b, v, w, A, B :: 'a_' ::= {{ com types and kinds }}
-   | TYPE               ::   :: Star
-     {{ tex \star }}
-   | x                  ::   :: Var
-   | \ rho x : A . b    ::   :: Abs (+ bind x in b +)
-     {{ tex \mathrm{\lambda}^[[rho]][[x]]\!:\![[A]].[[b]] }}
-   | \ rho x . b        ::   :: UAbs (+ bind x in b +)
-     {{ tex \mathrm{\lambda}^{[[rho]]}[[x]].[[b]] }}
-   | a nu b            ::   :: App
-     {{ tex [[a]]\ [[b]]^[[nu]]  }}
-   | F                  ::   :: Fam
-   | all rho x : A -> B ::   :: Pi (+ bind x in B +)
-     {{ tex \mathrm{\Pi}^[[rho]][[x]]\!:\![[A]][[->]][[B]] }}
-   | a |> R g             ::   :: Conv
-     {{ tex [[a]][[|>]]_{[[R]]} [[g]] }}
-   | all c : phi . B    ::   :: CPi (+ bind c in B +)
-     {{ tex [[all]][[c]]\!:\![[phi]].[[B]] }}
+   | TYPE                 ::   :: Star
 
-   | /\ c : phi . b     ::   :: CAbs (+ bind c in b +)
-     {{ tex [[/\]][[c]]\!:\![[phi]].[[b]] }}
-   | /\ c  . b          ::   :: UCAbs (+ bind c in b +)
-     {{ tex [[/\]][[c]].[[b]] }}
-   | a [ g ]            ::   :: CApp
-   | []                 ::   :: Bullet
-   | ifPath R a' a b1 b2   ::   :: Pattern
-	  {{ tex case_{[[R]]}\ [[a]]\ of \ [[a']] \rightarrow [[b1]] \| \_ \rightarrow [[b2]] }}
+   | x                    ::   :: Var
+   | \ rho x : A . b      ::   :: Abs
+   | \ rho x . b          ::   :: UAbs
+   | a nu b               ::   :: App
+   | all rho x : A -> B   ::   :: Pi
+
+   | /\ c : phi . b       ::   :: CAbs
+   | /\ c  . b            ::   :: UCAbs
+   | a [ g ]              ::   :: CApp
+   | all c : phi . B      ::   :: CPi
+
+   | a |> R g             ::   :: Conv
+
+   | F                    ::   :: Fam
+
+   | []                   ::   :: Bullet
+
+   | ifPath R a' a b1 b2  ::   :: Pattern
    | caseR a1 of a2 => b1 | => b2 :: :: Pattern2
-          {{ tex caseR [[a1]] of [[a2]] \rightarrow [[b1]] \| \_ \rightarrow [[b2]] }}
+
    %% currently unused but ready for extension
-   | K                ::   :: DataCon
-   | match a with brs ::   :: Case
+   | K                    ::   :: DataCon
+   | match a with brs     ::   :: Case
 
 	%% change the role in an annotated term
-   | sub R a          ::    :: Sub
+   | sub R a              ::    :: Sub
 
    %% standard substitution, using open
-   | a { b / x }      :: S :: Subst
-     {{ coq (open_tm_wrt_tm [[x a]] [[b]]) }}
+   | a { b / x }          :: S :: Subst
+   | a { g / c }          :: S :: SubstC
 
    %% this is a hack for when a substitution {x/x} is necessary for the
    %% locally nameless backend to generate the correct code, but we don't
    %% want this substitution to show in the tex output
-
-   | a {{{ b / x }}}  :: S :: SecretSubst
-     {{ coq (open_tm_wrt_tm [[x a]] [[b]]) }}
-     {{ tex [[a]] }}
-
-   | a { g / c }      :: S :: SubstC
-     {{ coq (open_tm_wrt_co [[c a]] [[g]])  }}
-   | a {{{ g / c }}}  :: S :: SecretSubstC
-     {{ coq (open_tm_wrt_co [[c a]] [[g]])  }}
-     {{ tex [[a]] }}
+   | a {{{ b / x }}}      :: S :: SecretSubst
+   | a {{{ g / c }}}      :: S :: SecretSubstC
 
 
-   | ( a )            :: S :: Paren
-     {{ coq ([[a]]) }}
+   | ( a )                :: S :: Paren
    %% Ott parsing precedence is hard
-   | (# a #)          :: S :: SecretParen
-     {{ coq [[a]] }} {{ tex [[a]] }}
-     {{ com parsing precedence is hard }}
+   | (# a #)              :: S :: SecretParen
 
-   |  | a | R          :: S :: Erase   {{ coq (erase_tm [[a]][[R]]) }}
-	{{ tex |[[a]]|_{[[R]]} }}
+   |  | a | R             :: S :: Erase
 
    %% abbreviations for examples
-   | Int              :: S :: Int    {{ coq 0 }}
-   | Bool             :: S :: Bool   {{ coq 0 }}
-   | Nat              :: S :: Nat    {{ coq 0 }}
-   | Vec              :: S :: Vec    {{ coq 0 }}
-   | 0                :: S :: Zero   {{ coq 0 }}
-   | Succ             :: S :: Succ   {{ coq 0 }} {{ tex \mathsf{S} }}
-   | True             :: S :: True   {{ coq 0 }}
-   | Fix              :: S :: Fix    {{ coq 0 }}
-   | Age              :: S :: Age    {{ coq 0 }}
-   | a -> b           :: S :: Arrow  {{ coq (a_Pi [[a]] [[b]]) }}
-   | a / R -> b       :: S :: RArrow {{ coq (a_Pi [[a]] [[b]]) }}
-   | phi => A         :: S :: CArrow {{ coq (a_CPi [[phi]] [[A]]) }}
-   | a b              :: S :: RelApp
-     {{ coq (a_App [[a]] Rel [[b]]) }}
-     {{ tex [[a]]\ [[b]] }}
-   | \ x . a          :: S :: RelUAbs
-     {{ coq (a_UAbs Rel Nom [[a]]) }}
-     {{ tex \lambda [[x]].[[a]] }}
-   | \ x : A . a      :: S :: RelAbs
-     {{ coq (a_Abs Rel [[A]] [[a]]) }}
-     {{ tex \lambda [[x]]\!:\![[A]].[[a]] }}
-   | all x : A -> B   :: S :: RelPi
-     {{ coq (a_Pi  Rel [[A]] [[B]]) }}
+   | Int                  :: S :: Int
+   | Bool                 :: S :: Bool
+   | Nat                  :: S :: Nat
+   | Vec                  :: S :: Vec
+   | 0                    :: S :: Zero
+   | Succ                 :: S :: Succ
+   | True                 :: S :: True
+   | Fix                  :: S :: Fix
+   | Age                  :: S :: Age
+   | a -> b               :: S :: Arrow
+   | a / R -> b           :: S :: RArrow
+   | phi => A             :: S :: CArrow
+   | a b                  :: S :: RelApp
+   | \ x . a              :: S :: RelUAbs
+   | \ x : A . a          :: S :: RelAbs
+   | all x : A -> B       :: S :: RelPi
    | if phi then a else b :: S :: If
-     {{ coq 0 }}
+
 
 
 %% Currently unused
@@ -1760,22 +1738,102 @@ F notin dom S
 
 % TODO: move these in different files
 
+
+%%%%____ Binding structure ____%%%%
+
+%%__ Terms __%%
+homs 'a_'
+  :: Abs   (+ bind x in b +)
+  :: UAbs  (+ bind x in b +)
+  :: Pi    (+ bind x in B +)
+  :: CPi   (+ bind c in B +)
+
+  :: CAbs  (+ bind c in b +)
+  :: UCAbs (+ bind c in b +)
+
+
+
 %%%%____ Formatting ____%%%%
 
-%%__ Roles
+%%__ Roles __%%
 homs ''
   :: Min      {{ tex [[R1]] \cap [[R2]]              }}
 
-%%__ Constraints
+
+%%__ Constraints __%%
 homs ''
   :: Eq       {{ tex [[a]] [[~]]_{[[A]]/[[R]]} [[b]] }}
-  :: EqNoType {{ tex [[a]] [[~]]_{[[R]]} [[b]]       }}
+  :: EqNT     {{ tex [[a]] [[~]]_{[[R]]} [[b]]       }}
+
+
+%%__ Terms __%%
+homs 'a_'
+  :: Star     {{ tex \star                                                }}
+  :: Var
+  :: Abs      {{ tex \mathrm{\lambda}^[[rho]][[x]]\!:\![[A]].[[b]]        }}
+  :: UAbs     {{ tex \mathrm{\lambda}^{[[rho]]}[[x]].[[b]]                }}
+  :: App      {{ tex [[a]]\ [[b]]^[[nu]]                                  }}
+  :: Pi       {{ tex \mathrm{\Pi}^[[rho]][[x]]\!:\![[A]][[->]][[B]]       }}
+
+
+
+  :: CAbs     {{ tex [[/\]][[c]]\!:\![[phi]].[[b]]                        }}
+  :: UCAbs    {{ tex [[/\]][[c]].[[b]]                                    }}
+  :: CApp
+  :: CPi      {{ tex [[all]][[c]]\!:\![[phi]].[[B]]                       }}
+
+  :: Conv     {{ tex [[a]][[|>]]_{[[R]]} [[g]]                            }}
+
+  :: Fam
+
+  :: Bullet
+
+  :: Pattern  {{ tex case_{[[R]]}\ [[a]]\ of \ [[a']] \rightarrow [[b1]] \| \_ \rightarrow [[b2]] }}
+  :: Pattern2 {{ tex caseR [[a1]] of [[a2]] \rightarrow [[b1]] \| \_ \rightarrow [[b2]] }}
+
+  :: DataCon
+  :: Case
+
+  :: Sub
+
+  :: Subst
+  :: SubstC
+
+  %% Hack: when id subst needed to force correct LN output (no shown in tex)
+  :: SecretSubst  {{ tex [[a]] }}
+  :: SecretSubstC {{ tex [[a]] }}
+
+
+  :: Paren
+  %% Ott parsing precedence is hard
+  :: SecretParen {{ tex [[a]] }} {{ com parsing precedence is hard }}
+
+  :: Erase       {{ tex |[[a]]|_{[[R]]} }}
+
+  %% abbreviations for examples
+  :: Int
+  :: Bool
+  :: Nat
+  :: Vec
+  :: Zero
+  :: Succ    {{ tex \mathsf{S} }}
+  :: True
+  :: Fix
+  :: Age
+  :: Arrow
+  :: CArrow
+  :: RelApp  {{ tex [[a]]\ [[b]]                  }}
+  :: RelUAbs {{ tex \lambda [[x]].[[a]]           }}
+  :: RelAbs  {{ tex \lambda [[x]]\!:\![[A]].[[a]] }}
+  :: RelPi
+
 
 
 
 %%%%____ Coq translation ____%%%%
 
-%%__ Roles
+
+%%__ Roles __%%
 homs ''
   :: Min           {{ coq (min [[R1]][[R2]])                       }}
   :: Param         {{ coq (param[[R1]] [[R2]])                     }}
@@ -1783,9 +1841,50 @@ homs ''
   :: RParen        {{ coq ([[R]])                                  }}
 
 
-%%__ Constraints
+%%__ Constraints __%%
 homs ''
   :: Paren         {{ coq ([[phi]])                                }}
   :: Subst         {{ coq (open_constraint_wrt_tm [[x b]] [[phi]]) }}
   :: Erase         {{ coq (erase_constraint [[phi]])               }}
-  :: EqNoType      {{ coq 0                                        }}
+  :: EqNT          {{ coq 0                                        }}
+
+%%__ Terms __%%
+homs 'a_'
+  :: Subst         {{ coq (open_tm_wrt_tm [[x a]] [[b]])           }}
+  :: SubstC        {{ coq (open_tm_wrt_co [[c a]] [[g]])           }}
+
+  %% Hack: when id subst needed to force correct LN output (no shown in tex)
+  :: SecretSubst   {{ coq (open_tm_wrt_tm [[x a]] [[b]])           }}
+  :: SecretSubstC  {{ coq (open_tm_wrt_co [[c a]] [[g]])           }}
+
+
+  :: Paren         {{ coq ([[a]])                                  }}
+  %% Ott parsing precedence is hard
+  :: SecretParen   {{ coq [[a]]                                    }}
+
+  :: Erase         {{ coq (erase_tm [[a]][[R]])                    }}
+
+  %% abbreviations for examples
+  :: Int           {{ coq 0                                        }}
+  :: Bool          {{ coq 0                                        }}
+  :: Nat           {{ coq 0                                        }}
+  :: Vec           {{ coq 0                                        }}
+  :: Zero          {{ coq 0                                        }}
+  :: Succ          {{ coq 0                                        }}
+  :: True          {{ coq 0                                        }}
+  :: Fix           {{ coq 0                                        }}
+  :: Age           {{ coq 0                                        }}
+  :: Arrow         {{ coq (a_Pi [[a]] [[b]])                       }}
+  :: CArrow        {{ coq (a_CPi [[phi]] [[A]])                    }}
+  :: RelApp        {{ coq (a_App [[a]] Rel [[b]])                  }}
+  :: RelUAbs       {{ coq (a_UAbs Rel Nom [[a]])                   }}
+  :: RelAbs        {{ coq (a_Abs Rel [[A]] [[a]])                  }}
+  :: RelPi         {{ coq (a_Pi  Rel [[A]] [[B]])                  }}
+  :: If            {{ coq 0                                        }}
+
+
+%%%%____ Comments ____%%%%
+
+%%__ Terms __%%
+homs 'a_'
+  :: SecretParen {{ com parsing precedence is hard }}
