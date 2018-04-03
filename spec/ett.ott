@@ -222,6 +222,7 @@ grammar
 role_context, W {{ tex \Omega }} :: 'rctx_' ::= {{ com role_contexts }}
                                           {{ coq list ( atom * role ) }}
    | empty           ::    :: Empty   {{ coq nil }}
+   | x : R           ::    :: Tm      {{ coq ([[x]] ~ [[R]]) }}
    | W , x : R       ::    :: ConsTm  {{ coq (([[x]] ~ [[R]]) ++ [[W]]) }}
    | ( W )           :: M  :: Paren   {{ coq ([[W]]) }}
    | (# W #)         :: M  :: SecretParen {{ coq [[W]] }} {{ tex [[W]] }}
@@ -515,7 +516,7 @@ Definition FixTy : tm :=
              (a_Var_b 1)).
 
 
-Definition an_toplevel : sig := Fix ~ Ax FixDef FixTy Rep (Nom :: Nom :: [Nom]).
+Definition an_toplevel : sig := Fix ~ Ax FixDef FixTy Rep (Nom :: [Nom]).
 
 Definition toplevel : sig := erase_sig an_toplevel Nom.
 
@@ -608,32 +609,12 @@ c notin dom G
 G , c:phi |= (a [o]) : B pat/R
 
 defns
-JTypeRoleList :: '' ::=
-
-defn
-TypeRoleList A @ Rs :: :: TypeRoleList :: 'TypeRoleList_'
-{{ com type role list }}
-{{ tex \mathsf{Roles}([[A]]) = [[Rs]] }}
-by
-
-------------------------- :: Star
- TypeRoleList TYPE @ nilR
-
- TypeRoleList B @ Rs
------------------------------------------- :: Pi
- TypeRoleList (all rho x : A -> B) @ R1,Rs
-
- TypeRoleList B @ Rs
------------------------------------------- :: CPi
- TypeRoleList (all c : phi. B) @ Rs
-
-defns
 JMatchSubst :: '' ::=
 
 defn
 MatchSubst R a1 a2 b1 b2 :: :: MatchSubst :: 'MatchSubst_'
 {{ com match and substitute }}
-{{ tex \mathsf{match}_[[R]] \hspace{2pt} [[a1]] \mathsf{ with } [[a2]] \rightarrow [[b1]] = [[b2]] }}
+{{ tex \mathsf{match}_[[R]] \hspace{3pt} [[a1]] \hspace{3pt}\mathsf{with} \hspace{3pt}[[a2]] \rightarrow [[b1]] = [[b2]] }}
 by
 
 F : A @ Rs in toplevel
@@ -822,6 +803,27 @@ W |- b1 : R1
 W |- b2 : R1
 --------------------------------------- :: Pattern
 W |- case R a1 of a2 => b1 | => b2 : R1
+
+defns
+JTypeRoleList :: '' ::=
+
+defn
+TypeRoleList A @ Rs :: :: TypeRoleList :: 'TypeRoleList_'
+{{ com type role list }}
+{{ tex \mathsf{Roles}([[A]]) = [[Rs]] }}
+by
+
+------------------------- :: Star
+ TypeRoleList TYPE @ nilR
+
+ TypeRoleList B @ Rs
+ x : Nom |- B : R1
+------------------------------------------ :: Pi
+ TypeRoleList (all rho x : A -> B) @ R1,Rs
+
+ TypeRoleList B @ Rs
+------------------------------------------ :: CPi
+ TypeRoleList (all c : phi. B) @ Rs
 
 
 defns
@@ -1206,7 +1208,7 @@ rho => check x in b2
 G ; D |=  (\ rho x. b1) == (\ rho x. b2) : (all rho x:A1 -> B)/R'
 
 G ; D |= a1 == b1 : (all + x:A -> B)/R'
-G ; D |= a2 == b2 : A/ R'
+G ; D |= a2 == b2 : A/ Nom
 -------------------------------------- :: AppCong
 G ; D |= a1 + a2 == b1 + b2 : (B { a2 / x })/R'
 
@@ -1828,7 +1830,7 @@ homs 'a_'
 
   :: Bullet
 
-  :: Pattern {{ tex caseR [[a1]] of [[a2]] \rightarrow [[b1]] \| \_ \rightarrow [[b2]] }}
+  :: Pattern {{ tex \mathsf{case}_[[R]] \hspace{3pt} [[a1]] \hspace{3pt} \mathsf{of} \hspace{3pt} [[a2]] \rightarrow [[b1]] \| \_ \rightarrow [[b2]] }}
 
   :: DataCon
   :: Case

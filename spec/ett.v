@@ -83,9 +83,9 @@ Inductive sort : Set :=  (*r binding classifier *)
 
 Definition sig : Set := list (atom * sig_sort).
 
-Definition role_context : Set := list ( atom * role ).
-
 Definition context : Set := list ( atom * sort ).
+
+Definition role_context : Set := list ( atom * role ).
 
 Definition available_props : Type := atoms.
 
@@ -844,7 +844,7 @@ Definition FixTy : tm :=
              (a_Var_b 1)).
 
 
-Definition an_toplevel : sig := Fix ~ Ax FixDef FixTy Rep (Nom :: Nom :: [Nom]).
+Definition an_toplevel : sig := Fix ~ Ax FixDef FixTy Rep (Nom :: [Nom]).
 
 Definition toplevel : sig := erase_sig an_toplevel Nom.
 
@@ -902,19 +902,6 @@ Inductive Pat : context -> tm -> tm -> Prop :=    (* defn Pat *)
       ~ AtomSetImpl.In  c  (dom  G )  ->
       ( forall c1 , c1 \notin  L  ->  co_subst_co_tm (g_Var_f  c1 )  c   B  =   ( open_tm_wrt_co B1 (g_Var_f c1) )   )  ->
      Pat  (( c ~ Co  phi ) ++  G )   ( (a_CApp a g_Triv) )  B.
-
-(* defns JTypeRoleList *)
-Inductive TypeRoleList : tm -> roles -> Prop :=    (* defn TypeRoleList *)
- | TypeRoleList_Star : 
-     TypeRoleList a_Star  nil 
- | TypeRoleList_Pi : forall (L:vars) (rho:relflag) (A B:tm) (R1:role) (Rs:roles),
-     lc_tm A ->
-      ( forall x , x \notin  L  -> TypeRoleList  ( open_tm_wrt_tm B (a_Var_f x) )  Rs )  ->
-     TypeRoleList  ( (a_Pi rho A B) )   ( R1 :: Rs ) 
- | TypeRoleList_CPi : forall (L:vars) (phi:constraint) (B:tm) (Rs:roles),
-     lc_constraint phi ->
-      ( forall c , c \notin  L  -> TypeRoleList  ( open_tm_wrt_co B (g_Var_f c) )  Rs )  ->
-     TypeRoleList  ( (a_CPi phi B) )  Rs.
 
 (* defns JMatchSubst *)
 Inductive MatchSubst : role -> tm -> tm -> tm -> tm -> Prop :=    (* defn MatchSubst *)
@@ -1070,6 +1057,20 @@ Inductive roleing : role_context -> tm -> role -> Prop :=    (* defn roleing *)
      roleing W b1 R1 ->
      roleing W b2 R1 ->
      roleing W (a_Pattern R a1 a2 b1 b2) R1.
+
+(* defns JTypeRoleList *)
+Inductive TypeRoleList : tm -> roles -> Prop :=    (* defn TypeRoleList *)
+ | TypeRoleList_Star : 
+     TypeRoleList a_Star  nil 
+ | TypeRoleList_Pi : forall (L:vars) (rho:relflag) (A B:tm) (R1:role) (Rs:roles),
+     lc_tm A ->
+      ( forall x , x \notin  L  -> TypeRoleList  ( open_tm_wrt_tm B (a_Var_f x) )  Rs )  ->
+      ( forall x , x \notin  L  -> roleing  ( x  ~  Nom )   ( open_tm_wrt_tm B (a_Var_f x) )  R1 )  ->
+     TypeRoleList  ( (a_Pi rho A B) )   ( R1 :: Rs ) 
+ | TypeRoleList_CPi : forall (L:vars) (phi:constraint) (B:tm) (Rs:roles),
+     lc_constraint phi ->
+      ( forall c , c \notin  L  -> TypeRoleList  ( open_tm_wrt_co B (g_Var_f c) )  Rs )  ->
+     TypeRoleList  ( (a_CPi phi B) )  Rs.
 
 (* defns JChk *)
 Inductive RhoCheck : relflag -> tmvar -> tm -> Prop :=    (* defn RhoCheck *)
@@ -1329,7 +1330,7 @@ with DefEq : context -> available_props -> tm -> tm -> tm -> role -> Prop :=    
      DefEq G D  ( (a_UAbs rho b1) )   ( (a_UAbs rho b2) )   ( (a_Pi rho A1 B) )  R'
  | E_AppCong : forall (G:context) (D:available_props) (a1 a2 b1 b2 B:tm) (R':role) (A:tm),
      DefEq G D a1 b1  ( (a_Pi Rel A B) )  R' ->
-     DefEq G D a2 b2 A R' ->
+     DefEq G D a2 b2 A Nom ->
      DefEq G D (a_App a1 (Rho Rel) a2) (a_App b1 (Rho Rel) b2)  (  (open_tm_wrt_tm  B   a2 )  )  R'
  | E_TAppCong : forall (G:context) (D:available_props) (a1:tm) (R:role) (a2 b1 b2 B:tm) (R':role) (A:tm) (F:const) (Rs:roles),
      DefEq G D a1 b1  ( (a_Pi Rel A B) )  R' ->
@@ -1456,6 +1457,6 @@ Inductive Sig : sig -> Prop :=    (* defn Sig *)
 
 
 (** infrastructure *)
-Hint Constructors SubRole Path Pat TypeRoleList MatchSubst Value value_type consistent roleing RhoCheck Par MultiPar joins Beta reduction_in_one reduction PropWff Typing Iso DefEq Ctx Sig lc_co lc_brs lc_tm lc_constraint lc_sig_sort lc_sort.
+Hint Constructors SubRole Path Pat MatchSubst Value value_type consistent roleing TypeRoleList RhoCheck Par MultiPar joins Beta reduction_in_one reduction PropWff Typing Iso DefEq Ctx Sig lc_co lc_brs lc_tm lc_constraint lc_sig_sort lc_sort.
 
 

@@ -84,7 +84,7 @@
 \ottprodline{|}{ \ottnt{a} \triangleright _{ \ottnt{R} }  \gamma }{}{}{}{}\ottprodnewline
 \ottprodline{|}{\ottmv{F}}{}{}{}{}\ottprodnewline
 \ottprodline{|}{\Box}{}{}{}{}\ottprodnewline
-\ottprodline{|}{ caseR  \ottnt{a_{{\mathrm{1}}}}  of  \ottnt{a_{{\mathrm{2}}}}  \rightarrow  \ottnt{b_{{\mathrm{1}}}}  \| \_ \rightarrow  \ottnt{b_{{\mathrm{2}}}} }{}{}{}{}\ottprodnewline
+\ottprodline{|}{ \mathsf{case}_ \ottnt{R}  \hspace{3pt}  \ottnt{a_{{\mathrm{1}}}}  \hspace{3pt} \mathsf{of} \hspace{3pt}  \ottnt{a_{{\mathrm{2}}}}  \rightarrow  \ottnt{b_{{\mathrm{1}}}}  \| \_ \rightarrow  \ottnt{b_{{\mathrm{2}}}} }{}{}{}{}\ottprodnewline
 \ottprodline{|}{\ottmv{K}}{}{}{}{}\ottprodnewline
 \ottprodline{|}{\ottkw{match} \, \ottnt{a} \, \ottkw{with} \, \ottnt{brs}}{}{}{}{}\ottprodnewline
 \ottprodline{|}{\ottkw{sub} \, \ottnt{R} \, \ottnt{a}}{}{}{}{}\ottprodnewline
@@ -154,6 +154,7 @@
 \newcommand{\ottroleXXcontext}{
 \ottrulehead{\ottnt{role\_context}  ,\ \Omega}{::=}{\ottcom{role_contexts}}\ottprodnewline
 \ottfirstprodline{|}{\varnothing}{}{}{}{}\ottprodnewline
+\ottprodline{|}{\ottmv{x}  \ottsym{:}  \ottnt{R}}{}{}{}{}\ottprodnewline
 \ottprodline{|}{\Omega  \ottsym{,}  \ottmv{x}  \ottsym{:}  \ottnt{R}}{}{}{}{}\ottprodnewline
 \ottprodline{|}{\ottsym{(}  \Omega  \ottsym{)}} {\textsf{M}}{}{}{}\ottprodnewline
 \ottprodline{|}{ \Omega } {\textsf{M}}{}{}{}}
@@ -287,13 +288,9 @@
 \ottrulehead{\ottnt{JPat}}{::=}{}\ottprodnewline
 \ottfirstprodline{|}{\Gamma  \vDash  \ottnt{a}  \ottsym{:}  \ottnt{A}  \ottsym{pat/R}}{}{}{}{\ottcom{Pattern judgment}}}
 
-\newcommand{\ottJTypeRoleList}{
-\ottrulehead{\ottnt{JTypeRoleList}}{::=}{}\ottprodnewline
-\ottfirstprodline{|}{ \mathsf{Roles}( \ottnt{A} ) =  \ottnt{Rs} }{}{}{}{\ottcom{type role list}}}
-
 \newcommand{\ottJMatchSubst}{
 \ottrulehead{\ottnt{JMatchSubst}}{::=}{}\ottprodnewline
-\ottfirstprodline{|}{ \mathsf{match}_ \ottnt{R}  \hspace{2pt}  \ottnt{a_{{\mathrm{1}}}}  \mathsf{ with }  \ottnt{a_{{\mathrm{2}}}}  \rightarrow  \ottnt{b_{{\mathrm{1}}}}  =  \ottnt{b_{{\mathrm{2}}}} }{}{}{}{\ottcom{match and substitute}}}
+\ottfirstprodline{|}{ \mathsf{match}_ \ottnt{R}  \hspace{3pt}  \ottnt{a_{{\mathrm{1}}}}  \hspace{3pt}\mathsf{with} \hspace{3pt} \ottnt{a_{{\mathrm{2}}}}  \rightarrow  \ottnt{b_{{\mathrm{1}}}}  =  \ottnt{b_{{\mathrm{2}}}} }{}{}{}{\ottcom{match and substitute}}}
 
 \newcommand{\ottJValue}{
 \ottrulehead{\ottnt{JValue}}{::=}{}\ottprodnewline
@@ -310,6 +307,10 @@
 \newcommand{\ottJroleing}{
 \ottrulehead{\ottnt{Jroleing}}{::=}{}\ottprodnewline
 \ottfirstprodline{|}{ \Omega  \vDash  \ottnt{a}  :  \ottnt{R} }{}{}{}{}}
+
+\newcommand{\ottJTypeRoleList}{
+\ottrulehead{\ottnt{JTypeRoleList}}{::=}{}\ottprodnewline
+\ottfirstprodline{|}{ \mathsf{Roles}( \ottnt{A} ) =  \ottnt{Rs} }{}{}{}{\ottcom{type role list}}}
 
 \newcommand{\ottJChk}{
 \ottrulehead{\ottnt{JChk}}{::=}{}\ottprodnewline
@@ -344,12 +345,12 @@
 \ottfirstprodline{|}{\ottnt{JSubRole}}{}{}{}{}\ottprodnewline
 \ottprodline{|}{\ottnt{JPath}}{}{}{}{}\ottprodnewline
 \ottprodline{|}{\ottnt{JPat}}{}{}{}{}\ottprodnewline
-\ottprodline{|}{\ottnt{JTypeRoleList}}{}{}{}{}\ottprodnewline
 \ottprodline{|}{\ottnt{JMatchSubst}}{}{}{}{}\ottprodnewline
 \ottprodline{|}{\ottnt{JValue}}{}{}{}{}\ottprodnewline
 \ottprodline{|}{\ottnt{JValueType}}{}{}{}{}\ottprodnewline
 \ottprodline{|}{\ottnt{Jconsistent}}{}{}{}{}\ottprodnewline
 \ottprodline{|}{\ottnt{Jroleing}}{}{}{}{}\ottprodnewline
+\ottprodline{|}{\ottnt{JTypeRoleList}}{}{}{}{}\ottprodnewline
 \ottprodline{|}{\ottnt{JChk}}{}{}{}{}\ottprodnewline
 \ottprodline{|}{\ottnt{Jpar}}{}{}{}{}\ottprodnewline
 \ottprodline{|}{\ottnt{Jbeta}}{}{}{}{}\ottprodnewline
@@ -400,12 +401,12 @@
 \ottJSubRole\ottinterrule
 \ottJPath\ottinterrule
 \ottJPat\ottinterrule
-\ottJTypeRoleList\ottinterrule
 \ottJMatchSubst\ottinterrule
 \ottJValue\ottinterrule
 \ottJValueType\ottinterrule
 \ottJconsistent\ottinterrule
 \ottJroleing\ottinterrule
+\ottJTypeRoleList\ottinterrule
 \ottJChk\ottinterrule
 \ottJpar\ottinterrule
 \ottJbeta\ottinterrule
@@ -553,46 +554,12 @@
 \newcommand{\ottdefnsJPat}{
 \ottdefnPat{}}
 
-% defns JTypeRoleList
-%% defn TypeRoleList
-\newcommand{\ottdruleTypeRoleListXXStar}[1]{\ottdrule[#1]{%
-}{
- \mathsf{Roles}(  \star  ) =  \ottkw{nilR} }{%
-{\ottdrulename{TypeRoleList\_Star}}{}%
-}}
-
-
-\newcommand{\ottdruleTypeRoleListXXPi}[1]{\ottdrule[#1]{%
-\ottpremise{ \mathsf{Roles}( \ottnt{B} ) =  \ottnt{Rs} }%
-}{
- \mathsf{Roles}( \ottsym{(}   \mathrm{\Pi}^ \rho \ottmv{x} \!:\! \ottnt{A} \to \ottnt{B}   \ottsym{)} ) =  \ottnt{R_{{\mathrm{1}}}}  \ottsym{,}  \ottnt{Rs} }{%
-{\ottdrulename{TypeRoleList\_Pi}}{}%
-}}
-
-
-\newcommand{\ottdruleTypeRoleListXXCPi}[1]{\ottdrule[#1]{%
-\ottpremise{ \mathsf{Roles}( \ottnt{B} ) =  \ottnt{Rs} }%
-}{
- \mathsf{Roles}( \ottsym{(}   \forall \ottmv{c} \!:\! \phi . \ottnt{B}   \ottsym{)} ) =  \ottnt{Rs} }{%
-{\ottdrulename{TypeRoleList\_CPi}}{}%
-}}
-
-\newcommand{\ottdefnTypeRoleList}[1]{\begin{ottdefnblock}[#1]{$ \mathsf{Roles}( \ottnt{A} ) =  \ottnt{Rs} $}{\ottcom{type role list}}
-\ottusedrule{\ottdruleTypeRoleListXXStar{}}
-\ottusedrule{\ottdruleTypeRoleListXXPi{}}
-\ottusedrule{\ottdruleTypeRoleListXXCPi{}}
-\end{ottdefnblock}}
-
-
-\newcommand{\ottdefnsJTypeRoleList}{
-\ottdefnTypeRoleList{}}
-
 % defns JMatchSubst
 %% defn MatchSubst
 \newcommand{\ottdruleMatchSubstXXAbsConst}[1]{\ottdrule[#1]{%
 \ottpremise{\ottmv{F} \, \ottsym{:}  \ottnt{A}  \ottsym{@}  \ottnt{Rs} \, \in \,  \Sigma_0 }%
 }{
- \mathsf{match}_ \ottnt{R}  \hspace{2pt}  \ottmv{F}  \mathsf{ with }  \ottmv{F}  \rightarrow  \ottnt{b}  =  \ottnt{b} }{%
+ \mathsf{match}_ \ottnt{R}  \hspace{3pt}  \ottmv{F}  \hspace{3pt}\mathsf{with} \hspace{3pt} \ottmv{F}  \rightarrow  \ottnt{b}  =  \ottnt{b} }{%
 {\ottdrulename{MatchSubst\_AbsConst}}{}%
 }}
 
@@ -601,43 +568,43 @@
 \ottpremise{\ottmv{F} \,  \sim  \ottnt{a}  :  \ottnt{A}  /  \ottnt{R_{{\mathrm{1}}}}  @  \ottnt{Rs}  \, \in \,  \Sigma_0 }%
 \ottpremise{ \neg  \ottsym{(}   \ottnt{R_{{\mathrm{1}}}}  \leq  \ottnt{R}   \ottsym{)} }%
 }{
- \mathsf{match}_ \ottnt{R}  \hspace{2pt}  \ottmv{F}  \mathsf{ with }  \ottmv{F}  \rightarrow  \ottnt{b}  =  \ottnt{b} }{%
+ \mathsf{match}_ \ottnt{R}  \hspace{3pt}  \ottmv{F}  \hspace{3pt}\mathsf{with} \hspace{3pt} \ottmv{F}  \rightarrow  \ottnt{b}  =  \ottnt{b} }{%
 {\ottdrulename{MatchSubst\_Const}}{}%
 }}
 
 
 \newcommand{\ottdruleMatchSubstXXAppRelR}[1]{\ottdrule[#1]{%
-\ottpremise{ \mathsf{match}_ \ottnt{R}  \hspace{2pt}  \ottnt{a_{{\mathrm{1}}}}  \mathsf{ with }  \ottnt{a_{{\mathrm{2}}}}  \rightarrow  \ottnt{b_{{\mathrm{1}}}}  =  \ottnt{b_{{\mathrm{2}}}} }%
+\ottpremise{ \mathsf{match}_ \ottnt{R}  \hspace{3pt}  \ottnt{a_{{\mathrm{1}}}}  \hspace{3pt}\mathsf{with} \hspace{3pt} \ottnt{a_{{\mathrm{2}}}}  \rightarrow  \ottnt{b_{{\mathrm{1}}}}  =  \ottnt{b_{{\mathrm{2}}}} }%
 }{
- \mathsf{match}_ \ottnt{R}  \hspace{2pt}  \ottsym{(}   \ottnt{a_{{\mathrm{1}}}} \  \ottnt{a} ^ \ottnt{R'}   \ottsym{)}  \mathsf{ with }  \ottsym{(}   \ottnt{a_{{\mathrm{2}}}} \  \ottmv{x} ^ \ottsym{+}   \ottsym{)}  \rightarrow  \ottnt{b_{{\mathrm{1}}}}  =  \ottsym{(}  \ottnt{b_{{\mathrm{2}}}}  \ottsym{\{}  \ottnt{a}  \ottsym{/}  \ottmv{x}  \ottsym{\}}  \ottsym{)} }{%
+ \mathsf{match}_ \ottnt{R}  \hspace{3pt}  \ottsym{(}   \ottnt{a_{{\mathrm{1}}}} \  \ottnt{a} ^ \ottnt{R'}   \ottsym{)}  \hspace{3pt}\mathsf{with} \hspace{3pt} \ottsym{(}   \ottnt{a_{{\mathrm{2}}}} \  \ottmv{x} ^ \ottsym{+}   \ottsym{)}  \rightarrow  \ottnt{b_{{\mathrm{1}}}}  =  \ottsym{(}  \ottnt{b_{{\mathrm{2}}}}  \ottsym{\{}  \ottnt{a}  \ottsym{/}  \ottmv{x}  \ottsym{\}}  \ottsym{)} }{%
 {\ottdrulename{MatchSubst\_AppRelR}}{}%
 }}
 
 
 \newcommand{\ottdruleMatchSubstXXAppRel}[1]{\ottdrule[#1]{%
-\ottpremise{ \mathsf{match}_ \ottnt{R}  \hspace{2pt}  \ottnt{a_{{\mathrm{1}}}}  \mathsf{ with }  \ottnt{a_{{\mathrm{2}}}}  \rightarrow  \ottnt{b_{{\mathrm{1}}}}  =  \ottnt{b_{{\mathrm{2}}}} }%
+\ottpremise{ \mathsf{match}_ \ottnt{R}  \hspace{3pt}  \ottnt{a_{{\mathrm{1}}}}  \hspace{3pt}\mathsf{with} \hspace{3pt} \ottnt{a_{{\mathrm{2}}}}  \rightarrow  \ottnt{b_{{\mathrm{1}}}}  =  \ottnt{b_{{\mathrm{2}}}} }%
 }{
- \mathsf{match}_ \ottnt{R}  \hspace{2pt}  \ottsym{(}   \ottnt{a_{{\mathrm{1}}}} \  \ottnt{a} ^ \ottsym{+}   \ottsym{)}  \mathsf{ with }  \ottsym{(}   \ottnt{a_{{\mathrm{2}}}} \  \ottmv{x} ^ \ottsym{+}   \ottsym{)}  \rightarrow  \ottnt{b_{{\mathrm{1}}}}  =  \ottsym{(}  \ottnt{b_{{\mathrm{2}}}}  \ottsym{\{}  \ottnt{a}  \ottsym{/}  \ottmv{x}  \ottsym{\}}  \ottsym{)} }{%
+ \mathsf{match}_ \ottnt{R}  \hspace{3pt}  \ottsym{(}   \ottnt{a_{{\mathrm{1}}}} \  \ottnt{a} ^ \ottsym{+}   \ottsym{)}  \hspace{3pt}\mathsf{with} \hspace{3pt} \ottsym{(}   \ottnt{a_{{\mathrm{2}}}} \  \ottmv{x} ^ \ottsym{+}   \ottsym{)}  \rightarrow  \ottnt{b_{{\mathrm{1}}}}  =  \ottsym{(}  \ottnt{b_{{\mathrm{2}}}}  \ottsym{\{}  \ottnt{a}  \ottsym{/}  \ottmv{x}  \ottsym{\}}  \ottsym{)} }{%
 {\ottdrulename{MatchSubst\_AppRel}}{}%
 }}
 
 
 \newcommand{\ottdruleMatchSubstXXAppIrrel}[1]{\ottdrule[#1]{%
-\ottpremise{ \mathsf{match}_ \ottnt{R}  \hspace{2pt}  \ottnt{a_{{\mathrm{1}}}}  \mathsf{ with }  \ottnt{a_{{\mathrm{2}}}}  \rightarrow  \ottnt{b_{{\mathrm{1}}}}  =  \ottnt{b_{{\mathrm{2}}}} }%
+\ottpremise{ \mathsf{match}_ \ottnt{R}  \hspace{3pt}  \ottnt{a_{{\mathrm{1}}}}  \hspace{3pt}\mathsf{with} \hspace{3pt} \ottnt{a_{{\mathrm{2}}}}  \rightarrow  \ottnt{b_{{\mathrm{1}}}}  =  \ottnt{b_{{\mathrm{2}}}} }%
 }{
- \mathsf{match}_ \ottnt{R}  \hspace{2pt}  \ottsym{(}   \ottnt{a_{{\mathrm{1}}}} \  \Box ^ \ottsym{-}   \ottsym{)}  \mathsf{ with }  \ottsym{(}   \ottnt{a_{{\mathrm{2}}}} \  \Box ^ \ottsym{-}   \ottsym{)}  \rightarrow  \ottnt{b_{{\mathrm{1}}}}  =  \ottnt{b_{{\mathrm{2}}}} }{%
+ \mathsf{match}_ \ottnt{R}  \hspace{3pt}  \ottsym{(}   \ottnt{a_{{\mathrm{1}}}} \  \Box ^ \ottsym{-}   \ottsym{)}  \hspace{3pt}\mathsf{with} \hspace{3pt} \ottsym{(}   \ottnt{a_{{\mathrm{2}}}} \  \Box ^ \ottsym{-}   \ottsym{)}  \rightarrow  \ottnt{b_{{\mathrm{1}}}}  =  \ottnt{b_{{\mathrm{2}}}} }{%
 {\ottdrulename{MatchSubst\_AppIrrel}}{}%
 }}
 
 
 \newcommand{\ottdruleMatchSubstXXCApp}[1]{\ottdrule[#1]{%
-\ottpremise{ \mathsf{match}_ \ottnt{R}  \hspace{2pt}  \ottnt{a_{{\mathrm{1}}}}  \mathsf{ with }  \ottnt{a_{{\mathrm{2}}}}  \rightarrow  \ottnt{b_{{\mathrm{1}}}}  =  \ottnt{b_{{\mathrm{2}}}} }%
+\ottpremise{ \mathsf{match}_ \ottnt{R}  \hspace{3pt}  \ottnt{a_{{\mathrm{1}}}}  \hspace{3pt}\mathsf{with} \hspace{3pt} \ottnt{a_{{\mathrm{2}}}}  \rightarrow  \ottnt{b_{{\mathrm{1}}}}  =  \ottnt{b_{{\mathrm{2}}}} }%
 }{
- \mathsf{match}_ \ottnt{R}  \hspace{2pt}  \ottsym{(}  \ottnt{a_{{\mathrm{1}}}}  \ottsym{[}  \bullet  \ottsym{]}  \ottsym{)}  \mathsf{ with }  \ottsym{(}  \ottnt{a_{{\mathrm{2}}}}  \ottsym{[}  \bullet  \ottsym{]}  \ottsym{)}  \rightarrow  \ottnt{b_{{\mathrm{1}}}}  =  \ottnt{b_{{\mathrm{2}}}} }{%
+ \mathsf{match}_ \ottnt{R}  \hspace{3pt}  \ottsym{(}  \ottnt{a_{{\mathrm{1}}}}  \ottsym{[}  \bullet  \ottsym{]}  \ottsym{)}  \hspace{3pt}\mathsf{with} \hspace{3pt} \ottsym{(}  \ottnt{a_{{\mathrm{2}}}}  \ottsym{[}  \bullet  \ottsym{]}  \ottsym{)}  \rightarrow  \ottnt{b_{{\mathrm{1}}}}  =  \ottnt{b_{{\mathrm{2}}}} }{%
 {\ottdrulename{MatchSubst\_CApp}}{}%
 }}
 
-\newcommand{\ottdefnMatchSubst}[1]{\begin{ottdefnblock}[#1]{$ \mathsf{match}_ \ottnt{R}  \hspace{2pt}  \ottnt{a_{{\mathrm{1}}}}  \mathsf{ with }  \ottnt{a_{{\mathrm{2}}}}  \rightarrow  \ottnt{b_{{\mathrm{1}}}}  =  \ottnt{b_{{\mathrm{2}}}} $}{\ottcom{match and substitute}}
+\newcommand{\ottdefnMatchSubst}[1]{\begin{ottdefnblock}[#1]{$ \mathsf{match}_ \ottnt{R}  \hspace{3pt}  \ottnt{a_{{\mathrm{1}}}}  \hspace{3pt}\mathsf{with} \hspace{3pt} \ottnt{a_{{\mathrm{2}}}}  \rightarrow  \ottnt{b_{{\mathrm{1}}}}  =  \ottnt{b_{{\mathrm{2}}}} $}{\ottcom{match and substitute}}
 \ottusedrule{\ottdruleMatchSubstXXAbsConst{}}
 \ottusedrule{\ottdruleMatchSubstXXConst{}}
 \ottusedrule{\ottdruleMatchSubstXXAppRelR{}}
@@ -937,7 +904,7 @@
 \ottpremise{ \Omega  \vDash  \ottnt{b_{{\mathrm{1}}}}  :  \ottnt{R_{{\mathrm{1}}}} }%
 \ottpremise{ \Omega  \vDash  \ottnt{b_{{\mathrm{2}}}}  :  \ottnt{R_{{\mathrm{1}}}} }%
 }{
- \Omega  \vDash   caseR  \ottnt{a_{{\mathrm{1}}}}  of  \ottnt{a_{{\mathrm{2}}}}  \rightarrow  \ottnt{b_{{\mathrm{1}}}}  \| \_ \rightarrow  \ottnt{b_{{\mathrm{2}}}}   :  \ottnt{R_{{\mathrm{1}}}} }{%
+ \Omega  \vDash   \mathsf{case}_ \ottnt{R}  \hspace{3pt}  \ottnt{a_{{\mathrm{1}}}}  \hspace{3pt} \mathsf{of} \hspace{3pt}  \ottnt{a_{{\mathrm{2}}}}  \rightarrow  \ottnt{b_{{\mathrm{1}}}}  \| \_ \rightarrow  \ottnt{b_{{\mathrm{2}}}}   :  \ottnt{R_{{\mathrm{1}}}} }{%
 {\ottdrulename{role\_a\_Pattern}}{}%
 }}
 
@@ -959,6 +926,41 @@
 
 \newcommand{\ottdefnsJroleing}{
 \ottdefnroleing{}}
+
+% defns JTypeRoleList
+%% defn TypeRoleList
+\newcommand{\ottdruleTypeRoleListXXStar}[1]{\ottdrule[#1]{%
+}{
+ \mathsf{Roles}(  \star  ) =  \ottkw{nilR} }{%
+{\ottdrulename{TypeRoleList\_Star}}{}%
+}}
+
+
+\newcommand{\ottdruleTypeRoleListXXPi}[1]{\ottdrule[#1]{%
+\ottpremise{ \mathsf{Roles}( \ottnt{B} ) =  \ottnt{Rs} }%
+\ottpremise{ \ottmv{x}  \ottsym{:}  \ottkw{Nom}  \vDash  \ottnt{B}  :  \ottnt{R_{{\mathrm{1}}}} }%
+}{
+ \mathsf{Roles}( \ottsym{(}   \mathrm{\Pi}^ \rho \ottmv{x} \!:\! \ottnt{A} \to \ottnt{B}   \ottsym{)} ) =  \ottnt{R_{{\mathrm{1}}}}  \ottsym{,}  \ottnt{Rs} }{%
+{\ottdrulename{TypeRoleList\_Pi}}{}%
+}}
+
+
+\newcommand{\ottdruleTypeRoleListXXCPi}[1]{\ottdrule[#1]{%
+\ottpremise{ \mathsf{Roles}( \ottnt{B} ) =  \ottnt{Rs} }%
+}{
+ \mathsf{Roles}( \ottsym{(}   \forall \ottmv{c} \!:\! \phi . \ottnt{B}   \ottsym{)} ) =  \ottnt{Rs} }{%
+{\ottdrulename{TypeRoleList\_CPi}}{}%
+}}
+
+\newcommand{\ottdefnTypeRoleList}[1]{\begin{ottdefnblock}[#1]{$ \mathsf{Roles}( \ottnt{A} ) =  \ottnt{Rs} $}{\ottcom{type role list}}
+\ottusedrule{\ottdruleTypeRoleListXXStar{}}
+\ottusedrule{\ottdruleTypeRoleListXXPi{}}
+\ottusedrule{\ottdruleTypeRoleListXXCPi{}}
+\end{ottdefnblock}}
+
+
+\newcommand{\ottdefnsJTypeRoleList}{
+\ottdefnTypeRoleList{}}
 
 % defns JChk
 %% defn RhoCheck
@@ -1081,7 +1083,7 @@
 \ottpremise{ \Omega  \vDash  \ottnt{b_{{\mathrm{1}}}}   \Rightarrow _{ \ottnt{R_{{\mathrm{0}}}} }  \ottnt{b'_{{\mathrm{1}}}} }%
 \ottpremise{ \Omega  \vDash  \ottnt{b_{{\mathrm{2}}}}   \Rightarrow _{ \ottnt{R_{{\mathrm{0}}}} }  \ottnt{b'_{{\mathrm{2}}}} }%
 }{
- \Omega  \vDash  \ottsym{(}   caseR  \ottnt{a_{{\mathrm{1}}}}  of  \ottnt{a_{{\mathrm{2}}}}  \rightarrow  \ottnt{b_{{\mathrm{1}}}}  \| \_ \rightarrow  \ottnt{b_{{\mathrm{2}}}}   \ottsym{)}   \Rightarrow _{ \ottnt{R_{{\mathrm{0}}}} }  \ottsym{(}   caseR  \ottnt{a'_{{\mathrm{1}}}}  of  \ottnt{a_{{\mathrm{2}}}}  \rightarrow  \ottnt{b'_{{\mathrm{1}}}}  \| \_ \rightarrow  \ottnt{b'_{{\mathrm{2}}}}   \ottsym{)} }{%
+ \Omega  \vDash  \ottsym{(}   \mathsf{case}_ \ottnt{R}  \hspace{3pt}  \ottnt{a_{{\mathrm{1}}}}  \hspace{3pt} \mathsf{of} \hspace{3pt}  \ottnt{a_{{\mathrm{2}}}}  \rightarrow  \ottnt{b_{{\mathrm{1}}}}  \| \_ \rightarrow  \ottnt{b_{{\mathrm{2}}}}   \ottsym{)}   \Rightarrow _{ \ottnt{R_{{\mathrm{0}}}} }  \ottsym{(}   \mathsf{case}_ \ottnt{R}  \hspace{3pt}  \ottnt{a'_{{\mathrm{1}}}}  \hspace{3pt} \mathsf{of} \hspace{3pt}  \ottnt{a_{{\mathrm{2}}}}  \rightarrow  \ottnt{b'_{{\mathrm{1}}}}  \| \_ \rightarrow  \ottnt{b'_{{\mathrm{2}}}}   \ottsym{)} }{%
 {\ottdrulename{Par\_Pattern}}{}%
 }}
 
@@ -1090,9 +1092,9 @@
 \ottpremise{ \Omega  \vDash  \ottnt{a_{{\mathrm{1}}}}   \Rightarrow _{ \ottnt{R} }  \ottnt{a'_{{\mathrm{1}}}} }%
 \ottpremise{ \Omega  \vDash  \ottnt{b_{{\mathrm{1}}}}   \Rightarrow _{ \ottnt{R_{{\mathrm{0}}}} }  \ottnt{b'_{{\mathrm{1}}}} }%
 \ottpremise{ \Omega  \vDash  \ottnt{b_{{\mathrm{2}}}}   \Rightarrow _{ \ottnt{R_{{\mathrm{0}}}} }  \ottnt{b'_{{\mathrm{2}}}} }%
-\ottpremise{ \mathsf{match}_ \ottnt{R}  \hspace{2pt}  \ottnt{a'_{{\mathrm{1}}}}  \mathsf{ with }  \ottnt{a_{{\mathrm{2}}}}  \rightarrow  \ottnt{b'_{{\mathrm{1}}}}  =  \ottnt{b} }%
+\ottpremise{ \mathsf{match}_ \ottnt{R}  \hspace{3pt}  \ottnt{a'_{{\mathrm{1}}}}  \hspace{3pt}\mathsf{with} \hspace{3pt} \ottnt{a_{{\mathrm{2}}}}  \rightarrow  \ottnt{b'_{{\mathrm{1}}}}  =  \ottnt{b} }%
 }{
- \Omega  \vDash  \ottsym{(}   caseR  \ottnt{a_{{\mathrm{1}}}}  of  \ottnt{a_{{\mathrm{2}}}}  \rightarrow  \ottnt{b_{{\mathrm{1}}}}  \| \_ \rightarrow  \ottnt{b_{{\mathrm{2}}}}   \ottsym{)}   \Rightarrow _{ \ottnt{R_{{\mathrm{0}}}} }  \ottnt{b} }{%
+ \Omega  \vDash  \ottsym{(}   \mathsf{case}_ \ottnt{R}  \hspace{3pt}  \ottnt{a_{{\mathrm{1}}}}  \hspace{3pt} \mathsf{of} \hspace{3pt}  \ottnt{a_{{\mathrm{2}}}}  \rightarrow  \ottnt{b_{{\mathrm{1}}}}  \| \_ \rightarrow  \ottnt{b_{{\mathrm{2}}}}   \ottsym{)}   \Rightarrow _{ \ottnt{R_{{\mathrm{0}}}} }  \ottnt{b} }{%
 {\ottdrulename{Par\_PatternTrue}}{}%
 }}
 
@@ -1102,9 +1104,9 @@
 \ottpremise{ \Omega  \vDash  \ottnt{b_{{\mathrm{1}}}}   \Rightarrow _{ \ottnt{R_{{\mathrm{0}}}} }  \ottnt{b'_{{\mathrm{1}}}} }%
 \ottpremise{ \Omega  \vDash  \ottnt{b_{{\mathrm{2}}}}   \Rightarrow _{ \ottnt{R_{{\mathrm{0}}}} }  \ottnt{b'_{{\mathrm{2}}}} }%
 \ottpremise{ \mathsf{Value}_{ \ottnt{R} }\  \ottnt{a'_{{\mathrm{1}}}} }%
-\ottpremise{ \neg  \ottsym{(}   \mathsf{match}_ \ottnt{R}  \hspace{2pt}  \ottnt{a'_{{\mathrm{1}}}}  \mathsf{ with }  \ottnt{a_{{\mathrm{2}}}}  \rightarrow  \ottnt{b'_{{\mathrm{1}}}}  =  \ottnt{b}   \ottsym{)} }%
+\ottpremise{ \neg  \ottsym{(}   \mathsf{match}_ \ottnt{R}  \hspace{3pt}  \ottnt{a'_{{\mathrm{1}}}}  \hspace{3pt}\mathsf{with} \hspace{3pt} \ottnt{a_{{\mathrm{2}}}}  \rightarrow  \ottnt{b'_{{\mathrm{1}}}}  =  \ottnt{b}   \ottsym{)} }%
 }{
- \Omega  \vDash  \ottsym{(}   caseR  \ottnt{a_{{\mathrm{1}}}}  of  \ottnt{a_{{\mathrm{2}}}}  \rightarrow  \ottnt{b_{{\mathrm{1}}}}  \| \_ \rightarrow  \ottnt{b_{{\mathrm{2}}}}   \ottsym{)}   \Rightarrow _{ \ottnt{R_{{\mathrm{0}}}} }  \ottnt{b'_{{\mathrm{2}}}} }{%
+ \Omega  \vDash  \ottsym{(}   \mathsf{case}_ \ottnt{R}  \hspace{3pt}  \ottnt{a_{{\mathrm{1}}}}  \hspace{3pt} \mathsf{of} \hspace{3pt}  \ottnt{a_{{\mathrm{2}}}}  \rightarrow  \ottnt{b_{{\mathrm{1}}}}  \| \_ \rightarrow  \ottnt{b_{{\mathrm{2}}}}   \ottsym{)}   \Rightarrow _{ \ottnt{R_{{\mathrm{0}}}} }  \ottnt{b'_{{\mathrm{2}}}} }{%
 {\ottdrulename{Par\_PatternFalse}}{}%
 }}
 
@@ -1189,18 +1191,18 @@
 
 
 \newcommand{\ottdruleBetaXXPatternTrue}[1]{\ottdrule[#1]{%
-\ottpremise{ \mathsf{match}_ \ottnt{R}  \hspace{2pt}  \ottnt{a_{{\mathrm{1}}}}  \mathsf{ with }  \ottnt{a_{{\mathrm{2}}}}  \rightarrow  \ottnt{b_{{\mathrm{1}}}}  =  \ottnt{b} }%
+\ottpremise{ \mathsf{match}_ \ottnt{R}  \hspace{3pt}  \ottnt{a_{{\mathrm{1}}}}  \hspace{3pt}\mathsf{with} \hspace{3pt} \ottnt{a_{{\mathrm{2}}}}  \rightarrow  \ottnt{b_{{\mathrm{1}}}}  =  \ottnt{b} }%
 }{
-\vDash   caseR  \ottnt{a_{{\mathrm{1}}}}  of  \ottnt{a_{{\mathrm{2}}}}  \rightarrow  \ottnt{b_{{\mathrm{1}}}}  \| \_ \rightarrow  \ottnt{b_{{\mathrm{2}}}}   \ottsym{>}  \ottnt{b}  \ottsym{/}  \ottnt{R_{{\mathrm{0}}}}}{%
+\vDash   \mathsf{case}_ \ottnt{R}  \hspace{3pt}  \ottnt{a_{{\mathrm{1}}}}  \hspace{3pt} \mathsf{of} \hspace{3pt}  \ottnt{a_{{\mathrm{2}}}}  \rightarrow  \ottnt{b_{{\mathrm{1}}}}  \| \_ \rightarrow  \ottnt{b_{{\mathrm{2}}}}   \ottsym{>}  \ottnt{b}  \ottsym{/}  \ottnt{R_{{\mathrm{0}}}}}{%
 {\ottdrulename{Beta\_PatternTrue}}{}%
 }}
 
 
 \newcommand{\ottdruleBetaXXPatternFalse}[1]{\ottdrule[#1]{%
 \ottpremise{ \mathsf{Value}_{ \ottnt{R} }\  \ottnt{a_{{\mathrm{1}}}} }%
-\ottpremise{ \neg  \ottsym{(}   \mathsf{match}_ \ottnt{R}  \hspace{2pt}  \ottnt{a_{{\mathrm{1}}}}  \mathsf{ with }  \ottnt{a_{{\mathrm{2}}}}  \rightarrow  \ottnt{b_{{\mathrm{1}}}}  =  \ottnt{b}   \ottsym{)} }%
+\ottpremise{ \neg  \ottsym{(}   \mathsf{match}_ \ottnt{R}  \hspace{3pt}  \ottnt{a_{{\mathrm{1}}}}  \hspace{3pt}\mathsf{with} \hspace{3pt} \ottnt{a_{{\mathrm{2}}}}  \rightarrow  \ottnt{b_{{\mathrm{1}}}}  =  \ottnt{b}   \ottsym{)} }%
 }{
-\vDash   caseR  \ottnt{a_{{\mathrm{1}}}}  of  \ottnt{a_{{\mathrm{2}}}}  \rightarrow  \ottnt{b_{{\mathrm{1}}}}  \| \_ \rightarrow  \ottnt{b_{{\mathrm{2}}}}   \ottsym{>}  \ottnt{b_{{\mathrm{2}}}}  \ottsym{/}  \ottnt{R_{{\mathrm{0}}}}}{%
+\vDash   \mathsf{case}_ \ottnt{R}  \hspace{3pt}  \ottnt{a_{{\mathrm{1}}}}  \hspace{3pt} \mathsf{of} \hspace{3pt}  \ottnt{a_{{\mathrm{2}}}}  \rightarrow  \ottnt{b_{{\mathrm{1}}}}  \| \_ \rightarrow  \ottnt{b_{{\mathrm{2}}}}   \ottsym{>}  \ottnt{b_{{\mathrm{2}}}}  \ottsym{/}  \ottnt{R_{{\mathrm{0}}}}}{%
 {\ottdrulename{Beta\_PatternFalse}}{}%
 }}
 
@@ -1240,7 +1242,7 @@
 \newcommand{\ottdruleEXXPattern}[1]{\ottdrule[#1]{%
 \ottpremise{\vDash  \ottnt{a}  \leadsto  \ottnt{a'_{{\mathrm{1}}}}  \ottsym{/}  \ottnt{R}}%
 }{
-\vDash   caseR  \ottnt{a_{{\mathrm{1}}}}  of  \ottnt{a_{{\mathrm{2}}}}  \rightarrow  \ottnt{b_{{\mathrm{1}}}}  \| \_ \rightarrow  \ottnt{b_{{\mathrm{2}}}}   \leadsto   caseR  \ottnt{a'_{{\mathrm{1}}}}  of  \ottnt{a_{{\mathrm{2}}}}  \rightarrow  \ottnt{b_{{\mathrm{1}}}}  \| \_ \rightarrow  \ottnt{b_{{\mathrm{2}}}}   \ottsym{/}  \ottnt{R_{{\mathrm{0}}}}}{%
+\vDash   \mathsf{case}_ \ottnt{R}  \hspace{3pt}  \ottnt{a_{{\mathrm{1}}}}  \hspace{3pt} \mathsf{of} \hspace{3pt}  \ottnt{a_{{\mathrm{2}}}}  \rightarrow  \ottnt{b_{{\mathrm{1}}}}  \| \_ \rightarrow  \ottnt{b_{{\mathrm{2}}}}   \leadsto   \mathsf{case}_ \ottnt{R}  \hspace{3pt}  \ottnt{a'_{{\mathrm{1}}}}  \hspace{3pt} \mathsf{of} \hspace{3pt}  \ottnt{a_{{\mathrm{2}}}}  \rightarrow  \ottnt{b_{{\mathrm{1}}}}  \| \_ \rightarrow  \ottnt{b_{{\mathrm{2}}}}   \ottsym{/}  \ottnt{R_{{\mathrm{0}}}}}{%
 {\ottdrulename{E\_Pattern}}{}%
 }}
 
@@ -1429,7 +1431,7 @@
 \ottpremise{\Gamma  \vDash  \ottnt{b_{{\mathrm{2}}}}  \ottsym{:}  \ottnt{B}}%
 \ottpremise{\phi_{{\mathrm{1}}}  \ottsym{=}  \ottsym{(}   \ottnt{a_{{\mathrm{1}}}}   \sim _{ \ottnt{A} / \ottnt{R} }  \ottnt{a_{{\mathrm{2}}}}   \ottsym{)}}%
 }{
-\Gamma  \vDash   caseR  \ottnt{a_{{\mathrm{1}}}}  of  \ottnt{a_{{\mathrm{2}}}}  \rightarrow  \ottnt{b_{{\mathrm{1}}}}  \| \_ \rightarrow  \ottnt{b_{{\mathrm{2}}}}   \ottsym{:}  \ottnt{B}}{%
+\Gamma  \vDash   \mathsf{case}_ \ottnt{R}  \hspace{3pt}  \ottnt{a_{{\mathrm{1}}}}  \hspace{3pt} \mathsf{of} \hspace{3pt}  \ottnt{a_{{\mathrm{2}}}}  \rightarrow  \ottnt{b_{{\mathrm{1}}}}  \| \_ \rightarrow  \ottnt{b_{{\mathrm{2}}}}   \ottsym{:}  \ottnt{B}}{%
 {\ottdrulename{E\_case}}{}%
 }}
 
@@ -1563,7 +1565,7 @@
 
 \newcommand{\ottdruleEXXAppCong}[1]{\ottdrule[#1]{%
 \ottpremise{\Gamma  \ottsym{;}  \Delta  \vDash  \ottnt{a_{{\mathrm{1}}}}  \equiv  \ottnt{b_{{\mathrm{1}}}}  \ottsym{:}  \ottsym{(}   \mathrm{\Pi}^ \ottsym{+} \ottmv{x} \!:\! \ottnt{A} \to \ottnt{B}   \ottsym{)}  \ottsym{/}  \ottnt{R'}}%
-\ottpremise{\Gamma  \ottsym{;}  \Delta  \vDash  \ottnt{a_{{\mathrm{2}}}}  \equiv  \ottnt{b_{{\mathrm{2}}}}  \ottsym{:}  \ottnt{A}  \ottsym{/}  \ottnt{R'}}%
+\ottpremise{\Gamma  \ottsym{;}  \Delta  \vDash  \ottnt{a_{{\mathrm{2}}}}  \equiv  \ottnt{b_{{\mathrm{2}}}}  \ottsym{:}  \ottnt{A}  \ottsym{/}  \ottkw{Nom}}%
 }{
 \Gamma  \ottsym{;}  \Delta  \vDash   \ottnt{a_{{\mathrm{1}}}} \  \ottnt{a_{{\mathrm{2}}}} ^ \ottsym{+}   \equiv   \ottnt{b_{{\mathrm{1}}}} \  \ottnt{b_{{\mathrm{2}}}} ^ \ottsym{+}   \ottsym{:}  \ottsym{(}  \ottnt{B}  \ottsym{\{}  \ottnt{a_{{\mathrm{2}}}}  \ottsym{/}  \ottmv{x}  \ottsym{\}}  \ottsym{)}  \ottsym{/}  \ottnt{R'}}{%
 {\ottdrulename{E\_AppCong}}{}%
@@ -1678,7 +1680,7 @@
 \ottpremise{\Gamma  \ottsym{;}  \Delta  \vDash  \ottnt{b_{{\mathrm{1}}}}  \equiv  \ottnt{b'_{{\mathrm{1}}}}  \ottsym{:}  \ottnt{B}  \ottsym{/}  \ottnt{R_{{\mathrm{0}}}}}%
 \ottpremise{\Gamma  \ottsym{;}  \Delta  \vDash  \ottnt{b_{{\mathrm{2}}}}  \equiv  \ottnt{b'_{{\mathrm{2}}}}  \ottsym{:}  \ottnt{B}  \ottsym{/}  \ottnt{R_{{\mathrm{0}}}}}%
 }{
-\Gamma  \ottsym{;}  \Delta  \vDash   caseR  \ottnt{a_{{\mathrm{1}}}}  of  \ottnt{a_{{\mathrm{2}}}}  \rightarrow  \ottnt{b_{{\mathrm{1}}}}  \| \_ \rightarrow  \ottnt{b_{{\mathrm{2}}}}   \equiv   caseR  \ottnt{a'_{{\mathrm{1}}}}  of  \ottnt{a_{{\mathrm{2}}}}  \rightarrow  \ottnt{b'_{{\mathrm{1}}}}  \| \_ \rightarrow  \ottnt{b'_{{\mathrm{2}}}}   \ottsym{:}  \ottnt{B}  \ottsym{/}  \ottnt{R_{{\mathrm{0}}}}}{%
+\Gamma  \ottsym{;}  \Delta  \vDash   \mathsf{case}_ \ottnt{R}  \hspace{3pt}  \ottnt{a_{{\mathrm{1}}}}  \hspace{3pt} \mathsf{of} \hspace{3pt}  \ottnt{a_{{\mathrm{2}}}}  \rightarrow  \ottnt{b_{{\mathrm{1}}}}  \| \_ \rightarrow  \ottnt{b_{{\mathrm{2}}}}   \equiv   \mathsf{case}_ \ottnt{R}  \hspace{3pt}  \ottnt{a'_{{\mathrm{1}}}}  \hspace{3pt} \mathsf{of} \hspace{3pt}  \ottnt{a_{{\mathrm{2}}}}  \rightarrow  \ottnt{b'_{{\mathrm{1}}}}  \| \_ \rightarrow  \ottnt{b'_{{\mathrm{2}}}}   \ottsym{:}  \ottnt{B}  \ottsym{/}  \ottnt{R_{{\mathrm{0}}}}}{%
 {\ottdrulename{E\_PatCong}}{}%
 }}
 
@@ -1849,12 +1851,12 @@
 \ottdefnsJSubRole
 \ottdefnsJPath
 \ottdefnsJPat
-\ottdefnsJTypeRoleList
 \ottdefnsJMatchSubst
 \ottdefnsJValue
 \ottdefnsJValueType
 \ottdefnsJconsistent
 \ottdefnsJroleing
+\ottdefnsJTypeRoleList
 \ottdefnsJChk
 \ottdefnsJpar
 \ottdefnsJbeta
@@ -1871,6 +1873,6 @@
 
 \begin{verbatim}
 Definition rules:        131 good    0 bad
-Definition rule clauses: 376 good    0 bad
+Definition rule clauses: 377 good    0 bad
 \end{verbatim}
 \end{document}
