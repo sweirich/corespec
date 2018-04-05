@@ -47,7 +47,7 @@ spec: $(SPEC)
 	ott -o $(RULESFILE) \
 					-tex_wrap false \
 					-tex_show_meta false $(SPEC)
-	pdflatex $(SPECFILE)
+	pdflatex -interaction nonstopmode $(SPECFILE)
 
 
 spec-continuous-update: $(SPEC)
@@ -63,7 +63,9 @@ spec-continuous-update: $(SPEC)
 					2>&1                                                    \
 					| sed -r "s/\x1B\[([0-9]{1,2}(;[0-9]{1,2})?)?[mGK]//g"; \
 			echo "\n\n";                                                \
-			pdflatex -halt-on-error $(SPECFILE)                         \
+			pdflatex                                                    \
+			    -interaction nonstopmode                                \
+			    $(SPECFILE)                                             \
 					-file-line-error                                        \
 					2>&1;                                                   \
 		) | fold -w 80 | column -e;                                   \
