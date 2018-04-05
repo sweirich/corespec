@@ -631,7 +631,7 @@ not (R1 <= R)
 MatchSubst R F F b b
 
 MatchSubst R a1 a2 b1 b2
---------------------------------------------- :: AppRelR 
+--------------------------------------------- :: AppRelR
 MatchSubst R (a1 R' a) (a2 + x) b1 (b2 {a/x})
 
 MatchSubst R a1 a2 b1 b2
@@ -639,11 +639,11 @@ MatchSubst R a1 a2 b1 b2
 MatchSubst R (a1 + a) (a2 + x) b1 (b2 {a/x})
 
 MatchSubst R a1 a2 b1 b2
------------------------------------------ :: AppIrrel 
+----------------------------------------- :: AppIrrel
 MatchSubst R (a1 - []) (a2 - []) b1 b2
 
 MatchSubst R a1 a2 b1 b2
------------------------------------------ :: CApp 
+----------------------------------------- :: CApp
 MatchSubst R (a1 [o]) (a2 [o]) b1 b2
 
 defns
