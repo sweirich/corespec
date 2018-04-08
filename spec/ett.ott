@@ -228,6 +228,10 @@ role_context, W {{ tex \Omega }} :: 'rctx_' ::= {{ com role_contexts }}
    | empty           ::    :: Empty   {{ coq nil }}
    | x : R           ::    :: Tm      {{ coq ([[x]] ~ [[R]]) }}
    | W , x : R       ::    :: ConsTm  {{ coq (([[x]] ~ [[R]]) ++ [[W]]) }}
+   | W ++ W'         :: M  :: Append  {{ coq ([[W]] ++ [[W']]) }}
+   {{tex [[W]],[[W']]}}
+   | ctx_to_NomCtx G ::    :: Conv    {{ coq (ctx_to_NomCtx [[G]]) }}
+   {{tex [[G]]_\mathsf{Nom} }}
    | ( W )           :: M  :: Paren   {{ coq ([[W]]) }}
    | (# W #)         :: M  :: SecretParen {{ coq [[W]] }} {{ tex [[W]] }}
 
@@ -524,6 +528,11 @@ Definition an_toplevel : sig := Fix ~ Ax FixDef FixTy Rep (Nom :: [Nom]).
 
 Definition toplevel : sig := erase_sig an_toplevel Nom.
 
+Fixpoint ctx_to_NomCtx (G : context) : role_context :=
+  match G with
+  | nil => nil
+  | (x,A) :: G' => (x,Nom) :: ctx_to_NomCtx(G')
+  end.
 }}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -587,8 +596,9 @@ defns
 JPat :: '' ::=
 
 defn
-G |= a : A pat/R ::  :: Pat :: 'Pat_'
+G |= a : A pat / R ::  :: Pat :: 'Pat_'
 {{ com Pattern judgment }}
+{{ tex [[G]] \vDash [[a]] : [[A]] \hspace{2pt} \mathsf{pat} / [[R]] }}
 by
 
 F : A @ Rs in toplevel
@@ -601,16 +611,39 @@ not (R1 <= R)
 empty |= F : A pat/R
 
 G |= a : all rho y: A1 -> B1 pat/R
-x notin dom G
 {y/x}B = B1
 ------------------------------------------- :: App
 G , x : A1 |= (a rho x) : B pat/R
 
 G |= a : all c1: phi. B1 pat/R
-c notin dom G
 {c1/c}B = B1
 ------------------------------------------- :: CApp
-G , c:phi |= (a [o]) : B pat/R
+G , c:phi |= (a [c]) : B pat/R
+
+defns
+JIrrelVarCheck :: '' ::=
+
+defn
+IrrelVarCheck a b :: :: IrrelVarCheck :: 'IrrelVarCheck_'
+{{ com Irrelevant Variable Check }}
+{{ tex \mathsf{Irrelevant Var} [[a]] \hspace{3pt} \cap \hspace{3pt} \mathsf{fv} [[b]] = \emptyset }}
+by
+
+--------------------------- :: Const
+IrrelVarCheck F b
+
+IrrelVarCheck a b
+--------------------------- :: App
+IrrelVarCheck (a + x) b
+
+IrrelVarCheck a b
+x notin fv b
+--------------------------- :: IApp
+IrrelVarCheck (a - x) b
+
+IrrelVarCheck a b
+--------------------------  :: CApp
+IrrelVarCheck (a [c]) b
 
 defns
 JMatchSubst :: '' ::=
@@ -639,12 +672,12 @@ MatchSubst R a1 a2 b1 b2
 MatchSubst R (a1 + a) (a2 + x) b1 (b2 {a/x})
 
 MatchSubst R a1 a2 b1 b2
------------------------------------------ :: AppIrrel
-MatchSubst R (a1 - []) (a2 - []) b1 b2
+---------------------------------------------- :: AppIrrel
+MatchSubst R (a1 - []) (a2 - x) b1 (b2 {[]/x})
 
 MatchSubst R a1 a2 b1 b2
------------------------------------------ :: CApp
-MatchSubst R (a1 [o]) (a2 [o]) b1 b2
+---------------------------------------------- :: CApp
+MatchSubst R (a1 [o]) (a2 [c]) b1 (b2 {o/c})
 
 defns
 JValue :: '' ::=
@@ -803,32 +836,11 @@ F ~ a : A / R @ Rs in toplevel
 W |- F : R1
 
 W |- a1 : R
-W |- b1 : R1
+G |= a2 : A pat/R
+W ++ ctx_to_NomCtx G |- b1 : R1
 W |- b2 : R1
 --------------------------------------- :: Pattern
 W |- case R a1 of a2 => b1 | => b2 : R1
-
-defns
-JTypeRoleList :: '' ::=
-
-defn
-TypeRoleList A @ Rs :: :: TypeRoleList :: 'TypeRoleList_'
-{{ com type role list }}
-{{ tex \mathsf{Roles}([[A]]) = [[Rs]] }}
-by
-
-------------------------- :: Star
- TypeRoleList TYPE @ nilR
-
- TypeRoleList B @ Rs
- x : Nom |- B : R1
------------------------------------------- :: Pi
- TypeRoleList (all rho x : A -> B) @ R1,Rs
-
- TypeRoleList B @ Rs
------------------------------------------- :: CPi
- TypeRoleList (all c : phi. B) @ Rs
-
 
 defns
 JChk :: '' ::=
@@ -1129,6 +1141,7 @@ G' |= a2 : A pat/R
 G ++ (G', c:phi1) |= b1 : B
 G  |= b2 : B
 phi1 = (a1 ~ a2 : A/R)
+IrrelVarCheck a2 b1
 ------------------------------------------ :: case
 G |= case R a1 of a2 => b1 | => b2 : B
 
@@ -1365,14 +1378,12 @@ by
 |= S
 empty |= A : TYPE
 F notin dom S
-TypeRoleList A @ Rs
 -------------------- :: ConsConst
 |= S, F : A @ Rs
 
 |= S
 empty |= a : A
 F notin dom S
-TypeRoleList A @ Rs
 ----------------------- :: ConsAx
 |= S, F ~ a : A/R @ Rs
 
