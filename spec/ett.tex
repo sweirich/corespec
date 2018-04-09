@@ -156,6 +156,8 @@
 \ottfirstprodline{|}{\varnothing}{}{}{}{}\ottprodnewline
 \ottprodline{|}{\ottmv{x}  \ottsym{:}  \ottnt{R}}{}{}{}{}\ottprodnewline
 \ottprodline{|}{\Omega  \ottsym{,}  \ottmv{x}  \ottsym{:}  \ottnt{R}}{}{}{}{}\ottprodnewline
+\ottprodline{|}{ \Omega , \Omega' } {\textsf{M}}{}{}{}\ottprodnewline
+\ottprodline{|}{ \Gamma _\mathsf{Nom} }{}{}{}{}\ottprodnewline
 \ottprodline{|}{\ottsym{(}  \Omega  \ottsym{)}} {\textsf{M}}{}{}{}\ottprodnewline
 \ottprodline{|}{ \Omega } {\textsf{M}}{}{}{}}
 
@@ -286,7 +288,11 @@
 
 \newcommand{\ottJPat}{
 \ottrulehead{\ottnt{JPat}}{::=}{}\ottprodnewline
-\ottfirstprodline{|}{\Gamma  \vDash  \ottnt{a}  \ottsym{:}  \ottnt{A}  \ottsym{pat/R}}{}{}{}{\ottcom{Pattern judgment}}}
+\ottfirstprodline{|}{ \Gamma  \vDash  \ottnt{a}  :  \ottnt{A}  \hspace{2pt} \mathsf{pat} /  \ottnt{R} }{}{}{}{\ottcom{Pattern judgment}}}
+
+\newcommand{\ottJIrrelVarCheck}{
+\ottrulehead{\ottnt{JIrrelVarCheck}}{::=}{}\ottprodnewline
+\ottfirstprodline{|}{ \mathsf{Irrelevant Var}  \ottnt{a}  \hspace{3pt} \cap \hspace{3pt} \mathsf{fv}  \ottnt{b}  = \emptyset }{}{}{}{\ottcom{Irrelevant Variable Check}}}
 
 \newcommand{\ottJMatchSubst}{
 \ottrulehead{\ottnt{JMatchSubst}}{::=}{}\ottprodnewline
@@ -307,10 +313,6 @@
 \newcommand{\ottJroleing}{
 \ottrulehead{\ottnt{Jroleing}}{::=}{}\ottprodnewline
 \ottfirstprodline{|}{ \Omega  \vDash  \ottnt{a}  :  \ottnt{R} }{}{}{}{}}
-
-\newcommand{\ottJTypeRoleList}{
-\ottrulehead{\ottnt{JTypeRoleList}}{::=}{}\ottprodnewline
-\ottfirstprodline{|}{ \mathsf{Roles}( \ottnt{A} ) =  \ottnt{Rs} }{}{}{}{\ottcom{type role list}}}
 
 \newcommand{\ottJChk}{
 \ottrulehead{\ottnt{JChk}}{::=}{}\ottprodnewline
@@ -345,12 +347,12 @@
 \ottfirstprodline{|}{\ottnt{JSubRole}}{}{}{}{}\ottprodnewline
 \ottprodline{|}{\ottnt{JPath}}{}{}{}{}\ottprodnewline
 \ottprodline{|}{\ottnt{JPat}}{}{}{}{}\ottprodnewline
+\ottprodline{|}{\ottnt{JIrrelVarCheck}}{}{}{}{}\ottprodnewline
 \ottprodline{|}{\ottnt{JMatchSubst}}{}{}{}{}\ottprodnewline
 \ottprodline{|}{\ottnt{JValue}}{}{}{}{}\ottprodnewline
 \ottprodline{|}{\ottnt{JValueType}}{}{}{}{}\ottprodnewline
 \ottprodline{|}{\ottnt{Jconsistent}}{}{}{}{}\ottprodnewline
 \ottprodline{|}{\ottnt{Jroleing}}{}{}{}{}\ottprodnewline
-\ottprodline{|}{\ottnt{JTypeRoleList}}{}{}{}{}\ottprodnewline
 \ottprodline{|}{\ottnt{JChk}}{}{}{}{}\ottprodnewline
 \ottprodline{|}{\ottnt{Jpar}}{}{}{}{}\ottprodnewline
 \ottprodline{|}{\ottnt{Jbeta}}{}{}{}{}\ottprodnewline
@@ -401,12 +403,12 @@
 \ottJSubRole\ottinterrule
 \ottJPath\ottinterrule
 \ottJPat\ottinterrule
+\ottJIrrelVarCheck\ottinterrule
 \ottJMatchSubst\ottinterrule
 \ottJValue\ottinterrule
 \ottJValueType\ottinterrule
 \ottJconsistent\ottinterrule
 \ottJroleing\ottinterrule
-\ottJTypeRoleList\ottinterrule
 \ottJChk\ottinterrule
 \ottJpar\ottinterrule
 \ottJbeta\ottinterrule
@@ -510,7 +512,7 @@
 \newcommand{\ottdrulePatXXAbsConst}[1]{\ottdrule[#1]{%
 \ottpremise{\ottmv{F} \, \ottsym{:}  \ottnt{A}  \ottsym{@}  \ottnt{Rs} \, \in \,  \Sigma_0 }%
 }{
-\varnothing  \vDash  \ottmv{F}  \ottsym{:}  \ottnt{A}  \ottsym{pat/R}}{%
+ \varnothing  \vDash  \ottmv{F}  :  \ottnt{A}  \hspace{2pt} \mathsf{pat} /  \ottnt{R} }{%
 {\ottdrulename{Pat\_AbsConst}}{}%
 }}
 
@@ -519,31 +521,29 @@
 \ottpremise{\ottmv{F} \,  \sim  \ottnt{a}  :  \ottnt{A}  /  \ottnt{R_{{\mathrm{1}}}}  @  \ottnt{Rs}  \, \in \,  \Sigma_0 }%
 \ottpremise{ \neg  \ottsym{(}   \ottnt{R_{{\mathrm{1}}}}  \leq  \ottnt{R}   \ottsym{)} }%
 }{
-\varnothing  \vDash  \ottmv{F}  \ottsym{:}  \ottnt{A}  \ottsym{pat/R}}{%
+ \varnothing  \vDash  \ottmv{F}  :  \ottnt{A}  \hspace{2pt} \mathsf{pat} /  \ottnt{R} }{%
 {\ottdrulename{Pat\_Const}}{}%
 }}
 
 
 \newcommand{\ottdrulePatXXApp}[1]{\ottdrule[#1]{%
-\ottpremise{\Gamma  \vDash  \ottnt{a}  \ottsym{:}   \mathrm{\Pi}^ \rho \ottmv{y} \!:\! \ottnt{A_{{\mathrm{1}}}} \to \ottnt{B_{{\mathrm{1}}}}   \ottsym{pat/R}}%
-\ottpremise{\ottmv{x} \, \not\in \, \mathsf{dom} \, \Gamma}%
+\ottpremise{ \Gamma  \vDash  \ottnt{a}  :   \mathrm{\Pi}^ \rho \ottmv{y} \!:\! \ottnt{A_{{\mathrm{1}}}} \to \ottnt{B_{{\mathrm{1}}}}   \hspace{2pt} \mathsf{pat} /  \ottnt{R} }%
 \ottpremise{\ottsym{\{}  \ottmv{y}  \ottsym{/}  \ottmv{x}  \ottsym{\}}  \ottnt{B}  \ottsym{=}  \ottnt{B_{{\mathrm{1}}}}}%
 }{
-\Gamma  \ottsym{,}  \ottmv{x}  \ottsym{:}  \ottnt{A_{{\mathrm{1}}}}  \vDash  \ottsym{(}   \ottnt{a} \  \ottmv{x} ^ \rho   \ottsym{)}  \ottsym{:}  \ottnt{B}  \ottsym{pat/R}}{%
+ \Gamma  \ottsym{,}  \ottmv{x}  \ottsym{:}  \ottnt{A_{{\mathrm{1}}}}  \vDash  \ottsym{(}   \ottnt{a} \  \ottmv{x} ^ \rho   \ottsym{)}  :  \ottnt{B}  \hspace{2pt} \mathsf{pat} /  \ottnt{R} }{%
 {\ottdrulename{Pat\_App}}{}%
 }}
 
 
 \newcommand{\ottdrulePatXXCApp}[1]{\ottdrule[#1]{%
-\ottpremise{\Gamma  \vDash  \ottnt{a}  \ottsym{:}   \forall \ottmv{c_{{\mathrm{1}}}} \!:\! \phi . \ottnt{B_{{\mathrm{1}}}}   \ottsym{pat/R}}%
-\ottpremise{\ottmv{c} \, \not\in \, \mathsf{dom} \, \Gamma}%
+\ottpremise{ \Gamma  \vDash  \ottnt{a}  :   \forall \ottmv{c_{{\mathrm{1}}}} \!:\! \phi . \ottnt{B_{{\mathrm{1}}}}   \hspace{2pt} \mathsf{pat} /  \ottnt{R} }%
 \ottpremise{\ottsym{\{}  \ottmv{c_{{\mathrm{1}}}}  \ottsym{/}  \ottmv{c}  \ottsym{\}}  \ottnt{B}  \ottsym{=}  \ottnt{B_{{\mathrm{1}}}}}%
 }{
-\Gamma  \ottsym{,}  \ottmv{c}  \ottsym{:}  \phi  \vDash  \ottsym{(}  \ottnt{a}  \ottsym{[}  \bullet  \ottsym{]}  \ottsym{)}  \ottsym{:}  \ottnt{B}  \ottsym{pat/R}}{%
+ \Gamma  \ottsym{,}  \ottmv{c}  \ottsym{:}  \phi  \vDash  \ottsym{(}  \ottnt{a}  \ottsym{[}  \ottmv{c}  \ottsym{]}  \ottsym{)}  :  \ottnt{B}  \hspace{2pt} \mathsf{pat} /  \ottnt{R} }{%
 {\ottdrulename{Pat\_CApp}}{}%
 }}
 
-\newcommand{\ottdefnPat}[1]{\begin{ottdefnblock}[#1]{$\Gamma  \vDash  \ottnt{a}  \ottsym{:}  \ottnt{A}  \ottsym{pat/R}$}{\ottcom{Pattern judgment}}
+\newcommand{\ottdefnPat}[1]{\begin{ottdefnblock}[#1]{$ \Gamma  \vDash  \ottnt{a}  :  \ottnt{A}  \hspace{2pt} \mathsf{pat} /  \ottnt{R} $}{\ottcom{Pattern judgment}}
 \ottusedrule{\ottdrulePatXXAbsConst{}}
 \ottusedrule{\ottdrulePatXXConst{}}
 \ottusedrule{\ottdrulePatXXApp{}}
@@ -553,6 +553,50 @@
 
 \newcommand{\ottdefnsJPat}{
 \ottdefnPat{}}
+
+% defns JIrrelVarCheck
+%% defn IrrelVarCheck
+\newcommand{\ottdruleIrrelVarCheckXXConst}[1]{\ottdrule[#1]{%
+}{
+ \mathsf{Irrelevant Var}  \ottmv{F}  \hspace{3pt} \cap \hspace{3pt} \mathsf{fv}  \ottnt{b}  = \emptyset }{%
+{\ottdrulename{IrrelVarCheck\_Const}}{}%
+}}
+
+
+\newcommand{\ottdruleIrrelVarCheckXXApp}[1]{\ottdrule[#1]{%
+\ottpremise{ \mathsf{Irrelevant Var}  \ottnt{a}  \hspace{3pt} \cap \hspace{3pt} \mathsf{fv}  \ottnt{b}  = \emptyset }%
+}{
+ \mathsf{Irrelevant Var}  \ottsym{(}   \ottnt{a} \  \ottmv{x} ^ \ottsym{+}   \ottsym{)}  \hspace{3pt} \cap \hspace{3pt} \mathsf{fv}  \ottnt{b}  = \emptyset }{%
+{\ottdrulename{IrrelVarCheck\_App}}{}%
+}}
+
+
+\newcommand{\ottdruleIrrelVarCheckXXIApp}[1]{\ottdrule[#1]{%
+\ottpremise{ \mathsf{Irrelevant Var}  \ottnt{a}  \hspace{3pt} \cap \hspace{3pt} \mathsf{fv}  \ottnt{b}  = \emptyset }%
+\ottpremise{\ottmv{x} \, \not\in \, \mathsf{fv}\! \, \ottnt{b}}%
+}{
+ \mathsf{Irrelevant Var}  \ottsym{(}   \ottnt{a} \  \ottmv{x} ^ \ottsym{-}   \ottsym{)}  \hspace{3pt} \cap \hspace{3pt} \mathsf{fv}  \ottnt{b}  = \emptyset }{%
+{\ottdrulename{IrrelVarCheck\_IApp}}{}%
+}}
+
+
+\newcommand{\ottdruleIrrelVarCheckXXCApp}[1]{\ottdrule[#1]{%
+\ottpremise{ \mathsf{Irrelevant Var}  \ottnt{a}  \hspace{3pt} \cap \hspace{3pt} \mathsf{fv}  \ottnt{b}  = \emptyset }%
+}{
+ \mathsf{Irrelevant Var}  \ottsym{(}  \ottnt{a}  \ottsym{[}  \ottmv{c}  \ottsym{]}  \ottsym{)}  \hspace{3pt} \cap \hspace{3pt} \mathsf{fv}  \ottnt{b}  = \emptyset }{%
+{\ottdrulename{IrrelVarCheck\_CApp}}{}%
+}}
+
+\newcommand{\ottdefnIrrelVarCheck}[1]{\begin{ottdefnblock}[#1]{$ \mathsf{Irrelevant Var}  \ottnt{a}  \hspace{3pt} \cap \hspace{3pt} \mathsf{fv}  \ottnt{b}  = \emptyset $}{\ottcom{Irrelevant Variable Check}}
+\ottusedrule{\ottdruleIrrelVarCheckXXConst{}}
+\ottusedrule{\ottdruleIrrelVarCheckXXApp{}}
+\ottusedrule{\ottdruleIrrelVarCheckXXIApp{}}
+\ottusedrule{\ottdruleIrrelVarCheckXXCApp{}}
+\end{ottdefnblock}}
+
+
+\newcommand{\ottdefnsJIrrelVarCheck}{
+\ottdefnIrrelVarCheck{}}
 
 % defns JMatchSubst
 %% defn MatchSubst
@@ -592,7 +636,7 @@
 \newcommand{\ottdruleMatchSubstXXAppIrrel}[1]{\ottdrule[#1]{%
 \ottpremise{ \mathsf{match}_ \ottnt{R}  \hspace{3pt}  \ottnt{a_{{\mathrm{1}}}}  \hspace{3pt}\mathsf{with} \hspace{3pt} \ottnt{a_{{\mathrm{2}}}}  \rightarrow  \ottnt{b_{{\mathrm{1}}}}  =  \ottnt{b_{{\mathrm{2}}}} }%
 }{
- \mathsf{match}_ \ottnt{R}  \hspace{3pt}  \ottsym{(}   \ottnt{a_{{\mathrm{1}}}} \  \Box ^ \ottsym{-}   \ottsym{)}  \hspace{3pt}\mathsf{with} \hspace{3pt} \ottsym{(}   \ottnt{a_{{\mathrm{2}}}} \  \Box ^ \ottsym{-}   \ottsym{)}  \rightarrow  \ottnt{b_{{\mathrm{1}}}}  =  \ottnt{b_{{\mathrm{2}}}} }{%
+ \mathsf{match}_ \ottnt{R}  \hspace{3pt}  \ottsym{(}   \ottnt{a_{{\mathrm{1}}}} \  \Box ^ \ottsym{-}   \ottsym{)}  \hspace{3pt}\mathsf{with} \hspace{3pt} \ottsym{(}   \ottnt{a_{{\mathrm{2}}}} \  \ottmv{x} ^ \ottsym{-}   \ottsym{)}  \rightarrow  \ottnt{b_{{\mathrm{1}}}}  =  \ottsym{(}  \ottnt{b_{{\mathrm{2}}}}  \ottsym{\{}  \Box  \ottsym{/}  \ottmv{x}  \ottsym{\}}  \ottsym{)} }{%
 {\ottdrulename{MatchSubst\_AppIrrel}}{}%
 }}
 
@@ -600,7 +644,7 @@
 \newcommand{\ottdruleMatchSubstXXCApp}[1]{\ottdrule[#1]{%
 \ottpremise{ \mathsf{match}_ \ottnt{R}  \hspace{3pt}  \ottnt{a_{{\mathrm{1}}}}  \hspace{3pt}\mathsf{with} \hspace{3pt} \ottnt{a_{{\mathrm{2}}}}  \rightarrow  \ottnt{b_{{\mathrm{1}}}}  =  \ottnt{b_{{\mathrm{2}}}} }%
 }{
- \mathsf{match}_ \ottnt{R}  \hspace{3pt}  \ottsym{(}  \ottnt{a_{{\mathrm{1}}}}  \ottsym{[}  \bullet  \ottsym{]}  \ottsym{)}  \hspace{3pt}\mathsf{with} \hspace{3pt} \ottsym{(}  \ottnt{a_{{\mathrm{2}}}}  \ottsym{[}  \bullet  \ottsym{]}  \ottsym{)}  \rightarrow  \ottnt{b_{{\mathrm{1}}}}  =  \ottnt{b_{{\mathrm{2}}}} }{%
+ \mathsf{match}_ \ottnt{R}  \hspace{3pt}  \ottsym{(}  \ottnt{a_{{\mathrm{1}}}}  \ottsym{[}  \bullet  \ottsym{]}  \ottsym{)}  \hspace{3pt}\mathsf{with} \hspace{3pt} \ottsym{(}  \ottnt{a_{{\mathrm{2}}}}  \ottsym{[}  \ottmv{c}  \ottsym{]}  \ottsym{)}  \rightarrow  \ottnt{b_{{\mathrm{1}}}}  =  \ottsym{(}  \ottnt{b_{{\mathrm{2}}}}  \ottsym{\{}  \bullet  \ottsym{/}  \ottmv{c}  \ottsym{\}}  \ottsym{)} }{%
 {\ottdrulename{MatchSubst\_CApp}}{}%
 }}
 
@@ -901,7 +945,8 @@
 
 \newcommand{\ottdruleroleXXaXXPattern}[1]{\ottdrule[#1]{%
 \ottpremise{ \Omega  \vDash  \ottnt{a_{{\mathrm{1}}}}  :  \ottnt{R} }%
-\ottpremise{ \Omega  \vDash  \ottnt{b_{{\mathrm{1}}}}  :  \ottnt{R_{{\mathrm{1}}}} }%
+\ottpremise{ \Gamma  \vDash  \ottnt{a_{{\mathrm{2}}}}  :  \ottnt{A}  \hspace{2pt} \mathsf{pat} /  \ottnt{R} }%
+\ottpremise{  \Omega ,  \Gamma _\mathsf{Nom}    \vDash  \ottnt{b_{{\mathrm{1}}}}  :  \ottnt{R_{{\mathrm{1}}}} }%
 \ottpremise{ \Omega  \vDash  \ottnt{b_{{\mathrm{2}}}}  :  \ottnt{R_{{\mathrm{1}}}} }%
 }{
  \Omega  \vDash   \mathsf{case}_ \ottnt{R}  \hspace{3pt}  \ottnt{a_{{\mathrm{1}}}}  \hspace{3pt} \mathsf{of} \hspace{3pt}  \ottnt{a_{{\mathrm{2}}}}  \rightarrow  \ottnt{b_{{\mathrm{1}}}}  \| \_ \rightarrow  \ottnt{b_{{\mathrm{2}}}}   :  \ottnt{R_{{\mathrm{1}}}} }{%
@@ -926,41 +971,6 @@
 
 \newcommand{\ottdefnsJroleing}{
 \ottdefnroleing{}}
-
-% defns JTypeRoleList
-%% defn TypeRoleList
-\newcommand{\ottdruleTypeRoleListXXStar}[1]{\ottdrule[#1]{%
-}{
- \mathsf{Roles}(  \star  ) =  \ottkw{nilR} }{%
-{\ottdrulename{TypeRoleList\_Star}}{}%
-}}
-
-
-\newcommand{\ottdruleTypeRoleListXXPi}[1]{\ottdrule[#1]{%
-\ottpremise{ \mathsf{Roles}( \ottnt{B} ) =  \ottnt{Rs} }%
-\ottpremise{ \ottmv{x}  \ottsym{:}  \ottkw{Nom}  \vDash  \ottnt{B}  :  \ottnt{R_{{\mathrm{1}}}} }%
-}{
- \mathsf{Roles}( \ottsym{(}   \mathrm{\Pi}^ \rho \ottmv{x} \!:\! \ottnt{A} \to \ottnt{B}   \ottsym{)} ) =  \ottnt{R_{{\mathrm{1}}}}  \ottsym{,}  \ottnt{Rs} }{%
-{\ottdrulename{TypeRoleList\_Pi}}{}%
-}}
-
-
-\newcommand{\ottdruleTypeRoleListXXCPi}[1]{\ottdrule[#1]{%
-\ottpremise{ \mathsf{Roles}( \ottnt{B} ) =  \ottnt{Rs} }%
-}{
- \mathsf{Roles}( \ottsym{(}   \forall \ottmv{c} \!:\! \phi . \ottnt{B}   \ottsym{)} ) =  \ottnt{Rs} }{%
-{\ottdrulename{TypeRoleList\_CPi}}{}%
-}}
-
-\newcommand{\ottdefnTypeRoleList}[1]{\begin{ottdefnblock}[#1]{$ \mathsf{Roles}( \ottnt{A} ) =  \ottnt{Rs} $}{\ottcom{type role list}}
-\ottusedrule{\ottdruleTypeRoleListXXStar{}}
-\ottusedrule{\ottdruleTypeRoleListXXPi{}}
-\ottusedrule{\ottdruleTypeRoleListXXCPi{}}
-\end{ottdefnblock}}
-
-
-\newcommand{\ottdefnsJTypeRoleList}{
-\ottdefnTypeRoleList{}}
 
 % defns JChk
 %% defn RhoCheck
@@ -1426,10 +1436,11 @@
 
 \newcommand{\ottdruleEXXcase}[1]{\ottdrule[#1]{%
 \ottpremise{\Gamma  \vDash  \ottnt{a_{{\mathrm{1}}}}  \ottsym{:}  \ottnt{A}}%
-\ottpremise{\Gamma'  \vDash  \ottnt{a_{{\mathrm{2}}}}  \ottsym{:}  \ottnt{A}  \ottsym{pat/R}}%
+\ottpremise{ \Gamma'  \vDash  \ottnt{a_{{\mathrm{2}}}}  :  \ottnt{A}  \hspace{2pt} \mathsf{pat} /  \ottnt{R} }%
 \ottpremise{ \Gamma ,  \ottsym{(}  \Gamma'  \ottsym{,}  \ottmv{c}  \ottsym{:}  \phi_{{\mathrm{1}}}  \ottsym{)}   \vDash  \ottnt{b_{{\mathrm{1}}}}  \ottsym{:}  \ottnt{B}}%
 \ottpremise{\Gamma  \vDash  \ottnt{b_{{\mathrm{2}}}}  \ottsym{:}  \ottnt{B}}%
 \ottpremise{\phi_{{\mathrm{1}}}  \ottsym{=}  \ottsym{(}   \ottnt{a_{{\mathrm{1}}}}   \sim _{ \ottnt{A} / \ottnt{R} }  \ottnt{a_{{\mathrm{2}}}}   \ottsym{)}}%
+\ottpremise{ \mathsf{Irrelevant Var}  \ottnt{a_{{\mathrm{2}}}}  \hspace{3pt} \cap \hspace{3pt} \mathsf{fv}  \ottnt{b_{{\mathrm{1}}}}  = \emptyset }%
 }{
 \Gamma  \vDash   \mathsf{case}_ \ottnt{R}  \hspace{3pt}  \ottnt{a_{{\mathrm{1}}}}  \hspace{3pt} \mathsf{of} \hspace{3pt}  \ottnt{a_{{\mathrm{2}}}}  \rightarrow  \ottnt{b_{{\mathrm{1}}}}  \| \_ \rightarrow  \ottnt{b_{{\mathrm{2}}}}   \ottsym{:}  \ottnt{B}}{%
 {\ottdrulename{E\_case}}{}%
@@ -1820,7 +1831,6 @@
 \ottpremise{\vDash  \Sigma}%
 \ottpremise{\varnothing  \vDash  \ottnt{A}  \ottsym{:}   \star }%
 \ottpremise{\ottmv{F} \, \not\in \, \mathsf{dom} \, \Sigma}%
-\ottpremise{ \mathsf{Roles}( \ottnt{A} ) =  \ottnt{Rs} }%
 }{
 \vDash   \Sigma  \cup \{ \ottmv{F} \ottsym{:}  \ottnt{A}  \ottsym{@}  \ottnt{Rs} \} }{%
 {\ottdrulename{Sig\_ConsConst}}{}%
@@ -1831,7 +1841,6 @@
 \ottpremise{\vDash  \Sigma}%
 \ottpremise{\varnothing  \vDash  \ottnt{a}  \ottsym{:}  \ottnt{A}}%
 \ottpremise{\ottmv{F} \, \not\in \, \mathsf{dom} \, \Sigma}%
-\ottpremise{ \mathsf{Roles}( \ottnt{A} ) =  \ottnt{Rs} }%
 }{
 \vDash   \Sigma  \cup \{ \ottmv{F}  \sim  \ottnt{a}  :  \ottnt{A}  /  \ottnt{R}  @  \ottnt{Rs}  \} }{%
 {\ottdrulename{Sig\_ConsAx}}{}%
@@ -1851,12 +1860,12 @@
 \ottdefnsJSubRole
 \ottdefnsJPath
 \ottdefnsJPat
+\ottdefnsJIrrelVarCheck
 \ottdefnsJMatchSubst
 \ottdefnsJValue
 \ottdefnsJValueType
 \ottdefnsJconsistent
 \ottdefnsJroleing
-\ottdefnsJTypeRoleList
 \ottdefnsJChk
 \ottdefnsJpar
 \ottdefnsJbeta
@@ -1872,7 +1881,7 @@
 \ottall
 
 \begin{verbatim}
-Definition rules:        131 good    0 bad
+Definition rules:        132 good    0 bad
 Definition rule clauses: 377 good    0 bad
 \end{verbatim}
 \end{document}
