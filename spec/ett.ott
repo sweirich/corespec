@@ -658,35 +658,35 @@ defns
 JMatchSubst :: '' ::=
 
 defn
-MatchSubst R a1 a2 b1 b2 :: :: MatchSubst :: 'MatchSubst_'
+match R a1 with a2 -> b1 = b2 :: :: MatchSubst :: 'MatchSubst_'
 {{ com match and substitute }}
-{{ tex \mathsf{match}_[[R]] \hspace{3pt} [[a1]] \hspace{3pt}\mathsf{with} \hspace{3pt}[[a2]] \rightarrow [[b1]] = [[b2]] }}
+{{ tex \mathsf{match}_[[R]] \ [[a1]] \ \mathsf{with} \ [[a2]] \rightarrow [[b1]] = [[b2]] }}
 by
 
 F : A @ Rs in toplevel
 --------------------------- :: AbsConst
-MatchSubst R F F b b
+match R F with F -> b = b
 
 F ~ a : A/R1 @ Rs in toplevel
 not (R1 <= R)
 ----------------------------------------- :: Const
-MatchSubst R F F b b
+match R F with F -> b = b
 
-MatchSubst R a1 a2 b1 b2
---------------------------------------------- :: AppRelR
-MatchSubst R (a1 R' a) (a2 + x) b1 (b2 {a/x})
+match R a1 with a2 -> b1 = b2
+------------------------------------------------------- :: AppRelR
+match R (a1 R' a) with (a2 + x) -> b1 = (b2 {a/x})
 
-MatchSubst R a1 a2 b1 b2
---------------------------------------------- :: AppRel
-MatchSubst R (a1 + a) (a2 + x) b1 (b2 {a/x})
+match R a1 with a2 -> b1 = b2
+------------------------------------------------------ :: AppRel
+match R (a1 + a) with (a2 + x) -> b1 = (b2 {a/x})
 
-MatchSubst R a1 a2 b1 b2
----------------------------------------------- :: AppIrrel
-MatchSubst R (a1 - []) (a2 - x) b1 (b2 {[]/x})
+match R a1 with a2 -> b1 = b2
+-------------------------------------------------------- :: AppIrrel
+match R (a1 - []) with (a2 - x) -> b1 = (b2 {[]/x})
 
-MatchSubst R a1 a2 b1 b2
----------------------------------------------- :: CApp
-MatchSubst R (a1 [o]) (a2 [c]) b1 (b2 {o/c})
+match R a1 with a2 -> b1 = b2
+------------------------------------------------------ :: CApp
+match R (a1 [o]) with (a2 [c]) -> b1 = (b2 {o/c})
 
 defns
 JValue :: '' ::=
@@ -937,7 +937,7 @@ W |- F => a / R
  W |- a1 => a1' / R
  W |- b1 => b1' / R0
  W |- b2 => b2' / R0
- MatchSubst R a1' a2 b1' b
+ match R a1' with a2 -> b1' = b
 ---------------------------------------------- :: PatternTrue
  W |- (case R a1 of a2 => b1 | => b2) => b / R0
 
@@ -945,7 +945,7 @@ W |- F => a / R
  W |- b1 => b1' / R0
  W |- b2 => b2' / R0
  Value R a1'
- not (MatchSubst R a1' a2 b1' b)
+ not (match R a1' with a2 -> b1' = b)
 ------------------------------------------------ :: PatternFalse
  W |- (case R a1 of a2 => b1 | => b2) => b2' / R0
 
@@ -1001,12 +1001,12 @@ R <= R1
 -------------------------------- :: Axiom
 |= F > a / R1
 
-MatchSubst R a1 a2 b1 b
+match R a1 with a2 -> b1 = b
 ------------------------------------------ :: PatternTrue
 |= case R a1 of a2 => b1 | => b2 > b / R0
 
 Value R a1
-not (MatchSubst R a1 a2 b1 b)
+not (match R a1 with a2 -> b1 = b)
 ------------------------------------------ :: PatternFalse
 |= case R a1 of a2 => b1 | => b2 > b2 / R0
 
