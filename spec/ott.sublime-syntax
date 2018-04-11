@@ -1,0 +1,187 @@
+%YAML 1.2
+---
+# __.: Syntax highlighting for Ott :.__
+#
+# Based on the example file (example-c)
+#
+# Some of the scope choices are somewhat arbitrary, at times only remotely related - or even totally unrelated - to the content they're marking.
+# The main goal here is to distinguish as many elements as possible
+
+
+# See http://www.sublimetext.com/docs/3/syntax.html
+
+file_extensions:
+  - ott
+scope: source.ott
+
+# Helpers
+variables:
+  ident: '[A-Za-z_][A-Za-z_0-9]*'
+  space: '[ \t]'
+  # FIXME: somehow, the definition of this regexp works when inlined, but not when referred to instead... Wtf?
+  nonempty-line: '^{{space}}*[^{{space}}\n].*$'
+
+contexts:
+  main:
+    - include: comments
+
+    - match: '(::=|::)'
+      scope: keyword.operator.ott
+
+    - include: section-dispatch
+
+  #### Dispatching ####
+  # This rule looks for all possible section tags (excluding subsections (like defn))
+  section-dispatch:
+    - include: find-defns-header
+    - include: find-embed
+    - include: find-unimplemented-header
+
+
+  #### Defns ####
+  find-defns-header:
+    - match: '\b(defns)\b'
+      scope: keyword.control.ott
+      set: defns-header
+
+
+  defns-header:
+    - include: comments
+
+    - match: '::='
+      scope: keyword.operator.ott
+      set: defns
+
+    # TODO: properly match the header with capture groups; use entity.name.namespace
+    - match: '::'
+      scope: keyword.operator.ott
+
+  defns:
+    - include: comments
+
+    - include: section-dispatch
+
+    - include: find-defn-header
+
+  #### Defn ####
+  find-defn-header:
+    - match: '\b(defn)\b'
+      scope: keyword.control.ott
+      set: defn-header
+
+
+  defn-header:
+    - include: comments
+
+    - match: '\b(by)\b'
+      scope: keyword.control.ott
+      set: defn
+
+    # TODO: properly match the header with capture groups instead of the following rules - that constitute only a poor approximation
+    - match: '::'
+      scope: keyword.operator.ott
+
+    - match: '^{{space}}*[^{{space}}\n].*$' # FIXME: see nonempty-line above
+      scope: string.unquoted
+
+
+  defn:
+    - include: comments
+
+    - include: skip-empty-lines
+
+    - include: section-dispatch
+
+    - include: find-defn-header
+
+    - include: rule-premise
+
+
+  #### Rule parsing ####
+  rule-premise:
+    - include: comments
+    - include: rule-line
+
+    - match: '^{{space}}*[^{{space}}\n].*$' # FIXME: see nonempty-line above
+      scope: markup.raw.block
+      set: rule-premise
+
+    # Empty lines are forbidden in premises
+    - match: '^\s*$'
+      scope: invalid.illegal.stray-premise
+      set: defn
+
+  rule-line:
+    - match: '-+ *:: *{{ident}}'
+      scope: entity.name.class.ott
+      set: rule-conclusion
+
+  rule-conclusion:
+    - include: comments
+
+    - match: '^{{space}}*[^{{space}}\n].*$' # FIXME: see nonempty-line above
+      scope: markup.quote
+      set: defn
+
+
+  #### Embed ####
+  find-embed:
+    - match: '\b(embed)\b'
+      scope: keyword.control.ott
+      set: embed-header
+
+
+  embed-header:
+    # TODO: capture groups
+    - match: '\{\{ *{{ident}}'
+      scope: keyword.control.ott
+      set: embed-body
+
+  embed-body:
+    - meta_scope: markup.raw.block
+
+    - match: '\}\}'
+      scope: keyword.control.ott
+      set: main
+
+
+  #### Unimplemented ####
+  # For all unimplemented sections, we just fall back on main
+  find-unimplemented-header:
+    - match: '\b(metavar|indexvar|grammar|substitutions|freevars|parsing|embed|homs)\b'
+      scope: keyword.control.ott
+      set: main
+
+
+  #### Comments/titles ####
+  comments:
+    # Title comments - they include at least one '_' directly after the first group of '%'
+    # The tags are formatted in a different color than both the title itself and regular comment tags
+    - match: '%+\_+'
+      scope: constant.character.escape.ott
+      push: title
+
+    # Comments begin with a '%' and finish at the end of the line
+    - match: '%'
+      scope: punctuation.definition.comment.ott
+      push: line_comment
+
+  line_comment:
+    - meta_scope: comment.line.ott
+    - match: $
+      pop: true
+
+  title:
+    - meta_scope: markup.heading.ott
+
+    - match: '\_*%*$'
+      scope: constant.character.escape.ott
+      pop: true
+
+    - match: $
+      pop: true
+
+
+  #### Helpers ####
+  skip-empty-lines:
+    - match: '^\s*$'
