@@ -577,28 +577,28 @@ defns
    JPath :: '' ::=
 
 defn
-Path F a R @ Rs  ::  :: Path :: 'Path_'
+Path R a = F @ Rs  ::  :: Path :: 'Path_'
 {{ com Type headed by constant (partial function) }}
 {{ tex \mathsf{Path}_{[[R]]}\ [[a]] = [[F]] @ [[Rs]] }}
 by
 
  F : A @ Rs in toplevel
 ---------------------- :: AbsConst
- Path F F R @ Rs
+ Path R F = F @ Rs
 
 F ~ a : A/R1 @ Rs in toplevel
 not (R1 <= R)
 -------------------------- :: Const
-Path F F R @ Rs
+Path R F = F @ Rs
 
-Path F a R @ R1,Rs
+Path R a = F @ R1,Rs
 app_role nu = R1
 ---------------------------- :: App
-Path F (a nu b') R @ Rs
+Path R (a nu b') = F @ Rs
 
-Path F a R @ Rs
+Path R a = F @ Rs
 ---------------------- :: CApp
-Path F (a [o]) R @ Rs
+Path R (a [o]) = F @ Rs
 
 
 defns
@@ -722,7 +722,7 @@ Value R /\c:phi.a
 --------------------- :: UCAbs
 Value R /\c .a
 
-Path F a R @ Rs
+Path R a = F @ Rs
 --------------- :: Path
 Value R a
 
@@ -744,7 +744,7 @@ ValueType R all rho x : A  -> B
 -------------------- :: CPi
 ValueType R all c : phi. B
 
-Path F a R @ Rs
+Path R a = F @ Rs
 ------------------------ :: Path
 ValueType R a
 
@@ -770,8 +770,8 @@ consistent (all rho x1:A1 -> B1) (all rho x2:A2 -> B2) R'
 ------------------------ :: CPi
 consistent (all c1:phi1. A1) (all c2 :phi2. A2) R
 
-Path F a1 R @ Rs
-Path F a2 R @ Rs
+Path R a1 = F @ Rs
+Path R a2 = F @ Rs
 ------------------- :: Path
 consistent a1 a2 R
 
@@ -1101,7 +1101,7 @@ G |= b + a : B { a / x }
 
 G |= b : all+ x : A -> B
 G |= a : A
-Path F a R' @ R,Rs
+Path R' a = F @ R,Rs
 ------------------------------------- :: TApp
 G |= b R a : B { a / x }
 
@@ -1239,7 +1239,7 @@ G ; D |= a2 == b2 : A/ Nom
 G ; D |= a1 + a2 == b1 + b2 : (B { a2 / x })/R'
 
 G ; D |= a1 == b1 : (all + x:A -> B)/R'
-Path F a1 R' @ R, Rs
+Path R' a1 = F @ R, Rs
 G ; D |= a2 == b2 : A/ param R R'
 -------------------------------------- :: TAppCong
 G ; D |= a1 R a2 == b1 R b2 : (B { a2 / x })/R'
@@ -1308,8 +1308,8 @@ G ; D |= b2 == b2' : B / R0
 ----------------------------------------------------------------------------------- :: PatCong
 G ; D |= case R a1 of a2 => b1 | => b2 == case R a1' of a2 => b1' | => b2' : B / R0
 
- Path F a R' @ R, Rs
- Path F a' R' @ R , Rs
+ Path R' a  = F @ R, Rs
+ Path R' a' = F @ R, Rs
  G |= a : all +x:A  -> B
  G |= b : A
  G |= a' : all +x:A  -> B
@@ -1319,8 +1319,8 @@ G ; D |= case R a1 of a2 => b1 | => b2 == case R a1' of a2 => b1' | => b2' : B /
 --------------------------------------------------- :: LeftRel
  G ; D |= a == a' : all + x: A -> B / R'
 
- Path F a R' @ R, Rs
- Path F a' R' @ R, Rs
+ Path R' a  = F @ R, Rs
+ Path R' a' = F @ R, Rs
  G |= a : all -x:A -> B
  G |= b : A
  G |= a' : all -x:A -> B
@@ -1331,8 +1331,8 @@ G ; D |= case R a1 of a2 => b1 | => b2 == case R a1' of a2 => b1' | => b2' : B /
  G ; D |= a == a' : all -x: A -> B/R'
 
 
- Path F a R' @ R, Rs
- Path F a' R' @ R, Rs
+ Path R' a  = F @ R, Rs
+ Path R' a' = F @ R, Rs
  G |= a : all +x:A -> B
  G |= b : A
  G |= a' : all +x:A -> B
@@ -1343,8 +1343,8 @@ G ; D |= case R a1 of a2 => b1 | => b2 == case R a1' of a2 => b1' | => b2' : B /
  G ; D |= b == b' : A/param R1 R'
 
 
- Path F a R' @ R, Rs
- Path F a' R' @ R, Rs
+ Path R' a  = F @ R, Rs
+ Path R' a' = F @ R, Rs
  G |= a  : all c:(a1 ~ a2:A/R1). B
  G |= a' : all c:(a1 ~ a2:A/R1). B
  G ; dom G |= a1 == a2 : A/R'
