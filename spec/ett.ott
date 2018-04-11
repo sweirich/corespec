@@ -788,68 +788,68 @@ defns
   Jroleing :: '' ::=
 
 defn
-  W |- a : R ::  :: roleing :: 'role_a_'
+  W |= a : R ::  :: roleing :: 'role_a_'
   {{ tex [[W]] \vDash [[a]] : [[R]] }}
 by
 rctx_uniq W
 ------------------- :: Bullet
-W |- [] : R
+W |= [] : R
 
 rctx_uniq W
 ---------------------  :: Star
-W |- TYPE : R
+W |= TYPE : R
 
 rctx_uniq W
 x : R in W
 R <= R1
 ------------------------------- :: Var
-W |- x : R1
+W |= x : R1
 
-W , x : Nom |-  a : R
+W , x : Nom |=  a : R
 ------------------------------------ :: Abs
-W |- (\rho x.a) : R
+W |= (\rho x.a) : R
 
-W |- a : R
-W |- b : app_role nu
+W |= a : R
+W |= b : app_role nu
 ----------------------------- :: App
-W |- (a nu b) : R
+W |= (a nu b) : R
 
-W |- A : R
-W , x : Nom |- B : R
+W |= A : R
+W , x : Nom |= B : R
 ---------------------------------------- :: Pi
-W |- (all rho x:A -> B) : R
+W |= (all rho x:A -> B) : R
 
-W |- a : R1
-W |- b : R1
-W |- A : R0
-W |- B : R
+W |= a : R1
+W |= b : R1
+W |= A : R0
+W |= B : R
 ----------------------------------------------- :: CPi
-W |- (all c:a ~ b : A / R1. B) : R
+W |= (all c:a ~ b : A / R1. B) : R
 
-W |- b : R
+W |= b : R
 ---------------------------------- :: CAbs
-W |- (/\c. b) : R
+W |= (/\c. b) : R
 
-W |- a : R
+W |= a : R
 ------------------------- :: CApp
-W |- (a [o]) : R
+W |= (a [o]) : R
 
 rctx_uniq W
 F : A @ Rs in toplevel
 --------------------------- :: Const
-W |- F : R
+W |= F : R
 
 rctx_uniq W
 F ~ a : A / R @ Rs in toplevel
 --------------------------- :: Fam
-W |- F : R1
+W |= F : R1
 
-W |- a1 : R
+W |= a1 : R
 G |= a2 : A pat/R
-W ++ ctx_to_NomCtx G |- b1 : R1
-W |- b2 : R1
+W ++ ctx_to_NomCtx G |= b1 : R1
+W |= b2 : R1
 --------------------------------------- :: Pattern
-W |- case R a1 of a2 => b1 | => b2 : R1
+W |= case R a1 of a2 => b1 | => b2 : R1
 
 defns
 JChk :: '' ::=
@@ -874,106 +874,106 @@ defns
 
 
 defn
- W |- a => b / R ::  :: Par :: 'Par_'
+ W |= a => b / R ::  :: Par :: 'Par_'
 {{ tex [[W]] \vDash [[a]] [[=>]]_{[[R]]} [[b]] }}
 {{ com parallel reduction (implicit language) }}
 by
-W |- a : R
+W |= a : R
 ------------------------- :: Refl
-W |- a => a  / R
+W |= a => a  / R
 
 
-W |- a => (\rho x.a') / R
-W |- b => b' / app_role nu
+W |= a => (\rho x.a') / R
+W |= b => b' / app_role nu
 ---------------------------------------- :: Beta
-W |- a nu b => a' { b' / x } / R
+W |= a nu b => a' { b' / x } / R
 
-W |- a => a' / R
-W |- b => b' /  app_role nu
+W |= a => a' / R
+W |= b => b' /  app_role nu
 ------------------------------------------- :: App
-W |- a nu b => a' nu b' / R
+W |= a nu b => a' nu b' / R
 
-W |- a => (/\c .a')  / R
+W |= a => (/\c .a')  / R
 ----------------------- :: CBeta
-W |- a [o] => a' { o / c } / R
+W |= a [o] => a' { o / c } / R
 
-W |- a => a' / R
+W |= a => a' / R
 ----------------------- :: CApp
-W |- a [o] => a' [o] / R
+W |= a [o] => a' [o] / R
 
-W , x : Nom |- a => a' / R
+W , x : Nom |= a => a' / R
 ---------------------------------------------------- :: Abs
-W |- \ rho x. a => \ rho x. a' / R
+W |= \ rho x. a => \ rho x. a' / R
 
-W |- A => A' / R
-W , x : Nom |- B => B' / R
+W |= A => A' / R
+W , x : Nom |= B => B' / R
 --------------------------------------------------------- :: Pi
-W |- all rho x:A -> B => all rho x:A' -> B' / R
+W |= all rho x:A -> B => all rho x:A' -> B' / R
 
-W |- a => a' / R
+W |= a => a' / R
 ------------------------------------------ :: CAbs
-W |- /\c . a => /\c . a' / R
+W |= /\c . a => /\c . a' / R
 
-W |- A => A' / R0
-W |- a => a' / R1
-W |- b => b' / R1
-W |- B => B' / R
+W |= A => A' / R0
+W |= a => a' / R1
+W |= b => b' / R1
+W |= B => B' / R
 ------------------------------------------------------------------ :: CPi
-W |- all c:a~b:A/R1. B => all c:a'~b':A'/R1. B' / R
+W |= all c:a~b:A/R1. B => all c:a'~b':A'/R1. B' / R
 
 % NOTE: toplevel is assumed to be locally closed
 F ~ a : A/R1 @ Rs in toplevel
 R1 <= R
 rctx_uniq W
 -------------------------------- :: Axiom
-W |- F => a / R
+W |= F => a / R
 
- W |- a1 => a1' / R
- W |- b1 => b1' / R0
- W |- b2 => b2' / R0
+ W |= a1 => a1' / R
+ W |= b1 => b1' / R0
+ W |= b2 => b2' / R0
 --------------------------------------------------------------------------------- :: Pattern
- W |- (case R a1 of a2 => b1 | => b2) => (case R a1' of a2 => b1' | => b2') / R0
+ W |= (case R a1 of a2 => b1 | => b2) => (case R a1' of a2 => b1' | => b2') / R0
 
- W |- a1 => a1' / R
- W |- b1 => b1' / R0
- W |- b2 => b2' / R0
+ W |= a1 => a1' / R
+ W |= b1 => b1' / R0
+ W |= b2 => b2' / R0
  match R a1' with a2 -> b1' = b
 ---------------------------------------------- :: PatternTrue
- W |- (case R a1 of a2 => b1 | => b2) => b / R0
+ W |= (case R a1 of a2 => b1 | => b2) => b / R0
 
- W |- a1 => a1' / R
- W |- b1 => b1' / R0
- W |- b2 => b2' / R0
+ W |= a1 => a1' / R
+ W |= b1 => b1' / R0
+ W |= b2 => b2' / R0
  Value R a1'
  not (match R a1' with a2 -> b1' = b)
 ------------------------------------------------ :: PatternFalse
- W |- (case R a1 of a2 => b1 | => b2) => b2' / R0
+ W |= (case R a1 of a2 => b1 | => b2) => b2' / R0
 
 
 defn
-W |- a =>* b / R ::   :: MultiPar :: 'MP_'
+W |= a =>* b / R ::   :: MultiPar :: 'MP_'
 {{ tex [[W]] [[|-]] [[a]] [[=>*]]_[[R]] [[b]] }}
 {{ com multistep parallel reduction }}
 by
 
 ------------------------- :: Refl
-W |- a =>* a / R
+W |= a =>* a / R
 
-W |- a => b / R
-W |- b =>* a' / R
+W |= a => b / R
+W |= b =>* a' / R
 -------------------------- :: Step
-W |- a =>* a' / R
+W |= a =>* a' / R
 
 defn
-W |- a <=> b / R ::   :: joins :: ''
+W |= a <=> b / R ::   :: joins :: ''
 {{ tex [[W]] [[|-]] [[a]] [[<=>]]_[[R]] [[b]] }}
 {{ com parallel reduction to a common term }}
 by
 
-W |- a1 =>* b / R
-W |- a2 =>* b / R
+W |= a1 =>* b / R
+W |= a2 =>* b / R
 -------------------------- :: join
-W |- a1 <=> a2 / R
+W |= a1 <=> a2 / R
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
