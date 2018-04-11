@@ -53,7 +53,7 @@ spec: $(SPEC)
 spec-continuous-update: $(SPEC)
 	# Only caveat: it doesn't register saves that happen while recompiling
 	# Have to use an ulgy sed as Ott's -colour option is broken
-	while inotifywait -e close_write $(SPEC); do                    \
+	while inotifywait -qe close_write $(SPEC); do                   \
 		(                                                             \
 			ott -o $(RULESFILE)                                         \
 					-colour false                                           \
