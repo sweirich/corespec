@@ -1308,49 +1308,49 @@ G ; D |= b2 == b2' : B / R0
 ----------------------------------------------------------------------------------- :: PatCong
 G ; D |= case R a1 of a2 => b1 | => b2 == case R a1' of a2 => b1' | => b2' : B / R0
 
- Path R' a  = F @ R, Rs
- Path R' a' = F @ R, Rs
- G |= a : all +x:A  -> B
- G |= b : A
- G |= a' : all +x:A  -> B
- G |= b' : A
- G ; D |= a R1 b == a' R1 b' : B { b / x } / R'
- G ; dom G |= B {b/x} == B {b'/x} : TYPE / R'
---------------------------------------------------- :: LeftRel
- G ; D |= a == a' : all + x: A -> B / R'
+Path R' a  = F @ R, Rs
+Path R' a' = F @ R, Rs
+G |= a : all +x:A  -> B
+G |= b : A
+G |= a' : all +x:A  -> B
+G |= b' : A
+G ; D |= a R1 b == a' R1 b' : B { b / x } / R'
+G ; dom G |= B {b/x} == B {b'/x} : TYPE / R'
+-------------------------------------------------- :: LeftRel
+G ; D |= a == a' : all + x: A -> B / R'
 
- Path R' a  = F @ R, Rs
- Path R' a' = F @ R, Rs
- G |= a : all -x:A -> B
- G |= b : A
- G |= a' : all -x:A -> B
- G |= b' : A
- G ; D |= a - [] == a' - [] : B { b / x }/R'
- G ; dom G |= B {b/x} == B {b'/x} : TYPE/R0
-------------------------------------------------- :: LeftIrrel
- G ; D |= a == a' : all -x: A -> B/R'
-
-
- Path R' a  = F @ R, Rs
- Path R' a' = F @ R, Rs
- G |= a : all +x:A -> B
- G |= b : A
- G |= a' : all +x:A -> B
- G |= b' : A
- G ; D |= a + b == a' + b' : B { b / x }/R'
- G ; dom G |= B {b/x} == B {b'/x} : TYPE/R0
------------------------------------------------- :: Right
- G ; D |= b == b' : A/param R1 R'
+Path R' a  = F @ R, Rs
+Path R' a' = F @ R, Rs
+G |= a : all -x:A -> B
+G |= b : A
+G |= a' : all -x:A -> B
+G |= b' : A
+G ; D |= a - [] == a' - [] : B { b / x }/R'
+G ; dom G |= B {b/x} == B {b'/x} : TYPE/R0
+------------------------------------------------ :: LeftIrrel
+G ; D |= a == a' : all -x: A -> B/R'
 
 
- Path R' a  = F @ R, Rs
- Path R' a' = F @ R, Rs
- G |= a  : all c:(a1 ~ a2:A/R1). B
- G |= a' : all c:(a1 ~ a2:A/R1). B
- G ; dom G |= a1 == a2 : A/R'
- G ; D |= a [o] == a' [o] : B {o/c}/R'
---------------------------------------------- :: CLeft
- G ; D |= a == a' : all c:(a1 ~ a2:A/R1). B/R'
+Path R' a  = F @ R, Rs
+Path R' a' = F @ R, Rs
+G |= a : all +x:A -> B
+G |= b : A
+G |= a' : all +x:A -> B
+G |= b' : A
+G ; D |= a + b == a' + b' : B { b / x }/R'
+G ; dom G |= B {b/x} == B {b'/x} : TYPE/R0
+----------------------------------------------- :: Right
+G ; D |= b == b' : A/param R1 R'
+
+
+Path R' a  = F @ R, Rs
+Path R' a' = F @ R, Rs
+G |= a  : all c:(a1 ~ a2:A/R1). B
+G |= a' : all c:(a1 ~ a2:A/R1). B
+G ; dom G |= a1 == a2 : A/R'
+G ; D |= a [o] == a' [o] : B {o/c}/R'
+-------------------------------------------- :: CLeft
+G ; D |= a == a' : all c:(a1 ~ a2:A/R1). B/R'
 
 defn
 |= G ::    :: Ctx  :: 'E_'
