@@ -2,7 +2,8 @@
 %% evaluation rules for the implicit and explicit languages
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% METAVARIABLES
+%%%%%%%%%%%%%%%%%%%%%%__ Metavariables __%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 metavar tmvar, x, y, f, m, n ::=
   {{ repr-locally-nameless }}
@@ -27,8 +28,10 @@ indexvar index, i ::=
   {{ com indices }}
   {{ coq nat }}
 
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% GRAMMAR
+%%%%%%%%%%%%%%%%%%%%%%%%%__ Grammar __%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 grammar
 
@@ -61,7 +64,7 @@ constraint, phi {{ tex \phi }} :: '' ::= {{ com props }}
 
 
 
-tm, a, b, v, w, A, B :: 'a_' ::= {{ com types and kinds }}
+tm, a, b, p, v, w, A, B :: 'a_' ::= {{ com types and kinds }}
   | TYPE                 ::   :: Star
 
   | x                    ::   :: Var
@@ -227,8 +230,10 @@ parsing
 
   a_Arrow <= a_Pi
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%  This part is not handled by LNgen
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%__ /!\  This part is not handled by LNgen /!\ __%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 grammar
 
@@ -250,8 +255,8 @@ roles, Rs :: '' ::= {{ coq list role }}
 
 sig_sort :: '' ::= {{ com signature classifier }}
    | : A @ Rs            ::    :: Cs
-   | ~ a : A / R @ Rs    ::    :: Ax
-     {{ tex \sim [[a]] : [[A]] / [[R]] @ [[Rs]] }}
+   | as a1 ~ a2 : A / R @ Rs    ::    :: Ax
+     {{ tex [[as]]~[[a1]] \sim [[a2]] : [[A]] / [[R]] @ [[Rs]] }}
 
 sort :: '' ::= {{ com binding classifier }}
    | Tm A             ::   :: Tm
@@ -309,9 +314,9 @@ freevars
 
 
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%  Terminals  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%__ Terminals __%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 grammar
 
@@ -352,6 +357,7 @@ terminals :: 'terminals_' ::=
   | o                 ::   :: bullet     {{ tex \bullet }}
   | fst               ::   :: fst
   | snd               ::   :: snd
+  | as                ::   :: as
   | |=>|              ::   :: erasesto   {{ tex \mathrel{|\Rightarrow|} }}
   | |-=               ::   :: turneq     {{ tex \vdash_{=} }}
   | refl2             ::   :: refl2      {{ tex \mathbf{refl_2}  }}
@@ -428,8 +434,9 @@ formula, Fm {{tex \psi}} :: 'formula_' ::=
     {{ coq co_subst_co_tm (g_Var_f [[c1]]) [[c2]] [[B]] = [[B1]]  }}
 
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% Coq Definitions necessary to specify the semantics
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%__ Coq Definitions necessary to specify the semantics __%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 embed {{ coq
 
@@ -477,8 +484,8 @@ Fixpoint erase_tm (a : tm) (r : role) : tm :=
    | a_Fam F => a_Fam F
    | a_Pi rho A B => a_Pi rho (erase_tm A r) (erase_tm B r)
    | a_Conv a r1 g => if (lte_role r1 r) then
-	                      erase_tm a r else
-						   a_Conv (erase_tm a r) r1 g_Triv
+                        erase_tm a r else
+                                 a_Conv (erase_tm a r) r1 g_Triv
    | a_CPi phi B => a_CPi (erase_constraint phi r) (erase_tm B r)
    | a_CAbs phi b => a_UCAbs (erase_tm b r)
    | a_UCAbs b => a_UCAbs (erase_tm b r)
@@ -545,7 +552,8 @@ Fixpoint ctx_to_NomCtx (G : context) : role_context :=
 }}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% "Syntactic" definitions
+%%%%%%%%%%%%%%%%%__ "Syntactic" definitions __%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 defns
 JSubRole :: '' ::=
@@ -582,11 +590,11 @@ Path R a = F @ Rs  ::  :: Path :: 'Path_'
 {{ tex \mathsf{Path}_{[[R]]}\ [[a]] = [[F]] @ [[Rs]] }}
 by
 
- F : A @ Rs in toplevel
----------------------- :: AbsConst
- Path R F = F @ Rs
+F : A @ Rs in toplevel
+--------------------- :: AbsConst
+Path R F = F @ Rs
 
-F ~ a : A/R1 @ Rs in toplevel
+F as a' ~ a : A/R1 @ Rs in toplevel
 not (R1 <= R)
 -------------------------- :: Const
 Path R F = F @ Rs
@@ -614,7 +622,7 @@ F : A @ Rs in toplevel
 --------------------------- :: AbsConst
 empty |= F : A pat/R
 
-F ~ a : A/R1 @ Rs in toplevel
+F as a' ~ a : A/R1 @ Rs in toplevel
 not (R1 <= R)
 -------------------------- :: Const
 empty |= F : A pat/R
@@ -658,6 +666,28 @@ defns
 JMatchSubst :: '' ::=
 
 defn
+|= p : A patctx = W | G  :: :: PatternContexts :: 'PatCtx_'
+{{ com Contexts associated to a pattern }}
+{{ tex [[|=]] [[p]] : [[A]] \ \mathsf{patctx} = [[W]] \ | \ [[G]] }}
+by
+
+--------------------------- :: Const
+|= F : A patctx = empty | empty
+
+|= p : all + x : A' -> A patctx = W | G
+---------------------------------------- :: PiRel
+|= p x : A patctx = W, x : R | G, x : A'
+
+|= p : all - x : A' -> A patctx = W | G
+--------------------------------------- :: PiIrr
+|= p [] : A patctx = W | G, x : A'
+
+|= p : all c : phi. A patctx = W | G
+------------------------------------ :: CPi
+|= p [o] : A patctx = W | G, c : phi
+
+
+defn
 match R a1 with a2 -> b1 = b2 :: :: MatchSubst :: 'MatchSubst_'
 {{ com match and substitute }}
 {{ tex \mathsf{match}_[[R]] \ [[a1]] \ \mathsf{with} \ [[a2]] \rightarrow [[b1]] = [[b2]] }}
@@ -667,7 +697,7 @@ F : A @ Rs in toplevel
 --------------------------- :: AbsConst
 match R F with F -> b = b
 
-F ~ a : A/R1 @ Rs in toplevel
+F as a' ~ a : A/R1 @ Rs in toplevel
 not (R1 <= R)
 ----------------------------------------- :: Const
 match R F with F -> b = b
@@ -758,7 +788,7 @@ defns
 defn
    consistent a b R ::  :: consistent :: 'consistent_a_'
    {{ com (erased) types do not differ in their heads }}
-  {{ tex \suppress{\mathsf{consistent}_{[[R]]}\ [[a]] [[b]] } }}
+  {{ tex \suppress{\mathsf{consistent}_{[[R]]}\ [[a]] \ [[b]] } }}
 by
 
 ---------------------- :: Star
@@ -789,6 +819,7 @@ defns
 
 defn
   W |= a : R ::  :: roleing :: 'role_a_'
+  {{ com Roleing judgment }}
   {{ tex [[W]] \vDash [[a]] : [[R]] }}
 by
 rctx_uniq W
@@ -840,7 +871,7 @@ F : A @ Rs in toplevel
 W |= F : R
 
 rctx_uniq W
-F ~ a : A / R @ Rs in toplevel
+F as a' ~ a : A / R @ Rs in toplevel
 --------------------------- :: Fam
 W |= F : R1
 
@@ -878,6 +909,7 @@ defn
 {{ tex [[W]] \vDash [[a]] [[=>]]_{[[R]]} [[b]] }}
 {{ com parallel reduction (implicit language) }}
 by
+
 W |= a : R
 ------------------------- :: Refl
 W |= a => a  / R
@@ -922,11 +954,11 @@ W |= B => B' / R
 W |= all c:a~b:A/R1. B => all c:a'~b':A'/R1. B' / R
 
 % NOTE: toplevel is assumed to be locally closed
-F ~ a : A/R1 @ Rs in toplevel
+F as p ~ a : A/R1 @ Rs in toplevel
 R1 <= R
 rctx_uniq W
 -------------------------------- :: Axiom
-W |= F => a / R
+W |= F => a / R   TOODO
 
  W |= a1 => a1' / R
  W |= b1 => b1' / R0
@@ -977,7 +1009,9 @@ W |= a1 <=> a2 / R
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% Implicit (or erased) language reductions
+%%%%%%%%__ Implicit (or erased) language reductions __%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 
 defns
  Jbeta :: '' ::=
@@ -996,10 +1030,12 @@ Value R1 (\rho x. v)
 |= (/\c .a') [o] > a' { o / c } / R
 
 
-F ~ a : A/R @ Rs in toplevel
+Path R a = F @ Rs
+F as p ~ b : A/R @ Rs in toplevel
+match R2 a with p -> b = b'
 R <= R1
--------------------------------- :: Axiom
-|= F > a / R1
+----------------------------------- :: Axiom
+|= a > b' / R1
 
 match R a1 with a2 -> b1 = b
 ------------------------------------------ :: PatternTrue
@@ -1140,7 +1176,7 @@ empty |= A : TYPE
 G |= F : A
 
 |= G
-F ~ a : A / R1 @ Rs in toplevel
+F as p ~ a : A / R1 @ Rs in toplevel
 empty |= A : TYPE
 ------------------------- :: Fam
 G |= F : A
@@ -1391,8 +1427,10 @@ F notin dom S
 |= S, F : A @ Rs
 
 |= S
-empty |= a : A
 F notin dom S
+|= p : A patctx = W, G
+G |= a : A
+W |= a : Rep
 ----------------------- :: ConsAx
 |= S, F ~ a : A/R @ Rs
 
@@ -1791,11 +1829,10 @@ F notin dom S
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%% Homs (binders, formatting, etc) %%%%%%%%%%%%%%%%%%
+%%%%%%%%%%__ Homs (binders, formatting, etc) __%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % TODO: move these in different files
-
 
 %%%%____ Binding structure ____%%%%
 
