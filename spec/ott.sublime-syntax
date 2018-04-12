@@ -123,6 +123,11 @@ contexts:
       scope: markup.quote
       set: defn
 
+    # Empty lines are forbidden as conclusions
+    - match: '^\s*$'
+      scope: invalid.illegal.stray-premise
+      set: defn
+
 
   #### Embed ####
   find-embed:
