@@ -1036,7 +1036,7 @@ Value R1 (\rho x. v)
 
 
 % TODO: not sure the roles are correct in this rule
-Path R a = F @ Rs
+Path R1 a = F @ Rs
 F as p ~ b : A/R1 @ Rs in toplevel
 match R2 a with p -> b = b'
 R1 <= R
