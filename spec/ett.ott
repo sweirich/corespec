@@ -38,6 +38,8 @@ grammar
 relflag, rho {{ tex \rho }} :: '' ::= {{ com relevance flag }}
   | +             ::   :: Rel
   | -             ::   :: Irrel
+  | app_rho nu    ::   :: Rho_App
+  | ( rho )       ::   :: Rho_Paren
 
 
 appflag, nu {{ tex \nu }} :: '' ::= {{ com applicative flag }}
@@ -51,7 +53,7 @@ role, R :: '' ::= {{ com Role }}
   | min R1 R2   :: S :: Min
   %% FIXME: I don't think we need param anymore, do we?
   | param R1 R2 :: S :: Param
-  | app_role nu :: S :: App   % FIXME: not sure what this stands for
+  | app_role nu :: S :: App
   | ( R )       :: S :: RParen
 
 
@@ -725,6 +727,28 @@ match R (a1 [o]) with (a2 [c]) -> b1 = (b2 {o/c})
 
 
 defns
+JMatchApply :: '' ::=
+
+defn
+match a applyto b = b' :: :: MatchApply :: 'MatchApply_'
+{{ com match and apply arguments }}
+{{ tex \mathsf{match} \ [[a]] \ \mathsf{apply to} \ [[b]] = [[b']] }}
+by
+
+F : A @ Rs in toplevel
+----------------------------------- :: Const
+match F applyto b = b
+
+match a applyto b = b'
+------------------------------------------------------- :: App
+match a nu a' applyto b = b' (app_rho nu) a'
+
+match a applyto b = b'
+------------------------------------------------------- :: CApp
+match a [g] applyto b = b' [g]
+
+
+defns
 JValue :: '' ::=
 
 defn
@@ -882,12 +906,12 @@ F [p] ~ a : A / R @ Rs in toplevel
 --------------------------- :: Fam
 W |= F : R1
 
-W |= a1 : R
-G |= a2 : A pat/R
+W |= a : R
 W ++ ctx_to_NomCtx G |= b1 : R1
 W |= b2 : R1
+TODO: finish updating this rule
 --------------------------------------- :: Pattern
-W |= case R a1 of a2 => b1 | => b2 : R1
+W |= case R a of F => b1 | => b2 : R1
 
 defns
 JChk :: '' ::=
@@ -976,26 +1000,27 @@ rctx_uniq W
 -------------------------------- :: Axiom
 W |= a => b' / R
 
- W |= a1 => a1' / R
- W |= b1 => b1' / R0
- W |= b2 => b2' / R0
---------------------------------------------------------------------------------- :: Pattern
- W |= (case R a1 of a2 => b1 | => b2) => (case R a1' of a2 => b1' | => b2') / R0
+W |= a => a' / R
+W |= b1 => b1' / R0
+W |= b2 => b2' / R0
+------------------------------------------------------------------------------- :: Pattern
+W |= (case R a of F => b1 | => b2) => (case R a' of F => b1' | => b2') / R0
 
- W |= a1 => a1' / R
- W |= b1 => b1' / R0
- W |= b2 => b2' / R0
- match R a1' with a2 -> b1' = b
----------------------------------------------- :: PatternTrue
- W |= (case R a1 of F => b1 | => b2) => b / R0
+% TODO: check roles
+W |= a => a' / R
+W |= b1 => b1' / R0
+Path R1 a' = F @ Rs
+match a' applyto b1' = b
+--------------------------------------------- :: PatternTrue
+W |= (case R a of F => b1 | => b2) => b [o] / R0
 
- W |= a1 => a1' / R
- W |= b1 => b1' / R0
- W |= b2 => b2' / R0
- Value R a1'
- not (match R a1' with a2 -> b1' = b)
+% TODO: check roles
+W |= a => a' / R
+W |= b2 => b2' / R0
+Value R a'
+not (Path R1 a' = F @ Rs)
 ------------------------------------------------ :: PatternFalse
- W |= (case R a1 of a2 => b1 | => b2) => b2' / R0
+W |= (case R a of F => b1 | => b2) => b2' / R0
 
 
 defn
@@ -1051,15 +1076,16 @@ R1 <= R
 ----------------------------------- :: Axiom
 |= a > b' / R
 
-% match R a1 with a2 -> b1 = b
 Path R1 a = F @ Rs
+match a applyto b1 = b1'
 ------------------------------------------ :: PatternTrue
-|= case R a1 of a2 => b1 | => b2 > b / R0
+|= case R a of F => b1 | => b2 > b1' [o] / R0
 
-Value R a1
-not (match R a1 with a2 -> b1 = b)
+% FIXME: unsure about the roles here
+Value R a
+not (Path R1 a = F @ Rs)
 ------------------------------------------ :: PatternFalse
-|= case R a1 of a2 => b1 | => b2 > b2 / R0
+|= case R a of F => b1 | => b2 > b2 / R0
 
 defn
  |= a ~> b / R ::   :: reduction_in_one :: 'E_'
@@ -1078,9 +1104,9 @@ by
 -----------------------------   :: CAppLeft
 |= a [o]  ~> a' [o] / R
 
-|= a ~> a1' / R
+|= a ~> a' / R
 ----------------------------------------------------------------------- :: Pattern
-|= case R a1 of a2 => b1 | => b2 ~> case R a1' of a2 => b1 | => b2 / R0
+|= case R a of F => b1 | => b2 ~> case R a' of F => b1 | => b2 / R0
 
 |= a > b / R
 ----------------------------- :: Prim
@@ -1202,8 +1228,9 @@ G ++ (G', c:phi1) |= b1 : B
 G  |= b2 : B
 phi1 = (a1 ~ a2 : A/R)
 IrrelVarCheck a2 b1
+TODO: update this rule
 ------------------------------------------ :: case
-G |= case R a1 of a2 => b1 | => b2 : B
+G |= case R a of F => b1 | => b2 : B
 
 
 
@@ -1353,11 +1380,11 @@ G ; D |= a ~ b : A/R1 == a' ~ b' : A'/R1
 --------------------------------------------- :: IsoSnd
 G ; D |= A == A' : TYPE/Rep
 
-G ; D |= a1 == a1' : A / R
+G ; D |= a == a' : A / R
 G ; D |= b1 == b1' : B / R0
 G ; D |= b2 == b2' : B / R0
------------------------------------------------------------------------------------ :: PatCong
-G ; D |= case R a1 of a2 => b1 | => b2 == case R a1' of a2 => b1' | => b2' : B / R0
+------------------------------------------------------------------------------- :: PatCong
+G ; D |= case R a of F => b1 | => b2 == case R a' of F => b1' | => b2' : B / R0
 
 Path R' a  = F @ R, Rs
 Path R' a' = F @ R, Rs
