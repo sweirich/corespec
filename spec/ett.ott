@@ -662,6 +662,7 @@ IrrelVarCheck a b
 --------------------------  :: CApp
 IrrelVarCheck (a [c]) b
 
+
 defns
 JPatCtx :: '' ::=
 
@@ -686,6 +687,10 @@ by
 ------------------------------------ :: CPi
 |= p [o] : A patctx = W | G, c : phi
 
+
+
+defns
+JMatchSubst :: '' ::=
 
 defn
 match R a1 with a2 -> b1 = b2 :: :: MatchSubst :: 'MatchSubst_'
@@ -717,6 +722,7 @@ match R (a1 - []) with (a2 - x) -> b1 = (b2 {[]/x})
 match R a1 with a2 -> b1 = b2
 ------------------------------------------------------ :: CApp
 match R (a1 [o]) with (a2 [c]) -> b1 = (b2 {o/c})
+
 
 defns
 JValue :: '' ::=
