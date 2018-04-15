@@ -83,7 +83,7 @@ tm, a, b, p, v, w, A, B :: 'a_' ::= {{ com types and kinds }}
   | F                    ::   :: Fam
 
   | []                   ::   :: Bullet
-  | case R a1 of a2 => b1 | => b2 :: :: Pattern
+  | case R a1 of F => b1 | => b2 :: :: Pattern
 
   %% currently unused but ready for extension
   | K                    ::   :: DataCon
@@ -663,7 +663,7 @@ IrrelVarCheck a b
 IrrelVarCheck (a [c]) b
 
 defns
-JMatchSubst :: '' ::=
+JPatCtx :: '' ::=
 
 defn
 |= p : A patctx = W | G  :: :: PatternContexts :: 'PatCtx_'
@@ -780,7 +780,8 @@ ValueType R a
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% Definitions for consistency proof
+%%%%%%%%%%%%__ Definitions for consistency proof __%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 defns
    Jconsistent :: '' ::=
@@ -980,7 +981,7 @@ W |= a => b' / R
  W |= b2 => b2' / R0
  match R a1' with a2 -> b1' = b
 ---------------------------------------------- :: PatternTrue
- W |= (case R a1 of a2 => b1 | => b2) => b / R0
+ W |= (case R a1 of F => b1 | => b2) => b / R0
 
  W |= a1 => a1' / R
  W |= b1 => b1' / R0
@@ -1044,7 +1045,8 @@ R1 <= R
 ----------------------------------- :: Axiom
 |= a > b' / R
 
-match R a1 with a2 -> b1 = b
+% match R a1 with a2 -> b1 = b
+Path R1 a = F @ Rs
 ------------------------------------------ :: PatternTrue
 |= case R a1 of a2 => b1 | => b2 > b / R0
 
