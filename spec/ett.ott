@@ -83,7 +83,7 @@ tm, a, b, p, v, w, A, B :: 'a_' ::= {{ com types and kinds }}
   | F                    ::   :: Fam
 
   | []                   ::   :: Bullet
-  | case R a1 of F => b1 | => b2 :: :: Pattern
+  | case R a of F => b1 | => b2 :: :: Pattern
 
   %% currently unused but ready for extension
   | K                    ::   :: DataCon
@@ -1000,7 +1000,7 @@ W |= a => b' / R
 
 defn
 W |= a =>* b / R ::   :: MultiPar :: 'MP_'
-{{ tex [[W]] [[|-]] [[a]] [[=>*]]_[[R]] [[b]] }}
+{{ tex [[W]] [[|=]] [[a]] [[=>*]]_[[R]] [[b]] }}
 {{ com multistep parallel reduction }}
 by
 
@@ -1014,7 +1014,7 @@ W |= a =>* a' / R
 
 defn
 W |= a <=> b / R ::   :: joins :: ''
-{{ tex [[W]] [[|-]] [[a]] [[<=>]]_[[R]] [[b]] }}
+{{ tex [[W]] [[|=]] [[a]] [[<=>]]_[[R]] [[b]] }}
 {{ com parallel reduction to a common term }}
 by
 
@@ -1891,7 +1891,7 @@ homs 'a_'
   :: Var
   :: Abs      {{ tex \mathrm{\lambda}^[[rho]][[x]]\!:\![[A]].[[b]]        }}
   :: UAbs     {{ tex \mathrm{\lambda}^{[[rho]]}[[x]].[[b]]                }}
-  :: App      {{ tex [[a]]\ [[b]]^[[nu]]                                  }}
+  :: App      {{ tex [[a]]\ [[b]]^{[[nu]]}                                }}
   :: Pi       {{ tex \mathrm{\Pi}^[[rho]][[x]]\!:\![[A]][[->]][[B]]       }}
 
 
@@ -1907,7 +1907,7 @@ homs 'a_'
 
   :: Bullet
 
-  :: Pattern {{ tex \mathsf{case}_[[R]] \hspace{3pt} [[a1]] \hspace{3pt} \mathsf{of} \hspace{3pt} [[a2]] \rightarrow [[b1]] \| \_ \rightarrow [[b2]] }}
+  :: Pattern {{ tex \mathsf{case}_[[R]] \hspace{3pt} [[a]] \hspace{3pt} \mathsf{of} \hspace{3pt} [[F]] \rightarrow [[b1]] \| \_ \rightarrow [[b2]] }}
 
   :: DataCon
   :: Case
