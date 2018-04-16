@@ -19,6 +19,8 @@ variables:
   ident: '[A-Za-z_][A-Za-z_0-9]*'
   space: '[ \t]'
   # FIXME: somehow, the definition of this regexp works when inlined, but not when referred to instead... Wtf?
+  not-double-rbrace: '([^}]|[}][^}])*'
+  # FIXME: same problem
   nonempty-line: '^{{space}}*[^{{space}}\n].*$'
 
 contexts:
@@ -33,9 +35,64 @@ contexts:
   #### Dispatching ####
   # This rule looks for all possible section tags (excluding subsections (like defn))
   section-dispatch:
+    - include: find-grammar
     - include: find-defns-header
     - include: find-embed
     - include: find-unimplemented-header
+
+
+  #### Grammar ####
+  find-grammar:
+    - match: '\b(grammar)\b'
+      scope: keyword.control.ott
+      set: find-grammar-header
+
+  ## Grammar header, first part (name and aliases)
+  find-grammar-header:
+    - include: comments
+    - include: section-dispatch
+
+    - match: '({{ident}})'
+      captures:
+        1: entity.name.class.ott
+        2: entity.name.interface.ott
+      set: grammar-header-aliases
+
+  grammar-header-aliases:
+    - include: comments
+    - include: homs
+
+    - match: '{{ident}}'
+      scope: entity.name.interface.ott
+
+    - match: '::'
+      scope: keyword.operator.ott
+      set: grammar-header-prefix
+
+  grammar-header-prefix:
+    - include: comments
+
+    - match: "'({{ident}})'"
+      captures:
+        1: constant.other.ott
+
+    - match: '::='
+      scope: keyword.operator.ott
+      set: grammar-body
+
+  grammar-body:
+    - include: comments
+    - include: homs
+    - include: find-grammar-header
+
+    - match: '([|])(([^:]|:[^:])*)(::)([ SM])*(::)\s*({{ident}})'
+      captures:
+        1: constant.character.escape.ott
+        2: markup.quote
+        4: constant.character.escape.ott
+        5: constant.other
+        6: constant.character.escape.ott
+        7: entity.name.ott
 
 
   #### Defns ####
@@ -186,6 +243,14 @@ contexts:
     - match: $
       pop: true
 
+
+  #### Homs ####
+  homs:
+    - match: '([{][{])\s*({{ident}})(([^}]|[}][^}])*)([}][}])'
+      captures:
+        1: storage.type.ott
+        2: string.quoted.single.ott
+        5: storage.type.ott
 
   #### Helpers ####
   skip-empty-lines:
