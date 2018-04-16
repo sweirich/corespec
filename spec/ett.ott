@@ -328,42 +328,42 @@ terminals :: 'terminals_' ::=
   | -->               ::   :: step          {{ tex \longrightarrow }}
   | min               ::   :: min           {{ tex \mathsf{min} }}
   | ==                ::   :: definitional  {{ tex \equiv }}
-  | all               ::   :: forall     {{ tex \forall }}
-  | in                ::   :: in         {{ tex \in }}
-  | notin             ::   :: notin      {{ tex \not\in }}
-  | <=                ::   :: check      {{ tex \Leftarrow }}
-  | =>                ::   :: infer      {{ tex \Rightarrow }}
-  | =>*               ::   :: minfer      {{ tex \Rightarrow^{\ast} }}
-  | ->                ::   :: arrow      {{ tex \to }}
-  | /\                ::   :: ilam       {{ tex \mathrm{\Lambda} }}   % Swag
-  | <-|               ::   :: mapsfrom   {{ tex \mapsfrom }}
-  | []                ::   :: box        {{ tex \Box }}
-  | |-                ::   :: entails    {{ tex \vdash }}
-  | -|                ::   :: produces   {{ tex \dashv }}
-  | |=                ::   :: hs_entails {{ tex \vDash }}
-  | |==               ::   :: hs_entaill {{ tex \vDash }}
-  | /=                ::   :: neq        {{ tex \neq }}
-  | |>                ::   :: cast       {{ tex \triangleright }}
-  | ok                ::   :: ok         {{ tex \ \mathsf{ok} }}
-  | _                 ::   :: blank      {{ tex \_ }}
-  | ~>                ::   :: produce    {{ tex \leadsto }}
-  | ~>*               ::   :: multistep  {{ tex \leadsto^{\ast} }}
-  | ~>h               ::   :: steph      {{ tex \leadsto }}
-  | empty             ::   :: empty      {{ tex \varnothing }}
-  | hole              ::   :: hole       {{ tex \circ }}
-  | fv                ::   :: fv         {{ tex \mathsf{fv}\! }}
-  | dom               ::   :: dom        {{ tex \mathsf{dom} }}
-  | ~                 ::   :: twiddle    {{ tex \sim }}
-  | ~~                ::   :: compatible {{ tex \asymp }}
-  | '|'               ::   :: bar        {{ tex | }}
-  | o                 ::   :: bullet     {{ tex \bullet }}
+  | all               ::   :: forall        {{ tex \forall }}
+  | in                ::   :: in            {{ tex \in }}
+  | notin             ::   :: notin         {{ tex \not\in }}
+  | <=                ::   :: check         {{ tex \Leftarrow }}
+  | =>                ::   :: infer         {{ tex \Rightarrow }}
+  | =>*               ::   :: minfer        {{ tex \Rightarrow^{\ast} }}
+  | ->                ::   :: arrow         {{ tex \to }}
+  | /\                ::   :: ilam          {{ tex \mathrm{\Lambda} }}   % Swag
+  | <-|               ::   :: mapsfrom      {{ tex \mapsfrom }}
+  | []                ::   :: box           {{ tex \Box }}
+  | |-                ::   :: entails       {{ tex \vdash }}
+  | -|                ::   :: produces      {{ tex \dashv }}
+  | |=                ::   :: hs_entails    {{ tex \vDash }}
+  | |==               ::   :: hs_entaill    {{ tex \vDash }}
+  | /=                ::   :: neq           {{ tex \neq }}
+  | |>                ::   :: cast          {{ tex \triangleright }}
+  | ok                ::   :: ok            {{ tex \ \mathsf{ok} }}
+  | _                 ::   :: blank         {{ tex \_ }}
+  | ~>                ::   :: produce       {{ tex \leadsto }}
+  | ~>*               ::   :: multistep     {{ tex \leadsto^{\ast} }}
+  | ~>h               ::   :: steph         {{ tex \leadsto }}
+  | empty             ::   :: empty         {{ tex \varnothing }}
+  | hole              ::   :: hole          {{ tex \circ }}
+  | fv                ::   :: fv            {{ tex \mathsf{fv}\! }}
+  | dom               ::   :: dom           {{ tex \mathsf{dom} }}
+  | ~                 ::   :: twiddle       {{ tex \sim }}
+  | ~~                ::   :: compatible    {{ tex \asymp }}
+  | '|'               ::   :: bar           {{ tex | }}
+  | o                 ::   :: bullet        {{ tex \bullet }}
   | fst               ::   :: fst
   | snd               ::   :: snd
   | as                ::   :: as
-  | |=>|              ::   :: erasesto   {{ tex \mathrel{|\Rightarrow|} }}
-  | |-=               ::   :: turneq     {{ tex \vdash_{=} }}
-  | refl2             ::   :: refl2      {{ tex \mathbf{refl_2}  }}
-  | ++                ::   :: concat     {{ tex \mathop{++} }}
+  | |=>|              ::   :: erasesto      {{ tex \mathrel{|\Rightarrow|} }}
+  | |-=               ::   :: turneq        {{ tex \vdash_{=} }}
+  | refl2             ::   :: refl2         {{ tex \mathbf{refl_2}  }}
+  | ++                ::   :: concat        {{ tex \mathop{++} }}
 
 formula, Fm {{tex \psi}} :: 'formula_' ::=
   | judgement                ::   :: judgement
