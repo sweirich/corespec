@@ -86,8 +86,7 @@ tm, a, b, p, v, w, A, B, C :: 'a_' ::= {{ com types and kinds }}
 
   | []                   ::   :: Bullet
 
-  % TODO: missing _
-  | case R a of F => b1 | => b2 :: :: Pattern
+  | case R a of F => b1 | _ => b2 :: :: Pattern
 
   %% currently unused but ready for extension
   | K                    ::   :: DataCon
@@ -940,7 +939,7 @@ W |= a : R
 W |= b1 : R1
 W |= b2 : R1
 --------------------------------------- :: Pattern
-W |= case R a of F => b1 | => b2 : R1
+W |= case R a of F => b1 | _ => b2 : R1
 
 defns
 JChk :: '' ::=
@@ -1033,7 +1032,7 @@ W |= a => a' / R
 W |= b1 => b1' / R0
 W |= b2 => b2' / R0
 ------------------------------------------------------------------------------- :: Pattern
-W |= (case R a of F => b1 | => b2) => (case R a' of F => b1' | => b2') / R0
+W |= (case R a of F => b1 | _ => b2) => (case R a' of F => b1' | _ => b2') / R0
 
 % TODO: check roles
 W |= a => a' / R
@@ -1041,7 +1040,7 @@ W |= b1 => b1' / R0
 Path R1 a' = F @ Rs
 match a' applyto b1' = b
 --------------------------------------------- :: PatternTrue
-W |= (case R a of F => b1 | => b2) => b [o] / R0
+W |= (case R a of F => b1 | _ => b2) => b [o] / R0
 
 % TODO: check roles
 W |= a => a' / R
@@ -1049,7 +1048,7 @@ W |= b2 => b2' / R0
 Value R a'
 not (Path R1 a' = F @ Rs)
 ------------------------------------------------ :: PatternFalse
-W |= (case R a of F => b1 | => b2) => b2' / R0
+W |= (case R a of F => b1 | _ => b2) => b2' / R0
 
 
 defn
@@ -1108,12 +1107,12 @@ R1 <= R
 Path R a = F @ Rs
 match a applyto b1 = b1'
 ------------------------------------------ :: PatternTrue
-|= case R a of F => b1 | => b2 > b1' [o] / R0
+|= case R a of F => b1 | _ => b2 > b1' [o] / R0
 
 Value R a
 not (Path R a = F @ Rs)
 ------------------------------------------ :: PatternFalse
-|= case R a of F => b1 | => b2 > b2 / R0
+|= case R a of F => b1 | _ => b2 > b2 / R0
 
 defn
  |= a ~> b / R ::   :: reduction_in_one :: 'E_'
@@ -1134,7 +1133,7 @@ by
 
 |= a ~> a' / R
 ----------------------------------------------------------------------- :: Pattern
-|= case R a of F => b1 | => b2 ~> case R a' of F => b1 | => b2 / R0
+|= case R a of F => b1 | _ => b2 ~> case R a' of F => b1 | _ => b2 / R0
 
 |= a > b / R
 ----------------------------- :: Prim
@@ -1255,8 +1254,8 @@ G |= F : A1
 G |= b1 : B
 G |= b2 : C
 G |= case a : A of F : A1 -> B | C
------------------------------------------- :: case
-G |= case R a of F => b1 | => b2 : C
+------------------------------------------ :: Case
+G |= case R a of F => b1 | _ => b2 : C
 
 
 
@@ -1410,7 +1409,7 @@ G ; D |= a == a' : A / R
 G ; D |= b1 == b1' : B / R0
 G ; D |= b2 == b2' : B / R0
 ------------------------------------------------------------------------------- :: PatCong
-G ; D |= case R a of F => b1 | => b2 == case R a' of F => b1' | => b2' : B / R0
+G ; D |= case R a of F => b1 | _ => b2 == case R a' of F => b1' | _ => b2' : B / R0
 
 Path R' a  = F @ R, Rs
 Path R' a' = F @ R, Rs
