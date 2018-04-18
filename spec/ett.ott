@@ -392,7 +392,7 @@ formula, Fm {{tex \psi}} :: 'formula_' ::=
     {{ coq ~ AtomSetImpl.In [[x]] (dom [[G]]) }}
   | ctx_uniq G               ::   :: uniqGx
     {{ coq uniq [[G]] }}
-    {{ tex \emph{uniq}[[G]] }}
+    {{ tex \emph{uniq} \ [[G]] }}
   | rctx_uniq W              ::   :: uniqWx
     {{ coq uniq [[W]] }}
     {{ tex \emph{uniq}([[W]]) }}
@@ -650,7 +650,7 @@ JCaseSyntax :: '' ::=
 defn
 G |= case a : A of b : B -> C | C' ::    :: CaseSyntax :: 'CaseSyntax_'
 {{ com Case Syntax judgment }}
-{{ tex [[G]] \vDash \mathsf{case} \hspace{2pt} [[a]] : [[A]] \hspace{2pt} \mathsf{of} \hspace{2pt} [[b]] : [[B]] \Rightarrow [[C]] | [[C']] }}
+{{ tex [[G]] \vDash \mathsf{case} \hspace{2pt} [[a]] : [[A]] \hspace{2pt} \mathsf{of} \hspace{2pt} [[b]] : [[B]] \Rightarrow [[C]] \ | \, [[C']] }}
 by
 
 ctx_uniq G
@@ -1255,7 +1255,7 @@ G |= a : A
 G |= F : A1
 G |= b1 : B
 G |= b2 : C
-G |= case a : A of F : A1 -> B | C 
+G |= case a : A of F : A1 -> B | C
 ------------------------------------------ :: case
 G |= case R a of F => b1 | => b2 : C
 
