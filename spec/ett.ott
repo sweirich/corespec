@@ -1104,14 +1104,13 @@ R1 <= R
 ----------------------------------- :: Axiom
 |= a > b' / R
 
-Path R1 a = F @ Rs
+Path R a = F @ Rs
 match a applyto b1 = b1'
 ------------------------------------------ :: PatternTrue
 |= case R a of F => b1 | => b2 > b1' [o] / R0
 
-% FIXME: unsure about the roles here
 Value R a
-not (Path R1 a = F @ Rs)
+not (Path R a = F @ Rs)
 ------------------------------------------ :: PatternFalse
 |= case R a of F => b1 | => b2 > b2 / R0
 

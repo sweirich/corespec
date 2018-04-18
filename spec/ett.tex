@@ -1348,7 +1348,7 @@
 
 
 \newcommand{\ottdruleBetaXXPatternTrue}[1]{\ottdrule[#1]{%
-\ottpremise{ \mathsf{Path}_{ \ottnt{R_{{\mathrm{1}}}} }\  \ottnt{a}  =  \ottmv{F}  @  \ottnt{Rs} }%
+\ottpremise{ \mathsf{Path}_{ \ottnt{R} }\  \ottnt{a}  =  \ottmv{F}  @  \ottnt{Rs} }%
 \ottpremise{ \mathsf{match} \  \ottnt{a}  \ \mathsf{apply to} \  \ottnt{b_{{\mathrm{1}}}}  =  \ottnt{b'_{{\mathrm{1}}}} }%
 }{
 \vDash   \mathsf{case}_ \ottnt{R}  \hspace{3pt}  \ottnt{a}  \hspace{3pt} \mathsf{of} \hspace{3pt}  \ottmv{F}  \rightarrow  \ottnt{b_{{\mathrm{1}}}}  \| \_ \rightarrow  \ottnt{b_{{\mathrm{2}}}}   \ottsym{>}  \ottnt{b'_{{\mathrm{1}}}}  \ottsym{[}  \bullet  \ottsym{]}  \ottsym{/}  \ottnt{R_{{\mathrm{0}}}}}{%
@@ -1358,7 +1358,7 @@
 
 \newcommand{\ottdruleBetaXXPatternFalse}[1]{\ottdrule[#1]{%
 \ottpremise{ \mathsf{Value}_{ \ottnt{R} }\  \ottnt{a} }%
-\ottpremise{ \neg  \ottsym{(}   \mathsf{Path}_{ \ottnt{R_{{\mathrm{1}}}} }\  \ottnt{a}  =  \ottmv{F}  @  \ottnt{Rs}   \ottsym{)} }%
+\ottpremise{ \neg  \ottsym{(}   \mathsf{Path}_{ \ottnt{R} }\  \ottnt{a}  =  \ottmv{F}  @  \ottnt{Rs}   \ottsym{)} }%
 }{
 \vDash   \mathsf{case}_ \ottnt{R}  \hspace{3pt}  \ottnt{a}  \hspace{3pt} \mathsf{of} \hspace{3pt}  \ottmv{F}  \rightarrow  \ottnt{b_{{\mathrm{1}}}}  \| \_ \rightarrow  \ottnt{b_{{\mathrm{2}}}}   \ottsym{>}  \ottnt{b_{{\mathrm{2}}}}  \ottsym{/}  \ottnt{R_{{\mathrm{0}}}}}{%
 {\ottdrulename{Beta\_PatternFalse}}{}%

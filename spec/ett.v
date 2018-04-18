@@ -1226,16 +1226,16 @@ Inductive Beta : tm -> tm -> role -> Prop :=    (* defn Beta *)
      MatchSubst R2 a p b b' ->
      SubRole R1 R ->
      Beta a b' R
- | Beta_PatternTrue : forall (R:role) (a:tm) (F:const) (b1 b2 b1':tm) (R0 R1:role) (Rs:roles),
+ | Beta_PatternTrue : forall (R:role) (a:tm) (F:const) (b1 b2 b1':tm) (R0:role) (Rs:roles),
      lc_tm b2 ->
-     Path R1 a F Rs ->
+     Path R a F Rs ->
      MatchApply a b1 b1' ->
      Beta (a_Pattern R a F b1 b2) (a_CApp b1' g_Triv) R0
- | Beta_PatternFalse : forall (R:role) (a:tm) (F:const) (b1 b2:tm) (R0 R1:role) (Rs:roles),
+ | Beta_PatternFalse : forall (R:role) (a:tm) (F:const) (b1 b2:tm) (R0:role) (Rs:roles),
      lc_tm b1 ->
      lc_tm b2 ->
      Value R a ->
-      not (  ( Path R1 a F Rs )  )  ->
+      not (  ( Path R a F Rs )  )  ->
      Beta (a_Pattern R a F b1 b2) b2 R0
 with reduction_in_one : tm -> tm -> role -> Prop :=    (* defn reduction_in_one *)
  | E_AbsTerm : forall (L:vars) (a a':tm) (R1:role),
