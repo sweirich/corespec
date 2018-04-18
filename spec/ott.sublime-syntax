@@ -129,6 +129,7 @@ contexts:
 
   defn-header:
     - include: comments
+    - include: homs
 
     - match: '\b(by)\b'
       scope: keyword.control.ott
