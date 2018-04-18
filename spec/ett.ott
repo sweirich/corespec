@@ -66,7 +66,7 @@ constraint, phi {{ tex \phi }} :: '' ::= {{ com props }}
 
 
 
-tm, a, b, p, v, w, A, B :: 'a_' ::= {{ com types and kinds }}
+tm, a, b, p, v, w, A, B, C :: 'a_' ::= {{ com types and kinds }}
   | TYPE                 ::   :: Star
 
   | x                    ::   :: Var
@@ -390,6 +390,9 @@ formula, Fm {{tex \psi}} :: 'formula_' ::=
     {{ coq [[x]] \notin fv_tm_tm_tm [[a]] }}
   | x notin dom G            ::   :: notInGx
     {{ coq ~ AtomSetImpl.In [[x]] (dom [[G]]) }}
+  | ctx_uniq G               ::   :: uniqGx
+    {{ coq uniq [[G]] }}
+    {{ tex \emph{uniq}[[G]] }}
   | rctx_uniq W              ::   :: uniqWx
     {{ coq uniq [[W]] }}
     {{ tex \emph{uniq}([[W]]) }}
@@ -640,6 +643,31 @@ G |= a : all c1: phi. B1 pat/R
 {c1/c}B = B1
 ------------------------------------------- :: CApp
 G , c:phi |= (a [c]) : B pat/R
+
+defns
+JCaseSyntax :: '' ::=
+
+defn
+G |= case a : A of b : B -> C | C' ::    :: CaseSyntax :: 'CaseSyntax_'
+{{ com Case Syntax judgment }}
+{{ tex [[G]] \vDash \mathsf{case} \hspace{2pt} [[a]] : [[A]] \hspace{2pt} \mathsf{of} \hspace{2pt} [[b]] : [[B]] \Rightarrow [[C]] | [[C']] }}
+by
+
+ctx_uniq G
+-------------------------------------------------------------- :: Base
+G |= case a : A of b : A -> all c : (a ~ b : A / R) . C | C
+
+G, x : A |= case a : A1 of b + x : B -> C | C'
+------------------------------------------------------------------- :: PiRel
+G |= case a : A1 of b : all + x : A -> B -> all + x : A -> C | C'
+
+G, x : A |= case a : A1 of b - x : B -> C | C'
+------------------------------------------------------------------- :: PiIrrel
+G |= case a : A1 of b : all - x : A -> B -> all - x : A -> C | C'
+
+G, c : phi |= case a : A of b [c] : B -> C | C'
+----------------------------------------------------------------- :: CPi
+G |= case a : A of b : all c : phi. B -> all c : phi. C | C'
 
 defns
 JIrrelVarCheck :: '' ::=
@@ -911,7 +939,7 @@ W |= F : R1
 W |= a : R
 W ++ ctx_to_NomCtx G |= b1 : R1
 W |= b2 : R1
-TODO: finish updating this rule
+% TODO: finish updating this rule
 --------------------------------------- :: Pattern
 W |= case R a of F => b1 | => b2 : R1
 
@@ -1078,14 +1106,13 @@ R1 <= R
 ----------------------------------- :: Axiom
 |= a > b' / R
 
-Path R1 a = F @ Rs
+Path R a = F @ Rs
 match a applyto b1 = b1'
 ------------------------------------------ :: PatternTrue
 |= case R a of F => b1 | => b2 > b1' [o] / R0
 
-% FIXME: unsure about the roles here
 Value R a
-not (Path R1 a = F @ Rs)
+not (Path R a = F @ Rs)
 ------------------------------------------ :: PatternFalse
 |= case R a of F => b1 | => b2 > b2 / R0
 
@@ -1180,7 +1207,7 @@ G |= b + a : B { a / x }
 
 G |= b : all+ x : A -> B
 G |= a : A
-Path R' a = F @ R,Rs
+Path R' b = F @ R,Rs
 ------------------------------------- :: TApp
 G |= b R a : B { a / x }
 
@@ -1224,15 +1251,13 @@ empty |= A : TYPE
 ------------------------- :: Fam
 G |= F : A
 
-G  |= a1 : A
-G' |= a2 : A pat/R
-G ++ (G', c:phi1) |= b1 : B
-G  |= b2 : B
-phi1 = (a1 ~ a2 : A/R)
-IrrelVarCheck a2 b1
-TODO: update this rule
+G |= a : A
+G |= F : A1
+G |= b1 : B
+G |= b2 : C
+G |= case a : A of F : A1 -> B | C 
 ------------------------------------------ :: case
-G |= case R a of F => b1 | => b2 : B
+G |= case R a of F => b1 | => b2 : C
 
 
 
