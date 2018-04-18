@@ -85,6 +85,8 @@ tm, a, b, p, v, w, A, B :: 'a_' ::= {{ com types and kinds }}
   | F                    ::   :: Fam
 
   | []                   ::   :: Bullet
+
+  % TODO: missing _
   | case R a of F => b1 | => b2 :: :: Pattern
 
   %% currently unused but ready for extension
