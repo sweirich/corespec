@@ -732,25 +732,25 @@ match R (a1 [o]) with (a2 [c]) -> b1 = (b2 {o/c})
 
 
 defns
-JMatchApply :: '' ::=
+JApplyArgs :: '' ::=
 
 defn
-match a applyto b = b' :: :: MatchApply :: 'MatchApply_'
-{{ com match and apply arguments }}
-{{ tex \mathsf{match} \ [[a]] \ \mathsf{apply to} \ [[b]] = [[b']] }}
+apply args a to b -> b' :: :: ApplyArgs :: 'ApplyArgs_'
+{{ com apply arguments of a (headed by a constant) to b }}
+{{ tex \mathsf{apply~args} \ [[a]] \ \mathsf{to} \ [[b]] \mapsto [[b']] }}
 by
 
 F : A @ Rs in toplevel
 ----------------------------------- :: Const
-match F applyto b = b
+apply args F to b -> b
 
-match a applyto b = b'
+apply args a to b -> b'
 ------------------------------------------------------- :: App
-match a nu a' applyto b = b' (app_rho nu) a'
+apply args a nu a' to b -> b' (app_rho nu) a'
 
-match a applyto b = b'
+apply args a to b -> b'
 ------------------------------------------------------- :: CApp
-match a [g] applyto b = b' [g]
+apply args a [g] to b -> b' [g]
 
 
 defns
@@ -1014,7 +1014,7 @@ W |= (case R a of F => b1 | _ => b2) => (case R a' of F => b1' | _ => b2') / R0
 W |= a => a' / R
 W |= b1 => b1' / R0
 Path R1 a' = F @ Rs
-match a' applyto b1' = b
+apply args a' to b1' -> b
 --------------------------------------------- :: PatternTrue
 W |= (case R a of F => b1 | _ => b2) => b [o] / R0
 
@@ -1081,7 +1081,7 @@ R1 <= R
 |= a > b' / R
 
 Path R a = F @ Rs
-match a applyto b1 = b1'
+apply args a to b1 -> b1'
 ------------------------------------------ :: PatternTrue
 |= case R a of F => b1 | _ => b2 > b1' [o] / R0
 
