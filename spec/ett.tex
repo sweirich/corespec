@@ -261,7 +261,7 @@
 \ottprodline{|}{\ottmv{c} \, \ottkw{not} \, \ottkw{relevant} \, \in \, \gamma}{}{}{}{}\ottprodnewline
 \ottprodline{|}{\ottmv{x} \, \not\in \, \mathsf{fv}\! \, \ottnt{a}}{}{}{}{}\ottprodnewline
 \ottprodline{|}{\ottmv{x} \, \not\in \, \mathsf{dom} \, \Gamma}{}{}{}{}\ottprodnewline
-\ottprodline{|}{ \emph{uniq} \Gamma }{}{}{}{}\ottprodnewline
+\ottprodline{|}{ \emph{uniq} \  \Gamma }{}{}{}{}\ottprodnewline
 \ottprodline{|}{ \emph{uniq}( \Omega ) }{}{}{}{}\ottprodnewline
 \ottprodline{|}{\ottmv{c} \, \not\in \, \mathsf{dom} \, \Gamma}{}{}{}{}\ottprodnewline
 \ottprodline{|}{\ottmv{T} \, \not\in \, \mathsf{dom} \, \Sigma}{}{}{}{}\ottprodnewline
@@ -296,7 +296,7 @@
 
 \newcommand{\ottJCaseSyntax}{
 \ottrulehead{\ottnt{JCaseSyntax}}{::=}{}\ottprodnewline
-\ottfirstprodline{|}{ \Gamma  \vDash \mathsf{case} \hspace{2pt}  \ottnt{a}  :  \ottnt{A}  \hspace{2pt} \mathsf{of} \hspace{2pt}  \ottnt{b}  :  \ottnt{B}  \Rightarrow  \ottnt{C}  |  \ottnt{C'} }{}{}{}{\ottcom{Case Syntax judgment}}}
+\ottfirstprodline{|}{ \Gamma  \vDash \mathsf{case} \hspace{2pt}  \ottnt{a}  :  \ottnt{A}  \hspace{2pt} \mathsf{of} \hspace{2pt}  \ottnt{b}  :  \ottnt{B}  \Rightarrow  \ottnt{C}  \ | \,  \ottnt{C'} }{}{}{}{\ottcom{Case Syntax judgment}}}
 
 \newcommand{\ottJIrrelVarCheck}{
 \ottrulehead{\ottnt{JIrrelVarCheck}}{::=}{}\ottprodnewline
@@ -579,37 +579,37 @@
 % defns JCaseSyntax
 %% defn CaseSyntax
 \newcommand{\ottdruleCaseSyntaxXXBase}[1]{\ottdrule[#1]{%
-\ottpremise{ \emph{uniq} \Gamma }%
+\ottpremise{ \emph{uniq} \  \Gamma }%
 }{
- \Gamma  \vDash \mathsf{case} \hspace{2pt}  \ottnt{a}  :  \ottnt{A}  \hspace{2pt} \mathsf{of} \hspace{2pt}  \ottnt{b}  :  \ottnt{A}  \Rightarrow   \forall \ottmv{c} \!:\! \ottsym{(}   \ottnt{a}   \sim _{ \ottnt{A} / \ottnt{R} }  \ottnt{b}   \ottsym{)} . \ottnt{C}   |  \ottnt{C} }{%
+ \Gamma  \vDash \mathsf{case} \hspace{2pt}  \ottnt{a}  :  \ottnt{A}  \hspace{2pt} \mathsf{of} \hspace{2pt}  \ottnt{b}  :  \ottnt{A}  \Rightarrow   \forall \ottmv{c} \!:\! \ottsym{(}   \ottnt{a}   \sim _{ \ottnt{A} / \ottnt{R} }  \ottnt{b}   \ottsym{)} . \ottnt{C}   \ | \,  \ottnt{C} }{%
 {\ottdrulename{CaseSyntax\_Base}}{}%
 }}
 
 
 \newcommand{\ottdruleCaseSyntaxXXPiRel}[1]{\ottdrule[#1]{%
-\ottpremise{ \Gamma  \ottsym{,}  \ottmv{x}  \ottsym{:}  \ottnt{A}  \vDash \mathsf{case} \hspace{2pt}  \ottnt{a}  :  \ottnt{A_{{\mathrm{1}}}}  \hspace{2pt} \mathsf{of} \hspace{2pt}   \ottnt{b} \  \ottmv{x} ^{ \ottsym{+} }   :  \ottnt{B}  \Rightarrow  \ottnt{C}  |  \ottnt{C'} }%
+\ottpremise{ \Gamma  \ottsym{,}  \ottmv{x}  \ottsym{:}  \ottnt{A}  \vDash \mathsf{case} \hspace{2pt}  \ottnt{a}  :  \ottnt{A_{{\mathrm{1}}}}  \hspace{2pt} \mathsf{of} \hspace{2pt}   \ottnt{b} \  \ottmv{x} ^{ \ottsym{+} }   :  \ottnt{B}  \Rightarrow  \ottnt{C}  \ | \,  \ottnt{C'} }%
 }{
- \Gamma  \vDash \mathsf{case} \hspace{2pt}  \ottnt{a}  :  \ottnt{A_{{\mathrm{1}}}}  \hspace{2pt} \mathsf{of} \hspace{2pt}  \ottnt{b}  :   \mathrm{\Pi}^ \ottsym{+} \ottmv{x} \!:\! \ottnt{A} \to \ottnt{B}   \Rightarrow   \mathrm{\Pi}^ \ottsym{+} \ottmv{x} \!:\! \ottnt{A} \to \ottnt{C}   |  \ottnt{C'} }{%
+ \Gamma  \vDash \mathsf{case} \hspace{2pt}  \ottnt{a}  :  \ottnt{A_{{\mathrm{1}}}}  \hspace{2pt} \mathsf{of} \hspace{2pt}  \ottnt{b}  :   \mathrm{\Pi}^ \ottsym{+} \ottmv{x} \!:\! \ottnt{A} \to \ottnt{B}   \Rightarrow   \mathrm{\Pi}^ \ottsym{+} \ottmv{x} \!:\! \ottnt{A} \to \ottnt{C}   \ | \,  \ottnt{C'} }{%
 {\ottdrulename{CaseSyntax\_PiRel}}{}%
 }}
 
 
 \newcommand{\ottdruleCaseSyntaxXXPiIrrel}[1]{\ottdrule[#1]{%
-\ottpremise{ \Gamma  \ottsym{,}  \ottmv{x}  \ottsym{:}  \ottnt{A}  \vDash \mathsf{case} \hspace{2pt}  \ottnt{a}  :  \ottnt{A_{{\mathrm{1}}}}  \hspace{2pt} \mathsf{of} \hspace{2pt}   \ottnt{b} \  \ottmv{x} ^{ \ottsym{-} }   :  \ottnt{B}  \Rightarrow  \ottnt{C}  |  \ottnt{C'} }%
+\ottpremise{ \Gamma  \ottsym{,}  \ottmv{x}  \ottsym{:}  \ottnt{A}  \vDash \mathsf{case} \hspace{2pt}  \ottnt{a}  :  \ottnt{A_{{\mathrm{1}}}}  \hspace{2pt} \mathsf{of} \hspace{2pt}   \ottnt{b} \  \ottmv{x} ^{ \ottsym{-} }   :  \ottnt{B}  \Rightarrow  \ottnt{C}  \ | \,  \ottnt{C'} }%
 }{
- \Gamma  \vDash \mathsf{case} \hspace{2pt}  \ottnt{a}  :  \ottnt{A_{{\mathrm{1}}}}  \hspace{2pt} \mathsf{of} \hspace{2pt}  \ottnt{b}  :   \mathrm{\Pi}^ \ottsym{-} \ottmv{x} \!:\! \ottnt{A} \to \ottnt{B}   \Rightarrow   \mathrm{\Pi}^ \ottsym{-} \ottmv{x} \!:\! \ottnt{A} \to \ottnt{C}   |  \ottnt{C'} }{%
+ \Gamma  \vDash \mathsf{case} \hspace{2pt}  \ottnt{a}  :  \ottnt{A_{{\mathrm{1}}}}  \hspace{2pt} \mathsf{of} \hspace{2pt}  \ottnt{b}  :   \mathrm{\Pi}^ \ottsym{-} \ottmv{x} \!:\! \ottnt{A} \to \ottnt{B}   \Rightarrow   \mathrm{\Pi}^ \ottsym{-} \ottmv{x} \!:\! \ottnt{A} \to \ottnt{C}   \ | \,  \ottnt{C'} }{%
 {\ottdrulename{CaseSyntax\_PiIrrel}}{}%
 }}
 
 
 \newcommand{\ottdruleCaseSyntaxXXCPi}[1]{\ottdrule[#1]{%
-\ottpremise{ \Gamma  \ottsym{,}  \ottmv{c}  \ottsym{:}  \phi  \vDash \mathsf{case} \hspace{2pt}  \ottnt{a}  :  \ottnt{A}  \hspace{2pt} \mathsf{of} \hspace{2pt}  \ottnt{b}  \ottsym{[}  \ottmv{c}  \ottsym{]}  :  \ottnt{B}  \Rightarrow  \ottnt{C}  |  \ottnt{C'} }%
+\ottpremise{ \Gamma  \ottsym{,}  \ottmv{c}  \ottsym{:}  \phi  \vDash \mathsf{case} \hspace{2pt}  \ottnt{a}  :  \ottnt{A}  \hspace{2pt} \mathsf{of} \hspace{2pt}  \ottnt{b}  \ottsym{[}  \ottmv{c}  \ottsym{]}  :  \ottnt{B}  \Rightarrow  \ottnt{C}  \ | \,  \ottnt{C'} }%
 }{
- \Gamma  \vDash \mathsf{case} \hspace{2pt}  \ottnt{a}  :  \ottnt{A}  \hspace{2pt} \mathsf{of} \hspace{2pt}  \ottnt{b}  :   \forall \ottmv{c} \!:\! \phi . \ottnt{B}   \Rightarrow   \forall \ottmv{c} \!:\! \phi . \ottnt{C}   |  \ottnt{C'} }{%
+ \Gamma  \vDash \mathsf{case} \hspace{2pt}  \ottnt{a}  :  \ottnt{A}  \hspace{2pt} \mathsf{of} \hspace{2pt}  \ottnt{b}  :   \forall \ottmv{c} \!:\! \phi . \ottnt{B}   \Rightarrow   \forall \ottmv{c} \!:\! \phi . \ottnt{C}   \ | \,  \ottnt{C'} }{%
 {\ottdrulename{CaseSyntax\_CPi}}{}%
 }}
 
-\newcommand{\ottdefnCaseSyntax}[1]{\begin{ottdefnblock}[#1]{$ \Gamma  \vDash \mathsf{case} \hspace{2pt}  \ottnt{a}  :  \ottnt{A}  \hspace{2pt} \mathsf{of} \hspace{2pt}  \ottnt{b}  :  \ottnt{B}  \Rightarrow  \ottnt{C}  |  \ottnt{C'} $}{\ottcom{Case Syntax judgment}}
+\newcommand{\ottdefnCaseSyntax}[1]{\begin{ottdefnblock}[#1]{$ \Gamma  \vDash \mathsf{case} \hspace{2pt}  \ottnt{a}  :  \ottnt{A}  \hspace{2pt} \mathsf{of} \hspace{2pt}  \ottnt{b}  :  \ottnt{B}  \Rightarrow  \ottnt{C}  \ | \,  \ottnt{C'} $}{\ottcom{Case Syntax judgment}}
 \ottusedrule{\ottdruleCaseSyntaxXXBase{}}
 \ottusedrule{\ottdruleCaseSyntaxXXPiRel{}}
 \ottusedrule{\ottdruleCaseSyntaxXXPiIrrel{}}
@@ -1089,7 +1089,7 @@
 
 \newcommand{\ottdruleroleXXaXXPattern}[1]{\ottdrule[#1]{%
 \ottpremise{ \Omega  \vDash  \ottnt{a}  :  \ottnt{R} }%
-\ottpremise{  \Omega ,  \Gamma _\mathsf{Nom}    \vDash  \ottnt{b_{{\mathrm{1}}}}  :  \ottnt{R_{{\mathrm{1}}}} }%
+\ottpremise{ \Omega  \vDash  \ottnt{b_{{\mathrm{1}}}}  :  \ottnt{R_{{\mathrm{1}}}} }%
 \ottpremise{ \Omega  \vDash  \ottnt{b_{{\mathrm{2}}}}  :  \ottnt{R_{{\mathrm{1}}}} }%
 }{
  \Omega  \vDash   \mathsf{case}_ \ottnt{R}  \hspace{3pt}  \ottnt{a}  \hspace{3pt} \mathsf{of} \hspace{3pt}  \ottmv{F}  \rightarrow  \ottnt{b_{{\mathrm{1}}}}  \| \_ \rightarrow  \ottnt{b_{{\mathrm{2}}}}   :  \ottnt{R_{{\mathrm{1}}}} }{%
@@ -1587,7 +1587,7 @@
 \ottpremise{\Gamma  \vDash  \ottmv{F}  \ottsym{:}  \ottnt{A_{{\mathrm{1}}}}}%
 \ottpremise{\Gamma  \vDash  \ottnt{b_{{\mathrm{1}}}}  \ottsym{:}  \ottnt{B}}%
 \ottpremise{\Gamma  \vDash  \ottnt{b_{{\mathrm{2}}}}  \ottsym{:}  \ottnt{C}}%
-\ottpremise{ \Gamma  \vDash \mathsf{case} \hspace{2pt}  \ottnt{a}  :  \ottnt{A}  \hspace{2pt} \mathsf{of} \hspace{2pt}  \ottmv{F}  :  \ottnt{A_{{\mathrm{1}}}}  \Rightarrow  \ottnt{B}  |  \ottnt{C} }%
+\ottpremise{ \Gamma  \vDash \mathsf{case} \hspace{2pt}  \ottnt{a}  :  \ottnt{A}  \hspace{2pt} \mathsf{of} \hspace{2pt}  \ottmv{F}  :  \ottnt{A_{{\mathrm{1}}}}  \Rightarrow  \ottnt{B}  \ | \,  \ottnt{C} }%
 }{
 \Gamma  \vDash   \mathsf{case}_ \ottnt{R}  \hspace{3pt}  \ottnt{a}  \hspace{3pt} \mathsf{of} \hspace{3pt}  \ottmv{F}  \rightarrow  \ottnt{b_{{\mathrm{1}}}}  \| \_ \rightarrow  \ottnt{b_{{\mathrm{2}}}}   \ottsym{:}  \ottnt{C}}{%
 {\ottdrulename{E\_case}}{}%

@@ -1120,9 +1120,9 @@ Inductive roleing : role_context -> tm -> role -> Prop :=    (* defn roleing *)
       uniq  W  ->
       binds  F  ( (Ax p a A R Rs) )   toplevel   ->
      roleing W (a_Fam F) R1
- | role_a_Pattern : forall (W:role_context) (R:role) (a:tm) (F:const) (b1 b2:tm) (R1:role) (G:context),
+ | role_a_Pattern : forall (W:role_context) (R:role) (a:tm) (F:const) (b1 b2:tm) (R1:role),
      roleing W a R ->
-     roleing  ( W  ++   (ctx_to_NomCtx  G )  )  b1 R1 ->
+     roleing W b1 R1 ->
      roleing W b2 R1 ->
      roleing W (a_Pattern R a F b1 b2) R1.
 

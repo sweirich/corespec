@@ -937,9 +937,8 @@ F [p] ~ a : A / R @ Rs in toplevel
 W |= F : R1
 
 W |= a : R
-W ++ ctx_to_NomCtx G |= b1 : R1
+W |= b1 : R1
 W |= b2 : R1
-% TODO: finish updating this rule
 --------------------------------------- :: Pattern
 W |= case R a of F => b1 | => b2 : R1
 
