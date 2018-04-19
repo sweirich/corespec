@@ -1142,8 +1142,8 @@ defns
 JBranchTyping :: '' ::=
 
 defn
-G |= case a : A of b : B -> C | C' ::    :: BranchTyping :: 'BrTpg_'
-{{ com Branch Typing }}
+G |= case a : A of b : B -> C | C' ::    :: BranchTyping :: 'BranchTyping_'
+{{ com Branch Typing (aligning the types of case) }}
 {{ tex [[G]] \vDash \mathsf{case} \hspace{2pt} [[a]] : [[A]] \hspace{2pt} \mathsf{of} \hspace{2pt} [[b]] : [[B]] \Rightarrow [[C]] \ | \, [[C']] }}
 by
 
@@ -1155,11 +1155,11 @@ G, x : A |= case a : A1 of b + x : B -> C | C'
 ------------------------------------------------------------------- :: PiRel
 G |= case a : A1 of b : all + x : A -> B -> all + x : A -> C | C'
 
-G, x : A |= case a : A1 of b - x : B -> C | C'
+G, x : A |= case a : A1 of b - [] : B -> C | C'
 ------------------------------------------------------------------- :: PiIrrel
 G |= case a : A1 of b : all - x : A -> B -> all - x : A -> C | C'
 
-G, c : phi |= case a : A of b [c] : B -> C | C'
+G, c : phi |= case a : A of b [o] : B -> C | C'
 ----------------------------------------------------------------- :: CPi
 G |= case a : A of b : all c : phi. B -> all c : phi. C | C'
 
