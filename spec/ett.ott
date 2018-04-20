@@ -38,8 +38,8 @@ grammar
 relflag, rho {{ tex \rho }} :: '' ::= {{ com relevance flag }}
   | +             ::   :: Rel
   | -             ::   :: Irrel
-  | app_rho nu    :: S :: RhoApp {{ coq (app_rho(nu)) }}
-  | ( rho )       :: S :: RhoParen {{ coq rho }}
+  | app_rho nu    :: S :: RhoApp {{ coq app_rho [[nu]] }}
+  | ( rho )       :: S :: RhoParen {{ coq ([[rho]]) }}
 
 
 appflag, nu {{ tex \nu }} :: '' ::= {{ com applicative flag }}
@@ -52,8 +52,8 @@ role, R :: '' ::= {{ com Role }}
   | Rep         ::   :: Rep
   | min R1 R2   :: S :: Min
   | param R1 R2 :: S :: Param
-  | app_role nu :: S :: App {{ coq (app_role(nu)) }}
-  | ( R )       :: S :: RParen {{ coq R }} 
+  | app_role nu :: S :: App
+  | ( R )       :: S :: RParen 
 
 
 constraint, phi {{ tex \phi }} :: '' ::= {{ com props }}
@@ -439,7 +439,7 @@ Definition app_role (rr : appflag) : role :=
   | Role r => r
   end.
 
-Definition app_rho (rr : appflag) : role :=
+Definition app_rho (rr : appflag) : relflag :=
   match rr with
   | Rho p => p
   | Role _ => Rel
@@ -492,7 +492,7 @@ Fixpoint erase_tm (a : tm) (r : role) : tm :=
    | a_DataCon K => a_Star  (* a_DataCon K *)
    | a_Case a brs => a_Star (* a_Case (erase_tm a) (erase_brs brs) *)
    | a_Bullet => a_Bullet
-   | a_Pattern R a1 a2 b1 b2 => a_Pattern R (erase_tm a1 r) (erase_tm a2 r) (erase_tm b1 r) (erase_tm b2 r)
+   | a_Pattern R a1 F b1 b2 => a_Pattern R (erase_tm a1 r) F (erase_tm b1 r) (erase_tm b2 r)
    | a_Sub _ a => erase_tm a r
    end
 with erase_brs (x : brs) (r:role): brs :=
@@ -515,7 +515,7 @@ end.
 Definition erase_csort s r :=
  match s with
  | Cs a Rs => Cs (erase_tm a r) Rs
- | Ax a A R Rs => Ax (erase_tm a r) (erase_tm A r) R Rs
+ | Ax p a A R Rs => Ax (erase_tm p r) (erase_tm a r) (erase_tm A r) R Rs
 end.
 
 Definition erase_context G r := map (fun s => erase_sort s r) G.
@@ -538,8 +538,8 @@ Definition FixTy : tm :=
        (a_Pi Rel (a_Pi Rel (a_Var_b 0) (a_Var_b 1))
              (a_Var_b 1)).
 
-
-Definition an_toplevel : sig := Fix ~ Ax FixDef FixTy Rep (Nom :: [Nom]).
+(* % Needs correction. *)
+Definition an_toplevel : sig := Fix ~ Ax FixDef FixTy FixTy Rep (Nom :: [Nom]).
 
 Definition toplevel : sig := erase_sig an_toplevel Nom.
 
@@ -1135,30 +1135,30 @@ G, c : phi |= case R a : A of b [o] : B -> C | C'
 ----------------------------------------------------------------- :: CPi
 G |= case R a : A of b : all c : phi. B -> all c : phi. C | C'
 
-defns
-JFoldCtxType :: '' ::=
-
-defn
-G FoldCtxType p : A = B ::      :: FoldCtxType :: 'FoldCtxType_'
-{{ com Fold Context to Type }}
-{{ tex [[G]] \ \mathsf{CtxType} \ [[p]] : [[A]] = [[B]] }}
-by
-
------------------------------------------- :: Base
-empty FoldCtxType F : A = A
-
-G FoldCtxType p : A = B
------------------------------------------------- :: PiRel
-G , x : A1 FoldCtxType p + x : A = all + x : A1 -> B
-
-G FoldCtxType p : A = B
--------------------------------------------------- :: PiIrrel
-G , x : A1 FoldCtxType p - [] : A = all - x : A1 -> B
-
-G FoldCtxType p : A = B
--------------------------------------------------- :: CPi
-G , c : phi FoldCtxType p [o] : A = all c : phi. B
-
+%defns
+%JFoldCtxType :: '' ::=
+%
+%defn
+%G FoldCtxType p : A = B ::      :: FoldCtxType :: 'FoldCtxType_'
+%{{ com Fold Context to Type }}
+%{{ tex [[G]] \ \mathsf{CtxType} \ [[p]] : [[A]] = [[B]] }}
+%by
+%
+%------------------------------------------ :: Base
+%empty FoldCtxType F : A = A
+%
+%G FoldCtxType p : A = B
+%------------------------------------------------------ :: PiRel
+%(G , x : A1) FoldCtxType p + x : A = all + x : A1 -> B
+%
+%G FoldCtxType p : A = B
+%------------------------------------------------------- :: PiIrrel
+%(G , x : A1) FoldCtxType p - [] : A = all - x : A1 -> B
+%
+%G FoldCtxType p : A = B
+%---------------------------------------------------- :: CPi
+%(G , c : phi) FoldCtxType p [o] : A = all c : phi. B
+%
 
 %%__ Typing/equality/wellformedness __%%
 
@@ -1253,9 +1253,9 @@ G |= F : A
 F : p ~ a : A / R1 @ Rs in toplevel
 empty |= A : TYPE
 W ; G' |= p : A
-G' FoldCtxType p : A = A'
+% G' FoldCtxType p : A = A'
 ------------------------- :: Fam
-G |= F : A'
+G |= F : A
 
 G |= a : A
 G |= F : A1
