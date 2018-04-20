@@ -1037,6 +1037,11 @@ Inductive consistent : tm -> tm -> role -> Prop :=    (* defn consistent *)
      RoledPath R a1 F Rs ->
      RoledPath R a2 F Rs ->
      consistent a1 a2 R
+ | consistent_a_Path : forall (a1 a2:tm) (R:role) (a:tm) (F:const) (Rs':roles) (R':role) (Rs:roles),
+      not (  ( RoledPath R a F Rs' )  )  ->
+     Path a1 F  ( R' :: Rs )  ->
+     Path a2 F  ( R' :: Rs )  ->
+     consistent a1 a2 R
  | consistent_a_Step_R : forall (a b:tm) (R:role),
      lc_tm a ->
       not ( value_type R b )  ->
@@ -1525,7 +1530,7 @@ Inductive Sig : sig -> Prop :=    (* defn Sig *)
      PatternContexts W G p A ->
      Typing G a A ->
      roleing W a Rep ->
-     Sig  (( F ~ (Ax p a A R  (range(W)) ) )++ S ) .
+     Sig  (( F ~ (Ax p a A R  (range( W )) ) )++ S ) .
 
 
 (** infrastructure *)

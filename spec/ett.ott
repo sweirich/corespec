@@ -245,7 +245,7 @@ role_context, W {{ tex \Omega }} :: 'rctx_' ::= {{ com role_contexts }}
 roles, Rs :: '' ::= {{ coq list role }}
    | nilR       ::  :: nilR {{ coq nil }}
    | R , Rs     ::  :: consR {{ coq ([[R]]::[[Rs]]) }}
-   | range(W)   :: S :: rangeR {{ coq (range(W)) }}
+   | range W   :: S :: rangeR {{ coq (range([[W]])) }}
    
 sig_sort :: '' ::= {{ com signature classifier }}
    | A @ Rs            ::    :: Cs
@@ -279,7 +279,7 @@ sig, S {{ tex \Sigma }} :: 'sig_' ::=
      {{ tex \varnothing }}
   | S , F : sig_sort ::    :: Cons
    {{ coq (([[F]]~[[sig_sort]])++[[S]]) }}
-   {{ tex [[S]] \cup \{[[F]][[sig_sort]]\} }}
+   {{ tex [[S]] \cup \{[[F]] : [[sig_sort]]\} }}
   | toplevel       :: M  :: Toplevel
      {{ coq toplevel }}
      {{ tex \Sigma_0 }}
@@ -805,6 +805,12 @@ consistent (all c1:phi1. A1) (all c2 :phi2. A2) R
 RoledPath R a1 = F @ Rs
 RoledPath R a2 = F @ Rs
 ------------------------ :: RoledPath
+consistent a1 a2 R
+
+not (RoledPath R a = F @ Rs')
+Path a1 = F @ R',Rs
+Path a2 = F @ R',Rs
+------------------------------ :: Path
 consistent a1 a2 R
 
 not ValueType R b
@@ -1507,7 +1513,7 @@ W ; G |= p : A
 G |= a : A
 W |= a : Rep
 -------------------------------- :: ConsAx
-|= S, F : p ~ a : A/R @ range(W)
+|= S, F : p ~ a : A/R @ range W
 
 
 
