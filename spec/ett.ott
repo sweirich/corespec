@@ -85,7 +85,7 @@ tm, a, b, p, v, w, A, B, C :: 'a_' ::= {{ com types and kinds }}
 
   | []                   ::   :: Bullet
 
-  | case R a of F => b1 | _ => b2 :: :: Pattern
+  | case R a of F => b1 | _ => b2 ::   :: Pattern
 
   %% currently unused but ready for extension
   | K                    ::   :: DataCon

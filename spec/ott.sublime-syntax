@@ -55,7 +55,6 @@ contexts:
     - match: '({{ident}})'
       captures:
         1: entity.name.class.ott
-        2: entity.name.interface.ott
       set: grammar-header-aliases
 
   grammar-header-aliases:
@@ -83,16 +82,17 @@ contexts:
   grammar-body:
     - include: comments
     - include: homs
+    - include: binds
     - include: find-grammar-header
 
     - match: '([|])(([^:]|:[^:])*)(::)([ SM])*(::)\s*({{ident}})'
       captures:
         1: constant.character.escape.ott
         2: markup.quote
-        4: constant.character.escape.ott
+        4: keyword.operator.ott
         5: constant.other
-        6: constant.character.escape.ott
-        7: entity.name.ott
+        6: keyword.operator.ott
+        7: entity.name.class.ott
 
 
   #### Defns ####
@@ -248,6 +248,14 @@ contexts:
   #### Homs ####
   homs:
     - match: '([{][{])\s*({{ident}})(([^}]|[}][^}])*)([}][}])'
+      captures:
+        1: storage.type.ott
+        2: string.quoted.single.ott
+        5: storage.type.ott
+
+  #### Binds ####
+  binds:
+    - match: '([(][+])\s*(bind)(([^+]|[+][^)])*)([+][)])'
       captures:
         1: storage.type.ott
         2: string.quoted.single.ott
