@@ -6,13 +6,13 @@ Definition datacon := atom.
 Definition const := atom.
 Definition index := nat. (*r indices *)
 
-Inductive role : Set :=  (*r Role *)
- | Nom : role
- | Rep : role.
-
 Inductive relflag : Set :=  (*r relevance flag *)
  | Rel : relflag
  | Irrel : relflag.
+
+Inductive role : Set :=  (*r Role *)
+ | Nom : role
+ | Rep : role.
 
 Inductive appflag : Set :=  (*r applicative flag *)
  | Role (R:role)
@@ -82,9 +82,9 @@ Inductive sig_sort : Set :=  (*r signature classifier *)
  | Cs (A:tm) (Rs:roles)
  | Ax (p:tm) (a:tm) (A:tm) (R:role) (Rs:roles).
 
-Definition role_context : Set := list ( atom * role ).
-
 Definition available_props : Type := atoms.
+
+Definition role_context : Set := list ( atom * role ).
 
 Definition sig : Set := list (atom * sig_sort).
 
@@ -943,11 +943,11 @@ Inductive MatchSubst : tm -> tm -> tm -> tm -> Prop :=    (* defn MatchSubst *)
  | MatchSubst_AppRelR : forall (a1:tm) (R':role) (a a2:tm) (x:tmvar) (b1 b2:tm),
      lc_tm a ->
      MatchSubst a1 a2 b1 b2 ->
-     MatchSubst  ( (a_App a1 (Role R') a) )   ( (a_App a2 (Rho Rel) (a_Var_f x)) )  b1  (  (open_tm_wrt_tm  b2   a )  ) 
+     MatchSubst  ( (a_App a1 (Role R') a) )   ( (a_App a2 (Rho Rel) (a_Var_f x)) )  b1  (  (tm_subst_tm_tm  a   x   b2 )  ) 
  | MatchSubst_AppRel : forall (a1 a a2:tm) (x:tmvar) (b1 b2:tm),
      lc_tm a ->
      MatchSubst a1 a2 b1 b2 ->
-     MatchSubst  ( (a_App a1 (Rho Rel) a) )   ( (a_App a2 (Rho Rel) (a_Var_f x)) )  b1  (  (open_tm_wrt_tm  b2   a )  ) 
+     MatchSubst  ( (a_App a1 (Rho Rel) a) )   ( (a_App a2 (Rho Rel) (a_Var_f x)) )  b1  (  (tm_subst_tm_tm  a   x   b2 )  ) 
  | MatchSubst_AppIrrel : forall (a1 a2 b1 b2:tm),
      MatchSubst a1 a2 b1 b2 ->
      MatchSubst  ( (a_App a1 (Rho Irrel) a_Bullet) )   ( (a_App a2 (Rho Irrel) a_Bullet) )  b1 b2

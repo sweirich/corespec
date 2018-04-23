@@ -98,6 +98,9 @@ tm, a, b, p, v, w, A, B, C :: 'a_' ::= {{ com types and kinds }}
   | a { b / x }          :: S :: Subst
   | a { g / c }          :: S :: SubstC
 
+  %% Actual standard substitution
+  | a {` b / x `}        :: S :: StdSubst
+
   %% this is a hack for when a substitution {x/x} is necessary for the
   %% locally nameless backend to generate the correct code, but we don't
   %% want this substitution to show in the tex output
@@ -678,11 +681,11 @@ match F with F -> b = b
 
 match a1 with a2 -> b1 = b2
 ------------------------------------------------------- :: AppRelR
-match (a1 R' a) with (a2 + x) -> b1 = (b2 {a/x})
+match (a1 R' a) with (a2 + x) -> b1 = (b2 {`a/x`})
 
 match a1 with a2 -> b1 = b2
 ------------------------------------------------------ :: AppRel
-match (a1 + a) with (a2 + x) -> b1 = (b2 {a/x})
+match (a1 + a) with (a2 + x) -> b1 = (b2 {`a/x`})
 
 match a1 with a2 -> b1 = b2
 -------------------------------------------------------- :: AppIrrel
@@ -1970,6 +1973,8 @@ homs 'a_'
   :: Subst
   :: SubstC
 
+  :: StdSubst     {{ tex [[a]] [[{]] [[b]] [[/]] [[x]]  [[}]] }}
+
   %% Hack: when id subst needed to force correct LN output (no shown in tex)
   :: SecretSubst  {{ tex [[a]] }}
   :: SecretSubstC {{ tex [[a]] }}
@@ -2036,6 +2041,8 @@ homs ''
 homs 'a_'
   :: Subst         {{ coq (open_tm_wrt_tm [[x a]] [[b]])           }}
   :: SubstC        {{ coq (open_tm_wrt_co [[c a]] [[g]])           }}
+
+  :: StdSubst      {{ coq (tm_subst_tm_tm [[b]] [[x]] [[x a]])     }}
 
   %% Hack: when id subst needed to force correct LN output (no shown in tex)
   :: SecretSubst   {{ coq (open_tm_wrt_tm [[x a]] [[b]])           }}
