@@ -1396,6 +1396,7 @@
 %% defn BranchTyping
 \newcommand{\ottdruleBranchTypingXXBase}[1]{\ottdrule[#1]{%
 \ottpremise{ \emph{uniq} \  \Gamma }%
+\ottpremise{\texttt{lc\_tm }\ottnt{C}\texttt{ }}%
 }{
  \Gamma  \vDash \mathsf{case}_{ \ottnt{R} } \hspace{2pt}  \ottnt{a}  :  \ottnt{A}  \hspace{2pt} \mathsf{of} \hspace{2pt}  \ottnt{b}  :  \ottnt{A}  \Rightarrow   \forall \ottmv{c} \!:\! \ottsym{(}   \ottnt{a}   \sim _{ \ottnt{A} / \ottnt{R} }  \ottnt{b}   \ottsym{)} . \ottnt{C}   \ | \,  \ottnt{C} }{%
 {\ottdrulename{BranchTyping\_Base}}{}%
@@ -1446,10 +1447,10 @@
 
 
 \newcommand{\ottdruleFoldCtxTypeXXPiRel}[1]{\ottdrule[#1]{%
-\ottpremise{ \Gamma   \vDash   \mathsf{FoldCtxType} \  \ottnt{p}  :  \ottnt{A}  =  \ottnt{B_{{\mathrm{1}}}} }%
+\ottpremise{ \Gamma  \ottsym{,}  \ottmv{x}  \ottsym{:}  \ottnt{A_{{\mathrm{1}}}}   \vDash   \mathsf{FoldCtxType} \  \ottnt{p}  :  \ottnt{A}  =  \ottnt{B_{{\mathrm{1}}}} }%
 \ottpremise{\ottsym{B\{x\}}  \ottsym{=}  \ottnt{B_{{\mathrm{1}}}}}%
 }{
- \Gamma  \ottsym{,}  \ottmv{x}  \ottsym{:}  \ottnt{A_{{\mathrm{1}}}}   \vDash   \mathsf{FoldCtxType} \   \ottnt{p} \  \ottmv{x} ^{ \ottsym{+} }   :  \ottnt{A}  =   \mathrm{\Pi}^ \ottsym{+} \ottmv{x} \!:\! \ottnt{A_{{\mathrm{1}}}} \to \ottnt{B}  }{%
+ \Gamma  \ottsym{,}  \ottmv{x}  \ottsym{:}  \ottnt{A_{{\mathrm{1}}}}   \vDash   \mathsf{FoldCtxType} \   \ottnt{p} \  \ottmv{x} ^{ \ottsym{+} }   :  \ottnt{A}  =   \mathrm{\Pi}^ \ottsym{+} \ottmv{y} \!:\! \ottnt{A_{{\mathrm{1}}}} \to \ottnt{B}  }{%
 {\ottdrulename{FoldCtxType\_PiRel}}{}%
 }}
 
@@ -1458,7 +1459,7 @@
 \ottpremise{ \Gamma   \vDash   \mathsf{FoldCtxType} \  \ottnt{p}  :  \ottnt{A}  =  \ottnt{B_{{\mathrm{1}}}} }%
 \ottpremise{\ottsym{B\{x\}}  \ottsym{=}  \ottnt{B_{{\mathrm{1}}}}}%
 }{
- \Gamma  \ottsym{,}  \ottmv{x}  \ottsym{:}  \ottnt{A_{{\mathrm{1}}}}   \vDash   \mathsf{FoldCtxType} \   \ottnt{p} \  \Box ^{ \ottsym{-} }   :  \ottnt{A}  =   \mathrm{\Pi}^ \ottsym{-} \ottmv{x} \!:\! \ottnt{A_{{\mathrm{1}}}} \to \ottnt{B}  }{%
+ \Gamma  \ottsym{,}  \ottmv{x}  \ottsym{:}  \ottnt{A_{{\mathrm{1}}}}   \vDash   \mathsf{FoldCtxType} \   \ottnt{p} \  \Box ^{ \ottsym{-} }   :  \ottnt{A}  =   \mathrm{\Pi}^ \ottsym{-} \ottmv{y} \!:\! \ottnt{A_{{\mathrm{1}}}} \to \ottnt{B}  }{%
 {\ottdrulename{FoldCtxType\_PiIrrel}}{}%
 }}
 
@@ -1467,7 +1468,7 @@
 \ottpremise{ \Gamma   \vDash   \mathsf{FoldCtxType} \  \ottnt{p}  :  \ottnt{A}  =  \ottnt{B_{{\mathrm{1}}}} }%
 \ottpremise{\ottsym{B\{c\}}  \ottsym{=}  \ottnt{B_{{\mathrm{1}}}}}%
 }{
- \Gamma  \ottsym{,}  \ottmv{c}  \ottsym{:}  \phi   \vDash   \mathsf{FoldCtxType} \  \ottnt{p}  \ottsym{[}  \bullet  \ottsym{]}  :  \ottnt{A}  =   \forall \ottmv{c} \!:\! \phi . \ottnt{B}  }{%
+ \Gamma  \ottsym{,}  \ottmv{c}  \ottsym{:}  \phi   \vDash   \mathsf{FoldCtxType} \  \ottnt{p}  \ottsym{[}  \bullet  \ottsym{]}  :  \ottnt{A}  =   \forall \ottmv{c_{{\mathrm{1}}}} \!:\! \phi . \ottnt{B}  }{%
 {\ottdrulename{FoldCtxType\_CPi}}{}%
 }}
 
@@ -2072,6 +2073,6 @@
 
 \begin{verbatim}
 Definition rules:        147 good    0 bad
-Definition rule clauses: 412 good    0 bad
+Definition rule clauses: 413 good    0 bad
 \end{verbatim}
 \end{document}

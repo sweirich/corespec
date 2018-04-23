@@ -1155,19 +1155,18 @@ empty |= FoldCtxType F : A = A
 
 G, x : A1 |= FoldCtxType p : A = B1
 B{x} = B1
-% FIXME: seems to be a bug in ott - it doesn't introduce a variable that appears freely in the conclusion
 ------------------------------------------------------- :: PiRel
-G , x : A1 |= FoldCtxType p + x : A = all + x : A1 -> B
+G , x : A1 |= FoldCtxType p + x : A = all + y : A1 -> B
 
 G |= FoldCtxType p : A = B1
 B{x} = B1
 -------------------------------------------------------- :: PiIrrel
-G , x : A1 |= FoldCtxType p - [] : A = all - x : A1 -> B
+G , x : A1 |= FoldCtxType p - [] : A = all - y : A1 -> B
 
 G |= FoldCtxType p : A = B1
 B{c} = B1
 ------------------------------------------------------ :: CPi
-G , c : phi |= FoldCtxType p [o] : A = all c : phi. B
+G , c : phi |= FoldCtxType p [o] : A = all c1 : phi. B
 
 
 
