@@ -1124,6 +1124,8 @@ G |= case R a : A of b : B -> C | C' ::    :: BranchTyping :: 'BranchTyping_'
 by
 
 ctx_uniq G
+{{ lc_tm [[C]] }}
+% ^ better way to do this? (hopefully making ott aware that C is lc)
 ------------------------------------------------------------- :: Base
 G |= case R a : A of b : A -> all c : (a ~ b : A / R) . C | C
 
@@ -1151,8 +1153,9 @@ by
 ------------------------------------------ :: Base
 empty |= FoldCtxType F : A = A
 
-G |= FoldCtxType p : A = B1
+G, x : A1 |= FoldCtxType p : A = B1
 B{x} = B1
+% FIXME: seems to be a bug in ott - it doesn't introduce a variable that appears freely in the conclusion
 ------------------------------------------------------- :: PiRel
 G , x : A1 |= FoldCtxType p + x : A = all + x : A1 -> B
 
