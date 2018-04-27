@@ -6,13 +6,13 @@ Definition datacon := atom.
 Definition const := atom.
 Definition index := nat. (*r indices *)
 
-Inductive relflag : Set :=  (*r relevance flag *)
- | Rel : relflag
- | Irrel : relflag.
-
 Inductive role : Set :=  (*r Role *)
  | Nom : role
  | Rep : role.
+
+Inductive relflag : Set :=  (*r relevance flag *)
+ | Rel : relflag
+ | Irrel : relflag.
 
 Inductive appflag : Set :=  (*r applicative flag *)
  | Role (R:role)
@@ -82,9 +82,9 @@ Inductive sig_sort : Set :=  (*r signature classifier *)
  | Cs (A:tm) (Rs:roles)
  | Ax (p:tm) (a:tm) (A:tm) (R:role) (Rs:roles).
 
-Definition available_props : Type := atoms.
-
 Definition role_context : Set := list ( atom * role ).
+
+Definition available_props : Type := atoms.
 
 Definition sig : Set := list (atom * sig_sort).
 
@@ -847,19 +847,23 @@ Definition Fix : atom.
   exact F.
 Qed.
 
-Definition FixDef : tm :=
-  (a_Abs Irrel a_Star
-         (a_Abs Rel (a_Pi Rel (a_Var_b 0) (a_Var_b 1))
-                (a_App (a_Var_b 0) (Rho Rel)
-                       (a_App (a_App (a_Fam Fix) (Rho Irrel) (a_Var_b 1)) (Rho Rel) (a_Var_b 0))))).
+Definition FixVar1 : atom.
+ pick fresh F.
+ exact F.
+Qed.
 
-Definition FixTy : tm :=
-  a_Pi Irrel a_Star
-       (a_Pi Rel (a_Pi Rel (a_Var_b 0) (a_Var_b 1))
-             (a_Var_b 1)).
+Definition FixVar2 : atom.
+ pick fresh F.
+ exact F.
+Qed.
 
-(* % Needs correction. *)
-Definition an_toplevel : sig := Fix ~ Ax FixDef FixTy FixTy Rep (Nom :: [Nom]).
+Definition FixPat : tm := a_App (a_App (a_Fam Fix) (Rho Irrel) (a_Var_f FixVar1)) (Rho Rel) (a_Var_f FixVar2).
+
+Definition FixDef : tm := a_App (a_Var_f FixVar2) (Rho Rel) (a_App (a_App (a_Fam Fix) (Rho Irrel) a_Bullet) (Rho Rel) (a_Var_f FixVar2)).
+
+Definition FixTy : tm := a_Var_f FixVar1.
+
+Definition an_toplevel : sig := Fix ~ Ax FixPat FixDef FixTy Rep (Nom :: [Nom]).
 
 Definition toplevel : sig := erase_sig an_toplevel Nom.
 
@@ -930,10 +934,10 @@ Inductive PatternContexts : role_context -> context -> tm -> tm -> Prop :=    (*
       ( forall x , x \notin  L  -> PatternContexts  (( x  ~  R ) ++  W )   (( x ~ Tm  A' ) ++  G )  (a_App p (Rho Rel) (a_Var_f x))  ( open_tm_wrt_tm A (a_Var_f x) )  ) 
  | PatCtx_PiIrr : forall (L:vars) (W:role_context) (G:context) (A' p A:tm),
      PatternContexts W G p (a_Pi Irrel A' A) ->
-      ( forall x , x \notin  L  -> PatternContexts W  (( x ~ Tm  A' ) ++  G )  (a_App p (Rho Irrel) a_Bullet)  ( open_tm_wrt_tm A (a_Var_f x) )  ) 
+      ( forall x , x \notin  L  -> PatternContexts W  (( x ~ Tm  A' ) ++  G )  (a_App p (Rho Irrel) (a_Var_f x))  ( open_tm_wrt_tm A (a_Var_f x) )  ) 
  | PatCtx_CPi : forall (L:vars) (W:role_context) (G:context) (phi:constraint) (p A:tm),
      PatternContexts W G p (a_CPi phi A) ->
-      ( forall c , c \notin  L  -> PatternContexts W  (( c ~ Co  phi ) ++  G )  (a_CApp p g_Triv)  ( open_tm_wrt_co A (g_Var_f c) )  ) .
+      ( forall c , c \notin  L  -> PatternContexts W  (( c ~ Co  phi ) ++  G )  (a_CApp p (g_Var_f c))  ( open_tm_wrt_co A (g_Var_f c) )  ) .
 
 (* defns JMatchSubst *)
 Inductive MatchSubst : tm -> tm -> tm -> tm -> Prop :=    (* defn MatchSubst *)
@@ -948,12 +952,12 @@ Inductive MatchSubst : tm -> tm -> tm -> tm -> Prop :=    (* defn MatchSubst *)
      lc_tm a ->
      MatchSubst a1 a2 b1 b2 ->
      MatchSubst  ( (a_App a1 (Rho Rel) a) )   ( (a_App a2 (Rho Rel) (a_Var_f x)) )  b1  (  (tm_subst_tm_tm  a   x   b2 )  ) 
- | MatchSubst_AppIrrel : forall (a1 a2 b1 b2:tm),
+ | MatchSubst_AppIrrel : forall (a1 a2:tm) (x:tmvar) (b1 b2:tm),
      MatchSubst a1 a2 b1 b2 ->
-     MatchSubst  ( (a_App a1 (Rho Irrel) a_Bullet) )   ( (a_App a2 (Rho Irrel) a_Bullet) )  b1 b2
- | MatchSubst_CApp : forall (a1 a2 b1 b2:tm),
+     MatchSubst  ( (a_App a1 (Rho Irrel) a_Bullet) )   ( (a_App a2 (Rho Irrel) (a_Var_f x)) )  b1  (  (tm_subst_tm_tm  a_Bullet   x   b2 )  ) 
+ | MatchSubst_CApp : forall (a1 a2:tm) (c:covar) (b1 b2:tm),
      MatchSubst a1 a2 b1 b2 ->
-     MatchSubst  ( (a_CApp a1 g_Triv) )   ( (a_CApp a2 g_Triv) )  b1 b2.
+     MatchSubst  ( (a_CApp a1 g_Triv) )   ( (a_CApp a2 (g_Var_f c)) )  b1  (  (co_subst_co_tm  g_Triv   c   b2 )  ) .
 
 (* defns JApplyArgs *)
 Inductive ApplyArgs : tm -> tm -> tm -> Prop :=    (* defn ApplyArgs *)
@@ -1281,21 +1285,18 @@ Inductive FoldCtxType : context -> tm -> tm -> tm -> Prop :=    (* defn FoldCtxT
      lc_tm A ->
      FoldCtxType  nil  (a_Fam F) A A
  | FoldCtxType_PiRel : forall (G:context) (x:tmvar) (A1 p A B B1:tm),
-     lc_tm (a_Pi Rel A1 B) ->
      FoldCtxType  (( x ~ Tm  A1 ) ++  G )  p A B1 ->
-      open_tm_wrt_tm  B  (a_Var_f  x ) =  B1  ->
+      (  (open_tm_wrt_tm  B   (a_Var_f x) )   =  B1 )  ->
      FoldCtxType  (( x ~ Tm  A1 ) ++  G )  (a_App p (Rho Rel) (a_Var_f x)) A (a_Pi Rel A1 B)
  | FoldCtxType_PiIrrel : forall (G:context) (x:tmvar) (A1 p A B B1:tm),
      lc_tm A1 ->
-     lc_tm (a_Pi Irrel A1 B) ->
      FoldCtxType G p A B1 ->
-      open_tm_wrt_tm  B  (a_Var_f  x ) =  B1  ->
+      (  (open_tm_wrt_tm  B   (a_Var_f x) )   =  B1 )  ->
      FoldCtxType  (( x ~ Tm  A1 ) ++  G )  (a_App p (Rho Irrel) a_Bullet) A (a_Pi Irrel A1 B)
  | FoldCtxType_CPi : forall (G:context) (c:covar) (phi:constraint) (p A B B1:tm),
      lc_constraint phi ->
-     lc_tm (a_CPi phi B) ->
      FoldCtxType G p A B1 ->
-      open_tm_wrt_co  B  (g_Var_f  c ) =  B1  ->
+      (  (open_tm_wrt_co  B   (g_Var_f c) )   =  B1 )  ->
      FoldCtxType  (( c ~ Co  phi ) ++  G )  (a_CApp p g_Triv) A (a_CPi phi B).
 
 (* defns Jett *)
