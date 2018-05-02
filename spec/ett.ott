@@ -1533,17 +1533,19 @@ W |= a : Rep
 
 
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Annotated language semantics
-%
 
-% defns
-% Jann :: '' ::=
-%
-% defn
-% G |- phi ok ::   :: AnnPropWff :: 'An_'
-% {{ com prop wellformedness }}
-% by
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%__ Annotated language semantics __%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+defns
+Jann :: '' ::=
+defn
+G |- phi ok ::   :: AnnPropWff :: 'An_'
+{{ com prop wellformedness }}
+by
 %
 % G |- a : A/R
 % G |- b : B/R
@@ -1551,10 +1553,10 @@ W |= a : Rep
 % ------------------------- :: Wff
 % G |- a ~ b : A/R  ok
 %
-% defn
-% G |- a : A / R ::  :: AnnTyping :: 'An_'
-% {{ com typing }}
-% by
+defn
+G |- a : A / R ::  :: AnnTyping :: 'An_'
+{{ com typing }}
+by
 %
 % |- G
 % ------------  :: Star
@@ -1615,11 +1617,11 @@ W |= a : Rep
 % G |- sub R1 a : A / R2
 %
 %
-% defn
-% G ; D |- g : phi1 == phi2 ::  :: AnnIso :: 'An_'
-% {{ tex [[G]];[[D]][[|-]] [[g]] : [[phi1]] \sim [[phi2]] }}
-% {{ com coercion between props }}
-% by
+defn
+G ; D |- g : phi1 == phi2 ::  :: AnnIso :: 'An_'
+{{ tex [[G]];[[D]][[|-]] [[g]] : [[phi1]] \sim [[phi2]] }}
+{{ com coercion between props }}
+by
 %
 % G ; D |- g1 : A1 ~ A2 : R
 % G ; D |- g2 : B1 ~ B2 : R
@@ -1645,11 +1647,12 @@ W |= a : Rep
 % G ; D |- conv (a1 ~ a2 : A/R) (a1' ~ a2' : B/R) g : (a1 ~ a2 : A/R) == (a1' ~ a2' : B/R)
 %
 %
-% defn
-% G ; D |- g : A ~ B : R ::  :: AnnDefEq :: 'An_'
-% {{ com coercion between types }}
-% {{ tex [[G]]; [[D]] \vdash [[g]] [[:]] [[A]] \sim_[[R]] [[B]] }}
-% by
+
+defn
+G ; D |- g : A ~ B : R ::  :: AnnDefEq :: 'An_'
+{{ com coercion between types }}
+{{ tex [[G]]; [[D]] \vdash [[g]] [[:]] [[A]] \sim_[[R]] [[B]] }}
+by
 %
 % |- G
 % c: a ~ b : A/R in G
@@ -1801,10 +1804,10 @@ W |= a : Rep
 %
 % %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
-% defn
-% |- G ::      :: AnnCtx :: 'An_'
-% {{ com context wellformedness }}
-% by
+defn
+|- G ::      :: AnnCtx :: 'An_'
+{{ com context wellformedness }}
+by
 %
 %
 % ---------- :: Empty
@@ -1839,17 +1842,17 @@ W |= a : Rep
 % |- S, F ~ a  : A/R
 %
 %
-% defns
-%   Jred :: '' ::=
-%
-% defn
-% G |- a ~>h b / R ::   :: head_reduction :: 'An_'
-% {{ com single-step, weak head reduction to
-%    values for annotated language }}
-% % NOTE: this reduction needs a context for the the
-% % two push rules. We need to read the coercion proofs
-% % to know what type annotations to use after the push.
-% by
+defns
+  Jred :: '' ::=
+
+defn
+G |- a ~>h b / R ::   :: head_reduction :: 'An_'
+{{ com single-step, weak head reduction to
+   values for annotated language }}
+% NOTE: this reduction needs a context for the the
+% two push rules. We need to read the coercion proofs
+% to know what type annotations to use after the push.
+by
 %
 % G |- a ~>h a' / R1
 % -------------------------  :: AppLeft

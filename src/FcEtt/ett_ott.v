@@ -1547,8 +1547,18 @@ Inductive Sig : sig -> Prop :=    (* defn Sig *)
      roleing W a Rep ->
      Sig  (( F ~ (Ax p a A R  (range( W )) ) )++ S ) .
 
+(* defns Jann *)
+Inductive AnnPropWff : context -> constraint -> Prop :=    (* defn AnnPropWff *)
+with AnnTyping : context -> tm -> tm -> role -> Prop :=    (* defn AnnTyping *)
+with AnnIso : context -> available_props -> co -> constraint -> constraint -> Prop :=    (* defn AnnIso *)
+with AnnDefEq : context -> available_props -> co -> tm -> tm -> role -> Prop :=    (* defn AnnDefEq *)
+with AnnCtx : context -> Prop :=    (* defn AnnCtx *).
+
+(* defns Jred *)
+Inductive head_reduction : context -> tm -> tm -> role -> Prop :=    (* defn head_reduction *).
+
 
 (** infrastructure *)
-Hint Constructors SubRole Path RoledPath PatternContexts MatchSubst ApplyArgs Value value_type consistent roleing RhoCheck Par MultiPar joins Beta reduction_in_one reduction BranchTyping FoldCtxType PropWff Typing Iso DefEq Ctx Sig lc_co lc_brs lc_tm lc_constraint lc_sort lc_sig_sort.
+Hint Constructors SubRole Path RoledPath PatternContexts MatchSubst ApplyArgs Value value_type consistent roleing RhoCheck Par MultiPar joins Beta reduction_in_one reduction BranchTyping FoldCtxType PropWff Typing Iso DefEq Ctx Sig AnnPropWff AnnTyping AnnIso AnnDefEq AnnCtx head_reduction lc_co lc_brs lc_tm lc_constraint lc_sort lc_sig_sort.
 
 
