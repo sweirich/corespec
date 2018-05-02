@@ -15,19 +15,19 @@ Require Export FcEtt.fix_typing.
 
 
 (* --------------------------------------------------- *)
-
+(*
 Lemma uniq_an_toplevel : uniq an_toplevel.
 Proof.
  induction AnnSig_an_toplevel; auto.
-Qed.
+Qed. *)
 Lemma uniq_toplevel : uniq toplevel.
 Proof.
   induction Sig_toplevel; auto.
 Qed.
-
+(*
 (* ------------------------------------------ *)
-Lemma toplevel_closed : forall F a A R, binds F (Ax a A R) toplevel ->
-                                 Typing nil a A R.
+Lemma toplevel_closed : forall F p a A R Rs, binds F (Ax p a A R Rs) toplevel ->
+                                 Typing nil a A.
 Proof.
   have st: Sig toplevel by apply Sig_toplevel.
   induction st.
@@ -65,4 +65,4 @@ Proof.
     match goal with [ H : binds ?F _ _ |- _ ] => inversion H end.
     match goal with [ H : (_,_) = (_,_) |- _ ] => inversion H end.
     subst. eauto. eauto.
-Qed.
+Qed. *)

@@ -1166,10 +1166,9 @@ Inductive Par : role_context -> tm -> tm -> role -> Prop :=    (* defn Par *)
      Par W b b' R1 ->
       ( forall c , c \notin  L  -> Par W  ( open_tm_wrt_co B (g_Var_f c) )   ( open_tm_wrt_co B' (g_Var_f c) )  R )  ->
      Par W (a_CPi (Eq a b A R1) B) (a_CPi (Eq a' b' A' R1) B') R
- | Par_Axiom : forall (W:role_context) (a b':tm) (R:role) (F:const) (p b A:tm) (R1:role) (Rs:roles) (a':tm),
-     lc_tm a ->
+ | Par_Axiom : forall (W:role_context) (a b':tm) (R:role) (F:const) (p b A:tm) (R1:role) (Rs:roles),
       binds  F  ( (Ax p b A R1 Rs) )   toplevel   ->
-     MatchSubst a' p b b' ->
+     MatchSubst a p b b' ->
      SubRole R1 R ->
       uniq  W  ->
      Par W a b' R

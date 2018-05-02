@@ -142,13 +142,13 @@ Ltac lc_inversion c :=
   (* simple inversions *)
   | [ H : lc_constraint (_ _) |- _ ] =>
     inversion H; clear H
-  | [ H : lc_tm (a_Abs _ _ _ _) |- _ ] =>
+  | [ H : lc_tm (a_Abs _ _ _) |- _ ] =>
     inversion H; clear H
-  | [ H : lc_tm (a_UAbs _ _ _) |- _ ] =>
+  | [ H : lc_tm (a_UAbs _ _) |- _ ] =>
     inversion H; clear H
-  | [ H : lc_tm (a_App _ _ _ _) |- _ ] =>
+  | [ H : lc_tm (a_App _ _ _) |- _ ] =>
     inversion H; clear H
-  | [ H : lc_tm (a_Pi _ _ _ _) |- _ ] =>
+  | [ H : lc_tm (a_Pi _ _ _) |- _ ] =>
     inversion H; clear H
   | [ H : lc_tm (a_Conv _ _ _) |- _ ] =>
     inversion H; clear H
@@ -230,13 +230,13 @@ Ltac invert_syntactic_equality :=
   repeat match goal with
   | [ H : a_Var_f _  = a_Var_f _ |- _ ] =>
     inversion H; subst; clear H
-  | [ H : a_Abs _ _ _ _ = a_Abs _ _ _ _ |- _ ] =>
+  | [ H : a_Abs _ _ _ = a_Abs _ _ _ |- _ ] =>
     inversion H; subst; clear H
-  | [ H : a_UAbs _ _ _ = a_UAbs _ _ _ |- _ ] =>
+  | [ H : a_UAbs _ _ = a_UAbs _ _ |- _ ] =>
     inversion H; subst; clear H
-  | [ H : a_Pi _ _ _ _ = a_Pi _ _ _ _ |- _ ] =>
+  | [ H : a_Pi _ _ _ = a_Pi _ _ _ |- _ ] =>
     inversion H; subst; clear H
-  | [ H : a_App _ _ _ _ = a_App _ _ _ _ |- _ ] =>
+  | [ H : a_App _ _ _ = a_App _ _ _ |- _ ] =>
     inversion H; subst; clear H
   | [ H : a_Fam _  = a_Fam _ |- _ ] =>
     inversion H; subst; clear H
@@ -328,8 +328,7 @@ from ann_typing_ind', ann_wff_ind', ann_iso_ind',
    data constructor for that case available) as the name 'CON'. *)
 Ltac ext_induction CON :=
     apply typing_wff_iso_defeq_mutual;
-    [ pose CON :=  E_SubRole    |
-      pose CON :=  E_Star       |
+    [ pose CON :=  E_Star       |
       pose CON :=  E_Var        |
       pose CON :=  E_Pi         |
       pose CON :=  E_Abs        |
@@ -341,7 +340,7 @@ Ltac ext_induction CON :=
       pose CON :=  E_CApp       |
       pose CON :=  E_Const      |
       pose CON :=  E_Fam        |
-      pose CON :=  E_Pat        |
+      pose CON :=  E_Case       |
       pose CON :=  E_Wff        |
       pose CON :=  E_PropCong   |
       pose CON :=  E_IsoConv    |
@@ -593,10 +592,10 @@ Proof.
   +  eapply fv_swap with (x:=x); eauto.
 Qed.
 
-Lemma eta_swap: forall x y a' b rho R,
+Lemma eta_swap: forall x y a' b rho,
     x `notin` fv_tm_tm_tm a' \u fv_tm_tm_tm b ->
-    open_tm_wrt_tm a' (a_Var_f x) = a_App b rho R (a_Var_f x) ->
-    open_tm_wrt_tm a' (a_Var_f y) = a_App b rho R (a_Var_f y).
+    open_tm_wrt_tm a' (a_Var_f x) = a_App b (Rho rho) (a_Var_f x) ->
+    open_tm_wrt_tm a' (a_Var_f y) = a_App b (Rho rho) (a_Var_f y).
 Proof.
   intros.
   rewrite (tm_subst_tm_tm_intro x); auto.
@@ -646,10 +645,10 @@ Ltac auto_rew_env :=
 
 Ltac E_pick_fresh x :=
   match goal with
-    | [ |- Typing _ ?shape _ _] =>
+    | [ |- Typing _ ?shape _] =>
       let v := match shape with
-            | a_Pi _ _ _ _ => E_Pi
-            | a_UAbs _ _ _ => E_Abs
+            | a_Pi _ _ _ => E_Pi
+            | a_UAbs _ _ => E_Abs
             | a_CPi _ _  => E_CPi
             | a_CAbs _ _ => E_CAbs
             | a_UCAbs _  => E_CAbs
@@ -657,11 +656,11 @@ Ltac E_pick_fresh x :=
       in pick fresh x and apply v
     | [ |- DefEq _ _ ?shape ?s2 _ _] =>
       let v := match shape with
-               | a_Pi _ _ _ _ => E_PiCong
-               | a_UAbs Rel _ _ => match s2 with
-                                | a_UAbs _ _ _ => E_AbsCong
+               | a_Pi _ _ _ => E_PiCong
+               | a_UAbs Rel _ => match s2 with
+                                | a_UAbs _ _ => E_AbsCong
                                 end
-               | a_UAbs _ _ _ => E_AbsCong
+               | a_UAbs _ _ => E_AbsCong
                | a_CPi _ _  => E_CPiCong
                | a_CAbs _ _ => E_CAbsCong
                | a_UCAbs _  => E_CAbsCong
@@ -673,9 +672,9 @@ Ltac Par_pick_fresh x :=
   match goal with
     | [ |- Par _ ?shape ?s2 ?R ] =>
       let v := match shape with
-            | a_Pi _ _ _ _ => Par_Pi
-            | a_UAbs _ _ _ =>  match s2 with
-                                | a_UAbs _ _ _ => Par_Abs
+            | a_Pi _ _ _ => Par_Pi
+            | a_UAbs _ _ =>  match s2 with
+                                | a_UAbs _ _ => Par_Abs
                                 end
             | a_CPi _ _  => Par_CPi
             | a_CAbs _ _ => Par_CAbs

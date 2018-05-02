@@ -28,7 +28,7 @@ Qed.
 Lemma roleing_app_rctx : forall W1 W2 W3 a R, uniq (W1 ++ W2 ++ W3) -> 
                                roleing (W1 ++ W3) a R ->
                                roleing (W1 ++ W2 ++ W3) a R.
-Proof. intros W1 W2 W3 a R U H. generalize dependent W2. 
+Proof. intros W1 W2 W3 a R U H. generalize dependent W2.
        dependent induction H; intros; eauto.
         - eapply role_a_Abs with (L := union L (dom (W1 ++ W2 ++ W3))).
           intros. rewrite <- app_assoc.
@@ -47,8 +47,8 @@ Ltac roleing_pick_fresh x :=
   match goal with
     [ |- roleing ?W ?s ?R ] =>
     let v := match s with
-             | a_UAbs _ _ _ => role_a_Abs
-             | a_Pi _ _ _ _ => role_a_Pi
+             | a_UAbs _ _ => role_a_Abs
+             | a_Pi _ _ _ => role_a_Pi
              | a_CPi _ _   => role_a_CPi
              | a_UCAbs _   => role_a_CAbs
              end
@@ -57,11 +57,11 @@ Ltac roleing_pick_fresh x :=
 
 Ltac roleing_inversion :=
   repeat match goal with
-  | [H : roleing _ (a_UAbs _ _ _) _ |- _ ] =>
+  | [H : roleing _ (a_UAbs _ _) _ |- _ ] =>
     inversion H; subst; clear H
-  | [H : roleing _ (a_App _ _ _ _) _ |- _ ] =>
+  | [H : roleing _ (a_App _ _ _) _ |- _ ] =>
     inversion H; subst; clear H
-  | [H : roleing _ (a_Pi _ _ _ _) _ |- _ ] =>
+  | [H : roleing _ (a_Pi _ _ _) _ |- _ ] =>
     inversion H; subst; clear H
   | [H : roleing _ (a_CPi _ _) _ |- _ ] =>
     inversion H; subst; clear H
@@ -73,7 +73,7 @@ end.
 
 
 Inductive roleing_sort (W : role_context) : sort -> Prop := 
-| roleing_Tm : forall a R, roleing W a R -> roleing_sort W (Tm a R)
+| roleing_Tm : forall a R, roleing W a R -> roleing_sort W (Tm a)
 | roleing_Co : forall a b A R, roleing W a R -> roleing W b R -> roleing W A R -> roleing_sort W (Co (Eq a b A R)).
 
 (* Check Forall_forall FIXME:?? *)
@@ -85,17 +85,8 @@ Inductive roleing_context : role_context -> context -> Prop :=
                    roleing_sort W (Co (Eq a b A R)) -> roleing_context W G -> 
                    roleing_context W ([(c, (Co (Eq a b A R)))] ++ G)
  | tm_roleing_ctx : forall W G x A R, roleing_context W G ->
-                   roleing_sort W (Tm A R) ->
-                   roleing_context ([(x,R)] ++ W) ([(x, (Tm A R))] ++ G).
-
-Lemma dom_rctx_le_ctx : forall G, dom (ctx_to_rctx G) [<=] dom G.
-Proof. intros. induction G. auto. destruct a, s; simpl; fsetdec.
-Qed.
-
-Lemma notin_ctx_rctx : forall x G, x `notin` (dom G) -> x `notin` dom (ctx_to_rctx G).
-Proof. intros. induction G. auto. destruct a, s; simpl in *.
-       all : pose (P := H); apply notin_add_2 in P; fsetdec.
-Qed.
+                   roleing_sort W (Tm A) ->
+                   roleing_context ([(x,R)] ++ W) ([(x, (Tm A))] ++ G).
 
 Lemma dom_roleing_ctx_rctx_le_ctx : forall W G, roleing_context W G ->
                                                dom W [<=] dom G.
@@ -119,7 +110,18 @@ Hint Resolve roleing_lc : lc.
 Lemma roleing_sub : forall W a R1 R2, roleing W a R1 -> SubRole R1 R2 ->
                                      roleing W a R2.
 Proof. intros W a R1 R2 H S. generalize dependent R2. induction H; intros; eauto.
-       econstructor. auto. auto using param_covariant.
+Qed.
+
+Lemma Path_subst : forall F a b Rs x, Path a F Rs -> lc_tm b ->
+                   Path (tm_subst_tm_tm b x a) F Rs.
+Proof. intros. induction H; simpl; eauto.
+       econstructor; eauto with lngen lc.
+Qed.
+
+Lemma Path_subst_co : forall F a b Rs c, Path a F Rs -> lc_co b ->
+                   Path (co_subst_co_tm b c a) F Rs.
+Proof. intros. induction H; simpl; eauto.
+       econstructor; eauto with lngen lc.
 Qed.
 
 Lemma subst_tm_roleing : forall W1 x R1 W2 a R b, 
@@ -139,6 +141,8 @@ Proof.
      rewrite tm_subst_tm_tm_open_tm_wrt_tm_var; auto 1.
      rewrite <- app_assoc. eapply H0; eauto. simpl_env. auto.
      eapply roleing_lc; eauto.
+  - econstructor. eauto. eapply Path_subst. eauto. eapply roleing_lc.
+    eauto. eauto.
   - pick fresh y and apply role_a_Pi; eauto.
      rewrite tm_subst_tm_tm_open_tm_wrt_tm_var; auto 1.
      rewrite <- app_assoc. eapply H0; eauto. simpl_env. auto.
@@ -159,6 +163,7 @@ Proof.
   - eapply role_a_Abs with (L := L).
      intros x0 h1.
      rewrite co_subst_co_tm_open_tm_wrt_tm_var; auto 2.
+   - econstructor. eauto. eapply Path_subst_co; eauto. eauto.
    - eapply role_a_Pi with (L := L); eauto.
      intros x0 h2.
      rewrite co_subst_co_tm_open_tm_wrt_tm_var; auto 2.
@@ -172,20 +177,20 @@ Qed.
 
 Hint Resolve subst_tm_roleing subst_co_roleing : roleing.
 
-Lemma roleing_Pi_some_any: forall W x rho A R1 B R2,
+Lemma roleing_Pi_some_any: forall W x rho A B R2,
        x `notin` fv_tm_tm_tm B ->
        roleing W A R2 ->
-       roleing ([(x,R1)] ++ W) (open_tm_wrt_tm B (a_Var_f x)) R2 ->
-       roleing W (a_Pi rho A R1 B) R2.
+       roleing ([(x,Nom)] ++ W) (open_tm_wrt_tm B (a_Var_f x)) R2 ->
+       roleing W (a_Pi rho A B) R2.
 Proof. intros. apply (role_a_Pi (union (singleton x) (dom W)));
                  eauto using roleing_sub.
        intros. rewrite (tm_subst_tm_tm_intro x B (a_Var_f x0)); auto.
-       replace ([(x0,R1)] ++ W) with (nil ++ [(x0,R1)] ++ W); auto.
-       assert (uniq ([(x,R1)] ++ W)). {eapply rctx_uniq; eauto. }
+       replace ([(x0,Nom)] ++ W) with (nil ++ [(x0,Nom)] ++ W); auto.
+       assert (uniq ([(x,Nom)] ++ W)). {eapply rctx_uniq; eauto. }
        eapply subst_tm_roleing. simpl_env. apply roleing_app_rctx; eauto.
        econstructor. solve_uniq. auto. auto.
 Qed.
-
+(*
 Lemma typing_roleing_mutual:
     (forall G b A R, Typing G b A R -> roleing (ctx_to_rctx G) b R) /\
     (forall G0 phi  (H : PropWff G0 phi ),
@@ -224,4 +229,4 @@ Proof.
   apply roleing_app_rctx. simpl_env; auto.
   simpl_env. pose (P := Typing_roleing h0). simpl in P.
   auto. simpl_env. auto.
-Qed.
+Qed. *)

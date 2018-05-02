@@ -43,7 +43,7 @@ Hint Resolve binds_In AtomSetImpl.singleton_1 in_singleton_subset.
 *)
 
 Theorem context_fv_mutual :
-  (forall G (a : tm) A R (H: Typing G a A R),
+  (forall G (a : tm) A (H: Typing G a A),
       fv_tm_tm_tm a [<=] dom G /\ fv_co_co_tm a [<=] dom G /\
       fv_tm_tm_tm A [<=] dom G /\ fv_co_co_tm A [<=] dom G)
   /\
@@ -61,8 +61,8 @@ Theorem context_fv_mutual :
 
   /\
   (forall G (H : Ctx G),
-      (forall x A R,
-          binds x (Tm A R)   G ->
+      (forall x A,
+          binds x (Tm A)   G ->
           fv_tm_tm_tm         A   [<=] dom G /\ fv_co_co_tm         A   [<=] dom G) /\
       (forall c phi,
           binds c (Co phi) G ->
@@ -78,20 +78,9 @@ Proof.
   (* split all asummptions about unions *)
 
   (* Do the cases about the context at the end. *)
-  all: try (intros x0 A0 R0 BI).
-  all: try solve [inversion BI].
   all: try (intros x0 A0 BI).
   all: try solve [inversion BI].
   all: try (match goal with |- _ ∧ _ => split end).
-
-  all: try (intros y h1; inversion BI; [
-              match goal with
-                [ H5 : (_,_) = (_,_) |- _ ] =>
-                inversion H5; subst; clear H5; eauto end|
-              match goal with
-                [ H5 : List.In (?x0, ?s ?a ?R) ?G,
-                  H : forall x A R, binds x (?s A R) ?G -> _ |- _ ] =>
-                destruct (H x0 _ _ H5); eauto end]).
 
   all: try (intros y h1; inversion BI; [
               match goal with
@@ -102,7 +91,7 @@ Proof.
                   H : forall x A, binds x (?s A) ?G -> _ |- _ ] =>
                 destruct (H x0 _ H5); eauto end]).
 
-  (* rest of the cases *)
+ (* rest of the cases *)
   all: intros y IN.
 
   (* more splitting, assumption has a union type *)
@@ -189,18 +178,9 @@ Proof.
   all: try solve [ simpl in *; eauto].
 
   (* all: try solve [ assert (c = y) by auto; subst; eapply binds_In; eauto ]. *)
-
   all: try solve [ destruct (H0 _ _ b0); simpl in *; eauto].
-  all: try solve [ destruct (H _ _ _ b); simpl in *; eauto].
-  all: match goal with 
-      [ H1 : ?y `in` union ?A ?B,
-        H2 : forall a, a `in` ?A -> a `in` ?C,
-        H3 : forall b, b `in` ?B -> b `in` ?C |- ?y `in` ?C ] =>
-        apply union_iff in H1; inversion H1 as [P | Q];
-        [apply H2; auto | apply H3; auto]
-       end.
 
-Qed.
+Admitted.
 
 
 Definition Typing_context_fv  := first context_fv_mutual.
@@ -210,9 +190,9 @@ Definition DefEq_context_fv   := fourth context_fv_mutual.
 
 Ltac show_fresh :=
   match goal with 
-  | [H: Typing _ ?T _ _ |- ?c `notin` _ ?T ] => 
+  | [H: Typing _ ?T _ |- ?c `notin` _ ?T ] => 
     move: (Typing_context_fv H) => ?; split_hyp; auto
-  | [H: Typing _ _ ?T _ |- ?c `notin` _ ?T ] => 
+  | [H: Typing _ _ ?T |- ?c `notin` _ ?T ] => 
     move: (Typing_context_fv H) => ?; split_hyp; auto
 
   end.

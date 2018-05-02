@@ -985,7 +985,7 @@ W |= B => B' / R
 W |= all c:a~b:A/R1. B => all c:a'~b':A'/R1. B' / R
 
 F : p ~ b : A/R1 @ Rs in toplevel
-match a' with p -> b = b'
+match a with p -> b = b'
 R1 <= R
 rctx_uniq W
 -------------------------------- :: Axiom

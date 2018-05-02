@@ -10,31 +10,31 @@ Require Import FcEtt.toplevel.
 Require Import FcEtt.ett_roleing.
 Require Import FcEtt.ext_wf.
 
-Lemma Path_binds_toplevel : forall F a R, Path F a R ->
-                     (exists A, binds F (Cs A) toplevel) \/
-                     (exists a0 A0 R0, binds F (Ax a0 A0 R0) toplevel
+Lemma Path_binds_toplevel : forall F a R Rl, RoledPath R a F Rl ->
+                     (exists A Rs, binds F (Cs A Rs) toplevel) \/
+                     (exists p a0 A0 R0 Rs, binds F (Ax p a0 A0 R0 Rs) toplevel
                                                   /\ ~(SubRole R0 R)).
-Proof. intros. induction H. left. exists A; auto.
-       right. exists a, A, R1; auto. auto. auto.
+Proof. intros. induction H. left. exists A, Rs; auto.
+       right. exists p, a, A, R1, Rs; auto. auto. auto.
 Qed.
 
-Lemma Path_subst : forall F a b R x, Path F a R -> lc_tm b ->
-                   Path F (tm_subst_tm_tm b x a) R.
+Lemma Path_subst : forall F a b R Rs x, RoledPath R a F Rs -> lc_tm b ->
+                   RoledPath R (tm_subst_tm_tm b x a) F Rs.
 Proof. intros. induction H; simpl; eauto.
        econstructor; eauto with lngen lc.
 Qed.
 
-Lemma Path_subst_co : forall F a b R c, Path F a R -> lc_co b ->
-                   Path F (co_subst_co_tm b c a) R.
+Lemma Path_subst_co : forall F a b R Rs c, RoledPath R a F Rs -> lc_co b ->
+                   RoledPath R (co_subst_co_tm b c a) F Rs.
 Proof. intros. induction H; simpl; eauto.
        econstructor; eauto with lngen lc.
 Qed.
-
-Lemma subst_Path : forall F a b R x, lc_tm b -> Value R a ->
-                   Path F (tm_subst_tm_tm b x a) R -> Path F a R.
+(*
+Lemma subst_Path : forall F a b R Rs x, lc_tm b -> Value R a ->
+                   RoledPath R (tm_subst_tm_tm b x a) F Rs -> RoledPath R a F Rs.
 Proof. intros. induction a; simpl in H1; auto; try (inversion H1; fail).
-        - inversion H0. inversion H2.
-        - inversion H0; subst. inversion H1; subst. inversion H2; subst.
+        - inversion H0. inversion H2. inversion H3.
+        - inversion H0; subst. inversion H9; subst. inversion H2; subst.
           econstructor. auto. eapply IHa1; eauto.
         - inversion H0; subst. inversion H1; subst. inversion H2; subst.
           econstructor. eapply IHa; eauto.
@@ -130,4 +130,4 @@ Proof. induction a; intros R' E.
         - intros. inversion H; subst. pose (P := IHa R' E H4).
           inversion P as [P1 | P2]. left; eauto.
           right. intro. inversion H0; subst. contradiction.
-Qed.
+Qed. *)

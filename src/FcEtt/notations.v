@@ -37,8 +37,6 @@ Notation "'ℱν' φ" := (fv_co_co_tm φ) (at level 50, only printing).
 
 Notation "a ∪ b" := (a `union` b) (at level 50).
 
-Notation "| G |" := (ctx_to_rctx G) (at level 10).
-
 (* Elements *)
 Notation "∅" := nil.
 
