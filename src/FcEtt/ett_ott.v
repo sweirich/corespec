@@ -907,22 +907,21 @@ Inductive Path : tm -> const -> roles -> Prop :=    (* defn Path *)
      Path  ( (a_CApp a g_Triv) )  F Rs.
 
 (* defns JRoledPath *)
-Inductive RoledPath : role -> tm -> const -> roles -> Prop :=    (* defn RoledPath *)
- | RoledPath_AbsConst : forall (R:role) (F:const) (Rs:roles) (A:tm),
+Inductive RoledPath : role -> tm -> const -> Prop :=    (* defn RoledPath *)
+ | RoledPath_AbsConst : forall (R:role) (F:const) (A:tm) (Rs:roles),
       binds  F  ( (Cs A Rs) )   toplevel   ->
-     RoledPath R (a_Fam F) F Rs
- | RoledPath_Const : forall (R:role) (F:const) (Rs:roles) (p a A:tm) (R1:role),
+     RoledPath R (a_Fam F) F
+ | RoledPath_Const : forall (R:role) (F:const) (p a A:tm) (R1:role) (Rs:roles),
       binds  F  ( (Ax p a A R1 Rs) )   toplevel   ->
       not (  ( SubRole R1 R )  )  ->
-     RoledPath R (a_Fam F) F Rs
- | RoledPath_App : forall (R:role) (a:tm) (nu:appflag) (b':tm) (F:const) (Rs:roles) (R1:role),
+     RoledPath R (a_Fam F) F
+ | RoledPath_App : forall (R:role) (a:tm) (nu:appflag) (b':tm) (F:const),
      lc_tm b' ->
-     RoledPath R a F  ( R1 :: Rs )  ->
-      (  (app_role  nu )   =  R1 )  ->
-     RoledPath R  ( (a_App a nu b') )  F Rs
- | RoledPath_CApp : forall (R:role) (a:tm) (F:const) (Rs:roles),
-     RoledPath R a F Rs ->
-     RoledPath R  ( (a_CApp a g_Triv) )  F Rs.
+     RoledPath R a F ->
+     RoledPath R  ( (a_App a nu b') )  F
+ | RoledPath_CApp : forall (R:role) (a:tm) (F:const),
+     RoledPath R a F ->
+     RoledPath R  ( (a_CApp a g_Triv) )  F.
 
 (* defns JPatCtx *)
 Inductive PatternContexts : role_context -> context -> tm -> tm -> Prop :=    (* defn PatternContexts *)
@@ -1002,12 +1001,12 @@ Inductive Value : role -> tm -> Prop :=    (* defn Value *)
  | Value_UCAbs : forall (R:role) (a:tm),
      lc_tm (a_UCAbs a) ->
      Value R (a_UCAbs a)
- | Value_RolePath : forall (R:role) (a:tm) (F:const) (Rs:roles),
-     RoledPath R a F Rs ->
+ | Value_RolePath : forall (R:role) (a:tm) (F:const),
+     RoledPath R a F ->
      Value R a
- | Value_Path : forall (R:role) (a:tm) (F:const) (Rs:roles) (R':role) (Rs':roles),
-      not (  ( RoledPath R a F Rs )  )  ->
-     Path a F  ( R' :: Rs' )  ->
+ | Value_Path : forall (R:role) (a:tm) (F:const) (R':role) (Rs:roles),
+      not (  ( RoledPath R a F )  )  ->
+     Path a F  ( R' :: Rs )  ->
      Value R a.
 
 (* defns JValueType *)
@@ -1022,12 +1021,12 @@ Inductive value_type : role -> tm -> Prop :=    (* defn value_type *)
      lc_constraint phi ->
      lc_tm (a_CPi phi B) ->
      value_type R (a_CPi phi B)
- | value_type_RoledPath : forall (R:role) (a:tm) (F:const) (Rs:roles),
-     RoledPath R a F Rs ->
+ | value_type_RoledPath : forall (R:role) (a:tm) (F:const),
+     RoledPath R a F ->
      value_type R a
- | value_type_Path : forall (R:role) (a:tm) (F:const) (Rs:roles) (R':role) (Rs':roles),
-      not (  ( RoledPath R a F Rs )  )  ->
-     Path a F  ( R' :: Rs' )  ->
+ | value_type_Path : forall (R:role) (a:tm) (F:const) (R':role) (Rs:roles),
+      not (  ( RoledPath R a F )  )  ->
+     Path a F  ( R' :: Rs )  ->
      value_type R a.
 
 (* defns Jconsistent *)
@@ -1046,12 +1045,12 @@ Inductive consistent : tm -> tm -> role -> Prop :=    (* defn consistent *)
      lc_constraint phi2 ->
      lc_tm (a_CPi phi2 A2) ->
      consistent  ( (a_CPi phi1 A1) )   ( (a_CPi phi2 A2) )  R
- | consistent_a_RoledPath : forall (a1 a2:tm) (R:role) (F:const) (Rs:roles),
-     RoledPath R a1 F Rs ->
-     RoledPath R a2 F Rs ->
+ | consistent_a_RoledPath : forall (a1 a2:tm) (R:role) (F:const),
+     RoledPath R a1 F ->
+     RoledPath R a2 F ->
      consistent a1 a2 R
- | consistent_a_Path : forall (a1 a2:tm) (R:role) (a:tm) (F:const) (Rs':roles) (R':role) (Rs:roles),
-      not (  ( RoledPath R a F Rs' )  )  ->
+ | consistent_a_Path : forall (a1 a2:tm) (R:role) (a:tm) (F:const) (R':role) (Rs:roles),
+      not (  ( RoledPath R a F )  )  ->
      Path a1 F  ( R' :: Rs )  ->
      Path a2 F  ( R' :: Rs )  ->
      consistent a1 a2 R
@@ -1136,14 +1135,14 @@ Inductive Par : role_context -> tm -> tm -> role -> Prop :=    (* defn Par *)
  | Par_Refl : forall (W:role_context) (a:tm) (R:role),
      roleing W a R ->
      Par W a a R
- | Par_Beta : forall (W:role_context) (a:tm) (nu:appflag) (b a' b':tm) (R:role) (rho:relflag),
+ | Par_Beta : forall (W:role_context) (a:tm) (rho:relflag) (b a' b':tm) (R:role),
      Par W a  ( (a_UAbs rho a') )  R ->
-     Par W b b'  (app_role  nu )  ->
-     Par W (a_App a nu b)  (open_tm_wrt_tm  a'   b' )  R
- | Par_App : forall (W:role_context) (a:tm) (nu:appflag) (b a' b':tm) (R:role),
+     Par W b b' Nom ->
+     Par W (a_App a (Rho rho) b)  (open_tm_wrt_tm  a'   b' )  R
+ | Par_App : forall (W:role_context) (a:tm) (rho:relflag) (b a' b':tm) (R:role),
      Par W a a' R ->
-     Par W b b'  (app_role  nu )  ->
-     Par W (a_App a nu b) (a_App a' nu b') R
+     Par W b b' Nom ->
+     Par W (a_App a (Rho rho) b) (a_App a' (Rho rho) b') R
  | Par_CBeta : forall (W:role_context) (a a':tm) (R:role),
      Par W a  ( (a_UCAbs a') )  R ->
      Par W (a_CApp a g_Triv)  (open_tm_wrt_co  a'   g_Triv )  R
@@ -1177,19 +1176,19 @@ Inductive Par : role_context -> tm -> tm -> role -> Prop :=    (* defn Par *)
      Par W b1 b1' R0 ->
      Par W b2 b2' R0 ->
      Par W  ( (a_Pattern R a F b1 b2) )   ( (a_Pattern R a' F b1' b2') )  R0
- | Par_PatternTrue : forall (W:role_context) (R:role) (a:tm) (F:const) (b1 b2 b:tm) (R0:role) (a' b1':tm) (Rs:roles),
+ | Par_PatternTrue : forall (W:role_context) (R:role) (a:tm) (F:const) (b1 b2 b:tm) (R0:role) (a' b1':tm),
      lc_tm b2 ->
      Par W a a' R ->
      Par W b1 b1' R0 ->
-     RoledPath R a' F Rs ->
+     RoledPath R a' F ->
      ApplyArgs a' b1' b ->
      Par W  ( (a_Pattern R a F b1 b2) )  (a_CApp b g_Triv) R0
- | Par_PatternFalse : forall (W:role_context) (R:role) (a:tm) (F:const) (b1 b2 b2':tm) (R0:role) (a':tm) (Rs:roles),
+ | Par_PatternFalse : forall (W:role_context) (R:role) (a:tm) (F:const) (b1 b2 b2':tm) (R0:role) (a':tm),
      lc_tm b1 ->
      Par W a a' R ->
      Par W b2 b2' R0 ->
      Value R a' ->
-      not (  ( RoledPath R a' F Rs )  )  ->
+      not (  ( RoledPath R a' F )  )  ->
      Par W  ( (a_Pattern R a F b1 b2) )  b2' R0
 with MultiPar : role_context -> tm -> tm -> role -> Prop :=    (* defn MultiPar *)
  | MP_Refl : forall (W:role_context) (a:tm) (R:role),
@@ -1207,10 +1206,10 @@ with joins : role_context -> tm -> tm -> role -> Prop :=    (* defn joins *)
 
 (* defns Jbeta *)
 Inductive Beta : tm -> tm -> role -> Prop :=    (* defn Beta *)
- | Beta_AppAbs : forall (rho:relflag) (v:tm) (nu:appflag) (b:tm) (R1:role),
+ | Beta_AppAbs : forall (rho:relflag) (v b:tm) (R1:role),
      lc_tm b ->
      Value R1  ( (a_UAbs rho v) )  ->
-     Beta (a_App  ( (a_UAbs rho v) )  nu b)  (open_tm_wrt_tm  v   b )  R1
+     Beta (a_App  ( (a_UAbs rho v) )  (Rho rho) b)  (open_tm_wrt_tm  v   b )  R1
  | Beta_CAppCAbs : forall (a':tm) (R:role),
      lc_tm (a_UCAbs a') ->
      Beta (a_CApp  ( (a_UCAbs a') )  g_Triv)  (open_tm_wrt_co  a'   g_Triv )  R
@@ -1219,25 +1218,25 @@ Inductive Beta : tm -> tm -> role -> Prop :=    (* defn Beta *)
      MatchSubst a p b b' ->
      SubRole R1 R ->
      Beta a b' R
- | Beta_PatternTrue : forall (R:role) (a:tm) (F:const) (b1 b2 b1':tm) (R0:role) (Rs:roles),
+ | Beta_PatternTrue : forall (R:role) (a:tm) (F:const) (b1 b2 b1':tm) (R0:role),
      lc_tm b2 ->
-     RoledPath R a F Rs ->
+     RoledPath R a F ->
      ApplyArgs a b1 b1' ->
      Beta (a_Pattern R a F b1 b2) (a_CApp b1' g_Triv) R0
- | Beta_PatternFalse : forall (R:role) (a:tm) (F:const) (b1 b2:tm) (R0:role) (Rs:roles),
+ | Beta_PatternFalse : forall (R:role) (a:tm) (F:const) (b1 b2:tm) (R0:role),
      lc_tm b1 ->
      lc_tm b2 ->
      Value R a ->
-      not (  ( RoledPath R a F Rs )  )  ->
+      not (  ( RoledPath R a F )  )  ->
      Beta (a_Pattern R a F b1 b2) b2 R0
 with reduction_in_one : tm -> tm -> role -> Prop :=    (* defn reduction_in_one *)
  | E_AbsTerm : forall (L:vars) (a a':tm) (R1:role),
       ( forall x , x \notin  L  -> reduction_in_one  ( open_tm_wrt_tm a (a_Var_f x) )   ( open_tm_wrt_tm a' (a_Var_f x) )  R1 )  ->
      reduction_in_one (a_UAbs Irrel a) (a_UAbs Irrel a') R1
- | E_AppLeft : forall (a:tm) (nu:appflag) (b a':tm) (R1:role),
+ | E_AppLeft : forall (a:tm) (rho:relflag) (b a':tm) (R1:role),
      lc_tm b ->
      reduction_in_one a a' R1 ->
-     reduction_in_one (a_App a nu b) (a_App a' nu b) R1
+     reduction_in_one (a_App a (Rho rho) b) (a_App a' (Rho rho) b) R1
  | E_CAppLeft : forall (a a':tm) (R:role),
      reduction_in_one a a' R ->
      reduction_in_one (a_CApp a g_Triv) (a_CApp a' g_Triv) R
@@ -1425,9 +1424,8 @@ with DefEq : context -> available_props -> tm -> tm -> tm -> role -> Prop :=    
      DefEq G D a1 b1  ( (a_Pi Rel A B) )  R' ->
      DefEq G D a2 b2 A Nom ->
      DefEq G D (a_App a1 (Rho Rel) a2) (a_App b1 (Rho Rel) b2)  (  (open_tm_wrt_tm  B   a2 )  )  R'
- | E_TAppCong : forall (G:context) (D:available_props) (a1:tm) (R:role) (a2 b1 b2 B:tm) (R':role) (A:tm) (F:const) (Rs:roles),
+ | E_TAppCong : forall (G:context) (D:available_props) (a1:tm) (R:role) (a2 b1 b2 B:tm) (R':role) (A:tm),
      DefEq G D a1 b1  ( (a_Pi Rel A B) )  R' ->
-     RoledPath R' a1 F  ( R :: Rs )  ->
      DefEq G D a2 b2 A  (param R   R' )  ->
      DefEq G D (a_App a1 (Role R) a2) (a_App b1 (Role R) b2)  (  (open_tm_wrt_tm  B   a2 )  )  R'
  | E_IAppCong : forall (G:context) (D:available_props) (a1 b1 B a:tm) (R':role) (A:tm),
@@ -1478,9 +1476,9 @@ with DefEq : context -> available_props -> tm -> tm -> tm -> role -> Prop :=    
      DefEq G D b1 b1' B R0 ->
      DefEq G D b2 b2' B R0 ->
      DefEq G D (a_Pattern R a F b1 b2) (a_Pattern R a' F b1' b2') B R0
- | E_LeftRel : forall (G:context) (D:available_props) (a a' A B:tm) (R':role) (F:const) (R:role) (Rs:roles) (b b':tm) (R1:role),
-     RoledPath R' a F  ( R :: Rs )  ->
-     RoledPath R' a' F  ( R :: Rs )  ->
+ | E_LeftRel : forall (G:context) (D:available_props) (a a' A B:tm) (R':role) (F:const) (b b':tm) (R1:role),
+     RoledPath R' a F ->
+     RoledPath R' a' F ->
      Typing G a (a_Pi Rel A B) ->
      Typing G b A ->
      Typing G a' (a_Pi Rel A B) ->
@@ -1488,9 +1486,9 @@ with DefEq : context -> available_props -> tm -> tm -> tm -> role -> Prop :=    
      DefEq G D (a_App a (Role R1) b) (a_App a' (Role R1) b')  (open_tm_wrt_tm  B   b )  R' ->
      DefEq G  (dom  G )   (open_tm_wrt_tm  B   b )   (open_tm_wrt_tm  B   b' )  a_Star R' ->
      DefEq G D a a' (a_Pi Rel A B) R'
- | E_LeftIrrel : forall (G:context) (D:available_props) (a a' A B:tm) (R':role) (F:const) (R:role) (Rs:roles) (b b':tm) (R0:role),
-     RoledPath R' a F  ( R :: Rs )  ->
-     RoledPath R' a' F  ( R :: Rs )  ->
+ | E_LeftIrrel : forall (G:context) (D:available_props) (a a' A B:tm) (R':role) (F:const) (b b':tm) (R0:role),
+     RoledPath R' a F ->
+     RoledPath R' a' F ->
      Typing G a (a_Pi Irrel A B) ->
      Typing G b A ->
      Typing G a' (a_Pi Irrel A B) ->
@@ -1498,9 +1496,9 @@ with DefEq : context -> available_props -> tm -> tm -> tm -> role -> Prop :=    
      DefEq G D (a_App a (Rho Irrel) a_Bullet) (a_App a' (Rho Irrel) a_Bullet)  (open_tm_wrt_tm  B   b )  R' ->
      DefEq G  (dom  G )   (open_tm_wrt_tm  B   b )   (open_tm_wrt_tm  B   b' )  a_Star R0 ->
      DefEq G D a a' (a_Pi Irrel A B) R'
- | E_Right : forall (G:context) (D:available_props) (b b' A:tm) (R1 R':role) (a:tm) (F:const) (R:role) (Rs:roles) (a' B:tm) (R0:role),
-     RoledPath R' a F  ( R :: Rs )  ->
-     RoledPath R' a' F  ( R :: Rs )  ->
+ | E_Right : forall (G:context) (D:available_props) (b b' A:tm) (R1 R':role) (a:tm) (F:const) (a' B:tm) (R0:role),
+     RoledPath R' a F ->
+     RoledPath R' a' F ->
      Typing G a (a_Pi Rel A B) ->
      Typing G b A ->
      Typing G a' (a_Pi Rel A B) ->
@@ -1508,9 +1506,9 @@ with DefEq : context -> available_props -> tm -> tm -> tm -> role -> Prop :=    
      DefEq G D (a_App a (Rho Rel) b) (a_App a' (Rho Rel) b')  (open_tm_wrt_tm  B   b )  R' ->
      DefEq G  (dom  G )   (open_tm_wrt_tm  B   b )   (open_tm_wrt_tm  B   b' )  a_Star R0 ->
      DefEq G D b b' A  (param R1   R' ) 
- | E_CLeft : forall (G:context) (D:available_props) (a a' a1 a2 A:tm) (R1:role) (B:tm) (R':role) (F:const) (R:role) (Rs:roles),
-     RoledPath R' a F  ( R :: Rs )  ->
-     RoledPath R' a' F  ( R :: Rs )  ->
+ | E_CLeft : forall (G:context) (D:available_props) (a a' a1 a2 A:tm) (R1:role) (B:tm) (R':role) (F:const),
+     RoledPath R' a F ->
+     RoledPath R' a' F ->
      Typing G a (a_CPi  ( (Eq a1 a2 A R1) )  B) ->
      Typing G a' (a_CPi  ( (Eq a1 a2 A R1) )  B) ->
      DefEq G  (dom  G )  a1 a2 A R' ->

@@ -8,6 +8,7 @@ ett_ott.v
 ett_par.v
 ett_value.v
 ett_path.v
+ett_match.v
 ext_consist.v
 ext_context_fv.v
 ext_invert.v

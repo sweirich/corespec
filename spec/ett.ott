@@ -619,28 +619,27 @@ defns
    JRoledPath :: '' ::=
 
 defn
-RoledPath R a = F @ Rs  ::  :: RoledPath :: 'RoledPath_'
+RoledPath R a = F  ::  :: RoledPath :: 'RoledPath_'
 {{ com Type headed by constant (role-sensitive partial function) }}
-{{ tex \mathsf{Path}_{[[R]]}\ [[a]] = [[F]] @ [[Rs]] }}
+{{ tex \mathsf{Path}_{[[R]]}\ [[a]] = [[F]] }}
 by
 
 F : A @ Rs in toplevel
 --------------------- :: AbsConst
-RoledPath R F = F @ Rs
+RoledPath R F = F
 
 F : p ~ a : A/R1 @ Rs in toplevel
 not (R1 <= R)
 -------------------------- :: Const
-RoledPath R F = F @ Rs
+RoledPath R F = F
 
-RoledPath R a = F @ R1,Rs
-app_role nu = R1
+RoledPath R a = F
 ---------------------------- :: App
-RoledPath R (a nu b') = F @ Rs
+RoledPath R (a nu b') = F
 
-RoledPath R a = F @ Rs
+RoledPath R a = F
 ---------------------- :: CApp
-RoledPath R (a [o]) = F @ Rs
+RoledPath R (a [o]) = F
 
 
 
@@ -754,12 +753,12 @@ Value R /\c:phi.a
 --------------------- :: UCAbs
 Value R /\c .a
 
-RoledPath R a = F @ Rs
+RoledPath R a = F
 ---------------------- :: RolePath
 Value R a
 
-not (RoledPath R a = F @ Rs)
-Path a = F @ R',Rs'
+not (RoledPath R a = F)
+Path a = F @ R',Rs
 --------------------------- :: Path
 Value R a
 
@@ -781,12 +780,12 @@ ValueType R all rho x : A  -> B
 -------------------- :: CPi
 ValueType R all c : phi. B
 
-RoledPath R a = F @ Rs
+RoledPath R a = F
 ------------------------ :: RoledPath
 ValueType R a
 
-not (RoledPath R a = F @ Rs)
-Path a = F @ R',Rs'
+not (RoledPath R a = F)
+Path a = F @ R',Rs
 --------------------------- :: Path
 ValueType R a
 
@@ -812,12 +811,12 @@ consistent (all rho x1:A1 -> B1) (all rho x2:A2 -> B2) R'
 ------------------------ :: CPi
 consistent (all c1:phi1. A1) (all c2 :phi2. A2) R
 
-RoledPath R a1 = F @ Rs
-RoledPath R a2 = F @ Rs
+RoledPath R a1 = F
+RoledPath R a2 = F
 ------------------------ :: RoledPath
 consistent a1 a2 R
 
-not (RoledPath R a = F @ Rs')
+not (RoledPath R a = F)
 Path a1 = F @ R',Rs
 Path a2 = F @ R',Rs
 ------------------------------ :: Path
@@ -947,14 +946,14 @@ W |= a => a  / R
 
 
 W |= a => (\rho x.a') / R
-W |= b => b' / app_role nu
+W |= b => b' / Nom
 ---------------------------------------- :: Beta
-W |= a nu b => a' { b' / x } / R
+W |= a rho b => a' { b' / x } / R
 
 W |= a => a' / R
-W |= b => b' /  app_role nu
+W |= b => b' / Nom
 ------------------------------------------- :: App
-W |= a nu b => a' nu b' / R
+W |= a rho b => a' rho b' / R
 
 W |= a => (/\c .a')  / R
 ----------------------- :: CBeta
@@ -999,7 +998,7 @@ W |= (case R a of F => b1 | _ => b2) => (case R a' of F => b1' | _ => b2') / R0
 
 W |= a => a' / R
 W |= b1 => b1' / R0
-RoledPath R a' = F @ Rs
+RoledPath R a' = F
 apply args a' to b1' -> b
 --------------------------------------------- :: PatternTrue
 W |= (case R a of F => b1 | _ => b2) => b [o] / R0
@@ -1007,7 +1006,7 @@ W |= (case R a of F => b1 | _ => b2) => b [o] / R0
 W |= a => a' / R
 W |= b2 => b2' / R0
 Value R a'
-not (RoledPath R a' = F @ Rs)
+not (RoledPath R a' = F)
 ------------------------------------------------ :: PatternFalse
 W |= (case R a of F => b1 | _ => b2) => b2' / R0
 
@@ -1049,7 +1048,7 @@ by
 
 Value R1 (\rho x. v)
 ------------------------------------ :: AppAbs
-|= (\rho x.v) nu b > v { b / x } / R1
+|= (\rho x.v) rho b > v { b / x } / R1
 
 
 ------------------------------- :: CAppCAbs
@@ -1062,13 +1061,13 @@ R1 <= R
 ----------------------------------- :: Axiom
 |= a > b' / R
 
-RoledPath R a = F @ Rs
+RoledPath R a = F
 apply args a to b1 -> b1'
 ------------------------------------------ :: PatternTrue
 |= case R a of F => b1 | _ => b2 > b1' [o] / R0
 
 Value R a
-not (RoledPath R a = F @ Rs)
+not (RoledPath R a = F)
 ------------------------------------------ :: PatternFalse
 |= case R a of F => b1 | _ => b2 > b2 / R0
 
@@ -1083,7 +1082,7 @@ by
 
 |= a ~> a' / R1
 -------------------------  :: AppLeft
-|= a nu b ~> a' nu b / R1
+|= a rho b ~> a' rho b / R1
 
 |= a  ~> a' / R
 -----------------------------   :: CAppLeft
@@ -1368,7 +1367,6 @@ G ; D |= a2 == b2 : A/ Nom
 G ; D |= a1 + a2 == b1 + b2 : (B { a2 / x })/R'
 
 G ; D |= a1 == b1 : (all + x:A -> B)/R'
-RoledPath R' a1 = F @ R, Rs
 G ; D |= a2 == b2 : A/ param R R'
 -------------------------------------- :: TAppCong
 G ; D |= a1 R a2 == b1 R b2 : (B { a2 / x })/R'
@@ -1437,8 +1435,8 @@ G ; D |= b2 == b2' : B / R0
 ------------------------------------------------------------------------------- :: PatCong
 G ; D |= case R a of F => b1 | _ => b2 == case R a' of F => b1' | _ => b2' : B / R0
 
-RoledPath R' a  = F @ R, Rs
-RoledPath R' a' = F @ R, Rs
+RoledPath R' a  = F
+RoledPath R' a' = F
 G |= a : all +x:A  -> B
 G |= b : A
 G |= a' : all +x:A  -> B
@@ -1448,8 +1446,8 @@ G ; dom G |= B {b/x} == B {b'/x} : TYPE / R'
 -------------------------------------------------- :: LeftRel
 G ; D |= a == a' : all + x: A -> B / R'
 
-RoledPath R' a  = F @ R, Rs
-RoledPath R' a' = F @ R, Rs
+RoledPath R' a  = F
+RoledPath R' a' = F
 G |= a : all -x:A -> B
 G |= b : A
 G |= a' : all -x:A -> B
@@ -1460,8 +1458,8 @@ G ; dom G |= B {b/x} == B {b'/x} : TYPE/R0
 G ; D |= a == a' : all -x: A -> B/R'
 
 
-RoledPath R' a  = F @ R, Rs
-RoledPath R' a' = F @ R, Rs
+RoledPath R' a  = F
+RoledPath R' a' = F
 G |= a : all +x:A -> B
 G |= b : A
 G |= a' : all +x:A -> B
@@ -1472,8 +1470,8 @@ G ; dom G |= B {b/x} == B {b'/x} : TYPE/R0
 G ; D |= b == b' : A/param R1 R'
 
 
-RoledPath R' a  = F @ R, Rs
-RoledPath R' a' = F @ R, Rs
+RoledPath R' a  = F
+RoledPath R' a' = F
 G |= a  : all c:(a1 ~ a2:A/R1). B
 G |= a' : all c:(a1 ~ a2:A/R1). B
 G ; dom G |= a1 == a2 : A/R'

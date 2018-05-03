@@ -16,7 +16,7 @@ Require Import FcEtt.ext_wf.
 Require Import FcEtt.ett_roleing.
 Require Import FcEtt.ett_path.
 Import ext_wf.
-Require Import FcEtt.param.
+Require Import FcEtt.ett_match.
 
 
 (* Require Import FcEtt.erase_syntax. *)
@@ -68,7 +68,8 @@ Qed.
 Definition joins W a b R := exists c, multipar W a c R /\ multipar W b c R.
 
 Lemma Par_lc1 : forall W a a' R , Par W a a' R -> lc_tm a.
-  intros.  induction H; auto; eapply roleing_lc; eauto.
+Proof. intros.  induction H; auto. eapply roleing_lc; eauto.
+       eapply match_subst_lc1; eauto.
 Qed.
 
 (* FIXME: find a good place for this tactic. *)
@@ -85,11 +86,8 @@ Proof.
   - lc_solve.
   - lc_solve.
   - lc_solve.
-  - lc_toplevel_inversion.
-(*
-  - inversion IHPar1. constructor; auto.
-  - inversion IHPar1. constructor; auto.
-  - inversion IHPar. constructor; auto. *)
+  - eapply match_subst_lc3; eauto.
+  - econstructor. eapply apply_args_lc; eauto. auto.
 Qed.
 
 Hint Resolve Par_lc1 Par_lc2 : lc.
