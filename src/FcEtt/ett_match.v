@@ -9,23 +9,28 @@ Require Export FcEtt.ett_inf.
 Require Export FcEtt.ett_ott.
 Require Export FcEtt.ett_ind.
 
-Lemma match_subst_lc1 : forall a p b b', MatchSubst a p b b' -> lc_tm a.
-Proof. intros. induction H; auto.
+
+(* TODO: where? *)
+Generalizable All Variables.
+
+Lemma MatchSubst_lc_1 : `(MatchSubst a p b b' →  lc_tm a).
+Proof.
+  induction 1; auto.
 Qed.
 
-Lemma match_subst_lc2 : forall a p b b', MatchSubst a p b b' -> lc_tm b.
-Proof. intros. induction H; auto.
+Lemma MatchSubst_lc_2 : `(MatchSubst a p b b' →  lc_tm b).
+Proof.
+  induction 1; auto.
 Qed.
 
-Lemma match_subst_lc3 : forall a p b b', MatchSubst a p b b' -> lc_tm b'.
-Proof. intros. induction H.
-        - auto.
-        - apply tm_subst_tm_tm_lc_tm; auto.
-        - apply tm_subst_tm_tm_lc_tm; auto.
-        - apply tm_subst_tm_tm_lc_tm; auto.
-        - apply co_subst_co_tm_lc_tm; auto.
+Lemma MatchSubst_lc_3 : `(MatchSubst a p b b' →  lc_tm b').
+Proof.
+  induction 1;
+    eauto using tm_subst_tm_tm_lc_tm, co_subst_co_tm_lc_tm.
 Qed.
 
-Lemma apply_args_lc : forall a b c, ApplyArgs a b c -> lc_tm c.
-Proof. intros. induction H; auto.
+
+Lemma ApplyArgs_lc_3 : `(ApplyArgs a b c → lc_tm c).
+Proof.
+  induction 1; lc_solve.
 Qed.
