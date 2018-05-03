@@ -308,7 +308,12 @@ Scheme typing_ind' := Induction for Typing Sort Prop
    with defeq_ind' := Induction for DefEq Sort Prop
    with ctx_ind'   := Induction for Ctx Sort Prop.
 
-Combined Scheme typing_wff_iso_defeq_mutual from typing_ind', wff_ind', iso_ind', defeq_ind', ctx_ind'.
+Combined Scheme typing_wff_iso_defeq_mutual
+  from typing_ind',
+       wff_ind',
+       iso_ind',
+       defeq_ind',
+       ctx_ind'.
 
 Scheme ann_typing_ind' := Induction for AnnTyping Sort Prop
    with ann_wff_ind'   := Induction for AnnPropWff Sort Prop
@@ -316,10 +321,15 @@ Scheme ann_typing_ind' := Induction for AnnTyping Sort Prop
    with ann_defeq_ind' := Induction for AnnDefEq Sort Prop
    with ann_ctx_ind'   := Induction for AnnCtx Sort Prop.
 
+(* FIXME: somehow this doesn't work (seems to be a bug)
 Combined Scheme ann_typing_wff_iso_defeq_mutual
-from ann_typing_ind', ann_wff_ind', ann_iso_ind',
-     ann_defeq_ind', ann_ctx_ind'.
-
+  from ann_typing_ind',
+       ann_wff_ind',
+       ann_iso_ind',
+       ann_defeq_ind',
+       ann_ctx_ind'.
+*)
+Definition ann_typing_wff_iso_defeq_mutual := I. (* FIXME *)
 
 (* --------------------------------------------------- *)
 
@@ -373,7 +383,7 @@ Ltac ext_induction CON :=
       pose CON :=  E_ConsTm     |
       pose CON :=  E_ConsCo     ].
 
-
+(*
 Ltac ann_induction CON :=
     apply ann_typing_wff_iso_defeq_mutual;
     [ pose CON :=  An_SubRole    |
@@ -413,7 +423,7 @@ Ltac ann_induction CON :=
       pose CON :=  An_Empty      |
       pose CON :=  An_ConsTm     |
       pose CON :=  An_ConsCo     ].
-
+*)
 
 Ltac ensure_case C :=
   match goal with [ CON := C : ?A |- _ ] => idtac end.
@@ -684,7 +694,7 @@ Ltac Par_pick_fresh x :=
   end.
 
 
-
+(*
 Ltac An_pick_fresh x :=
   let shape := match goal with
                  | [ |- AnnTyping _   ?shape _ _   ] => shape
@@ -701,7 +711,7 @@ Ltac An_pick_fresh x :=
     | g_CAbsCong _ _ _ => An_CAbsCong
                end in
   pick fresh x and apply ctor.
-
+*)
 
 (* --------------------------------------------------------- *)
 
