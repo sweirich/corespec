@@ -10,7 +10,7 @@ Require Import FcEtt.toplevel.
 Require Import FcEtt.ett_roleing.
 Require Import FcEtt.ext_wf.
 
-Lemma Path_binds_toplevel : forall F a R, RoledPath R a F ->
+Lemma Path_binds_toplevel : forall F a R, ValuePath R a F ->
                      (exists A Rs, binds F (Cs A Rs) toplevel) \/
                      (exists p a0 A0 R0 Rs, binds F (Ax p a0 A0 R0 Rs) toplevel
                                                   /\ ~(SubRole R0 R)).
@@ -18,14 +18,14 @@ Proof. intros. induction H. left. exists A, Rs; auto.
        right. exists p, a, A, R1, Rs; auto. auto. auto.
 Qed.
 
-Lemma Path_subst : forall F a b R x, RoledPath R a F -> lc_tm b ->
-                   RoledPath R (tm_subst_tm_tm b x a) F.
+Lemma Path_subst : forall F a b R x, ValuePath R a F -> lc_tm b ->
+                   ValuePath R (tm_subst_tm_tm b x a) F.
 Proof. intros. induction H; simpl; eauto.
        econstructor; eauto with lngen lc.
 Qed.
 
-Lemma Path_subst_co : forall F a b R c, RoledPath R a F -> lc_co b ->
-                   RoledPath R (co_subst_co_tm b c a) F.
+Lemma Path_subst_co : forall F a b R c, ValuePath R a F -> lc_co b ->
+                   ValuePath R (co_subst_co_tm b c a) F.
 Proof. intros. induction H; simpl; eauto.
        econstructor; eauto with lngen lc.
 Qed.
