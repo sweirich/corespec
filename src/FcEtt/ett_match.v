@@ -36,7 +36,7 @@ Qed.
 
 Lemma match_path : forall F p a A R Rs a0 b, binds F (Ax p a A R Rs) toplevel ->
                           MatchSubst a0 p a b -> Path a0 F nil.
-Proof. intros. induction H0.
+Proof. intros. induction H0. Admitted.
 
 Lemma ApplyArgs_lc_3 : forall a b c, ApplyArgs a b c → lc_tm c.
 Proof.

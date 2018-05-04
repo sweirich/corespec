@@ -924,19 +924,19 @@ Inductive RoledPath : role -> tm -> const -> Prop :=    (* defn RoledPath *)
      RoledPath R  ( (a_CApp a g_Triv) )  F.
 
 (* defns JPatCtx *)
-Inductive PatternContexts : role_context -> context -> tm -> tm -> Prop :=    (* defn PatternContexts *)
+Inductive PatternContexts : role_context -> context -> const -> tm -> tm -> Prop :=    (* defn PatternContexts *)
  | PatCtx_Const : forall (F:const) (A:tm),
      lc_tm A ->
-     PatternContexts  nil   nil  (a_Fam F) A
- | PatCtx_PiRel : forall (L:vars) (W:role_context) (R:role) (G:context) (A' p A:tm),
-     PatternContexts W G p (a_Pi Rel A' A) ->
-      ( forall x , x \notin  L  -> PatternContexts  (( x  ~  R ) ++  W )   (( x ~ Tm  A' ) ++  G )  (a_App p (Rho Rel) (a_Var_f x))  ( open_tm_wrt_tm A (a_Var_f x) )  ) 
- | PatCtx_PiIrr : forall (L:vars) (W:role_context) (G:context) (A' p A:tm),
-     PatternContexts W G p (a_Pi Irrel A' A) ->
-      ( forall x , x \notin  L  -> PatternContexts W  (( x ~ Tm  A' ) ++  G )  (a_App p (Rho Irrel) (a_Var_f x))  ( open_tm_wrt_tm A (a_Var_f x) )  ) 
- | PatCtx_CPi : forall (L:vars) (W:role_context) (G:context) (phi:constraint) (p A:tm),
-     PatternContexts W G p (a_CPi phi A) ->
-      ( forall c , c \notin  L  -> PatternContexts W  (( c ~ Co  phi ) ++  G )  (a_CApp p (g_Var_f c))  ( open_tm_wrt_co A (g_Var_f c) )  ) .
+     PatternContexts  nil   nil  F (a_Fam F) A
+ | PatCtx_PiRel : forall (L:vars) (W:role_context) (R:role) (G:context) (A':tm) (F:const) (p A:tm),
+     PatternContexts W G F p (a_Pi Rel A' A) ->
+      ( forall x , x \notin  L  -> PatternContexts  (( x  ~  R ) ++  W )   (( x ~ Tm  A' ) ++  G )  F (a_App p (Rho Rel) (a_Var_f x))  ( open_tm_wrt_tm A (a_Var_f x) )  ) 
+ | PatCtx_PiIrr : forall (L:vars) (W:role_context) (G:context) (A':tm) (F:const) (p A:tm),
+     PatternContexts W G F p (a_Pi Irrel A' A) ->
+      ( forall x , x \notin  L  -> PatternContexts W  (( x ~ Tm  A' ) ++  G )  F (a_App p (Rho Irrel) (a_Var_f x))  ( open_tm_wrt_tm A (a_Var_f x) )  ) 
+ | PatCtx_CPi : forall (L:vars) (W:role_context) (G:context) (phi:constraint) (F:const) (p A:tm),
+     PatternContexts W G F p (a_CPi phi A) ->
+      ( forall c , c \notin  L  -> PatternContexts W  (( c ~ Co  phi ) ++  G )  F (a_CApp p (g_Var_f c))  ( open_tm_wrt_co A (g_Var_f c) )  ) .
 
 (* defns JMatchSubst *)
 Inductive MatchSubst : tm -> tm -> tm -> tm -> Prop :=    (* defn MatchSubst *)
@@ -1356,7 +1356,7 @@ with Typing : context -> tm -> tm -> Prop :=    (* defn Typing *)
      Ctx G ->
       binds  F  ( (Ax p a A R1 Rs) )   toplevel   ->
      Typing  nil  A a_Star ->
-     PatternContexts W G' p A ->
+     PatternContexts W G' F p A ->
      FoldCtxType G' p A A' ->
      Typing G (a_Fam F) A'
  | E_Case : forall (G:context) (R:role) (a:tm) (F:const) (b1 b2 C A A1 B:tm),
@@ -1537,7 +1537,7 @@ Inductive Sig : sig -> Prop :=    (* defn Sig *)
  | Sig_ConsAx : forall (S:sig) (F:const) (p a A:tm) (R:role) (W:role_context) (G:context),
      Sig S ->
       ~ AtomSetImpl.In  F  (dom  S )  ->
-     PatternContexts W G p A ->
+     PatternContexts W G F p A ->
      Typing G a A ->
      roleing W a Rep ->
      Sig  (( F ~ (Ax p a A R  (range( W )) ) )++ S ) .
