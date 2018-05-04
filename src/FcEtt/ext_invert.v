@@ -3,7 +3,8 @@ Require Import FcEtt.ett_ott.
 Require Import FcEtt.ett_inf.
 Require Import FcEtt.ett_ind.
 
-Require Import FcEtt.ett_par.
+(*
+Require Import FcEtt.ett_par.*)
 Require Import FcEtt.ext_wf.
 Require Import FcEtt.ext_weak.
 Require Import FcEtt.ext_subst.
@@ -11,15 +12,17 @@ Require Import FcEtt.ext_subst.
 Require Import FcEtt.utils.
 Require Import FcEtt.notations.
 Require Import FcEtt.param.
+Require Import FcEtt.tactics.
 
 Set Bullet Behavior "Strict Subproofs".
 Set Implicit Arguments.
 
+Generalizable All Variables.
 
-Lemma binds_to_Typing: forall G T A R, Ctx G -> binds T (Tm A R) G -> Typing G A a_Star Rep.
+Lemma binds_to_Typing: `(Ctx G -> binds T (Tm A) G -> Typing G A a_Star).
 Proof.
   induction G; try done.
-  intros T A R H H0.
+  intros T AH H0.
   rewrite_env ([a] ++ G).
   destruct a.
   induction s; subst.
@@ -39,13 +42,12 @@ Proof.
 Qed.
 
 
-Lemma invert_a_Pi:
-  forall G rho A0 A B0 R R',
-    Typing G (a_Pi rho A0 R B0) A R' ->
+Lemma invert_a_Pi: `(
+    Typing G (a_Pi rho A0 B0) A ->
     DefEq G (dom G) A a_Star a_Star Rep /\ 
       (exists L, forall x, x `notin` L -> 
-        Typing ([(x, Tm A0 R)] ++ G) (open_tm_wrt_tm B0 (a_Var_f x)) a_Star R') 
-          /\ Typing G A0 a_Star R'.
+        Typing ([(x, Tm A0)] ++ G) (open_tm_wrt_tm B0 (a_Var_f x)) a_Star) 
+          /\ Typing G A0 a_Star).
 Proof.
   intros G rho A0 A B0 R R' h1.
   dependent induction h1; auto; try done.
@@ -59,15 +61,15 @@ Proof.
     destruct R0; eapply E_Trans; eauto 2.
 Qed.
 
-Lemma invert_a_CPi: forall G phi A B0 R,
-    Typing G (a_CPi phi B0) A R ->
+Lemma invert_a_CPi: `(
+    Typing G (a_CPi phi B0) A ->
       DefEq G (dom G) A a_Star a_Star Rep /\ 
       (exists L, forall c, c `notin` L -> 
-                 Typing ([(c, Co phi)] ++ G) (open_tm_wrt_co B0 (g_Var_f c) ) a_Star R)  
-      /\ PropWff G phi.
+                 Typing ([(c, Co phi)] ++ G) (open_tm_wrt_co B0 (g_Var_f c) ) a_Star)  
+      /\ PropWff G phi).
 Proof.
-  intros G phi A B0 R h1.
-  dependent induction h1; eauto 2; try done.
+  intros until 0.
+  intro h; dependent induction h; eauto 2; try done.
   - destruct (IHh1 phi B0) as [h2 [L h3]]; first by done.
     repeat split; eauto 1. inversion L as [L0 h4].
     exists L0. intros. eapply E_SubRole. apply H. auto.
@@ -79,12 +81,12 @@ Proof.
 Qed.
 
 
-Lemma invert_a_Fam : forall G F A R,
-    Typing G (a_Fam F) A R ->
+Lemma invert_a_Fam : `(
+    Typing G (a_Fam F) A ->
     (exists B, DefEq G (dom G) A B a_Star Rep /\
-           binds F (Cs B) toplevel /\ Typing nil B a_Star Rep) \/
+           binds F (Cs B) toplevel /\ Typing nil B a_Star) \/
     (exists a B R', DefEq G (dom G) A B a_Star Rep /\
-           binds F (Ax a B R') toplevel /\ Typing nil B a_Star Rep).
+           binds F (Ax a B R') toplevel /\ Typing nil B a_Star)).
 Proof.
   intros G F A R H. dependent induction H.
   - destruct (IHTyping F) as [(B & h1 & h2 & h3) | (a & B1 & R' & h0 & h1 & h3)]; try done.
@@ -110,23 +112,22 @@ Proof.
 Qed.
 
 
-Lemma invert_a_Star: forall A G R, Typing G a_Star A R -> 
-                              DefEq G (dom G) A a_Star a_Star Rep.
+Lemma invert_a_Star: `(Typing G a_Star A →
+                       DefEq G (dom G) A a_Star a_Star Rep).
 Proof.
-  intros A G R H.
+  intros A G H.
   dependent induction H; subst; eauto 2; try done.
   eauto.
   eauto 4. 
 Qed.
 
 
-Lemma invert_a_Var :
-  forall G x A R, Typing G (a_Var_f x) A R -> 
-             exists A' R', binds x (Tm A' R') G 
-                      /\ DefEq G (dom G) A A' a_Star Rep
-                      /\ SubRole R' R.
+Lemma invert_a_Var: `(
+  Typing G (a_Var_f x) A -> 
+             exists A', binds x (Tm A') G 
+                      /\ DefEq G (dom G) A A' a_Star Rep).
 Proof.
-  intros G x A R H. dependent induction H. 
+  intros G x A H. dependent induction H. 
   - destruct (IHTyping x eq_refl) as (A0 & R0 & h1 & h2 & h3).
     exists A0, R0. repeat split; eauto 2.
   - exists A, R. repeat split; auto. 
@@ -187,9 +188,9 @@ Ltac un_subst_tm :=
 
 (* --------------------------------------------------------------- *)
 
-Lemma Typing_regularity : forall e A G R, Typing G e A R -> Typing G A a_Star Rep.
+Lemma Typing_regularity: `(Typing G e A -> Typing G A a_Star).
 Proof.
-  intros e A G R H1.
+  intros e A G H1.
   induction H1; intros; eauto.
   - eapply binds_to_Typing; eauto.
   - apply invert_a_Pi in IHTyping1; eauto.
@@ -221,7 +222,7 @@ Qed.
 
 (* --------------------------------------------------- *)
 
-Lemma refl_iso: forall G D phi , PropWff G phi  -> Iso G D phi phi .
+Lemma refl_iso: `(PropWff G phi  -> Iso G D phi phi).
 Proof.
   intros G D phi  H.
   destruct phi.
@@ -232,7 +233,7 @@ Proof.
 Qed.
 
 
-Lemma sym_iso: forall G D phi1 phi2  , Iso G D phi1 phi2  -> Iso G D phi2 phi1 .
+Lemma sym_iso: `(Iso G D phi1 phi2 → Iso G D phi2 phi1).
 Proof.
   intros G D phi1 phi2  H.
   induction H.
@@ -246,22 +247,21 @@ Qed.
 (* --------------------------------------------------- *)
 
 
-Lemma invert_a_UAbs:
-  forall G rho A R1 R b0,
-    Typing G (a_UAbs rho R1 b0) A R
-    -> exists A1 B1, DefEq G (dom G) A (a_Pi rho A1 R1 B1) a_Star Rep
+Lemma invert_a_UAbs: `(
+    Typing G (a_UAbs rho b0) A
+    -> exists A1 B1, DefEq G (dom G) A (a_Pi rho A1 B1) a_Star Rep
                /\ (exists L, forall x, x `notin` L ->
-                            Typing ([(x, Tm A1 R1)] ++ G)
+                            Typing ([(x, Tm A1)] ++ G)
                                    (open_tm_wrt_tm b0 (a_Var_f x))
-                                   (open_tm_wrt_tm B1 (a_Var_f x)) R
-                            /\ Typing ([(x, Tm A1 R1)] ++ G)
-                                     (open_tm_wrt_tm B1 (a_Var_f x)) a_Star Rep
+                                   (open_tm_wrt_tm B1 (a_Var_f x))
+                            /\ Typing ([(x, Tm A1)] ++ G)
+                                     (open_tm_wrt_tm B1 (a_Var_f x)) a_Star
                             /\ RhoCheck rho x (open_tm_wrt_tm b0 (a_Var_f x))
                             )
-               /\ Typing G A1 a_Star Rep.
+               /\ Typing G A1 a_Star).
 Proof.
-  intros G rho A R1 R b0.
-  move e: (a_UAbs rho R1 b0) => t1.
+  intros G rho A b0.
+  move e: (a_UAbs rho b0) => t1.
   move => h0.
   induction h0; auto; try done.
   inversion e; subst.
@@ -293,18 +293,18 @@ Proof.
 Qed.
 
 
-Lemma invert_a_UCAbs: forall G A R b0,
-    Typing G (a_UCAbs b0) A R ->
+Lemma invert_a_UCAbs: `(
+    Typing G (a_UCAbs b0) A ->
     exists a b T R' B1, PropWff G (Eq a b T R') 
                 /\ DefEq G (dom G) A (a_CPi (Eq a b T R') B1) a_Star Rep /\
                 (exists L, forall c, c `notin` L ->
                            Typing ([(c, Co (Eq a b T R'))] ++ G)
                                   (open_tm_wrt_co b0 (g_Var_f c))
-                                  (open_tm_wrt_co B1 (g_Var_f c)) R /\
+                                  (open_tm_wrt_co B1 (g_Var_f c)) /\
                            Typing ([(c, Co (Eq a b T R'))] ++ G)
-                                  (open_tm_wrt_co B1 (g_Var_f c)) a_Star Rep).
+                                  (open_tm_wrt_co B1 (g_Var_f c)) a_Star)).
 Proof.
-  intros G A R b0.
+  intros G A b0.
   move e: (a_UCAbs b0) => t1.
   move => h0.
   induction h0; auto; try done.
@@ -339,14 +339,14 @@ Proof.
 Qed.
 
 
-Lemma invert_a_App_Rel : forall G a b C R R',
-    Typing G (a_App a Rel R b) C R' ->
-    exists A B, Typing G a (a_Pi Rel A R B) R' /\
-           Typing G b A (param R R') /\
-           DefEq G (dom G) C (open_tm_wrt_tm B b) a_Star Rep.
+Lemma invert_a_App_Rel: `(
+    Typing G (a_App a R b) C ->
+    exists A B, Typing G a (a_Pi Rel A B) /\
+           Typing G b A /\
+           DefEq G (dom G) C (open_tm_wrt_tm B b) a_Star Rep).
 Proof.
-  intros G a b C R R'.
-  move e : (a_App a Rel R b) => t1.
+  intros until 0.
+  move e : (a_App a (Rho Rel) b) => t1.
   move => h1.
   induction h1; auto; try done.
   - destruct (IHh1 e) as [A0 [B [R3 [h0 h2]]]].
@@ -366,12 +366,12 @@ Proof.
     apply (E_Trans _ _ _ _ _ _ A); auto.
 Qed.
 
-Lemma invert_a_App_Irrel : forall G a b C R R',
-    Typing G (a_App a Irrel R b) C R' ->
-    exists A B b0, Typing G a (a_Pi Irrel A R B) R' /\
-              Typing G b0 A (param R R') /\
+Lemma invert_a_App_Irrel: `(
+    Typing G (a_App a (Rho Irrel) b) C ->
+    exists A B b0, Typing G a (a_Pi Irrel A B) /\
+              Typing G b0 A /\
               b = a_Bullet /\
-              DefEq G (dom G) C (open_tm_wrt_tm B b0) a_Star Rep.
+              DefEq G (dom G) C (open_tm_wrt_tm B b0) a_Star Rep).
 Proof.
   intros G a b C R R'.
   move e : (a_App a Irrel R b) => t1.
@@ -394,12 +394,12 @@ Proof.
     apply (E_Trans _ _ _ _ _ _ A); auto.
 Qed.
 
-Lemma invert_a_CApp : forall G a g A R,
-    Typing G (a_CApp a g) A R ->
+Lemma invert_a_CApp : `(
+    Typing G (a_CApp a g) A ->
     g = g_Triv /\
-    exists a1 b1 A1 R1 B, Typing G a (a_CPi (Eq a1 b1 A1 R1) B) R /\
+    exists a1 b1 A1 R1 B, Typing G a (a_CPi (Eq a1 b1 A1 R1) B) /\
              DefEq G (dom G) a1 b1 A1 (param R1 R) /\
-             DefEq G (dom G) A (open_tm_wrt_co B g_Triv) a_Star Rep. 
+             DefEq G (dom G) A (open_tm_wrt_co B g_Triv) a_Star Rep). 
 Proof.
   intros G a g A R H.
   dependent induction H.
@@ -425,10 +425,10 @@ Proof.
     eauto using param_sub1.
 Qed.
 
-Lemma invert_a_Pattern : forall G R F a b1 b2 B R',
-      Typing G (a_Pattern R (a_Fam F) a b1 b2) B R' ->
-      exists A s B0, binds F s toplevel /\ Typing G a A R /\
-         Typing G b1 B0 R' /\ Typing G b2 B0 R' /\ DefEq G (dom G) B B0 a_Star Rep.
+Lemma invert_a_Pattern : `(
+      Typing G (a_Pattern R a F b1 b2) B ->
+      exists A s B0, binds F s toplevel /\ Typing G a A /\
+         Typing G b1 B0 /\ Typing G b2 B0 /\ DefEq G (dom G) B B0 a_Star Rep).
 Proof. intros. dependent induction H.
         - destruct (IHTyping R F a b1 b2 ltac:(auto)) as
           [A0 [s [B0 [P1 [P2 [P3 [P4 P5]]]]]]].
@@ -446,11 +446,11 @@ Qed.
 
 Inductive context_DefEq : available_props -> context -> context -> Prop :=
 | Nul_Eqcontext: forall D, context_DefEq D nil nil
-| Factor_Eqcontext_tm: forall G1 G2 D A A' R x,
+| Factor_Eqcontext_tm: forall G1 G2 D A A' x,
     context_DefEq D G1 G2 ->
     DefEq G1 D A A' a_Star Rep ->
     DefEq G2 D A A' a_Star Rep ->
-    context_DefEq D ([(x, Tm A R)] ++ G1) ([(x, Tm A' R)] ++ G2)
+    context_DefEq D ([(x, Tm A)] ++ G1) ([(x, Tm A')] ++ G2)
 | Factor_Eqcontext_co: forall D G1 G2 Phi1 Phi2 c,
     context_DefEq D G1 G2 ->
     Iso G1 D Phi1 Phi2  ->
@@ -459,11 +459,11 @@ Inductive context_DefEq : available_props -> context -> context -> Prop :=
 
 Hint Constructors context_DefEq.
 
-Lemma context_tm_binding_defeq: forall D (G1 G2: context) A R x,
+Lemma context_tm_binding_defeq: forall D (G1 G2: context) A x,
     Ctx G1 -> Ctx G2 -> context_DefEq D G1 G2 ->
-    binds x (Tm A R) G1 -> exists A', (binds x (Tm A' R) G2) /\ DefEq G2 D A A' a_Star Rep.
+    binds x (Tm A) G1 -> exists A', (binds x (Tm A') G2) /\ DefEq G2 D A A' a_Star Rep.
 Proof.
-  intros D G1 G2 A R x H1 h0 H H0.
+  intros D G1 G2 A x H1 h0 H H0.
   induction H; try done.
   - case H0; simpl.
     + intros M4.
@@ -472,7 +472,7 @@ Proof.
          -- left.
             inversion M4; auto.
          -- inversion M4; subst; clear M4.
-            rewrite_env (nil ++ [(x, Tm A' R)] ++ G2).
+            rewrite_env (nil ++ [(x, Tm A')] ++ G2).
             pose K := DefEq_weakening.
             inversion h0; subst.
             inversion H1; subst.
@@ -485,7 +485,7 @@ Proof.
       * intros A2 [h1 h2].
          exists A2.
          split; auto.
-         rewrite_env (nil ++ [(x0, Tm A' R0)] ++ G2).
+         rewrite_env (nil ++ [(x0, Tm A')] ++ G2).
          pose K := DefEq_weakening.
          eapply K; eauto.
   - case H0; try done; simpl.
@@ -560,7 +560,7 @@ Lemma context_DefEq_weaken_available :
 Proof.
   induction 1.
   eauto.
-  assert (SUB : (dom G1) [<=] (dom ([(x,Tm A R)] ++ G1))). simpl. fsetdec.
+  assert (SUB : (dom G1) [<=] (dom ([(x,Tm A)] ++ G1))). simpl. fsetdec.
   econstructor; auto.
   apply (context_DefEq_sub IHcontext_DefEq SUB).
   eapply (fourth weaken_available_mutual G1).
@@ -580,16 +580,16 @@ Qed.
 
 
 Lemma context_DefEq_mutual:
-  (forall G1  a A R,   Typing G1 a A R -> forall D G2,
-        Ctx G2 -> context_DefEq D G1 G2 -> Typing G2 a A R) /\
+  (forall G1  a A,   Typing G1 a A -> forall D G2,
+        Ctx G2 -> context_DefEq D G1 G2 -> Typing G2 a A) /\
   (forall G1  phi ,   PropWff G1 phi -> forall D G2,
         Ctx G2 -> context_DefEq D G1 G2 -> PropWff G2 phi ) /\
   (forall G1 D p1 p2 , Iso G1 D p1 p2  ->
                   forall G2, Ctx G2 -> context_DefEq D G1 G2 -> Iso G2 D p1 p2 ) /\
   (forall G1 D1 A B T R,   DefEq G1 D1 A B T R -> forall G2, Ctx G2 -> context_DefEq D1 G1 G2 ->
                                           DefEq G2 D1 A B T R) /\
-  (forall G1 ,       Ctx G1 -> forall G2 D x A R, Ctx G2 -> context_DefEq D G1 G2
-                                   -> binds x (Tm A R) G1 -> Typing G2 A a_Star Rep).
+  (forall G1 ,       Ctx G1 -> forall G2 D x A, Ctx G2 -> context_DefEq D G1 G2
+                                   -> binds x (Tm A) G1 -> Typing G2 A a_Star).
 Proof.
   (* apply typing_wff_iso_defeq_mutual; *)
   ext_induction con; 
@@ -743,8 +743,8 @@ Proof.
 Qed.
 
 Lemma context_DefEq_typing:
-  forall G1  a A R,
-    Typing G1 a A R -> forall D G2, Ctx G2 -> context_DefEq D G1 G2 -> Typing G2 a A R.
+  forall G1  a A,
+    Typing G1 a A -> forall D G2, Ctx G2 -> context_DefEq D G1 G2 -> Typing G2 a A.
 Proof.
   apply context_DefEq_mutual.
 Qed.
@@ -765,12 +765,12 @@ Qed.
 
 
 Lemma DefEqIso_regularity :
-  (forall G0 a A R, Typing G0 a A R -> True ) /\
+  (forall G0 a A, Typing G0 a A -> True ) /\
   (forall G0 phi ,  PropWff G0 phi  -> True ) /\
   (forall G D p1 p2 , Iso G D p1 p2  ->
                  PropWff G p1  /\ PropWff G p2 ) /\
   (forall G D A B T R,   DefEq G D A B T R ->
-                  Typing G A T R /\ Typing G B T R) /\
+                  Typing G A T /\ Typing G B T) /\
   (forall G0, Ctx G0 -> True).
 Proof.
   ext_induction con; eauto; try done.
@@ -988,8 +988,7 @@ Proof.
 Qed.
 
 
-Lemma PropWff_regularity :
-  forall G A B T R, PropWff G (Eq A B T R) ->  Typing G A T R /\ Typing  G B T R.
+Lemma PropWff_regularity : `( PropWff G (Eq A B T R) ->  Typing G A T /\ Typing  G B T).
 Proof.
   intros G A B T R H.
   inversion H; subst.
@@ -1000,7 +999,7 @@ Qed.
 
 Lemma DefEq_conv : forall G D a b A B R, DefEq G D a b A R -> 
                   DefEq G (dom G) A B a_Star Rep -> 
-                  Typing G B a_Star R ->
+                  Typing G B a_Star ->
                   DefEq G D a b B R.
 Proof.
   intros. eauto.
@@ -1062,13 +1061,13 @@ Lemma iso_cong : forall G D A A' B B' T T' R,
       move: (DefEq_regularity H0) => p1. inversion p1.
       move: (DefEq_regularity H1) => p2. inversion p2.
       subst.
-      have AT: Typing G A T' R.
+      have AT: Typing G A T'.
       eapply E_Conv; eauto using DefEq_weaken_available.
-      have AT': Typing G A' T' R.
+      have AT': Typing G A' T'.
       eapply E_Conv; eauto using DefEq_weaken_available.
-      have BT: Typing G B T' R.
+      have BT: Typing G B T'.
       eapply E_Conv; eauto using DefEq_weaken_available.
-      have BT': Typing G B' T' R.
+      have BT': Typing G B' T'.
       eapply E_Conv; eauto using DefEq_weaken_available.
       have IA: Iso G D (Eq A A' T R) (Eq A A' T' R).
       eapply E_IsoConv; eauto 2.
@@ -1081,35 +1080,35 @@ Lemma iso_cong : forall G D A A' B B' T T' R,
 
 
 (* ----------------------------------------------------------------------------- *)
-Lemma E_PiCong2 :  ∀ (L : atoms) (G : context) (D : available_props) rho (A1 B1 A2 B2 : tm) R R',
+Lemma E_PiCong2 :  ∀ (L : atoms) (G : context) (D : available_props) rho (A1 B1 A2 B2 : tm) R',
     DefEq G D A1 A2 a_Star R'
     → (∀ x : atom,
           x `notin` L
-          → DefEq ([(x, Tm A1 R)] ++ G) D (open_tm_wrt_tm B1 (a_Var_f x))
+          → DefEq ([(x, Tm A1)] ++ G) D (open_tm_wrt_tm B1 (a_Var_f x))
                   (open_tm_wrt_tm B2 (a_Var_f x)) a_Star R')
-    → DefEq G D (a_Pi rho A1 R B1) (a_Pi rho A2 R B2) a_Star R'.
+    → DefEq G D (a_Pi rho A1 B1) (a_Pi rho A2 B2) a_Star R'.
 Proof.
   intros.
   move: (DefEq_regularity H) => WFF.
   inversion WFF. subst.
-  assert (Typing G A1 a_Star R'). eauto 1.
-  assert (Typing G (a_Pi rho A1 R B1) a_Star R').
+  assert (Typing G A1 a_Star). eauto 1.
+  assert (Typing G (a_Pi rho A1 B1) a_Star).
   {  eapply (E_Pi L); eauto 1. intros x Fr.
      move: (DefEq_regularity (H0 x Fr)) => WFF2.
      inversion WFF2. subst. eauto 1.  }
-  assert (Typing G (a_Pi rho A2 R B2) a_Star R').
+  assert (Typing G (a_Pi rho A2 B2) a_Star).
   {
      eapply (E_Pi L); eauto 1. intros x Fr.
      move: (DefEq_regularity (H0 x Fr)) => WFF2.
      inversion WFF2. subst.
-     have CTX: Ctx (x ~ Tm A1 R ++ G) by eauto.
+     have CTX: Ctx (x ~ Tm A1 ++ G) by eauto.
      inversion CTX. subst.
      eapply context_DefEq_typing; eauto 1.
      eapply E_ConsTm; eauto 1.
      econstructor; eauto 1.
      apply refl_context_defeq. eauto 1.
-      eauto using E_SubRole.
-     eauto using E_SubRole. }
+      eauto.
+     eauto. }
   eapply E_PiCong; eauto 1.
 Qed.
 
@@ -1125,11 +1124,11 @@ Proof.
   intros.
   move: (Iso_regularity H) => [h0 h1].
   inversion h0. inversion h1. subst.
-  assert (Typing G (a_CPi (Eq a0 b0 T0 R) A) a_Star R').
+  assert (Typing G (a_CPi (Eq a0 b0 T0 R) A) a_Star).
   { eapply (E_CPi L); eauto 1. intros x Fr.
     move: (DefEq_regularity (H0 x Fr)) => WFF2.
     inversion WFF2. subst. eauto 1. }
-  assert (Typing G (a_CPi (Eq a1 b1 T1 R) B) a_Star R').
+  assert (Typing G (a_CPi (Eq a1 b1 T1 R) B) a_Star).
   { eapply (E_CPi L); eauto 1. intros x Fr.
     move: (DefEq_regularity (H0 x Fr)) => WFF2.
     inversion WFF2. subst.
@@ -1157,23 +1156,23 @@ Proof.
   inversion h1. auto.
 Qed. *)
 
-Lemma E_Abs2 : ∀ (L : atoms) (G : context) (rho : relflag) (a A B : tm) R R',
+Lemma E_Abs2 : ∀ (L : atoms) (G : context) (rho : relflag) (a A B : tm),
     (∀ x : atom,
-        x `notin` L → Typing ([(x, Tm A R)] ++ G) (open_tm_wrt_tm a (a_Var_f x)) (open_tm_wrt_tm B (a_Var_f x)) R')
+        x `notin` L → Typing ([(x, Tm A)] ++ G) (open_tm_wrt_tm a (a_Var_f x)) (open_tm_wrt_tm B (a_Var_f x)))
     → (∀ x : atom, x `notin` L → RhoCheck rho x (open_tm_wrt_tm a (a_Var_f x)))
-    → Typing G (a_UAbs rho R a) (a_Pi rho A R B) R'.
+    → Typing G (a_UAbs rho a) (a_Pi rho A B).
 Proof.
   intros.
   eapply E_Abs; eauto.
   pick fresh x.
   move: (H x ltac:(auto)) => h0.
-  have h1: Ctx (x ~ Tm A R ++ G) by eauto.
-  inversion h1. eauto. Unshelve. auto.
+  have h1: Ctx (x ~ Tm A ++ G) by eauto.
+  inversion h1. eauto.
 Qed.
 
-Lemma E_Conv2 : ∀ (G : context) (a B A : tm) R,
-    Typing G a A R → DefEq G (dom G) A B a_Star Rep →
-    Typing G a B R.
+Lemma E_Conv2 : ∀ (G : context) (a B A : tm),
+    Typing G a A → DefEq G (dom G) A B a_Star Rep →
+    Typing G a B.
 Proof.
   intros.
   eapply E_Conv; eauto 2.
@@ -1182,9 +1181,9 @@ Proof.
   eauto.
 Qed.
 
-Lemma E_CPi2 :  ∀ (L : atoms) (G : context) (phi : constraint) (B : tm) R,
-    (∀ c : atom, c `notin` L → Typing ([(c, Co phi)] ++ G) (open_tm_wrt_co B (g_Var_f c)) a_Star R) ->
-    Typing G (a_CPi phi B) a_Star R.
+Lemma E_CPi2 :  ∀ (L : atoms) (G : context) (phi : constraint) (B : tm),
+    (∀ c : atom, c `notin` L → Typing ([(c, Co phi)] ++ G) (open_tm_wrt_co B (g_Var_f c)) a_Star) ->
+    Typing G (a_CPi phi B) a_Star.
 Proof.
   intros.
   eapply E_CPi; eauto.
@@ -1194,10 +1193,10 @@ Proof.
   inversion h1. auto. Unshelve. exact Rep.
 Qed.
 
-Lemma E_CAbs2 : ∀ (L : atoms) (G : context) (a : tm) (phi : constraint) (B : tm) R,
+Lemma E_CAbs2 : ∀ (L : atoms) (G : context) (a : tm) (phi : constraint) (B : tm),
        (∀ c : atom,
-        c `notin` L → Typing ([(c, Co phi)] ++ G) (open_tm_wrt_co a (g_Var_f c)) (open_tm_wrt_co B (g_Var_f c)) R)
-       → Typing G (a_UCAbs a) (a_CPi phi B) R.
+        c `notin` L → Typing ([(c, Co phi)] ++ G) (open_tm_wrt_co a (g_Var_f c)) (open_tm_wrt_co B (g_Var_f c)))
+       → Typing G (a_UCAbs a) (a_CPi phi B).
 Proof.
   intros.
   eapply E_CAbs; eauto.
@@ -1212,18 +1211,18 @@ Lemma E_AbsCong2
      : ∀ (L : atoms) (G : context) (D : available_props) (rho : relflag) (b1 b2 A1 B : tm) R R',
        (∀ x : atom,
         x `notin` L
-        → DefEq ([(x, Tm A1 R)] ++ G) D (open_tm_wrt_tm b1 (a_Var_f x)) (open_tm_wrt_tm b2 (a_Var_f x))
+        → DefEq ([(x, Tm A1)] ++ G) D (open_tm_wrt_tm b1 (a_Var_f x)) (open_tm_wrt_tm b2 (a_Var_f x))
             (open_tm_wrt_tm B (a_Var_f x)) R')
        → (∀ x : atom, x `notin` L → RhoCheck rho x (open_tm_wrt_tm b1 (a_Var_f x)))
        → (∀ x : atom, x `notin` L → RhoCheck rho x (open_tm_wrt_tm b2 (a_Var_f x)))
        -> SubRole R R'
-       → DefEq G D (a_UAbs rho R b1) (a_UAbs rho R b2) (a_Pi rho A1 R B) R'.
+       → DefEq G D (a_UAbs rho b1) (a_UAbs rho b2) (a_Pi rho A1 B) R'.
 Proof.
   intros.
   eapply E_AbsCong; eauto.
   pick fresh x.
   move: (H x ltac:(auto)) => h0.
-  have h1: Ctx (x ~ Tm A1 R ++ G) by eauto 2.
+  have h1: Ctx (x ~ Tm A1 ++ G) by eauto 2.
   inversion h1; eauto.
 Qed.
 
@@ -1254,7 +1253,7 @@ Proof.
 Qed.
 
 
-Lemma E_Wff2 : ∀ (G : context) (a b A : tm) R, Typing G a A R → Typing G b A R → PropWff G (Eq a b A R).
+Lemma E_Wff2 : ∀ (G : context) (a b A : tm) R, Typing G a A → Typing G b A → PropWff G (Eq a b A R).
 Proof.
   intros.
   eapply E_Wff; eauto 2.
