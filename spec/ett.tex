@@ -976,16 +976,8 @@
 \ottpremise{ \Omega  \vDash  \ottnt{a}  :  \ottnt{R} }%
 \ottpremise{ \Omega  \vDash  \ottnt{b}  :  \ottkw{Nom} }%
 }{
- \Omega  \vDash  \ottsym{(}   \ottnt{a} \  \ottnt{b} ^{ \ottsym{+} }   \ottsym{)}  :  \ottnt{R} }{%
+ \Omega  \vDash  \ottsym{(}   \ottnt{a} \  \ottnt{b} ^{ \rho }   \ottsym{)}  :  \ottnt{R} }{%
 {\ottdrulename{role\_a\_App}}{}%
-}}
-
-
-\newcommand{\ottdruleroleXXaXXIApp}[1]{\ottdrule[#1]{%
-\ottpremise{ \Omega  \vDash  \ottnt{a}  :  \ottnt{R} }%
-}{
- \Omega  \vDash   \ottnt{a} \  \Box ^{ \ottsym{-} }   :  \ottnt{R} }{%
-{\ottdrulename{role\_a\_IApp}}{}%
 }}
 
 
@@ -1068,7 +1060,6 @@
 \ottusedrule{\ottdruleroleXXaXXVar{}}
 \ottusedrule{\ottdruleroleXXaXXAbs{}}
 \ottusedrule{\ottdruleroleXXaXXApp{}}
-\ottusedrule{\ottdruleroleXXaXXIApp{}}
 \ottusedrule{\ottdruleroleXXaXXTApp{}}
 \ottusedrule{\ottdruleroleXXaXXPi{}}
 \ottusedrule{\ottdruleroleXXaXXCPi{}}
@@ -2132,7 +2123,7 @@
 \ottall
 
 \begin{verbatim}
-Definition rules:        147 good    0 bad
-Definition rule clauses: 411 good    0 bad
+Definition rules:        146 good    0 bad
+Definition rule clauses: 409 good    0 bad
 \end{verbatim}
 \end{document}

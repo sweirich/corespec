@@ -13,7 +13,6 @@ Require Export FcEtt.fix_typing.
 
 (**** Facts about toplevel signatures ****)
 
-
 (* --------------------------------------------------- *)
 (*
 Lemma uniq_an_toplevel : uniq an_toplevel.

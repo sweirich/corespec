@@ -1070,13 +1070,10 @@ Inductive roleing : role_context -> tm -> role -> Prop :=    (* defn roleing *)
  | role_a_Abs : forall (L:vars) (W:role_context) (rho:relflag) (a:tm) (R:role),
       ( forall x , x \notin  L  -> roleing  (( x  ~  Nom ) ++  W )   ( open_tm_wrt_tm a (a_Var_f x) )  R )  ->
      roleing W  ( (a_UAbs rho a) )  R
- | role_a_App : forall (W:role_context) (a b:tm) (R:role),
+ | role_a_App : forall (W:role_context) (a:tm) (rho:relflag) (b:tm) (R:role),
      roleing W a R ->
      roleing W b Nom ->
-     roleing W  ( (a_App a (Rho Rel) b) )  R
- | role_a_IApp : forall (W:role_context) (a:tm) (R:role),
-     roleing W a R ->
-     roleing W (a_App a (Rho Irrel) a_Bullet) R
+     roleing W  ( (a_App a (Rho rho) b) )  R
  | role_a_TApp : forall (W:role_context) (a:tm) (R1:role) (b:tm) (R:role) (F:const) (Rs:roles),
      roleing W a R ->
      Path a F  ( R1 :: Rs )  ->
