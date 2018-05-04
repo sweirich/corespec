@@ -10,25 +10,24 @@ Require Export FcEtt.ett_ott.
 Require Export FcEtt.ett_ind.
 Require Export FcEtt.fix_typing.
 
-Lemma match_subst_lc1 : forall a p b b', MatchSubst a p b b' -> lc_tm a.
-Proof. intros. induction H; auto.
+
+(* TODO: where? *)
+Generalizable All Variables.
+
+Lemma MatchSubst_lc_1 : `(MatchSubst a p b b' →  lc_tm a).
+Proof.
+  induction 1; auto.
 Qed.
 
-Lemma match_subst_lc2 : forall a p b b', MatchSubst a p b b' -> lc_tm b.
-Proof. intros. induction H; auto.
+Lemma MatchSubst_lc_2 : `(MatchSubst a p b b' →  lc_tm b).
+Proof.
+  induction 1; auto.
 Qed.
 
-Lemma match_subst_lc3 : forall a p b b', MatchSubst a p b b' -> lc_tm b'.
-Proof. intros. induction H.
-        - auto.
-        - apply tm_subst_tm_tm_lc_tm; auto.
-        - apply tm_subst_tm_tm_lc_tm; auto.
-        - apply tm_subst_tm_tm_lc_tm; auto.
-        - apply co_subst_co_tm_lc_tm; auto.
-Qed.
-
-Lemma apply_args_lc : forall a b c, ApplyArgs a b c -> lc_tm c.
-Proof. intros. induction H; auto.
+Lemma MatchSubst_lc_3 : `(MatchSubst a p b b' →  lc_tm b').
+Proof.
+  induction 1;
+    eauto using tm_subst_tm_tm_lc_tm, co_subst_co_tm_lc_tm.
 Qed.
 
 Lemma ax_const_rs : forall F F0 a A R Rs S, Sig S ->
@@ -41,3 +40,8 @@ Qed.
 Lemma match_path : forall F p a A R Rs a0 b, binds F (Ax p a A R Rs) toplevel ->
                           MatchSubst a0 p a b -> Path a0 F nil.
 Proof. intros. induction H0.
+
+Lemma ApplyArgs_lc_3 : `(ApplyArgs a b c → lc_tm c).
+Proof.
+  induction 1; lc_solve.
+Qed.

@@ -9,12 +9,12 @@ Require Export FcEtt.ett_inf.
 Require Export FcEtt.ett_ott.
 Require Export FcEtt.ett_ind.
 
-
 Require Export FcEtt.ext_context_fv.
 
 Require Import FcEtt.ext_wf.
 Require Import FcEtt.ett_roleing.
 Require Import FcEtt.ett_path.
+
 Import ext_wf.
 Require Import FcEtt.ett_match.
 
@@ -27,7 +27,7 @@ Require Export FcEtt.ett_value.
 
 
 Lemma par_app_rctx : forall W1 W2 W3 a a' R, uniq (W1 ++ W2 ++ W3) ->
-                     Par (W1 ++ W3) a a' R -> 
+                     Par (W1 ++ W3) a a' R ->
                      Par (W1 ++ W2 ++ W3) a a' R.
 Proof. intros W1 W2 W3 a a' R U H. generalize dependent W2.
        dependent induction H; intros; eauto.
@@ -51,13 +51,13 @@ Qed.
 
 Inductive multipar W ( a : tm) : tm -> role -> Prop :=
 | mp_refl : forall R, roleing W a R -> multipar W a a R
-| mp_step : forall R b c, Par W a b R -> multipar W b c R -> 
+| mp_step : forall R b c, Par W a b R -> multipar W b c R ->
                                              multipar W a c R.
 
 Hint Constructors multipar.
 
 Lemma multipar_app_rctx : forall W1 W2 W3 a a' R, uniq (W1 ++ W2 ++ W3) ->
-                     multipar (W1 ++ W3) a a' R -> 
+                     multipar (W1 ++ W3) a a' R ->
                      multipar (W1 ++ W2 ++ W3) a a' R.
 Proof. intros W1 W2 W3 a a' R U H. generalize dependent W2.
        dependent induction H; intros; eauto.
@@ -65,12 +65,10 @@ Proof. intros W1 W2 W3 a a' R U H. generalize dependent W2.
         - econstructor; eauto. apply par_app_rctx; auto.
 Qed.
 
-Definition joins W a b R := exists c, multipar W a c R /\ multipar W b c R.
+(* TODO: where? *)
+Generalizable All Variables.
 
-Lemma Par_lc1 : forall W a a' R , Par W a a' R -> lc_tm a.
-Proof. intros.  induction H; auto. eapply roleing_lc; eauto.
-       eapply match_subst_lc1; eauto.
-Qed.
+Definition joins W a b R := exists c, multipar W a c R /\ multipar W b c R.
 
 (* FIXME: find a good place for this tactic. *)
 (* cannot move this to ett_ind.v because need Toplevel_lc ??? *)
@@ -80,17 +78,21 @@ Ltac lc_toplevel_inversion :=
     apply Toplevel_lc in b; inversion b; auto
 end.
 
-Lemma Par_lc2 : forall W a a' R, Par W a a' R -> lc_tm a'.
-Proof.
-  intros. induction H; auto.
-  - lc_solve.
-  - lc_solve.
-  - lc_solve.
-  - eapply match_subst_lc3; eauto.
-  - econstructor. eapply apply_args_lc; eauto. auto.
+Lemma Par_lc1 : `(Par W a a' R → lc_tm a).
+  induction 1; eauto using roleing_lc, MatchSubst_lc_1.
 Qed.
 
-Hint Resolve Par_lc1 Par_lc2 : lc.
+
+Lemma Par_lc2 : `(Par W a a' R → lc_tm a').
+Proof.
+  induction 1;
+    eauto using MatchSubst_lc_3, ApplyArgs_lc_3;
+    lc_solve.
+  Unshelve. all: auto.
+Qed.
+
+Hint Resolve MatchSubst_lc_1 MatchSubst_lc_3 ApplyArgs_lc_3 Par_lc1 Par_lc2 : lc.
+
 
 Lemma Par_roleing_tm_fst : forall W a a' R, Par W a a' R -> 
                                                roleing W a R.
@@ -101,7 +103,7 @@ Proof. intros W a a' R H. induction H; eauto.
        inversion P. eauto.
 Qed.
 
-Lemma multipar_roleing_tm_fst: forall W a a' R, multipar W a a' R -> 
+Lemma multipar_roleing_tm_fst: forall W a a' R, multipar W a a' R ->
                                                roleing W a R.
 Proof. intros. induction H. auto. eapply Par_roleing_tm_fst; eauto.
 Qed.
@@ -133,11 +135,11 @@ Lemma multipar_rctx_uniq: forall W a a' R, multipar W a a' R -> uniq W.
 Proof. intros. eapply rctx_uniq. eapply multipar_roleing_tm_fst; eauto.
 Qed.
 
-Lemma par_multipar: forall W a a' R, Par W a a' R -> 
+Lemma par_multipar: forall W a a' R, Par W a a' R ->
                                          multipar W a a' R.
-Proof. intros. eapply mp_step. eauto. constructor. 
+Proof. intros. eapply mp_step. eauto. constructor.
        eapply Par_roleing_tm_snd; eauto.
-Qed. 
+Qed.
 
 Hint Resolve Par_roleing_tm_fst Par_roleing_tm_snd : roleing.
 
@@ -156,7 +158,7 @@ Proof. intros. induction H. econstructor. eapply roleing_sub; eauto.
        econstructor; eauto. eapply Par_sub; eauto.
 Qed.
 
-Lemma subst1 : forall b W W' a a' R1 R2 x, Par W' a a' R1 -> 
+Lemma subst1 : forall b W W' a a' R1 R2 x, Par W' a a' R1 ->
                roleing (W ++ [(x,R1)] ++ W') b R2 ->
                Par (W ++ W') (tm_subst_tm_tm a x b) (tm_subst_tm_tm a' x b) R2.
 Proof.
@@ -215,13 +217,13 @@ Proof.
   auto.
 Qed.
 
-Lemma subst2 : forall b W W' a a' R R1 x, 
-          Par (W ++ [(x,R1)] ++ W') a a' R -> 
+Lemma subst2 : forall b W W' a a' R R1 x,
+          Par (W ++ [(x,R1)] ++ W') a a' R ->
           roleing W' b R1 ->
           Par (W ++ W') (tm_subst_tm_tm b x a) (tm_subst_tm_tm b x a') R.
 Proof.
   intros b W W' a a' R R1 x PAR E.
-  dependent induction PAR; simpl. 
+  dependent induction PAR; simpl.
   all: eauto using tm_subst_tm_tm_lc_tm.
   all: autorewrite with subst_open; eauto.
   all: try eapply roleing_lc; eauto.
@@ -250,7 +252,7 @@ Proof.
     rewrite tm_subst_tm_tm_open_tm_wrt_co_var; auto 1.
     eapply H0. auto. eauto. auto.
     eapply roleing_lc; eauto. eapply roleing_lc; eauto.
-  - eapply Par_Axiom; eauto. 
+  - eapply Par_Axiom; eauto.
     rewrite tm_subst_tm_tm_fresh_eq. eauto.
     apply toplevel_closed in H.
     apply Typing_context_fv in H.
@@ -264,8 +266,8 @@ Proof.
 Qed.
 
 
-Lemma subst3 : forall b b' W W' a a' R R1 x, 
-          Par (W ++ [(x,R1)] ++ W') a a' R -> 
+Lemma subst3 : forall b b' W W' a a' R R1 x,
+          Par (W ++ [(x,R1)] ++ W') a a' R ->
           Par W' b b' R1 ->
           Par (W ++ W') (tm_subst_tm_tm b x a) (tm_subst_tm_tm b' x a') R.
 Proof.
@@ -321,8 +323,8 @@ Proof.
     intro. apply H1. eapply subst_co_Path; eauto.
 Qed.
 
-Lemma multipar_subst3 : forall b b' W W' a a' R R1 x, 
-     multipar (W ++ [(x,R1)] ++ W') a a' R -> 
+Lemma multipar_subst3 : forall b b' W W' a a' R R1 x,
+     multipar (W ++ [(x,R1)] ++ W') a a' R ->
      multipar W' b b' R1 ->
      multipar (W ++ W') (tm_subst_tm_tm b x a) (tm_subst_tm_tm b' x a') R.
 Proof.
@@ -424,7 +426,7 @@ Proof.
   apply subst4; auto.
 Qed.
 
-Lemma Par_open_tm_wrt_co_preservation: forall W B1 B2 c R, 
+Lemma Par_open_tm_wrt_co_preservation: forall W B1 B2 c R,
   Par W (open_tm_wrt_co B1 (g_Var_f c)) B2 R ->
   exists B', B2 = open_tm_wrt_co B' (g_Var_f c)
     /\ Par W (open_tm_wrt_co B1 (g_Var_f c)) (open_tm_wrt_co B' (g_Var_f c)) R.
@@ -470,14 +472,14 @@ Proof.
         fsetdec.
       * rewrite open_tm_wrt_tm_close_tm_wrt_tm; auto.
   - apply (@mp_step _ _ _ (a_Pi rho b R B)); auto.
-    apply (Par_Pi (union (singleton x) (union (dom W) (fv_tm_tm_tm B)))). 
-    auto. intros. econstructor. 
+    apply (Par_Pi (union (singleton x) (union (dom W) (fv_tm_tm_tm B)))).
+    auto. intros. econstructor.
     assert (uniq ([(x,R)] ++ W)). {eapply multipar_rctx_uniq; eauto. }
     rewrite (tm_subst_tm_tm_intro x B (a_Var_f x0)); auto.
     replace ([(x0,R)] ++ W) with (nil ++ [(x0,R)] ++ W); auto.
     eapply subst_tm_roleing. simpl_env. apply roleing_app_rctx.
     solve_uniq. eapply multipar_roleing_tm_fst; eauto.
-    econstructor. solve_uniq. auto. auto. 
+    econstructor. solve_uniq. auto. auto.
 Qed.
 
 
@@ -495,7 +497,7 @@ Qed.
 
 Lemma multipar_Pi_B_proj: ∀ W rho (A B A' B' : tm) R R',
     multipar W (a_Pi rho A R B) (a_Pi rho A' R B') R' →
-    exists L, forall x, x `notin` L -> 
+    exists L, forall x, x `notin` L ->
       multipar ([(x,R)] ++ W) (open_tm_wrt_tm B (a_Var_f x)) (open_tm_wrt_tm B' (a_Var_f x)) R'.
 Proof.
   intros W rho A B A' B' R R' h1.
@@ -571,7 +573,7 @@ Qed.
 Lemma multipar_CPi_phi_proj:  ∀ W (A B a A' B' a' T T': tm) R R1 R',
     multipar W (a_CPi (Eq A B T R) a) (a_CPi (Eq A' B' T' R1) a') R' ->
     R = R1
-      /\ multipar W A A' R 
+      /\ multipar W A A' R
       /\ multipar W B B' R
       /\ multipar W T T' Rep.
 Proof.
