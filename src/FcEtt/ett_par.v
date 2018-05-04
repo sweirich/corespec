@@ -78,12 +78,12 @@ Ltac lc_toplevel_inversion :=
     apply Toplevel_lc in b; inversion b; auto
 end.
 
-Lemma Par_lc1 : `(Par W a a' R → lc_tm a).
+Lemma Par_lc1 : forall W a a' R, Par W a a' R → lc_tm a.
   induction 1; eauto using roleing_lc, MatchSubst_lc_1.
 Qed.
 
 
-Lemma Par_lc2 : `(Par W a a' R → lc_tm a').
+Lemma Par_lc2 : forall W a a' R, Par W a a' R → lc_tm a'.
 Proof.
   induction 1;
     eauto using MatchSubst_lc_3, ApplyArgs_lc_3;
