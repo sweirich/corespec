@@ -78,12 +78,12 @@ Ltac lc_toplevel_inversion :=
     apply Toplevel_lc in b; inversion b; auto
 end.
 
-Lemma Par_lc1 : `(Par W a a' R → lc_tm a).
+Lemma Par_lc1 : forall W a a' R, Par W a a' R → lc_tm a.
   induction 1; eauto using roleing_lc, MatchSubst_lc_1.
 Qed.
 
 
-Lemma Par_lc2 : `(Par W a a' R → lc_tm a').
+Lemma Par_lc2 : forall W a a' R, Par W a a' R → lc_tm a'.
 Proof.
   induction 1;
     eauto using MatchSubst_lc_3, ApplyArgs_lc_3;
@@ -93,11 +93,12 @@ Qed.
 
 Hint Resolve MatchSubst_lc_1 MatchSubst_lc_3 ApplyArgs_lc_3 Par_lc1 Par_lc2 : lc.
 
-Lemma Par_roleing_tm_fst : `(Par W a a' R -> roleing W a R).
-Proof.
-  induction 1; eauto.
-  inversion IH.
-  apply Path_binds_toplevel in H2.
+
+Lemma Par_roleing_tm_fst : forall W a a' R, Par W a a' R -> 
+                                               roleing W a R.
+Proof. intros W a a' R H. induction H; eauto.
+       destruct rho. eauto. .
+       apply Path_binds_toplevel in H2.
        inversion H2 as [[A P] | [a0 [A0 [R1 P]]]]. eauto.
        inversion P. eauto.
 Qed.
