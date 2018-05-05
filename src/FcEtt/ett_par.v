@@ -97,7 +97,7 @@ Hint Resolve MatchSubst_lc_1 MatchSubst_lc_3 ApplyArgs_lc_3 Par_lc1 Par_lc2 : lc
 Lemma Par_roleing_tm_fst : forall W a a' R, Par W a a' R -> 
                                                roleing W a R.
 Proof. intros W a a' R H. induction H; eauto.
-       destruct rho. eauto. .
+       
        apply Path_binds_toplevel in H2.
        inversion H2 as [[A P] | [a0 [A0 [R1 P]]]]. eauto.
        inversion P. eauto.

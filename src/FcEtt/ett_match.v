@@ -8,6 +8,7 @@ Require Import FcEtt.utils.
 Require Export FcEtt.ett_inf.
 Require Export FcEtt.ett_ott.
 Require Export FcEtt.ett_ind.
+Require Export FcEtt.toplevel.
 Require Export FcEtt.fix_typing.
 
 
@@ -27,16 +28,20 @@ Proof.
     eauto using tm_subst_tm_tm_lc_tm, co_subst_co_tm_lc_tm.
 Qed.
 
-Lemma ax_const_rs : forall F F0 a A R Rs S, Sig S ->
-                 binds F (Ax (a_Fam F0) a A R Rs) S -> Rs = nil.
+Lemma ax_const_rs_nil : forall F F0 a A R Rs S, Sig S ->
+                 binds F (Ax (a_Fam F0) a A R Rs) S -> F = F0 /\ Rs = nil.
 Proof. intros. induction H. inversion H0. inversion H0.
        inversion H3. eauto. inversion H0. inversion H5; subst.
-       inversion H2; auto. eauto.
+       inversion H2; subst. inversion H2; auto. eauto.
 Qed.
 
 Lemma match_path : forall F p a A R Rs a0 b, binds F (Ax p a A R Rs) toplevel ->
                           MatchSubst a0 p a b -> Path a0 F nil.
-Proof. intros. induction H0. Admitted.
+Proof. intros. induction H0. pose (H' := H).
+       eapply ax_const_rs_nil in H'. inversion H'; subst.
+       eauto. apply Sig_toplevel. econstructor. auto.
+       
+
 
 Lemma ApplyArgs_lc_3 : forall a b c, ApplyArgs a b c → lc_tm c.
 Proof.

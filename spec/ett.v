@@ -893,6 +893,9 @@ Inductive Path : tm -> const -> roles -> Prop :=    (* defn Path *)
      Path a F  ( R1 :: Rs )  ->
       (  (app_role  nu )   =  R1 )  ->
      Path  ( (a_App a nu b') )  F Rs
+ | Path_IApp : forall (a:tm) (F:const) (Rs:roles),
+     Path a F Rs ->
+     Path  ( (a_App a (Rho Irrel) a_Bullet) )  F Rs
  | Path_CApp : forall (a:tm) (F:const) (Rs:roles),
      Path a F Rs ->
      Path  ( (a_CApp a g_Triv) )  F Rs.
@@ -924,10 +927,10 @@ Inductive PatternContexts : role_context -> context -> const -> tm -> tm -> tm -
       ( forall x , x \notin  L  -> PatternContexts  (( x  ~  R ) ++  W )   (( x ~ Tm  A' ) ++  G )  F B (a_App p (Rho Rel) (a_Var_f x))  ( open_tm_wrt_tm A (a_Var_f x) )  ) 
  | PatCtx_PiIrr : forall (L:vars) (W:role_context) (G:context) (A':tm) (F:const) (B p A:tm),
      PatternContexts W G F B p (a_Pi Irrel A' A) ->
-      ( forall x , x \notin  L  -> PatternContexts W  (( x ~ Tm  A' ) ++  G )  F B (a_App p (Rho Irrel) (a_Var_f x))  ( open_tm_wrt_tm A (a_Var_f x) )  ) 
+      ( forall x , x \notin  L  -> PatternContexts W  (( x ~ Tm  A' ) ++  G )  F B (a_App p (Rho Irrel) a_Bullet)  ( open_tm_wrt_tm A (a_Var_f x) )  ) 
  | PatCtx_CPi : forall (L:vars) (W:role_context) (G:context) (phi:constraint) (F:const) (B p A:tm),
      PatternContexts W G F B p (a_CPi phi A) ->
-      ( forall c , c \notin  L  -> PatternContexts W  (( c ~ Co  phi ) ++  G )  F B (a_CApp p (g_Var_f c))  ( open_tm_wrt_co A (g_Var_f c) )  ) .
+      ( forall c , c \notin  L  -> PatternContexts W  (( c ~ Co  phi ) ++  G )  F B (a_CApp p g_Triv)  ( open_tm_wrt_co A (g_Var_f c) )  ) .
 
 (* defns JMatchSubst *)
 Inductive MatchSubst : tm -> tm -> tm -> tm -> Prop :=    (* defn MatchSubst *)
@@ -942,12 +945,12 @@ Inductive MatchSubst : tm -> tm -> tm -> tm -> Prop :=    (* defn MatchSubst *)
      lc_tm a ->
      MatchSubst a1 a2 b1 b2 ->
      MatchSubst  ( (a_App a1 (Rho Rel) a) )   ( (a_App a2 (Rho Rel) (a_Var_f x)) )  b1  (  (tm_subst_tm_tm  a   x   b2 )  ) 
- | MatchSubst_AppIrrel : forall (a1 a2:tm) (x:tmvar) (b1 b2:tm),
+ | MatchSubst_AppIrrel : forall (a1 a2 b1 b2:tm),
      MatchSubst a1 a2 b1 b2 ->
-     MatchSubst  ( (a_App a1 (Rho Irrel) a_Bullet) )   ( (a_App a2 (Rho Irrel) (a_Var_f x)) )  b1  (  (tm_subst_tm_tm  a_Bullet   x   b2 )  ) 
- | MatchSubst_CApp : forall (a1 a2:tm) (c:covar) (b1 b2:tm),
+     MatchSubst  ( (a_App a1 (Rho Irrel) a_Bullet) )   ( (a_App a2 (Rho Irrel) a_Bullet) )  b1 b2
+ | MatchSubst_CApp : forall (a1 a2 b1 b2:tm),
      MatchSubst a1 a2 b1 b2 ->
-     MatchSubst  ( (a_CApp a1 g_Triv) )   ( (a_CApp a2 (g_Var_f c)) )  b1  (  (co_subst_co_tm  g_Triv   c   b2 )  ) .
+     MatchSubst  ( (a_CApp a1 g_Triv) )   ( (a_CApp a2 g_Triv) )  b1 b2.
 
 (* defns JApplyArgs *)
 Inductive ApplyArgs : tm -> tm -> tm -> Prop :=    (* defn ApplyArgs *)
@@ -1155,6 +1158,7 @@ Inductive Par : role_context -> tm -> tm -> role -> Prop :=    (* defn Par *)
      Par W (a_CPi (Eq a b A R1) B) (a_CPi (Eq a' b' A' R1) B') R
  | Par_Axiom : forall (W:role_context) (a b':tm) (R:role) (F:const) (p b A:tm) (R1:role) (Rs:roles),
       binds  F  ( (Ax p b A R1 Rs) )   toplevel   ->
+     roleing W a R ->
      MatchSubst a p b b' ->
      SubRole R1 R ->
       uniq  W  ->
@@ -1505,6 +1509,7 @@ Inductive Sig : sig -> Prop :=    (* defn Sig *)
  | Sig_ConsAx : forall (S:sig) (F:const) (p a A:tm) (R:role) (W:role_context) (G:context) (B:tm),
      Sig S ->
       ~ AtomSetImpl.In  F  (dom  S )  ->
+     Typing  nil  A a_Star ->
      PatternContexts W G F A p B ->
      Typing G a B ->
      roleing W a Rep ->

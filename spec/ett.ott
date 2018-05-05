@@ -612,6 +612,10 @@ app_role nu = R1
 Path (a nu b') = F @ Rs
 
 Path a = F @ Rs
+---------------------- :: IApp
+Path (a - []) = F @ Rs
+
+Path a = F @ Rs
 ---------------------- :: CApp
 Path (a [o]) = F @ Rs
 
@@ -621,7 +625,7 @@ defns
 defn
 ValuePath R a = F  ::  :: ValuePath :: 'ValuePath_'
 {{ com Type headed by constant (role-sensitive partial function) }}
-{{ tex \mathsf{Path}_{[[R]]}\ [[a]] = [[F]] }}
+{{ tex \mathsf{ValuePath}_{[[R]]}\ [[a]] = [[F]] }}
 by
 
 F : A @ Rs in toplevel
@@ -661,11 +665,11 @@ W, x : R ; G, x : A' |= F, B; p + x : A
 
 W ; G |= F, B; p : all - x : A' -> A
 --------------------------------------- :: PiIrr
-W ; G, x : A' |= F, B; p - x : A
+W ; G, x : A' |= F, B; p - [] : A
 
 W ; G |= F, B; p : all c : phi. A
 ------------------------------------ :: CPi
-W ; G, c : phi |= F, B; p [c] : A
+W ; G, c : phi |= F, B; p [o] : A
 
 
 
@@ -691,11 +695,11 @@ match (a1 + a) with (a2 + x) -> b1 = (b2 {`a/x`})
 
 match a1 with a2 -> b1 = b2
 -------------------------------------------------------- :: AppIrrel
-match (a1 - []) with (a2 - x) -> b1 = (b2 {`[]/x`})
+match (a1 - []) with (a2 - []) -> b1 = b2
 
 match a1 with a2 -> b1 = b2
 ------------------------------------------------------ :: CApp
-match (a1 [o]) with (a2 [c]) -> b1 = (b2 {`o/c`})
+match (a1 [o]) with (a2 [o]) -> b1 = b2
 
 
 defns
@@ -980,6 +984,7 @@ W |= B => B' / R
 W |= all c:a~b:A/R1. B => all c:a'~b':A'/R1. B' / R
 
 F : p ~ b : A/R1 @ Rs in toplevel
+W |= a : R
 match a with p -> b = b'
 R1 <= R
 rctx_uniq W
@@ -1488,6 +1493,7 @@ F notin dom S
 
 |= S
 F notin dom S
+empty |= A : TYPE
 W ; G |= F, A; p : B
 G |= a : B
 W |= a : Rep
