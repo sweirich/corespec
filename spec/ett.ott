@@ -999,12 +999,14 @@ W |= (case R a of F => b1 | _ => b2) => (case R a' of F => b1' | _ => b2') / R0
 
 W |= a => a' / R
 W |= b1 => b1' / R0
+W |= b2 => b2' / R0
 ValuePath R a' = F
 apply args a' to b1' -> b
 --------------------------------------------- :: PatternTrue
 W |= (case R a of F => b1 | _ => b2) => b [o] / R0
 
 W |= a => a' / R
+W |= b1 => b1' / R0
 W |= b2 => b2' / R0
 Value R a'
 not (ValuePath R a' = F)

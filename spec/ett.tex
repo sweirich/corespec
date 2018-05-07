@@ -1208,6 +1208,7 @@
 \newcommand{\ottdruleParXXPatternTrue}[1]{\ottdrule[#1]{%
 \ottpremise{ \Omega  \vDash  \ottnt{a}   \Rightarrow _{ \ottnt{R} }  \ottnt{a'} }%
 \ottpremise{ \Omega  \vDash  \ottnt{b_{{\mathrm{1}}}}   \Rightarrow _{ \ottnt{R_{{\mathrm{0}}}} }  \ottnt{b'_{{\mathrm{1}}}} }%
+\ottpremise{ \Omega  \vDash  \ottnt{b_{{\mathrm{2}}}}   \Rightarrow _{ \ottnt{R_{{\mathrm{0}}}} }  \ottnt{b'_{{\mathrm{2}}}} }%
 \ottpremise{ \mathsf{ValuePath}_{ \ottnt{R} }\  \ottnt{a'}  =  \ottmv{F} }%
 \ottpremise{ \mathsf{apply~args} \  \ottnt{a'}  \ \mathsf{to} \  \ottnt{b'_{{\mathrm{1}}}}  \mapsto  \ottnt{b} }%
 }{
@@ -1218,6 +1219,7 @@
 
 \newcommand{\ottdruleParXXPatternFalse}[1]{\ottdrule[#1]{%
 \ottpremise{ \Omega  \vDash  \ottnt{a}   \Rightarrow _{ \ottnt{R} }  \ottnt{a'} }%
+\ottpremise{ \Omega  \vDash  \ottnt{b_{{\mathrm{1}}}}   \Rightarrow _{ \ottnt{R_{{\mathrm{0}}}} }  \ottnt{b'_{{\mathrm{1}}}} }%
 \ottpremise{ \Omega  \vDash  \ottnt{b_{{\mathrm{2}}}}   \Rightarrow _{ \ottnt{R_{{\mathrm{0}}}} }  \ottnt{b'_{{\mathrm{2}}}} }%
 \ottpremise{ \mathsf{Value}_{ \ottnt{R} }\  \ottnt{a'} }%
 \ottpremise{ \neg  \ottsym{(}   \mathsf{ValuePath}_{ \ottnt{R} }\  \ottnt{a'}  =  \ottmv{F}   \ottsym{)} }%
@@ -2079,6 +2081,6 @@
 
 \begin{verbatim}
 Definition rules:        143 good    0 bad
-Definition rule clauses: 400 good    0 bad
+Definition rule clauses: 402 good    0 bad
 \end{verbatim}
 \end{document}

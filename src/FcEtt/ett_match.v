@@ -35,12 +35,16 @@ Proof. intros. induction H. inversion H0. inversion H0.
        inversion H2; subst. inversion H2; auto. eauto.
 Qed.
 
+Lemma match_subst_roleing : forall W a R p b b', Roleing W a R ->
+                   MatchSubst a p b b' -> Roleing W b' R.
+Proof.
+
 Lemma match_path : forall F p a A R Rs a0 b, binds F (Ax p a A R Rs) toplevel ->
                           MatchSubst a0 p a b -> Path a0 F nil.
 Proof. intros. induction H0. pose (H' := H).
        eapply ax_const_rs_nil in H'. inversion H'; subst.
        eauto. apply Sig_toplevel. econstructor. auto.
-       
+       Admitted.
 
 
 Lemma ApplyArgs_lc_3 : forall a b c, ApplyArgs a b c → lc_tm c.

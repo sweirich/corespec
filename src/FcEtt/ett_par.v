@@ -97,10 +97,6 @@ Hint Resolve MatchSubst_lc_1 MatchSubst_lc_3 ApplyArgs_lc_3 Par_lc1 Par_lc2 : lc
 Lemma Par_roleing_tm_fst : forall W a a' R, Par W a a' R -> 
                                                roleing W a R.
 Proof. intros W a a' R H. induction H; eauto.
-       
-       apply Path_binds_toplevel in H2.
-       inversion H2 as [[A P] | [a0 [A0 [R1 P]]]]. eauto.
-       inversion P. eauto.
 Qed.
 
 Lemma multipar_roleing_tm_fst: forall W a a' R, multipar W a a' R ->
@@ -114,13 +110,12 @@ Proof. intros W a a' R H. induction H; eauto.
         - inversion IHPar1; subst. pick fresh x.
           erewrite tm_subst_tm_tm_intro; eauto.
           replace W with (nil ++ W); auto. eapply subst_tm_roleing; eauto.
-          eapply roleing_sub with (R1 := (param R1 R)); auto.
-          apply param_sub1; auto.
         - inversion IHPar; subst. pick fresh c.
           erewrite co_subst_co_tm_intro; eauto.
           replace W with (nil ++ W); auto. eapply subst_co_roleing; eauto.
-        - eapply roleing_sub. eapply toplevel_roleing1; eauto. auto.
-Qed.
+        - admit.
+        - admit.
+Admitted.
 
 Lemma multipar_roleing_tm_snd : forall W a a' R, multipar W a a' R ->
                                                roleing W a' R.
@@ -148,7 +143,8 @@ Hint Resolve Par_roleing_tm_fst Par_roleing_tm_snd : roleing.
 Lemma Par_sub: forall W a a' R1 R2, Par W a a' R1 -> SubRole R1 R2 ->
                                       Par W a a' R2.
 Proof. intros W a a' R1 R2 H SR. generalize dependent R2.
-       induction H; intros; simpl; eauto using param_covariant. econstructor.
+       induction H; intros; eauto. econstructor.
+       eapply roleing_sub; eauto. eapply Par_Axiom; eauto.
        eapply roleing_sub; eauto.
 Qed.
 
@@ -181,6 +177,7 @@ Proof.
      rewrite <- app_assoc. eapply H0; eauto.
      eapply Par_lc2; eauto. eapply Par_lc1; eauto.
    - econstructor; eauto.
+   - admit.
    - eapply Par_Pi with (L := union (singleton x) L); eauto.
      intros x0 h1.
      rewrite tm_subst_tm_tm_open_tm_wrt_tm_var; auto 1.
@@ -200,8 +197,8 @@ Proof.
    - econstructor; eauto.
    - econstructor; eauto.
    - econstructor; eauto.
-   - econstructor; eauto.
-Qed.
+   - eapply Par_Pattern; eauto.
+Admitted.
 
 Lemma open1 : forall b W L a a' R, Par W a a' R
   -> (forall x, x `notin` L -> roleing W (open_tm_wrt_tm b (a_Var_f x)) R)
@@ -252,19 +249,18 @@ Proof.
     rewrite tm_subst_tm_tm_open_tm_wrt_co_var; auto 1.
     eapply H0. auto. eauto. auto.
     eapply roleing_lc; eauto. eapply roleing_lc; eauto.
-  - eapply Par_Axiom; eauto.
+  - admit. (* eapply Par_Axiom; eauto.
     rewrite tm_subst_tm_tm_fresh_eq. eauto.
     apply toplevel_closed in H.
     apply Typing_context_fv in H.
     split_hyp. simpl in *.
-    fsetdec.
+    fsetdec. *)
   - eapply Par_PatternTrue; eauto. eapply Path_subst; eauto.
-    eapply roleing_lc; eauto.
+    eapply roleing_lc; eauto. admit.
   - eapply Par_PatternFalse; eauto.
     eapply Value_tm_subst_tm_tm; eauto. eapply roleing_lc; eauto.
-    intro. eapply subst_Path in H2; eauto. eapply roleing_lc; eauto.
-Qed.
-
+    intro. admit. (* eapply subst_Path in H1; eauto. eapply roleing_lc; eauto. *)
+Admitted.
 
 Lemma subst3 : forall b b' W W' a a' R R1 x,
           Par (W ++ [(x,R1)] ++ W') a a' R ->
@@ -290,18 +286,18 @@ Proof.
     rewrite <- app_assoc. eapply H1; eauto. simpl_env; auto.
     eapply Par_lc2; eauto. eapply Par_lc1; eauto.
   - eapply Par_Axiom; eauto.
-    rewrite tm_subst_tm_tm_fresh_eq. eauto.
-    apply toplevel_closed in H.
+    rewrite tm_subst_tm_tm_fresh_eq. eauto. admit. admit. admit.
+    (* apply toplevel_closed in H.
     apply Typing_context_fv in H.
     split_hyp. simpl in *.
-    fsetdec.
-  - econstructor; eauto.
+    fsetdec. *)
+  - eapply Par_Pattern; eauto.
   - eapply Par_PatternTrue; eauto. eapply Path_subst; eauto.
-    eapply Par_lc2; eauto.
+    eapply Par_lc2; eauto. admit.
   - eapply Par_PatternFalse; eauto.
     eapply Value_tm_subst_tm_tm; eauto. eapply Par_lc2; eauto.
-    intro. eapply subst_Path in H6; eauto. eapply Par_lc2; eauto.
-Qed.
+    intro. admit. (* eapply subst_Path in H6; eauto. eapply Par_lc2; eauto. *)
+Admitted.
 
 Lemma subst4 : forall b x, lc_co b ->
     forall W a a' R, Par W a a' R ->
@@ -313,15 +309,15 @@ Proof.
               autorewrite with subst_open_var; eauto 3 with lc ].
   all: try solve [ autorewrite with subst_open; eauto 4 with lc ].
   - apply Par_Refl. eapply subst_co_roleing; eauto.
-  - rewrite co_subst_co_tm_fresh_eq. eauto.
-    apply toplevel_closed in H.
+  - rewrite co_subst_co_tm_fresh_eq. eauto. admit. admit.
+    (* apply toplevel_closed in H.
     apply Typing_context_fv in H.
     split_hyp. simpl in *.
-    fsetdec.
-  - eapply Par_PatternTrue; eauto. eapply Path_subst_co; eauto.
+    fsetdec. *)
+  - eapply Par_PatternTrue; eauto. eapply Path_subst_co; eauto. admit.
   - eapply Par_PatternFalse; eauto. eapply Value_co_subst_co_tm; eauto.
-    intro. apply H1. eapply subst_co_Path; eauto.
-Qed.
+    intro. admit. (* apply H1. eapply subst_co_Path; eauto. *)
+Admitted.
 
 Lemma multipar_subst3 : forall b b' W W' a a' R R1 x,
      multipar (W ++ [(x,R1)] ++ W') a a' R ->
@@ -364,18 +360,18 @@ Qed.
 Hint Resolve roleing_tm_open_tm_wrt_tm : roleing.
 
 
-Lemma Par_Pi_exists: ∀ x W rho (A B A' B' : tm) R R',
+Lemma Par_Pi_exists: ∀ x W rho (A B A' B' : tm) R',
     x `notin` fv_tm_tm_tm B -> Par W A A' R'
-    → Par ([(x,R)] ++ W) (open_tm_wrt_tm B (a_Var_f x)) B' R'
-    → Par W (a_Pi rho A R B) (a_Pi rho A' R (close_tm_wrt_tm x B')) R'.
+    → Par ([(x,Nom)] ++ W) (open_tm_wrt_tm B (a_Var_f x)) B' R'
+    → Par W (a_Pi rho A B) (a_Pi rho A' (close_tm_wrt_tm x B')) R'.
 Proof.
-  intros x W rho A B A' B' R R' H H0 H1.
+  intros x W rho A B A' B' R' H H0 H1.
   apply (Par_Pi (union (singleton x) (union (dom W) (fv_tm_tm_tm B)))); eauto.
   intros x0 h0.
   rewrite -tm_subst_tm_tm_spec.
   rewrite (tm_subst_tm_tm_intro x B (a_Var_f x0)); auto.
-  replace ([(x0,R)] ++ W) with (nil ++ [(x0,R)] ++ W); auto.
-  assert (uniq ([(x,R)] ++ W)). {eapply Par_rctx_uniq; eauto. }
+  replace ([(x0,Nom)] ++ W) with (nil ++ [(x0,Nom)] ++ W); auto.
+  assert (uniq ([(x,Nom)] ++ W)). {eapply Par_rctx_uniq; eauto. }
   eapply subst2; eauto.
   simpl_env. apply par_app_rctx; eauto 1. solve_uniq.
   econstructor. solve_uniq. auto. auto.
@@ -396,18 +392,18 @@ Proof.
 Qed.
 
 
-Lemma Par_Abs_exists: ∀ x W rho R R' (a a' : tm),
+Lemma Par_Abs_exists: ∀ x W rho R' (a a' : tm),
     x `notin` fv_tm_tm_tm a
-    → Par ([(x,R)] ++ W) (open_tm_wrt_tm a (a_Var_f x)) a' R'
-    → Par W (a_UAbs rho R a) (a_UAbs rho R (close_tm_wrt_tm x a')) R'.
+    → Par ([(x,Nom)] ++ W) (open_tm_wrt_tm a (a_Var_f x)) a' R'
+    → Par W (a_UAbs rho a) (a_UAbs rho (close_tm_wrt_tm x a')) R'.
 Proof.
-  intros x W rho R R' a a' hi0 H0.
+  intros x W rho R' a a' hi0 H0.
   apply (Par_Abs (union (singleton x) (dom W))); eauto.
   intros x0 h0.
   rewrite -tm_subst_tm_tm_spec.
   rewrite (tm_subst_tm_tm_intro x a (a_Var_f x0)); auto.
-  replace ([(x0,R)] ++ W) with (nil ++ [(x0,R)] ++ W); auto.
-  assert (uniq ([(x,R)] ++ W)). {eapply Par_rctx_uniq; eauto. }
+  replace ([(x0,Nom)] ++ W) with (nil ++ [(x0,Nom)] ++ W); auto.
+  assert (uniq ([(x,Nom)] ++ W)). {eapply Par_rctx_uniq; eauto. }
   eapply subst2; eauto.
   simpl_env. apply par_app_rctx; eauto 1.
   solve_uniq. econstructor. solve_uniq. auto. auto.
@@ -454,60 +450,60 @@ Proof.
   eauto.
 Qed.
 
-Lemma multipar_Pi_exists: ∀ x W rho (A B A' B' : tm) R R',
+Lemma multipar_Pi_exists: ∀ x W rho (A B A' B' : tm) R',
        x `notin` fv_tm_tm_tm B ->
        multipar W A A' R'
-       → multipar ([(x,R)] ++ W) (open_tm_wrt_tm B (a_Var_f x)) B' R'
-       → multipar W (a_Pi rho A R B) (a_Pi rho A' R (close_tm_wrt_tm x B')) R'.
+       → multipar ([(x,Nom)] ++ W) (open_tm_wrt_tm B (a_Var_f x)) B' R'
+       → multipar W (a_Pi rho A B) (a_Pi rho A' (close_tm_wrt_tm x B')) R'.
 Proof.
-  intros x W rho A B A' B' R R' e H H0.
+  intros x W rho A B A' B' R' e H H0.
   dependent induction H; eauto.
   - dependent induction H0; eauto.
     erewrite close_tm_wrt_tm_open_tm_wrt_tm; eauto.
     constructor. eapply roleing_Pi_some_any; eauto.
-    apply mp_step with (b := a_Pi rho a R (close_tm_wrt_tm x b)); auto.
+    apply mp_step with (b := a_Pi rho a (close_tm_wrt_tm x b)); auto.
     + eapply Par_Pi_exists; eauto.
     + apply IHmultipar; auto.
       * rewrite fv_tm_tm_tm_close_tm_wrt_tm_rec.
         fsetdec.
       * rewrite open_tm_wrt_tm_close_tm_wrt_tm; auto.
-  - apply (@mp_step _ _ _ (a_Pi rho b R B)); auto.
+  - apply (@mp_step _ _ _ (a_Pi rho b B)); auto.
     apply (Par_Pi (union (singleton x) (union (dom W) (fv_tm_tm_tm B)))).
     auto. intros. econstructor.
-    assert (uniq ([(x,R)] ++ W)). {eapply multipar_rctx_uniq; eauto. }
+    assert (uniq ([(x,Nom)] ++ W)). {eapply multipar_rctx_uniq; eauto. }
     rewrite (tm_subst_tm_tm_intro x B (a_Var_f x0)); auto.
-    replace ([(x0,R)] ++ W) with (nil ++ [(x0,R)] ++ W); auto.
+    replace ([(x0,Nom)] ++ W) with (nil ++ [(x0,Nom)] ++ W); auto.
     eapply subst_tm_roleing. simpl_env. apply roleing_app_rctx.
     solve_uniq. eapply multipar_roleing_tm_fst; eauto.
     econstructor. solve_uniq. auto. auto.
 Qed.
 
 
-Lemma multipar_Pi_A_proj: ∀ W rho (A B A' B' : tm) R R',
-    multipar W (a_Pi rho A R B) (a_Pi rho A' R B') R' ->
+Lemma multipar_Pi_A_proj: ∀ W rho (A B A' B' : tm) R',
+    multipar W (a_Pi rho A B) (a_Pi rho A' B') R' ->
     multipar W A A' R'.
 Proof.
-  intros W rho A B A' B' R R' h1.
+  intros W rho A B A' B' R' h1.
   dependent induction h1.
   - inversion H. constructor. auto.
   - inversion H. subst. eapply IHh1; eauto.
     apply mp_step with (b := A'0). auto.
-    eapply IHh1; eauto.
+    eapply IHh1; eauto. subst. inversion H2.
 Qed.
 
-Lemma multipar_Pi_B_proj: ∀ W rho (A B A' B' : tm) R R',
-    multipar W (a_Pi rho A R B) (a_Pi rho A' R B') R' →
+Lemma multipar_Pi_B_proj: ∀ W rho (A B A' B' : tm) R',
+    multipar W (a_Pi rho A B) (a_Pi rho A' B') R' →
     exists L, forall x, x `notin` L ->
-      multipar ([(x,R)] ++ W) (open_tm_wrt_tm B (a_Var_f x)) (open_tm_wrt_tm B' (a_Var_f x)) R'.
+      multipar ([(x,Nom)] ++ W) (open_tm_wrt_tm B (a_Var_f x)) (open_tm_wrt_tm B' (a_Var_f x)) R'.
 Proof.
-  intros W rho A B A' B' R R' h1.
+  intros W rho A B A' B' R' h1.
   dependent induction h1; eauto.
   - inversion H. subst. exists L. intros.
     constructor. auto.
   - inversion H; subst.
     eapply IHh1; eauto.
-    destruct (IHh1 rho A'0 B'0 A' B' R) as [L0 h0]; auto.
-    exists (L \u L0); eauto.
+    destruct (IHh1 rho A'0 B'0 A' B') as [L0 h0]; auto.
+    exists (L \u L0); eauto. inversion H2.
 Qed.
 
 
@@ -567,7 +563,7 @@ Proof.
   - inversion H; subst.
     eapply IHh1; eauto.
     destruct (IHh1 _ _ _ _ _ _ _ _ _ _ ltac:(auto) ltac:(auto)) as [L0 h0]; auto.
-    exists (L \u L0); eauto.
+    exists (L \u L0); eauto. inversion H2.
 Qed.
 
 Lemma multipar_CPi_phi_proj:  ∀ W (A B a A' B' a' T T': tm) R R1 R',
@@ -590,28 +586,28 @@ Proof.
     apply mp_step with (b := a'0); auto.
     apply mp_step with (b := b'); auto.
     apply mp_step with (b := A'0); auto.
-    eapply Par_sub; eauto.
+    eapply Par_sub; eauto. inversion H3.
 Qed.
 
 
-Lemma multipar_Abs_exists: ∀ x W rho R R' (a a' : tm),
+Lemma multipar_Abs_exists: ∀ x W rho R' (a a' : tm),
        x `notin` fv_tm_tm_tm a →
-       multipar ([(x,R)] ++ W) (open_tm_wrt_tm a (a_Var_f x)) a' R' →
-       multipar W (a_UAbs rho R a) (a_UAbs rho R (close_tm_wrt_tm x a')) R'.
+       multipar ([(x,Nom)] ++ W) (open_tm_wrt_tm a (a_Var_f x)) a' R' →
+       multipar W (a_UAbs rho a) (a_UAbs rho (close_tm_wrt_tm x a')) R'.
 Proof.
-  intros x W rho R R' B B' e H.
+  intros x W rho R' B B' e H.
   dependent induction H; eauto 2.
   - autorewrite with lngen. constructor.
-    assert (uniq ([(x,R)] ++ W)). {eapply rctx_uniq; eauto. }
+    assert (uniq ([(x,Nom)] ++ W)). {eapply rctx_uniq; eauto. }
     apply role_a_Abs with (L := union (singleton x) (dom W)).
     intros. rewrite (tm_subst_tm_tm_intro x B (a_Var_f x0)); auto.
-    replace ([(x0,R)] ++ W) with (nil ++ [(x0,R)] ++ W); auto.
-    apply subst_tm_roleing with (R1 := R). simpl_env. apply roleing_app_rctx.
+    replace ([(x0,Nom)] ++ W) with (nil ++ [(x0,Nom)] ++ W); auto.
+    apply subst_tm_roleing with (R1 := Nom). simpl_env. apply roleing_app_rctx.
     solve_uniq. auto. econstructor; auto. solve_uniq.
-  - assert (Par W (a_UAbs rho R B) (a_UAbs rho R (close_tm_wrt_tm x b)) R0).
+  - assert (Par W (a_UAbs rho B) (a_UAbs rho (close_tm_wrt_tm x b)) R).
     eapply (Par_Abs_exists); auto.
-    assert (multipar W (a_UAbs rho R (close_tm_wrt_tm x b))
-                       (a_UAbs rho R (close_tm_wrt_tm x c)) R0).
+    assert (multipar W (a_UAbs rho (close_tm_wrt_tm x b))
+                       (a_UAbs rho (close_tm_wrt_tm x c)) R).
     { apply IHmultipar; auto.
     * rewrite fv_tm_tm_tm_close_tm_wrt_tm_rec.
       fsetdec.
@@ -664,7 +660,7 @@ Proof.
   rewrite h0.
   eauto.
 Qed.
-
+(*
 (* Properties of Path and Value *)
 
 Lemma Par_Path : forall F a R W a', Path F a R -> Par W a a' R -> Path F a' R.
@@ -728,3 +724,4 @@ Lemma multipar_Path_join_head : forall F1 F2 W a1 a2 c R,
 Proof. intros. eapply multipar_Path in H; eauto.
        eapply multipar_Path in H0; eauto. eapply uniq_Path; eauto.
 Qed.
+*)

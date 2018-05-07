@@ -1168,16 +1168,16 @@ Inductive Par : role_context -> tm -> tm -> role -> Prop :=    (* defn Par *)
      Par W b1 b1' R0 ->
      Par W b2 b2' R0 ->
      Par W  ( (a_Pattern R a F b1 b2) )   ( (a_Pattern R a' F b1' b2') )  R0
- | Par_PatternTrue : forall (W:role_context) (R:role) (a:tm) (F:const) (b1 b2 b:tm) (R0:role) (a' b1':tm),
-     lc_tm b2 ->
+ | Par_PatternTrue : forall (W:role_context) (R:role) (a:tm) (F:const) (b1 b2 b:tm) (R0:role) (a' b1' b2':tm),
      Par W a a' R ->
      Par W b1 b1' R0 ->
+     Par W b2 b2' R0 ->
      ValuePath R a' F ->
      ApplyArgs a' b1' b ->
      Par W  ( (a_Pattern R a F b1 b2) )  (a_CApp b g_Triv) R0
- | Par_PatternFalse : forall (W:role_context) (R:role) (a:tm) (F:const) (b1 b2 b2':tm) (R0:role) (a':tm),
-     lc_tm b1 ->
+ | Par_PatternFalse : forall (W:role_context) (R:role) (a:tm) (F:const) (b1 b2 b2':tm) (R0:role) (a' b1':tm),
      Par W a a' R ->
+     Par W b1 b1' R0 ->
      Par W b2 b2' R0 ->
      Value R a' ->
       not (  ( ValuePath R a' F )  )  ->
