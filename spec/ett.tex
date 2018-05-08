@@ -161,7 +161,7 @@
 \ottprodline{|}{\ottmv{x}  \ottsym{:}  \ottnt{R}}{}{}{}{}\ottprodnewline
 \ottprodline{|}{\Omega  \ottsym{,}  \ottmv{x}  \ottsym{:}  \ottnt{R}}{}{}{}{}\ottprodnewline
 \ottprodline{|}{ \Omega , \Omega' } {\textsf{M}}{}{}{}\ottprodnewline
-\ottprodline{|}{ \Gamma _\mathsf{Nom} }{}{}{}{}\ottprodnewline
+\ottprodline{|}{\ottsym{var\_pat}  \ottnt{p}} {\textsf{M}}{}{}{}\ottprodnewline
 \ottprodline{|}{\ottsym{(}  \Omega  \ottsym{)}} {\textsf{M}}{}{}{}\ottprodnewline
 \ottprodline{|}{ \Omega } {\textsf{M}}{}{}{}}
 
@@ -608,7 +608,7 @@
 \newcommand{\ottdrulePatCtxXXPiRel}[1]{\ottdrule[#1]{%
 \ottpremise{ \Omega  ;  \Gamma   \vDash   \ottnt{p}  :_ \ottmv{F}    \mathrm{\Pi}^ \ottsym{+} \ottmv{x} \!:\! \ottnt{A'} \to \ottnt{A}   \Rightarrow  \ottnt{B} }%
 }{
- \Omega  \ottsym{,}  \ottmv{x}  \ottsym{:}  \ottnt{R}  ;  \Gamma  \ottsym{,}  \ottmv{x}  \ottsym{:}  \ottnt{A'}   \vDash    \ottnt{p} \  \ottmv{x} ^{ \ottsym{+} }   :_ \ottmv{F}   \ottnt{A}  \Rightarrow  \ottnt{B} }{%
+ \Omega  \ottsym{,}  \ottmv{x}  \ottsym{:}  \ottnt{R}  ;  \Gamma  \ottsym{,}  \ottmv{x}  \ottsym{:}  \ottnt{A'}   \vDash    \ottnt{p} \  \ottmv{x} ^{ \ottnt{R} }   :_ \ottmv{F}   \ottnt{A}  \Rightarrow  \ottnt{B} }{%
 {\ottdrulename{PatCtx\_PiRel}}{}%
 }}
 
@@ -651,16 +651,8 @@
 \newcommand{\ottdruleMatchSubstXXAppRelR}[1]{\ottdrule[#1]{%
 \ottpremise{ \mathsf{match} \  \ottnt{a_{{\mathrm{1}}}}  \ \mathsf{with} \  \ottnt{a_{{\mathrm{2}}}}  \rightarrow  \ottnt{b_{{\mathrm{1}}}}  =  \ottnt{b_{{\mathrm{2}}}} }%
 }{
- \mathsf{match} \  \ottsym{(}   \ottnt{a_{{\mathrm{1}}}} \  \ottnt{a} ^{ \ottnt{R'} }   \ottsym{)}  \ \mathsf{with} \  \ottsym{(}   \ottnt{a_{{\mathrm{2}}}} \  \ottmv{x} ^{ \ottsym{+} }   \ottsym{)}  \rightarrow  \ottnt{b_{{\mathrm{1}}}}  =  \ottsym{(}   \ottnt{b_{{\mathrm{2}}}}  \lbrace  \ottnt{a}   \ottsym{/}   \ottmv{x}   \rbrace   \ottsym{)} }{%
+ \mathsf{match} \  \ottsym{(}   \ottnt{a_{{\mathrm{1}}}} \  \ottnt{a} ^{ \ottnt{R} }   \ottsym{)}  \ \mathsf{with} \  \ottsym{(}   \ottnt{a_{{\mathrm{2}}}} \  \ottmv{x} ^{ \ottnt{R} }   \ottsym{)}  \rightarrow  \ottnt{b_{{\mathrm{1}}}}  =  \ottsym{(}   \ottnt{b_{{\mathrm{2}}}}  \lbrace  \ottnt{a}   \ottsym{/}   \ottmv{x}   \rbrace   \ottsym{)} }{%
 {\ottdrulename{MatchSubst\_AppRelR}}{}%
-}}
-
-
-\newcommand{\ottdruleMatchSubstXXAppRel}[1]{\ottdrule[#1]{%
-\ottpremise{ \mathsf{match} \  \ottnt{a_{{\mathrm{1}}}}  \ \mathsf{with} \  \ottnt{a_{{\mathrm{2}}}}  \rightarrow  \ottnt{b_{{\mathrm{1}}}}  =  \ottnt{b_{{\mathrm{2}}}} }%
-}{
- \mathsf{match} \  \ottsym{(}   \ottnt{a_{{\mathrm{1}}}} \  \ottnt{a} ^{ \ottsym{+} }   \ottsym{)}  \ \mathsf{with} \  \ottsym{(}   \ottnt{a_{{\mathrm{2}}}} \  \ottmv{x} ^{ \ottsym{+} }   \ottsym{)}  \rightarrow  \ottnt{b_{{\mathrm{1}}}}  =  \ottsym{(}   \ottnt{b_{{\mathrm{2}}}}  \lbrace  \ottnt{a}   \ottsym{/}   \ottmv{x}   \rbrace   \ottsym{)} }{%
-{\ottdrulename{MatchSubst\_AppRel}}{}%
 }}
 
 
@@ -682,7 +674,6 @@
 \newcommand{\ottdefnMatchSubst}[1]{\begin{ottdefnblock}[#1]{$ \mathsf{match} \  \ottnt{a_{{\mathrm{1}}}}  \ \mathsf{with} \  \ottnt{p}  \rightarrow  \ottnt{b_{{\mathrm{1}}}}  =  \ottnt{b_{{\mathrm{2}}}} $}{\ottcom{match and substitute}}
 \ottusedrule{\ottdruleMatchSubstXXConst{}}
 \ottusedrule{\ottdruleMatchSubstXXAppRelR{}}
-\ottusedrule{\ottdruleMatchSubstXXAppRel{}}
 \ottusedrule{\ottdruleMatchSubstXXAppIrrel{}}
 \ottusedrule{\ottdruleMatchSubstXXCApp{}}
 \end{ottdefnblock}}
@@ -2080,7 +2071,7 @@
 \ottall
 
 \begin{verbatim}
-Definition rules:        143 good    0 bad
-Definition rule clauses: 402 good    0 bad
+Definition rules:        142 good    0 bad
+Definition rule clauses: 400 good    0 bad
 \end{verbatim}
 \end{document}

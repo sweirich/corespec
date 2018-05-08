@@ -241,8 +241,7 @@ role_context, W {{ tex \Omega }} :: 'rctx_' ::= {{ com role_contexts }}
    | W , x : R       ::    :: ConsTm  {{ coq (([[x]] ~ [[R]]) ++ [[W]]) }}
    | W ++ W'         :: M  :: Append  {{ coq ([[W]] ++ [[W']]) }}
    {{tex [[W]],[[W']]}}
-   | ctx_to_NomCtx G ::    :: Conv    {{ coq (ctx_to_NomCtx [[G]]) }}
-   {{tex [[G]]_\mathsf{Nom} }}
+   | var_pat p       :: M  :: Pat {{ coq (var_pat([[p]])) }}
    | ( W )           :: M  :: Paren   {{ coq ([[W]]) }}
    | (# W #)         :: M  :: SecretParen {{ coq [[W]] }} {{ tex [[W]] }}
 
@@ -558,6 +557,14 @@ Fixpoint range (L : role_context) : roles :=
   | nil => nil
   | (x,R) :: L' => R :: range(L')
   end.
+
+Fixpoint var_pat (p : tm) : role_context := 
+   match p with
+      a_App p (Role R) (a_Var_f x) => (x, R) :: (var_pat p)
+    | a_App p (Rho Irrel) Bullet => var_pat p
+    | a_CApp p g_Triv => var_pat p
+    | _  => nil
+   end.
 }}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -661,7 +668,7 @@ empty ; empty |= F, A;  F : A
 
 W ; G |= F, B; p : all + x : A' -> A
 ---------------------------------------- :: PiRel
-W, x : R ; G, x : A' |= F, B; p + x : A
+W, x : R ; G, x : A' |= F, B; p R x : A
 
 W ; G |= F, B; p : all - x : A' -> A
 --------------------------------------- :: PiIrr
@@ -687,11 +694,7 @@ match F with F -> b = b
 
 match a1 with a2 -> b1 = b2
 ------------------------------------------------------- :: AppRelR
-match (a1 R' a) with (a2 + x) -> b1 = (b2 {`a/x`})
-
-match a1 with a2 -> b1 = b2
------------------------------------------------------- :: AppRel
-match (a1 + a) with (a2 + x) -> b1 = (b2 {`a/x`})
+match (a1 R a) with (a2 R x) -> b1 = (b2 {`a/x`})
 
 match a1 with a2 -> b1 = b2
 -------------------------------------------------------- :: AppIrrel
@@ -941,6 +944,7 @@ defn
 by
 
 W |= a : R
+% change to Rep?
 ------------------------- :: Refl
 W |= a => a  / R
 
@@ -988,6 +992,7 @@ W |= a : R
 match a with p -> b = b'
 R1 <= R
 rctx_uniq W
+% rctx_uniq (W ++ var_pat p)
 -------------------------------- :: Axiom
 W |= a => b' / R
 

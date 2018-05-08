@@ -18,6 +18,8 @@ Inductive appflag : Set :=  (*r applicative flag *)
  | Role (R:role)
  | Rho (rho:relflag).
 
+Definition roles : Set := list role.
+
 Inductive constraint : Set :=  (*r props *)
  | Eq (a:tm) (b:tm) (A:tm) (R:role)
 with tm : Set :=  (*r types and kinds *)
@@ -70,21 +72,19 @@ with co : Set :=  (*r explicit coercions *)
  | g_Left (g:co) (g':co)
  | g_Right (g:co) (g':co).
 
-Inductive sort : Set :=  (*r binding classifier *)
- | Tm (A:tm)
- | Co (phi:constraint).
-
-Definition roles : Set := list role.
-
-Definition context : Set := list ( atom * sort ).
-
 Inductive sig_sort : Set :=  (*r signature classifier *)
  | Cs (A:tm) (Rs:roles)
  | Ax (p:tm) (a:tm) (A:tm) (R:role) (Rs:roles).
 
+Inductive sort : Set :=  (*r binding classifier *)
+ | Tm (A:tm)
+ | Co (phi:constraint).
+
 Definition role_context : Set := list ( atom * role ).
 
 Definition sig : Set := list (atom * sig_sort).
+
+Definition context : Set := list ( atom * sort ).
 
 Definition available_props : Type := atoms.
 
@@ -443,15 +443,6 @@ with lc_constraint : constraint -> Prop :=    (* defn lc_constraint *)
      (lc_tm A) ->
      (lc_constraint (Eq a b A R)).
 
-(* defns LC_sort *)
-Inductive lc_sort : sort -> Prop :=    (* defn lc_sort *)
- | lc_Tm : forall (A:tm),
-     (lc_tm A) ->
-     (lc_sort (Tm A))
- | lc_Co : forall (phi:constraint),
-     (lc_constraint phi) ->
-     (lc_sort (Co phi)).
-
 (* defns LC_sig_sort *)
 Inductive lc_sig_sort : sig_sort -> Prop :=    (* defn lc_sig_sort *)
  | lc_Cs : forall (A:tm) (Rs:roles),
@@ -462,6 +453,15 @@ Inductive lc_sig_sort : sig_sort -> Prop :=    (* defn lc_sig_sort *)
      (lc_tm a) ->
      (lc_tm A) ->
      (lc_sig_sort (Ax p a A R Rs)).
+
+(* defns LC_sort *)
+Inductive lc_sort : sort -> Prop :=    (* defn lc_sort *)
+ | lc_Tm : forall (A:tm),
+     (lc_tm A) ->
+     (lc_sort (Tm A))
+ | lc_Co : forall (phi:constraint),
+     (lc_constraint phi) ->
+     (lc_sort (Co phi)).
 (** free variables *)
 Fixpoint fv_tm_tm_co (g_5:co) : vars :=
   match g_5 with
@@ -873,6 +873,14 @@ Fixpoint range (L : role_context) : roles :=
   | (x,R) :: L' => R :: range(L')
   end.
 
+Fixpoint var_pat (p : tm) : role_context := 
+   match p with
+      a_App p (Role R) (a_Var_f x) => (x, R) :: (var_pat p)
+    | a_App p (Rho Irrel) Bullet => var_pat p
+    | a_CApp p g_Triv => var_pat p
+    | _  => nil
+   end.
+
 
 (** definitions *)
 
@@ -933,7 +941,7 @@ Inductive PatternContexts : role_context -> context -> const -> tm -> tm -> tm -
      PatternContexts  nil   nil  F A (a_Fam F) A
  | PatCtx_PiRel : forall (L:vars) (W:role_context) (R:role) (G:context) (A':tm) (F:const) (B p A:tm),
      PatternContexts W G F B p (a_Pi Rel A' A) ->
-      ( forall x , x \notin  L  -> PatternContexts  (( x  ~  R ) ++  W )   (( x ~ Tm  A' ) ++  G )  F B (a_App p (Rho Rel) (a_Var_f x))  ( open_tm_wrt_tm A (a_Var_f x) )  ) 
+      ( forall x , x \notin  L  -> PatternContexts  (( x  ~  R ) ++  W )   (( x ~ Tm  A' ) ++  G )  F B (a_App p (Role R) (a_Var_f x))  ( open_tm_wrt_tm A (a_Var_f x) )  ) 
  | PatCtx_PiIrr : forall (L:vars) (W:role_context) (G:context) (A':tm) (F:const) (B p A:tm),
      PatternContexts W G F B p (a_Pi Irrel A' A) ->
       ( forall x , x \notin  L  -> PatternContexts W  (( x ~ Tm  A' ) ++  G )  F B (a_App p (Rho Irrel) a_Bullet)  ( open_tm_wrt_tm A (a_Var_f x) )  ) 
@@ -946,14 +954,10 @@ Inductive MatchSubst : tm -> tm -> tm -> tm -> Prop :=    (* defn MatchSubst *)
  | MatchSubst_Const : forall (F:const) (b:tm),
      lc_tm b ->
      MatchSubst (a_Fam F) (a_Fam F) b b
- | MatchSubst_AppRelR : forall (a1:tm) (R':role) (a a2:tm) (x:tmvar) (b1 b2:tm),
+ | MatchSubst_AppRelR : forall (a1:tm) (R:role) (a a2:tm) (x:tmvar) (b1 b2:tm),
      lc_tm a ->
      MatchSubst a1 a2 b1 b2 ->
-     MatchSubst  ( (a_App a1 (Role R') a) )   ( (a_App a2 (Rho Rel) (a_Var_f x)) )  b1  (  (tm_subst_tm_tm  a   x   b2 )  ) 
- | MatchSubst_AppRel : forall (a1 a a2:tm) (x:tmvar) (b1 b2:tm),
-     lc_tm a ->
-     MatchSubst a1 a2 b1 b2 ->
-     MatchSubst  ( (a_App a1 (Rho Rel) a) )   ( (a_App a2 (Rho Rel) (a_Var_f x)) )  b1  (  (tm_subst_tm_tm  a   x   b2 )  ) 
+     MatchSubst  ( (a_App a1 (Role R) a) )   ( (a_App a2 (Role R) (a_Var_f x)) )  b1  (  (tm_subst_tm_tm  a   x   b2 )  ) 
  | MatchSubst_AppIrrel : forall (a1 a2 b1 b2:tm),
      MatchSubst a1 a2 b1 b2 ->
      MatchSubst  ( (a_App a1 (Rho Irrel) a_Bullet) )   ( (a_App a2 (Rho Irrel) a_Bullet) )  b1 b2
@@ -1536,6 +1540,6 @@ Inductive head_reduction : context -> tm -> tm -> role -> Prop :=    (* defn hea
 
 
 (** infrastructure *)
-Hint Constructors SubRole Path ValuePath PatternContexts MatchSubst ApplyArgs Value value_type consistent roleing RhoCheck Par MultiPar joins Beta reduction_in_one reduction BranchTyping PropWff Typing Iso DefEq Ctx Sig AnnPropWff AnnTyping AnnIso AnnDefEq AnnCtx head_reduction lc_co lc_brs lc_tm lc_constraint lc_sort lc_sig_sort.
+Hint Constructors SubRole Path ValuePath PatternContexts MatchSubst ApplyArgs Value value_type consistent roleing RhoCheck Par MultiPar joins Beta reduction_in_one reduction BranchTyping PropWff Typing Iso DefEq Ctx Sig AnnPropWff AnnTyping AnnIso AnnDefEq AnnCtx head_reduction lc_co lc_brs lc_tm lc_constraint lc_sig_sort lc_sort.
 
 

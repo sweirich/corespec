@@ -37,7 +37,7 @@ Qed.
 
 Lemma match_subst_roleing : forall W a R p b b', Roleing W a R ->
                    MatchSubst a p b b' -> Roleing W b' R.
-Proof.
+Proof. Admitted.
 
 Lemma match_path : forall F p a A R Rs a0 b, binds F (Ax p a A R Rs) toplevel ->
                           MatchSubst a0 p a b -> Path a0 F nil.

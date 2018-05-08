@@ -23,10 +23,11 @@ Lemma uniq_toplevel : uniq toplevel.
 Proof.
   induction Sig_toplevel; auto.
 Qed.
-(*
+
 (* ------------------------------------------ *)
-Lemma toplevel_closed : forall F p a A R Rs, binds F (Ax p a A R Rs) toplevel ->
-                                 Typing nil a A.
+Lemma toplevel_inversion : forall F p a A R Rs, binds F (Ax p a A R Rs) toplevel ->
+                                 (exists W G B, PatternContexts W G F A p B /\
+                                Typing G a B /\ roleing W a Rep /\ Rs = range W).
 Proof.
   have st: Sig toplevel by apply Sig_toplevel.
   induction st.
@@ -36,9 +37,15 @@ Proof.
   - intros.
     match goal with [ H : binds ?F _ _ |- _ ] => inversion H end.
     match goal with [ H : (_,_) = (_,_) |- _ ] => inversion H end.
-    subst. eauto. eauto.
+    subst. exists W, G, B. eauto. eauto.
 Qed.
 
+Lemma var_pat_ctx : forall W G F A p B, PatternContexts W G F A p B ->
+                                        var_pat p = W.
+Proof. intros. induction H; simpl; auto. subst. auto.
+Qed.
+
+(*
 Lemma toplevel_closed_const : forall F A, binds F (Cs A) toplevel ->
                                  Typing nil A a_Star Rep.
 Proof.

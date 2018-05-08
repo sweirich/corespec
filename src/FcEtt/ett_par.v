@@ -93,6 +93,21 @@ Qed.
 
 Hint Resolve MatchSubst_lc_1 MatchSubst_lc_3 ApplyArgs_lc_3 Par_lc1 Par_lc2 : lc.
 
+Lemma roleing_match : forall W1 a R1 W2 p b R2 b', roleing W1 a R1 ->
+                      roleing (W2 ++ (var_pat p)) b R2 -> MatchSubst a p b b' ->
+                      uniq (W2 ++ (var_pat p) ++ W1) ->
+                      roleing (W2 ++ W1) b' R2.
+Proof. intros. generalize dependent W1. generalize dependent W2.
+       induction H1; intros.
+        - simpl in H0.
+          replace (W2 ++ W1) with (W2 ++ W1 ++ nil).
+          apply roleing_app_rctx. simpl_env. auto. auto. rewrite app_nil_r. auto.
+        - simpl in H0. inversion H2; subst. eapply subst_tm_roleing; eauto.
+          rewrite <- app_assoc. eapply IHMatchSubst; eauto.
+          rewrite app_assoc. eauto. simpl in H3. solve_uniq.
+        - simpl in H0. inversion H; subst. eauto.
+        - simpl in H0. inversion H; subst. eauto.
+Qed.
 
 Lemma Par_roleing_tm_fst : forall W a a' R, Par W a a' R -> 
                                                roleing W a R.
@@ -113,7 +128,10 @@ Proof. intros W a a' R H. induction H; eauto.
         - inversion IHPar; subst. pick fresh c.
           erewrite co_subst_co_tm_intro; eauto.
           replace W with (nil ++ W); auto. eapply subst_co_roleing; eauto.
-        - admit.
+        - apply toplevel_inversion in H.
+          inversion H as [W1 [G1 [B1 [P1 [P2 [P3 P4]]]]]].
+          replace W with (nil ++ W); auto. eapply roleing_match; eauto 1.
+          simpl_env. apply var_pat_ctx in P1. subst. admit. admit.
         - admit.
 Admitted.
 
