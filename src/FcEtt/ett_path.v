@@ -10,7 +10,7 @@ Require Import FcEtt.toplevel.
 Require Import FcEtt.ett_roleing.
 Require Import FcEtt.ext_wf.
 
-Lemma Path_binds_toplevel : forall F a R, ValuePath R a F ->
+Lemma CasePath_binds_toplevel : forall F a R, CasePath R a F ->
                      (exists A Rs, binds F (Cs A Rs) toplevel) \/
                      (exists p a0 A0 R0 Rs, binds F (Ax p a0 A0 R0 Rs) toplevel
                                                   /\ ~(SubRole R0 R)).
@@ -18,17 +18,76 @@ Proof. intros. induction H. left. exists A, Rs; auto.
        right. exists p, a, A, R1, Rs; auto. auto. auto.
 Qed.
 
-Lemma Path_subst : forall F a b R x, ValuePath R a F -> lc_tm b ->
-                   ValuePath R (tm_subst_tm_tm b x a) F.
+Lemma CasePath_subst : forall F a b R x, CasePath R a F -> lc_tm b ->
+                   CasePath R (tm_subst_tm_tm b x a) F.
 Proof. intros. induction H; simpl; eauto.
        econstructor; eauto with lngen lc.
 Qed.
 
-Lemma Path_subst_co : forall F a b R c, ValuePath R a F -> lc_co b ->
-                   ValuePath R (co_subst_co_tm b c a) F.
+Lemma CasePath_subst_co : forall F a b R c, CasePath R a F -> lc_co b ->
+                   CasePath R (co_subst_co_tm b c a) F.
 Proof. intros. induction H; simpl; eauto.
        econstructor; eauto with lngen lc.
 Qed.
+
+Lemma role_dec : forall (R1 : role) R2, R1 = R2 \/ ~(R1 = R2).
+Proof. intros. destruct R1, R2; auto. right. intro. inversion H.
+       right. intro. inversion H.
+Qed.
+
+Lemma tm_dec : forall (a : tm) b, a = b \/ ~(a = b).
+Proof. intros. generalize dependent b. induction a; destruct b;
+        try destruct nu, nu0; try destruct rho, rho0; try destruct phi, phi0;
+       try (right; intro P; inversion P; fail);
+       try (left; eauto 2; fail); try (
+       match goal with
+        [ b0 : tm, IH : forall b, _ |- _ ] => pose (Q := IH b0); inversion Q;
+        [ left; f_equal; eauto | right; intro P; inversion P; contradiction]
+       end; fail). Admitted.
+
+Lemma match_bullet : forall a p b, MatchSubst a p a_Bullet b -> b = a_Bullet.
+Proof. intros. dependent induction H; auto.
+       pose (P := IHMatchSubst ltac:(auto)). rewrite P. auto.
+Qed.
+
+Lemma match_dec : forall a p, lc_tm a -> MatchSubst a p a_Bullet a_Bullet \/ ~(MatchSubst a p a_Bullet a_Bullet).
+Proof. intros. generalize dependent a.
+       induction p; intros; try (right; intro P; inversion P; fail).
+        - destruct nu. destruct a; try (right; intro P; inversion P; fail).
+          destruct nu. destruct p2; try (right; intro P; inversion P; fail).
+          pose (P := role_dec R0 R). inversion P. subst.
+          inversion H; subst. pose (Q := IHp1 a1 H2). inversion Q.
+          assert (Q' : a_Bullet = (tm_subst_tm_tm a2 x a_Bullet)). {auto. }
+          left. apply MatchSubst_AppRelR with (R := R)(a := a2)(x := x) in H0.
+          rewrite <- Q' in H0. auto. auto.
+          right. intro Q1. inversion Q1; subst. rewrite H10 in H11.
+          pose (Q2 := H11). apply match_bullet in Q2. subst. contradiction.
+          right; intro P1; inversion P1; contradiction.
+          right; intro P1; inversion P1; contradiction.
+          destruct rho. right; intro P1; inversion P1.
+          destruct p2; try (right; intro P; inversion P; fail).
+          destruct a; try (right; intro P; inversion P; fail).
+          destruct nu; try (right; intro P; inversion P; fail).
+          destruct rho; try (right; intro P1; inversion P1; fail).
+          destruct a2; try (right; intro P; inversion P; fail).
+          inversion H; subst. pose (Q := IHp1 a1 H2). inversion Q.
+          left; eauto. right. intro P. inversion P. contradiction.
+        - destruct g; try (right; intro P; inversion P; fail).
+          destruct a; try (right; intro P; inversion P; fail).
+          destruct g; try (right; intro P; inversion P; fail).
+          inversion H; subst. pose (Q := IHp a H2). inversion Q.
+          left; eauto. right. intro P. inversion P. contradiction.
+        - destruct a; try (right; intro P; inversion P; fail).
+          destruct (F0 == F). subst. left. eauto.
+          right; intro P; inversion P; contradiction.
+Qed.
+
+Lemma CasePath_ValuePath : forall R a F, CasePath R a F -> ValuePath R a F.
+Proof. intros. induction H; eauto.
+       pose (P := match_dec). pose (Q := P (a_Fam F) p ltac:(auto)).
+       inversion Q. eauto. eauto.
+Qed.
+
 (*
 Lemma subst_Path : forall F a b R x, lc_tm b -> Value R a ->
                    ValuePath R (tm_subst_tm_tm b x a) F -> ValuePath R a F.
