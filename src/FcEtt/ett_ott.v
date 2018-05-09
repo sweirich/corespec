@@ -965,26 +965,20 @@ Inductive MatchSubst : tm -> tm -> tm -> tm -> Prop :=    (* defn MatchSubst *)
      MatchSubst  ( (a_CApp a1 g_Triv) )   ( (a_CApp a2 g_Triv) )  b1 b2.
 
 (* defns JValuePath *)
-Inductive ValuePath : role -> tm -> const -> Prop :=    (* defn ValuePath *)
- | ValuePath_AbsConst : forall (R:role) (F:const) (A:tm) (Rs:roles),
+Inductive ValuePath : tm -> const -> Prop :=    (* defn ValuePath *)
+ | ValuePath_AbsConst : forall (F:const) (A:tm) (Rs:roles),
       binds  F  ( (Cs A Rs) )   toplevel   ->
-     ValuePath R (a_Fam F) F
- | ValuePath_ConstMatch : forall (R:role) (b:tm) (F:const) (p a A:tm) (R1:role) (Rs:roles),
+     ValuePath (a_Fam F) F
+ | ValuePath_Const : forall (F:const) (p a A:tm) (R1:role) (Rs:roles),
       binds  F  ( (Ax p a A R1 Rs) )   toplevel   ->
-     MatchSubst b p a_Bullet a_Bullet ->
-      not (  ( SubRole R1 R )  )  ->
-     ValuePath R b F
- | ValuePath_Const : forall (R:role) (b:tm) (F:const) (p a A:tm) (R1:role) (Rs:roles),
-      binds  F  ( (Ax p a A R1 Rs) )   toplevel   ->
-      not (  ( MatchSubst b p a_Bullet a_Bullet )  )  ->
-     ValuePath R b F
- | ValuePath_App : forall (R:role) (a:tm) (nu:appflag) (b':tm) (F:const),
+     ValuePath (a_Fam F) F
+ | ValuePath_App : forall (a:tm) (nu:appflag) (b':tm) (F:const),
      lc_tm b' ->
-     ValuePath R a F ->
-     ValuePath R  ( (a_App a nu b') )  F
- | ValuePath_CApp : forall (R:role) (a:tm) (F:const),
-     ValuePath R a F ->
-     ValuePath R  ( (a_CApp a g_Triv) )  F.
+     ValuePath a F ->
+     ValuePath  ( (a_App a nu b') )  F
+ | ValuePath_CApp : forall (a:tm) (F:const),
+     ValuePath a F ->
+     ValuePath  ( (a_CApp a g_Triv) )  F.
 
 (* defns JApplyArgs *)
 Inductive ApplyArgs : tm -> tm -> tm -> Prop :=    (* defn ApplyArgs *)
@@ -1028,8 +1022,20 @@ Inductive Value : role -> tm -> Prop :=    (* defn Value *)
  | Value_UCAbs : forall (R:role) (a:tm),
      lc_tm (a_UCAbs a) ->
      Value R (a_UCAbs a)
- | Value_Path : forall (R:role) (a:tm) (F:const),
-     ValuePath R a F ->
+ | Value_Const : forall (R:role) (a:tm) (F:const) (A:tm) (Rs:roles),
+     ValuePath a F ->
+      binds  F  ( (Cs A Rs) )   toplevel   ->
+     Value R a
+ | Value_Path : forall (R:role) (a:tm) (F:const) (p b A:tm) (R1:role) (Rs:roles),
+     ValuePath a F ->
+      binds  F  ( (Ax p b A R1 Rs) )   toplevel   ->
+      not (  ( MatchSubst a p a_Bullet a_Bullet )  )  ->
+     Value R a
+ | Value_PathMatch : forall (R:role) (a:tm) (F:const) (p b A:tm) (R1:role) (Rs:roles),
+     ValuePath a F ->
+      binds  F  ( (Ax p b A R1 Rs) )   toplevel   ->
+     MatchSubst a p a_Bullet a_Bullet ->
+      not (  ( SubRole R1 R )  )  ->
      Value R a.
 
 (* defns JValueType *)
@@ -1045,7 +1051,7 @@ Inductive value_type : role -> tm -> Prop :=    (* defn value_type *)
      lc_tm (a_CPi phi B) ->
      value_type R (a_CPi phi B)
  | value_type_ValuePath : forall (R:role) (a:tm) (F:const),
-     ValuePath R a F ->
+     ValuePath a F ->
      value_type R a.
 
 (* defns Jconsistent *)
@@ -1065,8 +1071,8 @@ Inductive consistent : tm -> tm -> role -> Prop :=    (* defn consistent *)
      lc_tm (a_CPi phi2 A2) ->
      consistent  ( (a_CPi phi1 A1) )   ( (a_CPi phi2 A2) )  R
  | consistent_a_ValuePath : forall (a1 a2:tm) (R:role) (F:const),
-     ValuePath R a1 F ->
-     ValuePath R a2 F ->
+     ValuePath a1 F ->
+     ValuePath a2 F ->
      consistent a1 a2 R
  | consistent_a_Step_R : forall (a b:tm) (R:role),
      lc_tm a ->
@@ -1466,8 +1472,8 @@ with DefEq : context -> available_props -> tm -> tm -> tm -> role -> Prop :=    
      DefEq G D b2 b2' B R0 ->
      DefEq G D (a_Pattern R a F b1 b2) (a_Pattern R a' F b1' b2') B R0
  | E_LeftRel : forall (G:context) (D:available_props) (a a' A B:tm) (R':role) (F:const) (b b':tm) (R1:role),
-     ValuePath R' a F ->
-     ValuePath R' a' F ->
+     ValuePath a F ->
+     ValuePath a' F ->
      Typing G a (a_Pi Rel A B) ->
      Typing G b A ->
      Typing G a' (a_Pi Rel A B) ->
@@ -1476,8 +1482,8 @@ with DefEq : context -> available_props -> tm -> tm -> tm -> role -> Prop :=    
      DefEq G  (dom  G )   (open_tm_wrt_tm  B   b )   (open_tm_wrt_tm  B   b' )  a_Star R' ->
      DefEq G D a a' (a_Pi Rel A B) R'
  | E_LeftIrrel : forall (G:context) (D:available_props) (a a' A B:tm) (R':role) (F:const) (b b':tm) (R0:role),
-     ValuePath R' a F ->
-     ValuePath R' a' F ->
+     ValuePath a F ->
+     ValuePath a' F ->
      Typing G a (a_Pi Irrel A B) ->
      Typing G b A ->
      Typing G a' (a_Pi Irrel A B) ->
@@ -1486,8 +1492,8 @@ with DefEq : context -> available_props -> tm -> tm -> tm -> role -> Prop :=    
      DefEq G  (dom  G )   (open_tm_wrt_tm  B   b )   (open_tm_wrt_tm  B   b' )  a_Star R0 ->
      DefEq G D a a' (a_Pi Irrel A B) R'
  | E_Right : forall (G:context) (D:available_props) (b b' A:tm) (R1 R':role) (a:tm) (F:const) (a' B:tm) (R0:role),
-     ValuePath R' a F ->
-     ValuePath R' a' F ->
+     ValuePath a F ->
+     ValuePath a' F ->
      Typing G a (a_Pi Rel A B) ->
      Typing G b A ->
      Typing G a' (a_Pi Rel A B) ->
@@ -1496,8 +1502,8 @@ with DefEq : context -> available_props -> tm -> tm -> tm -> role -> Prop :=    
      DefEq G  (dom  G )   (open_tm_wrt_tm  B   b )   (open_tm_wrt_tm  B   b' )  a_Star R0 ->
      DefEq G D b b' A  (param R1   R' ) 
  | E_CLeft : forall (G:context) (D:available_props) (a a' a1 a2 A:tm) (R1:role) (B:tm) (R':role) (F:const),
-     ValuePath R' a F ->
-     ValuePath R' a' F ->
+     ValuePath a F ->
+     ValuePath a' F ->
      Typing G a (a_CPi  ( (Eq a1 a2 A R1) )  B) ->
      Typing G a' (a_CPi  ( (Eq a1 a2 A R1) )  B) ->
      DefEq G  (dom  G )  a1 a2 A R' ->

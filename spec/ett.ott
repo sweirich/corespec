@@ -707,33 +707,26 @@ defns
    JValuePath :: '' ::=
 
 defn
-ValuePath R a = F  ::  :: ValuePath :: 'ValuePath_'
+ValuePath a = F  ::  :: ValuePath :: 'ValuePath_'
 {{ com Type headed by constant (role-sensitive partial function used in value) }}
-{{ tex \mathsf{ValuePath}_{[[R]]}\ [[a]] = [[F]] }}
+{{ tex \mathsf{ValuePath} \ [[a]] = [[F]] }}
 by
 
 F : A @ Rs in toplevel
 --------------------- :: AbsConst
-ValuePath R F = F
+ValuePath F = F
 
 F : p ~ a : A/R1 @ Rs in toplevel
-match b with p -> [] = []
-not (R1 <= R)
----------------------------------- :: ConstMatch
-ValuePath R b = F
-
-F : p ~ a : A/R1 @ Rs in toplevel
-not (match b with p -> [] = [])
 ---------------------------------- :: Const
-ValuePath R b = F
+ValuePath F = F
 
-ValuePath R a = F
+ValuePath a = F
 ---------------------------- :: App
-ValuePath R (a nu b') = F
+ValuePath (a nu b') = F
 
-ValuePath R a = F
+ValuePath a = F
 ---------------------- :: CApp
-ValuePath R (a [o]) = F
+ValuePath (a [o]) = F
 
 defns
 JApplyArgs :: '' ::=
@@ -790,9 +783,24 @@ Value R /\c:phi.a
 --------------------- :: UCAbs
 Value R /\c .a
 
-ValuePath R a = F
----------------------- :: Path
+ValuePath a = F
+F : A @ Rs in toplevel
+--------------------------- :: Const
 Value R a
+
+ValuePath a = F
+F : p ~ b : A/R1 @ Rs in toplevel
+not (match a with p -> [] = []) 
+---------------------------------- :: Path
+Value R a
+
+ValuePath a = F
+F : p ~ b : A/R1 @ Rs in toplevel
+match a with p -> [] = []
+not (R1 <= R)
+---------------------------------- :: PathMatch
+Value R a
+
 
 defns
    JValueType :: '' ::=
@@ -812,7 +820,7 @@ ValueType R all rho x : A  -> B
 -------------------- :: CPi
 ValueType R all c : phi. B
 
-ValuePath R a = F
+ValuePath a = F
 ------------------------ :: ValuePath
 ValueType R a
 
@@ -839,8 +847,8 @@ consistent (all rho x1:A1 -> B1) (all rho x2:A2 -> B2) R'
 ------------------------ :: CPi
 consistent (all c1:phi1. A1) (all c2 :phi2. A2) R
 
-ValuePath R a1 = F
-ValuePath R a2 = F
+ValuePath a1 = F
+ValuePath a2 = F
 ------------------------ :: ValuePath
 consistent a1 a2 R
 
@@ -1427,8 +1435,8 @@ G ; D |= b2 == b2' : B / R0
 ------------------------------------------------------------------------------- :: PatCong
 G ; D |= case R a of F => b1 | _ => b2 == case R a' of F => b1' | _ => b2' : B / R0
 
-ValuePath R' a  = F
-ValuePath R' a' = F
+ValuePath a  = F
+ValuePath a' = F
 G |= a : all +x:A  -> B
 G |= b : A
 G |= a' : all +x:A  -> B
@@ -1438,8 +1446,8 @@ G ; dom G |= B {b/x} == B {b'/x} : TYPE / R'
 -------------------------------------------------- :: LeftRel
 G ; D |= a == a' : all + x: A -> B / R'
 
-ValuePath R' a  = F
-ValuePath R' a' = F
+ValuePath a  = F
+ValuePath a' = F
 G |= a : all -x:A -> B
 G |= b : A
 G |= a' : all -x:A -> B
@@ -1450,8 +1458,8 @@ G ; dom G |= B {b/x} == B {b'/x} : TYPE/R0
 G ; D |= a == a' : all -x: A -> B/R'
 
 
-ValuePath R' a  = F
-ValuePath R' a' = F
+ValuePath a  = F
+ValuePath a' = F
 G |= a : all +x:A -> B
 G |= b : A
 G |= a' : all +x:A -> B
@@ -1462,8 +1470,8 @@ G ; dom G |= B {b/x} == B {b'/x} : TYPE/R0
 G ; D |= b == b' : A/param R1 R'
 
 
-ValuePath R' a  = F
-ValuePath R' a' = F
+ValuePath a  = F
+ValuePath a' = F
 G |= a  : all c:(a1 ~ a2:A/R1). B
 G |= a' : all c:(a1 ~ a2:A/R1). B
 G ; dom G |= a1 == a2 : A/R'

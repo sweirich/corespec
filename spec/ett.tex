@@ -307,7 +307,7 @@
 
 \newcommand{\ottJValuePath}{
 \ottrulehead{\ottnt{JValuePath}}{::=}{}\ottprodnewline
-\ottfirstprodline{|}{ \mathsf{ValuePath}_{ \ottnt{R} }\  \ottnt{a}  =  \ottmv{F} }{}{}{}{\ottcom{Type headed by constant (role-sensitive partial function used in value)}}}
+\ottfirstprodline{|}{ \mathsf{ValuePath} \  \ottnt{a}  =  \ottmv{F} }{}{}{}{\ottcom{Type headed by constant (role-sensitive partial function used in value)}}}
 
 \newcommand{\ottJApplyArgs}{
 \ottrulehead{\ottnt{JApplyArgs}}{::=}{}\ottprodnewline
@@ -692,48 +692,36 @@
 \newcommand{\ottdruleValuePathXXAbsConst}[1]{\ottdrule[#1]{%
 \ottpremise{\ottmv{F}  \ottsym{:}  \ottnt{A}  \ottsym{@}  \ottnt{Rs} \, \in \,  \Sigma_0 }%
 }{
- \mathsf{ValuePath}_{ \ottnt{R} }\  \ottmv{F}  =  \ottmv{F} }{%
+ \mathsf{ValuePath} \  \ottmv{F}  =  \ottmv{F} }{%
 {\ottdrulename{ValuePath\_AbsConst}}{}%
-}}
-
-
-\newcommand{\ottdruleValuePathXXConstMatch}[1]{\ottdrule[#1]{%
-\ottpremise{\ottmv{F}  \ottsym{:}   \,  \ottnt{p}  \sim  \ottnt{a}  :  \ottnt{A}  /  \ottnt{R_{{\mathrm{1}}}}  @  \ottnt{Rs}  \, \in \,  \Sigma_0 }%
-\ottpremise{ \mathsf{match} \  \ottnt{b}  \ \mathsf{with} \  \ottnt{p}  \rightarrow  \Box  =  \Box }%
-\ottpremise{ \neg  \ottsym{(}   \ottnt{R_{{\mathrm{1}}}}  \leq  \ottnt{R}   \ottsym{)} }%
-}{
- \mathsf{ValuePath}_{ \ottnt{R} }\  \ottnt{b}  =  \ottmv{F} }{%
-{\ottdrulename{ValuePath\_ConstMatch}}{}%
 }}
 
 
 \newcommand{\ottdruleValuePathXXConst}[1]{\ottdrule[#1]{%
 \ottpremise{\ottmv{F}  \ottsym{:}   \,  \ottnt{p}  \sim  \ottnt{a}  :  \ottnt{A}  /  \ottnt{R_{{\mathrm{1}}}}  @  \ottnt{Rs}  \, \in \,  \Sigma_0 }%
-\ottpremise{ \neg  \ottsym{(}   \mathsf{match} \  \ottnt{b}  \ \mathsf{with} \  \ottnt{p}  \rightarrow  \Box  =  \Box   \ottsym{)} }%
 }{
- \mathsf{ValuePath}_{ \ottnt{R} }\  \ottnt{b}  =  \ottmv{F} }{%
+ \mathsf{ValuePath} \  \ottmv{F}  =  \ottmv{F} }{%
 {\ottdrulename{ValuePath\_Const}}{}%
 }}
 
 
 \newcommand{\ottdruleValuePathXXApp}[1]{\ottdrule[#1]{%
-\ottpremise{ \mathsf{ValuePath}_{ \ottnt{R} }\  \ottnt{a}  =  \ottmv{F} }%
+\ottpremise{ \mathsf{ValuePath} \  \ottnt{a}  =  \ottmv{F} }%
 }{
- \mathsf{ValuePath}_{ \ottnt{R} }\  \ottsym{(}   \ottnt{a} \  \ottnt{b'} ^{ \nu }   \ottsym{)}  =  \ottmv{F} }{%
+ \mathsf{ValuePath} \  \ottsym{(}   \ottnt{a} \  \ottnt{b'} ^{ \nu }   \ottsym{)}  =  \ottmv{F} }{%
 {\ottdrulename{ValuePath\_App}}{}%
 }}
 
 
 \newcommand{\ottdruleValuePathXXCApp}[1]{\ottdrule[#1]{%
-\ottpremise{ \mathsf{ValuePath}_{ \ottnt{R} }\  \ottnt{a}  =  \ottmv{F} }%
+\ottpremise{ \mathsf{ValuePath} \  \ottnt{a}  =  \ottmv{F} }%
 }{
- \mathsf{ValuePath}_{ \ottnt{R} }\  \ottsym{(}  \ottnt{a}  \ottsym{[}  \bullet  \ottsym{]}  \ottsym{)}  =  \ottmv{F} }{%
+ \mathsf{ValuePath} \  \ottsym{(}  \ottnt{a}  \ottsym{[}  \bullet  \ottsym{]}  \ottsym{)}  =  \ottmv{F} }{%
 {\ottdrulename{ValuePath\_CApp}}{}%
 }}
 
-\newcommand{\ottdefnValuePath}[1]{\begin{ottdefnblock}[#1]{$ \mathsf{ValuePath}_{ \ottnt{R} }\  \ottnt{a}  =  \ottmv{F} $}{\ottcom{Type headed by constant (role-sensitive partial function used in value)}}
+\newcommand{\ottdefnValuePath}[1]{\begin{ottdefnblock}[#1]{$ \mathsf{ValuePath} \  \ottnt{a}  =  \ottmv{F} $}{\ottcom{Type headed by constant (role-sensitive partial function used in value)}}
 \ottusedrule{\ottdruleValuePathXXAbsConst{}}
-\ottusedrule{\ottdruleValuePathXXConstMatch{}}
 \ottusedrule{\ottdruleValuePathXXConst{}}
 \ottusedrule{\ottdruleValuePathXXApp{}}
 \ottusedrule{\ottdruleValuePathXXCApp{}}
@@ -836,11 +824,33 @@
 }}
 
 
+\newcommand{\ottdruleValueXXConst}[1]{\ottdrule[#1]{%
+\ottpremise{ \mathsf{ValuePath} \  \ottnt{a}  =  \ottmv{F} }%
+\ottpremise{\ottmv{F}  \ottsym{:}  \ottnt{A}  \ottsym{@}  \ottnt{Rs} \, \in \,  \Sigma_0 }%
+}{
+ \mathsf{Value}_{ \ottnt{R} }\  \ottnt{a} }{%
+{\ottdrulename{Value\_Const}}{}%
+}}
+
+
 \newcommand{\ottdruleValueXXPath}[1]{\ottdrule[#1]{%
-\ottpremise{ \mathsf{ValuePath}_{ \ottnt{R} }\  \ottnt{a}  =  \ottmv{F} }%
+\ottpremise{ \mathsf{ValuePath} \  \ottnt{a}  =  \ottmv{F} }%
+\ottpremise{\ottmv{F}  \ottsym{:}   \,  \ottnt{p}  \sim  \ottnt{b}  :  \ottnt{A}  /  \ottnt{R_{{\mathrm{1}}}}  @  \ottnt{Rs}  \, \in \,  \Sigma_0 }%
+\ottpremise{ \neg  \ottsym{(}   \mathsf{match} \  \ottnt{a}  \ \mathsf{with} \  \ottnt{p}  \rightarrow  \Box  =  \Box   \ottsym{)} }%
 }{
  \mathsf{Value}_{ \ottnt{R} }\  \ottnt{a} }{%
 {\ottdrulename{Value\_Path}}{}%
+}}
+
+
+\newcommand{\ottdruleValueXXPathMatch}[1]{\ottdrule[#1]{%
+\ottpremise{ \mathsf{ValuePath} \  \ottnt{a}  =  \ottmv{F} }%
+\ottpremise{\ottmv{F}  \ottsym{:}   \,  \ottnt{p}  \sim  \ottnt{b}  :  \ottnt{A}  /  \ottnt{R_{{\mathrm{1}}}}  @  \ottnt{Rs}  \, \in \,  \Sigma_0 }%
+\ottpremise{ \mathsf{match} \  \ottnt{a}  \ \mathsf{with} \  \ottnt{p}  \rightarrow  \Box  =  \Box }%
+\ottpremise{ \neg  \ottsym{(}   \ottnt{R_{{\mathrm{1}}}}  \leq  \ottnt{R}   \ottsym{)} }%
+}{
+ \mathsf{Value}_{ \ottnt{R} }\  \ottnt{a} }{%
+{\ottdrulename{Value\_PathMatch}}{}%
 }}
 
 \newcommand{\ottdefnValue}[1]{\begin{ottdefnblock}[#1]{$ \mathsf{Value}_{ \ottnt{R} }\  \ottnt{A} $}{\ottcom{values}}
@@ -852,7 +862,9 @@
 \ottusedrule{\ottdruleValueXXUAbsIrrel{}}
 \ottusedrule{\ottdruleValueXXCAbs{}}
 \ottusedrule{\ottdruleValueXXUCAbs{}}
+\ottusedrule{\ottdruleValueXXConst{}}
 \ottusedrule{\ottdruleValueXXPath{}}
+\ottusedrule{\ottdruleValueXXPathMatch{}}
 \end{ottdefnblock}}
 
 
@@ -883,7 +895,7 @@
 
 
 \newcommand{\ottdrulevalueXXtypeXXValuePath}[1]{\ottdrule[#1]{%
-\ottpremise{ \mathsf{ValuePath}_{ \ottnt{R} }\  \ottnt{a}  =  \ottmv{F} }%
+\ottpremise{ \mathsf{ValuePath} \  \ottnt{a}  =  \ottmv{F} }%
 }{
  \mathsf{ValueType}_{ \ottnt{R} }\  \ottnt{a} }{%
 {\ottdrulename{value\_type\_ValuePath}}{}%
@@ -924,8 +936,8 @@
 
 
 \newcommand{\ottdruleconsistentXXaXXValuePath}[1]{\ottdrule[#1]{%
-\ottpremise{ \mathsf{ValuePath}_{ \ottnt{R} }\  \ottnt{a_{{\mathrm{1}}}}  =  \ottmv{F} }%
-\ottpremise{ \mathsf{ValuePath}_{ \ottnt{R} }\  \ottnt{a_{{\mathrm{2}}}}  =  \ottmv{F} }%
+\ottpremise{ \mathsf{ValuePath} \  \ottnt{a_{{\mathrm{1}}}}  =  \ottmv{F} }%
+\ottpremise{ \mathsf{ValuePath} \  \ottnt{a_{{\mathrm{2}}}}  =  \ottmv{F} }%
 }{
  \suppress{\mathsf{consistent}_{ \ottnt{R} }\  \ottnt{a_{{\mathrm{1}}}}  \  \ottnt{a_{{\mathrm{2}}}}  } }{%
 {\ottdrulename{consistent\_a\_ValuePath}}{}%
@@ -1869,8 +1881,8 @@
 
 
 \newcommand{\ottdruleEXXLeftRel}[1]{\ottdrule[#1]{%
-\ottpremise{ \mathsf{ValuePath}_{ \ottnt{R'} }\  \ottnt{a}  =  \ottmv{F} }%
-\ottpremise{ \mathsf{ValuePath}_{ \ottnt{R'} }\  \ottnt{a'}  =  \ottmv{F} }%
+\ottpremise{ \mathsf{ValuePath} \  \ottnt{a}  =  \ottmv{F} }%
+\ottpremise{ \mathsf{ValuePath} \  \ottnt{a'}  =  \ottmv{F} }%
 \ottpremise{\Gamma  \vDash  \ottnt{a}  \ottsym{:}   \mathrm{\Pi}^ \ottsym{+} \ottmv{x} \!:\! \ottnt{A} \to \ottnt{B} }%
 \ottpremise{\Gamma  \vDash  \ottnt{b}  \ottsym{:}  \ottnt{A}}%
 \ottpremise{\Gamma  \vDash  \ottnt{a'}  \ottsym{:}   \mathrm{\Pi}^ \ottsym{+} \ottmv{x} \!:\! \ottnt{A} \to \ottnt{B} }%
@@ -1884,8 +1896,8 @@
 
 
 \newcommand{\ottdruleEXXLeftIrrel}[1]{\ottdrule[#1]{%
-\ottpremise{ \mathsf{ValuePath}_{ \ottnt{R'} }\  \ottnt{a}  =  \ottmv{F} }%
-\ottpremise{ \mathsf{ValuePath}_{ \ottnt{R'} }\  \ottnt{a'}  =  \ottmv{F} }%
+\ottpremise{ \mathsf{ValuePath} \  \ottnt{a}  =  \ottmv{F} }%
+\ottpremise{ \mathsf{ValuePath} \  \ottnt{a'}  =  \ottmv{F} }%
 \ottpremise{\Gamma  \vDash  \ottnt{a}  \ottsym{:}   \mathrm{\Pi}^ \ottsym{-} \ottmv{x} \!:\! \ottnt{A} \to \ottnt{B} }%
 \ottpremise{\Gamma  \vDash  \ottnt{b}  \ottsym{:}  \ottnt{A}}%
 \ottpremise{\Gamma  \vDash  \ottnt{a'}  \ottsym{:}   \mathrm{\Pi}^ \ottsym{-} \ottmv{x} \!:\! \ottnt{A} \to \ottnt{B} }%
@@ -1899,8 +1911,8 @@
 
 
 \newcommand{\ottdruleEXXRight}[1]{\ottdrule[#1]{%
-\ottpremise{ \mathsf{ValuePath}_{ \ottnt{R'} }\  \ottnt{a}  =  \ottmv{F} }%
-\ottpremise{ \mathsf{ValuePath}_{ \ottnt{R'} }\  \ottnt{a'}  =  \ottmv{F} }%
+\ottpremise{ \mathsf{ValuePath} \  \ottnt{a}  =  \ottmv{F} }%
+\ottpremise{ \mathsf{ValuePath} \  \ottnt{a'}  =  \ottmv{F} }%
 \ottpremise{\Gamma  \vDash  \ottnt{a}  \ottsym{:}   \mathrm{\Pi}^ \ottsym{+} \ottmv{x} \!:\! \ottnt{A} \to \ottnt{B} }%
 \ottpremise{\Gamma  \vDash  \ottnt{b}  \ottsym{:}  \ottnt{A}}%
 \ottpremise{\Gamma  \vDash  \ottnt{a'}  \ottsym{:}   \mathrm{\Pi}^ \ottsym{+} \ottmv{x} \!:\! \ottnt{A} \to \ottnt{B} }%
@@ -1914,8 +1926,8 @@
 
 
 \newcommand{\ottdruleEXXCLeft}[1]{\ottdrule[#1]{%
-\ottpremise{ \mathsf{ValuePath}_{ \ottnt{R'} }\  \ottnt{a}  =  \ottmv{F} }%
-\ottpremise{ \mathsf{ValuePath}_{ \ottnt{R'} }\  \ottnt{a'}  =  \ottmv{F} }%
+\ottpremise{ \mathsf{ValuePath} \  \ottnt{a}  =  \ottmv{F} }%
+\ottpremise{ \mathsf{ValuePath} \  \ottnt{a'}  =  \ottmv{F} }%
 \ottpremise{\Gamma  \vDash  \ottnt{a}  \ottsym{:}   \forall \ottmv{c} \!:\! \ottsym{(}   \ottnt{a_{{\mathrm{1}}}}   \sim _{ \ottnt{A} / \ottnt{R_{{\mathrm{1}}}} }  \ottnt{a_{{\mathrm{2}}}}   \ottsym{)} . \ottnt{B} }%
 \ottpremise{\Gamma  \vDash  \ottnt{a'}  \ottsym{:}   \forall \ottmv{c} \!:\! \ottsym{(}   \ottnt{a_{{\mathrm{1}}}}   \sim _{ \ottnt{A} / \ottnt{R_{{\mathrm{1}}}} }  \ottnt{a_{{\mathrm{2}}}}   \ottsym{)} . \ottnt{B} }%
 \ottpremise{\Gamma  \ottsym{;}   \widetilde { \Gamma }   \vDash  \ottnt{a_{{\mathrm{1}}}}  \equiv  \ottnt{a_{{\mathrm{2}}}}  \ottsym{:}  \ottnt{A}  \ottsym{/}  \ottnt{R'}}%
@@ -2102,7 +2114,7 @@
 \ottall
 
 \begin{verbatim}
-Definition rules:        144 good    0 bad
-Definition rule clauses: 402 good    0 bad
+Definition rules:        145 good    0 bad
+Definition rule clauses: 407 good    0 bad
 \end{verbatim}
 \end{document}
