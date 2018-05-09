@@ -30,11 +30,12 @@ Proof. intros. induction H; simpl; eauto.
        econstructor; eauto with lngen lc.
 Qed.
 (*
-Lemma subst_Path : forall F a b R Rs x, lc_tm b -> Value R a ->
-                   RoledPath R (tm_subst_tm_tm b x a) F Rs -> RoledPath R a F Rs.
+Lemma subst_Path : forall F a b R x, lc_tm b -> Value R a ->
+                   ValuePath R (tm_subst_tm_tm b x a) F -> ValuePath R a F.
 Proof. intros. induction a; simpl in H1; auto; try (inversion H1; fail).
         - inversion H0. inversion H2. inversion H3.
-        - inversion H0; subst. inversion H9; subst. inversion H2; subst.
+        - destruct nu. inversion H1.
+          inversion H2; subst. inversion H2; subst.
           econstructor. auto. eapply IHa1; eauto.
         - inversion H0; subst. inversion H1; subst. inversion H2; subst.
           econstructor. eapply IHa; eauto.

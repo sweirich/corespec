@@ -293,9 +293,9 @@
 \ottrulehead{\ottnt{JPath}}{::=}{}\ottprodnewline
 \ottfirstprodline{|}{ \mathsf{Path} \  \ottnt{a}  =  \ottmv{F}  @  \ottnt{Rs} }{}{}{}{\ottcom{Type headed by constant (partial function)}}}
 
-\newcommand{\ottJValuePath}{
-\ottrulehead{\ottnt{JValuePath}}{::=}{}\ottprodnewline
-\ottfirstprodline{|}{ \mathsf{ValuePath}_{ \ottnt{R} }\  \ottnt{a}  =  \ottmv{F} }{}{}{}{\ottcom{Type headed by constant (role-sensitive partial function)}}}
+\newcommand{\ottJCasePath}{
+\ottrulehead{\ottnt{JCasePath}}{::=}{}\ottprodnewline
+\ottfirstprodline{|}{ \mathsf{CasePath}_{ \ottnt{R} }\  \ottnt{a}  =  \ottmv{F} }{}{}{}{\ottcom{Type headed by constant (role-sensitive partial function used in case)}}}
 
 \newcommand{\ottJPatCtx}{
 \ottrulehead{\ottnt{JPatCtx}}{::=}{}\ottprodnewline
@@ -304,6 +304,10 @@
 \newcommand{\ottJMatchSubst}{
 \ottrulehead{\ottnt{JMatchSubst}}{::=}{}\ottprodnewline
 \ottfirstprodline{|}{ \mathsf{match} \  \ottnt{a_{{\mathrm{1}}}}  \ \mathsf{with} \  \ottnt{p}  \rightarrow  \ottnt{b_{{\mathrm{1}}}}  =  \ottnt{b_{{\mathrm{2}}}} }{}{}{}{\ottcom{match and substitute}}}
+
+\newcommand{\ottJValuePath}{
+\ottrulehead{\ottnt{JValuePath}}{::=}{}\ottprodnewline
+\ottfirstprodline{|}{ \mathsf{ValuePath}_{ \ottnt{R} }\  \ottnt{a}  =  \ottmv{F} }{}{}{}{\ottcom{Type headed by constant (role-sensitive partial function used in value)}}}
 
 \newcommand{\ottJApplyArgs}{
 \ottrulehead{\ottnt{JApplyArgs}}{::=}{}\ottprodnewline
@@ -374,9 +378,10 @@
 \ottrulehead{\ottnt{judgement}}{::=}{}\ottprodnewline
 \ottfirstprodline{|}{\ottnt{JSubRole}}{}{}{}{}\ottprodnewline
 \ottprodline{|}{\ottnt{JPath}}{}{}{}{}\ottprodnewline
-\ottprodline{|}{\ottnt{JValuePath}}{}{}{}{}\ottprodnewline
+\ottprodline{|}{\ottnt{JCasePath}}{}{}{}{}\ottprodnewline
 \ottprodline{|}{\ottnt{JPatCtx}}{}{}{}{}\ottprodnewline
 \ottprodline{|}{\ottnt{JMatchSubst}}{}{}{}{}\ottprodnewline
+\ottprodline{|}{\ottnt{JValuePath}}{}{}{}{}\ottprodnewline
 \ottprodline{|}{\ottnt{JApplyArgs}}{}{}{}{}\ottprodnewline
 \ottprodline{|}{\ottnt{JValue}}{}{}{}{}\ottprodnewline
 \ottprodline{|}{\ottnt{JValueType}}{}{}{}{}\ottprodnewline
@@ -434,9 +439,10 @@
 \ottformula\ottinterrule
 \ottJSubRole\ottinterrule
 \ottJPath\ottinterrule
-\ottJValuePath\ottinterrule
+\ottJCasePath\ottinterrule
 \ottJPatCtx\ottinterrule
 \ottJMatchSubst\ottinterrule
+\ottJValuePath\ottinterrule
 \ottJApplyArgs\ottinterrule
 \ottJValue\ottinterrule
 \ottJValueType\ottinterrule
@@ -517,9 +523,8 @@
 
 \newcommand{\ottdrulePathXXApp}[1]{\ottdrule[#1]{%
 \ottpremise{ \mathsf{Path} \  \ottnt{a}  =  \ottmv{F}  @  \ottnt{R_{{\mathrm{1}}}}  \ottsym{,}  \ottnt{Rs} }%
-\ottpremise{\ottsym{app\_role}  \nu  \ottsym{=}  \ottnt{R_{{\mathrm{1}}}}}%
 }{
- \mathsf{Path} \  \ottsym{(}   \ottnt{a} \  \ottnt{b'} ^{ \nu }   \ottsym{)}  =  \ottmv{F}  @  \ottnt{Rs} }{%
+ \mathsf{Path} \  \ottsym{(}   \ottnt{a} \  \ottnt{b'} ^{ \ottnt{R_{{\mathrm{1}}}} }   \ottsym{)}  =  \ottmv{F}  @  \ottnt{Rs} }{%
 {\ottdrulename{Path\_App}}{}%
 }}
 
@@ -551,50 +556,50 @@
 \newcommand{\ottdefnsJPath}{
 \ottdefnPath{}}
 
-% defns JValuePath
-%% defn ValuePath
-\newcommand{\ottdruleValuePathXXAbsConst}[1]{\ottdrule[#1]{%
+% defns JCasePath
+%% defn CasePath
+\newcommand{\ottdruleCasePathXXAbsConst}[1]{\ottdrule[#1]{%
 \ottpremise{\ottmv{F}  \ottsym{:}  \ottnt{A}  \ottsym{@}  \ottnt{Rs} \, \in \,  \Sigma_0 }%
 }{
- \mathsf{ValuePath}_{ \ottnt{R} }\  \ottmv{F}  =  \ottmv{F} }{%
-{\ottdrulename{ValuePath\_AbsConst}}{}%
+ \mathsf{CasePath}_{ \ottnt{R} }\  \ottmv{F}  =  \ottmv{F} }{%
+{\ottdrulename{CasePath\_AbsConst}}{}%
 }}
 
 
-\newcommand{\ottdruleValuePathXXConst}[1]{\ottdrule[#1]{%
+\newcommand{\ottdruleCasePathXXConst}[1]{\ottdrule[#1]{%
 \ottpremise{\ottmv{F}  \ottsym{:}   \,  \ottnt{p}  \sim  \ottnt{a}  :  \ottnt{A}  /  \ottnt{R_{{\mathrm{1}}}}  @  \ottnt{Rs}  \, \in \,  \Sigma_0 }%
 \ottpremise{ \neg  \ottsym{(}   \ottnt{R_{{\mathrm{1}}}}  \leq  \ottnt{R}   \ottsym{)} }%
 }{
- \mathsf{ValuePath}_{ \ottnt{R} }\  \ottmv{F}  =  \ottmv{F} }{%
-{\ottdrulename{ValuePath\_Const}}{}%
+ \mathsf{CasePath}_{ \ottnt{R} }\  \ottmv{F}  =  \ottmv{F} }{%
+{\ottdrulename{CasePath\_Const}}{}%
 }}
 
 
-\newcommand{\ottdruleValuePathXXApp}[1]{\ottdrule[#1]{%
-\ottpremise{ \mathsf{ValuePath}_{ \ottnt{R} }\  \ottnt{a}  =  \ottmv{F} }%
+\newcommand{\ottdruleCasePathXXApp}[1]{\ottdrule[#1]{%
+\ottpremise{ \mathsf{CasePath}_{ \ottnt{R} }\  \ottnt{a}  =  \ottmv{F} }%
 }{
- \mathsf{ValuePath}_{ \ottnt{R} }\  \ottsym{(}   \ottnt{a} \  \ottnt{b'} ^{ \nu }   \ottsym{)}  =  \ottmv{F} }{%
-{\ottdrulename{ValuePath\_App}}{}%
+ \mathsf{CasePath}_{ \ottnt{R} }\  \ottsym{(}   \ottnt{a} \  \ottnt{b'} ^{ \rho }   \ottsym{)}  =  \ottmv{F} }{%
+{\ottdrulename{CasePath\_App}}{}%
 }}
 
 
-\newcommand{\ottdruleValuePathXXCApp}[1]{\ottdrule[#1]{%
-\ottpremise{ \mathsf{ValuePath}_{ \ottnt{R} }\  \ottnt{a}  =  \ottmv{F} }%
+\newcommand{\ottdruleCasePathXXCApp}[1]{\ottdrule[#1]{%
+\ottpremise{ \mathsf{CasePath}_{ \ottnt{R} }\  \ottnt{a}  =  \ottmv{F} }%
 }{
- \mathsf{ValuePath}_{ \ottnt{R} }\  \ottsym{(}  \ottnt{a}  \ottsym{[}  \bullet  \ottsym{]}  \ottsym{)}  =  \ottmv{F} }{%
-{\ottdrulename{ValuePath\_CApp}}{}%
+ \mathsf{CasePath}_{ \ottnt{R} }\  \ottsym{(}  \ottnt{a}  \ottsym{[}  \bullet  \ottsym{]}  \ottsym{)}  =  \ottmv{F} }{%
+{\ottdrulename{CasePath\_CApp}}{}%
 }}
 
-\newcommand{\ottdefnValuePath}[1]{\begin{ottdefnblock}[#1]{$ \mathsf{ValuePath}_{ \ottnt{R} }\  \ottnt{a}  =  \ottmv{F} $}{\ottcom{Type headed by constant (role-sensitive partial function)}}
-\ottusedrule{\ottdruleValuePathXXAbsConst{}}
-\ottusedrule{\ottdruleValuePathXXConst{}}
-\ottusedrule{\ottdruleValuePathXXApp{}}
-\ottusedrule{\ottdruleValuePathXXCApp{}}
+\newcommand{\ottdefnCasePath}[1]{\begin{ottdefnblock}[#1]{$ \mathsf{CasePath}_{ \ottnt{R} }\  \ottnt{a}  =  \ottmv{F} $}{\ottcom{Type headed by constant (role-sensitive partial function used in case)}}
+\ottusedrule{\ottdruleCasePathXXAbsConst{}}
+\ottusedrule{\ottdruleCasePathXXConst{}}
+\ottusedrule{\ottdruleCasePathXXApp{}}
+\ottusedrule{\ottdruleCasePathXXCApp{}}
 \end{ottdefnblock}}
 
 
-\newcommand{\ottdefnsJValuePath}{
-\ottdefnValuePath{}}
+\newcommand{\ottdefnsJCasePath}{
+\ottdefnCasePath{}}
 
 % defns JPatCtx
 %% defn PatternContexts
@@ -682,6 +687,62 @@
 \newcommand{\ottdefnsJMatchSubst}{
 \ottdefnMatchSubst{}}
 
+% defns JValuePath
+%% defn ValuePath
+\newcommand{\ottdruleValuePathXXAbsConst}[1]{\ottdrule[#1]{%
+\ottpremise{\ottmv{F}  \ottsym{:}  \ottnt{A}  \ottsym{@}  \ottnt{Rs} \, \in \,  \Sigma_0 }%
+}{
+ \mathsf{ValuePath}_{ \ottnt{R} }\  \ottmv{F}  =  \ottmv{F} }{%
+{\ottdrulename{ValuePath\_AbsConst}}{}%
+}}
+
+
+\newcommand{\ottdruleValuePathXXConstMatch}[1]{\ottdrule[#1]{%
+\ottpremise{\ottmv{F}  \ottsym{:}   \,  \ottnt{p}  \sim  \ottnt{a}  :  \ottnt{A}  /  \ottnt{R_{{\mathrm{1}}}}  @  \ottnt{Rs}  \, \in \,  \Sigma_0 }%
+\ottpremise{ \mathsf{match} \  \ottnt{b}  \ \mathsf{with} \  \ottnt{p}  \rightarrow  \Box  =  \Box }%
+\ottpremise{ \neg  \ottsym{(}   \ottnt{R_{{\mathrm{1}}}}  \leq  \ottnt{R}   \ottsym{)} }%
+}{
+ \mathsf{ValuePath}_{ \ottnt{R} }\  \ottnt{b}  =  \ottmv{F} }{%
+{\ottdrulename{ValuePath\_ConstMatch}}{}%
+}}
+
+
+\newcommand{\ottdruleValuePathXXConst}[1]{\ottdrule[#1]{%
+\ottpremise{\ottmv{F}  \ottsym{:}   \,  \ottnt{p}  \sim  \ottnt{a}  :  \ottnt{A}  /  \ottnt{R_{{\mathrm{1}}}}  @  \ottnt{Rs}  \, \in \,  \Sigma_0 }%
+\ottpremise{ \neg  \ottsym{(}   \mathsf{match} \  \ottnt{b}  \ \mathsf{with} \  \ottnt{p}  \rightarrow  \Box  =  \Box   \ottsym{)} }%
+}{
+ \mathsf{ValuePath}_{ \ottnt{R} }\  \ottnt{b}  =  \ottmv{F} }{%
+{\ottdrulename{ValuePath\_Const}}{}%
+}}
+
+
+\newcommand{\ottdruleValuePathXXApp}[1]{\ottdrule[#1]{%
+\ottpremise{ \mathsf{ValuePath}_{ \ottnt{R} }\  \ottnt{a}  =  \ottmv{F} }%
+}{
+ \mathsf{ValuePath}_{ \ottnt{R} }\  \ottsym{(}   \ottnt{a} \  \ottnt{b'} ^{ \nu }   \ottsym{)}  =  \ottmv{F} }{%
+{\ottdrulename{ValuePath\_App}}{}%
+}}
+
+
+\newcommand{\ottdruleValuePathXXCApp}[1]{\ottdrule[#1]{%
+\ottpremise{ \mathsf{ValuePath}_{ \ottnt{R} }\  \ottnt{a}  =  \ottmv{F} }%
+}{
+ \mathsf{ValuePath}_{ \ottnt{R} }\  \ottsym{(}  \ottnt{a}  \ottsym{[}  \bullet  \ottsym{]}  \ottsym{)}  =  \ottmv{F} }{%
+{\ottdrulename{ValuePath\_CApp}}{}%
+}}
+
+\newcommand{\ottdefnValuePath}[1]{\begin{ottdefnblock}[#1]{$ \mathsf{ValuePath}_{ \ottnt{R} }\  \ottnt{a}  =  \ottmv{F} $}{\ottcom{Type headed by constant (role-sensitive partial function used in value)}}
+\ottusedrule{\ottdruleValuePathXXAbsConst{}}
+\ottusedrule{\ottdruleValuePathXXConstMatch{}}
+\ottusedrule{\ottdruleValuePathXXConst{}}
+\ottusedrule{\ottdruleValuePathXXApp{}}
+\ottusedrule{\ottdruleValuePathXXCApp{}}
+\end{ottdefnblock}}
+
+
+\newcommand{\ottdefnsJValuePath}{
+\ottdefnValuePath{}}
+
 % defns JApplyArgs
 %% defn ApplyArgs
 \newcommand{\ottdruleApplyArgsXXConst}[1]{\ottdrule[#1]{%
@@ -694,7 +755,7 @@
 \newcommand{\ottdruleApplyArgsXXApp}[1]{\ottdrule[#1]{%
 \ottpremise{ \mathsf{apply~args} \  \ottnt{a}  \ \mathsf{to} \  \ottnt{b}  \mapsto  \ottnt{b'} }%
 }{
- \mathsf{apply~args} \   \ottnt{a} \  \ottnt{a'} ^{ \nu }   \ \mathsf{to} \  \ottnt{b}  \mapsto   \ottnt{b'} \  \ottnt{a'} ^{ \ottsym{(}  \ottsym{app\_rho}  \nu  \ottsym{)} }  }{%
+ \mathsf{apply~args} \   \ottnt{a} \  \ottnt{a'} ^{ \rho }   \ \mathsf{to} \  \ottnt{b}  \mapsto   \ottnt{b'} \  \ottnt{a'} ^{ \rho }  }{%
 {\ottdrulename{ApplyArgs\_App}}{}%
 }}
 
@@ -702,7 +763,7 @@
 \newcommand{\ottdruleApplyArgsXXCApp}[1]{\ottdrule[#1]{%
 \ottpremise{ \mathsf{apply~args} \  \ottnt{a}  \ \mathsf{to} \  \ottnt{b}  \mapsto  \ottnt{b'} }%
 }{
- \mathsf{apply~args} \  \ottnt{a}  \ottsym{[}  \gamma  \ottsym{]}  \ \mathsf{to} \  \ottnt{b}  \mapsto  \ottnt{b'}  \ottsym{[}  \gamma  \ottsym{]} }{%
+ \mathsf{apply~args} \  \ottnt{a}  \ottsym{[}  \bullet  \ottsym{]}  \ \mathsf{to} \  \ottnt{b}  \mapsto  \ottnt{b'}  \ottsym{[}  \bullet  \ottsym{]} }{%
 {\ottdrulename{ApplyArgs\_CApp}}{}%
 }}
 
@@ -775,17 +836,8 @@
 }}
 
 
-\newcommand{\ottdruleValueXXRolePath}[1]{\ottdrule[#1]{%
-\ottpremise{ \mathsf{ValuePath}_{ \ottnt{R} }\  \ottnt{a}  =  \ottmv{F} }%
-}{
- \mathsf{Value}_{ \ottnt{R} }\  \ottnt{a} }{%
-{\ottdrulename{Value\_RolePath}}{}%
-}}
-
-
 \newcommand{\ottdruleValueXXPath}[1]{\ottdrule[#1]{%
-\ottpremise{ \neg  \ottsym{(}   \mathsf{ValuePath}_{ \ottnt{R} }\  \ottnt{a}  =  \ottmv{F}   \ottsym{)} }%
-\ottpremise{ \mathsf{Path} \  \ottnt{a}  =  \ottmv{F}  @  \ottnt{R'}  \ottsym{,}  \ottnt{Rs} }%
+\ottpremise{ \mathsf{ValuePath}_{ \ottnt{R} }\  \ottnt{a}  =  \ottmv{F} }%
 }{
  \mathsf{Value}_{ \ottnt{R} }\  \ottnt{a} }{%
 {\ottdrulename{Value\_Path}}{}%
@@ -800,7 +852,6 @@
 \ottusedrule{\ottdruleValueXXUAbsIrrel{}}
 \ottusedrule{\ottdruleValueXXCAbs{}}
 \ottusedrule{\ottdruleValueXXUCAbs{}}
-\ottusedrule{\ottdruleValueXXRolePath{}}
 \ottusedrule{\ottdruleValueXXPath{}}
 \end{ottdefnblock}}
 
@@ -838,21 +889,11 @@
 {\ottdrulename{value\_type\_ValuePath}}{}%
 }}
 
-
-\newcommand{\ottdrulevalueXXtypeXXPath}[1]{\ottdrule[#1]{%
-\ottpremise{ \neg  \ottsym{(}   \mathsf{ValuePath}_{ \ottnt{R} }\  \ottnt{a}  =  \ottmv{F}   \ottsym{)} }%
-\ottpremise{ \mathsf{Path} \  \ottnt{a}  =  \ottmv{F}  @  \ottnt{R'}  \ottsym{,}  \ottnt{Rs} }%
-}{
- \mathsf{ValueType}_{ \ottnt{R} }\  \ottnt{a} }{%
-{\ottdrulename{value\_type\_Path}}{}%
-}}
-
 \newcommand{\ottdefnvalueXXtype}[1]{\begin{ottdefnblock}[#1]{$ \mathsf{ValueType}_{ \ottnt{R} }\  \ottnt{A} $}{\ottcom{Types with head forms (erased language)}}
 \ottusedrule{\ottdrulevalueXXtypeXXStar{}}
 \ottusedrule{\ottdrulevalueXXtypeXXPi{}}
 \ottusedrule{\ottdrulevalueXXtypeXXCPi{}}
 \ottusedrule{\ottdrulevalueXXtypeXXValuePath{}}
-\ottusedrule{\ottdrulevalueXXtypeXXPath{}}
 \end{ottdefnblock}}
 
 
@@ -891,16 +932,6 @@
 }}
 
 
-\newcommand{\ottdruleconsistentXXaXXPath}[1]{\ottdrule[#1]{%
-\ottpremise{ \neg  \ottsym{(}   \mathsf{ValuePath}_{ \ottnt{R} }\  \ottnt{a}  =  \ottmv{F}   \ottsym{)} }%
-\ottpremise{ \mathsf{Path} \  \ottnt{a_{{\mathrm{1}}}}  =  \ottmv{F}  @  \ottnt{R'}  \ottsym{,}  \ottnt{Rs} }%
-\ottpremise{ \mathsf{Path} \  \ottnt{a_{{\mathrm{2}}}}  =  \ottmv{F}  @  \ottnt{R'}  \ottsym{,}  \ottnt{Rs} }%
-}{
- \suppress{\mathsf{consistent}_{ \ottnt{R} }\  \ottnt{a_{{\mathrm{1}}}}  \  \ottnt{a_{{\mathrm{2}}}}  } }{%
-{\ottdrulename{consistent\_a\_Path}}{}%
-}}
-
-
 \newcommand{\ottdruleconsistentXXaXXStepXXR}[1]{\ottdrule[#1]{%
 \ottpremise{ \neg   \mathsf{ValueType}_{ \ottnt{R} }\  \ottnt{b}  }%
 }{
@@ -921,7 +952,6 @@
 \ottusedrule{\ottdruleconsistentXXaXXPi{}}
 \ottusedrule{\ottdruleconsistentXXaXXCPi{}}
 \ottusedrule{\ottdruleconsistentXXaXXValuePath{}}
-\ottusedrule{\ottdruleconsistentXXaXXPath{}}
 \ottusedrule{\ottdruleconsistentXXaXXStepXXR{}}
 \ottusedrule{\ottdruleconsistentXXaXXStepXXL{}}
 \end{ottdefnblock}}
@@ -1200,7 +1230,7 @@
 \ottpremise{ \Omega  \vDash  \ottnt{a}   \Rightarrow _{ \ottnt{R} }  \ottnt{a'} }%
 \ottpremise{ \Omega  \vDash  \ottnt{b_{{\mathrm{1}}}}   \Rightarrow _{ \ottnt{R_{{\mathrm{0}}}} }  \ottnt{b'_{{\mathrm{1}}}} }%
 \ottpremise{ \Omega  \vDash  \ottnt{b_{{\mathrm{2}}}}   \Rightarrow _{ \ottnt{R_{{\mathrm{0}}}} }  \ottnt{b'_{{\mathrm{2}}}} }%
-\ottpremise{ \mathsf{ValuePath}_{ \ottnt{R} }\  \ottnt{a'}  =  \ottmv{F} }%
+\ottpremise{ \mathsf{CasePath}_{ \ottnt{R} }\  \ottnt{a'}  =  \ottmv{F} }%
 \ottpremise{ \mathsf{apply~args} \  \ottnt{a'}  \ \mathsf{to} \  \ottnt{b'_{{\mathrm{1}}}}  \mapsto  \ottnt{b} }%
 }{
  \Omega  \vDash  \ottsym{(}   \mathsf{case}_ \ottnt{R}  \hspace{3pt}  \ottnt{a}  \hspace{3pt} \mathsf{of} \hspace{3pt}  \ottmv{F}  \rightarrow  \ottnt{b_{{\mathrm{1}}}}  \| \_ \rightarrow  \ottnt{b_{{\mathrm{2}}}}   \ottsym{)}   \Rightarrow _{ \ottnt{R_{{\mathrm{0}}}} }  \ottnt{b}  \ottsym{[}  \bullet  \ottsym{]} }{%
@@ -1213,7 +1243,7 @@
 \ottpremise{ \Omega  \vDash  \ottnt{b_{{\mathrm{1}}}}   \Rightarrow _{ \ottnt{R_{{\mathrm{0}}}} }  \ottnt{b'_{{\mathrm{1}}}} }%
 \ottpremise{ \Omega  \vDash  \ottnt{b_{{\mathrm{2}}}}   \Rightarrow _{ \ottnt{R_{{\mathrm{0}}}} }  \ottnt{b'_{{\mathrm{2}}}} }%
 \ottpremise{ \mathsf{Value}_{ \ottnt{R} }\  \ottnt{a'} }%
-\ottpremise{ \neg  \ottsym{(}   \mathsf{ValuePath}_{ \ottnt{R} }\  \ottnt{a'}  =  \ottmv{F}   \ottsym{)} }%
+\ottpremise{ \neg  \ottsym{(}   \mathsf{CasePath}_{ \ottnt{R} }\  \ottnt{a'}  =  \ottmv{F}   \ottsym{)} }%
 }{
  \Omega  \vDash  \ottsym{(}   \mathsf{case}_ \ottnt{R}  \hspace{3pt}  \ottnt{a}  \hspace{3pt} \mathsf{of} \hspace{3pt}  \ottmv{F}  \rightarrow  \ottnt{b_{{\mathrm{1}}}}  \| \_ \rightarrow  \ottnt{b_{{\mathrm{2}}}}   \ottsym{)}   \Rightarrow _{ \ottnt{R_{{\mathrm{0}}}} }  \ottnt{b'_{{\mathrm{2}}}} }{%
 {\ottdrulename{Par\_PatternFalse}}{}%
@@ -1301,7 +1331,7 @@
 
 
 \newcommand{\ottdruleBetaXXPatternTrue}[1]{\ottdrule[#1]{%
-\ottpremise{ \mathsf{ValuePath}_{ \ottnt{R} }\  \ottnt{a}  =  \ottmv{F} }%
+\ottpremise{ \mathsf{CasePath}_{ \ottnt{R} }\  \ottnt{a}  =  \ottmv{F} }%
 \ottpremise{ \mathsf{apply~args} \  \ottnt{a}  \ \mathsf{to} \  \ottnt{b_{{\mathrm{1}}}}  \mapsto  \ottnt{b'_{{\mathrm{1}}}} }%
 }{
 \vDash   \mathsf{case}_ \ottnt{R}  \hspace{3pt}  \ottnt{a}  \hspace{3pt} \mathsf{of} \hspace{3pt}  \ottmv{F}  \rightarrow  \ottnt{b_{{\mathrm{1}}}}  \| \_ \rightarrow  \ottnt{b_{{\mathrm{2}}}}   \ottsym{>}  \ottnt{b'_{{\mathrm{1}}}}  \ottsym{[}  \bullet  \ottsym{]}  \ottsym{/}  \ottnt{R_{{\mathrm{0}}}}}{%
@@ -1311,7 +1341,7 @@
 
 \newcommand{\ottdruleBetaXXPatternFalse}[1]{\ottdrule[#1]{%
 \ottpremise{ \mathsf{Value}_{ \ottnt{R} }\  \ottnt{a} }%
-\ottpremise{ \neg  \ottsym{(}   \mathsf{ValuePath}_{ \ottnt{R} }\  \ottnt{a}  =  \ottmv{F}   \ottsym{)} }%
+\ottpremise{ \neg  \ottsym{(}   \mathsf{CasePath}_{ \ottnt{R} }\  \ottnt{a}  =  \ottmv{F}   \ottsym{)} }%
 }{
 \vDash   \mathsf{case}_ \ottnt{R}  \hspace{3pt}  \ottnt{a}  \hspace{3pt} \mathsf{of} \hspace{3pt}  \ottmv{F}  \rightarrow  \ottnt{b_{{\mathrm{1}}}}  \| \_ \rightarrow  \ottnt{b_{{\mathrm{2}}}}   \ottsym{>}  \ottnt{b_{{\mathrm{2}}}}  \ottsym{/}  \ottnt{R_{{\mathrm{0}}}}}{%
 {\ottdrulename{Beta\_PatternFalse}}{}%
@@ -2045,9 +2075,10 @@
 \newcommand{\ottdefnss}{
 \ottdefnsJSubRole
 \ottdefnsJPath
-\ottdefnsJValuePath
+\ottdefnsJCasePath
 \ottdefnsJPatCtx
 \ottdefnsJMatchSubst
+\ottdefnsJValuePath
 \ottdefnsJApplyArgs
 \ottdefnsJValue
 \ottdefnsJValueType
@@ -2071,7 +2102,7 @@
 \ottall
 
 \begin{verbatim}
-Definition rules:        142 good    0 bad
-Definition rule clauses: 400 good    0 bad
+Definition rules:        144 good    0 bad
+Definition rule clauses: 402 good    0 bad
 \end{verbatim}
 \end{document}

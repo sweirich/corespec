@@ -109,6 +109,13 @@ Proof. intros. generalize dependent W1. generalize dependent W2.
         - simpl in H0. inversion H; subst. eauto.
 Qed.
 
+Lemma roleing_apply : forall W a R0 b c R, roleing W a R0 -> roleing W b R ->
+                      ApplyArgs a b c -> roleing W c R.
+Proof. intros. generalize dependent W. induction H1; intros; auto.
+        - inversion H0; subst. econstructor; eauto.
+        - inversion H; subst. econstructor; eauto.
+Qed.
+
 Lemma Par_roleing_tm_fst : forall W a a' R, Par W a a' R -> 
                                                roleing W a R.
 Proof. intros W a a' R H. induction H; eauto.
@@ -132,7 +139,8 @@ Proof. intros W a a' R H. induction H; eauto.
           inversion H as [W1 [G1 [B1 [P1 [P2 [P3 P4]]]]]].
           replace W with (nil ++ W); auto. eapply roleing_match; eauto 1.
           simpl_env. apply var_pat_ctx in P1. subst. admit. admit.
-        - admit.
+        - econstructor. eapply roleing_apply. eapply IHPar1.
+          eapply IHPar2. eauto.
 Admitted.
 
 Lemma multipar_roleing_tm_snd : forall W a a' R, multipar W a a' R ->
@@ -334,7 +342,7 @@ Proof.
     fsetdec. *)
   - eapply Par_PatternTrue; eauto. eapply Path_subst_co; eauto. admit.
   - eapply Par_PatternFalse; eauto. eapply Value_co_subst_co_tm; eauto.
-    intro. admit. (* apply H1. eapply subst_co_Path; eauto. *)
+    intro.  admit. (* apply H1. eapply subst_co_Path; eauto. *)
 Admitted.
 
 Lemma multipar_subst3 : forall b b' W W' a a' R R1 x,

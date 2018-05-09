@@ -614,9 +614,8 @@ F : p ~ a : A/R1 @ Rs in toplevel
 Path F = F @ Rs
 
 Path a = F @ R1,Rs
-app_role nu = R1
 ---------------------------- :: App
-Path (a nu b') = F @ Rs
+Path (a R1 b') = F @ Rs
 
 Path a = F @ Rs
 ---------------------- :: IApp
@@ -627,30 +626,30 @@ Path a = F @ Rs
 Path (a [o]) = F @ Rs
 
 defns
-   JValuePath :: '' ::=
+   JCasePath :: '' ::=
 
 defn
-ValuePath R a = F  ::  :: ValuePath :: 'ValuePath_'
-{{ com Type headed by constant (role-sensitive partial function) }}
-{{ tex \mathsf{ValuePath}_{[[R]]}\ [[a]] = [[F]] }}
+CasePath R a = F  ::  :: CasePath :: 'CasePath_'
+{{ com Type headed by constant (role-sensitive partial function used in case) }}
+{{ tex \mathsf{CasePath}_{[[R]]}\ [[a]] = [[F]] }}
 by
 
 F : A @ Rs in toplevel
 --------------------- :: AbsConst
-ValuePath R F = F
+CasePath R F = F
 
 F : p ~ a : A/R1 @ Rs in toplevel
 not (R1 <= R)
 -------------------------- :: Const
-ValuePath R F = F
+CasePath R F = F
 
-ValuePath R a = F
+CasePath R a = F
 ---------------------------- :: App
-ValuePath R (a nu b') = F
+CasePath R (a rho b') = F
 
-ValuePath R a = F
+CasePath R a = F
 ---------------------- :: CApp
-ValuePath R (a [o]) = F
+CasePath R (a [o]) = F
 
 
 
@@ -704,6 +703,37 @@ match a1 with a2 -> b1 = b2
 ------------------------------------------------------ :: CApp
 match (a1 [o]) with (a2 [o]) -> b1 = b2
 
+defns
+   JValuePath :: '' ::=
+
+defn
+ValuePath R a = F  ::  :: ValuePath :: 'ValuePath_'
+{{ com Type headed by constant (role-sensitive partial function used in value) }}
+{{ tex \mathsf{ValuePath}_{[[R]]}\ [[a]] = [[F]] }}
+by
+
+F : A @ Rs in toplevel
+--------------------- :: AbsConst
+ValuePath R F = F
+
+F : p ~ a : A/R1 @ Rs in toplevel
+match b with p -> [] = []
+not (R1 <= R)
+---------------------------------- :: ConstMatch
+ValuePath R b = F
+
+F : p ~ a : A/R1 @ Rs in toplevel
+not (match b with p -> [] = [])
+---------------------------------- :: Const
+ValuePath R b = F
+
+ValuePath R a = F
+---------------------------- :: App
+ValuePath R (a nu b') = F
+
+ValuePath R a = F
+---------------------- :: CApp
+ValuePath R (a [o]) = F
 
 defns
 JApplyArgs :: '' ::=
@@ -719,11 +749,11 @@ apply args F to b -> b
 
 apply args a to b -> b'
 ------------------------------------------------------- :: App
-apply args a nu a' to b -> b' (app_rho nu) a'
+apply args a rho a' to b -> b' rho a'
 
 apply args a to b -> b'
 ------------------------------------------------------- :: CApp
-apply args a [g] to b -> b' [g]
+apply args a [o] to b -> b' [o]
 
 
 defns
@@ -761,12 +791,7 @@ Value R /\c:phi.a
 Value R /\c .a
 
 ValuePath R a = F
----------------------- :: RolePath
-Value R a
-
-not (ValuePath R a = F)
-Path a = F @ R',Rs
---------------------------- :: Path
+---------------------- :: Path
 Value R a
 
 defns
@@ -791,10 +816,6 @@ ValuePath R a = F
 ------------------------ :: ValuePath
 ValueType R a
 
-not (ValuePath R a = F)
-Path a = F @ R',Rs
---------------------------- :: Path
-ValueType R a
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%__ Definitions for consistency proof __%%%%%%%%%%%%
@@ -821,12 +842,6 @@ consistent (all c1:phi1. A1) (all c2 :phi2. A2) R
 ValuePath R a1 = F
 ValuePath R a2 = F
 ------------------------ :: ValuePath
-consistent a1 a2 R
-
-not (ValuePath R a = F)
-Path a1 = F @ R',Rs
-Path a2 = F @ R',Rs
------------------------------- :: Path
 consistent a1 a2 R
 
 not ValueType R b
@@ -1005,7 +1020,7 @@ W |= (case R a of F => b1 | _ => b2) => (case R a' of F => b1' | _ => b2') / R0
 W |= a => a' / R
 W |= b1 => b1' / R0
 W |= b2 => b2' / R0
-ValuePath R a' = F
+CasePath R a' = F
 apply args a' to b1' -> b
 --------------------------------------------- :: PatternTrue
 W |= (case R a of F => b1 | _ => b2) => b [o] / R0
@@ -1014,7 +1029,7 @@ W |= a => a' / R
 W |= b1 => b1' / R0
 W |= b2 => b2' / R0
 Value R a'
-not (ValuePath R a' = F)
+not (CasePath R a' = F)
 ------------------------------------------------ :: PatternFalse
 W |= (case R a of F => b1 | _ => b2) => b2' / R0
 
@@ -1069,13 +1084,13 @@ R1 <= R
 ----------------------------------- :: Axiom
 |= a > b' / R
 
-ValuePath R a = F
+CasePath R a = F
 apply args a to b1 -> b1'
 ------------------------------------------ :: PatternTrue
 |= case R a of F => b1 | _ => b2 > b1' [o] / R0
 
 Value R a
-not (ValuePath R a = F)
+not (CasePath R a = F)
 ------------------------------------------ :: PatternFalse
 |= case R a of F => b1 | _ => b2 > b2 / R0
 
