@@ -159,7 +159,7 @@ Qed.
 Lemma par_multipar: forall W a a' R, Par W a a' R ->
                                          multipar W a a' R.
 Proof. intros. eapply mp_step. eauto. constructor.
-       eapply Par_roleing_tm_snd; eauto.
+       eapply Par_roleing_tm_snd; eauto 1.
 Qed.
 
 Hint Resolve Par_roleing_tm_fst Par_roleing_tm_snd : roleing.
@@ -312,13 +312,13 @@ Proof.
     rewrite <- app_assoc. eapply H1; eauto. simpl_env; auto.
     eapply Par_lc2; eauto. eapply Par_lc1; eauto.
   - eapply Par_Axiom; eauto.
-    rewrite tm_subst_tm_tm_fresh_eq. eauto. admit. admit. admit.
+    rewrite tm_subst_tm_tm_fresh_eq. eauto. admit. admit. admit. admit.
     (* apply toplevel_closed in H.
     apply Typing_context_fv in H.
     split_hyp. simpl in *.
     fsetdec. *)
   - eapply Par_Pattern; eauto.
-  - eapply Par_PatternTrue; eauto. eapply Path_subst; eauto.
+  - eapply Par_PatternTrue; eauto. eapply CasePath_subst; eauto.
     eapply Par_lc2; eauto. admit.
   - eapply Par_PatternFalse; eauto.
     eapply Value_tm_subst_tm_tm; eauto. eapply Par_lc2; eauto.
@@ -501,7 +501,7 @@ Proof.
     replace ([(x0,Nom)] ++ W) with (nil ++ [(x0,Nom)] ++ W); auto.
     eapply subst_tm_roleing. simpl_env. apply roleing_app_rctx.
     solve_uniq. eapply multipar_roleing_tm_fst; eauto.
-    econstructor. solve_uniq. auto. auto.
+    econstructor. solve_uniq. eauto. eauto.
 Qed.
 
 
@@ -514,7 +514,7 @@ Proof.
   - inversion H. constructor. auto.
   - inversion H. subst. eapply IHh1; eauto.
     apply mp_step with (b := A'0). auto.
-    eapply IHh1; eauto. subst. inversion H2.
+    eapply IHh1; eauto. subst. inversion H4.
 Qed.
 
 Lemma multipar_Pi_B_proj: ∀ W rho (A B A' B' : tm) R',
@@ -529,7 +529,7 @@ Proof.
   - inversion H; subst.
     eapply IHh1; eauto.
     destruct (IHh1 rho A'0 B'0 A' B') as [L0 h0]; auto.
-    exists (L \u L0); eauto. inversion H2.
+    exists (L \u L0); eauto. inversion H4.
 Qed.
 
 
@@ -566,14 +566,15 @@ Proof.
            constructor. eapply multipar_roleing_tm_fst; eauto.
            intros. constructor. rewrite (co_subst_co_tm_intro c).
            apply subst_co_roleing. auto. eapply multipar_roleing_tm_fst; eauto.
-           auto.
+           auto. 
   - apply mp_step with (b:= (a_CPi (Eq b B T R) a)); auto.
      eapply (Par_CPi (singleton c)); eauto.
      constructor. eapply multipar_roleing_tm_fst; eauto.
-     constructor. eapply multipar_roleing_tm_fst; eauto.
-     intros. constructor. rewrite (co_subst_co_tm_intro c).
-     apply subst_co_roleing. auto. eapply multipar_roleing_tm_fst; eauto.
-     auto. Unshelve. apply (fv_co_co_tm a). apply (fv_co_co_tm a).
+     constructor. eapply roleing_sub. eapply multipar_roleing_tm_fst; eauto.
+     auto. intros. constructor. rewrite (co_subst_co_tm_intro c).
+     apply subst_co_roleing. auto.
+     eapply multipar_roleing_tm_fst; eauto.
+     auto. Unshelve. all:eauto. apply (fv_co_co_tm a). apply (fv_co_co_tm a).
 Qed.
 
 
@@ -589,7 +590,7 @@ Proof.
   - inversion H; subst.
     eapply IHh1; eauto.
     destruct (IHh1 _ _ _ _ _ _ _ _ _ _ ltac:(auto) ltac:(auto)) as [L0 h0]; auto.
-    exists (L \u L0); eauto. inversion H2.
+    exists (L \u L0); eauto. inversion H4.
 Qed.
 
 Lemma multipar_CPi_phi_proj:  ∀ W (A B a A' B' a' T T': tm) R R1 R',
@@ -601,8 +602,8 @@ Lemma multipar_CPi_phi_proj:  ∀ W (A B a A' B' a' T T': tm) R R1 R',
 Proof.
   intros W A B a A' B' a' T T' R R1 R' H.
   dependent induction H; eauto.
-  - inversion H; subst. split. constructor; auto.
-    split. all:constructor; eauto. econstructor. eapply roleing_sub; eauto.
+  - inversion H; subst. split. auto.
+    repeat split. all:econstructor. all:eapply roleing_sub; eauto.
   - inversion H; subst.
     eapply IHmultipar; eauto.
     destruct (IHmultipar _ _ _ _ _ _ _ _ _ _ ltac:(auto) ltac:(auto))
@@ -612,7 +613,7 @@ Proof.
     apply mp_step with (b := a'0); auto.
     apply mp_step with (b := b'); auto.
     apply mp_step with (b := A'0); auto.
-    eapply Par_sub; eauto. inversion H3.
+    eapply Par_sub; eauto. inversion H5.
 Qed.
 
 

@@ -11,8 +11,8 @@ Require Export FcEtt.ett_roleing.
 Require Import FcEtt.ett_path.
 Require Export FcEtt.ett_par.
 Require Import FcEtt.ext_wf.
-Require Import FcEtt.ext_invert.
-Require Import FcEtt.ext_red_one.
+(* Require Import FcEtt.ext_invert.
+Require Import FcEtt.ext_red_one. *)
 Require Import FcEtt.param.
 
 Set Implicit Arguments.
@@ -54,32 +54,32 @@ Proof.
 Qed.
 
 
-Lemma a_Pi_head : forall W b A R rho B R',
-    Par W (a_Pi rho A R B) b R' -> exists A' B' L,
-      b = a_Pi rho A' R B' /\ Par W A A' R' /\
+Lemma a_Pi_head : forall W b A rho B R',
+    Par W (a_Pi rho A B) b R' -> exists A' B' L,
+      b = a_Pi rho A' B' /\ Par W A A' R' /\
       (forall x, x `notin` L -> 
-        Par([(x,R)] ++ W) (open_tm_wrt_tm B (a_Var_f x)) 
+        Par([(x,Nom)] ++ W) (open_tm_wrt_tm B (a_Var_f x)) 
                                (open_tm_wrt_tm B' (a_Var_f x)) R').
 Proof.
   intros. inversion H. subst.
   inversion H0. subst.  exists A , B, L. split; auto.
-  subst. exists A', B', L.  split; auto.
+  subst. exists A', B', L.  split; auto. inversion H4.
 Qed.
 
-Lemma Par_Abs_inversion : forall W a b rho R R',
-    Par W (a_UAbs rho R a) b R' ->
-    exists a', b = (a_UAbs rho R a') /\
+Lemma Par_Abs_inversion : forall W a b rho R',
+    Par W (a_UAbs rho a) b R' ->
+    exists a', b = (a_UAbs rho a') /\
           forall x, x `notin` fv_tm_tm_tm a \u fv_tm_tm_tm a' \u dom W ->
-         Par ([(x,R)] ++ W) (open_tm_wrt_tm a (a_Var_f x)) (open_tm_wrt_tm a' (a_Var_f x)) R'.
+         Par ([(x,Nom)] ++ W) (open_tm_wrt_tm a (a_Var_f x)) (open_tm_wrt_tm a' (a_Var_f x)) R'.
 
 Proof.
-  intros W a a' rho R R' P.
+  intros W a a' rho R' P.
   inversion P; subst.
   + inversion H. subst. exists a. split. reflexivity.
     intros. econstructor. eapply rctx_uniq in H.
     pick fresh y.
     rewrite (tm_subst_tm_tm_intro y); eauto.
-    replace ([(x,R)] ++ W) with (nil ++ ([(x,R)] ++ W)); auto.
+    replace ([(x,Nom)] ++ W) with (nil ++ ([(x,Nom)] ++ W)); auto.
     eapply subst_tm_roleing. simpl_env.
     eapply roleing_app_rctx; simpl_env.
     solve_uniq. auto. econstructor. solve_uniq. auto. auto.
@@ -87,10 +87,11 @@ Proof.
     pick fresh y.
     rewrite (tm_subst_tm_tm_intro y); eauto.
     rewrite (tm_subst_tm_tm_intro y a'0); eauto.
-    replace ([(x,R)] ++ W) with (nil ++ ([(x,R)] ++ W)); auto.
+    replace ([(x,Nom)] ++ W) with (nil ++ ([(x,Nom)] ++ W)); auto.
     eapply subst2. simpl_env.
     eapply par_app_rctx; simpl_env.
     solve_uniq. auto. econstructor. solve_uniq. auto. auto.
+  + inversion H3.
 Qed.
 
 
@@ -176,7 +177,7 @@ Proof.
   (* TODO: there may be a way to check the number of subgoals (and guard against a innvalid number) *)
 
   all: try_Refl_left.
-  all: try_Refl_right.
+  all: try_Refl_right. Locate invert_syntactic_equality.
   all: try invert_syntactic_equality.
   all: simpl in SZ; destruct n; try solve [ inversion SZ ].
 
@@ -201,6 +202,11 @@ Proof.
      + split. pick fresh x; eapply open2. auto. eauto.
        eauto using Par_sub, param_sub1.
        eapply Par_Beta; eauto.
+     + inversion H7.
+  - destruct rho. inversion H9.
+    destruct b; try (inversion H9; fail).
+    inversion H0; subst. inversion H9; subst.
+    
   - (* app cong / app beta *)
     use_size_induction a0 ac Par1 Par2.
     use_size_induction b bc Par3 Par4.
@@ -210,20 +216,23 @@ Proof.
        pick fresh x; eapply open2. auto. eauto. eauto using Par_sub, param_sub1.
      + split. eapply Par_Beta; eauto. 
        pick fresh x; eapply open2. auto. eauto. eauto using Par_sub, param_sub1.
+     + admit.
   - (* app cong / app cong *)
     use_size_induction a0 ac Par1 Par2.
     use_size_induction b bc Par3 Par4.
-    exists (a_App ac rho R1 bc). split; auto.
+    exists (a_App ac (Rho rho) bc). split; auto.
+  - admit.
   - (* two cbetas *)
     use_size_induction a0 ac Par1 Par2. inversion Par1; subst.
     + exists (open_tm_wrt_co a' g_Triv); split.
       econstructor. eapply Par_roleing_tm_snd. eauto.
       inversion Par2; subst. econstructor. eapply Par_roleing_tm_snd. eauto.
-      pick fresh c. eapply open3 with (c := c) (L := L); eauto.
+      pick fresh c. eapply open3 with (c := c) (L := L); eauto. inversion H6.
     + exists (open_tm_wrt_co a'1 g_Triv); split.
       pick fresh c. eapply open3 with (c := c) (L := L); eauto.
       inversion Par2; subst. econstructor. eapply Par_roleing_tm_snd. eauto.
-      pick fresh c. eapply open3 with (c := c) (L := L); eauto.
+      pick fresh c. eapply open3 with (c := c) (L := L); eauto. inversion H6.
+    + admit.
   - (* cbeta / capp cong *)
     use_size_induction a0 ac Par1 Par2.
     inversion Par1; subst.
@@ -233,6 +242,8 @@ Proof.
     + exists (open_tm_wrt_co a'1 g_Triv). split.
       pick fresh c. eapply open3 with (c := c) (L := L); eauto.
       econstructor. eauto.
+    + admit.
+  - admit.
   - (* capp cong / cbeta *)
     use_size_induction a0 ac Par1 Par2.
     inversion Par2; subst.
@@ -240,6 +251,7 @@ Proof.
       econstructor. eapply Par_roleing_tm_snd. eauto.
     + exists (open_tm_wrt_co a'1 g_Triv). split. econstructor. eauto.
       pick fresh c. eapply open3 with (c := c) (L := L); eauto.
+    + admit.
   - (* capp cong / capp cong *)
     use_size_induction a0 ac Par1 Par2.
     exists (a_CApp ac g_Triv). auto.

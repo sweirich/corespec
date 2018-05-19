@@ -6,13 +6,13 @@ Definition datacon := atom.
 Definition const := atom.
 Definition index := nat. (*r indices *)
 
-Inductive role : Set :=  (*r Role *)
- | Nom : role
- | Rep : role.
-
 Inductive relflag : Set :=  (*r relevance flag *)
  | Rel : relflag
  | Irrel : relflag.
+
+Inductive role : Set :=  (*r Role *)
+ | Nom : role
+ | Rep : role.
 
 Inductive appflag : Set :=  (*r applicative flag *)
  | Role (R:role)
@@ -82,11 +82,11 @@ Inductive sig_sort : Set :=  (*r signature classifier *)
 
 Definition context : Set := list ( atom * sort ).
 
-Definition available_props : Type := atoms.
+Definition sig : Set := list (atom * sig_sort).
 
 Definition role_context : Set := list ( atom * role ).
 
-Definition sig : Set := list (atom * sig_sort).
+Definition available_props : Type := atoms.
 
 (* EXPERIMENTAL *)
 (** auxiliary functions on the new list types *)
@@ -948,6 +948,22 @@ Inductive PatternContexts : role_context -> context -> const -> tm -> tm -> tm -
      PatternContexts W G F B p (a_CPi phi A) ->
       ( forall c , c \notin  L  -> PatternContexts W  (( c ~ Co  phi ) ++  G )  F B (a_CApp p g_Triv)  ( open_tm_wrt_co A (g_Var_f c) )  ) .
 
+(* defns JRename *)
+Inductive Rename : tm -> tm -> tm -> tm -> role_context -> Prop :=    (* defn Rename *)
+ | Rename_Base : forall (F:const) (a:tm) (W:role_context),
+     lc_tm a ->
+     Rename (a_Fam F) a (a_Fam F) a W
+ | Rename_AppRel : forall (p1:tm) (R:role) (x:tmvar) (a1 p2:tm) (y:tmvar) (a2:tm) (W:role_context),
+     Rename p1 a1 p2 a2 W ->
+      ~ AtomSetImpl.In  y  (dom  W )  ->
+     Rename  ( (a_App p1 (Role R) (a_Var_f x)) )  a1  ( (a_App p2 (Role R) (a_Var_f y)) )   (  (tm_subst_tm_tm  (a_Var_f y)   x   a2 )  )   (  (( y  ~  Nom ) ++  W )  ) 
+ | Rename_AppIrrel : forall (p1 a1 p2 a2:tm) (W:role_context),
+     Rename p1 a1 p2 a2 W ->
+     Rename  ( (a_App p1 (Rho Irrel) a_Bullet) )  a1  ( (a_App p2 (Rho Irrel) a_Bullet) )  a2 W
+ | Rename_CApp : forall (p1 a1 p2 a2:tm) (W:role_context),
+     Rename p1 a1 p2 a2 W ->
+     Rename  ( (a_CApp p1 g_Triv) )  a1  ( (a_CApp p2 g_Triv) )  a2 W.
+
 (* defns JMatchSubst *)
 Inductive MatchSubst : tm -> tm -> tm -> tm -> Prop :=    (* defn MatchSubst *)
  | MatchSubst_Const : forall (F:const) (b:tm),
@@ -1182,13 +1198,14 @@ Inductive Par : role_context -> tm -> tm -> role -> Prop :=    (* defn Par *)
      Par W b b' R1 ->
       ( forall c , c \notin  L  -> Par W  ( open_tm_wrt_co B (g_Var_f c) )   ( open_tm_wrt_co B' (g_Var_f c) )  R )  ->
      Par W (a_CPi (Eq a b A R1) B) (a_CPi (Eq a' b' A' R1) B') R
- | Par_Axiom : forall (W:role_context) (a b':tm) (R:role) (F:const) (p b A:tm) (R1:role) (Rs:roles),
+ | Par_Axiom : forall (W:role_context) (a a':tm) (R:role) (F:const) (p b A:tm) (R1:role) (Rs:roles) (p' b':tm) (W':role_context),
       binds  F  ( (Ax p b A R1 Rs) )   toplevel   ->
      roleing W a R ->
-     MatchSubst a p b b' ->
-     SubRole R1 R ->
       uniq  W  ->
-     Par W a b' R
+     Rename p b p' b'  (  (  (  ( W  ++   (var_pat( p ))  )  )   ++  W' )  )  ->
+     MatchSubst a p' b' a' ->
+     SubRole R1 R ->
+     Par W a a' R
  | Par_Pattern : forall (W:role_context) (R:role) (a:tm) (F:const) (b1 b2 a' b1' b2':tm) (R0:role),
      Par W a a' R ->
      Par W b1 b1' R0 ->
@@ -1323,9 +1340,10 @@ with Typing : context -> tm -> tm -> Prop :=    (* defn Typing *)
      Typing G b (a_Pi Rel A B) ->
      Typing G a A ->
      Typing G (a_App b (Rho Rel) a)  (open_tm_wrt_tm  B   a ) 
- | E_TApp : forall (G:context) (b:tm) (R:role) (a B A:tm),
+ | E_TApp : forall (G:context) (b:tm) (R:role) (a B A:tm) (F:const) (Rs:roles),
      Typing G b (a_Pi Rel A B) ->
      Typing G a A ->
+     Path b F  ( R :: Rs )  ->
      Typing G (a_App b (Role R) a)  (open_tm_wrt_tm  B   a ) 
  | E_IApp : forall (G:context) (b B a A:tm),
      Typing G b (a_Pi Irrel A B) ->
@@ -1419,9 +1437,11 @@ with DefEq : context -> available_props -> tm -> tm -> tm -> role -> Prop :=    
      DefEq G D a1 b1  ( (a_Pi Rel A B) )  R' ->
      DefEq G D a2 b2 A Nom ->
      DefEq G D (a_App a1 (Rho Rel) a2) (a_App b1 (Rho Rel) b2)  (  (open_tm_wrt_tm  B   a2 )  )  R'
- | E_TAppCong : forall (G:context) (D:available_props) (a1:tm) (R:role) (a2 b1 b2 B:tm) (R':role) (A:tm),
+ | E_TAppCong : forall (G:context) (D:available_props) (a1:tm) (R:role) (a2 b1 b2 B:tm) (R':role) (A:tm) (F:const) (Rs:roles) (F':const) (Rs':roles),
      DefEq G D a1 b1  ( (a_Pi Rel A B) )  R' ->
      DefEq G D a2 b2 A  (param R   R' )  ->
+     Path a1 F  ( R :: Rs )  ->
+     Path b1 F'  ( R :: Rs' )  ->
      DefEq G D (a_App a1 (Role R) a2) (a_App b1 (Role R) b2)  (  (open_tm_wrt_tm  B   a2 )  )  R'
  | E_IAppCong : forall (G:context) (D:available_props) (a1 b1 B a:tm) (R':role) (A:tm),
      DefEq G D a1 b1  ( (a_Pi Irrel A B) )  R' ->
@@ -1538,7 +1558,7 @@ Inductive Sig : sig -> Prop :=    (* defn Sig *)
      Typing  nil  A a_Star ->
      PatternContexts W G F A p B ->
      Typing G a B ->
-     roleing W a Rep ->
+     roleing W a R ->
      Sig  (( F ~ (Ax p a A R  (range( W )) ) )++ S ) .
 
 (* defns Jann *)
@@ -1553,6 +1573,6 @@ Inductive head_reduction : context -> tm -> tm -> role -> Prop :=    (* defn hea
 
 
 (** infrastructure *)
-Hint Constructors SubRole Path CasePath PatternContexts MatchSubst ValuePath ApplyArgs Value value_type consistent roleing RhoCheck Par MultiPar joins Beta reduction_in_one reduction BranchTyping PropWff Typing Iso DefEq Ctx Sig AnnPropWff AnnTyping AnnIso AnnDefEq AnnCtx head_reduction lc_co lc_brs lc_tm lc_constraint lc_sort lc_sig_sort.
+Hint Constructors SubRole Path CasePath PatternContexts Rename MatchSubst ValuePath ApplyArgs Value value_type consistent roleing RhoCheck Par MultiPar joins Beta reduction_in_one reduction BranchTyping PropWff Typing Iso DefEq Ctx Sig AnnPropWff AnnTyping AnnIso AnnDefEq AnnCtx head_reduction lc_co lc_brs lc_tm lc_constraint lc_sort lc_sig_sort.
 
 

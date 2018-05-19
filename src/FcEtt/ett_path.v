@@ -89,12 +89,12 @@ Proof. intros. pose (P := CasePath_binds_toplevel H).
        inversion Q4; eauto.
 Qed.
 (*
-Lemma subst_Path : forall F a b R x, lc_tm b -> Value R a ->
+Lemma subst_CasePath : forall F a b R x, lc_tm b -> Value R a ->
                    CasePath R (tm_subst_tm_tm b x a) F -> CasePath R a F.
 Proof. intros. induction a; simpl in H1; auto; try (inversion H1; fail).
         - inversion H0; subst; inversion H2.
         - destruct nu. inversion H1. inversion H1; subst.
-          econstructor. admit.
+          econstructor. admit. inversion H0; subst.
         - inversion H0; subst. inversion H1; subst. inversion H2; subst.
           econstructor. eapply IHa; eauto.
 Qed.
