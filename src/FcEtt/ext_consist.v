@@ -205,7 +205,7 @@ Proof.
      + inversion H7.
   - destruct rho. inversion H9.
     destruct b; try (inversion H9; fail).
-    inversion H0; subst. inversion H9; subst.
+    inversion H9; subst.
     
   - (* app cong / app beta *)
     use_size_induction a0 ac Par1 Par2.
