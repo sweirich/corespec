@@ -1547,9 +1547,12 @@ Inductive Sig : sig -> Prop :=    (* defn Sig *)
      Typing G a B ->
      roleing W a R ->
      Sig  (( F ~ (Ax p a A R   (range( W ))    AtomSetImpl.empty ) )++ S ) 
- | Sig_ConsExcl : forall (S:sig) (F:const) (p a A:tm) (R:role) (W:role_context) (D:available_props),
-      binds  F  ( (Ax p a A R   (range( W ))    AtomSetImpl.empty ) )  S  ->
-     Sig  (( F ~ (Ax p a A R   (range( W ))   D) )++ S ) .
+ | Sig_ConsExcl : forall (S:sig) (F:const) (p' a' A:tm) (R:role) (W:role_context) (D:available_props) (p a:tm) (Rs:roles) (G:context) (B':tm),
+      binds  F  ( (Ax p a A R Rs  AtomSetImpl.empty ) )  S  ->
+     PatternContexts W G F A D p' B' ->
+     Typing G a' B' ->
+     roleing W a' R ->
+     Sig  (( F ~ (Ax p' a' A R   (range( W ))   D) )++ S ) .
 
 (* defns Jann *)
 Inductive AnnPropWff : context -> constraint -> Prop :=    (* defn AnnPropWff *)
