@@ -969,10 +969,6 @@ Inductive PatternContexts : role_context -> context -> const -> tm -> available_
 
 (* defns JMatchSubst *)
 Inductive MatchSubst : const -> tm -> tm -> tm -> tm -> Prop :=    (* defn MatchSubst *)
- | MatchSubst_AbsConst : forall (F:const) (b A:tm) (Rs:roles),
-     lc_tm b ->
-      binds  F  ( (Cs A Rs) )   toplevel   ->
-     MatchSubst F (a_Fam F) (a_Fam F) b b
  | MatchSubst_Const : forall (F:const) (b p a A:tm) (R1:role) (Rs:roles) (D:available_props),
      lc_tm b ->
       binds  F  ( (Ax p a A R1 Rs D) )   toplevel   ->
@@ -1543,13 +1539,16 @@ Inductive Sig : sig -> Prop :=    (* defn Sig *)
      Typing  nil  A a_Star ->
       ~ AtomSetImpl.In  F  (dom  S )  ->
      Sig  (( F ~ (Cs A Rs) )++ S ) 
- | Sig_ConsAx : forall (S:sig) (F:const) (p a A:tm) (R:role) (W:role_context) (D:available_props) (G:context) (B:tm),
+ | Sig_ConsAx : forall (S:sig) (F:const) (p a A:tm) (R:role) (W:role_context) (G:context) (B:tm),
      Sig S ->
       ~ AtomSetImpl.In  F  (dom  S )  ->
      Typing  nil  A a_Star ->
-     PatternContexts W G F A D p B ->
+     PatternContexts W G F A  AtomSetImpl.empty  p B ->
      Typing G a B ->
      roleing W a R ->
+     Sig  (( F ~ (Ax p a A R   (range( W ))    AtomSetImpl.empty ) )++ S ) 
+ | Sig_ConsExcl : forall (S:sig) (F:const) (p a A:tm) (R:role) (W:role_context) (D:available_props),
+      binds  F  ( (Ax p a A R   (range( W ))    AtomSetImpl.empty ) )  S  ->
      Sig  (( F ~ (Ax p a A R   (range( W ))   D) )++ S ) .
 
 (* defns Jann *)

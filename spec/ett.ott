@@ -727,10 +727,6 @@ match F a1 with p -> b1 = b2 :: :: MatchSubst :: 'MatchSubst_'
 {{ tex \mathsf{match}_[[F]] \ [[a1]] \ \mathsf{with} \ [[p]] \rightarrow [[b1]] = [[b2]] }}
 by
 
-F : A @ Rs in toplevel
------------------------------------------ :: AbsConst
-match F F with F -> b = b
-
 F : p ~ a : A/R1 @ Rs excl D in toplevel
 ----------------------------------------- :: Const
 match F F with F -> b = b
@@ -1550,14 +1546,15 @@ F notin dom S
 |= S
 F notin dom S
 empty |= A : TYPE
-W ; G |= F, A, D; p : B
+W ; G |= F, A, emptyD; p : B
 G |= a : B
 W |= a : R
----------------------------------------- :: ConsAx
+--------------------------------------------- :: ConsAx
+|= S, F : p ~ a : A/R @ (range W) excl emptyD
+
+F : p ~ a : A/R @ (range W) excl emptyD in S
+----------------------------------------------- :: ConsExcl
 |= S, F : p ~ a : A/R @ (range W) excl D
-
-
-
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
