@@ -25,8 +25,8 @@ Proof.
 Qed.
 
 (* ------------------------------------------ *)
-Lemma toplevel_inversion : forall F p a A R Rs, binds F (Ax p a A R Rs) toplevel ->
-                                 (exists W G B, PatternContexts W G F A p B /\
+Lemma toplevel_inversion : forall F p a A R Rs D, binds F (Ax p a A R Rs D) toplevel ->
+                                 (exists W G B, PatternContexts W G F A D p B /\
                                 Typing G a B /\ roleing W a Rep /\ Rs = range W).
 Proof.
   have st: Sig toplevel by apply Sig_toplevel.
@@ -40,7 +40,7 @@ Proof.
     subst. exists W, G, B. eauto. eauto.
 Qed.
 
-Lemma var_pat_ctx : forall W G F A p B, PatternContexts W G F A p B ->
+Lemma var_pat_ctx : forall W G F A p B D, PatternContexts W G F A D p B ->
                                         var_pat p = W.
 Proof. intros. induction H; simpl; auto. subst. auto.
 Qed.
