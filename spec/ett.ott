@@ -1552,12 +1552,9 @@ W |= a : R
 --------------------------------------------- :: ConsAx
 |= S, F : p ~ a : A/R @ (range W) excl emptyD
 
-F : p ~ a : A/R @ Rs excl emptyD in S
-W ; G |= F, A, D; p' : B'
-G |= a' : B'
-W |= a' : R
+F : p ~ a : A/R @ (range W) excl emptyD in S
 ----------------------------------------------- :: ConsExcl
-|= S, F : p' ~ a' : A/R @ (range W) excl D
+|= S, F : p ~ a : A/R @ (range W) excl D
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

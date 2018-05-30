@@ -2045,12 +2045,9 @@
 
 
 \newcommand{\ottdruleSigXXConsExcl}[1]{\ottdrule[#1]{%
-\ottpremise{\ottmv{F}  \ottsym{:}   \,  \ottnt{p}  \sim  \ottnt{a}  :  \ottnt{A}  /  \ottnt{R}  @  \ottnt{Rs}  \ \mathsf{excl} \   \varnothing   \, \in \, \Sigma}%
-\ottpremise{ \Omega  ;  \Gamma   \vDash   \ottnt{p'}  :_ \ottmv{F}   \ottnt{B'}  \Rightarrow  \ottnt{A}  \ \mathsf{excluding} \  \Delta }%
-\ottpremise{\Gamma  \vDash  \ottnt{a'}  \ottsym{:}  \ottnt{B'}}%
-\ottpremise{ \Omega  \vDash  \ottnt{a'}  :  \ottnt{R} }%
+\ottpremise{\ottmv{F}  \ottsym{:}   \,  \ottnt{p}  \sim  \ottnt{a}  :  \ottnt{A}  /  \ottnt{R}  @  \ottsym{(}  \ottkw{range} \, \Omega  \ottsym{)}  \ \mathsf{excl} \   \varnothing   \, \in \, \Sigma}%
 }{
-\vDash   \Sigma  \cup \{ \ottmv{F}  :   \,  \ottnt{p'}  \sim  \ottnt{a'}  :  \ottnt{A}  /  \ottnt{R}  @  \ottsym{(}  \ottkw{range} \, \Omega  \ottsym{)}  \ \mathsf{excl} \  \Delta  \} }{%
+\vDash   \Sigma  \cup \{ \ottmv{F}  :   \,  \ottnt{p}  \sim  \ottnt{a}  :  \ottnt{A}  /  \ottnt{R}  @  \ottsym{(}  \ottkw{range} \, \Omega  \ottsym{)}  \ \mathsf{excl} \  \Delta  \} }{%
 {\ottdrulename{Sig\_ConsExcl}}{}%
 }}
 
@@ -2137,6 +2134,6 @@
 
 \begin{verbatim}
 Definition rules:        146 good    0 bad
-Definition rule clauses: 419 good    0 bad
+Definition rule clauses: 416 good    0 bad
 \end{verbatim}
 \end{document}
