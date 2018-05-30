@@ -690,27 +690,14 @@ Qed.
 (*
 (* Properties of Path and Value *)
 
-Lemma Par_Path : forall F a R Rs W a', Path a F Rs -> Par W a a' R -> Path a' F Rs.
+Lemma Par_Path : forall F a R W a', Path F a R -> Par W a a' R -> Path F a' R.
 Proof. intros. generalize dependent a'. induction H; intros.
-       - inversion H0; subst. eauto. inversion H2; subst.
-         inversion H5; subst. inversion H4; subst. pose (Q1 := H1).
-         apply toplevel_inversion in Q1.
-         inversion Q1 as [W1 [G1 [B1 [P1 P2]]]].
-         inversion P1; subst.
-         have E: (Ax (a_Fam F) a' B1 R1 Rs0 = Cs A Rs).
+       - inversion H0; subst. eauto. have E: (Ax a' A0 R1 = Cs A).
          eapply binds_unique; eauto using uniq_toplevel.
          inversion E.
-         have E: (Ax p0 a A1 R2 Rs1 = Cs A Rs).
+       - inversion H1; subst. eauto. have E: (Ax a A R1 = Ax a' A0 R2).
          eapply binds_unique; eauto using uniq_toplevel.
-         inversion E.
-       - inversion H0; subst. eauto. inversion H5; subst.
-         inversion H4; subst. pose (Q1 := H1).
-         apply toplevel_inversion in Q1.
-         inversion Q1 as [W1 [G1 [B1 [P1 P2]]]].
-         inversion P1; subst.
-         have E: (Ax (a_Fam F) a' B1 R2 Rs0 = Ax p a A R1 Rs).
-         eapply binds_unique; eauto using uniq_toplevel.
-         inversion E. subst. eapply Path_Const. contradiction.
+         inversion E. subst. contradiction.
        - inversion H1; subst. eauto. apply IHPath in H9.
          inversion H9. apply IHPath in H9. econstructor; auto.
          apply Par_roleing_tm_snd in H10. eapply roleing_lc; eauto.

@@ -18,11 +18,11 @@ Require Import FcEtt.param.
 Set Implicit Arguments.
 Set Bullet Behavior "Strict Subproofs".
 
-Definition Good (G : context) (D : available_props):=
+ Definition Good (G : context) (D : available_props):=
   forall c1 A B1 T1 R,
     binds c1 (Co (Eq A B1 T1 R)) G
     -> c1 `in` D
-    -> exists C W, Par W A C R /\ Par W B1 C R.
+    -> exists C, Par (ctx_to_rctx G) A C R /\ Par (ctx_to_rctx G) B1 C R.
 
 (* ---------------------------------------- *)
 
@@ -177,7 +177,7 @@ Proof.
   (* TODO: there may be a way to check the number of subgoals (and guard against a innvalid number) *)
 
   all: try_Refl_left.
-  all: try_Refl_right.
+  all: try_Refl_right. Locate invert_syntactic_equality.
   all: try invert_syntactic_equality.
   all: simpl in SZ; destruct n; try solve [ inversion SZ ].
 
@@ -204,7 +204,9 @@ Proof.
        eapply Par_Beta; eauto.
      + inversion H7.
   - destruct rho. inversion H9.
-    destruct b; try (inversion H9; fail). admit.
+    destruct b; try (inversion H9; fail).
+    inversion H9; subst.
+    
   - (* app cong / app beta *)
     use_size_induction a0 ac Par1 Par2.
     use_size_induction b bc Par3 Par4.
@@ -214,13 +216,12 @@ Proof.
        pick fresh x; eapply open2. auto. eauto. eauto using Par_sub, param_sub1.
      + split. eapply Par_Beta; eauto. 
        pick fresh x; eapply open2. auto. eauto. eauto using Par_sub, param_sub1.
-     + inversion H7.
+     + admit.
   - (* app cong / app cong *)
     use_size_induction a0 ac Par1 Par2.
     use_size_induction b bc Par3 Par4.
     exists (a_App ac (Rho rho) bc). split; auto.
-  - destruct rho. inversion H9.
-    destruct b; try (inversion H9; fail). admit.
+  - admit.
   - (* two cbetas *)
     use_size_induction a0 ac Par1 Par2. inversion Par1; subst.
     + exists (open_tm_wrt_co a' g_Triv); split.
@@ -231,7 +232,7 @@ Proof.
       pick fresh c. eapply open3 with (c := c) (L := L); eauto.
       inversion Par2; subst. econstructor. eapply Par_roleing_tm_snd. eauto.
       pick fresh c. eapply open3 with (c := c) (L := L); eauto. inversion H6.
-    + inversion H5.
+    + admit.
   - (* cbeta / capp cong *)
     use_size_induction a0 ac Par1 Par2.
     inversion Par1; subst.
@@ -241,8 +242,8 @@ Proof.
     + exists (open_tm_wrt_co a'1 g_Triv). split.
       pick fresh c. eapply open3 with (c := c) (L := L); eauto.
       econstructor. eauto.
-    + inversion H5.
-  - inversion H8; subst. inversion H7; subst. admit.
+    + admit.
+  - admit.
   - (* capp cong / cbeta *)
     use_size_induction a0 ac Par1 Par2.
     inversion Par2; subst.
@@ -250,30 +251,26 @@ Proof.
       econstructor. eapply Par_roleing_tm_snd. eauto.
     + exists (open_tm_wrt_co a'1 g_Triv). split. econstructor. eauto.
       pick fresh c. eapply open3 with (c := c) (L := L); eauto.
-    + inversion H5.
+    + admit.
   - (* capp cong / capp cong *)
     use_size_induction a0 ac Par1 Par2.
     exists (a_CApp ac g_Triv). auto.
-  - inversion H8; subst. inversion H7; subst. admit.
   - (* abs cong / abs cong *)
     pick fresh x.
     use_size_induction_open a0 x ac Par1 Par2.
-    exists (a_UAbs rho (close_tm_wrt_tm x ac)).
+    exists (a_UAbs rho R1 (close_tm_wrt_tm x ac)).
     split; apply (@Par_Abs_exists x); eauto.
-  - inversion H8.
   - (* pi cong / pi cong *)
     pick fresh x.
     use_size_induction A ac Par1 Par2.
     use_size_induction_open B x bc Par3 Par4.
-    exists (a_Pi rho ac (close_tm_wrt_tm x bc)).
+    exists (a_Pi rho ac R1 (close_tm_wrt_tm x bc)).
     split; apply (@Par_Pi_exists x); eauto.
-  - inversion H9.
   - (* cabs cong / cabs cong *)
     pick fresh c.
     use_size_induction_open a0 c ac Par1 Par2.
     exists (a_UCAbs (close_tm_wrt_co c ac)).
     split; apply (@Par_CAbs_exists c); eauto.
-  - inversion H8.
   - (* cpi cong / cpi cong *) 
     apply Par_sub with (R2 := Rep) in H; auto.
     apply Par_sub with (R2 := Rep) in H7; auto.
@@ -284,15 +281,6 @@ Proof.
     use_size_induction_open B c BC Par7 Par8.
     exists (a_CPi (Eq aC bC AC R1) (close_tm_wrt_co c BC)).
     split; apply (@Par_CPi_exists c); eauto.
-  - inversion H11.
-  - admit.
-  - admit.
-  - admit.
-  - admit.
-  - inversion H3.
-  - inversion H3.
-  - inversion H3.
-  - inversion H3.
   - (* fam / fam *)
     have E: (Ax a1 A R1 = Ax a2 A0 R3).
     eapply binds_unique; eauto using uniq_toplevel.
@@ -1288,8 +1276,10 @@ Proof.
   - assert False. eapply no_aCAbs. eauto 2. done.
 Qed.
 
+
+
 Definition irrelevant G D (a : tm) :=
-  (forall x A R, binds x (Tm A) G -> x `notin` fv_tm_tm_tm a) /\ Good G D.
+  (forall x A R, binds x (Tm A R) G -> x `notin` fv_tm_tm_tm a) /\ Good G D.
 
 Lemma irrelevant_Good : forall G D a, irrelevant G D a -> Good G D.
 intros. inversion H.
@@ -1389,8 +1379,8 @@ Qed.
 (* Generalizing progress *)
 
 Lemma canonical_forms_Pi' : forall G rho a A R B R' R'', Good G (dom G) ->
-    Typing G a (a_Pi rho A B) R' -> Value R'' a ->
-    (exists a1, a = a_UAbs rho a1) \/ (exists F, Path F a R'').
+    Typing G a (a_Pi rho A R B) R' -> Value R'' a ->
+    (exists a1, a = a_UAbs rho R a1) \/ (exists F, Path F a R'').
 Proof.
   intros G rho a A R B R' R'' C H H0.
   inversion H0; subst; eauto.

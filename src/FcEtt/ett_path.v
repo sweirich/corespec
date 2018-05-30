@@ -39,12 +39,12 @@ Proof. intros. destruct R1, R2; auto. right. intro. inversion H.
        right. intro. inversion H.
 Qed.
 
-Lemma match_bullet : forall F a p b, MatchSubst F a p a_Bullet b -> b = a_Bullet.
+Lemma match_bullet : forall a p b, MatchSubst a p a_Bullet b -> b = a_Bullet.
 Proof. intros. dependent induction H; auto.
        pose (P := IHMatchSubst ltac:(auto)). rewrite P. auto.
 Qed.
 
-Lemma match_dec : forall F a p, lc_tm a -> MatchSubst F a p a_Bullet a_Bullet \/ ~(MatchSubst F a p a_Bullet a_Bullet).
+Lemma match_dec : forall a p, lc_tm a -> MatchSubst a p a_Bullet a_Bullet \/ ~(MatchSubst a p a_Bullet a_Bullet).
 Proof. intros. generalize dependent a.
        induction p; intros; try (right; intro P; inversion P; fail).
         - destruct nu. destruct a; try (right; intro P; inversion P; fail).
@@ -97,10 +97,10 @@ Fixpoint var_patt (p : tm) : atoms :=
     | _  => {}
    end.
 
-Lemma MatchSubst_subst : forall F a p b1 x y b2,
-     MatchSubst F a p (tm_subst_tm_tm (a_Var_f y) x b1) b2 ->
+Lemma MatchSubst_subst : forall a p b1 x y b2,
+     MatchSubst a p (tm_subst_tm_tm (a_Var_f y) x b1) b2 ->
      y `notin` fv_tm_tm_tm a -> y `notin` var_patt(p) -> x `notin` var_patt(p) ->
-     MatchSubst F a p b1 (tm_subst_tm_tm (a_Var_f x) y b2).
+     MatchSubst a p b1 (tm_subst_tm_tm (a_Var_f x) y b2).
 Proof. intros. dependent induction H.
         - admit.
         - simpl in *. eapply MatchSubst_AppRelR in IHMatchSubst; eauto 2.
@@ -113,6 +113,17 @@ Proof. intros. dependent induction H.
         - simpl in *. eauto.
 Admitted.
 
+Lemma MatchSubst_Rename : forall p1 p2 a1 a2 W a b, Rename p1 a1 p2 a2 W ->
+                                 MatchSubst a p1 a1 b ->
+                                 MatchSubst a p2 a2 b.
+Proof. intros. generalize dependent p2. generalize dependent a2.
+       generalize dependent W. induction H0; intros.
+        - inversion H0; subst. eauto.
+        - inversion H1; subst. apply IHMatchSubst in H9.
+          eapply MatchSubst_AppRelR in H9; auto. admit.
+        - inversion H; subst. eauto.
+        - inversion H; subst. eauto.
+Admitted.
 (*
 Lemma subst_CasePath : forall F a b R x, lc_tm b -> Value R a ->
                    CasePath R (tm_subst_tm_tm b x a) F -> CasePath R a F.
