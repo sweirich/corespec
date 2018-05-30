@@ -696,6 +696,14 @@
 
 % defns JMatchSubst
 %% defn MatchSubst
+\newcommand{\ottdruleMatchSubstXXAbsConst}[1]{\ottdrule[#1]{%
+\ottpremise{\ottmv{F}  \ottsym{:}  \ottnt{A}  \ottsym{@}  \ottnt{Rs} \, \in \,  \Sigma_0 }%
+}{
+ \mathsf{match}_ \ottmv{F}  \  \ottmv{F}  \ \mathsf{with} \  \ottmv{F}  \rightarrow  \ottnt{b}  =  \ottnt{b} }{%
+{\ottdrulename{MatchSubst\_AbsConst}}{}%
+}}
+
+
 \newcommand{\ottdruleMatchSubstXXConst}[1]{\ottdrule[#1]{%
 \ottpremise{\ottmv{F}  \ottsym{:}   \,  \ottnt{p}  \sim  \ottnt{a}  :  \ottnt{A}  /  \ottnt{R_{{\mathrm{1}}}}  @  \ottnt{Rs}  \ \mathsf{excl} \  \Delta  \, \in \,  \Sigma_0 }%
 }{
@@ -728,6 +736,7 @@
 }}
 
 \newcommand{\ottdefnMatchSubst}[1]{\begin{ottdefnblock}[#1]{$ \mathsf{match}_ \ottmv{F}  \  \ottnt{a_{{\mathrm{1}}}}  \ \mathsf{with} \  \ottnt{p}  \rightarrow  \ottnt{b_{{\mathrm{1}}}}  =  \ottnt{b_{{\mathrm{2}}}} $}{\ottcom{match and substitute}}
+\ottusedrule{\ottdruleMatchSubstXXAbsConst{}}
 \ottusedrule{\ottdruleMatchSubstXXConst{}}
 \ottusedrule{\ottdruleMatchSubstXXAppRelR{}}
 \ottusedrule{\ottdruleMatchSubstXXAppIrrel{}}
@@ -2035,27 +2044,18 @@
 \ottpremise{\vDash  \Sigma}%
 \ottpremise{\ottmv{F} \, \not\in \, \mathsf{dom} \, \Sigma}%
 \ottpremise{\varnothing  \vDash  \ottnt{A}  \ottsym{:}   \star }%
-\ottpremise{ \Omega  ;  \Gamma   \vDash   \ottnt{p}  :_ \ottmv{F}   \ottnt{B}  \Rightarrow  \ottnt{A}  \ \mathsf{excluding} \   \varnothing  }%
+\ottpremise{ \Omega  ;  \Gamma   \vDash   \ottnt{p}  :_ \ottmv{F}   \ottnt{B}  \Rightarrow  \ottnt{A}  \ \mathsf{excluding} \  \Delta }%
 \ottpremise{\Gamma  \vDash  \ottnt{a}  \ottsym{:}  \ottnt{B}}%
 \ottpremise{ \Omega  \vDash  \ottnt{a}  :  \ottnt{R} }%
 }{
-\vDash   \Sigma  \cup \{ \ottmv{F}  :   \,  \ottnt{p}  \sim  \ottnt{a}  :  \ottnt{A}  /  \ottnt{R}  @  \ottsym{(}  \ottkw{range} \, \Omega  \ottsym{)}  \ \mathsf{excl} \   \varnothing   \} }{%
-{\ottdrulename{Sig\_ConsAx}}{}%
-}}
-
-
-\newcommand{\ottdruleSigXXConsExcl}[1]{\ottdrule[#1]{%
-\ottpremise{\ottmv{F}  \ottsym{:}   \,  \ottnt{p}  \sim  \ottnt{a}  :  \ottnt{A}  /  \ottnt{R}  @  \ottsym{(}  \ottkw{range} \, \Omega  \ottsym{)}  \ \mathsf{excl} \   \varnothing   \, \in \, \Sigma}%
-}{
 \vDash   \Sigma  \cup \{ \ottmv{F}  :   \,  \ottnt{p}  \sim  \ottnt{a}  :  \ottnt{A}  /  \ottnt{R}  @  \ottsym{(}  \ottkw{range} \, \Omega  \ottsym{)}  \ \mathsf{excl} \  \Delta  \} }{%
-{\ottdrulename{Sig\_ConsExcl}}{}%
+{\ottdrulename{Sig\_ConsAx}}{}%
 }}
 
 \newcommand{\ottdefnSig}[1]{\begin{ottdefnblock}[#1]{$\vDash  \Sigma$}{\ottcom{signature wellformedness}}
 \ottusedrule{\ottdruleSigXXEmpty{}}
 \ottusedrule{\ottdruleSigXXConsConst{}}
 \ottusedrule{\ottdruleSigXXConsAx{}}
-\ottusedrule{\ottdruleSigXXConsExcl{}}
 \end{ottdefnblock}}
 
 
