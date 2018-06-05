@@ -27,6 +27,9 @@
 \else
 \ifextended
 \documentclass[format=acmsmall,screen=true,review=false]{acmart}
+
+\usepackage[a-1b]{pdfx} %% for PDF/A compliance
+
 \settopmatter{printfolios=true,printacmref=false,printccs=false}
 \setcopyright{none}
 \acmYear{2017} \acmVolume{1} \acmNumber{1} \acmArticle{31} \acmMonth{9}
@@ -70,6 +73,7 @@
 \ifsource
 \usepackage[para]{footmisc}   %% gather footnotes on a single line
 \fi
+
 
 \usepackage{amsmath}
 \usepackage{amssymb}
