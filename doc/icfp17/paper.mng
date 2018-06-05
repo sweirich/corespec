@@ -28,7 +28,77 @@
 \ifextended
 \documentclass[format=acmsmall,screen=true,review=false]{acmart}
 
-\usepackage[a-1b]{pdfx} %% for PDF/A compliance
+%
+%  http://support.river-valley.com/wiki/index.php?title=Generating_PDF/A_compliant_PDFs_from_pdftex
+%
+\def\Title{A specification for dependent types in Haskell}
+\def\Author{Stephanie Weirich and Antoine Voizard and Pedro Henrique Azevedo de Amorim and Richard A. Eisenberg}
+\def\Keywords{Haskell, Dependent Types}
+
+%***************************************************************************
+% \convertDate converts D:20080419103507+02'00' to 2008-04-19T10:35:07+02:00
+%___________________________________________________________________________
+\def\convertDate{%
+    \getYear
+}
+ 
+{\catcode`\D=12
+ \gdef\getYear D:#1#2#3#4{\edef\xYear{#1#2#3#4}\getMonth}
+}
+\def\getMonth#1#2{\edef\xMonth{#1#2}\getDay}
+\def\getDay#1#2{\edef\xDay{#1#2}\getHour}
+\def\getHour#1#2{\edef\xHour{#1#2}\getMin}
+\def\getMin#1#2{\edef\xMin{#1#2}\getSec}
+\def\getSec#1#2{\edef\xSec{#1#2}\getTZh}
+\def\getTZh +#1#2{\edef\xTZh{#1#2}\getTZm}
+\def\getTZm '#1#2'{%
+    \edef\xTZm{#1#2}%
+    \edef\convDate{\xYear-\xMonth-\xDay T\xHour:\xMin:\xSec+\xTZh:\xTZm}%
+}
+ 
+\expandafter\convertDate\pdfcreationdate 
+ 
+%**************************
+% get pdftex version string
+%__________________________
+\newcount\countA
+\countA=\pdftexversion
+\advance \countA by -100
+\def\pdftexVersionStr{pdfTeX-1.\the\countA.\pdftexrevision}
+ 
+%*********
+% XMP data
+%_________
+\usepackage{xmpincl}
+\includexmp{pdfa-1b}
+
+%********
+% pdfInfo
+%________
+\pdfinfo{%
+    /Title    (\Title)
+    /Author   (\Author)
+    /Keywords (\Keywords)
+    /ModDate  (\pdfcreationdate)
+    /Trapped  /False
+}
+
+
+%*************************
+% explicit interword space
+%_________________________
+\pdfmapline{+dummy-space <dummy-space.pfb}
+\pdfgeninterwordspace=1
+
+
+% "Text cannot be mapped to unicode"
+%
+\input glyphtounicode.tex
+\input glyphtounicode-cmr.tex
+\pdfgentounicode=1
+ 
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \settopmatter{printfolios=true,printacmref=false,printccs=false}
 \setcopyright{none}
