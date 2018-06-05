@@ -204,8 +204,12 @@
 \newcommand{\ottavailableXXprops}{
 \ottrulehead{\ottnt{available\_props}  ,\ \Delta}{::=}{}\ottprodnewline
 \ottfirstprodline{|}{ \varnothing }{}{}{}{}\ottprodnewline
+\ottprodline{|}{\Delta  \ottsym{,}  \ottmv{x}}{}{}{}{}\ottprodnewline
 \ottprodline{|}{\Delta  \ottsym{,}  \ottmv{c}}{}{}{}{}\ottprodnewline
+\ottprodline{|}{\mathsf{fv}\! \, \ottnt{a}} {\textsf{M}}{}{}{}\ottprodnewline
+\ottprodline{|}{ \Delta ,  \Delta' } {\textsf{M}}{}{}{}\ottprodnewline
 \ottprodline{|}{ \widetilde { \Gamma } } {\textsf{M}}{}{}{}\ottprodnewline
+\ottprodline{|}{ \widetilde { \Omega } } {\textsf{M}}{}{}{}\ottprodnewline
 \ottprodline{|}{\ottsym{(}  \Delta  \ottsym{)}} {\textsf{M}}{}{}{}}
 
 \newcommand{\ottterminals}{
@@ -264,12 +268,10 @@
 \ottprodline{|}{\ottmv{x} \, \in \, \Delta}{}{}{}{}\ottprodnewline
 \ottprodline{|}{\ottmv{c} \, \in \, \Delta}{}{}{}{}\ottprodnewline
 \ottprodline{|}{\ottmv{c} \, \ottkw{not} \, \ottkw{relevant} \, \in \, \gamma}{}{}{}{}\ottprodnewline
-\ottprodline{|}{\ottmv{x} \, \not\in \, \mathsf{fv}\! \, \ottnt{a}}{}{}{}{}\ottprodnewline
-\ottprodline{|}{\ottmv{x} \, \not\in \, \mathsf{dom} \, \Gamma}{}{}{}{}\ottprodnewline
-\ottprodline{|}{\ottmv{x} \, \not\in \, \mathsf{dom} \, \Omega}{}{}{}{}\ottprodnewline
+\ottprodline{|}{\ottmv{x} \, \not\in \, \Delta}{}{}{}{}\ottprodnewline
 \ottprodline{|}{ \emph{uniq} \  \Gamma }{}{}{}{}\ottprodnewline
 \ottprodline{|}{ \emph{uniq}( \Omega ) }{}{}{}{}\ottprodnewline
-\ottprodline{|}{\ottmv{c} \, \not\in \, \mathsf{dom} \, \Gamma}{}{}{}{}\ottprodnewline
+\ottprodline{|}{\ottmv{c} \, \not\in \, \Delta}{}{}{}{}\ottprodnewline
 \ottprodline{|}{\ottmv{T} \, \not\in \, \mathsf{dom} \, \Sigma}{}{}{}{}\ottprodnewline
 \ottprodline{|}{\ottmv{F} \, \not\in \, \mathsf{dom} \, \Sigma}{}{}{}{}\ottprodnewline
 \ottprodline{|}{\ottnt{R_{{\mathrm{1}}}}  \ottsym{=}  \ottnt{R_{{\mathrm{2}}}}}{}{}{}{}\ottprodnewline
@@ -304,7 +306,7 @@
 
 \newcommand{\ottJRename}{
 \ottrulehead{\ottnt{JRename}}{::=}{}\ottprodnewline
-\ottfirstprodline{|}{ \mathsf{rename} \  \ottnt{p}  \rightarrow  \ottnt{a}  \ \mathsf{to} \  \ottnt{p'}  \rightarrow  \ottnt{a'}  \ \mathsf{with}\ \mathsf{support} \  \Omega }{}{}{}{\ottcom{rename with fresh variables}}}
+\ottfirstprodline{|}{ \mathsf{rename} \  \ottnt{p}  \rightarrow  \ottnt{a}  \ \mathsf{to} \  \ottnt{p'}  \rightarrow  \ottnt{a'}  \ \mathsf{excluding} \  \Delta }{}{}{}{\ottcom{rename with fresh variables}}}
 
 \newcommand{\ottJMatchSubst}{
 \ottrulehead{\ottnt{JMatchSubst}}{::=}{}\ottprodnewline
@@ -655,36 +657,36 @@
 %% defn Rename
 \newcommand{\ottdruleRenameXXBase}[1]{\ottdrule[#1]{%
 }{
- \mathsf{rename} \  \ottmv{F}  \rightarrow  \ottnt{a}  \ \mathsf{to} \  \ottmv{F}  \rightarrow  \ottnt{a}  \ \mathsf{with}\ \mathsf{support} \  \Omega }{%
+ \mathsf{rename} \  \ottmv{F}  \rightarrow  \ottnt{a}  \ \mathsf{to} \  \ottmv{F}  \rightarrow  \ottnt{a}  \ \mathsf{excluding} \  \Delta }{%
 {\ottdrulename{Rename\_Base}}{}%
 }}
 
 
 \newcommand{\ottdruleRenameXXAppRel}[1]{\ottdrule[#1]{%
-\ottpremise{ \mathsf{rename} \  \ottnt{p_{{\mathrm{1}}}}  \rightarrow  \ottnt{a_{{\mathrm{1}}}}  \ \mathsf{to} \  \ottnt{p_{{\mathrm{2}}}}  \rightarrow  \ottnt{a_{{\mathrm{2}}}}  \ \mathsf{with}\ \mathsf{support} \  \Omega }%
-\ottpremise{\ottmv{y} \, \not\in \, \mathsf{dom} \, \Omega}%
+\ottpremise{ \mathsf{rename} \  \ottnt{p_{{\mathrm{1}}}}  \rightarrow  \ottnt{a_{{\mathrm{1}}}}  \ \mathsf{to} \  \ottnt{p_{{\mathrm{2}}}}  \rightarrow  \ottnt{a_{{\mathrm{2}}}}  \ \mathsf{excluding} \  \Delta }%
+\ottpremise{\ottmv{y} \, \not\in \, \Delta}%
 }{
- \mathsf{rename} \  \ottsym{(}   \ottnt{p_{{\mathrm{1}}}} \  \ottmv{x} ^{ \ottnt{R} }   \ottsym{)}  \rightarrow  \ottnt{a_{{\mathrm{1}}}}  \ \mathsf{to} \  \ottsym{(}   \ottnt{p_{{\mathrm{2}}}} \  \ottmv{y} ^{ \ottnt{R} }   \ottsym{)}  \rightarrow  \ottsym{(}   \ottnt{a_{{\mathrm{2}}}}  \lbrace  \ottmv{y}   \ottsym{/}   \ottmv{x}   \rbrace   \ottsym{)}  \ \mathsf{with}\ \mathsf{support} \  \ottsym{(}  \Omega  \ottsym{,}  \ottmv{y}  \ottsym{:}  \ottkw{Nom}  \ottsym{)} }{%
+ \mathsf{rename} \  \ottsym{(}   \ottnt{p_{{\mathrm{1}}}} \  \ottmv{x} ^{ \ottnt{R} }   \ottsym{)}  \rightarrow  \ottnt{a_{{\mathrm{1}}}}  \ \mathsf{to} \  \ottsym{(}   \ottnt{p_{{\mathrm{2}}}} \  \ottmv{y} ^{ \ottnt{R} }   \ottsym{)}  \rightarrow  \ottsym{(}   \ottnt{a_{{\mathrm{2}}}}  \lbrace  \ottmv{y}   \ottsym{/}   \ottmv{x}   \rbrace   \ottsym{)}  \ \mathsf{excluding} \  \ottsym{(}  \Delta  \ottsym{,}  \ottmv{y}  \ottsym{)} }{%
 {\ottdrulename{Rename\_AppRel}}{}%
 }}
 
 
 \newcommand{\ottdruleRenameXXAppIrrel}[1]{\ottdrule[#1]{%
-\ottpremise{ \mathsf{rename} \  \ottnt{p_{{\mathrm{1}}}}  \rightarrow  \ottnt{a_{{\mathrm{1}}}}  \ \mathsf{to} \  \ottnt{p_{{\mathrm{2}}}}  \rightarrow  \ottnt{a_{{\mathrm{2}}}}  \ \mathsf{with}\ \mathsf{support} \  \Omega }%
+\ottpremise{ \mathsf{rename} \  \ottnt{p_{{\mathrm{1}}}}  \rightarrow  \ottnt{a_{{\mathrm{1}}}}  \ \mathsf{to} \  \ottnt{p_{{\mathrm{2}}}}  \rightarrow  \ottnt{a_{{\mathrm{2}}}}  \ \mathsf{excluding} \  \Delta }%
 }{
- \mathsf{rename} \  \ottsym{(}   \ottnt{p_{{\mathrm{1}}}} \  \Box ^{ \ottsym{-} }   \ottsym{)}  \rightarrow  \ottnt{a_{{\mathrm{1}}}}  \ \mathsf{to} \  \ottsym{(}   \ottnt{p_{{\mathrm{2}}}} \  \Box ^{ \ottsym{-} }   \ottsym{)}  \rightarrow  \ottnt{a_{{\mathrm{2}}}}  \ \mathsf{with}\ \mathsf{support} \  \Omega }{%
+ \mathsf{rename} \  \ottsym{(}   \ottnt{p_{{\mathrm{1}}}} \  \Box ^{ \ottsym{-} }   \ottsym{)}  \rightarrow  \ottnt{a_{{\mathrm{1}}}}  \ \mathsf{to} \  \ottsym{(}   \ottnt{p_{{\mathrm{2}}}} \  \Box ^{ \ottsym{-} }   \ottsym{)}  \rightarrow  \ottnt{a_{{\mathrm{2}}}}  \ \mathsf{excluding} \  \Delta }{%
 {\ottdrulename{Rename\_AppIrrel}}{}%
 }}
 
 
 \newcommand{\ottdruleRenameXXCApp}[1]{\ottdrule[#1]{%
-\ottpremise{ \mathsf{rename} \  \ottnt{p_{{\mathrm{1}}}}  \rightarrow  \ottnt{a_{{\mathrm{1}}}}  \ \mathsf{to} \  \ottnt{p_{{\mathrm{2}}}}  \rightarrow  \ottnt{a_{{\mathrm{2}}}}  \ \mathsf{with}\ \mathsf{support} \  \Omega }%
+\ottpremise{ \mathsf{rename} \  \ottnt{p_{{\mathrm{1}}}}  \rightarrow  \ottnt{a_{{\mathrm{1}}}}  \ \mathsf{to} \  \ottnt{p_{{\mathrm{2}}}}  \rightarrow  \ottnt{a_{{\mathrm{2}}}}  \ \mathsf{excluding} \  \Delta }%
 }{
- \mathsf{rename} \  \ottsym{(}  \ottnt{p_{{\mathrm{1}}}}  \ottsym{[}  \bullet  \ottsym{]}  \ottsym{)}  \rightarrow  \ottnt{a_{{\mathrm{1}}}}  \ \mathsf{to} \  \ottsym{(}  \ottnt{p_{{\mathrm{2}}}}  \ottsym{[}  \bullet  \ottsym{]}  \ottsym{)}  \rightarrow  \ottnt{a_{{\mathrm{2}}}}  \ \mathsf{with}\ \mathsf{support} \  \Omega }{%
+ \mathsf{rename} \  \ottsym{(}  \ottnt{p_{{\mathrm{1}}}}  \ottsym{[}  \bullet  \ottsym{]}  \ottsym{)}  \rightarrow  \ottnt{a_{{\mathrm{1}}}}  \ \mathsf{to} \  \ottsym{(}  \ottnt{p_{{\mathrm{2}}}}  \ottsym{[}  \bullet  \ottsym{]}  \ottsym{)}  \rightarrow  \ottnt{a_{{\mathrm{2}}}}  \ \mathsf{excluding} \  \Delta }{%
 {\ottdrulename{Rename\_CApp}}{}%
 }}
 
-\newcommand{\ottdefnRename}[1]{\begin{ottdefnblock}[#1]{$ \mathsf{rename} \  \ottnt{p}  \rightarrow  \ottnt{a}  \ \mathsf{to} \  \ottnt{p'}  \rightarrow  \ottnt{a'}  \ \mathsf{with}\ \mathsf{support} \  \Omega $}{\ottcom{rename with fresh variables}}
+\newcommand{\ottdefnRename}[1]{\begin{ottdefnblock}[#1]{$ \mathsf{rename} \  \ottnt{p}  \rightarrow  \ottnt{a}  \ \mathsf{to} \  \ottnt{p'}  \rightarrow  \ottnt{a'}  \ \mathsf{excluding} \  \Delta $}{\ottcom{rename with fresh variables}}
 \ottusedrule{\ottdruleRenameXXBase{}}
 \ottusedrule{\ottdruleRenameXXAppRel{}}
 \ottusedrule{\ottdruleRenameXXAppIrrel{}}
@@ -1270,8 +1272,7 @@
 \newcommand{\ottdruleParXXAxiom}[1]{\ottdrule[#1]{%
 \ottpremise{\ottmv{F}  \ottsym{:}   \,  \ottnt{p}  \sim  \ottnt{b}  :  \ottnt{A}  /  \ottnt{R_{{\mathrm{1}}}}  @  \ottnt{Rs}  \, \in \,  \Sigma_0 }%
 \ottpremise{ \Omega  \vDash  \ottnt{a}  :  \ottnt{R} }%
-\ottpremise{ \emph{uniq}( \Omega ) }%
-\ottpremise{ \mathsf{rename} \  \ottnt{p}  \rightarrow  \ottnt{b}  \ \mathsf{to} \  \ottnt{p'}  \rightarrow  \ottnt{b'}  \ \mathsf{with}\ \mathsf{support} \  \ottsym{(}   \ottsym{(}   \Omega , \ottsym{var\_pat}  \ottnt{p}   \ottsym{)} , \Omega'   \ottsym{)} }%
+\ottpremise{ \mathsf{rename} \  \ottnt{p}  \rightarrow  \ottnt{b}  \ \mathsf{to} \  \ottnt{p'}  \rightarrow  \ottnt{b'}  \ \mathsf{excluding} \  \ottsym{(}    \widetilde { \Omega }  ,  \mathsf{fv}\! \, \ottnt{p}   \ottsym{)} }%
 \ottpremise{ \mathsf{match} \  \ottnt{a}  \ \mathsf{with} \  \ottnt{p'}  \rightarrow  \ottnt{b'}  =  \ottnt{a'} }%
 \ottpremise{ \ottnt{R_{{\mathrm{1}}}}  \leq  \ottnt{R} }%
 }{
@@ -1386,7 +1387,8 @@
 
 \newcommand{\ottdruleBetaXXAxiom}[1]{\ottdrule[#1]{%
 \ottpremise{\ottmv{F}  \ottsym{:}   \,  \ottnt{p}  \sim  \ottnt{b}  :  \ottnt{A}  /  \ottnt{R_{{\mathrm{1}}}}  @  \ottnt{Rs}  \, \in \,  \Sigma_0 }%
-\ottpremise{ \mathsf{match} \  \ottnt{a}  \ \mathsf{with} \  \ottnt{p}  \rightarrow  \ottnt{b}  =  \ottnt{b'} }%
+\ottpremise{ \mathsf{rename} \  \ottnt{p}  \rightarrow  \ottnt{b}  \ \mathsf{to} \  \ottnt{p_{{\mathrm{1}}}}  \rightarrow  \ottnt{b_{{\mathrm{1}}}}  \ \mathsf{excluding} \  \ottsym{(}   \mathsf{fv}\! \, \ottnt{a} ,  \mathsf{fv}\! \, \ottnt{p}   \ottsym{)} }%
+\ottpremise{ \mathsf{match} \  \ottnt{a}  \ \mathsf{with} \  \ottnt{p_{{\mathrm{1}}}}  \rightarrow  \ottnt{b_{{\mathrm{1}}}}  =  \ottnt{b'} }%
 \ottpremise{ \ottnt{R_{{\mathrm{1}}}}  \leq  \ottnt{R} }%
 }{
 \vDash  \ottnt{a}  \ottsym{>}  \ottnt{b'}  \ottsym{/}  \ottnt{R}}{%
@@ -2031,7 +2033,7 @@
 \newcommand{\ottdruleEXXConsTm}[1]{\ottdrule[#1]{%
 \ottpremise{\vDash  \Gamma}%
 \ottpremise{\Gamma  \vDash  \ottnt{A}  \ottsym{:}   \star }%
-\ottpremise{\ottmv{x} \, \not\in \, \mathsf{dom} \, \Gamma}%
+\ottpremise{\ottmv{x} \, \not\in \,  \widetilde { \Gamma } }%
 }{
 \vDash  \Gamma  \ottsym{,}  \ottmv{x}  \ottsym{:}  \ottnt{A}}{%
 {\ottdrulename{E\_ConsTm}}{}%
@@ -2041,7 +2043,7 @@
 \newcommand{\ottdruleEXXConsCo}[1]{\ottdrule[#1]{%
 \ottpremise{\vDash  \Gamma}%
 \ottpremise{\Gamma  \vDash  \phi \, \ \mathsf{ok}}%
-\ottpremise{\ottmv{c} \, \not\in \, \mathsf{dom} \, \Gamma}%
+\ottpremise{\ottmv{c} \, \not\in \,  \widetilde { \Gamma } }%
 }{
 \vDash  \Gamma  \ottsym{,}  \ottmv{c}  \ottsym{:}  \phi}{%
 {\ottdrulename{E\_ConsCo}}{}%

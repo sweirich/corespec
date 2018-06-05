@@ -292,10 +292,15 @@ sig, S {{ tex \Sigma }} :: 'sig_' ::=
   | | S |          :: M  :: Erase
    {{ coq (erase_sig [[S]]) }}
 
+
 available_props, D {{ tex \Delta }} :: 'D_' ::= {{ coq atoms }} {{ coq-universe Type }}
    | emptyD          ::    :: Empty   {{ coq AtomSetImpl.empty }} {{ tex \varnothing }}
+   | D , x           ::    :: ConsVar {{ coq (singleton [[x]] \u [[D]]) }}
    | D , c           ::    :: ConsCo  {{ coq (singleton [[c]] \u [[D]]) }}
+   | fv a            :: M  :: FreeVars {{ coq (fv_tm_tm_tm [[a]]) }}
+   | D , D'          :: M  :: Append  {{ coq ([[D]] `union` [[D']]) }} {{ tex [[D]], [[D']] }}
    | dom G           :: M  :: DomG    {{ coq (dom [[G]]) }} {{ tex \widetilde {[[G]]} }}
+   | dom W           :: M  :: DomW    {{ coq (dom [[W]]) }} {{ tex \widetilde {[[W]]} }}
    | ( D )           :: M  :: Paren   {{ coq ([[D]]) }}
 
 
@@ -381,20 +386,16 @@ formula, Fm {{tex \psi}} :: 'formula_' ::=
     {{ coq AtomSetImpl.In [[c]] [[D]] }}
   | c not relevant in g      ::   :: notrelevant
     {{ coq [[c]] \notin (fv_relevant [[g]]) }}
-  | x notin fv a             ::   :: fresh
-    {{ coq [[x]] \notin fv_tm_tm_tm [[a]] }}
-  | x notin dom G            ::   :: notInGx
-    {{ coq ~ AtomSetImpl.In [[x]] (dom [[G]]) }}
-  | x notin dom W            ::   :: notInWx
-    {{ coq ~ AtomSetImpl.In [[x]] (dom [[W]]) }}
+  | x notin D            ::   :: notInDx
+    {{ coq ~ AtomSetImpl.In [[x]] [[D]] }}
   | ctx_uniq G               ::   :: uniqGx
     {{ coq uniq [[G]] }}
     {{ tex \emph{uniq} \ [[G]] }}
   | rctx_uniq W              ::   :: uniqWx
     {{ coq uniq [[W]] }}
     {{ tex \emph{uniq}([[W]]) }}
-  | c notin dom G            ::   :: notInGc
-    {{ coq ~ AtomSetImpl.In [[c]] (dom [[G]]) }}
+  | c notin D                ::   :: notInDc
+    {{ coq ~ AtomSetImpl.In [[c]] [[D]] }}
   | T notin dom S            ::   :: notInST
     {{ coq ~ AtomSetImpl.In [[T]] (dom [[S]]) }}
   | F notin dom S            ::   :: notInSF
@@ -559,21 +560,13 @@ Fixpoint range (L : role_context) : roles :=
   | nil => nil
   | (x,R) :: L' => R :: range(L')
   end.
-
-Fixpoint var_pat (p : tm) : role_context := 
-   match p with
-      a_App p (Role R) (a_Var_f x) => (x, R) :: (var_pat p)
-    | a_App p (Rho Irrel) Bullet => var_pat p
-    | a_CApp p g_Triv => var_pat p
-    | _  => nil
-   end.
 }}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%__ "Syntactic" definitions __%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-defns
+defns 
 JSubRole :: '' ::=
 
 defn
@@ -684,26 +677,26 @@ defns
 JRename :: '' ::=
 
 defn
-rename p -> a to p' -> a' with support W :: :: Rename :: 'Rename_'
+rename p -> a to p' -> a' excluding D :: :: Rename :: 'Rename_'
 {{ com rename with fresh variables }}
-{{ tex \mathsf{rename} \ [[p]] \rightarrow [[a]] \ \mathsf{to} \ [[p']] \rightarrow [[a']] \ \mathsf{with}\ \mathsf{support} \ [[W]] }}
+{{ tex \mathsf{rename} \ [[p]] \rightarrow [[a]] \ \mathsf{to} \ [[p']] \rightarrow [[a']] \ \mathsf{excluding} \ [[D]] }}
 by
 
 ------------------------------------------------ :: Base
-rename F -> a to F -> a with support W
+rename F -> a to F -> a excluding D
 
-rename p1 -> a1 to p2 -> a2 with support W
-y notin dom W
+rename p1 -> a1 to p2 -> a2 excluding D
+y notin D
 --------------------------------------------------------------------------- :: AppRel
-rename (p1 R x) -> a1 to (p2 R y) -> (a2 {`y/x`}) with support (W, y : Nom)
+rename (p1 R x) -> a1 to (p2 R y) -> (a2 {`y/x`}) excluding (D, y)
 
-rename p1 -> a1 to p2 -> a2 with support W
+rename p1 -> a1 to p2 -> a2 excluding D
 --------------------------------------------------------- :: AppIrrel
-rename (p1 - []) -> a1 to (p2 - []) -> a2 with support W
+rename (p1 - []) -> a1 to (p2 - []) -> a2 excluding D
 
-rename p1 -> a1 to p2 -> a2 with support W
+rename p1 -> a1 to p2 -> a2 excluding D
 ---------------------------------------------------------- :: CApp
-rename (p1 [o]) -> a1 to (p2 [o]) -> a2 with support W
+rename (p1 [o]) -> a1 to (p2 [o]) -> a2 excluding D
 
 defns
 JMatchSubst :: '' ::=
@@ -1037,8 +1030,7 @@ W |= all c:a~b:A/R1. B => all c:a'~b':A'/R1. B' / R
 
 F : p ~ b : A/R1 @ Rs in toplevel
 W |= a : R
-rctx_uniq W
-rename p -> b to p' -> b' with support ((W ++ var_pat p) ++ W') 
+rename p -> b to p' -> b' excluding (dom W, fv p) 
 match a with p' -> b' = a'
 R1 <= R
 ------------------------------------------------------------------- :: Axiom
@@ -1112,9 +1104,10 @@ Value R1 (\rho x. v)
 
 
 F : p ~ b : A/R1 @ Rs in toplevel
-match a with p -> b = b'
+rename p -> b to p1 -> b1 excluding (fv a, fv p)
+match a with p1 -> b1 = b'
 R1 <= R
------------------------------------ :: Axiom
+------------------------------------------------ :: Axiom
 |= a > b' / R
 
 CasePath R a = F
