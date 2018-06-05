@@ -102,6 +102,13 @@ Fixpoint chain_substitution (l : list (atom * tm)) (b : tm) : tm :=
    | (x, a) :: l' => tm_subst_tm_tm a x (chain_substitution l' b)
    end.
 
+Corollary chain_sub_append : forall l1 l2 b,
+          chain_substitution (l1 ++ l2) b =
+          chain_substitution l1 (chain_substitution l2 b).
+Proof. intros. generalize dependent l2. induction l1; auto. intros.
+       rewrite <- app_comm_cons. destruct a; simpl. rewrite IHl1. auto.
+Qed.
+
 Fixpoint permutation (a p : tm) : list (atom * tm) := match (a,p) with
   | (a_Fam F, a_Fam F') => nil
   | (a_App a1 (Role Nom) a2, a_App p1 (Role Nom) (a_Var_f x)) =>
@@ -113,6 +120,48 @@ Fixpoint permutation (a p : tm) : list (atom * tm) := match (a,p) with
   | (a_CApp a1 g_Triv, a_CApp p1 g_Triv) => permutation a1 p1
   | (_,_) => nil
   end.
+
+Lemma chain_sub_fam : forall l F,
+                      chain_substitution l (a_Fam F) = a_Fam F.
+Proof. intros. induction l. simpl; auto. destruct a; simpl. rewrite IHl.
+       auto.
+Qed.
+
+Lemma chain_sub_app : forall l nu a1 a2,
+           chain_substitution l (a_App a1 nu a2) =
+           a_App (chain_substitution l a1) nu (chain_substitution l a2).
+Proof. intros. induction l. simpl; auto. destruct a; simpl. rewrite IHl.
+       auto.
+Qed.
+
+Lemma chain_sub_var : forall l x, exists y, 
+                      chain_substitution (map a_Var_f l) (a_Var_f x) = a_Var_f y.
+Proof. intros. induction l. simpl. exists x; auto. destruct a.
+       simpl. inversion IHl as [y P]. rewrite P. destruct (a == y).
+       subst. exists t; simpl. destruct (y == y). auto. contradiction.
+       exists y. simpl. destruct (y == a). symmetry in e. contradiction.
+       auto.
+Qed.
+
+Lemma chain_sub_bullet : forall l, chain_substitution l a_Bullet = a_Bullet.
+Proof. intros. induction l; try destruct a; simpl; try rewrite IHl; eauto.
+Qed.
+
+Lemma chain_sub_capp : forall l a, chain_substitution l (a_CApp a g_Triv) =
+                       a_CApp (chain_substitution l a) g_Triv.
+Proof. intros. induction l. simpl; auto. destruct a0; simpl. rewrite IHl; auto.
+Qed.
+
+Lemma Path_pat_rename_consist : forall a p l, Path_pat_consist a p ->
+              Path_pat_consist a (chain_substitution (map a_Var_f l) p).
+Proof. intros. induction H.
+        - rewrite chain_sub_fam. eauto.
+        - rewrite chain_sub_app. pose (P := chain_sub_var l x).
+          inversion P as [y Q]. rewrite Q. eauto.
+        - rewrite chain_sub_app. rewrite chain_sub_bullet. eauto.
+        - rewrite chain_sub_capp; eauto.
+Qed.
+
 
 Lemma MatchSubst_permutation : forall a p b,
               chain_substitution (permutation a p) b = matchsubst a p b.
@@ -264,7 +313,7 @@ Proof. intros. induction H; eauto. destruct x. apply uniq_cons_iff in H0.
        destruct x, y. solve_uniq.
 Qed.
 
-Lemma Chain_sub_Permutation : forall b L L',
+Lemma Chain_sub_Permutation : forall L L' b,
         uniq L -> (forall x, x `in` dom L -> x `notin` rang L) ->
         Permutation L L' -> chain_substitution L b = chain_substitution L' b.
 Proof. intros.
@@ -284,6 +333,36 @@ Proof. intros.
            apply dom_Perm in P. apply rang_Perm in Q. intros.
            pose (S := H0 x). fsetdec.
 Qed.
+
+Lemma perm_pat_subst : forall a p x y a' l l1 l2, l = permutation a p ->
+      uniq l -> y `notin` dom l -> l = l1 ++ (x, a') :: l2 ->
+      permutation a (tm_subst_tm_tm (a_Var_f y) x p) = l1 ++ (y, a') :: l2.
+Proof. intros. generalize dependent a. generalize dependent p.
+       dependent induction l; intros. destruct l1; inversion H2.
+       destruct l1; simpl in *. inversion H2; subst.
+       apply nonempty_perm in H. inversion H as [a1 [a2 [p1 [z [P1 | P2]]]]].
+       inversion P1 as [Q1 [Q2 [Q3 Q4]]]. inversion Q3; subst.
+       solve_uniq. fsetdec.
+
+Lemma chain_sub_subst : forall a p b x y,
+    uniq (permutation a p) -> (forall z, z `in` p -> z `notin` fv_tm_tm_tm a) ->
+    x `in` fv_tm_tm_tm p -> y `notin` fv_tm_tm_tm a ->
+    chain_substitution (permutation a (tm_subst_tm_tm (a_Var_f y) x p))
+    tm_subst_tm_tm (a_Var_f y) x b) = chain_substitution (permutation a p) b.
+Proof. intros. rewrite MatchSubst_permutation. rewrite MatchSubst_permutation.
+
+Lemma rename_chain_sub : forall a l p b,
+ chain_substitution (permutation a (chain_substitution (map a_Var_f l) p))
+ (chain_substitution (map a_Var_f l) b) = chain_substitution (permutation a p) b.
+Proof. intros. generalize dependent p; generalize dependent b.
+       induction l; intros. simpl. auto.
+       destruct a0. rewrite map_cons.
+       rewrite (Chain_sub_Permutation (L := [(a0, a_Var_f t)] ++ map a_Var_f l)
+       (L' := map a_Var_f l ++ ([(a0, a_Var_f t)]))).
+       rewrite chain_sub_append.
+       rewrite (Chain_sub_Permutation (L := [(a0, a_Var_f t)] ++ map a_Var_f l)
+       (L' := map a_Var_f l ++ ([(a0, a_Var_f t)]))).
+       rewrite chain_sub_append. simpl. rewrite IHl.
 
 Definition Nice a p := Path_pat_consist a p /\
               (forall x, x `in` fv_tm_tm_tm p -> x `notin` fv_tm_tm_tm a) /\
