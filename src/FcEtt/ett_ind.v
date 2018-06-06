@@ -364,6 +364,8 @@ Ltac ext_induction CON :=
       pose CON :=  E_EqConv     |
       pose CON :=  E_IsoSnd     |
       pose CON :=  E_EtaRel     |
+      pose CON :=  E_EtaIrrel   |
+      pose CON :=  E_EtaC       |
 (*      pose CON :=  E_LeftRel    |
       pose CON :=  E_LeftIrrel  |
       pose CON :=  E_Right      |
@@ -409,6 +411,7 @@ Ltac ann_induction CON :=
       pose CON :=  An_Cast       |
       pose CON :=  An_IsoSnd     |
       pose CON :=  An_Eta        |
+      pose CON :=  An_EtaC       |
 (*      pose CON :=  An_Left       |
       pose CON :=  An_Right      |
       pose CON :=  An_CLeft      | *)
@@ -614,6 +617,30 @@ Proof.
   destruct eq_dec. auto. done.
 Qed.
 
+Lemma eta_swap_irrel: forall x y a' b,
+    x `notin` fv_tm_tm_tm a' \u fv_tm_tm_tm b ->
+    open_tm_wrt_tm a' (a_Var_f x) = a_App b Irrel a_Bullet ->
+    open_tm_wrt_tm a' (a_Var_f y) = a_App b Irrel a_Bullet.
+Proof.
+  intros.
+  rewrite (tm_subst_tm_tm_intro x); auto.
+  rewrite H0.
+  simpl.
+  rewrite tm_subst_tm_tm_fresh_eq; auto.
+Qed.
+
+Lemma eta_swap_c: forall x y a' b,
+    x `notin` fv_co_co_tm a' \u fv_co_co_tm b ->
+    open_tm_wrt_co a' (g_Var_f x) = a_CApp b g_Triv ->
+    open_tm_wrt_co a' (g_Var_f y) = a_CApp b g_Triv.
+Proof.
+  intros.
+  rewrite (co_subst_co_tm_intro x); auto.
+  rewrite H0.
+  simpl.
+  rewrite co_subst_co_tm_fresh_eq; auto.
+Qed.
+
 
 
 (* ---------------------------------- *)
@@ -670,10 +697,16 @@ Ltac E_pick_fresh x :=
                                 | a_UAbs _ _ => E_AbsCong
                                 | _ => E_EtaRel
                                 end
-               | a_UAbs _ _ => E_AbsCong
+               | a_UAbs Irrel _ => match s2 with 
+                                | a_UAbs _ _ =>  E_AbsCong
+                                | _ => E_EtaIrrel
+                                end
                | a_CPi _ _  => E_CPiCong
                | a_CAbs _ _ => E_CAbsCong
-               | a_UCAbs _  => E_CAbsCong
+               | a_UCAbs _  => match s2 with 
+                                | a_UCAbs _ =>  E_CAbsCong
+                                | _ => E_EtaC
+                                end
                end
       in pick fresh x and apply v
   end.

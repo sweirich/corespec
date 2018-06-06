@@ -58,7 +58,6 @@ Ltac threesub t2 :=
         try solve [right; intro h; inversion h; done]
          end.
 
-
 Lemma tm_eq_dec_mutual :
   ((forall t1 t2 : tm, {t1 = t2} +  {~ t1 = t2}) *
    (forall t1 t2 : brs, {t1 = t2} +  {~ t1 = t2}) *
@@ -76,7 +75,10 @@ Proof.
     intro H. inversion H. done. }
   { intro x. destruct t2.
     all : try solve [right; done].
-    edestruct (eq_atom_dec x x0). subst. left. auto. right.
+    (* edestruct (eq_atom_dec x x0). subst. left. auto. right.
+    intro H. inversion H. done. *)
+    edestruct (EqDec_atom x x0). inversion e.
+    subst. left. auto. right.
     intro H. inversion H. done. }
   { intros rho A t2 b t3 t0.
     destruct t0.
@@ -104,15 +106,19 @@ Proof.
   { intros F t2.
     destruct t2.
     all : try solve [right; done].
-    destruct (eq_atom_dec F F0). subst.
+    (* destruct (eq_atom_dec F F0). subst.
     left. auto.
-    right; intro H; inversion H; done. }
+    right; intro H; inversion H; done.*)
+    destruct (EqDec_atom F F0). inversion e. subst.
+    left. auto. right; intro H; inversion H; done. }
   { intros T t2.
     destruct t2.
     all : try solve [right; done].
-    destruct (eq_atom_dec T T0). subst.
+    (* destruct (eq_atom_dec T T0). subst.
     left. auto.
-    right; intro H; inversion H; done. }
+    right; intro H; inversion H; done. *)
+    destruct (EqDec_atom T T0). inversion e. subst.
+    left. auto. right; intro H; inversion H; done. }
   { intros.
     destruct t2.
     all : try solve [right; done].
@@ -124,15 +130,22 @@ Proof.
   { intros K t2.
     destruct t2.
     all : try solve [right; done].
-    edestruct (eq_atom_dec K K0). subst. left. auto. right.
-    intro H. inversion H. done. }
+    (* edestruct (eq_atom_dec K K0). subst. left. auto. right.
+    intro H. inversion H. done. *)
+    destruct (EqDec_atom K K0). inversion e. subst.
+    left. auto. right; intro H; inversion H; done. }
   { intros.
     destruct t2.
     all : try solve [right; done].
-    destruct (eq_atom_dec K K0). subst.
+    (* destruct (eq_atom_dec K K0). subst.
     destruct (H a0). subst.
     destruct (H0 t2). subst.
     left. auto.
+    all: right; intro h; inversion h; done.*)
+    destruct (EqDec_atom K K0). subst.
+    destruct (H a0). subst.
+    destruct (H0 t2). subst.
+    left. inversion e. auto.
     all: right; intro h; inversion h; done. }
   { intro n. destruct t2.
     all : try solve [right; done].
@@ -140,7 +153,9 @@ Proof.
     intro H. inversion H. done. }
   { intro x. destruct t2.
     all : try solve [right; done].
-    edestruct (eq_atom_dec x c). subst. left. auto. right.
+    (* edestruct (eq_atom_dec x c). subst. left. auto. right.
+    intro H. inversion H. done. *)
+    edestruct (EqDec_atom x c). inversion e. subst. left. auto. right.
     intro H. inversion H. done. }
   { intros.
     destruct t2.
@@ -437,7 +452,6 @@ Definition rho_eq_dec : forall rho rho' : relflag, {rho = rho'} + {rho <> rho'}.
 Proof. decide equality. Defined.
 
 
-
 Lemma beta_dec : forall a1 a2, lc_tm a1 -> {Beta a1 a2} + {¬ Beta a1 a2}.
 Proof.
   intros a1 a2 LC1.
@@ -449,10 +463,15 @@ Proof.
     destruct (tm_eq_dec a2 (open_tm_wrt_tm a1_1 a1_2)).
     destruct (@Value_dec (a_UAbs rho0 a1_1)).
     { inversion LC1. auto. }
-    { subst. left. eapply Beta_AppAbs; eauto; inversion LC1; auto. }
-    { right. move => h. inversion h. subst. ok. }
-    { right; move => h; inversion h. subst. ok. }
-    { right; move => h; inversion h. subst. ok. }
+    { destruct rho. subst. left.
+      eapply Beta_AppAbs; eauto; inversion LC1; auto.
+      subst.
+      destruct a1_2;
+        try solve [right; move => h; inversion h].
+      left. eapply Beta_AppAbsIrrel; eauto. }
+    { right. move => h. inversion h. subst. ok. ok. }
+    { right; move => h; inversion h. subst. ok. ok. }
+    { right; move => h; inversion h. subst. ok. ok. }
 
   }
   {

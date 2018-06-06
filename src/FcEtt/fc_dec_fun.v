@@ -532,6 +532,10 @@ with AnnDefEq_dec (G: context) (S : available_props) (g : co) (fuel : fuel_deq g
       match T with
       | a_Pi Rel A B =>
         << a_Abs Rel A (close_tm_wrt_tm x (a_App b Rel (a_Var_f x))), b >>
+      | a_Pi Irrel A B =>
+        << a_Abs Irrel A (close_tm_wrt_tm x (a_App b Irrel (a_Var_f x))), b >>
+      | a_CPi phi B =>
+        << a_CAbs phi (close_tm_wrt_co x (a_CApp b (g_Var_f x))), b >>
       | _ => !!
       end
 
@@ -1673,17 +1677,115 @@ Next Obligation.
   simpl. destruct eq_dec; try done.
   rewrite tm_subst_tm_tm_fresh_eq. auto.
   auto.
+Defined. 
+Next Obligation.
+  eapply An_Eta with (L := dom G)(B := B).
+  subst. auto.
+  intros.
+  rewrite -tm_subst_tm_tm_spec.
+  simpl. edestruct eq_dec; try done.
+  rewrite tm_subst_tm_tm_fresh_eq. auto.
+  auto.
+Defined.
+Next Obligation. 
+  eapply An_EtaC with (L := dom G).
+  subst. eapply wildcard'.
+  intros.
+  rewrite -co_subst_co_tm_spec.
+  simpl. edestruct eq_dec; try done.
+  rewrite co_subst_co_tm_fresh_eq. auto.
+  move: (AnnTyping_context_fv wildcard') => h0.
+  fsetdec.
+Defined. 
+Next Obligation.
+  cleanup. inversion 1; subst;
+  inversion H0; clear H0;
+  inversion H4; clear H4.
+  destruct rho.
+  move: (H5 A0 B0) => h0.
+  destruct h0.
+  eapply AnnTyping_unique. eauto. eauto.
+  move: (H2 A0 B0) => h0.
+  destruct h0.
+  eapply AnnTyping_unique. eauto. eauto.
+  move: (H0 phi) => h0.
+  edestruct h0.
+  eapply AnnTyping_unique. eauto. eauto.
+Defined. 
+
+Next Obligation.
+  unfold wildcard'.
+  repeat split; intros; discriminate.
 Defined.
 Next Obligation.
-  cleanup'.
+  unfold wildcard'.
+  repeat split; intros; discriminate.
+Defined.
+Next Obligation.
+  unfold wildcard'.
+  repeat split; intros; discriminate.
+Defined.
+Next Obligation.
+  unfold wildcard'.
+  repeat split; intros; discriminate.
+Defined.
+Next Obligation.
+  unfold wildcard'.
+  repeat split; intros; discriminate.
+Defined.
+Next Obligation.
+  unfold wildcard'.
+  repeat split; intros; discriminate.
+Defined.
+Next Obligation.
+  unfold wildcard'.
+  repeat split; intros; discriminate.
+Defined.
+Next Obligation.
+  unfold wildcard'.
+  repeat split; intros; discriminate.
+Defined.
+Next Obligation.
+  unfold wildcard'.
+  repeat split; intros; discriminate.
+Defined.
+Next Obligation.
+  unfold wildcard'.
+  repeat split; intros; discriminate.
+Defined.
+Next Obligation.
+  unfold wildcard'.
+  repeat split; intros; discriminate.
+Defined.
+Next Obligation.
+  unfold wildcard'.
+  repeat split; intros; discriminate.
+Defined.
+Next Obligation.
+  unfold wildcard'.
+  repeat split; intros; discriminate.
+Defined.
+Next Obligation.
+  unfold wildcard'.
+  repeat split; intros; discriminate.
+Defined.
+Next Obligation.
+  unfold wildcard'.
+  repeat split; intros; discriminate.
+Defined.
+
+
+ (* cleanup'.
   subst.
   move=> h0.
   inversion h0. subst.
   apply (H0 A0 B0).
   auto_uniq_full.
   apply u0.
-  auto.
-Defined.
+  auto. admit. admit. *)
+
+(*
+
 Next Obligation.
   hacky.
 Defined.
@@ -1734,7 +1836,7 @@ Next Obligation.
 Defined.
 Next Obligation.
   hacky.
-Defined.
+Defined.    *)
 
 (*
 (* An_Left *)

@@ -1095,7 +1095,8 @@ Proof.
 - exists (a_Const T).
   destruct (H0 nil eq_refl) as (a0 & A0 & E1 & E2 & Ty). auto. clear H0.
   unfold toplevel in b. unfold erase_sig in b.
-  destruct (@binds_map_3 _ _ T (Cs A) erase_csort an_toplevel b).
+  destruct (@binds_map_3 _ _ erase_csort T (Cs A) an_toplevel).
+  (* destruct (@binds_map_3 _  _ T (Cs A) erase_csort an_toplevel b). *) eauto.
   split_hyp. destruct x; simpl in H0; inversion H0.
   subst.
   exists A1.  simpl.
@@ -1105,7 +1106,7 @@ Proof.
   eapply an_toplevel_to_const; eauto.
 - destruct (H0 nil eq_refl) as (a0 & A0 & E1 & E2 & Ty). auto.
   unfold toplevel in b. unfold erase_sig in b.
-  destruct (@binds_map_3 _ _ F (Ax a A) erase_csort an_toplevel b).
+  destruct (@binds_map_3 _ _ erase_csort F (Ax a A) an_toplevel). eauto.
   split_hyp. destruct x; inversion H3.
   exists (a_Fam F). exists A1. repeat split; auto.
   eapply An_Fam; eauto.
@@ -1252,8 +1253,8 @@ Proof.
   eapply An_CPiFst. eapply H2.
 - (* assn *)
   rewrite <- H0 in b0.
-
-  destruct (binds_map_3 _ _ _ _ b0) as [s [E2 E3]].
+  unfold erase_context in b0.
+  destruct (binds_map_3 _ _ erase_sort c (Co (Eq a b A)) G0) as [s [E2 E3]]. eauto. 
   destruct s; try (simpl in E2; inversion E2).
   destruct phi. simpl in E2. inversion E2.
   subst. clear E2.

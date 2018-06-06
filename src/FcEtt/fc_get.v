@@ -176,6 +176,7 @@ get_deq_n (n : nat) (G : context) (g : co) : (tm * tm) :=
       let (x,_) := atom_fresh (dom G) in
       match get_tpg_n m G b with
       | (a_Pi rho A B) => (a_Abs rho A (close_tm_wrt_tm x (a_App b rho (a_Var_f x))), b)
+      | (a_CPi phi _) =>  (a_CAbs phi (close_tm_wrt_co x (a_CApp b (g_Var_f x))), b)
       | _ => (a_Star, a_Star)
       end
      (* Left/Right
@@ -478,8 +479,8 @@ Proof.
       rewrite -(@close_tm_wrt_tm_open_tm_wrt_tm a0 y); auto.
       rewrite H4; auto.
       unfold close_tm_wrt_tm. simpl.
-      destruct eq_dec; try done.
-      destruct eq_dec; try done.
+      edestruct eq_dec; try done.
+      edestruct eq_dec; try done. 
       f_equal.
       replace (close_tm_wrt_tm_rec 0 y B') with (close_tm_wrt_tm y B'); simpl; auto.
       replace (close_tm_wrt_tm_rec 0 x B') with (close_tm_wrt_tm x B'); simpl; auto.
@@ -491,6 +492,40 @@ Proof.
       rewrite tm_subst_tm_tm_fresh_eq; auto.
       destruct (AnnDefEq_context_fv DE) as (_ & _ & _ & _ & h4 & _).
       fsetdec.
+      assert (K: (if y == y then a_Var_b 0 else a_Var_f y) = a_Var_b 0).
+      destruct (y == y); auto. contradiction.
+      assert (K': (if x == x then a_Var_b 0 else a_Var_f x) = a_Var_b 0).
+      destruct (x == x); auto. contradiction. rewrite K. rewrite K'. auto.
+      
+      simpl in *. subst.
+      move: (H n ltac:(omega)) => [h0 _].
+      assert (EQ: size_tm B <= n). omega. 
+      eapply h0 with (G:= G) (A:= (a_CPi phi B0)) in EQ; auto.
+      remember (get_tpg_n n G B) as pi. destruct pi; inversion EQ. subst.
+      destruct (atom_fresh (dom G)) as [x Fr].
+      inversion GET. subst.
+      split; auto.
+      f_equal.
+      pick fresh y.
+      rewrite -(@close_tm_wrt_co_open_tm_wrt_co a0 y); auto.
+      rewrite H4; auto.
+      unfold close_tm_wrt_co. simpl.
+      edestruct eq_dec; try done.
+      edestruct eq_dec; try done. 
+      f_equal.
+      replace (close_tm_wrt_co_rec 0 y B') with (close_tm_wrt_co y B'); simpl; auto.
+      pick fresh z for (fv_co_co_tm (close_tm_wrt_co y B') \u fv_co_co_tm (close_tm_wrt_co_rec 0 x B')).
+      eapply open_tm_wrt_co_inj with (c1 := z); auto.
+      rewrite -co_subst_co_tm_spec.
+      rewrite -co_subst_co_tm_spec.
+      rewrite co_subst_co_tm_fresh_eq; auto.
+      rewrite co_subst_co_tm_fresh_eq; auto.
+      destruct (AnnDefEq_context_fv DE) as (_ & _ & _ & _ & _ & h4).
+      fsetdec.
+      assert (K: (if y == y then g_Var_b 0 else g_Var_f y) = g_Var_b 0).
+      destruct (y == y); auto. contradiction.
+      assert (K': (if x == x then g_Var_b 0 else g_Var_f x) = g_Var_b 0).
+      destruct (x == x); auto. contradiction. rewrite K. rewrite K'. auto.
    (* - inversion DE; simpl in *; subst.
       + move: (H n ltac:(omega)) => [h0 [h1 h2]].
         remember (get_deq_n n G g1) as GG1. destruct GG1.
@@ -525,7 +560,7 @@ Proof.
         move: (H n ltac:(omega)) => [_ [h0 h1]].
         move: (h0 _ _ g1 _ _ t t0 ltac:(omega) H4 ltac:(auto)) => [E1 E2]. subst.              move: (h0 _ _ g2 _ _ t1 t2 ltac:(omega) H7 ltac:(auto)) => [E1 E2]. subst.             inversion GET. auto.
       - inversion GET. auto.
-    }
+    } Unshelve. auto. auto. auto. auto.
 Qed.
 
 

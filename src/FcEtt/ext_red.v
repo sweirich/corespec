@@ -95,7 +95,7 @@ Proof.
   eapply Beta_preservation; eauto.
 Qed.
 
-
+(*
 Lemma Par_fv_preservation: forall G D x a b, Par G D a b ->
                                         x `notin` fv_tm_tm_tm a ->
                                         x `notin` fv_tm_tm_tm b.
@@ -215,7 +215,7 @@ Proof.
     apply AtomSetProperties.empty_union_1 in h3.
     auto. done.
 Qed.
-
+*)
 
 Lemma reduction_in_Par : forall a a', reduction_in_one a a' -> forall G D, Par G D a a'.
 Proof.
@@ -420,6 +420,7 @@ Lemma type_reduction_mutual:
   (forall G D A B T, DefEq G D A B T -> True) /\
   (forall G1,        Ctx G1 -> True).
 *)
+
 
 
 End  ext_red.

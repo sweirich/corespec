@@ -648,6 +648,23 @@ not ValueType a
 consistent a b
 
 defns
+JChk :: '' ::=
+
+defn
+rho => check x in A ::    :: RhoCheck :: 'Rho_'
+{{ tex ([[rho]] = +) \vee ([[x]]\not\in\mathsf{fv}\; [[A]]) }}
+{{ com irrelevant argument check }}
+by
+
+nolc A
+-------------------- :: Rel
++ => check x in A
+
+x notin fv A
+-------------------- :: IrrRel
+- => check x in A
+
+defns
   Jerased :: '' ::=
 
 defn
@@ -664,8 +681,10 @@ erased_tm TYPE
 erased_tm x
 
 erased_tm a
+rho => check x in a
 -------------------- :: Abs
 erased_tm (\rho x.a)
+
 
 erased_tm a
 erased_tm b
@@ -702,22 +721,6 @@ erased_tm T
 -------- :: Fam
 erased_tm F
 
-defns
-JChk :: '' ::=
-
-defn
-rho => check x in A ::    :: RhoCheck :: 'Rho_'
-{{ tex ([[rho]] = +) \vee ([[x]]\not\in\mathsf{fv}\; [[A]]) }}
-{{ com irrelevant argument check }}
-by
-
-nolc A
--------------------- :: Rel
-+ => check x in A
-
-x notin fv A
--------------------- :: IrrRel
-- => check x in A
 
 
 % defns

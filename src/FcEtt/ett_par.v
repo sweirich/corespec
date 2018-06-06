@@ -155,7 +155,7 @@ Ltac erased_case :=
   | [ H : ∀ c, erased_tm (erase (open_tm_wrt_co ?b (g_Var_f c))) |- _ ] =>
     move: (H x) => h0; rewrite <- open_co_erase_tm2 with (g := (g_Var_f x)) in h0; auto
   end.
-
+(*
 
 Lemma erased_tm_erase_mutual :
   (forall a, lc_tm a -> erased_tm (erase a))
@@ -169,12 +169,20 @@ Proof.
   apply lc_tm_lc_brs_lc_co_lc_constraint_mutind; intros; simpl; eauto.
   all: try solve [ try (destruct rho); simpl; eauto].
   all: try solve [erased_case].
-
+  - destruct rho; eauto. pick fresh x and apply erased_a_Abs. 
+    replace (a_Var_f x) with (erase (a_Var_f x)); eauto.
+    rewrite open_tm_erase_tm; eauto.
+    eauto.
+    (*irrel*)
+    pick fresh x and apply erased_a_Abs.
+    replace (a_Var_f x) with (erase (a_Var_f x)); eauto.
+    rewrite open_tm_erase_tm; eauto. econstructor. admit.
   - destruct phi. destruct (H _ _ _ eq_refl) as (h0 & h1 & h2). simpl.
     erased_case.
   - inversion H2. subst. tauto.
-Qed.
+Qed. *)
 
+(*
 Lemma erased_tm_erase : forall a, lc_tm a -> erased_tm (erase a).
 Proof.
   intros.
@@ -182,7 +190,7 @@ Proof.
   eauto.
 Qed.
 
-Hint Resolve erased_tm_erase : erased.
+Hint Resolve erased_tm_erase : erased. *)
 
 
 Inductive erased_sort : sort -> Prop :=
@@ -208,16 +216,73 @@ Lemma subst_tm_erased : forall x b, erased_tm b -> forall a , erased_tm a -> era
 Proof.
   intros x b Eb a Ea. induction Ea; simpl; intros; eauto 2.
   all: try solve [erased_pick_fresh x0; autorewrite with subst_open_var; eauto using erased_lc].
-  destruct eq_dec; eauto.
+  - destruct eq_dec; eauto.
+  - destruct rho.
+    + pick fresh y and apply erased_a_Abs; eauto.
+    assert (W: y `notin` L). fsetdec. apply H0 in W.
+    rewrite tm_subst_tm_tm_open_tm_wrt_tm in W. simpl in W.
+    assert (Q: (if y == x then b else a_Var_f y) = (a_Var_f y)).
+    destruct (y == x). fsetdec. eauto. rewrite Q in W. eauto.
+    apply erased_lc; eauto. 
+    + pick fresh y and apply erased_a_Abs; eauto.
+    assert (W: y `notin` L). fsetdec. apply H0 in W.
+    rewrite tm_subst_tm_tm_open_tm_wrt_tm in W. simpl in W.
+    assert (Q: (if y == x then b else a_Var_f y) = (a_Var_f y)).
+    destruct (y == x). fsetdec. eauto. rewrite Q in W. eauto.
+    apply erased_lc; eauto. assert (W: y `notin` L). fsetdec. apply H1 in W.
+    apply Rho_IrrRel. inversion W; subst.
+    rewrite tm_subst_tm_tm_open_tm_wrt_tm_var; eauto. apply fv_tm_tm_tm_tm_subst_tm_tm_notin.
+    auto. fsetdec. apply erased_lc; auto.
 Qed.
+
+Lemma erased_a_Abs_exists : ∀  (rho : relflag) (a : tm) x,
+                x `notin` fv_tm_tm_tm a
+              → erased_tm (open_tm_wrt_tm a (a_Var_f x))
+              → RhoCheck rho x (open_tm_wrt_tm a (a_Var_f x))
+              → erased_tm (a_UAbs rho a).
+Proof.
+  intros. pick fresh y and apply erased_a_Abs.
+  rewrite (@tm_subst_tm_tm_intro x); eauto. apply subst_tm_erased; eauto.
+  eapply rho_swap; eauto.
+Qed.
+
+Lemma erased_a_Abs_inversion : forall rho a, 
+     erased_tm (a_UAbs rho a) -> forall x, x `notin` fv_tm_tm_tm a 
+  -> erased_tm (open_tm_wrt_tm a (a_Var_f x)) /\ RhoCheck rho x (open_tm_wrt_tm a (a_Var_f x)).
+Proof.
+  intros. inversion H; subst. pick fresh y. split.
+  rewrite (@tm_subst_tm_tm_intro y); eauto. apply subst_tm_erased; eauto.
+  eapply rho_swap. assert (Q: y `notin` fv_tm_tm_tm a). fsetdec. apply Q. eauto. eauto.
+Qed.
+
 
 Lemma subst_co_erased : forall c g a , lc_co g -> erased_tm a -> erased_tm (co_subst_co_tm g c a).
 Proof.
   induction 2; simpl; intros; eauto 2.
   all: try solve [erased_pick_fresh x0; autorewrite with subst_open_var; eauto using erased_lc].
+  destruct rho.
+    + pick fresh y and apply erased_a_Abs; eauto.
+    assert (W: y `notin` L). fsetdec. apply H1 in W.
+    rewrite co_subst_co_tm_open_tm_wrt_tm in W. simpl in W.
+    eauto. eauto.
+    + pick fresh y and apply erased_a_Abs; eauto.
+    assert (W: y `notin` L). fsetdec. apply H1 in W.
+    rewrite co_subst_co_tm_open_tm_wrt_tm in W. simpl in W.
+    eauto. eauto. assert (W: y `notin` L). fsetdec. apply H2 in W.
+    apply Rho_IrrRel. inversion W; subst.
+    rewrite co_subst_co_tm_open_tm_wrt_tm_var; eauto. apply fv_tm_tm_tm_co_subst_co_tm_notin.
+    auto. fsetdec.
 Qed.
 
 Hint Resolve subst_tm_erased subst_co_erased : erased.
+
+Lemma erased_a_CAbs_inversion : forall b, 
+     erased_tm (a_UCAbs b) -> forall c, c `notin` fv_co_co_tm b 
+  -> erased_tm (open_tm_wrt_co b (g_Var_f c)).
+Proof.
+  intros. inversion H; subst. pick fresh y.
+  rewrite (@co_subst_co_tm_intro y); eauto. apply subst_co_erased; eauto.
+Qed.
 
 Lemma Par_lc1 : forall G D a a' , Par G D a a' -> lc_tm a.
   intros.  induction H; auto. all: lc_solve.
@@ -337,6 +402,241 @@ Ltac eta_eq y EQ :=
 end.
 
 
+
+Lemma Par_fv_preservation: forall G D x a b, Par G D a b ->
+                                        x `notin` fv_tm_tm_tm a ->
+                                        x `notin` fv_tm_tm_tm b.
+Proof.
+  intros.
+  induction H; eauto 2; simpl.
+  all: simpl in H0.
+  all: try solve [move => h0; apply AtomSetFacts.union_iff in h0; case: h0 => h0; eauto; apply IHreduction_in_one; auto].
+  all: try auto.
+  - simpl in *.
+    have: x `notin` fv_tm_tm_tm (open_tm_wrt_tm a' b') => h0.
+    apply fv_tm_tm_tm_open_tm_wrt_tm_upper in h0.
+    apply AtomSetFacts.union_iff in h0.
+    case:h0; eauto => h0.
+    fsetdec_fast.
+    fsetdec_fast.
+    auto.
+  - rewrite fv_tm_tm_tm_open_tm_wrt_tm_upper.
+    fsetdec.
+  - have: x `notin` fv_tm_tm_tm (open_tm_wrt_co a' g_Triv) => h0.
+    apply fv_tm_tm_tm_open_tm_wrt_co_upper in h0.
+    apply AtomSetFacts.union_iff in h0.
+    case:h0; eauto => h0.
+    fsetdec.
+    auto.
+  - pick fresh x0.
+    assert (Fl : x0 `notin` L). auto.
+    assert (Fa : x `notin` fv_tm_tm_tm (open_tm_wrt_tm a (a_Var_f x0))).
+    rewrite fv_tm_tm_tm_open_tm_wrt_tm_upper. auto.
+    move: (H1 x0 Fl Fa) => h0.
+    rewrite fv_tm_tm_tm_open_tm_wrt_tm_lower. eauto. 
+  - pick fresh x0.
+    have na': x `notin` fv_tm_tm_tm A'. eauto.
+    have nb: x `notin` fv_tm_tm_tm (open_tm_wrt_tm B (a_Var_f x0)).
+    rewrite fv_tm_tm_tm_open_tm_wrt_tm_upper. eauto.
+    have nob': x `notin` fv_tm_tm_tm (open_tm_wrt_tm B' (a_Var_f x0)). eauto.
+    have nb': x `notin` fv_tm_tm_tm B'.
+    rewrite fv_tm_tm_tm_open_tm_wrt_tm_lower. eauto.
+    eauto.
+  - pick_fresh c0.
+    have: x `notin` fv_tm_tm_tm (open_tm_wrt_co a (g_Var_f c0)) => h0.
+    apply fv_tm_tm_tm_open_tm_wrt_co_upper in h0.
+    apply AtomSetFacts.union_iff in h0.
+    case:h0; eauto => h0.
+    simpl in h0.
+    fsetdec.
+    have K:= H1 c0 ltac:(auto) h0.
+    move => h1.
+    apply K. auto.
+    apply fv_tm_tm_tm_open_tm_wrt_co_lower; auto.
+  - pick fresh c0 for L.
+    have: x `notin` fv_tm_tm_tm (open_tm_wrt_co a (g_Var_f c0)) => h0.
+    apply fv_tm_tm_tm_open_tm_wrt_co_upper in h0.
+    apply AtomSetFacts.union_iff in h0.
+    case:h0; eauto => h0.
+    simpl in h0.
+    fsetdec.
+    have h2: x `notin` fv_tm_tm_tm (open_tm_wrt_co a' (g_Var_f c0)). eauto.
+    move: (fv_tm_tm_tm_open_tm_wrt_co_lower a' (g_Var_f c0)) => h3.
+    have h4: x `notin` fv_tm_tm_tm a'. fsetdec.
+
+    move => h1.
+    apply AtomSetFacts.union_iff in h1.
+    case: h1 => h1; eauto.
+    apply AtomSetFacts.union_iff in h1.
+    case: h1 => h1; eauto.
+    fsetdec.
+    fsetdec.
+  - apply toplevel_closed in H.
+    move: (Typing_context_fv H) => ?. split_hyp.
+    simpl in *.
+    fsetdec.
+  -
+    apply IHPar.
+    pick fresh y.
+    move: (H1 y ltac:(auto)) => h0.
+    apply (fun_cong fv_tm_tm_tm) in h0.
+    simpl in h0.
+    move: (@fv_tm_tm_tm_open_tm_wrt_tm_lower a (a_Var_f y) x) => h1.
+    move: (@fv_tm_tm_tm_open_tm_wrt_tm_upper a (a_Var_f y) x) => h2.
+    unfold not. intro IN.
+    assert (h3: x `in` (union (fv_tm_tm_tm b) (singleton y))). auto.
+    rewrite -h0 in h3.
+    apply h2 in h3.
+    simpl in h3.
+    destruct (AtomSetImpl.union_1 h3).
+    assert (x `notin` singleton y). auto. done.
+    done.
+  - apply IHPar.
+    pick fresh y.
+    move: (H1 y ltac:(auto)) => h0.
+    apply (fun_cong fv_tm_tm_tm) in h0.
+    simpl in h0.
+    move: (@fv_tm_tm_tm_open_tm_wrt_tm_lower a (a_Var_f y) x) => h1.
+    move: (@fv_tm_tm_tm_open_tm_wrt_tm_upper a (a_Var_f y) x) => h2.
+    unfold not. intro IN.
+    assert (h3: x `in` (union (fv_tm_tm_tm b) empty)). auto.
+    rewrite -h0 in h3.
+    apply h2 in h3.
+    simpl in h3.
+    destruct (AtomSetImpl.union_1 h3).
+    assert (x `notin` singleton y). auto. done.
+    done.
+  - apply IHPar.
+    pick fresh y.
+    move: (H1 y ltac:(auto)) => h0.
+    apply (fun_cong fv_tm_tm_tm) in h0.
+    simpl in h0.
+    move: (@fv_tm_tm_tm_open_tm_wrt_co_lower a (g_Var_f y) x) => h1.
+    move: (@fv_tm_tm_tm_open_tm_wrt_co_upper a (g_Var_f y) x) => h2.
+    unfold not. intro IN.
+    assert (h3: x `in` (union (fv_tm_tm_tm b) empty)). auto.
+    rewrite -h0 in h3.
+    apply h2 in h3.
+    simpl in h3.
+    destruct H0. 
+    apply AtomSetProperties.empty_union_1 in h3.
+    auto. done.
+Qed.
+
+Lemma Par_fv_co_preservation: forall G D x a b, Par G D a b ->
+                                        x `notin` fv_co_co_tm a ->
+                                        x `notin` fv_co_co_tm b.
+Proof.
+  intros.
+  induction H; eauto 2; simpl.
+  all: simpl in H0.
+  all: try solve [move => h0; apply AtomSetFacts.union_iff in h0; case: h0 => h0; eauto; apply IHreduction_in_one; auto].
+  all: try auto.
+  - simpl in *.
+    have: x `notin` fv_co_co_tm (open_tm_wrt_tm a' b') => h0.
+    apply fv_co_co_tm_open_tm_wrt_tm_upper in h0.
+    apply AtomSetFacts.union_iff in h0.
+    case:h0; eauto => h0.
+    fsetdec_fast.
+    fsetdec_fast.
+    auto.
+  - rewrite fv_co_co_tm_open_tm_wrt_tm_upper.
+    fsetdec.
+  - have: x `notin` fv_co_co_tm (open_tm_wrt_co a' g_Triv) => h0.
+    apply fv_co_co_tm_open_tm_wrt_co_upper in h0.
+    apply AtomSetFacts.union_iff in h0.
+    case:h0; eauto => h0.
+    fsetdec.
+    auto.
+  - pick fresh x0.
+    assert (Fl : x0 `notin` L). auto.
+    assert (Fa : x `notin` fv_co_co_tm (open_tm_wrt_tm a (a_Var_f x0))).
+    rewrite fv_co_co_tm_open_tm_wrt_tm_upper. auto.
+    move: (H1 x0 Fl Fa) => h0.
+    rewrite fv_co_co_tm_open_tm_wrt_tm_lower. eauto. 
+  - pick fresh x0.
+    have na': x `notin` fv_co_co_tm A'. eauto.
+    have nb: x `notin` fv_co_co_tm (open_tm_wrt_tm B (a_Var_f x0)).
+    rewrite fv_co_co_tm_open_tm_wrt_tm_upper. eauto.
+    have nob': x `notin` fv_co_co_tm (open_tm_wrt_tm B' (a_Var_f x0)). eauto.
+    have nb': x `notin` fv_co_co_tm B'.
+    rewrite fv_co_co_tm_open_tm_wrt_tm_lower. eauto.
+    eauto.
+  - pick_fresh c0.
+    have: x `notin` fv_co_co_tm (open_tm_wrt_co a (g_Var_f c0)) => h0.
+    apply fv_co_co_tm_open_tm_wrt_co_upper in h0.
+    apply AtomSetFacts.union_iff in h0.
+    case:h0; eauto => h0.
+    simpl in h0.
+    fsetdec.
+    have K:= H1 c0 ltac:(auto) h0.
+    move => h1.
+    apply K. auto.
+    apply fv_co_co_tm_open_tm_wrt_co_lower; auto.
+  - pick fresh c0.
+    have: x `notin` fv_co_co_tm (open_tm_wrt_co a (g_Var_f c0)) => h0.
+    apply fv_co_co_tm_open_tm_wrt_co_upper in h0.
+    apply AtomSetFacts.union_iff in h0.
+    case:h0; eauto => h0.
+    simpl in h0. assert (Q: c0 `notin` singleton x). fsetdec. clear Fr.
+    fsetdec.
+    have h2: x `notin` fv_co_co_tm (open_tm_wrt_co a' (g_Var_f c0)). eauto.
+    move: (fv_co_co_tm_open_tm_wrt_co_lower a' (g_Var_f c0)) => h3.
+    have h4: x `notin` fv_co_co_tm a'. fsetdec.
+    move => h1.
+    apply AtomSetFacts.union_iff in h1.
+    case: h1 => h1; eauto.
+    apply AtomSetFacts.union_iff in h1.
+    case: h1 => h1; eauto. clear Fr.
+    fsetdec. clear Fr.
+    fsetdec.
+  - apply toplevel_closed in H.
+    move: (Typing_context_fv H) => ?. split_hyp.
+    simpl in *.
+    fsetdec.
+  - apply IHPar.
+    pick fresh y.
+    move: (H1 y ltac:(auto)) => h0.
+    apply (fun_cong fv_co_co_tm) in h0.
+    simpl in h0.
+    move: (@fv_co_co_tm_open_tm_wrt_tm_lower a (a_Var_f y) x) => h1.
+    move: (@fv_co_co_tm_open_tm_wrt_tm_upper a (a_Var_f y) x) => h2.
+    unfold not. intro IN.
+    assert (h3: x `in` (union (fv_co_co_tm b) empty)). auto.
+    rewrite -h0 in h3.
+    apply h2 in h3.
+    simpl in h3.
+    destruct (AtomSetImpl.union_1 h3).
+    assert (x `notin` singleton y). auto. fsetdec. fsetdec.
+  - apply IHPar.
+    pick fresh y.
+    move: (H1 y ltac:(auto)) => h0.
+    apply (fun_cong fv_co_co_tm) in h0.
+    simpl in h0.
+    move: (@fv_co_co_tm_open_tm_wrt_tm_lower a (a_Var_f y) x) => h1.
+    move: (@fv_co_co_tm_open_tm_wrt_tm_upper a (a_Var_f y) x) => h2.
+    unfold not. intro IN.
+    assert (h3: x `in` (union (fv_co_co_tm b) empty)). auto.
+    rewrite -h0 in h3.
+    apply h2 in h3.
+    simpl in h3.
+    destruct (AtomSetImpl.union_1 h3).
+    assert (x `notin` singleton y). auto. fsetdec. fsetdec.
+  - apply IHPar.
+    pick fresh y.
+    move: (H1 y ltac:(auto)) => h0.
+    apply (fun_cong fv_co_co_tm) in h0.
+    simpl in h0.
+    move: (@fv_co_co_tm_open_tm_wrt_co_lower a (g_Var_f y) x) => h1.
+    move: (@fv_co_co_tm_open_tm_wrt_co_upper a (g_Var_f y) x) => h2.
+    unfold not. intro IN.
+    assert (h3: x `in` (union (fv_co_co_tm b) empty)). auto.
+    rewrite -h0 in h3.
+    apply h2 in h3.
+    simpl in h3. destruct (AtomSetImpl.union_1 h3).
+    assert (x `notin` singleton y). auto. fsetdec. fsetdec.
+Qed.
+
 Lemma Par_erased_tm : forall G D a a', Par G D a a' -> erased_tm a -> erased_tm a'.
 Proof.
   intros G D a a' Ep Ea.  induction Ep; inversion Ea; subst; eauto 2.
@@ -354,7 +654,12 @@ Proof.
     pick fresh x;
     rewrite (co_subst_co_tm_intro x); auto;
     apply subst_co_erased; auto.
-  - eauto with erased.
+  - apply erased_a_Abs with (L := union L L0). intros. 
+    eapply H0 in H3; eauto.
+    intros. assert (W: x `notin` L0). fsetdec. apply H4 in W.
+    inversion W; subst. econstructor; eauto.
+    econstructor. eapply Par_fv_preservation in H; eauto.
+  - eapply toplevel_erased1; eauto.
   - (* Eta *)
     eapply IHEp; auto.
     pick fresh x;
@@ -375,7 +680,7 @@ Proof.
     inversion Eaa; auto. fsetdec.
 Qed.
 
-Hint Resolve Par_erased_tm : erased.
+Hint Resolve Par_erased_tm : erased. 
 
 (* ------------------------------------------------------------- *)
 
@@ -458,9 +763,9 @@ Proof.
       move:  (toplevel_closed H) => h0
     end.
      move: (Typing_context_fv h0) => ?. split_hyp.
-     fsetdec.
+     fsetdec. 
   - pick fresh y.
-    move: (H4 y ltac:(auto)) => h0.
+    move: (H5 y ltac:(auto)) => h0.
     move: (H2 y ltac:(auto)) => h1.
     rewrite h1 in h0. inversion h0. subst.
     eapply (Par_Eta (L \u singleton x)). eauto.
@@ -473,7 +778,7 @@ Proof.
     clear Fr. fsetdec.
     eapply Par_lc1. eauto.
   - pick fresh y.
-    move: (H4 y ltac:(auto)) => h0.
+    move: (H5 y ltac:(auto)) => h0.
     move: (H2 y ltac:(auto)) => h1.
     rewrite h1 in h0. inversion h0. subst.
     eapply (Par_EtaIrrel (L \u singleton x)). eauto.
@@ -484,7 +789,7 @@ Proof.
     simpl in h2.
     destruct (@eq_dec tmvar _ z x); try done.
     clear Fr. fsetdec.
-    eapply Par_lc1. eauto.
+    eapply Par_lc1. eauto. 
   - pick fresh y.
     move: (H4 y ltac:(auto)) => h0.
     move: (H2 y ltac:(auto)) => h1.

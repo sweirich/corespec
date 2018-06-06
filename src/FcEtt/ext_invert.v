@@ -719,6 +719,91 @@ Proof.
 Qed.
 
 
+Lemma co_subst_co_tm_var_eq : forall a g c,
+  lc_co g ->
+  erased_tm a -> 
+  co_subst_co_tm g_Triv c a = co_subst_co_tm g c a.
+Proof.
+  intros. induction H0; eauto.
+  - pick fresh x. assert (X: x `notin` L). fsetdec. apply H1 in X. simpl in X.
+    erewrite co_subst_co_tm_a_UAbs; eauto. erewrite co_subst_co_tm_a_UAbs; eauto.
+    rewrite X; auto.
+  - simpl. rewrite IHerased_tm1. rewrite IHerased_tm2. auto.
+  - simpl. rewrite IHerased_tm. auto.
+  - simpl. rewrite IHerased_tm. pick fresh x.
+    assert (X: x `notin` L). fsetdec. apply H2 in X.
+    rewrite co_subst_co_tm_open_tm_wrt_tm in X; eauto.
+    rewrite co_subst_co_tm_open_tm_wrt_tm in X; eauto. simpl in X.
+    eapply open_tm_wrt_tm_inj in X. rewrite X; auto.
+    rewrite fv_tm_tm_tm_co_subst_co_tm_upper. fsetdec.
+    rewrite fv_tm_tm_tm_co_subst_co_tm_upper. fsetdec.
+  - simpl. rewrite IHerased_tm1. rewrite IHerased_tm2. rewrite IHerased_tm3.
+    pick fresh x.
+    assert (X: x `notin` L). fsetdec. apply H1 in X.
+    assert (Q: x <> c). fsetdec.
+    rewrite co_subst_co_tm_open_tm_wrt_co in X; eauto.
+    rewrite co_subst_co_tm_open_tm_wrt_co in X; eauto. simpl in X.
+    assert (W: (if x == c then g_Triv else g_Var_f x) = g_Var_f x).
+    destruct (x == c). contradiction. auto.
+    rewrite W in X.
+    assert (W': (if x == c then g else g_Var_f x) = g_Var_f x).
+    destruct (x == c). contradiction. auto.
+    rewrite W' in X.
+    eapply open_tm_wrt_co_inj in X. rewrite X; auto.
+    rewrite fv_co_co_tm_co_subst_co_tm_upper. fsetdec.
+    rewrite fv_co_co_tm_co_subst_co_tm_upper. fsetdec.
+  - pick fresh x. assert (X: x `notin` L). fsetdec. apply H1 in X. simpl in X.
+    erewrite co_subst_co_tm_a_UCAbs; eauto. erewrite co_subst_co_tm_a_UCAbs; eauto.
+    rewrite X; auto.
+  - simpl. rewrite IHerased_tm. auto.
+Qed.
+
+
+Lemma Typing_swap_co : forall x1 x G a A B,
+      x1 `notin` fv_co_co_tm a \u fv_co_co_tm B
+    -> x `notin` dom G \u {{ x1 }}
+    -> Typing ([(x1, Co A)] ++ G) (open_tm_wrt_co a (g_Var_f x1))
+             (open_tm_wrt_co B (g_Var_f x1))
+    -> Typing ([(x, Co A)] ++ G) (open_tm_wrt_co a (g_Var_f x))
+             (open_tm_wrt_co B (g_Var_f x)).
+Proof.
+  intros.
+  assert (AC: Ctx ((x1 ~ Co A) ++ G)). eauto.
+  inversion AC; subst. destruct A. 
+  assert (TV : DefEq ([(x,Co (Eq a0 b A))] ++ G) {{x}} a0 b A).
+  apply E_Assn with (c:=x); eauto.
+  assert (CTX : Ctx ([(x1,Co (Eq a0 b A))] ++ [(x, Co (Eq a0 b A))] ++ G)).
+  econstructor; auto.
+  pose M1 := (PropWff_weakening H6 [(x,Co (Eq a0 b A))] nil G).
+  simpl_env in M1; eapply M1; eauto.
+  pose K1 := Typing_weakening H1 [(x,Co (Eq a0 b A))] [(x1, Co (Eq a0 b A))] G eq_refl CTX;
+               clearbody K1. simpl in K1.
+  pose K2 := Typing_co_subst K1 TV.
+  clearbody K2.
+  repeat rewrite co_subst_co_tm_open_tm_wrt_co in K2; auto.
+  rewrite co_subst_co_co_var in K2;
+  repeat rewrite co_subst_co_tm_fresh_eq in K2.
+  rewrite (co_subst_co_tm_intro x1).
+  rewrite (co_subst_co_tm_intro x1 B).
+  rewrite -co_subst_co_tm_var_eq. rewrite -co_subst_co_tm_var_eq.
+  rewrite -co_subst_co_tm_intro. rewrite -co_subst_co_tm_intro. 
+  auto. fsetdec. fsetdec. eauto. eapply Typing_erased. eapply Typing_regularity. eauto.
+  eauto. eapply Typing_erased. eauto. fsetdec. fsetdec. fsetdec. fsetdec.
+Qed.
+
+Lemma E_CAbs_exists :  forall c (G : context) (phi : constraint) (a B : tm),
+    c `notin` fv_co_co_tm a \u fv_co_co_tm B
+    -> Typing ([(c, Co phi)] ++ G) (open_tm_wrt_co a (g_Var_f c))
+       (open_tm_wrt_co B (g_Var_f c))
+    -> PropWff G phi
+    -> Typing G (a_UCAbs a) (a_CPi phi B).
+Proof.
+  intros.
+  pick fresh y and apply E_CAbs; auto.
+  eapply (@Typing_swap_co c); eauto. 
+Qed.
+
+
 Lemma DefEqIso_regularity :
   (forall G0 a A, Typing G0 a A -> True ) /\
   (forall G0 phi,  PropWff G0 phi -> True ) /\
@@ -930,11 +1015,36 @@ Proof.
     pick fresh x.
     eapply (@E_Abs_exists x); try econstructor; eauto;
     rewrite e; eauto.
-    eapply E_App; eauto 4.
+    eapply E_App.
     eapply Typing_weakening with (F:=nil); simpl; eauto 4.
     econstructor; eauto.
     econstructor; eauto using Typing_lc1.
-(*    econstructor; eauto using Typing_lc1. *)
+  - intros. split; auto.
+    have h0: Ctx G by eauto.
+    move: (Typing_regularity t) => h1.
+    move: (invert_a_Pi h1) => [DE [[L1 h2] h3]].
+    pick fresh x.
+    eapply (@E_Abs_exists x); try econstructor; eauto;
+    rewrite e; eauto.
+    econstructor; eauto.
+    eapply Typing_weakening with (F:=nil); simpl; eauto 4. 
+    econstructor; eauto.
+  - intros. split; auto.
+    have h0: Ctx G by eauto.
+    move: (Typing_regularity t) => h1.
+    move: (invert_a_CPi h1) => [DE [[L1 h2] h3]].
+    pick fresh x. 
+    eapply (@E_CAbs_exists x); try econstructor; eauto;
+    rewrite e; eauto.
+    erewrite co_subst_co_tm_intro; eauto.
+    rewrite -co_subst_co_tm_var_eq; eauto.
+    rewrite -co_subst_co_tm_intro; eauto.
+    destruct phi. eapply E_CApp.
+    eapply Typing_weakening with (F:=nil); simpl; eauto 4.
+    econstructor; eauto.
+    econstructor; eauto.
+    assert (Q: x `notin` L1). fsetdec. apply h2 in Q. 
+    apply Typing_erased in Q. auto.
 Qed.
 
 Lemma DefEq_regularity :

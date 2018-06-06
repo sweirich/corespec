@@ -927,6 +927,15 @@ Inductive consistent : tm -> tm -> Prop :=    (* defn consistent *)
       not ( value_type a )  ->
      consistent a b.
 
+(* defns JChk *)
+Inductive RhoCheck : relflag -> tmvar -> tm -> Prop :=    (* defn RhoCheck *)
+ | Rho_Rel : forall (x:tmvar) (A:tm),
+      True  ->
+     RhoCheck Rel x A
+ | Rho_IrrRel : forall (x:tmvar) (A:tm),
+      x  \notin fv_tm_tm_tm  A  ->
+     RhoCheck Irrel x A.
+
 (* defns Jerased *)
 Inductive erased_tm : tm -> Prop :=    (* defn erased_tm *)
  | erased_a_Bullet : 
@@ -937,6 +946,7 @@ Inductive erased_tm : tm -> Prop :=    (* defn erased_tm *)
      erased_tm (a_Var_f x)
  | erased_a_Abs : forall (L:vars) (rho:relflag) (a:tm),
       ( forall x , x \notin  L  -> erased_tm  ( open_tm_wrt_tm a (a_Var_f x) )  )  ->
+      ( forall x , x \notin  L  -> RhoCheck rho x  ( open_tm_wrt_tm a (a_Var_f x) )  )  ->
      erased_tm  ( (a_UAbs rho a) ) 
  | erased_a_App : forall (a b:tm),
      erased_tm a ->
@@ -965,15 +975,6 @@ Inductive erased_tm : tm -> Prop :=    (* defn erased_tm *)
      erased_tm (a_Const T)
  | erased_a_Fam : forall (F:tyfam),
      erased_tm (a_Fam F).
-
-(* defns JChk *)
-Inductive RhoCheck : relflag -> tmvar -> tm -> Prop :=    (* defn RhoCheck *)
- | Rho_Rel : forall (x:tmvar) (A:tm),
-      True  ->
-     RhoCheck Rel x A
- | Rho_IrrRel : forall (x:tmvar) (A:tm),
-      x  \notin fv_tm_tm_tm  A  ->
-     RhoCheck Irrel x A.
 
 (* defns Jpar *)
 Inductive Par : context -> available_props -> tm -> tm -> Prop :=    (* defn Par *)
@@ -1558,6 +1559,6 @@ Inductive head_reduction : context -> tm -> tm -> Prop :=    (* defn head_reduct
 
 
 (** infrastructure *)
-Hint Constructors Path CoercedValue Value value_type DataTy consistent erased_tm RhoCheck Par MultiPar joins Beta reduction_in_one reduction PropWff Typing Iso DefEq Ctx Sig AnnPropWff AnnTyping AnnIso AnnDefEq AnnCtx AnnSig head_reduction lc_co lc_brs lc_tm lc_constraint lc_sort lc_sig_sort.
+Hint Constructors Path CoercedValue Value value_type DataTy consistent RhoCheck erased_tm Par MultiPar joins Beta reduction_in_one reduction PropWff Typing Iso DefEq Ctx Sig AnnPropWff AnnTyping AnnIso AnnDefEq AnnCtx AnnSig head_reduction lc_co lc_brs lc_tm lc_constraint lc_sort lc_sig_sort.
 
 

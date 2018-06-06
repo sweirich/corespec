@@ -244,7 +244,7 @@ Lemma tm_substitution_mutual :
                  forall F x, G0 = (F ++ (x ~ Tm A) ++ G) ->
                         Ctx (map (tm_subst_tm_sort a x) F ++ G)).
   eapply typing_wff_iso_defeq_mutual;
-    intros; subst; simpl.
+    intros; subst; simpl. Focus 23. destruct rho. Unfocus.
   all: try first [ E_pick_fresh y; autorewrite with subst_open_var; eauto 2 with lc;
                    try rewrite_subst_context; eauto 3 |
                    autorewrite with subst_open; eauto 2 with lc ].
@@ -353,6 +353,10 @@ Lemma tm_substitution_mutual :
     auto.
 
   *)
+  - have h0: (y <> x) by eauto.
+    rewrite e; eauto.
+  - have h0: (y <> x) by eauto.
+    rewrite e; eauto.
   - destruct  F; try done.
   - induction F; try done.
     simpl; simpl in H2.
@@ -437,6 +441,7 @@ Lemma co_substitution_mutual :
           -> Ctx (map (co_subst_co_sort g_Triv c) F ++ G)).
 Proof.
   apply typing_wff_iso_defeq_mutual; auto; intros; subst; simpl.
+  Focus 23. destruct rho. Unfocus. 
    all: try first [ E_pick_fresh y; autorewrite with subst_open_var; eauto 2 with lc;
                     try rewrite_subst_context; eauto 3
                   | autorewrite with subst_open; eauto 2 with lc ].
@@ -563,6 +568,8 @@ Proof.
     replace g_Triv with (co_subst_co_co g_Triv c g_Triv).
     autorewrite with open_subst; eauto 2 with lc.
     auto. *)
+  - rewrite e; eauto. 
+  - rewrite e; eauto.
   - induction F; done.
   - induction F; try done.
     destruct a.
@@ -688,6 +695,8 @@ Proof.
   eapply (@Typing_swap x); eauto.
   eapply rho_swap with (x := x); eauto.
 Qed.
+
+
 
 
 End ext_subst.

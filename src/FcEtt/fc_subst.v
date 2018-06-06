@@ -384,6 +384,10 @@ Proof.
       eapply CON; eauto 2 using erase_subst_tm.
       autorewcs. rewrite -!subst_tm_erase_tm.
       eauto using Beta_tm_subst, lc_tm_erase, AnnTyping_lc1.
+    - econstructor; eauto.
+      intros.
+      erewrite tm_subst_tm_tm_open_tm_wrt_co_var; eauto.
+      erewrite e; eauto.
 
     (* context cases *)
     - ensure_case An_Empty.
@@ -620,6 +624,14 @@ Proof.
                 unfold "[<=]" in h4.
                 move => h6.
                 apply H9; auto.
+  - eapply An_EtaC with (L := union L (singleton c)); eauto.
+    intros. assert (Q: c0 `notin` L); eauto. eapply e in Q. 
+    erewrite co_subst_co_tm_open_tm_wrt_co_var; eauto.
+    erewrite e; eauto. assert (W: c0 `notin` singleton c). eauto. 
+    apply notin_singleton_1 in W. simpl. 
+    assert (X: (if c0 == c then g else g_Var_f c0) = g_Var_f c0).
+    destruct (c0 == c). contradict W. auto. auto.
+    rewrite X. auto.
 
   - induction F; done.
   - induction F; try done.
@@ -942,6 +954,16 @@ Proof.
     autorewcs.
     rewrite -!subst_co_erase_tm => /=.
     auto.
+  - eapply An_EtaC with (L := union L (singleton c)); try co_subst_hyp; 
+    eauto using erase_co_subst_tm.
+    intros. assert (X: c0 `notin` L). eauto. apply e in X. 
+    erewrite co_subst_co_tm_open_tm_wrt_co_var; eauto.
+    rewrite X. simpl.
+    assert (W: c0 `notin` singleton c). eauto.
+    apply notin_singleton_1 in W.
+    assert (Q: (if c0 == c then g else g_Var_f c0) = g_Var_f c0). 
+    destruct (c0 == c). contradict W. auto. auto. 
+    rewrite Q. auto.
 Qed.
 
 

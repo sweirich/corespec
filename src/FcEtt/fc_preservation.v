@@ -114,8 +114,7 @@ Proof.
     left. eauto. simpl in H8. rewrite H8. eauto.
   - subst. destruct rho; left; simpl_erase.
     ++ eapply E_AppAbs; eauto using lc_er_tm.
-       eapply Value_lc in H0. econstructor.
-       lc_erase_hyp.
+       eapply Value_lc in H0. lc_erase_hyp.
     ++ inversion H6; clear H6; subst.
        pose EB := erase w.
        pick fresh x.
@@ -126,7 +125,7 @@ Proof.
        econstructor. auto.
        eapply Value_erase in H0. auto.
        do_rho.
-       do_rho.
+       do_rho. 
   - subst.
     destruct (IHhead_reduction _ H4); simpl.
     eauto.
@@ -189,7 +188,6 @@ Proof.
     econstructor. econstructor. apply Value_lc in H0.
     match goal with H : lc_tm (a_Abs Irrel ?A0 ?b) |-
                     lc_tm (a_UAbs Irrel (erase ?b)) => eapply lc_erase in H; simpl in H; auto end.
-    econstructor; eauto.
     do_rho.
     do_rho.
   + subst. simpl.
