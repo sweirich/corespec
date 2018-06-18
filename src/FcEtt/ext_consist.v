@@ -145,7 +145,7 @@ Lemma Par_Abs_inversion_Irrel_2: forall G D a b,
                Par G D (open_tm_wrt_tm a (a_Bullet)) (open_tm_wrt_tm a' (a_Bullet)))
     \/ (exists a', Par G D a' b /\ (forall x, x `notin`  fv_tm_tm_tm a ->
           open_tm_wrt_tm a (a_Var_f x) = a_App a' Irrel a_Bullet)). 
-Proof. Admitted.
+Proof. 
   intros G D a b H. eapply Par_Abs_inversion in H. inversion H; eauto.
   inversion H0; eauto.
   - right. inversion H1. inversion H2. inversion H4. inversion H6.

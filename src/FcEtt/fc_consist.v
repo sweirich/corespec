@@ -51,9 +51,6 @@ Import pres.
 (* Why does this cause so many messages? *)
 
 
-Print AnnPropWff.
-
-
 Lemma erased_tm_erase_mutual :
   (forall G0 a B (H : AnnTyping G0 a B),
      erased_tm (erase a) /\ erased_tm (erase B)) /\
@@ -104,11 +101,12 @@ Proof.
   - inversion H. inversion H0. destruct rho; simpl; eauto.
   - rewrite <- open_tm_erase_tm.
     set M := erase_tm B.
+    inversion H. inversion H2; subst.
     pick fresh x.
     unfold M in Fr.
     rewrite (tm_subst_tm_tm_intro x); eauto.
-    eapply subst_tm_erased.
-  inversion H. inversion H2; subst. 
+    eapply subst_tm_erased. inversion H0. auto.
+    eapply H7. fsetdec.
   - (* a_CPi erase constraint *)
     destruct phi. destruct (H _ _ _ eq_refl) as (h0 & h1 & h2). simpl.
     eauto. erased_pick_fresh y; eauto using lc_erase.
@@ -126,29 +124,45 @@ Proof.
     assert (W: y `notin` L). auto. apply H0 in W.
     rewrite Rew.r_erase_tm.
     erewrite open_co_erase_tm2. inversion W. apply H2.
-  - inversion H. inversion H2; subst. admit.
+  - rewrite <- open_co_erase_tm.
+    set M := erase_tm B.
+    inversion H. inversion H2; subst.
+    pick fresh x.
+    unfold M in Fr.
+    assert (W: x `notin` L). fsetdec. apply H10 in W.
+    erewrite open_co_erase_tm with (a := (g_Var_f x)).
+    erewrite open_co_erase_tm2 in W. apply W.
   - inversion H1. subst. inversion H. auto.
   - inversion H1. subst. inversion H0. auto.
   - inversion H1. subst. inversion H. auto.
   - simpl in H1.
     apply binds_cons_iff in H1.
-    destruct H1.
-    admit.
-    admit.
+    inversion H1. inversion H2.
+    + inversion H4; subst; auto.
+      inversion H0; auto.
+    + apply H in H2; auto.
   - simpl in H1.
     apply binds_cons_iff in H1.
-    destruct H1.
-Admitted.
+    inversion H1. destruct phi.
+    inversion H2. inversion H4. 
+    apply H in H2; auto.
+Qed.
 
-(*
-Lemma erased_tm_erase : forall a, lc_tm a -> erased_tm (erase a).
+Lemma erased_tm_erase : forall G0 a B, AnnTyping G0 a B -> erased_tm (erase a).
 Proof.
   intros.
   destruct erased_tm_erase_mutual.
-  eauto.
+  apply H0 in H. inversion H. auto.
 Qed.
 
-Hint Resolve erased_tm_erase : erased. *)
+Lemma erased_tm_erase_type : forall G0 a B, AnnTyping G0 a B -> erased_tm (erase B).
+Proof.
+  intros.
+  destruct erased_tm_erase_mutual.
+  apply H0 in H. inversion H. auto.
+Qed.
+
+Hint Resolve erased_tm_erase : erased.
 
 
 Definition AnnGood G D := Good (erase_context G) D.
@@ -494,14 +508,14 @@ Qed.
 (* ------------------------------------- *)
 
 (* TODO: move elsewhere?  ext_consist for the first two? *)
-(*
+
 Lemma erased_constraint_erase :
-  forall a b A, lc_constraint (Eq a b A) -> erased_tm (erase a) /\ erased_tm (erase b)
+  forall G a b A, AnnPropWff G (Eq a b A) -> erased_tm (erase a) /\ erased_tm (erase b)
                                       /\ erased_tm (erase A).
 Proof.
-  move: erased_tm_erase_mutual => [_ [_ [_ h]]].
+  move: erased_tm_erase_mutual => [_ [h [_ _]]].
   eauto.
-Qed. use propwff as constraint*)
+Qed.
 
 Lemma erased_context_erase :
   forall G, AnnCtx G -> erased_context (erase_context G).
@@ -509,8 +523,8 @@ Lemma erased_context_erase :
          induction 1; simpl; unfold erased_context; rewrite Forall_forall.
          - intros. inversion H.
          - intros. destruct x0. inversion H2.
-           -- inversion H3. destruct s. inversion H6. subst.
-              econstructor. eapply erased_tm_erase. eauto using AnnTyping_lc1.
+           -- inversion H3. destruct s. inversion H6. subst. 
+              econstructor. eapply erased_tm_erase. eauto.
               inversion H6.
            -- unfold erased_context in IHAnnCtx.
               move: (Forall_forall (λ p : atom * sort, let (_, s) := p in erased_sort s) (erase_context G)) => [h0 h1].
@@ -521,7 +535,10 @@ Lemma erased_context_erase :
               inversion H6. subst.
               destruct phi.
               inversion H0.
-              econstructor; eapply erased_tm_erase; eauto using AnnTyping_lc1, AnnTyping_lc2.
+              econstructor. 
+              + eapply erased_tm_erase. eauto using AnnTyping_lc1.
+              + eapply erased_tm_erase. eauto using AnnTyping_lc2.
+              + eapply erased_tm_erase_type. eauto.
            -- unfold erased_context in IHAnnCtx.
               move: (Forall_forall (λ p : atom * sort, let (_, s) := p in erased_sort s) (erase_context G)) => [h0 h1].
               move: (h0 IHAnnCtx) => h2.
@@ -532,7 +549,7 @@ Lemma AnnGood_add_tm :
   forall G x A,  x `notin` dom G -> AnnTyping G A a_Star -> AnnGood G (dom G) -> AnnGood (x ~ Tm A ++ G) (dom (x ~ Tm A ++ G)).
 Proof.
   intros G x A Fr AT GG.
-  inversion GG.  econstructor.  eapply erased_context_erase; eauto using AnnTyping_AnnCtx.
+  inversion GG.  econstructor. eapply erased_context_erase; eauto using AnnTyping_AnnCtx.
   intros.
   simpl in H1.
   apply binds_cons_1 in H1.
