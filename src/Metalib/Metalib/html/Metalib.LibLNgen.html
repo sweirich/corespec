@@ -1,0 +1,228 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link href="coqdoc.css" rel="stylesheet" type="text/css" />
+<title>Metalib.LibLNgen</title>
+</head>
+
+<body>
+
+<div id="page">
+
+<div id="header">
+</div>
+
+<div id="main">
+
+<h1 class="libtitle">Library Metalib.LibLNgen</h1>
+
+<div class="code">
+
+<br/>
+</div>
+
+<div class="doc">
+A library of code for supporting LNgen. 
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Require</span> <span class="id" title="keyword">Export</span> <a class="idref" href="Metalib.LibDefaultSimp.html#"><span class="id" title="library">Metalib.LibDefaultSimp</span></a>.<br/>
+<span class="id" title="keyword">Require</span> <span class="id" title="keyword">Import</span> <a class="idref" href="Metalib.Metatheory.html#"><span class="id" title="library">Metalib.Metatheory</span></a>.<br/>
+<span class="id" title="keyword">Require</span> <span class="id" title="keyword">Import</span> <a class="idref" href="http://coq.inria.fr/distrib/8.6/stdlib/Coq.omega.Omega.html#"><span class="id" title="library">Omega</span></a>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+<a name="lab92"></a><h1 class="section">Assorted functions not in the standard library</h1>
+
+<div class="paragraph"> </div>
+
+ <span class="inlinecode"><a class="idref" href="Metalib.LibLNgen.html#lt_ge_dec"><span class="id" title="definition">lt_ge_dec</span></a></span> is a useful comparison operation when defining the
+    "close" operation on locally nameless terms. 
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Definition</span> <a name="lt_ge_dec"><span class="id" title="definition">lt_ge_dec</span></a> (<span class="id" title="var">n</span> <span class="id" title="var">m</span> : <a class="idref" href="http://coq.inria.fr/distrib/8.6/stdlib/Coq.Init.Datatypes.html#nat"><span class="id" title="inductive">nat</span></a>) : <a class="idref" href="http://coq.inria.fr/distrib/8.6/stdlib/Coq.Init.Specif.html#5bf2050e90b21ebc82dc5463d1ba338e"><span class="id" title="notation">{</span></a><a class="idref" href="Metalib.LibLNgen.html#n"><span class="id" title="variable">n</span></a> <a class="idref" href="http://coq.inria.fr/distrib/8.6/stdlib/Coq.Init.Peano.html#989c98e7ddd65d5bf37c334ff2076de8"><span class="id" title="notation">&lt;</span></a> <a class="idref" href="Metalib.LibLNgen.html#m"><span class="id" title="variable">m</span></a><a class="idref" href="http://coq.inria.fr/distrib/8.6/stdlib/Coq.Init.Specif.html#5bf2050e90b21ebc82dc5463d1ba338e"><span class="id" title="notation">}</span></a> <a class="idref" href="http://coq.inria.fr/distrib/8.6/stdlib/Coq.Init.Specif.html#5bf2050e90b21ebc82dc5463d1ba338e"><span class="id" title="notation">+</span></a> <a class="idref" href="http://coq.inria.fr/distrib/8.6/stdlib/Coq.Init.Specif.html#5bf2050e90b21ebc82dc5463d1ba338e"><span class="id" title="notation">{</span></a><a class="idref" href="Metalib.LibLNgen.html#n"><span class="id" title="variable">n</span></a> <a class="idref" href="http://coq.inria.fr/distrib/8.6/stdlib/Coq.Init.Peano.html#08fe8636f4b45ae6787c490d19de1366"><span class="id" title="notation">≥</span></a> <a class="idref" href="Metalib.LibLNgen.html#m"><span class="id" title="variable">m</span></a><a class="idref" href="http://coq.inria.fr/distrib/8.6/stdlib/Coq.Init.Specif.html#5bf2050e90b21ebc82dc5463d1ba338e"><span class="id" title="notation">}</span></a> :=<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">match</span> <a class="idref" href="http://coq.inria.fr/distrib/8.6/stdlib/Coq.Arith.Compare_dec.html#le_gt_dec"><span class="id" title="definition">Compare_dec.le_gt_dec</span></a> <a class="idref" href="Metalib.LibLNgen.html#m"><span class="id" title="variable">m</span></a> <a class="idref" href="Metalib.LibLNgen.html#n"><span class="id" title="variable">n</span></a> <span class="id" title="keyword">with</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;| <a class="idref" href="http://coq.inria.fr/distrib/8.6/stdlib/Coq.Init.Specif.html#left"><span class="id" title="constructor">left</span></a> <span class="id" title="var">pf</span> ⇒ <a class="idref" href="http://coq.inria.fr/distrib/8.6/stdlib/Coq.Init.Specif.html#right"><span class="id" title="constructor">right</span></a> <span class="id" title="var">pf</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;| <a class="idref" href="http://coq.inria.fr/distrib/8.6/stdlib/Coq.Init.Specif.html#right"><span class="id" title="constructor">right</span></a> <span class="id" title="var">pf</span> ⇒ <a class="idref" href="http://coq.inria.fr/distrib/8.6/stdlib/Coq.Init.Specif.html#left"><span class="id" title="constructor">left</span></a> <span class="id" title="var">pf</span><br/>
+&nbsp;&nbsp;<span class="id" title="keyword">end</span>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+<a name="lab93"></a><h1 class="section">Tactics</h1>
+
+<div class="paragraph"> </div>
+
+ <span class="inlinecode"><span class="id" title="var">generalize_wrt</span></span> <span class="inlinecode"><a class="idref" href="Metalib.MSetWeakNotin.html#Notin_fun.Lemmas.x"><span class="id" title="variable">x</span></a></span> is an ad hoc tactic that generalizes the goal
+    with respect to everything that <span class="inlinecode"><a class="idref" href="Metalib.MSetWeakNotin.html#Notin_fun.Lemmas.x"><span class="id" title="variable">x</span></a></span> does not depend on.  It seems
+    to work only if <span class="inlinecode"><a class="idref" href="Metalib.MSetWeakNotin.html#Notin_fun.Lemmas.x"><span class="id" title="variable">x</span></a></span> is the most recently introduced item into the
+    context. 
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Ltac</span> <span class="id" title="var">generalize_wrt</span> <span class="id" title="var">x</span> :=<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">repeat</span> (<span class="id" title="tactic">progress</span> (<span class="id" title="keyword">match</span> <span class="id" title="keyword">goal</span> <span class="id" title="keyword">with</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="var">J</span> : <span class="id" title="var">_</span> |- <span class="id" title="var">_</span> ⇒ <span class="id" title="tactic">move</span> <span class="id" title="var">J</span> <span class="id" title="keyword">after</span> <span class="id" title="var">x</span>; <span class="id" title="tactic">generalize</span> <span class="id" title="tactic">dependent</span> <span class="id" title="var">J</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">end</span>)).<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+<span class="inlinecode"><span class="id" title="var">apply_mutual_ind</span></span> applies to the current goal a mutual induction
+    principle that is stated in the form generated by <span class="inlinecode"><span class="id" title="var">Combined</span></span>
+    <span class="inlinecode"><span class="id" title="keyword">Scheme</span></span>.  It works even in degenerate cases, i.e., when there is
+    no mutual induction, only simple induction.  It is intended to be
+    used only at the start of a proof, and the argument(s) to induct
+    over should come first. 
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Ltac</span> <span class="id" title="var">apply_mutual_ind</span> <span class="id" title="var">ind</span> :=<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">let</span> <span class="id" title="var">H</span> := <span class="id" title="tactic">fresh</span> <span class="id" title="keyword">in</span><br/>
+&nbsp;&nbsp;<span class="id" title="tactic">first</span> [  <span class="id" title="tactic">intros</span> <span class="id" title="var">H</span>; <span class="id" title="tactic">induction</span> <span class="id" title="var">H</span> <span class="id" title="keyword">using</span> <span class="id" title="var">ind</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="tactic">intros</span> ? <span class="id" title="var">H</span>; <span class="id" title="tactic">induction</span> <span class="id" title="var">H</span> <span class="id" title="keyword">using</span> <span class="id" title="var">ind</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="tactic">intros</span> ? ? <span class="id" title="var">H</span>; <span class="id" title="tactic">induction</span> <span class="id" title="var">H</span> <span class="id" title="keyword">using</span> <span class="id" title="var">ind</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="tactic">intros</span> ? ? ? <span class="id" title="var">H</span>; <span class="id" title="tactic">induction</span> <span class="id" title="var">H</span> <span class="id" title="keyword">using</span> <span class="id" title="var">ind</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="tactic">intros</span> ? ? ? ? <span class="id" title="var">H</span>; <span class="id" title="tactic">induction</span> <span class="id" title="var">H</span> <span class="id" title="keyword">using</span> <span class="id" title="var">ind</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="tactic">intros</span> ? ? ? ? ? <span class="id" title="var">H</span>; <span class="id" title="tactic">induction</span> <span class="id" title="var">H</span> <span class="id" title="keyword">using</span> <span class="id" title="var">ind</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="tactic">intros</span> ? ? ? ? ? ? <span class="id" title="var">H</span>; <span class="id" title="tactic">induction</span> <span class="id" title="var">H</span> <span class="id" title="keyword">using</span> <span class="id" title="var">ind</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="tactic">intros</span> ? ? ? ? ? ? ? <span class="id" title="var">H</span>; <span class="id" title="tactic">induction</span> <span class="id" title="var">H</span> <span class="id" title="keyword">using</span> <span class="id" title="var">ind</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="tactic">intros</span> ? ? ? ? ? ? ? ? <span class="id" title="var">H</span>; <span class="id" title="tactic">induction</span> <span class="id" title="var">H</span> <span class="id" title="keyword">using</span> <span class="id" title="var">ind</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;].<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+Renames the last hypothesis to the given identifier. 
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Ltac</span> <span class="id" title="var">rename_last_into</span> <span class="id" title="var">H</span> :=<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">match</span> <span class="id" title="keyword">goal</span> <span class="id" title="keyword">with</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="var">J</span> : <span class="id" title="var">_</span> |- <span class="id" title="var">_</span> ⇒ <span class="id" title="tactic">rename</span> <span class="id" title="var">J</span> <span class="id" title="var">into</span> <span class="id" title="var">H</span><br/>
+&nbsp;&nbsp;<span class="id" title="keyword">end</span>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+Specializes every possible hypothesis with the given term. 
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Ltac</span> <span class="id" title="var">specialize_all</span> <span class="id" title="var">x</span> :=<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">repeat</span> (<span class="id" title="keyword">match</span> <span class="id" title="keyword">goal</span> <span class="id" title="keyword">with</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="var">H</span> : <span class="id" title="var">_</span> |- <span class="id" title="var">_</span> ⇒ <span class="id" title="tactic">specialize</span> (<span class="id" title="var">H</span> <span class="id" title="var">x</span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">end</span>).<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+<a name="lab94"></a><h1 class="section">Facts about finite sets</h1>
+
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Lemma</span> <a name="remove_union_distrib"><span class="id" title="lemma">remove_union_distrib</span></a> : <span class="id" title="keyword">∀</span> (<span class="id" title="var">s1</span> <span class="id" title="var">s2</span> : <a class="idref" href="Metalib.MetatheoryAtom.html#atoms"><span class="id" title="abbreviation">atoms</span></a>) (<span class="id" title="var">x</span> : <a class="idref" href="Metalib.MetatheoryAtom.html#atom"><span class="id" title="abbreviation">atom</span></a>),<br/>
+&nbsp;&nbsp;<a class="idref" href="Metalib.Metatheory.html#remove"><span class="id" title="abbreviation">remove</span></a> <a class="idref" href="Metalib.LibLNgen.html#x"><span class="id" title="variable">x</span></a> (<a class="idref" href="Metalib.Metatheory.html#union"><span class="id" title="abbreviation">union</span></a> <a class="idref" href="Metalib.LibLNgen.html#s1"><span class="id" title="variable">s1</span></a> <a class="idref" href="Metalib.LibLNgen.html#s2"><span class="id" title="variable">s2</span></a>) <a class="idref" href="Metalib.Metatheory.html#2499d7a52e1fca683823149ce53018f0"><span class="id" title="notation">[=]</span></a> <a class="idref" href="Metalib.Metatheory.html#union"><span class="id" title="abbreviation">union</span></a> (<a class="idref" href="Metalib.Metatheory.html#remove"><span class="id" title="abbreviation">remove</span></a> <a class="idref" href="Metalib.LibLNgen.html#x"><span class="id" title="variable">x</span></a> <a class="idref" href="Metalib.LibLNgen.html#s1"><span class="id" title="variable">s1</span></a>) (<a class="idref" href="Metalib.Metatheory.html#remove"><span class="id" title="abbreviation">remove</span></a> <a class="idref" href="Metalib.LibLNgen.html#x"><span class="id" title="variable">x</span></a> <a class="idref" href="Metalib.LibLNgen.html#s2"><span class="id" title="variable">s2</span></a>).<br/>
+<span class="id" title="keyword">Proof</span>. <span class="id" title="var">fsetdec</span>. <span class="id" title="keyword">Qed</span>.<br/>
+
+<br/>
+<span class="id" title="keyword">Lemma</span> <a name="Equal_union_compat"><span class="id" title="lemma">Equal_union_compat</span></a> : <span class="id" title="keyword">∀</span> (<span class="id" title="var">s1</span> <span class="id" title="var">s2</span> <span class="id" title="var">s3</span> <span class="id" title="var">s4</span> : <a class="idref" href="Metalib.MetatheoryAtom.html#atoms"><span class="id" title="abbreviation">atoms</span></a>),<br/>
+&nbsp;&nbsp;<a class="idref" href="Metalib.LibLNgen.html#s1"><span class="id" title="variable">s1</span></a> <a class="idref" href="Metalib.Metatheory.html#2499d7a52e1fca683823149ce53018f0"><span class="id" title="notation">[=]</span></a> <a class="idref" href="Metalib.LibLNgen.html#s3"><span class="id" title="variable">s3</span></a> <a class="idref" href="http://coq.inria.fr/distrib/8.6/stdlib/Coq.Init.Logic.html#d43e996736952df71ebeeae74d10a287"><span class="id" title="notation">→</span></a><br/>
+&nbsp;&nbsp;<a class="idref" href="Metalib.LibLNgen.html#s2"><span class="id" title="variable">s2</span></a> <a class="idref" href="Metalib.Metatheory.html#2499d7a52e1fca683823149ce53018f0"><span class="id" title="notation">[=]</span></a> <a class="idref" href="Metalib.LibLNgen.html#s4"><span class="id" title="variable">s4</span></a> <a class="idref" href="http://coq.inria.fr/distrib/8.6/stdlib/Coq.Init.Logic.html#d43e996736952df71ebeeae74d10a287"><span class="id" title="notation">→</span></a><br/>
+&nbsp;&nbsp;<a class="idref" href="Metalib.Metatheory.html#union"><span class="id" title="abbreviation">union</span></a> <a class="idref" href="Metalib.LibLNgen.html#s1"><span class="id" title="variable">s1</span></a> <a class="idref" href="Metalib.LibLNgen.html#s2"><span class="id" title="variable">s2</span></a> <a class="idref" href="Metalib.Metatheory.html#2499d7a52e1fca683823149ce53018f0"><span class="id" title="notation">[=]</span></a> <a class="idref" href="Metalib.Metatheory.html#union"><span class="id" title="abbreviation">union</span></a> <a class="idref" href="Metalib.LibLNgen.html#s3"><span class="id" title="variable">s3</span></a> <a class="idref" href="Metalib.LibLNgen.html#s4"><span class="id" title="variable">s4</span></a>.<br/>
+<span class="id" title="keyword">Proof</span>. <span class="id" title="var">fsetdec</span>. <span class="id" title="keyword">Qed</span>.<br/>
+
+<br/>
+<span class="id" title="keyword">Lemma</span> <a name="Subset_refl"><span class="id" title="lemma">Subset_refl</span></a> : <span class="id" title="keyword">∀</span> (<span class="id" title="var">s</span> : <a class="idref" href="Metalib.MetatheoryAtom.html#atoms"><span class="id" title="abbreviation">atoms</span></a>),<br/>
+&nbsp;&nbsp;<a class="idref" href="Metalib.LibLNgen.html#s"><span class="id" title="variable">s</span></a> <a class="idref" href="Metalib.Metatheory.html#a09b9f73c6cd1db960bc01de33abf895"><span class="id" title="notation">[&lt;=]</span></a> <a class="idref" href="Metalib.LibLNgen.html#s"><span class="id" title="variable">s</span></a>.<br/>
+<span class="id" title="keyword">Proof</span>. <span class="id" title="var">fsetdec</span>. <span class="id" title="keyword">Qed</span>.<br/>
+
+<br/>
+<span class="id" title="keyword">Lemma</span> <a name="Subset_empty_any"><span class="id" title="lemma">Subset_empty_any</span></a> : <span class="id" title="keyword">∀</span> (<span class="id" title="var">s</span> : <a class="idref" href="Metalib.MetatheoryAtom.html#atoms"><span class="id" title="abbreviation">atoms</span></a>),<br/>
+&nbsp;&nbsp;<a class="idref" href="Metalib.Metatheory.html#empty"><span class="id" title="abbreviation">empty</span></a> <a class="idref" href="Metalib.Metatheory.html#a09b9f73c6cd1db960bc01de33abf895"><span class="id" title="notation">[&lt;=]</span></a> <a class="idref" href="Metalib.LibLNgen.html#s"><span class="id" title="variable">s</span></a>.<br/>
+<span class="id" title="keyword">Proof</span>. <span class="id" title="var">fsetdec</span>. <span class="id" title="keyword">Qed</span>.<br/>
+
+<br/>
+<span class="id" title="keyword">Lemma</span> <a name="Subset_union_compat"><span class="id" title="lemma">Subset_union_compat</span></a> : <span class="id" title="keyword">∀</span> (<span class="id" title="var">s1</span> <span class="id" title="var">s2</span> <span class="id" title="var">s3</span> <span class="id" title="var">s4</span> : <a class="idref" href="Metalib.MetatheoryAtom.html#atoms"><span class="id" title="abbreviation">atoms</span></a>),<br/>
+&nbsp;&nbsp;<a class="idref" href="Metalib.LibLNgen.html#s1"><span class="id" title="variable">s1</span></a> <a class="idref" href="Metalib.Metatheory.html#a09b9f73c6cd1db960bc01de33abf895"><span class="id" title="notation">[&lt;=]</span></a> <a class="idref" href="Metalib.LibLNgen.html#s3"><span class="id" title="variable">s3</span></a> <a class="idref" href="http://coq.inria.fr/distrib/8.6/stdlib/Coq.Init.Logic.html#d43e996736952df71ebeeae74d10a287"><span class="id" title="notation">→</span></a><br/>
+&nbsp;&nbsp;<a class="idref" href="Metalib.LibLNgen.html#s2"><span class="id" title="variable">s2</span></a> <a class="idref" href="Metalib.Metatheory.html#a09b9f73c6cd1db960bc01de33abf895"><span class="id" title="notation">[&lt;=]</span></a> <a class="idref" href="Metalib.LibLNgen.html#s4"><span class="id" title="variable">s4</span></a> <a class="idref" href="http://coq.inria.fr/distrib/8.6/stdlib/Coq.Init.Logic.html#d43e996736952df71ebeeae74d10a287"><span class="id" title="notation">→</span></a><br/>
+&nbsp;&nbsp;<a class="idref" href="Metalib.Metatheory.html#union"><span class="id" title="abbreviation">union</span></a> <a class="idref" href="Metalib.LibLNgen.html#s1"><span class="id" title="variable">s1</span></a> <a class="idref" href="Metalib.LibLNgen.html#s2"><span class="id" title="variable">s2</span></a> <a class="idref" href="Metalib.Metatheory.html#a09b9f73c6cd1db960bc01de33abf895"><span class="id" title="notation">[&lt;=]</span></a> <a class="idref" href="Metalib.Metatheory.html#union"><span class="id" title="abbreviation">union</span></a> <a class="idref" href="Metalib.LibLNgen.html#s3"><span class="id" title="variable">s3</span></a> <a class="idref" href="Metalib.LibLNgen.html#s4"><span class="id" title="variable">s4</span></a>.<br/>
+<span class="id" title="keyword">Proof</span>. <span class="id" title="var">fsetdec</span>. <span class="id" title="keyword">Qed</span>.<br/>
+
+<br/>
+<span class="id" title="keyword">Lemma</span> <a name="Subset_union_left"><span class="id" title="lemma">Subset_union_left</span></a> : <span class="id" title="keyword">∀</span> (<span class="id" title="var">s1</span> <span class="id" title="var">s2</span> <span class="id" title="var">s3</span> : <a class="idref" href="Metalib.MetatheoryAtom.html#atoms"><span class="id" title="abbreviation">atoms</span></a>),<br/>
+&nbsp;&nbsp;<a class="idref" href="Metalib.LibLNgen.html#s1"><span class="id" title="variable">s1</span></a> <a class="idref" href="Metalib.Metatheory.html#a09b9f73c6cd1db960bc01de33abf895"><span class="id" title="notation">[&lt;=]</span></a> <a class="idref" href="Metalib.LibLNgen.html#s2"><span class="id" title="variable">s2</span></a> <a class="idref" href="http://coq.inria.fr/distrib/8.6/stdlib/Coq.Init.Logic.html#d43e996736952df71ebeeae74d10a287"><span class="id" title="notation">→</span></a><br/>
+&nbsp;&nbsp;<a class="idref" href="Metalib.LibLNgen.html#s1"><span class="id" title="variable">s1</span></a> <a class="idref" href="Metalib.Metatheory.html#a09b9f73c6cd1db960bc01de33abf895"><span class="id" title="notation">[&lt;=]</span></a> <a class="idref" href="Metalib.Metatheory.html#union"><span class="id" title="abbreviation">union</span></a> <a class="idref" href="Metalib.LibLNgen.html#s2"><span class="id" title="variable">s2</span></a> <a class="idref" href="Metalib.LibLNgen.html#s3"><span class="id" title="variable">s3</span></a>.<br/>
+<span class="id" title="keyword">Proof</span>. <span class="id" title="var">fsetdec</span>. <span class="id" title="keyword">Qed</span>.<br/>
+
+<br/>
+<span class="id" title="keyword">Lemma</span> <a name="Subset_union_right"><span class="id" title="lemma">Subset_union_right</span></a> : <span class="id" title="keyword">∀</span> (<span class="id" title="var">s1</span> <span class="id" title="var">s2</span> <span class="id" title="var">s3</span> : <a class="idref" href="Metalib.MetatheoryAtom.html#atoms"><span class="id" title="abbreviation">atoms</span></a>),<br/>
+&nbsp;&nbsp;<a class="idref" href="Metalib.LibLNgen.html#s1"><span class="id" title="variable">s1</span></a> <a class="idref" href="Metalib.Metatheory.html#a09b9f73c6cd1db960bc01de33abf895"><span class="id" title="notation">[&lt;=]</span></a> <a class="idref" href="Metalib.LibLNgen.html#s3"><span class="id" title="variable">s3</span></a> <a class="idref" href="http://coq.inria.fr/distrib/8.6/stdlib/Coq.Init.Logic.html#d43e996736952df71ebeeae74d10a287"><span class="id" title="notation">→</span></a><br/>
+&nbsp;&nbsp;<a class="idref" href="Metalib.LibLNgen.html#s1"><span class="id" title="variable">s1</span></a> <a class="idref" href="Metalib.Metatheory.html#a09b9f73c6cd1db960bc01de33abf895"><span class="id" title="notation">[&lt;=]</span></a> <a class="idref" href="Metalib.Metatheory.html#union"><span class="id" title="abbreviation">union</span></a> <a class="idref" href="Metalib.LibLNgen.html#s2"><span class="id" title="variable">s2</span></a> <a class="idref" href="Metalib.LibLNgen.html#s3"><span class="id" title="variable">s3</span></a>.<br/>
+<span class="id" title="keyword">Proof</span>. <span class="id" title="var">fsetdec</span>. <span class="id" title="keyword">Qed</span>.<br/>
+
+<br/>
+<span class="id" title="keyword">Lemma</span> <a name="Subset_union_lngen_open_upper"><span class="id" title="lemma">Subset_union_lngen_open_upper</span></a> :<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">∀</span> (<span class="id" title="var">s1</span> <span class="id" title="var">s2</span> <span class="id" title="var">s3</span> <span class="id" title="var">s4</span> <span class="id" title="var">s5</span> : <a class="idref" href="Metalib.MetatheoryAtom.html#atoms"><span class="id" title="abbreviation">atoms</span></a>),<br/>
+&nbsp;&nbsp;<a class="idref" href="Metalib.LibLNgen.html#s1"><span class="id" title="variable">s1</span></a> <a class="idref" href="Metalib.Metatheory.html#a09b9f73c6cd1db960bc01de33abf895"><span class="id" title="notation">[&lt;=]</span></a> <a class="idref" href="Metalib.Metatheory.html#union"><span class="id" title="abbreviation">union</span></a> <a class="idref" href="Metalib.LibLNgen.html#s3"><span class="id" title="variable">s3</span></a> <a class="idref" href="Metalib.LibLNgen.html#s4"><span class="id" title="variable">s4</span></a> <a class="idref" href="http://coq.inria.fr/distrib/8.6/stdlib/Coq.Init.Logic.html#d43e996736952df71ebeeae74d10a287"><span class="id" title="notation">→</span></a><br/>
+&nbsp;&nbsp;<a class="idref" href="Metalib.LibLNgen.html#s2"><span class="id" title="variable">s2</span></a> <a class="idref" href="Metalib.Metatheory.html#a09b9f73c6cd1db960bc01de33abf895"><span class="id" title="notation">[&lt;=]</span></a> <a class="idref" href="Metalib.Metatheory.html#union"><span class="id" title="abbreviation">union</span></a> <a class="idref" href="Metalib.LibLNgen.html#s3"><span class="id" title="variable">s3</span></a> <a class="idref" href="Metalib.LibLNgen.html#s5"><span class="id" title="variable">s5</span></a> <a class="idref" href="http://coq.inria.fr/distrib/8.6/stdlib/Coq.Init.Logic.html#d43e996736952df71ebeeae74d10a287"><span class="id" title="notation">→</span></a><br/>
+&nbsp;&nbsp;<a class="idref" href="Metalib.Metatheory.html#union"><span class="id" title="abbreviation">union</span></a> <a class="idref" href="Metalib.LibLNgen.html#s1"><span class="id" title="variable">s1</span></a> <a class="idref" href="Metalib.LibLNgen.html#s2"><span class="id" title="variable">s2</span></a> <a class="idref" href="Metalib.Metatheory.html#a09b9f73c6cd1db960bc01de33abf895"><span class="id" title="notation">[&lt;=]</span></a> <a class="idref" href="Metalib.Metatheory.html#union"><span class="id" title="abbreviation">union</span></a> <a class="idref" href="Metalib.LibLNgen.html#s3"><span class="id" title="variable">s3</span></a> (<a class="idref" href="Metalib.Metatheory.html#union"><span class="id" title="abbreviation">union</span></a> <a class="idref" href="Metalib.LibLNgen.html#s4"><span class="id" title="variable">s4</span></a> <a class="idref" href="Metalib.LibLNgen.html#s5"><span class="id" title="variable">s5</span></a>).<br/>
+<span class="id" title="keyword">Proof</span>. <span class="id" title="var">fsetdec</span>. <span class="id" title="keyword">Qed</span>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+<a name="lab95"></a><h1 class="section">Hints</h1>
+
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Hint Resolve</span> <span class="id" title="var">sym_eq</span> : <span class="id" title="var">brute_force</span>.<br/>
+
+<br/>
+<span class="id" title="keyword">Hint Extern</span> 5 (<span class="id" title="var">_</span> <a class="idref" href="http://coq.inria.fr/distrib/8.6/stdlib/Coq.Init.Logic.html#8f9364556521ebb498093f28eea2240f"><span class="id" title="notation">=</span></a> <span class="id" title="var">_</span> <a class="idref" href="http://coq.inria.fr/distrib/8.6/stdlib/Coq.Init.Logic.html#8f9364556521ebb498093f28eea2240f"><span class="id" title="notation">:&gt;</span></a> <a class="idref" href="http://coq.inria.fr/distrib/8.6/stdlib/Coq.Init.Datatypes.html#nat"><span class="id" title="inductive">nat</span></a>) ⇒ <span class="id" title="tactic">omega</span> : <span class="id" title="var">brute_force</span>.<br/>
+<span class="id" title="keyword">Hint Extern</span> 5 (<span class="id" title="var">_</span> <a class="idref" href="http://coq.inria.fr/distrib/8.6/stdlib/Coq.Init.Peano.html#989c98e7ddd65d5bf37c334ff2076de8"><span class="id" title="notation">&lt;</span></a> <span class="id" title="var">_</span>)        ⇒ <span class="id" title="tactic">omega</span> : <span class="id" title="var">brute_force</span>.<br/>
+<span class="id" title="keyword">Hint Extern</span> 5 (<span class="id" title="var">_</span> <a class="idref" href="http://coq.inria.fr/distrib/8.6/stdlib/Coq.Init.Peano.html#9b077c369e19739ef880736ba34623ff"><span class="id" title="notation">≤</span></a> <span class="id" title="var">_</span>)       ⇒ <span class="id" title="tactic">omega</span> : <span class="id" title="var">brute_force</span>.<br/>
+
+<br/>
+<span class="id" title="keyword">Hint Rewrite</span> @<a class="idref" href="Metalib.LibLNgen.html#remove_union_distrib"><span class="id" title="lemma">remove_union_distrib</span></a> : <span class="id" title="var">lngen</span>.<br/>
+
+<br/>
+<span class="id" title="keyword">Hint Resolve</span> @<a class="idref" href="Metalib.LibLNgen.html#Equal_union_compat"><span class="id" title="lemma">Equal_union_compat</span></a> : <span class="id" title="var">lngen</span>.<br/>
+<span class="id" title="keyword">Hint Resolve</span> @<a class="idref" href="Metalib.LibLNgen.html#Subset_refl"><span class="id" title="lemma">Subset_refl</span></a> : <span class="id" title="var">lngen</span>.<br/>
+<span class="id" title="keyword">Hint Resolve</span> @<a class="idref" href="Metalib.LibLNgen.html#Subset_empty_any"><span class="id" title="lemma">Subset_empty_any</span></a> : <span class="id" title="var">lngen</span>.<br/>
+<span class="id" title="keyword">Hint Resolve</span> @<a class="idref" href="Metalib.LibLNgen.html#Subset_union_compat"><span class="id" title="lemma">Subset_union_compat</span></a> : <span class="id" title="var">lngen</span>.<br/>
+<span class="id" title="keyword">Hint Resolve</span> @<a class="idref" href="Metalib.LibLNgen.html#Subset_union_left"><span class="id" title="lemma">Subset_union_left</span></a> : <span class="id" title="var">lngen</span>.<br/>
+<span class="id" title="keyword">Hint Resolve</span> @<a class="idref" href="Metalib.LibLNgen.html#Subset_union_right"><span class="id" title="lemma">Subset_union_right</span></a> : <span class="id" title="var">lngen</span>.<br/>
+<span class="id" title="keyword">Hint Resolve</span> @<a class="idref" href="Metalib.LibLNgen.html#Subset_union_lngen_open_upper"><span class="id" title="lemma">Subset_union_lngen_open_upper</span></a> : <span class="id" title="var">lngen</span>.<br/>
+</div>
+</div>
+
+<div id="footer">
+<hr/><a href="index.html">Index</a><hr/>This page has been generated by <a href="http://coq.inria.fr/">coqdoc</a>
+</div>
+
+</div>
+
+</body>
+</html>

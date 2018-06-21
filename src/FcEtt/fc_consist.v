@@ -18,14 +18,13 @@ Require Import FcEtt.fc_head_reduction.
 (* Needed for annotation lemma at end. *)
 Require Import FcEtt.fc_preservation.
 Require Import FcEtt.ext_subst.
-Require Import FcEtt.ext_invert.
 
 Set Implicit Arguments.
 Set Bullet Behavior "Strict Subproofs".
 
 
 Module fc_consist (wf : fc_wf_sig) (weak : fc_weak_sig) (subst : fc_subst_sig)
-                  (e_subst : ext_subst_sig).
+                  (e_invert : ext_invert_sig)(e_subst : ext_subst_sig).
 
 Import wf weak.
 
@@ -35,20 +34,136 @@ Export subst.
 Module invert := fc_invert wf weak subst.
 Export invert.
 
-Module e_invert := ext_invert e_subst.
-Import e_invert.
 
 Module consist := ext_consist e_invert wf.
 Export consist.
 
+
 Module erase' := erase wf weak subst e_invert.
 Export erase'.
+
 
 Module head := fc_head_reduction  e_invert weak wf subst.
 Export head.
 
 Module pres := fc_preservation wf weak subst e_subst.
 Import pres.
+(* Why does this cause so many messages? *)
+
+
+Lemma erased_tm_erase_mutual :
+  (forall G0 a B (H : AnnTyping G0 a B),
+     erased_tm (erase a) /\ erased_tm (erase B)) /\
+  (forall G0 phi (H : AnnPropWff G0 phi),
+      forall a b A, phi = (Eq a b A) ->
+                                         erased_tm (erase a) /\ erased_tm (erase b)
+                                         /\ erased_tm (erase A)) /\
+  (forall G0 D g p1 p2 (H : AnnIso G0 D g p1 p2),
+     True) /\
+  (forall  G0 D g A B (H : AnnDefEq G0 D g A B),
+      True) /\
+  (forall G0 (H : AnnCtx G0),
+     forall x A, binds x (Tm A) G0 -> erased_tm (erase_tm A)
+  ).
+Proof.
+ apply ann_typing_wff_iso_defeq_mutual; intros; simpl; repeat split; eauto.
+ all: try solve [inversion H; eauto].
+ all: try solve [inversion H1; eauto].
+ all: try solve [inversion H0; eauto].
+   (* all: try solve [ try (destruct rho); simpl; eauto]. *)
+  - (* a_Pi rho *)
+    erased_pick_fresh y. inversion H0. eauto using lc_erase.
+    move: (H y) => h0. assert (W: y `notin` L). eauto.
+    apply h0 in W. inversion W. rewrite <- open_tm_erase_tm in H1. eauto.
+  - (* a_UAbs rho *)
+    destruct rho; eauto. 
+    (* rel *)
+    pick fresh x and apply erased_a_Abs. 
+    replace (a_Var_f x) with (erase (a_Var_f x)); eauto.
+    rewrite open_tm_erase_tm. assert (W: x `notin` L). auto. apply H0 in W.
+    inversion W. auto. auto.
+    (*irrel*)
+    pick fresh x and apply erased_a_Abs.
+    replace (a_Var_f x) with (erase (a_Var_f x)); eauto.
+    rewrite open_tm_erase_tm. assert (W: x `notin` L). auto. apply H0 in W.
+    inversion W. auto.
+    econstructor.
+    assert (W: x `notin` L). auto.
+    apply r in W. inversion W. simpl. 
+    rewrite Rew.r_erase_tm.
+    rewrite Rew.r_erase_tm in H1. rewrite -open_tm_erase_tm in H1.
+    simpl in H1. auto.
+  - (* a_Pi type *)
+    erased_pick_fresh y. inversion H. eauto using lc_erase.
+    move: (H0 y) => h0. assert (W: y `notin` L). eauto.
+    apply h0 in W. inversion W. clear h0 W. 
+    rewrite <- open_tm_erase_tm in H2. eauto.
+  - inversion H. inversion H0. destruct rho; simpl; eauto.
+  - rewrite <- open_tm_erase_tm.
+    set M := erase_tm B.
+    inversion H. inversion H2; subst.
+    pick fresh x.
+    unfold M in Fr.
+    rewrite (tm_subst_tm_tm_intro x); eauto.
+    eapply subst_tm_erased. inversion H0. auto.
+    eapply H7. fsetdec.
+  - (* a_CPi erase constraint *)
+    destruct phi. destruct (H _ _ _ eq_refl) as (h0 & h1 & h2). simpl.
+    eauto. erased_pick_fresh y; eauto using lc_erase.
+    assert (W: y `notin` L). auto. apply H0 in W.
+    rewrite Rew.r_erase_tm.
+    erewrite open_co_erase_tm2. inversion W. apply H1.
+  - (* a_UCAbs *)
+    pick fresh y and apply erased_a_CAbs.
+    assert (W: y `notin` L). auto. apply H0 in W.
+    rewrite Rew.r_erase_tm.
+    erewrite open_co_erase_tm2. inversion W. apply H1.
+  - (* a_CPi type *)
+    destruct phi. destruct (H _ _ _ eq_refl) as (h0 & h1 & h2). simpl.
+    eauto. erased_pick_fresh y; eauto using lc_erase.
+    assert (W: y `notin` L). auto. apply H0 in W.
+    rewrite Rew.r_erase_tm.
+    erewrite open_co_erase_tm2. inversion W. apply H2.
+  - rewrite <- open_co_erase_tm.
+    set M := erase_tm B.
+    inversion H. inversion H2; subst.
+    pick fresh x.
+    unfold M in Fr.
+    assert (W: x `notin` L). fsetdec. apply H10 in W.
+    erewrite open_co_erase_tm with (a := (g_Var_f x)).
+    erewrite open_co_erase_tm2 in W. apply W.
+  - inversion H1. subst. inversion H. auto.
+  - inversion H1. subst. inversion H0. auto.
+  - inversion H1. subst. inversion H. auto.
+  - simpl in H1.
+    apply binds_cons_iff in H1.
+    inversion H1. inversion H2.
+    + inversion H4; subst; auto.
+      inversion H0; auto.
+    + apply H in H2; auto.
+  - simpl in H1.
+    apply binds_cons_iff in H1.
+    inversion H1. destruct phi.
+    inversion H2. inversion H4. 
+    apply H in H2; auto.
+Qed.
+
+Lemma erased_tm_erase : forall G0 a B, AnnTyping G0 a B -> erased_tm (erase a).
+Proof.
+  intros.
+  destruct erased_tm_erase_mutual.
+  apply H0 in H. inversion H. auto.
+Qed.
+
+Lemma erased_tm_erase_type : forall G0 a B, AnnTyping G0 a B -> erased_tm (erase B).
+Proof.
+  intros.
+  destruct erased_tm_erase_mutual.
+  apply H0 in H. inversion H. auto.
+Qed.
+
+Hint Resolve erased_tm_erase : erased.
+
 
 Definition AnnGood G D := Good (erase_context G) D.
 
@@ -79,27 +194,76 @@ Proof.
 Qed.
 
 
+Lemma Paths_are_DataTy : forall T a,
+    Path T a -> Value a -> forall G A, AnnTyping G a A -> DataTy A a_Star.
+Proof.
+  induction 1; intros.
+  - inversion H0. subst.
+    eapply (binds_to_type _ _ AnnSig_an_toplevel); eauto.
+  - inversion H1. inversion H2. subst.
+    move: (IHPath H8 _ _ H14) => h0.
+    inversion h0. subst.
+    pick fresh x.
+    rewrite (tm_subst_tm_tm_intro x); eauto with lngen.
+  - inversion H1. inversion H2. subst.
+    move: (IHPath H7 _ _ H11) => h0.
+    inversion h0. subst.
+    pick fresh x.
+    rewrite (co_subst_co_tm_intro x); eauto with lngen.
+  - inversion H1.
+Qed.
+
+
+
+Lemma Paths_have_value_types : forall T a,
+    Path T a -> Value a -> forall G A, AnnTyping G a A -> value_type A.
+Proof. intros.
+       eapply DataTy_value_type; eauto.
+       eapply Paths_are_DataTy; eauto.
+Qed.
+
+Lemma values_have_value_types :
+  forall G D a A, AnnGood G D ->  AnnTyping G a A -> Value a -> value_type A.
+Proof.
+  intros G D a A AN H V.
+  move: (AnnTyping_regularity H) => h0.
+  inversion H; subst; auto.
+  all: try solve [inversion V; inversion H2].
+  all: match goal with
+  | [H : AnnTyping ?G ?b ?A |- value_type ?b] =>
+    apply AnnTyping_lc in H; split_hyp; lc_inversion c;  eauto
+       end.
+  + inversion V.
+    eapply (@Paths_have_value_types T (a_App b rho a0)); eauto.
+  + inversion V.
+    eapply (@Paths_have_value_types T (a_CApp a1 g)); eauto.
+  + eapply DataTy_value_type.
+    eapply (binds_to_type _ _ AnnSig_an_toplevel); eauto.
+Qed.
+
 
 (* --------- Paths infect the cannonical forms lemmas for functions --------- *)
 
 Lemma canonical_forms_a_Pi :
   forall G D a rho A B, AnnGood G D ->
                    AnnTyping G a (a_Pi rho A B) -> Value a ->
-                   (exists a', a = a_Abs rho A a').
+                   (exists a', a = a_Abs rho A a') \/ (exists T, Path T a).
 Proof.
   intros G D a rho A B AN H V.
   inversion V; subst; inversion H; subst; try solve [inversion H0].
-  all: try solve [exists a0; eauto].
+  all: try solve [left; exists a0; auto].
+  all: try solve [right; exists T; auto].
 Qed.
 
 Lemma canonical_forms_a_CPi :
   forall G D a phi B, AnnGood G D ->
                  AnnTyping G a (a_CPi phi B) -> Value a ->
-                 (exists a', a = a_CAbs phi a').
+                 (exists a', a = a_CAbs phi a') \/ (exists T, Path T a).
 Proof.
   intros G D a phi B AN H V.
   inversion V; subst; inversion H; subst; try solve [inversion H0].
-  all: try solve [exists a0; auto].
+  all: try solve [left; exists a0; auto].
+  all: try solve [right; exists T; auto].
 Qed.
 
 Lemma consistent_a_Pi :
@@ -115,6 +279,7 @@ Proof.
   - subst. exists C1. exists C2. auto.
   - inversion VT.
   - inversion VT.
+  - inversion H0.
   - assert False.
     apply AnnDefEq_lc in DE. split_hyp.
     match goal with
@@ -139,6 +304,7 @@ Proof.
   destruct C; try destruct rho; simpl in H; inversion H;
   try solve [inversion VT; inversion H1].
   - subst. exists phi0. exists C.  auto.
+  - inversion H0.
   - assert False.
     apply AnnDefEq_lc in DE. split_hyp.
     apply H0. econstructor.
@@ -150,23 +316,14 @@ Proof.
     apply value_type_erase in VT. done.
 Qed.
 
-Lemma values_have_value_types :
-  forall G D a A, AnnGood G D ->  AnnTyping G a A -> Value a -> value_type A.
-Proof.
-  intros G D a A AN H V.
-  move: (AnnTyping_regularity H) => h0.
-  inversion H; subst; auto.
-  all: try solve [inversion V; inversion H2].
-  all: match goal with
-  | [H : AnnTyping ?G ?b ?A |- value_type ?b] =>
-    apply AnnTyping_lc in H; split_hyp; lc_inversion c;  eauto
-       end.
-Qed.
-
 
 Definition irrelevant G D (a : tm) :=
   (forall x A, binds x (Tm A) G -> x `notin` fv_tm (erase a)) /\ AnnGood G D.
 
+
+(* Other statement?
+Lemma progress : forall a A G D, AnnGood G D -> AnnTyping G a A -> CoercedValue a \/ exists a', head_reduction G a a'.
+*)
 Lemma progress : forall G a A, irrelevant G (dom G) a -> AnnTyping G a A -> CoercedValue a \/ exists a', head_reduction G a a'.
 Proof.
   intros G a A AN H.
@@ -218,7 +375,7 @@ Proof.
         H: CoercedValue b |- _ => inversion H
       end.
       -- (* application of a value *)
-        edestruct canonical_forms_a_Pi as [ a1 EQ] ; eauto; subst.
+        edestruct canonical_forms_a_Pi as [[ a1 EQ] | [T P]] ; eauto; subst.
         (* path case solved automatically *)
         ++ right. (* a lambda, do a beta reduction *)
            exists (open_tm_wrt_tm a1 a). eapply An_AppAbs; eauto.
@@ -228,7 +385,7 @@ Proof.
          subst.
          have VT: value_type A1. eapply values_have_value_types; eauto.
          edestruct consistent_a_Pi as (A' & B' & EQ); eauto. subst.
-         edestruct canonical_forms_a_Pi as [ a0' EQ]; eauto; subst.
+         edestruct canonical_forms_a_Pi as [[ a0' EQ] | [T P]]; eauto; subst.
     + subst.
       match goal with H : exists a' : tm, head_reduction G b a' |- _ => destruct H end.
       right. eexists. eapply An_AppLeft; eauto.
@@ -247,17 +404,25 @@ Proof.
       match goal with
         H : CoercedValue ?a1 |- _ => inversion H
       end.
-      -- edestruct canonical_forms_a_CPi as [a2 EQ]; eauto; subst.
+      -- edestruct canonical_forms_a_CPi as [[a2 EQ]|[T p]]; eauto; subst.
          right. exists (open_tm_wrt_co a2 g). eapply An_CAppCAbs; eauto.
          destruct (AnnTyping_lc H) as [h0 h1]. inversion h0; auto.
       -- subst.  inversion H. subst.
          have VT: value_type A. eapply values_have_value_types; eauto.
         edestruct consistent_a_CPi as (A' & a2 & EQ); eauto. subst.
-        edestruct canonical_forms_a_CPi as [a0' EQ]; eauto; subst.
+        edestruct canonical_forms_a_CPi as [[a0' EQ]|[T p]]; eauto; subst.
     + destruct H5. right. eexists. eapply An_CAppLeft. eauto. eauto.
+  - left. eauto.
   - right. exists a. eauto.
 Qed.
 
+
+(* ------------------------------------- *)
+
+(* This is proved in the preservation file.
+Lemma reduction_erasure : forall G a a',
+    head_reduction G a a' ->
+    reduction_in_one (erase a) (erase a') \/ erase a = erase a'. *)
 
 
 (* ------------------------------------- *)
@@ -343,11 +508,12 @@ Qed.
 (* ------------------------------------- *)
 
 (* TODO: move elsewhere?  ext_consist for the first two? *)
+
 Lemma erased_constraint_erase :
-  forall a b A, lc_constraint (Eq a b A) -> erased_tm (erase a) /\ erased_tm (erase b)
+  forall G a b A, AnnPropWff G (Eq a b A) -> erased_tm (erase a) /\ erased_tm (erase b)
                                       /\ erased_tm (erase A).
 Proof.
-  move: erased_tm_erase_mutual => [_ [_ [_ h]]].
+  move: erased_tm_erase_mutual => [_ [h [_ _]]].
   eauto.
 Qed.
 
@@ -357,8 +523,8 @@ Lemma erased_context_erase :
          induction 1; simpl; unfold erased_context; rewrite Forall_forall.
          - intros. inversion H.
          - intros. destruct x0. inversion H2.
-           -- inversion H3. destruct s. inversion H6. subst.
-              econstructor. eapply erased_tm_erase. eauto using AnnTyping_lc1.
+           -- inversion H3. destruct s. inversion H6. subst. 
+              econstructor. eapply erased_tm_erase. eauto.
               inversion H6.
            -- unfold erased_context in IHAnnCtx.
               move: (Forall_forall (λ p : atom * sort, let (_, s) := p in erased_sort s) (erase_context G)) => [h0 h1].
@@ -369,7 +535,10 @@ Lemma erased_context_erase :
               inversion H6. subst.
               destruct phi.
               inversion H0.
-              econstructor; eapply erased_tm_erase; eauto using AnnTyping_lc1, AnnTyping_lc2.
+              econstructor. 
+              + eapply erased_tm_erase. eauto using AnnTyping_lc1.
+              + eapply erased_tm_erase. eauto using AnnTyping_lc2.
+              + eapply erased_tm_erase_type. eauto.
            -- unfold erased_context in IHAnnCtx.
               move: (Forall_forall (λ p : atom * sort, let (_, s) := p in erased_sort s) (erase_context G)) => [h0 h1].
               move: (h0 IHAnnCtx) => h2.
@@ -380,7 +549,7 @@ Lemma AnnGood_add_tm :
   forall G x A,  x `notin` dom G -> AnnTyping G A a_Star -> AnnGood G (dom G) -> AnnGood (x ~ Tm A ++ G) (dom (x ~ Tm A ++ G)).
 Proof.
   intros G x A Fr AT GG.
-  inversion GG.  econstructor.  eapply erased_context_erase; eauto using AnnTyping_AnnCtx.
+  inversion GG.  econstructor. eapply erased_context_erase; eauto using AnnTyping_AnnCtx.
   intros.
   simpl in H1.
   apply binds_cons_1 in H1.
@@ -447,6 +616,48 @@ Proof.
   + destruct rho; simpl in V; inversion V; subst;
     move: (IHAnnTyping1 GG (erase b) eq_refl ltac:(auto)) => [av [MS [CV EE]]];
     inversion CV; subst.
+    ++ exists (a_App av Rel a).
+       repeat split. eapply multi_An_AppLeft; eauto_lc.
+       repeat econstructor; eauto_lc.
+       eapply Path_to_Path; eauto_lc.
+       simpl. autorewcs. congruence.
+    ++ move: (multi_preservation MS H) => TC. inversion TC.
+       move: (values_have_value_types GG H9 H3) => VT.
+       move: (consistent_a_Pi GG VT H11) => [A' [B' EQ]]. subst.
+       pose VV := H3. clearbody VV.
+       eapply An_Push with (b:=a) in H3; try eapply H11; try reflexivity.
+       eexists.
+       split. eapply multi_trans.
+       eapply multi_An_AppLeft; eauto_lc.
+       eapply multi_step; eauto_lc.
+       eapply multi_refl; eauto_lc.
+       repeat econstructor; eauto_lc.
+       split.
+       eapply CC; econstructor; eauto_lc.
+       econstructor; eauto_lc.
+       eapply Path_to_Path; eauto_lc.
+       simpl in EE. simpl. congruence.
+    ++ exists (a_App av Irrel a).
+       repeat split. eapply multi_An_AppLeft; eauto_lc.
+       repeat econstructor; eauto_lc.
+       eapply Path_to_Path; eauto_lc.
+       simpl. autorewcs. congruence.
+    ++ move: (multi_preservation MS H) => TC. inversion TC.
+       move: (values_have_value_types GG H9 H3) => VT.
+       move: (consistent_a_Pi GG VT H11) => [A' [B' EQ]]. subst.
+       pose VV := H3. clearbody VV.
+       eapply An_Push with (b:=a) in H3; try eapply H11; try reflexivity.
+       eexists.
+       split. eapply multi_trans.
+       eapply multi_An_AppLeft; eauto_lc.
+       eapply multi_step; eauto_lc.
+       eapply multi_refl; eauto_lc.
+       repeat econstructor; eauto_lc.
+       split.
+       eapply CC; econstructor; eauto_lc.
+       econstructor; eauto_lc.
+       eapply Path_to_Path; eauto_lc.
+       simpl in EE. simpl. congruence.
 
   + move: (IHAnnTyping1 GG _ eq_refl V) => [av [MS [CV EE]]].
     inversion CV.
@@ -478,6 +689,32 @@ Proof.
     repeat split; try eapply multi_refl; eauto using Value_lc;
       simpl; auto.
     econstructor; eauto using AnnTyping_lc1, AnnPropWff_lc.
+  + (* CApp case (for paths) *)
+    simpl in V; inversion V; subst;
+    move: (IHAnnTyping GG (erase a1) eq_refl ltac:(auto)) => [av [MS [CV EE]]];
+    inversion CV; subst.
+    ++ exists (a_CApp av g).
+       repeat split.
+       eapply multi_An_CAppLeft; eauto_lc.
+       repeat econstructor; eauto_lc.
+       eapply Path_to_Path; eauto_lc.
+       simpl. autorewcs. congruence.
+    ++ move: (multi_preservation MS H) => TC. inversion TC.
+       move: (values_have_value_types GG H9 H3) => VT.
+       move: (consistent_a_CPi GG VT H11) => [A' [B' EQ]]. subst.
+       pose VV := H3. clearbody VV.
+       eapply An_CPush with (g:=g0) in H3; try eapply H11; try reflexivity.
+       eexists.
+       split.
+       eapply multi_trans.
+       eapply multi_An_CAppLeft; eauto_lc.
+       eapply multi_step; eauto_lc.
+       eapply multi_refl; eauto_lc.
+       repeat econstructor; eauto_lc.
+       split.
+       eapply CC; econstructor; eauto_lc.
+       eapply Path_to_Path; eauto_lc.
+       simpl in EE. simpl. congruence.
 Qed.
 
 
@@ -492,6 +729,22 @@ Ltac solve_irrelevant y AA b0 h0 :=
     try (intros y AA b0; move: (H4 y AA b0) => h0; fsetdec) end.
 
 
+(* paths are not (erased) abstractions. *)
+Lemma paths_arent_abs :
+  forall a T, Path T a -> forall rho b, a = a_UAbs rho b -> False.
+Proof.
+  intros a T P.
+  induction P; intros r b0 EQ;
+    try  destruct rho; simpl in *; inversion EQ.
+Qed.
+
+Ltac no_paths:=
+  match goal with
+    [ EE : erase (a_App ?b0 ?rho ?a) = a_UAbs _ ?b, H : Path ?T ?b0 |- _ ] =>
+    destruct rho; simpl in EE;
+    match goal with
+      [ FF : ?a = a_UAbs _ ?b |- _ ] =>
+      have P: (Path T a); by eauto using lc_tm_erase end end.
 
 (* Each of the subcases are by induction on a0 to account for top-level coercions on the term.
    This tactic handles all of the inductive cases. *)
@@ -557,35 +810,33 @@ Proof.
       simpl. autorewrite with lngen. auto.
     + inversion H2.
     + induction_a0.
-
-  - (* E_AppLeft *)
+  - (* E_AppRel *) 
     intros.
     dependent induction a0; try destruct rho; simpl in H3; inversion H3; subst.
-    + destruct rho0;  simpl in H3; inversion H3.
-      inversion H1. simpl in H4.
+    + inversion H1. simpl in H4.
       inversion H2. subst.
-
       have I1: irrelevant G (dom G) a0_1.
       solve_irrelevant y AA b0 h0.
-
-      move: (IHreduction_in_one _ _ _ I1 H14 eq_refl) => [a0_1' [MS E']].
+      move: (IHreduction_in_one _ _ _ I1 H11 eq_refl) => [a0_1' [MS E']].
       exists (a_App a0_1' Rel a0_2).
       split.
       eapply multi_An_AppLeft; eauto using AnnTyping_lc1.
       simpl. autorewcs. congruence.
-    + destruct rho0;  simpl in H3; inversion H3.
-      inversion H1. simpl in H4.
+    + induction_a0.
+  - (* E_AppIrrel *) 
+    intros.
+    dependent induction a0; try destruct rho; simpl in H2; inversion H2; subst.
+    + inversion H1. simpl in H4.
       inversion H2. subst.
       have I1: irrelevant G (dom G) a0_1.
       solve_irrelevant y AA b0 h0.
-      move: (IHreduction_in_one _ _ _ I1 H14 eq_refl) => [a0_1' [MS E']].
+      move: (IHreduction_in_one _ _ _ I1 H8 eq_refl) => [a0_1' [MS E']].
       exists (a_App a0_1' Irrel a0_2).
       split.
       eapply multi_An_AppLeft; eauto using AnnTyping_lc1.
       simpl. autorewcs. congruence.
     + induction_a0.
-    + induction_a0.
-  - (* E_CAppLeft. *)
+  - (* E_CAppLeft. *) 
     intros.
     match goal with
       [ H2 : erase ?a0 = _ |- _ ] =>
@@ -607,13 +858,12 @@ Proof.
     dependent induction a0; try destruct rho; simpl in H3; inversion H3; subst.
     + (* No coercions. a0 is a direct (Rel) application of
       a0_1, which erases to an abstraction. *)
-      destruct rho0; simpl in H3; inversion H3.
       ann_invert_clear.
       inversion H1.
       have ?: Value (a_UAbs Rel v) by eauto.
-      move: (erased_Value_reduces_to_CoercedValue H12 H4 H6 ltac:(auto)) =>
+      move: (erased_Value_reduces_to_CoercedValue H10 H4 H5 ltac:(auto)) =>
       [av ?]. split_hyp.
-      move: (multi_preservation H7 H12) => Tav.
+      move: (multi_preservation H6 H10) => Tav.
       (* Check if there is a coercion at the top of av *)
       match goal with [ H : CoercedValue av |- _ ] => inversion H; subst end.
       ++ (* Value av *)
@@ -630,6 +880,8 @@ Proof.
            rewrite (tm_subst_tm_tm_intro y); auto.
            eapply tm_subst_tm_tm_lc_tm; eauto using AnnTyping_lc1. }
          rewrite open_tm_erase_tm. auto.
+         (* prove that paths don't erase to abstractions. *)
+         no_paths.
       ++ (* av = (a |> g) *)
          have LC: lc_tm a0_1 by eauto using AnnTyping_lc1.
          (* Push rule *)
@@ -642,7 +894,7 @@ Proof.
          move: (consistent_a_Pi H4 VT H20) => [A' [B' EQ]]; subst;
          move: (An_Push _ _ _ _ a0_2 _ _ _ _ _ _ H11 H20 eq_refl eq_refl)=> RED end.
          have TA': AnnTyping G A' a_Star.
-           { move: (AnnTyping_regularity H18) => T1. inversion T1. auto. }
+           { move: (AnnTyping_regularity H17) => T1. inversion T1. auto. }
          have Tb': AnnTyping G (a_Conv a0_2 (g_Sym (g_PiFst g))) A'.
            { eapply An_Conv; eauto.
              eapply An_Sym.  eauto. eauto using AnnTyping_regularity.
@@ -676,11 +928,19 @@ Proof.
          (* erasure property *)
          simpl_erase. auto.
 
+         destruct rho.
+         +++ have P: Path T (a_App (erase v) Rel (erase a0)); by eauto
+                                                                    using lc_tm_erase.
+         +++ have P: Path T (a_App (erase v) Irrel a_Bullet); by eauto using lc_tm_erase.
+    + (* induction step for top-level coercions (Rel) *)
+      induction_a0.
+  - (* E_AppAbs Irrel*)
+    intros.
+    dependent induction a0; try destruct rho; simpl in H2; inversion H2; subst.
     + (* No coercions. a0 is a direct (Irrel) application of
         a0_1, which erases to an abstraction. *)
-      destruct rho0; simpl in H3; inversion H3.
       ann_invert_clear.
-      inversion H1.
+      inversion H0.
       match goal with [H12 : AnnTyping G a0_1 (a_Pi Irrel A B),
                        H4  : AnnGood G (dom G),
                        H6  : erase_tm a0_1 = a_UAbs Irrel v |- _ ] =>
@@ -708,7 +968,7 @@ Proof.
          (* argument really is irelevant. *)
            simpl_erase.
            pick fresh x.
-           move: (H18 x ltac:(auto)) => RC. inversion RC.
+           move: (H16 x ltac:(auto)) => RC. inversion RC.
            rewrite (tm_subst_tm_tm_intro x (erase a)).
            replace (a_Var_f x) with (erase (a_Var_f x)); auto.
            rewrite open_tm_erase_tm.
@@ -721,10 +981,11 @@ Proof.
            apply fv_tm_erase_tm; auto.
          }
 
+         no_paths.
       ++ (* av = (a |> g) *)
          have LC: lc_tm a0_1 by eauto using AnnTyping_lc1.
          (* Push rule *)
-         inversion H1.
+         inversion H0.
          ann_invert_clear.
          match goal with
            [ H4 : AnnGood _ _,  H20 : AnnDefEq G (dom G) g A0 (a_Pi Irrel A B),
@@ -766,7 +1027,7 @@ Proof.
 
          { lc_inversion c. repeat econstructor; eauto_lc.
            pick fresh y.
-           move: (H23 y ltac:(auto)) => h0.
+           move: (H22 y ltac:(auto)) => h0.
            rewrite (tm_subst_tm_tm_intro y); auto.
            apply tm_subst_tm_tm_lc_tm; eauto_lc.
          }
@@ -775,7 +1036,7 @@ Proof.
          {
            simpl_erase.
            pick fresh x.
-           move: (H24 x ltac:(auto)) => RC. inversion RC.
+           move: (H22 x ltac:(auto)) => RC. inversion RC.
            rewrite (tm_subst_tm_tm_intro x (erase a0)).
            replace (a_Var_f x) with (erase (a_Var_f x)); auto.
            rewrite open_tm_erase_tm.
@@ -788,13 +1049,12 @@ Proof.
            apply fv_tm_erase_tm; auto.
          }
 
-
-    + (* induction step for top-level coercions (Rel) *)
-      induction_a0.
-
+         destruct rho.
+         +++ have P: Path T (a_App (erase v) Rel (erase a0)); by eauto
+                                                                    using lc_tm_erase.
+         +++ have P: Path T (a_App (erase v) Irrel a_Bullet); by eauto using lc_tm_erase.
     + (* induction step for top-level coercions (irrel) *)
       induction_a0.
-
   - (* E_CAbsCApp *)
     intros.
     match goal with
@@ -899,7 +1159,7 @@ Proof.
     dependent induction a0; try destruct rho; simpl in H2; inversion H2; subst.
 
     + unfold toplevel in H. unfold erase_sig in H.
-      destruct (@binds_map_3 _ _ F (Ax a A) erase_csort an_toplevel H).
+      destruct (@binds_map_3 _ _ erase_csort F (Ax a A) an_toplevel H).
       split_hyp. destruct x; inversion H3. subst.
 
       exists a0. repeat split.

@@ -41,7 +41,8 @@ Set Bullet Behavior "Strict Subproofs".
 Set Implicit Arguments.
 
 
-(* This version is just for "head reduction". *)
+(* This version is just for "head reduction."
+ *)
 
 Lemma open_a_Conv : forall a b g,
     open_tm_wrt_tm (a_Conv a g) b =
@@ -98,7 +99,7 @@ Ltac eauto_lc := simpl; eauto using AnnTyping_lc1, Value_lc,
                         AnnDefEq_lc3, AnnPropWff_lc.
 
 
-(* We need to know that the term type checks. But if it does, our annotated
+(* We need to know that the term type checks.  But if it does, our annotated
    operational semantics corresponds with reduction_in_one. *)
 Lemma head_reduction_in_one : forall G a b,
     head_reduction G a b -> forall A,  AnnTyping G a A ->
@@ -113,8 +114,7 @@ Proof.
     left. eauto. simpl in H8. rewrite H8. eauto.
   - subst. destruct rho; left; simpl_erase.
     ++ eapply E_AppAbs; eauto using lc_er_tm.
-       eapply Value_lc in H0. econstructor.
-       lc_erase_hyp.
+       eapply Value_lc in H0. lc_erase_hyp.
     ++ inversion H6; clear H6; subst.
        pose EB := erase w.
        pick fresh x.
@@ -125,7 +125,7 @@ Proof.
        econstructor. auto.
        eapply Value_erase in H0. auto.
        do_rho.
-       do_rho.
+       do_rho. 
   - subst.
     destruct (IHhead_reduction _ H4); simpl.
     eauto.
@@ -162,8 +162,9 @@ Proof.
 Qed.
 
 
-(* We need to know that the term type checks. But if it does, our annotated
+(* We need to know that the term type checks.  But if it does, our annotated
    operational semantics corresponds with parallel reduction. *)
+
 Lemma head_reduction_erased : forall G a b, head_reduction G a b ->
     forall A, AnnTyping G a A ->  Par G (dom G) (erase a) (erase b).
 Proof.
@@ -187,7 +188,6 @@ Proof.
     econstructor. econstructor. apply Value_lc in H0.
     match goal with H : lc_tm (a_Abs Irrel ?A0 ?b) |-
                     lc_tm (a_UAbs Irrel (erase ?b)) => eapply lc_erase in H; simpl in H; auto end.
-    econstructor; eauto.
     do_rho.
     do_rho.
   + subst. simpl.
@@ -270,6 +270,8 @@ Proof.
       inversion H2. inversion H7. subst. destruct phi1.
       eapply An_Conv; eauto.
       eapply AnnTyping_co_subst_nondep; eauto.
+  - move=> a' hr.
+    inversion hr.
   - move=> a' hr.
     inversion hr. subst.
 

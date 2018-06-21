@@ -32,6 +32,12 @@ Set Implicit Arguments.
 Set Bullet Behavior "Strict Subproofs".
 
 
+Lemma Path_erase : forall T a, Path T a -> Path T (erase a).
+Proof. induction 1; try destruct rho; simpl; auto.
+       autorewcs.
+       eauto with lc.
+Qed.
+
 
 Hint Constructors Typing PropWff Iso DefEq Ctx.
 
@@ -123,6 +129,10 @@ Proof.
     eapply E_CApp. simpl in H. eauto.
     rewrite <- erase_dom.
     eapply H0; eauto.
+  - simpl. eapply E_Const; eauto.
+    unfold toplevel.
+    unfold erase_sig.
+    replace (Cs (erase_tm A)) with (erase_csort (Cs A)). eapply binds_map. auto. auto.
   - simpl. eapply E_Fam; eauto.
     unfold toplevel.
     unfold erase_sig.
@@ -363,6 +373,245 @@ Proof.
     move: (AnnTyping_regularity H5) => ?.
     resolve_unique_nosubst. simpl.
     eapply E_IsoSnd. eauto.
+  - simpl in *.
+    destruct (An_Abs_inversion H0) as (B0 & h0 & h1 & h2). subst.
+    pick fresh x. destruct (h2 x ltac:(auto)) as [RC h3].
+    rewrite e in h3; auto.
+    inversion h3. subst.
+    have h4: AnnCtx G by eauto with ctx_wff.
+    have h5: AnnCtx (nil ++ (x ~ Tm A) ++ G) by econstructor; eauto with ctx_wff.
+    move: (AnnTyping_weakening a0 (x ~ Tm A) nil G eq_refl ltac:(auto)) => h0.
+    simpl_env in h0.
+    resolve_unique_subst. inversion H1. subst.
+    apply open_tm_wrt_tm_inj in H6; auto. subst.
+    simpl. destruct rho.
+    + eapply E_EtaRel with (L := L \u {{x}}); auto.
+    intros.
+    replace (a_Var_f x0) with (erase (a_Var_f x0)).
+    rewrite open_tm_erase_tm.
+    rewrite e; auto.
+    simpl; auto.
+    + eapply E_EtaIrrel with (L := L \u {{x}}); auto.
+    intros.
+    replace (a_Var_f x0) with (erase (a_Var_f x0)).
+    rewrite open_tm_erase_tm.
+    rewrite e; auto.
+    simpl; auto.
+  - simpl in *.
+    destruct (An_CAbs_inversion H0) as (B0 & h0 & h1). subst.
+    pick fresh x. destruct (h1 x ltac:(auto)) as [RC h3].
+    rewrite e in h3; auto.
+    inversion h3. subst.
+    have h4: AnnCtx G by eauto with ctx_wff.
+    have h5: AnnCtx (nil ++ (x ~ Co phi) ++ G) by econstructor; eauto with ctx_wff.
+    move: (AnnTyping_weakening a0 (x ~ Co phi) nil G eq_refl ltac:(auto)) => h0.
+    simpl_env in h0. clear h4 h5.
+    resolve_unique_subst. inversion H1. subst.
+    apply open_tm_wrt_co_inj in H4; auto. subst.
+    simpl. eapply E_EtaC with (L := L \u {{x}}); auto.
+    intros.
+    erewrite open_co_erase_tm2. 
+    erewrite e; auto.
+
+(* Left/Right
+  - simpl in *.
+    have k0: AnnTyping G (a_App a rho b) (open_tm_wrt_tm B b).
+    { eapply An_App. eauto. eauto. }
+
+    move: (H3 _ k0) => h0. clear H3.
+    move: (AnnTyping_regularity a0) => h1.
+    move: (H4 _ h1) => h2. clear H4.
+    rewrite erase_dom in h2.
+    move: (H5 _ (AnnTyping_regularity k0)) => h3. clear H5.
+    rewrite erase_dom in h3.
+
+    ann_invert_clear.
+    ann_invert_clear.
+
+    resolve_unique_nosubst.
+    resolve_unique_nosubst.
+
+    assert (a_Pi rho A B = a_Pi rho A B0).
+    eapply AnnTyping_unique. eauto. eauto. inversion H3. subst B0.
+
+    repeat match goal with [ H : AnnTyping _ _ _ |- _ ] => clear H end.
+    repeat match goal with [ H : AnnDefEq _ _ _ _ _ |- _ ] => clear H end.
+
+    move: (DefEq_regularity h0) => Pw. inversion Pw. clear Pw.
+    subst.
+
+    remember (erase_context G) as G0.
+    have Cx: Ctx G0. eauto.
+
+    have ?: Typing G0 (erase_tm a') (a_Pi rho (erase_tm A) (erase_tm B)).
+    { eapply E_Conv. eauto. auto. eauto using Typing_regularity. }
+    have ?: DefEq G0 (dom G0) (erase_tm A) (erase_tm A') a_Star.
+    { eapply E_PiFst. eauto. }
+    have ?: Typing G0 (erase_tm b') (erase_tm A).
+    { eapply E_Conv.  eauto. eauto. eauto using Typing_regularity. }
+
+    destruct rho.
+    + simpl in *.
+       match goal with
+         [ H8 : Typing _ (a_App (erase_tm a) Rel (erase_tm b)) _ |- _ ] =>
+         move: (invert_a_App_Rel Cx H8) => [A3 [B3 hyp]] end. split_hyp.
+       match goal with
+         [ H7 : Typing _ (a_App (erase_tm a') Rel (erase_tm b')) _ |- _ ] =>
+         move: (invert_a_App_Rel Cx H7) => [A4 [B4 hyp]] end. split_hyp.
+
+       eapply E_LeftRel with (b:=erase_tm b) (b':=erase_tm b').
+
+      ++ eapply Path_erase. eauto.
+      ++ eapply Path_erase. eauto.
+      ++ auto.
+      ++ auto.
+      ++ auto.
+      ++ auto.
+      ++ autorewcs. rewrite open_tm_erase_tm. auto.
+      ++ eapply E_Trans with (a1 := (open_tm_wrt_tm (erase B') (erase b'))).
+         autorewcs. repeat rewrite open_tm_erase_tm. auto.
+         eapply E_Sym.
+         eapply E_PiSnd with (B1:=erase B)(B2:=erase B').
+         eauto.
+         eapply E_Refl. eauto.
+    + simpl in *.
+       match goal with
+         [ H8 : Typing _ (a_App (erase_tm a) _ a_Bullet) _ |- _ ] =>
+         move: (invert_a_App_Irrel Cx H8) => [A3 [B3 [b3 hyp]]] end. split_hyp.
+       match goal with
+         [ H7 : Typing _ (a_App (erase_tm a') _ a_Bullet) _ |- _ ] =>
+         move: (invert_a_App_Irrel Cx H7) => [A4 [B4 [b4 hyp]]] end. split_hyp.
+
+       eapply E_LeftIrrel with (b:=erase_tm b) (b':=erase_tm b').
+      ++ eapply Path_erase. eauto.
+      ++ eapply Path_erase. eauto.
+      ++ auto.
+      ++ auto.
+      ++ auto.
+      ++ auto.
+      ++ autorewcs. rewrite open_tm_erase_tm. auto.
+      ++ eapply E_Trans with (a1 := (open_tm_wrt_tm (erase B') (erase b'))).
+         autorewcs. repeat rewrite open_tm_erase_tm. auto.
+         eapply E_Sym.
+         eapply E_PiSnd with (B1:=erase B)(B2:=erase B').
+         eauto.
+         eapply E_Refl. eauto.
+
+  - simpl in *.
+    have k0: AnnTyping G (a_App a Rel b) (open_tm_wrt_tm B b).
+    { eapply An_App. eauto. eauto. }
+
+    move: (H3 _ k0) => h0. clear H3.
+    move: (AnnTyping_regularity a0) => h1.
+    move: (H4 _ h1) => h2. clear H4.
+    rewrite erase_dom in h2.
+    move: (AnnTyping_regularity a2) => h3.
+    move: (H5 _ (AnnTyping_regularity k0)) => h4. clear H5.
+    rewrite erase_dom in h4.
+
+    ann_invert_clear.
+
+    resolve_unique_nosubst.
+
+    repeat match goal with [ H : AnnTyping _ _ _ |- _ ] => clear H end.
+    repeat match goal with [ H : AnnDefEq _ _ _ _ _ |- _ ] => clear H end.
+
+    move: (DefEq_regularity h0) => Pw. inversion Pw. clear Pw.
+    subst.
+
+    remember (erase_context G) as G0.
+    have Cx: Ctx G0. eauto.
+
+    simpl in *.
+
+
+    have ?: Typing G0 (erase_tm a') (a_Pi Rel (erase_tm A) (erase_tm B)).
+    { eapply E_Conv. eauto. auto. eauto using Typing_regularity. }
+    have ?: DefEq G0 (dom G0) (erase_tm A) (erase_tm A') a_Star.
+    { eapply E_PiFst. eauto. }
+    have ?: Typing G0 (erase_tm b') (erase_tm A).
+    { eapply E_Conv.  eauto. eauto. eauto using Typing_regularity. }
+
+    match goal with
+      [ H8 : Typing _ (a_App (erase_tm a) Rel (erase_tm b)) _ |- _ ] =>
+      move: (invert_a_App_Rel Cx H8) => [A3 [B3 hyp]] end. split_hyp.
+    match goal with
+         [ H7 : Typing _ (a_App (erase_tm a') Rel (erase_tm b')) _ |- _ ] =>
+         move: (invert_a_App_Rel Cx H7) => [A4 [B4 hyp]] end. split_hyp.
+
+    eapply E_Right with (a:=erase_tm a) (a':=erase_tm a').
+
+      ++ eapply Path_erase. eauto.
+      ++ eapply Path_erase. eauto.
+      ++ eauto.
+      ++ auto.
+      ++ auto.
+      ++ auto.
+      ++ autorewcs. rewrite open_tm_erase_tm. auto.
+      ++ eapply E_Trans with (a1 := (open_tm_wrt_tm (erase B') (erase b'))).
+         autorewcs. repeat rewrite open_tm_erase_tm. auto.
+         eapply E_Sym.
+         eapply E_PiSnd with (B1:=erase B)(B2:=erase B').
+         eauto.
+         eapply E_Refl. eauto.
+  - simpl in *.
+    have k0: AnnTyping G (a_CApp a g) (open_tm_wrt_co B g). eauto.
+
+    move: (H3 _ k0) => h0. clear H3.
+    move: (AnnTyping_regularity a0) => h1.
+    move: (H4 _ h1) => h2. clear H4.
+    rewrite erase_dom in h2.
+    move: (H5 _ (AnnTyping_regularity k0)) => h3. clear H5.
+    rewrite erase_dom in h3.
+
+    move: (AnnDefEq_regularity a7) => [T1 [T2 [s hyp]]]. split_hyp.
+    repeat ann_invert_clear.
+
+    resolve_unique_nosubst.
+    resolve_unique_nosubst.
+    resolve_unique_subst.
+    resolve_unique_subst.
+    resolve_unique_subst.
+    invert_syntactic_equality.
+
+    move: (H1 _ ltac:(eauto)) => h4. clear H1.
+    move: (H2 _ ltac:(eauto)) => h5. clear H2.
+    rewrite erase_dom in h4.
+    rewrite erase_dom in h5.
+
+    repeat match goal with [ H : AnnTyping _ _ _ |- _ ] => clear H end.
+    repeat match goal with [ H : AnnDefEq _ _ _ _ _ |- _ ] => clear H end.
+
+    move: (DefEq_regularity h0) => Pw. inversion Pw. clear Pw.
+    subst.
+
+    remember (erase_context G) as G0.
+    have Cx: Ctx G0. eauto.
+
+    simpl in *.
+
+    have ?: Typing G0 (erase_tm a')
+         (a_CPi (Eq (erase_tm a10) (erase_tm b) (erase_tm A1)) (erase_tm B0)).
+    { eapply E_Conv. eauto using Typing_regularity. eapply E_Sym. auto.
+      eauto using Typing_regularity. }
+
+    match goal with
+      [ H8 : Typing _ (a_CApp (erase_tm a) g_Triv) _ |- _ ] =>
+      move: (invert_a_CApp H8) => [a5 [b5 [A5 [B5 hyp]]]] end. split_hyp.
+    match goal with
+      [ H7 : Typing _ (a_CApp (erase_tm a') g_Triv) _  |- _ ] =>
+      move: (invert_a_CApp H7) => [a4 [b4 [A4 [B4 hyp]]]] end. split_hyp.
+
+     eapply E_CLeft.
+
+      ++ eapply Path_erase. eauto.
+      ++ eapply Path_erase. eauto.
+      ++ auto.
+      ++ auto.
+      ++ auto.
+      ++ autorewcs.  erewrite -> open_co_erase_tm2 with (g:=g_Triv). eauto.
+
+*)
 
   - rewrite <- dom_map with (f:=erase_sort) in n.
     unfold erase_context in *.
@@ -528,9 +777,21 @@ Lemma AnnDefEq_invert_a_Star : forall G0 D g1 A1' A2' S,
 
 
 
+Lemma Path_to_Path : forall  a0, lc_tm a0 -> forall T a,
+      Path T a -> erase a0 = a -> Path T a0.
+Proof.
+  intros a0. induction a0.
+  all: intros LC T1 a P H.
+  all: inversion P; subst.
+  all: try destruct rho; simpl in *; try done.
+  all: lc_inversion c.
+  all: invert_syntactic_equality.
+  all: econstructor; eauto.
+Qed.
+
+
   (*  ----------------------------------------------------------- *)
 
-(* TODO: Would there be a good way to split this proof into smaller parts? *)
 Lemma annotation_mutual :
   (forall G a A, Typing G a A ->
      forall G0, erase_context G0 = G -> AnnCtx G0 ->
@@ -635,6 +896,12 @@ Proof.
   assert (K : AnnTyping G0 AB0 a_Star). eapply AnnTyping_regularity; eauto.
   destruct (erase_pi F2 K) as [PA [PB [EAB [EPA [EPB TYB]]]]].
   inversion TYB. subst.
+(*  remember (g_Refl2 AB0 (a_Pi PA PB) (g_Refl a_Star)) as g.
+  assert (AnnDefEq G0 empty g AB0 (a_Pi PA PB)).
+  { rewrite Heqg. eapply An_EraseEq. eauto. eauto. eauto. eauto. }
+  remember (a_Conv a0 (g_Refl2 AB0 (a_Pi PA PB) (g_Refl a_Star))) as a0'.
+  assert (ATA' : AnnTyping G0 a0' (a_Pi PA PB)).
+  { rewrite Heqa0'. eapply An_Conv. eauto. eauto. eauto. } *)
   assert (N : AnnTyping G0 A0 a_Star). eapply AnnTyping_regularity; eauto.
   destruct (erasure_cvt Ty2 EAB) as [a0' [g ATA']]; eauto.
   destruct (erasure_cvt Ty3 (symmetry EPA)) as [b0' [g' ATB']]; eauto.
@@ -825,9 +1092,21 @@ Proof.
   rewrite no_co_in_erased_tm.
   repeat split. autorewcs. congruence.
   eauto.
+- exists (a_Const T).
+  destruct (H0 nil eq_refl) as (a0 & A0 & E1 & E2 & Ty). auto. clear H0.
+  unfold toplevel in b. unfold erase_sig in b.
+  destruct (@binds_map_3 _ _ erase_csort T (Cs A) an_toplevel).
+  (* destruct (@binds_map_3 _  _ T (Cs A) erase_csort an_toplevel b). *) eauto.
+  split_hyp. destruct x; simpl in H0; inversion H0.
+  subst.
+  exists A1.  simpl.
+  split; eauto.
+  split; eauto.
+  econstructor; eauto.
+  eapply an_toplevel_to_const; eauto.
 - destruct (H0 nil eq_refl) as (a0 & A0 & E1 & E2 & Ty). auto.
   unfold toplevel in b. unfold erase_sig in b.
-  destruct (@binds_map_3 _ _ F (Ax a A) erase_csort an_toplevel b).
+  destruct (@binds_map_3 _ _ erase_csort F (Ax a A) an_toplevel). eauto.
   split_hyp. destruct x; inversion H3.
   exists (a_Fam F). exists A1. repeat split; auto.
   eapply An_Fam; eauto.
@@ -974,8 +1253,8 @@ Proof.
   eapply An_CPiFst. eapply H2.
 - (* assn *)
   rewrite <- H0 in b0.
-
-  destruct (binds_map_3 _ _ _ _ b0) as [s [E2 E3]].
+  unfold erase_context in b0.
+  destruct (binds_map_3 _ _ erase_sort c (Co (Eq a b A)) G0) as [s [E2 E3]]. eauto. 
   destruct s; try (simpl in E2; inversion E2).
   destruct phi. simpl in E2. inversion E2.
   subst. clear E2.
@@ -2202,7 +2481,1001 @@ Proof.
   eexists. exists A0, A1, a_Star.
   repeat split; eauto 1.
   eapply An_IsoSnd. eauto.
+- destruct (H _ H0 H1) as (a0 & A0 & E1 & E2 & AT).
+  clear H.
+  move: (AnnTyping_regularity AT) => h0.
+  destruct (erase_pi E2 h0) as (A1 & B1 & E3 & E4 & E5 & AT1).
+  have h1: (exists g, AnnDefEq G0 (dom G0) g A0 (a_Pi Rel A1 B1)).
+  {
+    eexists. eapply An_EraseEq; eauto.
+  }
+  move: h1 => [g TT].
+  have h1: AnnTyping G0 (a_Conv a0 g) (a_Pi Rel A1 B1) by eauto.
+  subst.
+  have h2: erase a0 = erase (a_Conv a0 g) by simpl; auto.
+  pick fresh y.
+  move: (e y ltac:(auto)) => e0. rewrite h2 in e0.
+  replace (a_App (erase (a_Conv a0 g)) Rel (a_Var_f y)) with
+  (erase (a_App (a_Conv a0 g) Rel (a_Var_f y))) in e0.
+  move: (An_Pi_inversion AT1) => h3. split_hyp.
+  eexists.
+  exists (a_Abs Rel A1 (close_tm_wrt_tm y (a_App (a_Conv a0 g) Rel (a_Var_f y)))).
+  exists (a_Conv a0 g). exists (a_Pi Rel A1 B1).
+  split.
+  replace (erase
+    (a_Abs Rel A1
+            (close_tm_wrt_tm y (a_App (a_Conv a0 g) Rel (a_Var_f y)))))
+  with
+  (a_UAbs Rel
+     (erase (close_tm_wrt_tm y
+                             (a_App (a_Conv a0 g) Rel (a_Var_f y))))).
+  autorewcs. rewrite -close_tm_erase_tm.
+  rewrite -e0.
+  autorewrite with lngen.
+  auto.
+  simpl; auto.
+  repeat split; simpl; eauto 2.
+  eapply An_Eta with (L := L \u dom G0 \u {{y}} ). eauto.
+  intros.
+  rewrite -tm_subst_tm_tm_spec.
+  simpl.
+  rewrite tm_subst_tm_tm_fresh_eq; auto.
+  rewrite tm_subst_tm_co_fresh_eq; auto.
+  destruct eq_dec; try done.
+  eapply (@An_Abs_exists y); autorewrite with lngen; eauto 2.
+  + fsetdec.
+  + econstructor.
+      eapply AnnTyping_weakening with (F:=nil); eauto with ctx_wff.
+      simpl_env; eauto.
+    + simpl; auto.
+- destruct (H _ H0 H1) as (a0 & A0 & E1 & E2 & AT).
+  clear H.
+  move: (AnnTyping_regularity AT) => h0.
+  destruct (erase_pi E2 h0) as (A1 & B1 & E3 & E4 & E5 & AT1).
+  have h1: (exists g, AnnDefEq G0 (dom G0) g A0 (a_Pi Irrel A1 B1)).
+  {
+    eexists. eapply An_EraseEq; eauto.
+  }
+  move: h1 => [g TT].
+  have h1: AnnTyping G0 (a_Conv a0 g) (a_Pi Irrel A1 B1) by eauto.
+  subst.
+  have h2: erase a0 = erase (a_Conv a0 g) by simpl; auto.
+  pick fresh y.
+  move: (e y ltac:(auto)) => e0. rewrite h2 in e0.
+  replace (a_App (erase (a_Conv a0 g)) Irrel a_Bullet) with
+  (erase (a_App (a_Conv a0 g) Irrel (a_Var_f y))) in e0.
+  move: (An_Pi_inversion AT1) => h3. split_hyp.
+  eexists. 
+  exists (a_Abs Irrel A1 (close_tm_wrt_tm y (a_App (a_Conv a0 g) Irrel (a_Var_f y)))).
+  exists (a_Conv a0 g). exists (a_Pi Irrel A1 B1).
+  split.
+  replace (erase
+    (a_Abs Irrel A1
+            (close_tm_wrt_tm y (a_App (a_Conv a0 g) Irrel (a_Var_f y)))))
+  with
+  (a_UAbs Irrel
+     (erase (close_tm_wrt_tm y
+                             (a_App (a_Conv a0 g) Irrel (a_Var_f y))))).
+  autorewcs. rewrite -close_tm_erase_tm. simpl. simpl in e0.
+  rewrite -e0.
+  autorewrite with lngen.
+  auto.
+  simpl; auto.
+  repeat split; simpl; eauto 2.
+  eapply An_Eta with (L := L \u dom G0 \u {{y}} ). eauto.
+  intros.
+  rewrite -tm_subst_tm_tm_spec.
+  simpl.
+  rewrite tm_subst_tm_tm_fresh_eq; auto.
+  rewrite tm_subst_tm_co_fresh_eq; auto.
+  destruct eq_dec; try done.
+  eapply (@An_Abs_exists y); autorewrite with lngen; eauto 2.
+  + fsetdec.
+  + econstructor.
+      eapply AnnTyping_weakening with (F:=nil); eauto with ctx_wff.
+      simpl_env; eauto.
+    + simpl; auto. constructor. simpl.
+      apply union_notin_iff. split.
+      apply fv_tm_erase_tm. fsetdec. eauto.
+    + simpl. auto.
+ - destruct (H _ H0 H1) as (a0 & A0 & E1 & E2 & AT).
+  clear H.
+  move: (AnnTyping_regularity AT) => h0.
+  destruct (erase_cpi E2 h0) as (A1 & B1 & E3 & E4 & E5 & AT1).
+  have h1: (exists g, AnnDefEq G0 (dom G0) g A0 (a_CPi A1 B1)).
+  {
+    eexists. eapply An_EraseEq; eauto.
+    
+  } 
+  move: h1 => [g TT].
+  have h1: AnnTyping G0 (a_Conv a0 g) (a_CPi A1 B1) by eauto.
+  subst.
+  have h2: erase a0 = erase (a_Conv a0 g) by simpl; auto.
+  pick fresh y.
+  move: (e y ltac:(auto)) => e0. rewrite h2 in e0.
+  replace (a_CApp (erase (a_Conv a0 g)) g_Triv) with
+  (erase (a_CApp (a_Conv a0 g) g_Triv)) in e0; eauto.
+  move: (An_CPi_inversion AT1) => h3. split_hyp.
+  eexists. exists (a_CAbs A1 (close_tm_wrt_co y (a_CApp (a_Conv a0 g) (g_Var_f y)))).
+  exists (a_Conv a0 g). exists (a_CPi A1 B1).
+  split.
+  replace (erase
+    (a_CAbs A1
+            (close_tm_wrt_co y (a_CApp (a_Conv a0 g) (g_Var_f y)))))
+  with
+  (a_UCAbs
+     (erase (close_tm_wrt_co y
+                             (a_CApp (a_Conv a0 g) (g_Var_f y))))).
+  autorewcs. rewrite -close_co_erase_tm. simpl. simpl in e0.
+  rewrite -e0.
+  autorewrite with lngen.
+  auto.
+  simpl; auto.
+  repeat split; simpl; eauto 2. 
+  eapply An_EtaC with (L := L \u dom G0 \u {{y}} ). eauto.
+  intros. rewrite -co_subst_co_tm_spec.
+  simpl. rewrite co_subst_co_tm_fresh_eq; auto.
+  rewrite co_subst_co_co_fresh_eq; auto. auto.
+  destruct eq_dec; try done.
+  eapply (@An_CAbs_exists y); autorewrite with lngen; eauto 2.
+  + fsetdec.
+  + destruct A1. eapply An_CApp. 
+      eapply AnnTyping_weakening with (F:=nil); eauto with ctx_wff.
+      eapply An_Assn; eauto.
 Qed.
+
+
+(* --------------------------------------------------------------------- *)
+(*
+-  (* LeftRel *)
+
+
+  destruct (H _ H5 H6) as (a0 & AB & hyp). split_hyp. clear H.
+  destruct (H0 _ H5 H6) as (b0 & B0 & hyp). split_hyp. clear H0.
+  destruct (H1 _ H5 H6) as (a0' & AB' & hyp). split_hyp. clear H1.
+  destruct (H2 _ H5 H6) as (b0' & B0' & hyp). split_hyp. clear H2.
+  destruct (H3 _ H5 H6) as (gg & ab & ab' & s & hyp). split_hyp. clear H3.
+  destruct (H4 _ H5 H6) as (gB & Ba & Ba' & s1 & hyp). split_hyp. clear H4.
+
+  have ?: AnnTyping G0 AB a_Star. eauto using AnnTyping_regularity.
+  have ?: AnnTyping G0 AB' a_Star. eauto using AnnTyping_regularity.
+
+   match goal with [H : erase AB = a_Pi Rel A B, H1 : AnnTyping G0 AB a_Star |- _ ] =>
+      destruct (erase_pi H H1) as (A1 & B1 & hyp1); split_hyp end.
+   match goal with [H : erase AB' = a_Pi Rel A B, H1 : AnnTyping G0 AB' a_Star |- _ ] =>
+                   destruct (erase_pi H H1) as (A1' & B1' & hyp1); split_hyp end.
+
+   match goal with [H4: erase ab = a_App a Rel b, H8 : AnnTyping G0 ab s |- _ ] =>
+     destruct (erase_app_Rel H4 H8) as (a1 & b1 & gab & C & h0 & h1 & h2 & h3 & h4);
+       inversion h3 end.
+   match goal with [H4: erase ab' = a_App a' Rel b', H8 : AnnTyping G0 ab' s |- _ ] =>
+     destruct (erase_app_Rel H4 H8) as (a1' & b1' & gab' & C' & h0' & h1' & h2' & h3' & h4');
+   inversion h3' end.
+   match goal with [H: AnnTyping G0 (a_Pi Rel A1 B1) a_Star |- _ ] => inversion H end.
+
+   match goal with [H: AnnTyping G0 (a_Pi Rel A1' B1') a_Star |- _ ] => inversion H end.
+
+   subst.
+
+   have ?: AnnCtx G0 by eauto with ctx_wff.
+
+   have: exists g, AnnDefEq G0 (dom G0) g B0 A1.
+   { eexists. eapply An_EraseEq.
+     eauto using AnnTyping_regularity. eauto. eauto. eauto. } move => [g1 ?].
+
+   have: exists g, AnnDefEq G0 (dom G0) g B0 A1'.
+   { eexists. eapply An_EraseEq.
+     eauto using AnnTyping_regularity. eauto. eauto. eauto. } move => [g1' ?].
+
+   (* need to cast in B1 *)
+   pick fresh x.
+   have ?: AnnCtx ([(x, Tm B0)] ++ G0).
+   { econstructor. eauto. eauto using AnnTyping_regularity. fsetdec_fast. }
+   have ?: AnnTyping ([(x, Tm B0)] ++ G0) A1 a_Star.
+   { eapply AnnTyping_weakening with (F:=nil). eauto. auto. auto. }
+
+   remember (close_tm_wrt_tm x (open_tm_wrt_tm B1 (a_Conv (a_Var_f x) g1))) as B11.
+
+   have h5: AnnTyping G0 (a_Pi Rel B0 B11) a_Star.
+   { rewrite HeqB11.
+     eapply An_Pi_exists2 with (x:=x). autorewrite with lngen. auto.
+     autorewrite with lngen.
+     eapply (@AnnTyping_tm_subst_nondep (L \u {{x}} \u dom G0)).
+     econstructor. econstructor.
+     econstructor. auto.
+     eauto using AnnTyping_regularity.
+     auto.
+     auto.
+     eapply AnnDefEq_weaken_available.
+     eapply AnnDefEq_weakening with (F:=nil).
+     eauto. auto. auto. auto.
+
+     intros.
+     eapply AnnTyping_weakening.
+     match goal with
+       [H44 : ∀ x : atom, ¬ x `in` L
+             → AnnTyping ([(x, _)] ++ _) (open_tm_wrt_tm _ (a_Var_f x)) a_Star
+               |- _ ] => eapply H44 end.
+     auto. auto.
+     econstructor. auto. auto. simpl. auto.
+   } inversion h5.
+
+   (* pi type coercions *)
+   have: exists g, AnnDefEq G0 (dom G0) g AB (a_Pi Rel B0 B11).
+   { eexists. eapply An_EraseEq. eauto. eauto.
+     rewrite HeqB11. simpl.
+     autorewcs. rewrite -close_tm_erase_tm.
+     rewrite -open_tm_erase_tm.
+     simpl.
+     rewrite close_tm_wrt_tm_open_tm_wrt_tm.
+     auto. auto. apply fv_tm_erase_tm. auto.
+     eauto. } move => [ga0 ?].
+   have: exists g, AnnDefEq G0 (dom G0) g AB' (a_Pi Rel B0 B11).
+   { eexists. eapply An_EraseEq. eauto. eauto.
+     rewrite HeqB11. simpl.
+     autorewcs. rewrite -close_tm_erase_tm.
+     rewrite -open_tm_erase_tm.
+     simpl.
+     rewrite close_tm_wrt_tm_open_tm_wrt_tm.
+     auto. auto. apply fv_tm_erase_tm. auto.
+     eauto. } move => [ga0' ?].
+
+   have ?: AnnTyping G0 (a_App (a_Conv a0 ga0) Rel b0) (open_tm_wrt_tm B11 b0).
+   { econstructor.
+     eapply An_Conv. eauto. eauto. auto. auto. }
+
+   have: exists g, AnnDefEq G0 (dom G0) g B0' B0.
+   { eexists. eapply An_EraseEq. eauto using AnnTyping_regularity.
+      eauto using AnnTyping_regularity. eauto. eauto. } move => [gb0' ?].
+
+
+
+   have ?: AnnTyping G0 (a_App (a_Conv a0' ga0') Rel (a_Conv b0' gb0'))
+        (open_tm_wrt_tm B11 (a_Conv b0' gb0')).
+   { econstructor.
+     eapply An_Conv. eauto. eauto. auto.
+     eapply An_Conv. eauto. eauto. eauto using AnnTyping_regularity. }
+
+
+   have: exists g, AnnDefEq G0 D g (a_App (a_Conv a0 ga0) Rel b0) (a_App a1' Rel b1').
+   { eexists.
+     eapply An_Trans2 with (a1 := a_App a1 Rel b1).
+     { eapply An_EraseEq. eauto. econstructor. eauto. eauto.
+       simpl. f_equal. auto. auto.
+       eapply An_Trans2 with (a1 := s).
+       eapply An_EraseEq.
+       eauto using AnnTyping_regularity.
+       eauto using AnnTyping_regularity.
+       autorewcs.
+       match goal with [ H : erase s = _ |- _ ] => rewrite H end.
+       rewrite -open_tm_erase_tm.
+       f_equal.
+       rewrite HeqB11.
+       rewrite -close_tm_erase_tm.
+       rewrite -open_tm_erase_tm.
+       simpl. rewrite close_tm_wrt_tm_open_tm_wrt_tm. auto.
+       apply fv_tm_erase_tm. auto.
+       eauto. eauto.
+     }
+     eapply An_Trans2 with (a1 := ab).
+     { eapply An_EraseEq. eauto. eauto. eauto.
+       eapply An_Sym2. eauto. }
+     eapply An_Trans2 with (a1 := ab').
+     eauto.
+     { eapply An_EraseEq. eauto. eauto. eauto. eauto. } } move => [g ?].
+
+   have: exists g, AnnDefEq G0 (dom G0) g (open_tm_wrt_tm B3 b1')
+                       (open_tm_wrt_tm B11 (a_Conv b0' gb0')).
+   { eexists.
+     eapply An_Trans2 with (a1 := s). eapply An_Sym2. eauto.
+     eapply An_Trans2 with (a1 := Ba).
+     { eapply An_EraseEq. eauto using AnnTyping_regularity.
+       eauto using AnnTyping_regularity.
+       autorewcs.
+       match goal with [ H : erase Ba = _ |- _ ] => rewrite H end.
+       auto.
+       eapply An_EraseEq. eauto. eauto using AnnTyping_regularity. auto. eauto.
+     }
+     eapply An_Trans2 with (a1 := Ba').
+     {
+       match goal with [ H : AnnDefEq G0 _ _ Ba Ba' |- _ ] =>
+                  rewrite -erase_dom in H end.
+       eauto.
+     }
+     eapply An_EraseEq.
+     eauto using AnnTyping_regularity.
+     eauto using AnnTyping_regularity.
+     rewrite HeqB11.
+     autorewcs.
+     rewrite -open_tm_erase_tm.
+     simpl.
+     autorewcs.
+     rewrite -close_tm_erase_tm.
+     rewrite -open_tm_erase_tm.
+     simpl.
+     rewrite close_tm_wrt_tm_open_tm_wrt_tm. auto.
+     apply fv_tm_erase_tm. auto.
+     eapply An_EraseEq.
+     eauto using AnnTyping_regularity.
+     eauto.
+     auto.
+     eauto.
+   } move => [? ?].
+
+   have: exists g, AnnDefEq G0 D g (a_App a1' Rel b1')
+                       (a_App (a_Conv a0' ga0') Rel (a_Conv b0' gb0')).
+   { eexists.
+     eapply An_EraseEq. eauto. eauto.
+     simpl. f_equal. eauto. eauto.
+     eauto.
+   } move => [? ?].
+
+   have: exists g, AnnDefEq G0 D g
+                       (a_App (a_Conv a0 ga0) Rel b0)
+                       (a_App (a_Conv a0' ga0') Rel (a_Conv b0' gb0')).
+   { eexists.
+     eapply An_Trans2. eauto. eauto. } move => [? ?].
+
+   have LC: lc_tm (a_Conv a0 ga0). eauto using AnnTyping_lc1.
+   move: (Path_to_Path LC p eq_refl) => P.
+
+   have LC':lc_tm (a_Conv a0' ga0'). eauto using AnnTyping_lc1.
+   move: (Path_to_Path LC' p0 eq_refl) => P'.
+
+   have ?: AnnTyping G0 (a_Conv a0 ga0) (a_Pi Rel B0 B11).
+   { eapply An_Conv; eauto. }
+
+   eexists.
+   exists (a_Conv a0 ga0).
+   exists (a_Conv a0' ga0').
+   exists (a_Pi Rel B0 B11).
+
+   repeat split.
+  + rewrite HeqB11. simpl.
+    autorewcs. rewrite -close_tm_erase_tm.
+     rewrite -open_tm_erase_tm.
+     simpl.
+     rewrite close_tm_wrt_tm_open_tm_wrt_tm.
+     auto.  apply fv_tm_erase_tm. auto.
+  + eapply An_Left2; eauto.
+  + eauto.
+  + eauto.
+- (* LeftIrrel *)
+  destruct (H _ H5 H6) as (a0 & AB & hyp). split_hyp. clear H.
+  destruct (H0 _ H5 H6) as (b0 & B0 & hyp). split_hyp. clear H0.
+  destruct (H1 _ H5 H6) as (a0' & AB' & hyp). split_hyp. clear H1.
+  destruct (H2 _ H5 H6) as (b0' & B0' & hyp). split_hyp. clear H2.
+  destruct (H3 _ H5 H6) as (gg & ab & ab' & s & hyp). split_hyp. clear H3.
+  destruct (H4 _ H5 H6) as (gB & Ba & Ba' & s1 & hyp). split_hyp. clear H4.
+
+  have ?: AnnTyping G0 AB a_Star. eauto using AnnTyping_regularity.
+  have ?: AnnTyping G0 AB' a_Star. eauto using AnnTyping_regularity.
+
+   match goal with [H : erase AB = a_Pi _ A B, H1 : AnnTyping G0 AB a_Star |- _ ] =>
+      destruct (erase_pi H H1) as (A1 & B1 & hyp1); split_hyp end.
+   match goal with [H : erase AB' = a_Pi _ A B, H1 : AnnTyping G0 AB' a_Star |- _ ] =>
+                   destruct (erase_pi H H1) as (A1' & B1' & hyp1); split_hyp end.
+
+   match goal with [H4: erase ab = a_App a _ _, H8 : AnnTyping G0 ab s |- _ ] =>
+     destruct (erase_app_Irrel H4 H8) as (a1 & b1 & gab & C & ? & ? & h3 & ?);
+       inversion h3 end.
+   match goal with [H4: erase ab' = a_App a' _ _, H8 : AnnTyping G0 ab' s |- _ ] =>
+     destruct (erase_app_Irrel H4 H8) as (a1' & b1' & gab' & C' & ? & ? & h3' & ?) ;
+   inversion h3' end.
+   match goal with [H: AnnTyping G0 (a_Pi _ A1 B1) a_Star |- _ ] => inversion H end.
+
+   match goal with [H: AnnTyping G0 (a_Pi _ A1' B1') a_Star |- _ ] => inversion H end.
+
+   subst.
+
+   have ?: AnnCtx G0 by eauto with ctx_wff.
+
+   have: exists g, AnnDefEq G0 (dom G0) g B0 A1.
+   { eexists. eapply An_EraseEq.
+     eauto using AnnTyping_regularity. eauto. eauto. eauto. } move => [g1 ?].
+
+   have: exists g, AnnDefEq G0 (dom G0) g B0 A1'.
+   { eexists. eapply An_EraseEq.
+     eauto using AnnTyping_regularity. eauto. eauto. eauto. } move => [g1' ?].
+
+   (* need to cast in B1 *)
+   pick fresh x.
+   have ?: AnnCtx ([(x, Tm B0)] ++ G0).
+   { econstructor. eauto. eauto using AnnTyping_regularity. fsetdec_fast. }
+   have ?: AnnTyping ([(x, Tm B0)] ++ G0) A1 a_Star.
+   { eapply AnnTyping_weakening with (F:=nil). eauto. auto. auto. }
+
+   remember (close_tm_wrt_tm x (open_tm_wrt_tm B1 (a_Conv (a_Var_f x) g1))) as B11.
+
+   have h5: AnnTyping G0 (a_Pi Irrel B0 B11) a_Star.
+   { rewrite HeqB11.
+     eapply An_Pi_exists2 with (x:=x). autorewrite with lngen. auto.
+     autorewrite with lngen.
+     eapply (@AnnTyping_tm_subst_nondep (L \u {{x}} \u dom G0)).
+     econstructor. econstructor.
+     econstructor. auto.
+     eauto using AnnTyping_regularity.
+     auto.
+     auto.
+     eapply AnnDefEq_weaken_available.
+     eapply AnnDefEq_weakening with (F:=nil).
+     eauto. auto. auto. auto.
+
+     intros.
+     eapply AnnTyping_weakening.
+     match goal with
+       [H44 : ∀ x : atom, ¬ x `in` L
+             → AnnTyping ([(x, _)] ++ _) (open_tm_wrt_tm _ (a_Var_f x)) a_Star
+               |- _ ] => eapply H44 end.
+     auto. auto.
+     econstructor. auto. auto. simpl. auto.
+   } inversion h5.
+
+
+   (* pi type coercions *)
+   have: exists g, AnnDefEq G0 (dom G0) g AB (a_Pi Irrel B0 B11).
+   { eexists. eapply An_EraseEq. eauto. eauto.
+     rewrite HeqB11. simpl.
+     autorewcs. rewrite -close_tm_erase_tm.
+     rewrite -open_tm_erase_tm.
+     simpl.
+     rewrite close_tm_wrt_tm_open_tm_wrt_tm.
+     auto. auto. apply fv_tm_erase_tm. auto.
+     eauto. } move => [ga0 ?].
+   have: exists g, AnnDefEq G0 (dom G0) g AB' (a_Pi Irrel B0 B11).
+   { eexists. eapply An_EraseEq. eauto. eauto.
+     rewrite HeqB11. simpl.
+     autorewcs. rewrite -close_tm_erase_tm.
+     rewrite -open_tm_erase_tm.
+     simpl.
+     rewrite close_tm_wrt_tm_open_tm_wrt_tm.
+     auto. auto. apply fv_tm_erase_tm. auto.
+     eauto. } move => [ga0' ?].
+
+   have ?: AnnTyping G0 (a_App (a_Conv a0 ga0) Irrel b0) (open_tm_wrt_tm B11 b0).
+   { econstructor.
+     eapply An_Conv. eauto. eauto. auto. auto. }
+
+   have: exists g, AnnDefEq G0 (dom G0) g B0' B0.
+   { eexists. eapply An_EraseEq. eauto using AnnTyping_regularity.
+      eauto using AnnTyping_regularity. eauto. eauto. } move => [gb0' ?].
+
+
+
+   have ?: AnnTyping G0 (a_App (a_Conv a0' ga0') Irrel (a_Conv b0' gb0'))
+        (open_tm_wrt_tm B11 (a_Conv b0' gb0')).
+   { econstructor.
+     eapply An_Conv. eauto. eauto. auto.
+     eapply An_Conv. eauto. eauto. eauto using AnnTyping_regularity. }
+
+
+   have: exists g, AnnDefEq G0 D g (a_App (a_Conv a0 ga0) Irrel b0) (a_App a1' Irrel b1').
+   { eexists.
+     eapply An_Trans2 with (a1 := a_App a1 Irrel b1).
+     { eapply An_EraseEq. eauto. econstructor. eauto. eauto.
+       simpl. f_equal. auto. auto.
+       eapply An_Trans2 with (a1 := s).
+       eapply An_EraseEq.
+       eauto using AnnTyping_regularity.
+       eauto using AnnTyping_regularity.
+       autorewcs.
+       match goal with [ H : erase s = _ |- _ ] => rewrite H end.
+       rewrite -open_tm_erase_tm.
+       f_equal.
+       rewrite HeqB11.
+       rewrite -close_tm_erase_tm.
+       rewrite -open_tm_erase_tm.
+       simpl. rewrite close_tm_wrt_tm_open_tm_wrt_tm. auto.
+       apply fv_tm_erase_tm. auto.
+       eauto. eauto.
+     }
+     eapply An_Trans2 with (a1 := ab).
+     { eapply An_EraseEq. eauto. eauto. eauto.
+       eapply An_Sym2. eauto. }
+     eapply An_Trans2 with (a1 := ab').
+     eauto.
+     { eapply An_EraseEq. eauto. eauto. eauto. eauto. } } move => [g ?].
+
+   have: exists g, AnnDefEq G0 (dom G0) g (open_tm_wrt_tm B3 b1')
+                       (open_tm_wrt_tm B11 (a_Conv b0' gb0')).
+   { eexists.
+     eapply An_Trans2 with (a1 := s). eapply An_Sym2. eauto.
+     eapply An_Trans2 with (a1 := Ba).
+     { eapply An_EraseEq. eauto using AnnTyping_regularity.
+       eauto using AnnTyping_regularity.
+       autorewcs.
+       match goal with [ H : erase Ba = _ |- _ ] => rewrite H end.
+       auto.
+       eapply An_EraseEq. eauto. eauto using AnnTyping_regularity. auto. eauto.
+     }
+     eapply An_Trans2 with (a1 := Ba').
+     {
+       match goal with [ H : AnnDefEq G0 _ _ Ba Ba' |- _ ] =>
+                  rewrite -erase_dom in H end.
+       eauto.
+     }
+     eapply An_EraseEq.
+     eauto using AnnTyping_regularity.
+     eauto using AnnTyping_regularity.
+     rewrite HeqB11.
+     autorewcs.
+     rewrite -open_tm_erase_tm.
+     simpl.
+     autorewcs.
+     rewrite -close_tm_erase_tm.
+     rewrite -open_tm_erase_tm.
+     simpl.
+     rewrite close_tm_wrt_tm_open_tm_wrt_tm. auto.
+     apply fv_tm_erase_tm. auto.
+     eapply An_EraseEq.
+     eauto using AnnTyping_regularity.
+     eauto.
+     auto.
+     eauto.
+   } move => [? ?].
+
+   have: exists g, AnnDefEq G0 D g (a_App a1' Irrel b1')
+                       (a_App (a_Conv a0' ga0') Irrel (a_Conv b0' gb0')).
+   { eexists.
+     eapply An_EraseEq. eauto. eauto.
+     simpl. f_equal. eauto. eauto.
+   } move => [? ?].
+
+   have: exists g, AnnDefEq G0 D g
+                       (a_App (a_Conv a0 ga0) Irrel b0)
+                       (a_App (a_Conv a0' ga0') Irrel (a_Conv b0' gb0')).
+   { eexists.
+     eapply An_Trans2. eauto. eauto. } move => [? ?].
+
+   have LC: lc_tm (a_Conv a0 ga0). eauto using AnnTyping_lc1.
+   move: (Path_to_Path LC p eq_refl) => P.
+
+   have LC':lc_tm (a_Conv a0' ga0'). eauto using AnnTyping_lc1.
+   move: (Path_to_Path LC' p0 eq_refl) => P'.
+
+   have ?: AnnTyping G0 (a_Conv a0 ga0) (a_Pi Irrel B0 B11).
+   { eapply An_Conv; eauto. }
+
+   eexists.
+   exists (a_Conv a0 ga0).
+   exists (a_Conv a0' ga0').
+   exists (a_Pi Irrel B0 B11).
+
+   repeat split.
+  + rewrite HeqB11. simpl.
+    autorewcs. rewrite -close_tm_erase_tm.
+     rewrite -open_tm_erase_tm.
+     simpl.
+     rewrite close_tm_wrt_tm_open_tm_wrt_tm.
+     auto.  apply fv_tm_erase_tm. auto.
+  + eapply An_Left2; eauto.
+  + eauto.
+  + eauto.
+
+- (* Right *)
+
+  destruct (H _ H5 H6) as (a0 & AB & hyp). split_hyp. clear H.
+  destruct (H0 _ H5 H6) as (b0 & B0 & hyp). split_hyp. clear H0.
+  destruct (H1 _ H5 H6) as (a0' & AB' & hyp). split_hyp. clear H1.
+  destruct (H2 _ H5 H6) as (b0' & B0' & hyp). split_hyp. clear H2.
+  destruct (H3 _ H5 H6) as (gg & ab & ab' & s & hyp). split_hyp. clear H3.
+  destruct (H4 _ H5 H6) as (gB & Ba & Ba' & s1 & hyp). split_hyp. clear H4.
+
+  have ?: AnnTyping G0 AB a_Star. eauto using AnnTyping_regularity.
+  have ?: AnnTyping G0 AB' a_Star. eauto using AnnTyping_regularity.
+
+   match goal with [H : erase AB = a_Pi _ A B, H1 : AnnTyping G0 AB a_Star |- _ ] =>
+      destruct (erase_pi H H1) as (A1 & B1 & hyp1); split_hyp end.
+   match goal with [H : erase AB' = a_Pi _ A B, H1 : AnnTyping G0 AB' a_Star |- _ ] =>
+      destruct (erase_pi H H1) as (A1' & B1' & hyp1); split_hyp end.
+
+   match goal with [H4: erase ab = a_App a _ _, H8 : AnnTyping G0 ab s |- _ ] =>
+     destruct (erase_app_Rel H4 H8) as (a1 & b1 & gab & C & ? & ? & ? & h3 & ?);
+       inversion h3 end.
+   match goal with [H4: erase ab' = a_App a' _ _, H8 : AnnTyping G0 ab' s |- _ ] =>
+     destruct (erase_app_Rel H4 H8) as (a1' & b1' & gab' & C' & ? & ? & ? & h3' & ?) ;
+       inversion h3' end.
+
+   match goal with [H: AnnTyping G0 (a_Pi _ A1 B1) a_Star |- _ ] => inversion H end.
+
+   match goal with [H: AnnTyping G0 (a_Pi _ A1' B1') a_Star |- _ ] => inversion H end.
+
+   subst.
+
+   have ?: AnnCtx G0 by eauto with ctx_wff.
+
+   have: exists g, AnnDefEq G0 (dom G0) g B0 A1.
+   { eexists. eapply An_EraseEq.
+     eauto using AnnTyping_regularity. eauto. eauto. eauto. } move => [g1 ?].
+
+   have: exists g, AnnDefEq G0 (dom G0) g B0 A1'.
+   { eexists. eapply An_EraseEq.
+     eauto using AnnTyping_regularity. eauto. eauto. eauto. } move => [g1' ?].
+
+   (* need to cast in B1 *)
+   pick fresh x.
+   have ?: AnnCtx ([(x, Tm B0)] ++ G0).
+   { econstructor. eauto. eauto using AnnTyping_regularity. fsetdec_fast. }
+   have ?: AnnTyping ([(x, Tm B0)] ++ G0) A1 a_Star.
+   { eapply AnnTyping_weakening with (F:=nil). eauto. auto. auto. }
+
+   remember (close_tm_wrt_tm x (open_tm_wrt_tm B1 (a_Conv (a_Var_f x) g1))) as B11.
+
+   have h5: AnnTyping G0 (a_Pi Rel B0 B11) a_Star.
+   { rewrite HeqB11.
+     eapply An_Pi_exists2 with (x:=x). autorewrite with lngen. auto.
+     autorewrite with lngen.
+     eapply (@AnnTyping_tm_subst_nondep (L \u {{x}} \u dom G0)).
+     econstructor. econstructor.
+     econstructor. auto.
+     eauto using AnnTyping_regularity.
+     auto.
+     auto.
+     eapply AnnDefEq_weaken_available.
+     eapply AnnDefEq_weakening with (F:=nil).
+     eauto. auto. auto. auto.
+
+     intros.
+     eapply AnnTyping_weakening.
+     match goal with
+       [H44 : ∀ x : atom, ¬ x `in` L
+             → AnnTyping ([(x, _)] ++ _) (open_tm_wrt_tm _ (a_Var_f x)) a_Star
+               |- _ ] => eapply H44 end.
+     auto. auto.
+     econstructor. auto. auto. simpl. auto.
+   } inversion h5.
+
+
+   (* pi type coercions *)
+   have: exists g, AnnDefEq G0 (dom G0) g AB (a_Pi Rel B0 B11).
+   { eexists. eapply An_EraseEq. eauto. eauto.
+     rewrite HeqB11. simpl.
+     autorewcs. rewrite -close_tm_erase_tm.
+     rewrite -open_tm_erase_tm.
+     simpl.
+     rewrite close_tm_wrt_tm_open_tm_wrt_tm.
+     auto. auto. apply fv_tm_erase_tm. auto.
+     eauto. } move => [ga0 ?].
+   have: exists g, AnnDefEq G0 (dom G0) g AB' (a_Pi Rel B0 B11).
+   { eexists. eapply An_EraseEq. eauto. eauto.
+     rewrite HeqB11. simpl.
+     autorewcs. rewrite -close_tm_erase_tm.
+     rewrite -open_tm_erase_tm.
+     simpl.
+     rewrite close_tm_wrt_tm_open_tm_wrt_tm.
+     auto. auto. apply fv_tm_erase_tm. auto.
+     eauto. } move => [ga0' ?].
+
+   have ?: AnnTyping G0 (a_App (a_Conv a0 ga0) Rel b0) (open_tm_wrt_tm B11 b0).
+   { econstructor.
+     eapply An_Conv. eauto. eauto. auto. auto. }
+
+   have: exists g, AnnDefEq G0 (dom G0) g B0' B0.
+   { eexists. eapply An_EraseEq. eauto using AnnTyping_regularity.
+      eauto using AnnTyping_regularity. eauto. eauto. } move => [gb0' ?].
+
+
+
+   have ?: AnnTyping G0 (a_App (a_Conv a0' ga0') Rel (a_Conv b0' gb0'))
+        (open_tm_wrt_tm B11 (a_Conv b0' gb0')).
+   { econstructor.
+     eapply An_Conv. eauto. eauto. auto.
+     eapply An_Conv. eauto. eauto. eauto using AnnTyping_regularity. }
+
+
+   have: exists g, AnnDefEq G0 D g (a_App (a_Conv a0 ga0) Rel b0) (a_App a1' Rel b1').
+   { eexists.
+     eapply An_Trans2 with (a1 := a_App a1 Rel b1).
+     { eapply An_EraseEq. eauto. econstructor. eauto. eauto.
+       simpl. f_equal. auto. auto.
+       eapply An_Trans2 with (a1 := s).
+       eapply An_EraseEq.
+       eauto using AnnTyping_regularity.
+       eauto using AnnTyping_regularity.
+       autorewcs.
+       match goal with [ H : erase s = _ |- _ ] => rewrite H end.
+       rewrite -open_tm_erase_tm.
+       f_equal.
+       rewrite HeqB11.
+       rewrite -close_tm_erase_tm.
+       rewrite -open_tm_erase_tm.
+       simpl. rewrite close_tm_wrt_tm_open_tm_wrt_tm. auto.
+       apply fv_tm_erase_tm. auto.
+       eauto. eauto.
+     }
+     eapply An_Trans2 with (a1 := ab).
+     { eapply An_EraseEq. eauto. eauto. eauto.
+       eapply An_Sym2. eauto. }
+     eapply An_Trans2 with (a1 := ab').
+     eauto.
+     { eapply An_EraseEq. eauto. eauto. eauto. eauto. } } move => [g ?].
+
+   have: exists g, AnnDefEq G0 (dom G0) g (open_tm_wrt_tm B3 b1')
+                       (open_tm_wrt_tm B11 (a_Conv b0' gb0')).
+   { eexists.
+     eapply An_Trans2 with (a1 := s). eapply An_Sym2. eauto.
+     eapply An_Trans2 with (a1 := Ba).
+     { eapply An_EraseEq. eauto using AnnTyping_regularity.
+       eauto using AnnTyping_regularity.
+       autorewcs.
+       match goal with [ H : erase Ba = _ |- _ ] => rewrite H end.
+       auto.
+       eapply An_EraseEq. eauto. eauto using AnnTyping_regularity. auto. eauto.
+     }
+     eapply An_Trans2 with (a1 := Ba').
+     {
+       match goal with [ H : AnnDefEq G0 _ _ Ba Ba' |- _ ] =>
+                  rewrite -erase_dom in H end.
+       eauto.
+     }
+     eapply An_EraseEq.
+     eauto using AnnTyping_regularity.
+     eauto using AnnTyping_regularity.
+     rewrite HeqB11.
+     autorewcs.
+     rewrite -open_tm_erase_tm.
+     simpl.
+     autorewcs.
+     rewrite -close_tm_erase_tm.
+     rewrite -open_tm_erase_tm.
+     simpl.
+     rewrite close_tm_wrt_tm_open_tm_wrt_tm. auto.
+     apply fv_tm_erase_tm. auto.
+     eapply An_EraseEq.
+     eauto using AnnTyping_regularity.
+     eauto.
+     auto.
+     eauto.
+   } move => [? ?].
+
+   have: exists g, AnnDefEq G0 D g (a_App a1' Rel b1')
+                       (a_App (a_Conv a0' ga0') Rel (a_Conv b0' gb0')).
+   { eexists.
+     eapply An_EraseEq. eauto. eauto.
+     simpl. f_equal. eauto. eauto. eauto.
+   } move => [? ?].
+
+   have: exists g, AnnDefEq G0 D g
+                       (a_App (a_Conv a0 ga0) Rel b0)
+                       (a_App (a_Conv a0' ga0') Rel (a_Conv b0' gb0')).
+   { eexists.
+     eapply An_Trans2. eauto. eauto. } move => [? ?].
+
+   have LC: lc_tm (a_Conv a0 ga0). eauto using AnnTyping_lc1.
+   move: (Path_to_Path LC p eq_refl) => P.
+
+   have LC':lc_tm (a_Conv a0' ga0'). eauto using AnnTyping_lc1.
+   move: (Path_to_Path LC' p0 eq_refl) => P'.
+
+   have ?: AnnTyping G0 (a_Conv a0 ga0) (a_Pi Rel B0 B11).
+   { eapply An_Conv; eauto. }
+
+   eexists.
+   exists b0.
+   exists (a_Conv b0' gb0').
+   exists B0.
+
+   repeat split.
+  + eapply An_Right2 with (a := (a_Conv a0 ga0)) (a' := (a_Conv a0' ga0')) (A := B0) (A' := B0);
+    try eassumption.
+    eapply An_Conv. eauto. eauto. eauto using AnnTyping_regularity. eapply An_Refl.
+    eauto using AnnTyping_regularity.
+  + eauto.
+  + eauto.
+- (* CLeft. *)
+
+  destruct (H _ H3 H4) as (a0 & AB & hyp). split_hyp. clear H.
+  destruct (H0 _ H3 H4) as (a0' & AB' & hyp). split_hyp. clear H0.
+  destruct (H1 _ H3 H4) as (gg & a10 & a20 & A0 & hyp). split_hyp. clear H1.
+  destruct (H2 _ H3 H4) as (gAB & ab & ab' & Ba & hyp). split_hyp. clear H2.
+
+  have ?: AnnTyping G0 AB a_Star. eauto using AnnTyping_regularity.
+  have ?: AnnTyping G0 AB' a_Star. eauto using AnnTyping_regularity.
+
+   match goal with [H : erase AB = a_CPi _ B, H1 : AnnTyping G0 AB a_Star |- _ ] =>
+      destruct (erase_cpi H H1) as (A1 & B1 & hyp1); split_hyp end.
+   match goal with [H : erase AB' = a_CPi _ B, H1 : AnnTyping G0 AB' a_Star |- _ ] =>
+      destruct (erase_cpi H H1) as (A1' & B1' & hyp1); split_hyp end.
+
+   match goal with [H4: erase ab = a_CApp a _ , H8 : AnnTyping G0 ab Ba |- _ ] =>
+     destruct (erase_capp H8 H4) as (a3 & g2 & g3 & C & ? & ? & h3 & ?);
+       inversion h3 end.
+   match goal with [H4: erase ab' = a_CApp a' _ , H8 : AnnTyping G0 ab' Ba |- _ ] =>
+     destruct (erase_capp H8 H4) as (a3' & g2' & g3' & C' & ? & ? & h3' & ?) ;
+       inversion h3' end.
+
+   match goal with [H: AnnTyping G0 (a_CPi _ B1) a_Star |- _ ] => inversion H end.
+
+   match goal with [H: AnnTyping G0 (a_CPi _ B1') a_Star |- _ ] => inversion H end.
+
+   have ?: AnnCtx G0 by eauto with ctx_wff.
+   have ?: AnnPropWff G0 (Eq a10 a20 A0) by eauto.
+
+   subst.
+
+
+   match goal with [H: AnnDefEq G0 (dom (erase_context G0)) _ _ _ |- _ ]=>
+                   rewrite -erase_dom in H end.
+
+   remember (Eq a10 a20 A0) as phi0.
+
+   have: exists g, AnnIso  G0 (dom G0) g phi0  A1.
+   { eapply An_IsoRefl2_derivable. auto. auto. rewrite Heqphi0. simpl.
+     auto. } move => [g1 ?].
+
+   have: exists g, AnnIso G0 (dom G0) g phi0 A1'.
+   { eapply An_IsoRefl2_derivable. auto. auto. rewrite Heqphi0.
+     simpl. auto. }  move => [g1' ?].
+
+   (* need to cast in B1 *)
+   pick fresh x.
+   have ?: AnnCtx ([(x, Co phi0)] ++ G0).
+   { econstructor. eauto. eauto using AnnTyping_regularity. fsetdec_fast. }
+   have ?: AnnPropWff ([(x, Co phi0)] ++ G0) A1.
+   { eapply AnnPropWff_weakening with (F:=nil). eauto. auto. auto. }
+
+   remember (close_tm_wrt_co x (open_tm_wrt_co B1 (g_Cast (g_Var_f x) g1))) as B11.
+
+   have h5: AnnTyping G0 (a_CPi phi0 B11) a_Star.
+   { rewrite HeqB11.
+     eapply An_CPi_exists2 with (c:=x). autorewrite with lngen. auto.
+     autorewrite with lngen.
+     destruct A1.
+     eapply (@AnnTyping_co_subst_nondep (L \u {{x}} \u dom G0)
+                                        ((x ~ Co phi0) ++ G0)
+                                        (dom ((x ~ Co phi0) ++ G0))).
+     econstructor. econstructor.
+     econstructor. auto.
+     eauto using AnnPropWff_regularity.
+     auto. rewrite Heqphi0.
+     auto. eauto.
+     eapply AnnIso_weaken_available.
+     eapply AnnIso_weakening with (F:=nil).
+     match goal with [ H : AnnIso G0 (dom G0) g1 phi0 _ |- _] =>
+            move: H => h0; rewrite Heqphi0 in h0 end.
+     eapply h0.
+     eauto. auto.
+
+     intros.
+     eapply AnnTyping_weakening.
+     match goal with
+       [H44 : ∀ x : atom, ¬ x `in` L
+             → AnnTyping ([(x, _)] ++ _) (open_tm_wrt_co _ (g_Var_f x)) a_Star
+               |- _ ] => eapply H44 end.
+     auto. auto.
+     econstructor. auto. auto. simpl. auto.
+   } inversion h5.
+
+   (* pi type coercions *)
+   have: exists g, AnnDefEq G0 (dom G0) g AB (a_CPi phi0 B11).
+   { eexists. eapply An_EraseEq. eauto. eauto.
+     rewrite HeqB11. simpl.
+     autorewcs. rewrite -close_co_erase_tm.
+     rewrite <- open_co_erase_tm2 with (g:= (g_Var_f x)).
+     simpl.
+     rewrite close_tm_wrt_co_open_tm_wrt_co. rewrite Heqphi0. simpl.
+     auto. apply fv_co_erase_tm. auto.
+     eauto. } move => [ga0 ?].
+   have: exists g, AnnDefEq G0 (dom G0) g AB' (a_CPi phi0 B11).
+   { eexists. eapply An_EraseEq. eauto. eauto.
+     rewrite HeqB11. simpl.
+     autorewcs. rewrite -close_co_erase_tm.
+     rewrite <- open_co_erase_tm2 with (g := (g_Var_f x)).
+     simpl.
+     rewrite close_tm_wrt_co_open_tm_wrt_co. rewrite Heqphi0. simpl.
+     auto. apply fv_co_erase_tm. auto.
+     eauto. } move => [ga0' ?].
+
+   have ?: AnnTyping G0 (a_CApp (a_Conv a0 ga0) gg) (open_tm_wrt_co B11 gg).
+   {
+      match goal with [ H : AnnDefEq G0 (dom G0) ga0 AB (a_CPi phi0 B11) |- _] =>
+                      move: H => h0; rewrite Heqphi0 in h0 end.
+     econstructor.
+     eapply An_Conv. eauto. eauto.
+     rewrite <- Heqphi0.
+     auto. auto. }
+
+   have ?: AnnTyping G0 (a_CApp (a_Conv a0' ga0') gg)
+                        (open_tm_wrt_co B11 gg).
+   {
+     match goal with [ H : AnnDefEq G0 (dom G0) ga0' AB' (a_CPi phi0 B11) |- _] =>
+                     move: H => h0; rewrite Heqphi0 in h0 end.
+     move: (AnnDefEq_regularity h0) => [C1 [C2 [gC [? [h2 ?]]]]].
+     inversion h2. subst.
+     econstructor.
+     eapply An_Conv. eauto.
+     eauto. eauto. auto. }
+
+   have: exists g, AnnDefEq G0 D g (a_CApp (a_Conv a0 ga0) gg) (a_CApp a3' g2').
+   { eexists.
+     eapply An_Trans2 with (a1 := a_CApp a3 g2).
+     { eapply An_EraseEq. eauto. econstructor. eauto. eauto.
+       simpl. f_equal. auto.
+       eapply An_Trans2 with (a1 := Ba).
+       eapply An_EraseEq.
+       eauto using AnnTyping_regularity.
+       eauto using AnnTyping_regularity.
+       autorewcs.
+       match goal with [ H : erase Ba = _ |- _ ] => rewrite H end.
+       rewrite <- open_co_erase_tm2 with (g:= g_Triv).
+       rewrite HeqB11.
+       rewrite -close_co_erase_tm.
+       rewrite <- open_co_erase_tm2 with (g:= g_Var_f x).
+       simpl. rewrite close_tm_wrt_co_open_tm_wrt_co.
+       auto.
+       apply fv_co_erase_tm. auto.
+       eauto. eauto.
+     }
+     eapply An_Trans2 with (a1 := ab).
+     { eapply An_EraseEq. eauto. eauto. eauto.
+       eapply An_Sym2. eauto. }
+     eapply An_Trans2 with (a1 := ab').
+     eauto.
+     { eapply An_EraseEq. eauto. eauto. eauto. eauto. } } move => [g ?].
+
+
+   have: exists g, AnnDefEq G0 (dom G0) g (open_tm_wrt_co B2 g2')
+                       (open_tm_wrt_co B11 gg).
+   { eexists.
+     eapply An_Trans2 with (a1 := Ba). eapply An_Sym2. eauto.
+     eapply An_EraseEq.
+     eauto using AnnTyping_regularity.
+     eauto using AnnTyping_regularity.
+     rewrite HeqB11.
+     autorewcs.
+     rewrite <- open_co_erase_tm2 with (g := g_Triv).
+     simpl.
+     autorewcs.
+     rewrite -close_co_erase_tm.
+     rewrite <- open_co_erase_tm2 with (g:= g_Var_f x).
+     simpl.
+     rewrite close_tm_wrt_co_open_tm_wrt_co. auto.
+     apply fv_co_erase_tm. auto.
+     eauto.
+   } move => [? ?].
+
+
+   have: exists g, AnnDefEq G0 D g (a_CApp a3' g2')
+                       (a_CApp (a_Conv a0' ga0') gg).
+   { eexists.
+     eapply An_EraseEq. eauto. eauto.
+     simpl. f_equal. eauto. eauto.
+   } move => [? ?].
+
+   have: exists g, AnnDefEq G0 D g
+                       (a_CApp (a_Conv a0 ga0) gg)
+                       (a_CApp (a_Conv a0' ga0') gg).
+   { eexists.
+     eapply An_Trans2. eauto. eauto. } move => [? ?].
+
+   have LC: lc_tm (a_Conv a0 ga0). eauto using AnnTyping_lc1.
+   move: (Path_to_Path LC p eq_refl) => P.
+
+   have LC':lc_tm (a_Conv a0' ga0'). eauto using AnnTyping_lc1.
+   move: (Path_to_Path LC' p0 eq_refl) => P'.
+
+   have ?: AnnTyping G0 (a_Conv a0 ga0) (a_CPi phi0 B11).
+   { eapply An_Conv; eauto. }
+
+   eexists.
+   exists (a_Conv a0 ga0).
+   exists (a_Conv a0' ga0').
+   exists (a_CPi phi0 B11).
+
+   repeat split.
+  + rewrite HeqB11. rewrite Heqphi0.
+    simpl. autorewcs. f_equal.
+          rewrite -close_co_erase_tm.
+     rewrite <- open_co_erase_tm2 with (g:= g_Var_f x).
+     simpl.
+     rewrite close_tm_wrt_co_open_tm_wrt_co. auto.
+     apply fv_co_erase_tm. auto.
+  + eapply An_CLeft2; try eassumption.
+    ++ subst. eauto.
+    ++ subst. eauto.
+  + eauto.
+  + eauto. *)
+
 
 
 

@@ -93,7 +93,7 @@ Hint Rewrite <- co_subst_co_tm_open_tm_wrt_tm : open_subst.
 
 *)
 
-(* Apply a lc constructor for a term with binding. *)
+(* apply a lc constructor for a term with binding. *)
 Ltac apply_lc_exists x :=
   pick fresh x;
   ( apply lc_a_Abs_exists      with (x1 := x)
@@ -204,7 +204,7 @@ Lemma co_subst_co_tm_lc_tm_inverse
           lc_constraint phi -> forall XX, phi = (co_subst_co_constraint g1 c1 XX) ->
           lc_constraint XX).
 Proof.
-  intros.
+  intros. 
   apply lc_tm_lc_brs_lc_co_lc_constraint_mutind.
   all: intros.
   (* simple destruct and inversion. *)
@@ -212,13 +212,13 @@ Proof.
        | [H0 : _ = _ ?g1 ?c1 ?XX |- _] =>
          destruct XX; simpl in H0; inversion H0; clear H0; subst; auto
        end.
-  all: apply_lc_exists xc;
-    match goal with
+  all: try apply_lc_exists xc;
+    try match goal with
     | [ H1 : ∀ x XX,
           _ (_ ?g1 ?c1 ?XX2) (_ x) = _ ?g1 ?c1 XX → _ XX |- _ ] =>
       eapply (H1 xc); autorewrite with subst_open; auto
     end.
-  all: rewrite co_subst_co_co_var_neq; auto.
+  all: try rewrite co_subst_co_co_var_neq; auto.
 Qed.
 
 
@@ -255,7 +255,6 @@ Ltac invert_syntactic_equality :=
   end.
 
 (* Invert an "interesting" assumption in the typing context *)
-(* TODO: tactics.v -> it should already be subsumed by another tactic (many not for all cases => extend) *)
 Ltac ann_invert_clear :=
   match goal with
   | H : AnnTyping _ a_Star _ |- _ => inversion H; subst; clear H
@@ -340,6 +339,7 @@ Ltac ext_induction CON :=
       pose CON :=  E_CPi        |
       pose CON :=  E_CAbs       |
       pose CON :=  E_CApp       |
+      pose CON :=  E_Const      |
       pose CON :=  E_Fam        |
       pose CON :=  E_Wff        |
       pose CON :=  E_PropCong   |
@@ -363,6 +363,13 @@ Ltac ext_induction CON :=
       pose CON :=  E_Cast       |
       pose CON :=  E_EqConv     |
       pose CON :=  E_IsoSnd     |
+      pose CON :=  E_EtaRel     |
+      pose CON :=  E_EtaIrrel   |
+      pose CON :=  E_EtaC       |
+(*      pose CON :=  E_LeftRel    |
+      pose CON :=  E_LeftIrrel  |
+      pose CON :=  E_Right      |
+      pose CON :=  E_CLeft      | *)
       pose CON :=  E_Empty      |
       pose CON :=  E_ConsTm     |
       pose CON :=  E_ConsCo     ].
@@ -379,6 +386,7 @@ Ltac ann_induction CON :=
       pose CON :=  An_CPi        |
       pose CON :=  An_CAbs       |
       pose CON :=  An_CApp       |
+      pose CON :=  An_Const      |
       pose CON :=  An_Fam        |
       pose CON :=  An_Wff        |
       pose CON :=  An_PropCong   |
@@ -402,6 +410,11 @@ Ltac ann_induction CON :=
       pose CON :=  An_CPiSnd     |
       pose CON :=  An_Cast       |
       pose CON :=  An_IsoSnd     |
+      pose CON :=  An_Eta        |
+      pose CON :=  An_EtaC       |
+(*      pose CON :=  An_Left       |
+      pose CON :=  An_Right      |
+      pose CON :=  An_CLeft      | *)
       pose CON :=  An_Empty      |
       pose CON :=  An_ConsTm     |
       pose CON :=  An_ConsCo     ].
@@ -454,7 +467,17 @@ Ltac rewrite_body :=
     rewrite e; auto
   | [ e : ∀ x : atom, (x `in` ?L → False) →  _ _ (a_Var_f x) = _ _ _ (a_Var_f x) |- _ ] =>
     rewrite e; auto
+  | [ e : ∀ x : atom, (x `in` ?L → False) →  _ _ (a_Var_f x) = _ _ _ (a_Bullet) |- _ ] =>
+    rewrite e; auto
   | [ e : ∀ x : atom, (x `notin` ?L) →  _ _ (a_Var_f x) = _ _ _ (a_Var_f x) |- _ ] =>
+    rewrite e; auto
+  | [ e : ∀ x : atom, (x `notin` ?L) →  _ _ (a_Var_f x) = _ _ _ (a_Bullet) |- _ ] =>
+    rewrite e; auto
+  | [ e: ∀ c : atom,
+    (c `in` ?L → False) → _ _ (g_Var_f c) = a_CApp _ _ |- _ ] =>
+    rewrite e; auto
+  | [ e: ∀ c : atom,
+    (c `notin` ?L) → _ _ (g_Var_f c) = a_CApp _ _ |- _ ] =>
     rewrite e; auto
 
   end.
@@ -481,8 +504,6 @@ Hint Resolve lc_body_tm_wrt_tm lc_body_tm_wrt_co. (* binds_cons_1 *)
 
 
 (* ---------------------------------------- *)
-
-(* TODO: fix or remove the following? *)
 
 (*
 
@@ -596,6 +617,30 @@ Proof.
   destruct eq_dec. auto. done.
 Qed.
 
+Lemma eta_swap_irrel: forall x y a' b,
+    x `notin` fv_tm_tm_tm a' \u fv_tm_tm_tm b ->
+    open_tm_wrt_tm a' (a_Var_f x) = a_App b Irrel a_Bullet ->
+    open_tm_wrt_tm a' (a_Var_f y) = a_App b Irrel a_Bullet.
+Proof.
+  intros.
+  rewrite (tm_subst_tm_tm_intro x); auto.
+  rewrite H0.
+  simpl.
+  rewrite tm_subst_tm_tm_fresh_eq; auto.
+Qed.
+
+Lemma eta_swap_c: forall x y a' b,
+    x `notin` fv_co_co_tm a' \u fv_co_co_tm b ->
+    open_tm_wrt_co a' (g_Var_f x) = a_CApp b g_Triv ->
+    open_tm_wrt_co a' (g_Var_f y) = a_CApp b g_Triv.
+Proof.
+  intros.
+  rewrite (co_subst_co_tm_intro x); auto.
+  rewrite H0.
+  simpl.
+  rewrite co_subst_co_tm_fresh_eq; auto.
+Qed.
+
 
 
 (* ---------------------------------- *)
@@ -650,11 +695,18 @@ Ltac E_pick_fresh x :=
                | a_Pi _ _ _ => E_PiCong
                | a_UAbs Rel _ => match s2 with
                                 | a_UAbs _ _ => E_AbsCong
+                                | _ => E_EtaRel
                                 end
-               | a_UAbs _ _ => E_AbsCong
+               | a_UAbs Irrel _ => match s2 with 
+                                | a_UAbs _ _ =>  E_AbsCong
+                                | _ => E_EtaIrrel
+                                end
                | a_CPi _ _  => E_CPiCong
                | a_CAbs _ _ => E_CAbsCong
-               | a_UCAbs _  => E_CAbsCong
+               | a_UCAbs _  => match s2 with 
+                                | a_UCAbs _ =>  E_CAbsCong
+                                | _ => E_EtaC
+                                end
                end
       in pick fresh x and apply v
   end.
@@ -664,12 +716,21 @@ Ltac Par_pick_fresh x :=
     | [ |- Par _ _ ?shape ?s2 ] =>
       let v := match shape with
             | a_Pi _ _ _ => Par_Pi
-            | a_UAbs _ _ =>  match s2 with
+            | a_UAbs Rel _ =>  match s2 with
                                 | a_UAbs _ _ => Par_Abs
+                                | _ => Par_Eta
                                 end
+            | a_UAbs Irrel _ =>  match s2 with
+                                | a_UAbs _ _ => Par_Abs
+                                | _ => Par_EtaIrrel
+                                end
+            | a_UAbs _ _ =>  Par_Abs
             | a_CPi _ _  => Par_CPi
             | a_CAbs _ _ => Par_CAbs
-            | a_UCAbs _  => Par_CAbs
+            | a_UCAbs _  => match s2 with
+                                | a_UCAbs _ => Par_CAbs
+                                | _ => Par_EtaC
+                                end
            end
       in pick fresh x and apply v
   end.
@@ -690,6 +751,7 @@ Ltac An_pick_fresh x :=
     | g_AbsCong _ _ _  => An_AbsCong
     | g_CPiCong  _ _   => An_CPiCong
     | g_CAbsCong _ _ _ => An_CAbsCong
+    | g_Eta _          => An_Eta
                end in
   pick fresh x and apply ctor.
 

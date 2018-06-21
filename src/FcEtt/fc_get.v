@@ -59,6 +59,11 @@ match n with
       | a_CPi phi B => open_tm_wrt_co B g2
       | _ => a_Star
     end
+  | a_Const T =>
+     match binds_lookup _ T an_toplevel with
+    | inl (exist (Cs A) _) => A
+    | _ => a_Star
+    end
   | _ => a_Star
   end
 end
@@ -167,6 +172,26 @@ get_deq_n (n : nat) (G : context) (g : co) : (tm * tm) :=
        match get_iso_n m G g with
        | (Eq a a' A, Eq b b' B) => (A, B)
        end
+    | (g_Eta b) =>
+      let (x,_) := atom_fresh (dom G) in
+      match get_tpg_n m G b with
+      | (a_Pi rho A B) => (a_Abs rho A (close_tm_wrt_tm x (a_App b rho (a_Var_f x))), b)
+      | (a_CPi phi _) =>  (a_CAbs phi (close_tm_wrt_co x (a_CApp b (g_Var_f x))), b)
+      | _ => (a_Star, a_Star)
+      end
+     (* Left/Right
+    | (g_Left g1 g2) =>
+      match get_deq_n m G g1 with
+      | (a_App a _ _, a_App a' _ _) => (a,a')
+      | (a_CApp a _, a_CApp a' _) => (a,a')
+      | (_,_) => (a_Star, a_Star)
+      end
+    | (g_Right g1 g2) =>
+      match get_deq_n m G g1 with
+      | (a_App _ _ a, a_App _ _ a') => (a,a')
+      | (_,_) => (a_Star, a_Star)
+      end
+     *)
     | _ => (a_Star, a_Star)
     end
   end.
@@ -224,6 +249,12 @@ Proof.
       destruct (binds_lookup _ F an_toplevel) as [[ [A0 | phi] P] | NB].
       move: (binds_unique _ _ _ _ _ H2 P uniq_an_toplevel) => h0. inversion h0.
       move: (binds_unique _ _ _ _ _ H2 P uniq_an_toplevel) => h0. inversion h0. auto.
+      eapply NB in H2. done.
+    - inversion HT. subst. Opaque an_toplevel.
+      simpl.
+      destruct (binds_lookup _ T an_toplevel) as [ [ [A0 | phi] P] | NB].
+      move: (binds_unique _ _ _ _ _ H2 P uniq_an_toplevel) => h0. inversion h0. auto.
+      move: (binds_unique _ _ _ _ _ H2 P uniq_an_toplevel) => h0. inversion h0.
       eapply NB in H2. done.
     - inversion HT. subst. simpl.
       remember (get_deq_n n G g) as GD. destruct GD as [A' B'].
@@ -436,6 +467,82 @@ Proof.
       move: (h0 _ _ g1 _ _ t t0 ltac:(omega) H4 ltac:(auto)) => [E1 E2]. subst.
       move: (h1 _ _ g2 _ _ c c0 ltac:(omega) H7 ltac:(auto)) => [E1 E2]. subst.
       inversion GET. auto.
+    - inversion DE. simpl in *. subst.
+      move: (H n ltac:(omega)) => [h0 _].
+      move: (h0  _ B _ _ ltac:(omega) H1 eq_refl) => EQ.
+      remember (get_tpg_n n G B) as pi. destruct pi; inversion EQ. subst.
+      destruct (atom_fresh (dom G)) as [x Fr].
+      inversion GET. subst.
+      split; auto.
+      f_equal.
+      pick fresh y.
+      rewrite -(@close_tm_wrt_tm_open_tm_wrt_tm a0 y); auto.
+      rewrite H4; auto.
+      unfold close_tm_wrt_tm. simpl.
+      edestruct eq_dec; try done.
+      edestruct eq_dec; try done. 
+      f_equal.
+      replace (close_tm_wrt_tm_rec 0 y B') with (close_tm_wrt_tm y B'); simpl; auto.
+      replace (close_tm_wrt_tm_rec 0 x B') with (close_tm_wrt_tm x B'); simpl; auto.
+      pick fresh z for (fv_tm_tm_tm (close_tm_wrt_tm y B') \u fv_tm_tm_tm (close_tm_wrt_tm x B')).
+      eapply open_tm_wrt_tm_inj with (x1 := z); auto.
+      rewrite -tm_subst_tm_tm_spec.
+      rewrite -tm_subst_tm_tm_spec.
+      rewrite tm_subst_tm_tm_fresh_eq; auto.
+      rewrite tm_subst_tm_tm_fresh_eq; auto.
+      destruct (AnnDefEq_context_fv DE) as (_ & _ & _ & _ & h4 & _).
+      fsetdec.
+      assert (K: (if y == y then a_Var_b 0 else a_Var_f y) = a_Var_b 0).
+      destruct (y == y); auto. contradiction.
+      assert (K': (if x == x then a_Var_b 0 else a_Var_f x) = a_Var_b 0).
+      destruct (x == x); auto. contradiction. rewrite K. rewrite K'. auto.
+      
+      simpl in *. subst.
+      move: (H n ltac:(omega)) => [h0 _].
+      assert (EQ: size_tm B <= n). omega. 
+      eapply h0 with (G:= G) (A:= (a_CPi phi B0)) in EQ; auto.
+      remember (get_tpg_n n G B) as pi. destruct pi; inversion EQ. subst.
+      destruct (atom_fresh (dom G)) as [x Fr].
+      inversion GET. subst.
+      split; auto.
+      f_equal.
+      pick fresh y.
+      rewrite -(@close_tm_wrt_co_open_tm_wrt_co a0 y); auto.
+      rewrite H4; auto.
+      unfold close_tm_wrt_co. simpl.
+      edestruct eq_dec; try done.
+      edestruct eq_dec; try done. 
+      f_equal.
+      replace (close_tm_wrt_co_rec 0 y B') with (close_tm_wrt_co y B'); simpl; auto.
+      pick fresh z for (fv_co_co_tm (close_tm_wrt_co y B') \u fv_co_co_tm (close_tm_wrt_co_rec 0 x B')).
+      eapply open_tm_wrt_co_inj with (c1 := z); auto.
+      rewrite -co_subst_co_tm_spec.
+      rewrite -co_subst_co_tm_spec.
+      rewrite co_subst_co_tm_fresh_eq; auto.
+      rewrite co_subst_co_tm_fresh_eq; auto.
+      destruct (AnnDefEq_context_fv DE) as (_ & _ & _ & _ & _ & h4).
+      fsetdec.
+      assert (K: (if y == y then g_Var_b 0 else g_Var_f y) = g_Var_b 0).
+      destruct (y == y); auto. contradiction.
+      assert (K': (if x == x then g_Var_b 0 else g_Var_f x) = g_Var_b 0).
+      destruct (x == x); auto. contradiction. rewrite K. rewrite K'. auto.
+   (* - inversion DE; simpl in *; subst.
+      + move: (H n ltac:(omega)) => [h0 [h1 h2]].
+        remember (get_deq_n n G g1) as GG1. destruct GG1.
+        move: (h1  _ _ g1 _ _ _ _ ltac:(omega) H8 ltac:(eauto)) => [ EQ1 EQ2 ].
+        subst.
+        inversion GET. auto.
+      + move: (H n ltac:(omega)) => [h0 [h1 h2]].
+      remember (get_deq_n n G g1) as GG1. destruct GG1.
+      move: (h1  _ _ g1 _ _ _ _ ltac:(omega) H8 ltac:(eauto)) => [ EQ1 EQ2 ].
+      subst.
+      inversion GET. auto.
+    - inversion DE; simpl in *; subst.
+      move: (H n ltac:(omega)) => [h0 [h1 h2]].
+      remember (get_deq_n n G g1) as GG1. destruct GG1.
+      move: (h1  _ _ g1 _ _ _ _ ltac:(omega) H8 ltac:(eauto)) => [ EQ1 EQ2 ].
+      subst.
+      inversion GET. auto. *)
      }
       { intros G D g A B A' B' SZ H1 GET.
       destruct g; (destruct n; [inversion SZ|idtac]); inversion H1;
@@ -453,7 +560,7 @@ Proof.
         move: (H n ltac:(omega)) => [_ [h0 h1]].
         move: (h0 _ _ g1 _ _ t t0 ltac:(omega) H4 ltac:(auto)) => [E1 E2]. subst.              move: (h0 _ _ g2 _ _ t1 t2 ltac:(omega) H7 ltac:(auto)) => [E1 E2]. subst.             inversion GET. auto.
       - inversion GET. auto.
-    }
+    } Unshelve. auto. auto. auto. auto.
 Qed.
 
 
@@ -748,6 +855,12 @@ assert (AnnTyping ([(c,Co phi2)] ++ G)
     autorewrite with lngen; auto.
   apply (@AnnTyping_co_swap c y) in T4; autorewrite with lngen; eauto.
 
+  (*
+  rewrite (co_subst_co_tm_spec _ _ c); auto.
+  rewrite (co_subst_co_tm_intro y); auto. *)
+
+
+  (* move: (ann_ctx_wff_PropWff T1) => t1. *)
   move: (AnnPropWff_weakening T1 [(c,Co phi1)] nil G eq_refl) => t2. simpl_env in t2.
   move: (AnnPropWff_weakening T2 [(c,Co phi2)] nil G eq_refl) => t3. simpl_env in t3.
   move: (AnnPropWff_weakening T1 [(c,Co phi1)] nil G eq_refl) => t4. simpl_env in t4.

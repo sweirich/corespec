@@ -45,6 +45,8 @@ Proof.
     auto.
     simpl_env.
     auto.
+  - eapply AnnTyping_weakening with (F:=nil)(G:=nil) in H1;
+      simpl_env in H1; simpl_env; eauto.
 Qed.
 
 Lemma AnnPropWff_regularity :
@@ -69,7 +71,6 @@ Qed.
 
 (* -------------------------------------------------------------- *)
 
-(* TODO: Not sure this belongs here. Should we have something like erase_facts.v? *)
 
 Lemma erase_pi : forall G AB0 rho A B S, erase AB0 = (a_Pi rho A B) -> AnnTyping G AB0 S ->
   exists A1 B0, erase AB0 = erase (a_Pi rho A1 B0) /\ erase A1 = A /\ erase B0 = B /\ AnnTyping G (a_Pi rho A1 B0) a_Star.
@@ -159,10 +160,51 @@ Proof.
 Qed.
 
 
+(*
+Lemma erase_abs : forall AB0 rho B, erase AB0 = (a_UAbs rho B) ->
+  exists A1 B0, erase AB0 = erase (a_Abs rho A1 B0) /\ erase B0 = B.
+Proof.
+  induction AB0;
+    move=> rho' B H;
+            try destruct rho;
+    simpl in H;
+    inversion H;
+    eauto.
+Qed.
+*)
+(*
+Lemma erase_capp :
+  forall AB0 A C G, erase AB0 = (a_CApp A g_Triv) -> AnnTyping G AB0 C ->
+  exists A1 g0 g D, erase AB0 = erase (a_CApp A1 g0) /\ erase A1 = A /\
+          AnnTyping G (a_CApp A1 g0) D /\ AnnDefEq G (dom G) g C D.
+Proof.
+  induction AB0;
+    move=> A C G H;
+    simpl in H;
+    inversion H;
+    eauto.
+  - intros T.
+    inversion T. subst.
+    destruct (IHAB0 _  _ _ H H3) as [A1 [g0 [g1 [D [E1 [E3 [T1 DE]]]]]]].
+    simpl in E1. inversion E1. subst.
+    pose K := AnnTyping_regularity T. clearbody K.
+    pose K2 := AnnTyping_regularity T1. clearbody K2.
+    pose K3 := AnnTyping_regularity H3. clearbody K3.
+    assert (AnnCtx G). eauto.
+    exists A1, g0. eexists. eexists.
+    repeat split. simpl. eauto. eauto. eapply An_Trans with (a1 := A0).
+    eapply An_Sym; eauto. eauto. eauto. eauto.
+    eapply An_Refl. eauto.
+   -  intros T.
+    pose K := AnnTyping_regularity T.
+    eexists. eexists. eexists. eexists.
+    repeat split. eauto.  eauto.
+Qed.
+*)
 
 (* -------------------------------------------------------------- *)
 
-(* TODO: Same than above (-> erase_facts.v?) *)
+
 Lemma erasure_compatible : forall G a A (H1 :AnnTyping G a A),
     forall b B (H2 : AnnTyping G b B)
       (E : erase a = erase b)
@@ -405,6 +447,41 @@ Proof.
    repeat split; eauto 1.
    eapply An_Refl; eauto 1.
    eapply An_Star. eauto.
+ - assert (HG : AnnCtx G); eauto with ctx_wff.
+   assert (U1 : AnnTyping G (a_Pi rho A B) a_Star).
+   eapply AnnTyping_regularity; eauto.
+   inversion U1.
+   exists (a_Pi rho A B), (a_Pi rho A B). eexists.
+   repeat split; eauto 1.
+   pick fresh x and apply An_Abs; auto.
+   + rewrite e; eauto. econstructor.
+   eapply AnnTyping_weakening with (F:=nil); simpl; eauto.
+   econstructor; eauto.
+   econstructor; eauto.
+   + rewrite e; eauto.
+   destruct rho. econstructor; eauto. econstructor; eauto.
+   simpl. autorewcs. apply union_notin_iff. split. 
+   eapply fv_tm_erase_tm. auto. auto.
+(*   rewrite e; eauto.
+   econstructor. eapply lc_erase. eauto using AnnTyping_lc1. *)
+   + eapply An_Refl. eauto.
+ - assert (HG : AnnCtx G); eauto with ctx_wff.
+   assert (U1 : AnnTyping G (a_CPi phi B) a_Star).
+   eapply AnnTyping_regularity; eauto.
+   inversion U1. subst.
+   exists (a_CPi phi B), (a_CPi phi B). eexists.
+   repeat split; eauto 1. 
+   pick fresh x and apply An_CAbs; auto.
+   inversion H3; subst.
+   + rewrite e; eauto. econstructor. 
+     eapply AnnTyping_weakening with (F:=nil); simpl; eauto.
+     econstructor; eauto. econstructor; eauto. 
+   + eapply An_Refl. eauto.
+ (* Left/Right
+ -  exists (a_Pi rho A B), (a_Pi rho A' B'), g2. repeat split; eauto 1.
+ -  exists A, A'. eexists.  repeat split; eauto 1.
+    eapply An_PiFst. eauto.
+ - exists (a_CPi (Eq a1 a2 A0) B), (a_CPi (Eq a1' a2' A0') B'), g2. repeat split; eauto 1. *)
 Qed.
 
 
@@ -424,8 +501,6 @@ Definition AnnIso_regularity :
 (* --------------------------------------------------------- *)
 
 (* Smart constructors for the annotated language *)
-
-(* TODO: should we - and could we (wrt dependencies) - have a file gathering all the smart constructors? *)
 
   Lemma An_Sym2
     : ∀ (G : context) (D : available_props) (g : co) (a b : tm),
@@ -465,6 +540,13 @@ Lemma erase_a_Const : forall G0 a0 A0 A1 T,
        eexists. eapply An_Trans2 with (a1 := A).
        eapply An_Sym2. eassumption.
        eassumption.
+     + inversion H. subst.
+       move: (binds_unique _ _ _ _ _ H0 H2 uniq_an_toplevel) => EQ. inversion EQ.
+       subst.
+       eexists. eapply An_Refl.
+       move: (AnnTyping_weakening H3 G nil nil eq_refl) => h0.
+       simpl_env in h0.
+       eauto.
    Qed.
 
 
@@ -651,78 +733,6 @@ Proof.
   sort_inversion.
 Qed.
 
-Lemma An_AbsCong_exists2
-     : ∀ (x1 x2 : atom) (G : context) (D : available_props) (rho : relflag) (g1 g2 : co)
-       (A1 b1 A2 b3 b2 B : tm),
-       x1 `notin` union (dom G) (union (fv_tm_tm_tm b1) (union (fv_tm_tm_tm b2) (fv_tm_tm_co g2)))
-       → x2 `notin` union (dom G) (union (fv_tm_tm_tm b2) (union (fv_tm_tm_tm b3) (fv_tm_tm_co g1)))
-         → AnnDefEq G D g1 A1 A2
-           → AnnDefEq ([(x1, Tm A1)] ++ G) D (open_co_wrt_tm g2 (a_Var_f x1))
-               (open_tm_wrt_tm b1 (a_Var_f x1)) (open_tm_wrt_tm b2 (a_Var_f x1))
-             → open_tm_wrt_tm b3 (a_Var_f x2) = open_tm_wrt_tm b2 (a_Conv (a_Var_f x2) (g_Sym g1))
-                 → AnnTyping G A2 a_Star
-                   → RhoCheck rho x1 (erase_tm (open_tm_wrt_tm b1 (a_Var_f x1)))
-                     → RhoCheck rho x2 (erase_tm (open_tm_wrt_tm b3 (a_Var_f x2)))
-                       → AnnTyping G (a_Abs rho A1 b2) B
-                         → AnnDefEq G D (g_AbsCong rho g1 g2) (a_Abs rho A1 b1) (a_Abs rho A2 b3).
-Proof.
-  intros. eapply An_AbsCong_exists; eauto.
-  inversion H7. auto.
-Qed.
-
-Lemma An_CPiCong_exists2
-     : ∀ (c : atom) (G : context) (D : available_props)
-       (g1 g3 : co) (phi1 : constraint) (B1 : tm)
-       (phi2 : constraint) (B3 B2 : tm),
-       AnnIso G D g1 phi1 phi2
-       → c
-         `notin` (union (dom G)
-                  (union D
-                   (union (fv_co_co_tm B2)
-                      (union (fv_co_co_tm B1)
-                         (union (fv_co_co_co g3)
-                             (union (fv_co_co_co g1)
-                                    (fv_co_co_tm B3)))))))
-         → AnnDefEq ([(c, Co phi1)] ++ G) D
-                    (open_co_wrt_co g3 (g_Var_f c))
-                    (open_tm_wrt_co B1 (g_Var_f c))
-                    (open_tm_wrt_co B2 (g_Var_f c))
-         → open_tm_wrt_co B3 (g_Var_f c) =
-           open_tm_wrt_co B2 (g_Cast (g_Var_f c) (g_Sym g1))
-         → AnnTyping G (a_CPi phi1 B1) a_Star
-         → AnnTyping G (a_CPi phi1 B2) a_Star
-         → AnnDefEq G D (g_CPiCong g1 g3) (a_CPi phi1 B1) (a_CPi phi2 B3).
-Proof.
-  intros. eapply An_CPiCong_exists with (B1 := B1) (B2 := B2) (B3:= B3); eauto.
-  eapply An_CPi_exists2 with (c:= c).
-  fsetdec.
-  rewrite H2.
-  move: (AnnIso_regularity H) => [h0 h1].
-  move: (AnnIso_AnnCtx H) => h2.
-  destruct phi1 as [a1 b1 A1].
-  destruct phi2 as [a2 b2 A2].
-  inversion h1. subst.
-  inversion H4. subst.
-  eapply AnnTyping_co_subst_nondep with (D := dom ([(c, Co (Eq a2 b2 A2))] ++ G))(L := L \u {{c}} \u dom G).
-  eapply An_Cast.
-  eapply An_Assn.
-  eauto.
-  eauto.
-  simpl. eauto.
-  eapply An_IsoSym.
-  eapply AnnIso_weakening with (F := nil); simpl; eauto using AnnIso_weaken_available.
-  eapply (third ann_weaken_available_mutual).
-  eapply AnnIso_weaken_available. eauto. eauto.
-  econstructor; eauto.
-  intros c1 Fr.
-  move: (H12 c1 ltac:(auto)) => h3.
-  eapply AnnTyping_weakening with (F:= (c1 ~ Co (Eq a1 b1 A1))); eauto.
-  econstructor; eauto.
-  eapply AnnPropWff_weakening with (F:=nil); eauto.
-  simpl. econstructor; eauto.
-Qed.
-
-
 Lemma An_Fam2 :  ∀ (G : context) (F : tyfam) (A a : tm),
        AnnCtx G
        → binds F (Ax a A) an_toplevel
@@ -736,8 +746,144 @@ Proof.
   eauto.
 Qed.
 
+Lemma An_AbsCong_exists2
+      : ∀ (x1 x2 : atom) (G : context) (D : available_props) (rho : relflag) (g1 g2 : co)
+        (A1 b1 A2 b3 b2 B : tm),
+        x1 `notin` union (dom G) (union (fv_tm_tm_tm b1) (union (fv_tm_tm_tm b2) (fv_tm_tm_co g2)))
+        → x2 `notin` union (dom G) (union (fv_tm_tm_tm b2) (union (fv_tm_tm_tm b3) (fv_tm_tm_co g1)))
+          → AnnDefEq G D g1 A1 A2
+            → AnnDefEq ([(x1, Tm A1)]++ G) D (open_co_wrt_tm g2 (a_Var_f x1))
+                (open_tm_wrt_tm b1 (a_Var_f x1)) (open_tm_wrt_tm b2 (a_Var_f x1))
+              → open_tm_wrt_tm b3 (a_Var_f x2) = open_tm_wrt_tm b2 (a_Conv (a_Var_f x2) (g_Sym g1))
+                  → AnnTyping G A2 a_Star
+                    → RhoCheck rho x1 (erase_tm (open_tm_wrt_tm b1 (a_Var_f x1)))
+                      → RhoCheck rho x2 (erase_tm (open_tm_wrt_tm b3 (a_Var_f x2)))
+                        → AnnTyping G (a_Abs rho A1 b2) B
+                          → AnnDefEq G D (g_AbsCong rho g1 g2) (a_Abs rho A1 b1) (a_Abs rho A2 b3).
+ Proof.
+   intros. eapply An_AbsCong_exists; eauto.
+   inversion H7. auto.
+ Qed.
+
+ Lemma An_CPiCong_exists2
+      : ∀ (c : atom) (G : context) (D : available_props)
+        (g1 g3 : co) (phi1 : constraint) (B1 : tm)
+        (phi2 : constraint) (B3 B2 : tm),
+        AnnIso G D g1 phi1 phi2
+        → c
+          `notin` (union (dom G)
+                   (union D
+                    (union (fv_co_co_tm B2)
+                       (union (fv_co_co_tm B1)
+                          (union (fv_co_co_co g3)
+                              (union (fv_co_co_co g1)
+                                     (fv_co_co_tm B3)))))))
+          → AnnDefEq ([(c, Co phi1)] ++ G) D
+                     (open_co_wrt_co g3 (g_Var_f c))
+                     (open_tm_wrt_co B1 (g_Var_f c))
+                     (open_tm_wrt_co B2 (g_Var_f c))
+          → open_tm_wrt_co B3 (g_Var_f c) =
+            open_tm_wrt_co B2 (g_Cast (g_Var_f c) (g_Sym g1))
+          → AnnTyping G (a_CPi phi1 B1) a_Star
+          → AnnTyping G (a_CPi phi1 B2) a_Star
+          → AnnDefEq G D (g_CPiCong g1 g3) (a_CPi phi1 B1) (a_CPi phi2 B3).
+ Proof.
+   intros. eapply An_CPiCong_exists with (B1 := B1) (B2 := B2) (B3:= B3); eauto.
+   eapply An_CPi_exists2 with (c:= c).
+   fsetdec.
+   rewrite H2.
+   move: (AnnIso_regularity H) => [h0 h1].
+   move: (AnnIso_AnnCtx H) => h2.
+   destruct phi1 as [a1 b1 A1].
+   destruct phi2 as [a2 b2 A2].
+   inversion h1. subst.
+   inversion H4. subst.
+   eapply AnnTyping_co_subst_nondep with (D := dom ([(c, Co (Eq a2 b2 A2))] ++ G))(L := L \u {{c}} \u dom G).
+   eapply An_Cast.
+   eapply An_Assn.
+   eauto.
+   eauto.
+   simpl. eauto.
+   eapply An_IsoSym.
+   eapply AnnIso_weakening with (F := nil); simpl; eauto using AnnIso_weaken_available.
+   eapply (third ann_weaken_available_mutual).
+   eapply AnnIso_weaken_available. eauto. eauto.
+   econstructor; eauto.
+   intros c1 Fr.
+   move: (H12 c1 ltac:(auto)) => h3.
+   eapply AnnTyping_weakening with (F:= (c1 ~ Co (Eq a1 b1 A1))); eauto.
+   econstructor; eauto.
+   eapply AnnPropWff_weakening with (F:=nil); eauto.
+   simpl. econstructor; eauto.
+ Qed.
 
 
 
+(* Left/Right
+  Lemma An_Left2 :
+      ∀ (G : context) (D : available_props) (g1 g2 : co)
+       (a a' : tm) (T : ett_ott.const) (rho : relflag)
+       (A B A' B' b b' : tm),
+       Path T a
+       → Path T a'
+       → AnnTyping G a (a_Pi rho A B)
+       → AnnTyping G a' (a_Pi rho A' B')
+       → AnnDefEq G D g1 (a_App a rho b) (a_App a' rho b')
+       → AnnDefEq G (dom G) g2 (a_Pi rho A B) (a_Pi rho A' B')
+       → AnnDefEq G D (g_Left g1 g2) a a'.
+  Proof.
+    intros.
+    move: (AnnDefEq_regularity H3) => [s1 [s2 [g4 hyp]]]. split_hyp.
+    ann_invert_clear.
+    ann_invert_clear.
+    resolve_unique_subst.
+    resolve_unique_subst.
+    invert_syntactic_equality.
+    eapply An_Left with (b:=b)(b':=b'); try eassumption.
+  Qed.
+
+
+  Lemma An_Right2 : ∀ (G : context) (D : available_props) (g1 g2 : co) (b b' : tm) (T : ett_ott.const) (a a' : tm) (A A' B B' : tm),
+      Path T a
+      → Path T a'
+      → AnnTyping G a (a_Pi Rel A B)
+      → AnnTyping G a' (a_Pi Rel A' B')
+      → AnnDefEq G D g1 (a_App a Rel b) (a_App a' Rel b')
+      → AnnDefEq G (dom G) g2 (a_Pi Rel A B) (a_Pi Rel A' B')
+      → AnnDefEq G D (g_Right g1 g2) b b'.
+  Proof.
+    intros.
+    move: (AnnDefEq_regularity H3) => [T1 [T2 [g hyp]]]. split_hyp.
+    ann_invert_clear.
+    ann_invert_clear.
+    resolve_unique_subst.
+    resolve_unique_subst.
+    invert_syntactic_equality.
+    eapply An_Right with (a:=a)(a':=a'); try eassumption.
+  Qed.
+
+  Lemma An_CLeft2 : ∀ (G : context) (D : available_props) (g1 g2 : co) (a a' : tm)
+                      (T : const) phi B phi' B'
+                      (g g': co),
+      Path T a
+      → Path T a'
+      → AnnTyping G a (a_CPi phi B)
+      → AnnTyping G a' (a_CPi phi' B')
+      → AnnDefEq G D g1 (a_CApp a g) (a_CApp a' g')
+      → AnnDefEq G (dom G) g2 (a_CPi phi B) (a_CPi phi' B')
+      → AnnDefEq G D (g_Left g1 g2) a a'.
+  Proof.
+    intros.
+    move: (AnnDefEq_regularity H3) => [T1 [T2 [s hyp]]]. split_hyp.
+    inversion H5. inversion H6. subst.
+    destruct phi as [a1 a2 A]. destruct phi' as [a1' a2' A'].
+    resolve_unique_subst.
+    resolve_unique_subst.
+    inversion H8.
+    inversion H9.
+    subst.
+    eapply An_CLeft with (g := g)(g':=g')(a1 := a0)(a2:=b)(A0:=A1)(a1':=a3)(a2':=b0)(A0':=A0); try eassumption.
+  Qed.
+*)
 
 End fc_invert.

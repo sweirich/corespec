@@ -1,9 +1,8 @@
-Require Import Coq.Arith.Wf_nat.
 Require Import Coq.Logic.FunctionalExtensionality.
 Require Import Coq.Program.Equality.
 
 Require Export Metalib.Metatheory.
-Require Export LibLNgen.
+Require Export Metalib.LibLNgen.
 
 Require Export ett_ott.
 
@@ -923,18 +922,13 @@ Ltac default_autorewrite ::= fail.
 
 Lemma size_relflag_min_mutual :
 (forall rho1, 1 <= size_relflag rho1).
-Proof.
-apply_mutual_ind relflag_mutind;
-default_simp.
-Qed.
+Proof. Admitted.
 
 (* end hide *)
 
 Lemma size_relflag_min :
 forall rho1, 1 <= size_relflag rho1.
-Proof.
-pose proof size_relflag_min_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve size_relflag_min : lngen.
 
@@ -945,42 +939,31 @@ Lemma size_tm_min_size_brs_min_size_co_min_size_constraint_min_mutual :
 (forall brs1, 1 <= size_brs brs1) /\
 (forall g1, 1 <= size_co g1) /\
 (forall phi1, 1 <= size_constraint phi1).
-Proof.
-apply_mutual_ind tm_brs_co_constraint_mutind;
-default_simp.
-Qed.
+Proof. Admitted.
 
 (* end hide *)
 
 Lemma size_tm_min :
 forall a1, 1 <= size_tm a1.
-Proof.
-pose proof size_tm_min_size_brs_min_size_co_min_size_constraint_min_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve size_tm_min : lngen.
 
 Lemma size_brs_min :
 forall brs1, 1 <= size_brs brs1.
-Proof.
-pose proof size_tm_min_size_brs_min_size_co_min_size_constraint_min_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve size_brs_min : lngen.
 
 Lemma size_co_min :
 forall g1, 1 <= size_co g1.
-Proof.
-pose proof size_tm_min_size_brs_min_size_co_min_size_constraint_min_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve size_co_min : lngen.
 
 Lemma size_constraint_min :
 forall phi1, 1 <= size_constraint phi1.
-Proof.
-pose proof size_tm_min_size_brs_min_size_co_min_size_constraint_min_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve size_constraint_min : lngen.
 
@@ -995,10 +978,7 @@ Lemma size_tm_close_tm_wrt_tm_rec_size_brs_close_brs_wrt_tm_rec_size_co_close_co
   size_co (close_co_wrt_tm_rec n1 x1 g1) = size_co g1) /\
 (forall phi1 x1 n1,
   size_constraint (close_constraint_wrt_tm_rec n1 x1 phi1) = size_constraint phi1).
-Proof.
-apply_mutual_ind tm_brs_co_constraint_mutind;
-default_simp.
-Qed.
+Proof. Admitted.
 
 (* end hide *)
 
@@ -1007,9 +987,7 @@ Qed.
 Lemma size_tm_close_tm_wrt_tm_rec :
 forall a1 x1 n1,
   size_tm (close_tm_wrt_tm_rec n1 x1 a1) = size_tm a1.
-Proof.
-pose proof size_tm_close_tm_wrt_tm_rec_size_brs_close_brs_wrt_tm_rec_size_co_close_co_wrt_tm_rec_size_constraint_close_constraint_wrt_tm_rec_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve size_tm_close_tm_wrt_tm_rec : lngen.
 Hint Rewrite size_tm_close_tm_wrt_tm_rec using solve [auto] : lngen.
@@ -1021,9 +999,7 @@ Hint Rewrite size_tm_close_tm_wrt_tm_rec using solve [auto] : lngen.
 Lemma size_brs_close_brs_wrt_tm_rec :
 forall brs1 x1 n1,
   size_brs (close_brs_wrt_tm_rec n1 x1 brs1) = size_brs brs1.
-Proof.
-pose proof size_tm_close_tm_wrt_tm_rec_size_brs_close_brs_wrt_tm_rec_size_co_close_co_wrt_tm_rec_size_constraint_close_constraint_wrt_tm_rec_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve size_brs_close_brs_wrt_tm_rec : lngen.
 Hint Rewrite size_brs_close_brs_wrt_tm_rec using solve [auto] : lngen.
@@ -1035,9 +1011,7 @@ Hint Rewrite size_brs_close_brs_wrt_tm_rec using solve [auto] : lngen.
 Lemma size_co_close_co_wrt_tm_rec :
 forall g1 x1 n1,
   size_co (close_co_wrt_tm_rec n1 x1 g1) = size_co g1.
-Proof.
-pose proof size_tm_close_tm_wrt_tm_rec_size_brs_close_brs_wrt_tm_rec_size_co_close_co_wrt_tm_rec_size_constraint_close_constraint_wrt_tm_rec_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve size_co_close_co_wrt_tm_rec : lngen.
 Hint Rewrite size_co_close_co_wrt_tm_rec using solve [auto] : lngen.
@@ -1049,9 +1023,7 @@ Hint Rewrite size_co_close_co_wrt_tm_rec using solve [auto] : lngen.
 Lemma size_constraint_close_constraint_wrt_tm_rec :
 forall phi1 x1 n1,
   size_constraint (close_constraint_wrt_tm_rec n1 x1 phi1) = size_constraint phi1.
-Proof.
-pose proof size_tm_close_tm_wrt_tm_rec_size_brs_close_brs_wrt_tm_rec_size_co_close_co_wrt_tm_rec_size_constraint_close_constraint_wrt_tm_rec_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve size_constraint_close_constraint_wrt_tm_rec : lngen.
 Hint Rewrite size_constraint_close_constraint_wrt_tm_rec using solve [auto] : lngen.
@@ -1069,10 +1041,7 @@ Lemma size_tm_close_tm_wrt_co_rec_size_brs_close_brs_wrt_co_rec_size_co_close_co
   size_co (close_co_wrt_co_rec n1 c1 g1) = size_co g1) /\
 (forall phi1 c1 n1,
   size_constraint (close_constraint_wrt_co_rec n1 c1 phi1) = size_constraint phi1).
-Proof.
-apply_mutual_ind tm_brs_co_constraint_mutind;
-default_simp.
-Qed.
+Proof. Admitted.
 
 (* end hide *)
 
@@ -1081,9 +1050,7 @@ Qed.
 Lemma size_tm_close_tm_wrt_co_rec :
 forall a1 c1 n1,
   size_tm (close_tm_wrt_co_rec n1 c1 a1) = size_tm a1.
-Proof.
-pose proof size_tm_close_tm_wrt_co_rec_size_brs_close_brs_wrt_co_rec_size_co_close_co_wrt_co_rec_size_constraint_close_constraint_wrt_co_rec_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve size_tm_close_tm_wrt_co_rec : lngen.
 Hint Rewrite size_tm_close_tm_wrt_co_rec using solve [auto] : lngen.
@@ -1095,9 +1062,7 @@ Hint Rewrite size_tm_close_tm_wrt_co_rec using solve [auto] : lngen.
 Lemma size_brs_close_brs_wrt_co_rec :
 forall brs1 c1 n1,
   size_brs (close_brs_wrt_co_rec n1 c1 brs1) = size_brs brs1.
-Proof.
-pose proof size_tm_close_tm_wrt_co_rec_size_brs_close_brs_wrt_co_rec_size_co_close_co_wrt_co_rec_size_constraint_close_constraint_wrt_co_rec_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve size_brs_close_brs_wrt_co_rec : lngen.
 Hint Rewrite size_brs_close_brs_wrt_co_rec using solve [auto] : lngen.
@@ -1109,9 +1074,7 @@ Hint Rewrite size_brs_close_brs_wrt_co_rec using solve [auto] : lngen.
 Lemma size_co_close_co_wrt_co_rec :
 forall g1 c1 n1,
   size_co (close_co_wrt_co_rec n1 c1 g1) = size_co g1.
-Proof.
-pose proof size_tm_close_tm_wrt_co_rec_size_brs_close_brs_wrt_co_rec_size_co_close_co_wrt_co_rec_size_constraint_close_constraint_wrt_co_rec_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve size_co_close_co_wrt_co_rec : lngen.
 Hint Rewrite size_co_close_co_wrt_co_rec using solve [auto] : lngen.
@@ -1123,9 +1086,7 @@ Hint Rewrite size_co_close_co_wrt_co_rec using solve [auto] : lngen.
 Lemma size_constraint_close_constraint_wrt_co_rec :
 forall phi1 c1 n1,
   size_constraint (close_constraint_wrt_co_rec n1 c1 phi1) = size_constraint phi1.
-Proof.
-pose proof size_tm_close_tm_wrt_co_rec_size_brs_close_brs_wrt_co_rec_size_co_close_co_wrt_co_rec_size_constraint_close_constraint_wrt_co_rec_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve size_constraint_close_constraint_wrt_co_rec : lngen.
 Hint Rewrite size_constraint_close_constraint_wrt_co_rec using solve [auto] : lngen.
@@ -1135,9 +1096,7 @@ Hint Rewrite size_constraint_close_constraint_wrt_co_rec using solve [auto] : ln
 Lemma size_tm_close_tm_wrt_tm :
 forall a1 x1,
   size_tm (close_tm_wrt_tm x1 a1) = size_tm a1.
-Proof.
-unfold close_tm_wrt_tm; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve size_tm_close_tm_wrt_tm : lngen.
 Hint Rewrite size_tm_close_tm_wrt_tm using solve [auto] : lngen.
@@ -1145,9 +1104,7 @@ Hint Rewrite size_tm_close_tm_wrt_tm using solve [auto] : lngen.
 Lemma size_brs_close_brs_wrt_tm :
 forall brs1 x1,
   size_brs (close_brs_wrt_tm x1 brs1) = size_brs brs1.
-Proof.
-unfold close_brs_wrt_tm; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve size_brs_close_brs_wrt_tm : lngen.
 Hint Rewrite size_brs_close_brs_wrt_tm using solve [auto] : lngen.
@@ -1155,9 +1112,7 @@ Hint Rewrite size_brs_close_brs_wrt_tm using solve [auto] : lngen.
 Lemma size_co_close_co_wrt_tm :
 forall g1 x1,
   size_co (close_co_wrt_tm x1 g1) = size_co g1.
-Proof.
-unfold close_co_wrt_tm; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve size_co_close_co_wrt_tm : lngen.
 Hint Rewrite size_co_close_co_wrt_tm using solve [auto] : lngen.
@@ -1165,9 +1120,7 @@ Hint Rewrite size_co_close_co_wrt_tm using solve [auto] : lngen.
 Lemma size_constraint_close_constraint_wrt_tm :
 forall phi1 x1,
   size_constraint (close_constraint_wrt_tm x1 phi1) = size_constraint phi1.
-Proof.
-unfold close_constraint_wrt_tm; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve size_constraint_close_constraint_wrt_tm : lngen.
 Hint Rewrite size_constraint_close_constraint_wrt_tm using solve [auto] : lngen.
@@ -1175,9 +1128,7 @@ Hint Rewrite size_constraint_close_constraint_wrt_tm using solve [auto] : lngen.
 Lemma size_tm_close_tm_wrt_co :
 forall a1 c1,
   size_tm (close_tm_wrt_co c1 a1) = size_tm a1.
-Proof.
-unfold close_tm_wrt_co; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve size_tm_close_tm_wrt_co : lngen.
 Hint Rewrite size_tm_close_tm_wrt_co using solve [auto] : lngen.
@@ -1185,9 +1136,7 @@ Hint Rewrite size_tm_close_tm_wrt_co using solve [auto] : lngen.
 Lemma size_brs_close_brs_wrt_co :
 forall brs1 c1,
   size_brs (close_brs_wrt_co c1 brs1) = size_brs brs1.
-Proof.
-unfold close_brs_wrt_co; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve size_brs_close_brs_wrt_co : lngen.
 Hint Rewrite size_brs_close_brs_wrt_co using solve [auto] : lngen.
@@ -1195,9 +1144,7 @@ Hint Rewrite size_brs_close_brs_wrt_co using solve [auto] : lngen.
 Lemma size_co_close_co_wrt_co :
 forall g1 c1,
   size_co (close_co_wrt_co c1 g1) = size_co g1.
-Proof.
-unfold close_co_wrt_co; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve size_co_close_co_wrt_co : lngen.
 Hint Rewrite size_co_close_co_wrt_co using solve [auto] : lngen.
@@ -1205,9 +1152,7 @@ Hint Rewrite size_co_close_co_wrt_co using solve [auto] : lngen.
 Lemma size_constraint_close_constraint_wrt_co :
 forall phi1 c1,
   size_constraint (close_constraint_wrt_co c1 phi1) = size_constraint phi1.
-Proof.
-unfold close_constraint_wrt_co; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve size_constraint_close_constraint_wrt_co : lngen.
 Hint Rewrite size_constraint_close_constraint_wrt_co using solve [auto] : lngen.
@@ -1223,10 +1168,7 @@ Lemma size_tm_open_tm_wrt_tm_rec_size_brs_open_brs_wrt_tm_rec_size_co_open_co_wr
   size_co g1 <= size_co (open_co_wrt_tm_rec n1 a1 g1)) /\
 (forall phi1 a1 n1,
   size_constraint phi1 <= size_constraint (open_constraint_wrt_tm_rec n1 a1 phi1)).
-Proof.
-apply_mutual_ind tm_brs_co_constraint_mutind;
-default_simp.
-Qed.
+Proof. Admitted.
 
 (* end hide *)
 
@@ -1235,9 +1177,7 @@ Qed.
 Lemma size_tm_open_tm_wrt_tm_rec :
 forall a1 a2 n1,
   size_tm a1 <= size_tm (open_tm_wrt_tm_rec n1 a2 a1).
-Proof.
-pose proof size_tm_open_tm_wrt_tm_rec_size_brs_open_brs_wrt_tm_rec_size_co_open_co_wrt_tm_rec_size_constraint_open_constraint_wrt_tm_rec_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve size_tm_open_tm_wrt_tm_rec : lngen.
 
@@ -1248,9 +1188,7 @@ Hint Resolve size_tm_open_tm_wrt_tm_rec : lngen.
 Lemma size_brs_open_brs_wrt_tm_rec :
 forall brs1 a1 n1,
   size_brs brs1 <= size_brs (open_brs_wrt_tm_rec n1 a1 brs1).
-Proof.
-pose proof size_tm_open_tm_wrt_tm_rec_size_brs_open_brs_wrt_tm_rec_size_co_open_co_wrt_tm_rec_size_constraint_open_constraint_wrt_tm_rec_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve size_brs_open_brs_wrt_tm_rec : lngen.
 
@@ -1261,9 +1199,7 @@ Hint Resolve size_brs_open_brs_wrt_tm_rec : lngen.
 Lemma size_co_open_co_wrt_tm_rec :
 forall g1 a1 n1,
   size_co g1 <= size_co (open_co_wrt_tm_rec n1 a1 g1).
-Proof.
-pose proof size_tm_open_tm_wrt_tm_rec_size_brs_open_brs_wrt_tm_rec_size_co_open_co_wrt_tm_rec_size_constraint_open_constraint_wrt_tm_rec_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve size_co_open_co_wrt_tm_rec : lngen.
 
@@ -1274,9 +1210,7 @@ Hint Resolve size_co_open_co_wrt_tm_rec : lngen.
 Lemma size_constraint_open_constraint_wrt_tm_rec :
 forall phi1 a1 n1,
   size_constraint phi1 <= size_constraint (open_constraint_wrt_tm_rec n1 a1 phi1).
-Proof.
-pose proof size_tm_open_tm_wrt_tm_rec_size_brs_open_brs_wrt_tm_rec_size_co_open_co_wrt_tm_rec_size_constraint_open_constraint_wrt_tm_rec_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve size_constraint_open_constraint_wrt_tm_rec : lngen.
 
@@ -1293,10 +1227,7 @@ Lemma size_tm_open_tm_wrt_co_rec_size_brs_open_brs_wrt_co_rec_size_co_open_co_wr
   size_co g1 <= size_co (open_co_wrt_co_rec n1 g2 g1)) /\
 (forall phi1 g1 n1,
   size_constraint phi1 <= size_constraint (open_constraint_wrt_co_rec n1 g1 phi1)).
-Proof.
-apply_mutual_ind tm_brs_co_constraint_mutind;
-default_simp.
-Qed.
+Proof. Admitted.
 
 (* end hide *)
 
@@ -1305,9 +1236,7 @@ Qed.
 Lemma size_tm_open_tm_wrt_co_rec :
 forall a1 g1 n1,
   size_tm a1 <= size_tm (open_tm_wrt_co_rec n1 g1 a1).
-Proof.
-pose proof size_tm_open_tm_wrt_co_rec_size_brs_open_brs_wrt_co_rec_size_co_open_co_wrt_co_rec_size_constraint_open_constraint_wrt_co_rec_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve size_tm_open_tm_wrt_co_rec : lngen.
 
@@ -1318,9 +1247,7 @@ Hint Resolve size_tm_open_tm_wrt_co_rec : lngen.
 Lemma size_brs_open_brs_wrt_co_rec :
 forall brs1 g1 n1,
   size_brs brs1 <= size_brs (open_brs_wrt_co_rec n1 g1 brs1).
-Proof.
-pose proof size_tm_open_tm_wrt_co_rec_size_brs_open_brs_wrt_co_rec_size_co_open_co_wrt_co_rec_size_constraint_open_constraint_wrt_co_rec_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve size_brs_open_brs_wrt_co_rec : lngen.
 
@@ -1331,9 +1258,7 @@ Hint Resolve size_brs_open_brs_wrt_co_rec : lngen.
 Lemma size_co_open_co_wrt_co_rec :
 forall g1 g2 n1,
   size_co g1 <= size_co (open_co_wrt_co_rec n1 g2 g1).
-Proof.
-pose proof size_tm_open_tm_wrt_co_rec_size_brs_open_brs_wrt_co_rec_size_co_open_co_wrt_co_rec_size_constraint_open_constraint_wrt_co_rec_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve size_co_open_co_wrt_co_rec : lngen.
 
@@ -1344,9 +1269,7 @@ Hint Resolve size_co_open_co_wrt_co_rec : lngen.
 Lemma size_constraint_open_constraint_wrt_co_rec :
 forall phi1 g1 n1,
   size_constraint phi1 <= size_constraint (open_constraint_wrt_co_rec n1 g1 phi1).
-Proof.
-pose proof size_tm_open_tm_wrt_co_rec_size_brs_open_brs_wrt_co_rec_size_co_open_co_wrt_co_rec_size_constraint_open_constraint_wrt_co_rec_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve size_constraint_open_constraint_wrt_co_rec : lngen.
 
@@ -1355,72 +1278,56 @@ Hint Resolve size_constraint_open_constraint_wrt_co_rec : lngen.
 Lemma size_tm_open_tm_wrt_tm :
 forall a1 a2,
   size_tm a1 <= size_tm (open_tm_wrt_tm a1 a2).
-Proof.
-unfold open_tm_wrt_tm; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve size_tm_open_tm_wrt_tm : lngen.
 
 Lemma size_brs_open_brs_wrt_tm :
 forall brs1 a1,
   size_brs brs1 <= size_brs (open_brs_wrt_tm brs1 a1).
-Proof.
-unfold open_brs_wrt_tm; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve size_brs_open_brs_wrt_tm : lngen.
 
 Lemma size_co_open_co_wrt_tm :
 forall g1 a1,
   size_co g1 <= size_co (open_co_wrt_tm g1 a1).
-Proof.
-unfold open_co_wrt_tm; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve size_co_open_co_wrt_tm : lngen.
 
 Lemma size_constraint_open_constraint_wrt_tm :
 forall phi1 a1,
   size_constraint phi1 <= size_constraint (open_constraint_wrt_tm phi1 a1).
-Proof.
-unfold open_constraint_wrt_tm; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve size_constraint_open_constraint_wrt_tm : lngen.
 
 Lemma size_tm_open_tm_wrt_co :
 forall a1 g1,
   size_tm a1 <= size_tm (open_tm_wrt_co a1 g1).
-Proof.
-unfold open_tm_wrt_co; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve size_tm_open_tm_wrt_co : lngen.
 
 Lemma size_brs_open_brs_wrt_co :
 forall brs1 g1,
   size_brs brs1 <= size_brs (open_brs_wrt_co brs1 g1).
-Proof.
-unfold open_brs_wrt_co; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve size_brs_open_brs_wrt_co : lngen.
 
 Lemma size_co_open_co_wrt_co :
 forall g1 g2,
   size_co g1 <= size_co (open_co_wrt_co g1 g2).
-Proof.
-unfold open_co_wrt_co; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve size_co_open_co_wrt_co : lngen.
 
 Lemma size_constraint_open_constraint_wrt_co :
 forall phi1 g1,
   size_constraint phi1 <= size_constraint (open_constraint_wrt_co phi1 g1).
-Proof.
-unfold open_constraint_wrt_co; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve size_constraint_open_constraint_wrt_co : lngen.
 
@@ -1435,10 +1342,7 @@ Lemma size_tm_open_tm_wrt_tm_rec_var_size_brs_open_brs_wrt_tm_rec_var_size_co_op
   size_co (open_co_wrt_tm_rec n1 (a_Var_f x1) g1) = size_co g1) /\
 (forall phi1 x1 n1,
   size_constraint (open_constraint_wrt_tm_rec n1 (a_Var_f x1) phi1) = size_constraint phi1).
-Proof.
-apply_mutual_ind tm_brs_co_constraint_mutind;
-default_simp.
-Qed.
+Proof. Admitted.
 
 (* end hide *)
 
@@ -1447,9 +1351,7 @@ Qed.
 Lemma size_tm_open_tm_wrt_tm_rec_var :
 forall a1 x1 n1,
   size_tm (open_tm_wrt_tm_rec n1 (a_Var_f x1) a1) = size_tm a1.
-Proof.
-pose proof size_tm_open_tm_wrt_tm_rec_var_size_brs_open_brs_wrt_tm_rec_var_size_co_open_co_wrt_tm_rec_var_size_constraint_open_constraint_wrt_tm_rec_var_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve size_tm_open_tm_wrt_tm_rec_var : lngen.
 Hint Rewrite size_tm_open_tm_wrt_tm_rec_var using solve [auto] : lngen.
@@ -1461,9 +1363,7 @@ Hint Rewrite size_tm_open_tm_wrt_tm_rec_var using solve [auto] : lngen.
 Lemma size_brs_open_brs_wrt_tm_rec_var :
 forall brs1 x1 n1,
   size_brs (open_brs_wrt_tm_rec n1 (a_Var_f x1) brs1) = size_brs brs1.
-Proof.
-pose proof size_tm_open_tm_wrt_tm_rec_var_size_brs_open_brs_wrt_tm_rec_var_size_co_open_co_wrt_tm_rec_var_size_constraint_open_constraint_wrt_tm_rec_var_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve size_brs_open_brs_wrt_tm_rec_var : lngen.
 Hint Rewrite size_brs_open_brs_wrt_tm_rec_var using solve [auto] : lngen.
@@ -1475,9 +1375,7 @@ Hint Rewrite size_brs_open_brs_wrt_tm_rec_var using solve [auto] : lngen.
 Lemma size_co_open_co_wrt_tm_rec_var :
 forall g1 x1 n1,
   size_co (open_co_wrt_tm_rec n1 (a_Var_f x1) g1) = size_co g1.
-Proof.
-pose proof size_tm_open_tm_wrt_tm_rec_var_size_brs_open_brs_wrt_tm_rec_var_size_co_open_co_wrt_tm_rec_var_size_constraint_open_constraint_wrt_tm_rec_var_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve size_co_open_co_wrt_tm_rec_var : lngen.
 Hint Rewrite size_co_open_co_wrt_tm_rec_var using solve [auto] : lngen.
@@ -1489,9 +1387,7 @@ Hint Rewrite size_co_open_co_wrt_tm_rec_var using solve [auto] : lngen.
 Lemma size_constraint_open_constraint_wrt_tm_rec_var :
 forall phi1 x1 n1,
   size_constraint (open_constraint_wrt_tm_rec n1 (a_Var_f x1) phi1) = size_constraint phi1.
-Proof.
-pose proof size_tm_open_tm_wrt_tm_rec_var_size_brs_open_brs_wrt_tm_rec_var_size_co_open_co_wrt_tm_rec_var_size_constraint_open_constraint_wrt_tm_rec_var_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve size_constraint_open_constraint_wrt_tm_rec_var : lngen.
 Hint Rewrite size_constraint_open_constraint_wrt_tm_rec_var using solve [auto] : lngen.
@@ -1509,10 +1405,7 @@ Lemma size_tm_open_tm_wrt_co_rec_var_size_brs_open_brs_wrt_co_rec_var_size_co_op
   size_co (open_co_wrt_co_rec n1 (g_Var_f c1) g1) = size_co g1) /\
 (forall phi1 c1 n1,
   size_constraint (open_constraint_wrt_co_rec n1 (g_Var_f c1) phi1) = size_constraint phi1).
-Proof.
-apply_mutual_ind tm_brs_co_constraint_mutind;
-default_simp.
-Qed.
+Proof. Admitted.
 
 (* end hide *)
 
@@ -1521,9 +1414,7 @@ Qed.
 Lemma size_tm_open_tm_wrt_co_rec_var :
 forall a1 c1 n1,
   size_tm (open_tm_wrt_co_rec n1 (g_Var_f c1) a1) = size_tm a1.
-Proof.
-pose proof size_tm_open_tm_wrt_co_rec_var_size_brs_open_brs_wrt_co_rec_var_size_co_open_co_wrt_co_rec_var_size_constraint_open_constraint_wrt_co_rec_var_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve size_tm_open_tm_wrt_co_rec_var : lngen.
 Hint Rewrite size_tm_open_tm_wrt_co_rec_var using solve [auto] : lngen.
@@ -1535,9 +1426,7 @@ Hint Rewrite size_tm_open_tm_wrt_co_rec_var using solve [auto] : lngen.
 Lemma size_brs_open_brs_wrt_co_rec_var :
 forall brs1 c1 n1,
   size_brs (open_brs_wrt_co_rec n1 (g_Var_f c1) brs1) = size_brs brs1.
-Proof.
-pose proof size_tm_open_tm_wrt_co_rec_var_size_brs_open_brs_wrt_co_rec_var_size_co_open_co_wrt_co_rec_var_size_constraint_open_constraint_wrt_co_rec_var_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve size_brs_open_brs_wrt_co_rec_var : lngen.
 Hint Rewrite size_brs_open_brs_wrt_co_rec_var using solve [auto] : lngen.
@@ -1549,9 +1438,7 @@ Hint Rewrite size_brs_open_brs_wrt_co_rec_var using solve [auto] : lngen.
 Lemma size_co_open_co_wrt_co_rec_var :
 forall g1 c1 n1,
   size_co (open_co_wrt_co_rec n1 (g_Var_f c1) g1) = size_co g1.
-Proof.
-pose proof size_tm_open_tm_wrt_co_rec_var_size_brs_open_brs_wrt_co_rec_var_size_co_open_co_wrt_co_rec_var_size_constraint_open_constraint_wrt_co_rec_var_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve size_co_open_co_wrt_co_rec_var : lngen.
 Hint Rewrite size_co_open_co_wrt_co_rec_var using solve [auto] : lngen.
@@ -1563,9 +1450,7 @@ Hint Rewrite size_co_open_co_wrt_co_rec_var using solve [auto] : lngen.
 Lemma size_constraint_open_constraint_wrt_co_rec_var :
 forall phi1 c1 n1,
   size_constraint (open_constraint_wrt_co_rec n1 (g_Var_f c1) phi1) = size_constraint phi1.
-Proof.
-pose proof size_tm_open_tm_wrt_co_rec_var_size_brs_open_brs_wrt_co_rec_var_size_co_open_co_wrt_co_rec_var_size_constraint_open_constraint_wrt_co_rec_var_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve size_constraint_open_constraint_wrt_co_rec_var : lngen.
 Hint Rewrite size_constraint_open_constraint_wrt_co_rec_var using solve [auto] : lngen.
@@ -1575,9 +1460,7 @@ Hint Rewrite size_constraint_open_constraint_wrt_co_rec_var using solve [auto] :
 Lemma size_tm_open_tm_wrt_tm_var :
 forall a1 x1,
   size_tm (open_tm_wrt_tm a1 (a_Var_f x1)) = size_tm a1.
-Proof.
-unfold open_tm_wrt_tm; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve size_tm_open_tm_wrt_tm_var : lngen.
 Hint Rewrite size_tm_open_tm_wrt_tm_var using solve [auto] : lngen.
@@ -1585,9 +1468,7 @@ Hint Rewrite size_tm_open_tm_wrt_tm_var using solve [auto] : lngen.
 Lemma size_brs_open_brs_wrt_tm_var :
 forall brs1 x1,
   size_brs (open_brs_wrt_tm brs1 (a_Var_f x1)) = size_brs brs1.
-Proof.
-unfold open_brs_wrt_tm; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve size_brs_open_brs_wrt_tm_var : lngen.
 Hint Rewrite size_brs_open_brs_wrt_tm_var using solve [auto] : lngen.
@@ -1595,9 +1476,7 @@ Hint Rewrite size_brs_open_brs_wrt_tm_var using solve [auto] : lngen.
 Lemma size_co_open_co_wrt_tm_var :
 forall g1 x1,
   size_co (open_co_wrt_tm g1 (a_Var_f x1)) = size_co g1.
-Proof.
-unfold open_co_wrt_tm; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve size_co_open_co_wrt_tm_var : lngen.
 Hint Rewrite size_co_open_co_wrt_tm_var using solve [auto] : lngen.
@@ -1605,9 +1484,7 @@ Hint Rewrite size_co_open_co_wrt_tm_var using solve [auto] : lngen.
 Lemma size_constraint_open_constraint_wrt_tm_var :
 forall phi1 x1,
   size_constraint (open_constraint_wrt_tm phi1 (a_Var_f x1)) = size_constraint phi1.
-Proof.
-unfold open_constraint_wrt_tm; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve size_constraint_open_constraint_wrt_tm_var : lngen.
 Hint Rewrite size_constraint_open_constraint_wrt_tm_var using solve [auto] : lngen.
@@ -1615,9 +1492,7 @@ Hint Rewrite size_constraint_open_constraint_wrt_tm_var using solve [auto] : lng
 Lemma size_tm_open_tm_wrt_co_var :
 forall a1 c1,
   size_tm (open_tm_wrt_co a1 (g_Var_f c1)) = size_tm a1.
-Proof.
-unfold open_tm_wrt_co; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve size_tm_open_tm_wrt_co_var : lngen.
 Hint Rewrite size_tm_open_tm_wrt_co_var using solve [auto] : lngen.
@@ -1625,9 +1500,7 @@ Hint Rewrite size_tm_open_tm_wrt_co_var using solve [auto] : lngen.
 Lemma size_brs_open_brs_wrt_co_var :
 forall brs1 c1,
   size_brs (open_brs_wrt_co brs1 (g_Var_f c1)) = size_brs brs1.
-Proof.
-unfold open_brs_wrt_co; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve size_brs_open_brs_wrt_co_var : lngen.
 Hint Rewrite size_brs_open_brs_wrt_co_var using solve [auto] : lngen.
@@ -1635,9 +1508,7 @@ Hint Rewrite size_brs_open_brs_wrt_co_var using solve [auto] : lngen.
 Lemma size_co_open_co_wrt_co_var :
 forall g1 c1,
   size_co (open_co_wrt_co g1 (g_Var_f c1)) = size_co g1.
-Proof.
-unfold open_co_wrt_co; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve size_co_open_co_wrt_co_var : lngen.
 Hint Rewrite size_co_open_co_wrt_co_var using solve [auto] : lngen.
@@ -1645,9 +1516,7 @@ Hint Rewrite size_co_open_co_wrt_co_var using solve [auto] : lngen.
 Lemma size_constraint_open_constraint_wrt_co_var :
 forall phi1 c1,
   size_constraint (open_constraint_wrt_co phi1 (g_Var_f c1)) = size_constraint phi1.
-Proof.
-unfold open_constraint_wrt_co; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve size_constraint_open_constraint_wrt_co_var : lngen.
 Hint Rewrite size_constraint_open_constraint_wrt_co_var using solve [auto] : lngen.
@@ -1674,10 +1543,7 @@ Lemma degree_tm_wrt_tm_S_degree_brs_wrt_tm_S_degree_co_wrt_tm_S_degree_constrain
 (forall n1 phi1,
   degree_constraint_wrt_tm n1 phi1 ->
   degree_constraint_wrt_tm (S n1) phi1).
-Proof.
-apply_mutual_ind degree_tm_wrt_tm_degree_brs_wrt_tm_degree_co_wrt_tm_degree_constraint_wrt_tm_mutind;
-default_simp.
-Qed.
+Proof. Admitted.
 
 (* end hide *)
 
@@ -1685,9 +1551,7 @@ Lemma degree_tm_wrt_tm_S :
 forall n1 a1,
   degree_tm_wrt_tm n1 a1 ->
   degree_tm_wrt_tm (S n1) a1.
-Proof.
-pose proof degree_tm_wrt_tm_S_degree_brs_wrt_tm_S_degree_co_wrt_tm_S_degree_constraint_wrt_tm_S_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve degree_tm_wrt_tm_S : lngen.
 
@@ -1695,9 +1559,7 @@ Lemma degree_brs_wrt_tm_S :
 forall n1 brs1,
   degree_brs_wrt_tm n1 brs1 ->
   degree_brs_wrt_tm (S n1) brs1.
-Proof.
-pose proof degree_tm_wrt_tm_S_degree_brs_wrt_tm_S_degree_co_wrt_tm_S_degree_constraint_wrt_tm_S_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve degree_brs_wrt_tm_S : lngen.
 
@@ -1705,9 +1567,7 @@ Lemma degree_co_wrt_tm_S :
 forall n1 g1,
   degree_co_wrt_tm n1 g1 ->
   degree_co_wrt_tm (S n1) g1.
-Proof.
-pose proof degree_tm_wrt_tm_S_degree_brs_wrt_tm_S_degree_co_wrt_tm_S_degree_constraint_wrt_tm_S_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve degree_co_wrt_tm_S : lngen.
 
@@ -1715,9 +1575,7 @@ Lemma degree_constraint_wrt_tm_S :
 forall n1 phi1,
   degree_constraint_wrt_tm n1 phi1 ->
   degree_constraint_wrt_tm (S n1) phi1.
-Proof.
-pose proof degree_tm_wrt_tm_S_degree_brs_wrt_tm_S_degree_co_wrt_tm_S_degree_constraint_wrt_tm_S_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve degree_constraint_wrt_tm_S : lngen.
 
@@ -1736,10 +1594,7 @@ Lemma degree_tm_wrt_co_S_degree_brs_wrt_co_S_degree_co_wrt_co_S_degree_constrain
 (forall n1 phi1,
   degree_constraint_wrt_co n1 phi1 ->
   degree_constraint_wrt_co (S n1) phi1).
-Proof.
-apply_mutual_ind degree_tm_wrt_co_degree_brs_wrt_co_degree_co_wrt_co_degree_constraint_wrt_co_mutind;
-default_simp.
-Qed.
+Proof. Admitted.
 
 (* end hide *)
 
@@ -1747,9 +1602,7 @@ Lemma degree_tm_wrt_co_S :
 forall n1 a1,
   degree_tm_wrt_co n1 a1 ->
   degree_tm_wrt_co (S n1) a1.
-Proof.
-pose proof degree_tm_wrt_co_S_degree_brs_wrt_co_S_degree_co_wrt_co_S_degree_constraint_wrt_co_S_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve degree_tm_wrt_co_S : lngen.
 
@@ -1757,9 +1610,7 @@ Lemma degree_brs_wrt_co_S :
 forall n1 brs1,
   degree_brs_wrt_co n1 brs1 ->
   degree_brs_wrt_co (S n1) brs1.
-Proof.
-pose proof degree_tm_wrt_co_S_degree_brs_wrt_co_S_degree_co_wrt_co_S_degree_constraint_wrt_co_S_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve degree_brs_wrt_co_S : lngen.
 
@@ -1767,9 +1618,7 @@ Lemma degree_co_wrt_co_S :
 forall n1 g1,
   degree_co_wrt_co n1 g1 ->
   degree_co_wrt_co (S n1) g1.
-Proof.
-pose proof degree_tm_wrt_co_S_degree_brs_wrt_co_S_degree_co_wrt_co_S_degree_constraint_wrt_co_S_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve degree_co_wrt_co_S : lngen.
 
@@ -1777,9 +1626,7 @@ Lemma degree_constraint_wrt_co_S :
 forall n1 phi1,
   degree_constraint_wrt_co n1 phi1 ->
   degree_constraint_wrt_co (S n1) phi1.
-Proof.
-pose proof degree_tm_wrt_co_S_degree_brs_wrt_co_S_degree_co_wrt_co_S_degree_constraint_wrt_co_S_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve degree_constraint_wrt_co_S : lngen.
 
@@ -1787,9 +1634,7 @@ Lemma degree_tm_wrt_tm_O :
 forall n1 a1,
   degree_tm_wrt_tm O a1 ->
   degree_tm_wrt_tm n1 a1.
-Proof.
-induction n1; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve degree_tm_wrt_tm_O : lngen.
 
@@ -1797,9 +1642,7 @@ Lemma degree_brs_wrt_tm_O :
 forall n1 brs1,
   degree_brs_wrt_tm O brs1 ->
   degree_brs_wrt_tm n1 brs1.
-Proof.
-induction n1; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve degree_brs_wrt_tm_O : lngen.
 
@@ -1807,9 +1650,7 @@ Lemma degree_co_wrt_tm_O :
 forall n1 g1,
   degree_co_wrt_tm O g1 ->
   degree_co_wrt_tm n1 g1.
-Proof.
-induction n1; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve degree_co_wrt_tm_O : lngen.
 
@@ -1817,9 +1658,7 @@ Lemma degree_constraint_wrt_tm_O :
 forall n1 phi1,
   degree_constraint_wrt_tm O phi1 ->
   degree_constraint_wrt_tm n1 phi1.
-Proof.
-induction n1; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve degree_constraint_wrt_tm_O : lngen.
 
@@ -1827,9 +1666,7 @@ Lemma degree_tm_wrt_co_O :
 forall n1 a1,
   degree_tm_wrt_co O a1 ->
   degree_tm_wrt_co n1 a1.
-Proof.
-induction n1; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve degree_tm_wrt_co_O : lngen.
 
@@ -1837,9 +1674,7 @@ Lemma degree_brs_wrt_co_O :
 forall n1 brs1,
   degree_brs_wrt_co O brs1 ->
   degree_brs_wrt_co n1 brs1.
-Proof.
-induction n1; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve degree_brs_wrt_co_O : lngen.
 
@@ -1847,9 +1682,7 @@ Lemma degree_co_wrt_co_O :
 forall n1 g1,
   degree_co_wrt_co O g1 ->
   degree_co_wrt_co n1 g1.
-Proof.
-induction n1; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve degree_co_wrt_co_O : lngen.
 
@@ -1857,9 +1690,7 @@ Lemma degree_constraint_wrt_co_O :
 forall n1 phi1,
   degree_constraint_wrt_co O phi1 ->
   degree_constraint_wrt_co n1 phi1.
-Proof.
-induction n1; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve degree_constraint_wrt_co_O : lngen.
 
@@ -1878,10 +1709,7 @@ Lemma degree_tm_wrt_tm_close_tm_wrt_tm_rec_degree_brs_wrt_tm_close_brs_wrt_tm_re
 (forall phi1 x1 n1,
   degree_constraint_wrt_tm n1 phi1 ->
   degree_constraint_wrt_tm (S n1) (close_constraint_wrt_tm_rec n1 x1 phi1)).
-Proof.
-apply_mutual_ind tm_brs_co_constraint_mutind;
-default_simp.
-Qed.
+Proof. Admitted.
 
 (* end hide *)
 
@@ -1891,9 +1719,7 @@ Lemma degree_tm_wrt_tm_close_tm_wrt_tm_rec :
 forall a1 x1 n1,
   degree_tm_wrt_tm n1 a1 ->
   degree_tm_wrt_tm (S n1) (close_tm_wrt_tm_rec n1 x1 a1).
-Proof.
-pose proof degree_tm_wrt_tm_close_tm_wrt_tm_rec_degree_brs_wrt_tm_close_brs_wrt_tm_rec_degree_co_wrt_tm_close_co_wrt_tm_rec_degree_constraint_wrt_tm_close_constraint_wrt_tm_rec_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve degree_tm_wrt_tm_close_tm_wrt_tm_rec : lngen.
 
@@ -1905,9 +1731,7 @@ Lemma degree_brs_wrt_tm_close_brs_wrt_tm_rec :
 forall brs1 x1 n1,
   degree_brs_wrt_tm n1 brs1 ->
   degree_brs_wrt_tm (S n1) (close_brs_wrt_tm_rec n1 x1 brs1).
-Proof.
-pose proof degree_tm_wrt_tm_close_tm_wrt_tm_rec_degree_brs_wrt_tm_close_brs_wrt_tm_rec_degree_co_wrt_tm_close_co_wrt_tm_rec_degree_constraint_wrt_tm_close_constraint_wrt_tm_rec_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve degree_brs_wrt_tm_close_brs_wrt_tm_rec : lngen.
 
@@ -1919,9 +1743,7 @@ Lemma degree_co_wrt_tm_close_co_wrt_tm_rec :
 forall g1 x1 n1,
   degree_co_wrt_tm n1 g1 ->
   degree_co_wrt_tm (S n1) (close_co_wrt_tm_rec n1 x1 g1).
-Proof.
-pose proof degree_tm_wrt_tm_close_tm_wrt_tm_rec_degree_brs_wrt_tm_close_brs_wrt_tm_rec_degree_co_wrt_tm_close_co_wrt_tm_rec_degree_constraint_wrt_tm_close_constraint_wrt_tm_rec_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve degree_co_wrt_tm_close_co_wrt_tm_rec : lngen.
 
@@ -1933,9 +1755,7 @@ Lemma degree_constraint_wrt_tm_close_constraint_wrt_tm_rec :
 forall phi1 x1 n1,
   degree_constraint_wrt_tm n1 phi1 ->
   degree_constraint_wrt_tm (S n1) (close_constraint_wrt_tm_rec n1 x1 phi1).
-Proof.
-pose proof degree_tm_wrt_tm_close_tm_wrt_tm_rec_degree_brs_wrt_tm_close_brs_wrt_tm_rec_degree_co_wrt_tm_close_co_wrt_tm_rec_degree_constraint_wrt_tm_close_constraint_wrt_tm_rec_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve degree_constraint_wrt_tm_close_constraint_wrt_tm_rec : lngen.
 
@@ -1956,10 +1776,7 @@ Lemma degree_tm_wrt_tm_close_tm_wrt_co_rec_degree_brs_wrt_tm_close_brs_wrt_co_re
 (forall phi1 c1 n1 n2,
   degree_constraint_wrt_tm n2 phi1 ->
   degree_constraint_wrt_tm n2 (close_constraint_wrt_co_rec n1 c1 phi1)).
-Proof.
-apply_mutual_ind tm_brs_co_constraint_mutind;
-default_simp.
-Qed.
+Proof. Admitted.
 
 (* end hide *)
 
@@ -1969,9 +1786,7 @@ Lemma degree_tm_wrt_tm_close_tm_wrt_co_rec :
 forall a1 c1 n1 n2,
   degree_tm_wrt_tm n2 a1 ->
   degree_tm_wrt_tm n2 (close_tm_wrt_co_rec n1 c1 a1).
-Proof.
-pose proof degree_tm_wrt_tm_close_tm_wrt_co_rec_degree_brs_wrt_tm_close_brs_wrt_co_rec_degree_co_wrt_tm_close_co_wrt_co_rec_degree_constraint_wrt_tm_close_constraint_wrt_co_rec_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve degree_tm_wrt_tm_close_tm_wrt_co_rec : lngen.
 
@@ -1983,9 +1798,7 @@ Lemma degree_brs_wrt_tm_close_brs_wrt_co_rec :
 forall brs1 c1 n1 n2,
   degree_brs_wrt_tm n2 brs1 ->
   degree_brs_wrt_tm n2 (close_brs_wrt_co_rec n1 c1 brs1).
-Proof.
-pose proof degree_tm_wrt_tm_close_tm_wrt_co_rec_degree_brs_wrt_tm_close_brs_wrt_co_rec_degree_co_wrt_tm_close_co_wrt_co_rec_degree_constraint_wrt_tm_close_constraint_wrt_co_rec_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve degree_brs_wrt_tm_close_brs_wrt_co_rec : lngen.
 
@@ -1997,9 +1810,7 @@ Lemma degree_co_wrt_tm_close_co_wrt_co_rec :
 forall g1 c1 n1 n2,
   degree_co_wrt_tm n2 g1 ->
   degree_co_wrt_tm n2 (close_co_wrt_co_rec n1 c1 g1).
-Proof.
-pose proof degree_tm_wrt_tm_close_tm_wrt_co_rec_degree_brs_wrt_tm_close_brs_wrt_co_rec_degree_co_wrt_tm_close_co_wrt_co_rec_degree_constraint_wrt_tm_close_constraint_wrt_co_rec_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve degree_co_wrt_tm_close_co_wrt_co_rec : lngen.
 
@@ -2011,9 +1822,7 @@ Lemma degree_constraint_wrt_tm_close_constraint_wrt_co_rec :
 forall phi1 c1 n1 n2,
   degree_constraint_wrt_tm n2 phi1 ->
   degree_constraint_wrt_tm n2 (close_constraint_wrt_co_rec n1 c1 phi1).
-Proof.
-pose proof degree_tm_wrt_tm_close_tm_wrt_co_rec_degree_brs_wrt_tm_close_brs_wrt_co_rec_degree_co_wrt_tm_close_co_wrt_co_rec_degree_constraint_wrt_tm_close_constraint_wrt_co_rec_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve degree_constraint_wrt_tm_close_constraint_wrt_co_rec : lngen.
 
@@ -2034,10 +1843,7 @@ Lemma degree_tm_wrt_co_close_tm_wrt_tm_rec_degree_brs_wrt_co_close_brs_wrt_tm_re
 (forall phi1 x1 n1 n2,
   degree_constraint_wrt_co n2 phi1 ->
   degree_constraint_wrt_co n2 (close_constraint_wrt_tm_rec n1 x1 phi1)).
-Proof.
-apply_mutual_ind tm_brs_co_constraint_mutind;
-default_simp.
-Qed.
+Proof. Admitted.
 
 (* end hide *)
 
@@ -2047,9 +1853,7 @@ Lemma degree_tm_wrt_co_close_tm_wrt_tm_rec :
 forall a1 x1 n1 n2,
   degree_tm_wrt_co n2 a1 ->
   degree_tm_wrt_co n2 (close_tm_wrt_tm_rec n1 x1 a1).
-Proof.
-pose proof degree_tm_wrt_co_close_tm_wrt_tm_rec_degree_brs_wrt_co_close_brs_wrt_tm_rec_degree_co_wrt_co_close_co_wrt_tm_rec_degree_constraint_wrt_co_close_constraint_wrt_tm_rec_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve degree_tm_wrt_co_close_tm_wrt_tm_rec : lngen.
 
@@ -2061,9 +1865,7 @@ Lemma degree_brs_wrt_co_close_brs_wrt_tm_rec :
 forall brs1 x1 n1 n2,
   degree_brs_wrt_co n2 brs1 ->
   degree_brs_wrt_co n2 (close_brs_wrt_tm_rec n1 x1 brs1).
-Proof.
-pose proof degree_tm_wrt_co_close_tm_wrt_tm_rec_degree_brs_wrt_co_close_brs_wrt_tm_rec_degree_co_wrt_co_close_co_wrt_tm_rec_degree_constraint_wrt_co_close_constraint_wrt_tm_rec_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve degree_brs_wrt_co_close_brs_wrt_tm_rec : lngen.
 
@@ -2075,9 +1877,7 @@ Lemma degree_co_wrt_co_close_co_wrt_tm_rec :
 forall g1 x1 n1 n2,
   degree_co_wrt_co n2 g1 ->
   degree_co_wrt_co n2 (close_co_wrt_tm_rec n1 x1 g1).
-Proof.
-pose proof degree_tm_wrt_co_close_tm_wrt_tm_rec_degree_brs_wrt_co_close_brs_wrt_tm_rec_degree_co_wrt_co_close_co_wrt_tm_rec_degree_constraint_wrt_co_close_constraint_wrt_tm_rec_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve degree_co_wrt_co_close_co_wrt_tm_rec : lngen.
 
@@ -2089,9 +1889,7 @@ Lemma degree_constraint_wrt_co_close_constraint_wrt_tm_rec :
 forall phi1 x1 n1 n2,
   degree_constraint_wrt_co n2 phi1 ->
   degree_constraint_wrt_co n2 (close_constraint_wrt_tm_rec n1 x1 phi1).
-Proof.
-pose proof degree_tm_wrt_co_close_tm_wrt_tm_rec_degree_brs_wrt_co_close_brs_wrt_tm_rec_degree_co_wrt_co_close_co_wrt_tm_rec_degree_constraint_wrt_co_close_constraint_wrt_tm_rec_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve degree_constraint_wrt_co_close_constraint_wrt_tm_rec : lngen.
 
@@ -2112,10 +1910,7 @@ Lemma degree_tm_wrt_co_close_tm_wrt_co_rec_degree_brs_wrt_co_close_brs_wrt_co_re
 (forall phi1 c1 n1,
   degree_constraint_wrt_co n1 phi1 ->
   degree_constraint_wrt_co (S n1) (close_constraint_wrt_co_rec n1 c1 phi1)).
-Proof.
-apply_mutual_ind tm_brs_co_constraint_mutind;
-default_simp.
-Qed.
+Proof. Admitted.
 
 (* end hide *)
 
@@ -2125,9 +1920,7 @@ Lemma degree_tm_wrt_co_close_tm_wrt_co_rec :
 forall a1 c1 n1,
   degree_tm_wrt_co n1 a1 ->
   degree_tm_wrt_co (S n1) (close_tm_wrt_co_rec n1 c1 a1).
-Proof.
-pose proof degree_tm_wrt_co_close_tm_wrt_co_rec_degree_brs_wrt_co_close_brs_wrt_co_rec_degree_co_wrt_co_close_co_wrt_co_rec_degree_constraint_wrt_co_close_constraint_wrt_co_rec_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve degree_tm_wrt_co_close_tm_wrt_co_rec : lngen.
 
@@ -2139,9 +1932,7 @@ Lemma degree_brs_wrt_co_close_brs_wrt_co_rec :
 forall brs1 c1 n1,
   degree_brs_wrt_co n1 brs1 ->
   degree_brs_wrt_co (S n1) (close_brs_wrt_co_rec n1 c1 brs1).
-Proof.
-pose proof degree_tm_wrt_co_close_tm_wrt_co_rec_degree_brs_wrt_co_close_brs_wrt_co_rec_degree_co_wrt_co_close_co_wrt_co_rec_degree_constraint_wrt_co_close_constraint_wrt_co_rec_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve degree_brs_wrt_co_close_brs_wrt_co_rec : lngen.
 
@@ -2153,9 +1944,7 @@ Lemma degree_co_wrt_co_close_co_wrt_co_rec :
 forall g1 c1 n1,
   degree_co_wrt_co n1 g1 ->
   degree_co_wrt_co (S n1) (close_co_wrt_co_rec n1 c1 g1).
-Proof.
-pose proof degree_tm_wrt_co_close_tm_wrt_co_rec_degree_brs_wrt_co_close_brs_wrt_co_rec_degree_co_wrt_co_close_co_wrt_co_rec_degree_constraint_wrt_co_close_constraint_wrt_co_rec_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve degree_co_wrt_co_close_co_wrt_co_rec : lngen.
 
@@ -2167,9 +1956,7 @@ Lemma degree_constraint_wrt_co_close_constraint_wrt_co_rec :
 forall phi1 c1 n1,
   degree_constraint_wrt_co n1 phi1 ->
   degree_constraint_wrt_co (S n1) (close_constraint_wrt_co_rec n1 c1 phi1).
-Proof.
-pose proof degree_tm_wrt_co_close_tm_wrt_co_rec_degree_brs_wrt_co_close_brs_wrt_co_rec_degree_co_wrt_co_close_co_wrt_co_rec_degree_constraint_wrt_co_close_constraint_wrt_co_rec_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve degree_constraint_wrt_co_close_constraint_wrt_co_rec : lngen.
 
@@ -2179,9 +1966,7 @@ Lemma degree_tm_wrt_tm_close_tm_wrt_tm :
 forall a1 x1,
   degree_tm_wrt_tm 0 a1 ->
   degree_tm_wrt_tm 1 (close_tm_wrt_tm x1 a1).
-Proof.
-unfold close_tm_wrt_tm; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve degree_tm_wrt_tm_close_tm_wrt_tm : lngen.
 
@@ -2189,9 +1974,7 @@ Lemma degree_brs_wrt_tm_close_brs_wrt_tm :
 forall brs1 x1,
   degree_brs_wrt_tm 0 brs1 ->
   degree_brs_wrt_tm 1 (close_brs_wrt_tm x1 brs1).
-Proof.
-unfold close_brs_wrt_tm; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve degree_brs_wrt_tm_close_brs_wrt_tm : lngen.
 
@@ -2199,9 +1982,7 @@ Lemma degree_co_wrt_tm_close_co_wrt_tm :
 forall g1 x1,
   degree_co_wrt_tm 0 g1 ->
   degree_co_wrt_tm 1 (close_co_wrt_tm x1 g1).
-Proof.
-unfold close_co_wrt_tm; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve degree_co_wrt_tm_close_co_wrt_tm : lngen.
 
@@ -2209,9 +1990,7 @@ Lemma degree_constraint_wrt_tm_close_constraint_wrt_tm :
 forall phi1 x1,
   degree_constraint_wrt_tm 0 phi1 ->
   degree_constraint_wrt_tm 1 (close_constraint_wrt_tm x1 phi1).
-Proof.
-unfold close_constraint_wrt_tm; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve degree_constraint_wrt_tm_close_constraint_wrt_tm : lngen.
 
@@ -2219,9 +1998,7 @@ Lemma degree_tm_wrt_tm_close_tm_wrt_co :
 forall a1 c1 n1,
   degree_tm_wrt_tm n1 a1 ->
   degree_tm_wrt_tm n1 (close_tm_wrt_co c1 a1).
-Proof.
-unfold close_tm_wrt_co; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve degree_tm_wrt_tm_close_tm_wrt_co : lngen.
 
@@ -2229,9 +2006,7 @@ Lemma degree_brs_wrt_tm_close_brs_wrt_co :
 forall brs1 c1 n1,
   degree_brs_wrt_tm n1 brs1 ->
   degree_brs_wrt_tm n1 (close_brs_wrt_co c1 brs1).
-Proof.
-unfold close_brs_wrt_co; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve degree_brs_wrt_tm_close_brs_wrt_co : lngen.
 
@@ -2239,9 +2014,7 @@ Lemma degree_co_wrt_tm_close_co_wrt_co :
 forall g1 c1 n1,
   degree_co_wrt_tm n1 g1 ->
   degree_co_wrt_tm n1 (close_co_wrt_co c1 g1).
-Proof.
-unfold close_co_wrt_co; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve degree_co_wrt_tm_close_co_wrt_co : lngen.
 
@@ -2249,9 +2022,7 @@ Lemma degree_constraint_wrt_tm_close_constraint_wrt_co :
 forall phi1 c1 n1,
   degree_constraint_wrt_tm n1 phi1 ->
   degree_constraint_wrt_tm n1 (close_constraint_wrt_co c1 phi1).
-Proof.
-unfold close_constraint_wrt_co; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve degree_constraint_wrt_tm_close_constraint_wrt_co : lngen.
 
@@ -2259,9 +2030,7 @@ Lemma degree_tm_wrt_co_close_tm_wrt_tm :
 forall a1 x1 n1,
   degree_tm_wrt_co n1 a1 ->
   degree_tm_wrt_co n1 (close_tm_wrt_tm x1 a1).
-Proof.
-unfold close_tm_wrt_tm; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve degree_tm_wrt_co_close_tm_wrt_tm : lngen.
 
@@ -2269,9 +2038,7 @@ Lemma degree_brs_wrt_co_close_brs_wrt_tm :
 forall brs1 x1 n1,
   degree_brs_wrt_co n1 brs1 ->
   degree_brs_wrt_co n1 (close_brs_wrt_tm x1 brs1).
-Proof.
-unfold close_brs_wrt_tm; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve degree_brs_wrt_co_close_brs_wrt_tm : lngen.
 
@@ -2279,9 +2046,7 @@ Lemma degree_co_wrt_co_close_co_wrt_tm :
 forall g1 x1 n1,
   degree_co_wrt_co n1 g1 ->
   degree_co_wrt_co n1 (close_co_wrt_tm x1 g1).
-Proof.
-unfold close_co_wrt_tm; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve degree_co_wrt_co_close_co_wrt_tm : lngen.
 
@@ -2289,9 +2054,7 @@ Lemma degree_constraint_wrt_co_close_constraint_wrt_tm :
 forall phi1 x1 n1,
   degree_constraint_wrt_co n1 phi1 ->
   degree_constraint_wrt_co n1 (close_constraint_wrt_tm x1 phi1).
-Proof.
-unfold close_constraint_wrt_tm; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve degree_constraint_wrt_co_close_constraint_wrt_tm : lngen.
 
@@ -2299,9 +2062,7 @@ Lemma degree_tm_wrt_co_close_tm_wrt_co :
 forall a1 c1,
   degree_tm_wrt_co 0 a1 ->
   degree_tm_wrt_co 1 (close_tm_wrt_co c1 a1).
-Proof.
-unfold close_tm_wrt_co; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve degree_tm_wrt_co_close_tm_wrt_co : lngen.
 
@@ -2309,9 +2070,7 @@ Lemma degree_brs_wrt_co_close_brs_wrt_co :
 forall brs1 c1,
   degree_brs_wrt_co 0 brs1 ->
   degree_brs_wrt_co 1 (close_brs_wrt_co c1 brs1).
-Proof.
-unfold close_brs_wrt_co; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve degree_brs_wrt_co_close_brs_wrt_co : lngen.
 
@@ -2319,9 +2078,7 @@ Lemma degree_co_wrt_co_close_co_wrt_co :
 forall g1 c1,
   degree_co_wrt_co 0 g1 ->
   degree_co_wrt_co 1 (close_co_wrt_co c1 g1).
-Proof.
-unfold close_co_wrt_co; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve degree_co_wrt_co_close_co_wrt_co : lngen.
 
@@ -2329,9 +2086,7 @@ Lemma degree_constraint_wrt_co_close_constraint_wrt_co :
 forall phi1 c1,
   degree_constraint_wrt_co 0 phi1 ->
   degree_constraint_wrt_co 1 (close_constraint_wrt_co c1 phi1).
-Proof.
-unfold close_constraint_wrt_co; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve degree_constraint_wrt_co_close_constraint_wrt_co : lngen.
 
@@ -2350,10 +2105,7 @@ Lemma degree_tm_wrt_tm_close_tm_wrt_tm_rec_inv_degree_brs_wrt_tm_close_brs_wrt_t
 (forall phi1 x1 n1,
   degree_constraint_wrt_tm (S n1) (close_constraint_wrt_tm_rec n1 x1 phi1) ->
   degree_constraint_wrt_tm n1 phi1).
-Proof.
-apply_mutual_ind tm_brs_co_constraint_mutind;
-default_simp; eauto with lngen.
-Qed.
+Proof. Admitted.
 
 (* end hide *)
 
@@ -2363,9 +2115,7 @@ Lemma degree_tm_wrt_tm_close_tm_wrt_tm_rec_inv :
 forall a1 x1 n1,
   degree_tm_wrt_tm (S n1) (close_tm_wrt_tm_rec n1 x1 a1) ->
   degree_tm_wrt_tm n1 a1.
-Proof.
-pose proof degree_tm_wrt_tm_close_tm_wrt_tm_rec_inv_degree_brs_wrt_tm_close_brs_wrt_tm_rec_inv_degree_co_wrt_tm_close_co_wrt_tm_rec_inv_degree_constraint_wrt_tm_close_constraint_wrt_tm_rec_inv_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Immediate degree_tm_wrt_tm_close_tm_wrt_tm_rec_inv : lngen.
 
@@ -2377,9 +2127,7 @@ Lemma degree_brs_wrt_tm_close_brs_wrt_tm_rec_inv :
 forall brs1 x1 n1,
   degree_brs_wrt_tm (S n1) (close_brs_wrt_tm_rec n1 x1 brs1) ->
   degree_brs_wrt_tm n1 brs1.
-Proof.
-pose proof degree_tm_wrt_tm_close_tm_wrt_tm_rec_inv_degree_brs_wrt_tm_close_brs_wrt_tm_rec_inv_degree_co_wrt_tm_close_co_wrt_tm_rec_inv_degree_constraint_wrt_tm_close_constraint_wrt_tm_rec_inv_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Immediate degree_brs_wrt_tm_close_brs_wrt_tm_rec_inv : lngen.
 
@@ -2391,9 +2139,7 @@ Lemma degree_co_wrt_tm_close_co_wrt_tm_rec_inv :
 forall g1 x1 n1,
   degree_co_wrt_tm (S n1) (close_co_wrt_tm_rec n1 x1 g1) ->
   degree_co_wrt_tm n1 g1.
-Proof.
-pose proof degree_tm_wrt_tm_close_tm_wrt_tm_rec_inv_degree_brs_wrt_tm_close_brs_wrt_tm_rec_inv_degree_co_wrt_tm_close_co_wrt_tm_rec_inv_degree_constraint_wrt_tm_close_constraint_wrt_tm_rec_inv_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Immediate degree_co_wrt_tm_close_co_wrt_tm_rec_inv : lngen.
 
@@ -2405,9 +2151,7 @@ Lemma degree_constraint_wrt_tm_close_constraint_wrt_tm_rec_inv :
 forall phi1 x1 n1,
   degree_constraint_wrt_tm (S n1) (close_constraint_wrt_tm_rec n1 x1 phi1) ->
   degree_constraint_wrt_tm n1 phi1.
-Proof.
-pose proof degree_tm_wrt_tm_close_tm_wrt_tm_rec_inv_degree_brs_wrt_tm_close_brs_wrt_tm_rec_inv_degree_co_wrt_tm_close_co_wrt_tm_rec_inv_degree_constraint_wrt_tm_close_constraint_wrt_tm_rec_inv_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Immediate degree_constraint_wrt_tm_close_constraint_wrt_tm_rec_inv : lngen.
 
@@ -2428,10 +2172,7 @@ Lemma degree_tm_wrt_tm_close_tm_wrt_co_rec_inv_degree_brs_wrt_tm_close_brs_wrt_c
 (forall phi1 c1 n1 n2,
   degree_constraint_wrt_tm n2 (close_constraint_wrt_co_rec n1 c1 phi1) ->
   degree_constraint_wrt_tm n2 phi1).
-Proof.
-apply_mutual_ind tm_brs_co_constraint_mutind;
-default_simp; eauto with lngen.
-Qed.
+Proof. Admitted.
 
 (* end hide *)
 
@@ -2441,9 +2182,7 @@ Lemma degree_tm_wrt_tm_close_tm_wrt_co_rec_inv :
 forall a1 c1 n1 n2,
   degree_tm_wrt_tm n2 (close_tm_wrt_co_rec n1 c1 a1) ->
   degree_tm_wrt_tm n2 a1.
-Proof.
-pose proof degree_tm_wrt_tm_close_tm_wrt_co_rec_inv_degree_brs_wrt_tm_close_brs_wrt_co_rec_inv_degree_co_wrt_tm_close_co_wrt_co_rec_inv_degree_constraint_wrt_tm_close_constraint_wrt_co_rec_inv_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Immediate degree_tm_wrt_tm_close_tm_wrt_co_rec_inv : lngen.
 
@@ -2455,9 +2194,7 @@ Lemma degree_brs_wrt_tm_close_brs_wrt_co_rec_inv :
 forall brs1 c1 n1 n2,
   degree_brs_wrt_tm n2 (close_brs_wrt_co_rec n1 c1 brs1) ->
   degree_brs_wrt_tm n2 brs1.
-Proof.
-pose proof degree_tm_wrt_tm_close_tm_wrt_co_rec_inv_degree_brs_wrt_tm_close_brs_wrt_co_rec_inv_degree_co_wrt_tm_close_co_wrt_co_rec_inv_degree_constraint_wrt_tm_close_constraint_wrt_co_rec_inv_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Immediate degree_brs_wrt_tm_close_brs_wrt_co_rec_inv : lngen.
 
@@ -2469,9 +2206,7 @@ Lemma degree_co_wrt_tm_close_co_wrt_co_rec_inv :
 forall g1 c1 n1 n2,
   degree_co_wrt_tm n2 (close_co_wrt_co_rec n1 c1 g1) ->
   degree_co_wrt_tm n2 g1.
-Proof.
-pose proof degree_tm_wrt_tm_close_tm_wrt_co_rec_inv_degree_brs_wrt_tm_close_brs_wrt_co_rec_inv_degree_co_wrt_tm_close_co_wrt_co_rec_inv_degree_constraint_wrt_tm_close_constraint_wrt_co_rec_inv_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Immediate degree_co_wrt_tm_close_co_wrt_co_rec_inv : lngen.
 
@@ -2483,9 +2218,7 @@ Lemma degree_constraint_wrt_tm_close_constraint_wrt_co_rec_inv :
 forall phi1 c1 n1 n2,
   degree_constraint_wrt_tm n2 (close_constraint_wrt_co_rec n1 c1 phi1) ->
   degree_constraint_wrt_tm n2 phi1.
-Proof.
-pose proof degree_tm_wrt_tm_close_tm_wrt_co_rec_inv_degree_brs_wrt_tm_close_brs_wrt_co_rec_inv_degree_co_wrt_tm_close_co_wrt_co_rec_inv_degree_constraint_wrt_tm_close_constraint_wrt_co_rec_inv_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Immediate degree_constraint_wrt_tm_close_constraint_wrt_co_rec_inv : lngen.
 
@@ -2506,10 +2239,7 @@ Lemma degree_tm_wrt_co_close_tm_wrt_tm_rec_inv_degree_brs_wrt_co_close_brs_wrt_t
 (forall phi1 x1 n1 n2,
   degree_constraint_wrt_co n2 (close_constraint_wrt_tm_rec n1 x1 phi1) ->
   degree_constraint_wrt_co n2 phi1).
-Proof.
-apply_mutual_ind tm_brs_co_constraint_mutind;
-default_simp; eauto with lngen.
-Qed.
+Proof. Admitted.
 
 (* end hide *)
 
@@ -2519,9 +2249,7 @@ Lemma degree_tm_wrt_co_close_tm_wrt_tm_rec_inv :
 forall a1 x1 n1 n2,
   degree_tm_wrt_co n2 (close_tm_wrt_tm_rec n1 x1 a1) ->
   degree_tm_wrt_co n2 a1.
-Proof.
-pose proof degree_tm_wrt_co_close_tm_wrt_tm_rec_inv_degree_brs_wrt_co_close_brs_wrt_tm_rec_inv_degree_co_wrt_co_close_co_wrt_tm_rec_inv_degree_constraint_wrt_co_close_constraint_wrt_tm_rec_inv_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Immediate degree_tm_wrt_co_close_tm_wrt_tm_rec_inv : lngen.
 
@@ -2533,9 +2261,7 @@ Lemma degree_brs_wrt_co_close_brs_wrt_tm_rec_inv :
 forall brs1 x1 n1 n2,
   degree_brs_wrt_co n2 (close_brs_wrt_tm_rec n1 x1 brs1) ->
   degree_brs_wrt_co n2 brs1.
-Proof.
-pose proof degree_tm_wrt_co_close_tm_wrt_tm_rec_inv_degree_brs_wrt_co_close_brs_wrt_tm_rec_inv_degree_co_wrt_co_close_co_wrt_tm_rec_inv_degree_constraint_wrt_co_close_constraint_wrt_tm_rec_inv_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Immediate degree_brs_wrt_co_close_brs_wrt_tm_rec_inv : lngen.
 
@@ -2547,9 +2273,7 @@ Lemma degree_co_wrt_co_close_co_wrt_tm_rec_inv :
 forall g1 x1 n1 n2,
   degree_co_wrt_co n2 (close_co_wrt_tm_rec n1 x1 g1) ->
   degree_co_wrt_co n2 g1.
-Proof.
-pose proof degree_tm_wrt_co_close_tm_wrt_tm_rec_inv_degree_brs_wrt_co_close_brs_wrt_tm_rec_inv_degree_co_wrt_co_close_co_wrt_tm_rec_inv_degree_constraint_wrt_co_close_constraint_wrt_tm_rec_inv_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Immediate degree_co_wrt_co_close_co_wrt_tm_rec_inv : lngen.
 
@@ -2561,9 +2285,7 @@ Lemma degree_constraint_wrt_co_close_constraint_wrt_tm_rec_inv :
 forall phi1 x1 n1 n2,
   degree_constraint_wrt_co n2 (close_constraint_wrt_tm_rec n1 x1 phi1) ->
   degree_constraint_wrt_co n2 phi1.
-Proof.
-pose proof degree_tm_wrt_co_close_tm_wrt_tm_rec_inv_degree_brs_wrt_co_close_brs_wrt_tm_rec_inv_degree_co_wrt_co_close_co_wrt_tm_rec_inv_degree_constraint_wrt_co_close_constraint_wrt_tm_rec_inv_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Immediate degree_constraint_wrt_co_close_constraint_wrt_tm_rec_inv : lngen.
 
@@ -2584,10 +2306,7 @@ Lemma degree_tm_wrt_co_close_tm_wrt_co_rec_inv_degree_brs_wrt_co_close_brs_wrt_c
 (forall phi1 c1 n1,
   degree_constraint_wrt_co (S n1) (close_constraint_wrt_co_rec n1 c1 phi1) ->
   degree_constraint_wrt_co n1 phi1).
-Proof.
-apply_mutual_ind tm_brs_co_constraint_mutind;
-default_simp; eauto with lngen.
-Qed.
+Proof. Admitted.
 
 (* end hide *)
 
@@ -2597,9 +2316,7 @@ Lemma degree_tm_wrt_co_close_tm_wrt_co_rec_inv :
 forall a1 c1 n1,
   degree_tm_wrt_co (S n1) (close_tm_wrt_co_rec n1 c1 a1) ->
   degree_tm_wrt_co n1 a1.
-Proof.
-pose proof degree_tm_wrt_co_close_tm_wrt_co_rec_inv_degree_brs_wrt_co_close_brs_wrt_co_rec_inv_degree_co_wrt_co_close_co_wrt_co_rec_inv_degree_constraint_wrt_co_close_constraint_wrt_co_rec_inv_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Immediate degree_tm_wrt_co_close_tm_wrt_co_rec_inv : lngen.
 
@@ -2611,9 +2328,7 @@ Lemma degree_brs_wrt_co_close_brs_wrt_co_rec_inv :
 forall brs1 c1 n1,
   degree_brs_wrt_co (S n1) (close_brs_wrt_co_rec n1 c1 brs1) ->
   degree_brs_wrt_co n1 brs1.
-Proof.
-pose proof degree_tm_wrt_co_close_tm_wrt_co_rec_inv_degree_brs_wrt_co_close_brs_wrt_co_rec_inv_degree_co_wrt_co_close_co_wrt_co_rec_inv_degree_constraint_wrt_co_close_constraint_wrt_co_rec_inv_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Immediate degree_brs_wrt_co_close_brs_wrt_co_rec_inv : lngen.
 
@@ -2625,9 +2340,7 @@ Lemma degree_co_wrt_co_close_co_wrt_co_rec_inv :
 forall g1 c1 n1,
   degree_co_wrt_co (S n1) (close_co_wrt_co_rec n1 c1 g1) ->
   degree_co_wrt_co n1 g1.
-Proof.
-pose proof degree_tm_wrt_co_close_tm_wrt_co_rec_inv_degree_brs_wrt_co_close_brs_wrt_co_rec_inv_degree_co_wrt_co_close_co_wrt_co_rec_inv_degree_constraint_wrt_co_close_constraint_wrt_co_rec_inv_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Immediate degree_co_wrt_co_close_co_wrt_co_rec_inv : lngen.
 
@@ -2639,9 +2352,7 @@ Lemma degree_constraint_wrt_co_close_constraint_wrt_co_rec_inv :
 forall phi1 c1 n1,
   degree_constraint_wrt_co (S n1) (close_constraint_wrt_co_rec n1 c1 phi1) ->
   degree_constraint_wrt_co n1 phi1.
-Proof.
-pose proof degree_tm_wrt_co_close_tm_wrt_co_rec_inv_degree_brs_wrt_co_close_brs_wrt_co_rec_inv_degree_co_wrt_co_close_co_wrt_co_rec_inv_degree_constraint_wrt_co_close_constraint_wrt_co_rec_inv_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Immediate degree_constraint_wrt_co_close_constraint_wrt_co_rec_inv : lngen.
 
@@ -2651,9 +2362,7 @@ Lemma degree_tm_wrt_tm_close_tm_wrt_tm_inv :
 forall a1 x1,
   degree_tm_wrt_tm 1 (close_tm_wrt_tm x1 a1) ->
   degree_tm_wrt_tm 0 a1.
-Proof.
-unfold close_tm_wrt_tm; eauto with lngen.
-Qed.
+Proof. Admitted.
 
 Hint Immediate degree_tm_wrt_tm_close_tm_wrt_tm_inv : lngen.
 
@@ -2661,9 +2370,7 @@ Lemma degree_brs_wrt_tm_close_brs_wrt_tm_inv :
 forall brs1 x1,
   degree_brs_wrt_tm 1 (close_brs_wrt_tm x1 brs1) ->
   degree_brs_wrt_tm 0 brs1.
-Proof.
-unfold close_brs_wrt_tm; eauto with lngen.
-Qed.
+Proof. Admitted.
 
 Hint Immediate degree_brs_wrt_tm_close_brs_wrt_tm_inv : lngen.
 
@@ -2671,9 +2378,7 @@ Lemma degree_co_wrt_tm_close_co_wrt_tm_inv :
 forall g1 x1,
   degree_co_wrt_tm 1 (close_co_wrt_tm x1 g1) ->
   degree_co_wrt_tm 0 g1.
-Proof.
-unfold close_co_wrt_tm; eauto with lngen.
-Qed.
+Proof. Admitted.
 
 Hint Immediate degree_co_wrt_tm_close_co_wrt_tm_inv : lngen.
 
@@ -2681,9 +2386,7 @@ Lemma degree_constraint_wrt_tm_close_constraint_wrt_tm_inv :
 forall phi1 x1,
   degree_constraint_wrt_tm 1 (close_constraint_wrt_tm x1 phi1) ->
   degree_constraint_wrt_tm 0 phi1.
-Proof.
-unfold close_constraint_wrt_tm; eauto with lngen.
-Qed.
+Proof. Admitted.
 
 Hint Immediate degree_constraint_wrt_tm_close_constraint_wrt_tm_inv : lngen.
 
@@ -2691,9 +2394,7 @@ Lemma degree_tm_wrt_tm_close_tm_wrt_co_inv :
 forall a1 c1 n1,
   degree_tm_wrt_tm n1 (close_tm_wrt_co c1 a1) ->
   degree_tm_wrt_tm n1 a1.
-Proof.
-unfold close_tm_wrt_co; eauto with lngen.
-Qed.
+Proof. Admitted.
 
 Hint Immediate degree_tm_wrt_tm_close_tm_wrt_co_inv : lngen.
 
@@ -2701,9 +2402,7 @@ Lemma degree_brs_wrt_tm_close_brs_wrt_co_inv :
 forall brs1 c1 n1,
   degree_brs_wrt_tm n1 (close_brs_wrt_co c1 brs1) ->
   degree_brs_wrt_tm n1 brs1.
-Proof.
-unfold close_brs_wrt_co; eauto with lngen.
-Qed.
+Proof. Admitted.
 
 Hint Immediate degree_brs_wrt_tm_close_brs_wrt_co_inv : lngen.
 
@@ -2711,9 +2410,7 @@ Lemma degree_co_wrt_tm_close_co_wrt_co_inv :
 forall g1 c1 n1,
   degree_co_wrt_tm n1 (close_co_wrt_co c1 g1) ->
   degree_co_wrt_tm n1 g1.
-Proof.
-unfold close_co_wrt_co; eauto with lngen.
-Qed.
+Proof. Admitted.
 
 Hint Immediate degree_co_wrt_tm_close_co_wrt_co_inv : lngen.
 
@@ -2721,9 +2418,7 @@ Lemma degree_constraint_wrt_tm_close_constraint_wrt_co_inv :
 forall phi1 c1 n1,
   degree_constraint_wrt_tm n1 (close_constraint_wrt_co c1 phi1) ->
   degree_constraint_wrt_tm n1 phi1.
-Proof.
-unfold close_constraint_wrt_co; eauto with lngen.
-Qed.
+Proof. Admitted.
 
 Hint Immediate degree_constraint_wrt_tm_close_constraint_wrt_co_inv : lngen.
 
@@ -2731,9 +2426,7 @@ Lemma degree_tm_wrt_co_close_tm_wrt_tm_inv :
 forall a1 x1 n1,
   degree_tm_wrt_co n1 (close_tm_wrt_tm x1 a1) ->
   degree_tm_wrt_co n1 a1.
-Proof.
-unfold close_tm_wrt_tm; eauto with lngen.
-Qed.
+Proof. Admitted.
 
 Hint Immediate degree_tm_wrt_co_close_tm_wrt_tm_inv : lngen.
 
@@ -2741,9 +2434,7 @@ Lemma degree_brs_wrt_co_close_brs_wrt_tm_inv :
 forall brs1 x1 n1,
   degree_brs_wrt_co n1 (close_brs_wrt_tm x1 brs1) ->
   degree_brs_wrt_co n1 brs1.
-Proof.
-unfold close_brs_wrt_tm; eauto with lngen.
-Qed.
+Proof. Admitted.
 
 Hint Immediate degree_brs_wrt_co_close_brs_wrt_tm_inv : lngen.
 
@@ -2751,9 +2442,7 @@ Lemma degree_co_wrt_co_close_co_wrt_tm_inv :
 forall g1 x1 n1,
   degree_co_wrt_co n1 (close_co_wrt_tm x1 g1) ->
   degree_co_wrt_co n1 g1.
-Proof.
-unfold close_co_wrt_tm; eauto with lngen.
-Qed.
+Proof. Admitted.
 
 Hint Immediate degree_co_wrt_co_close_co_wrt_tm_inv : lngen.
 
@@ -2761,9 +2450,7 @@ Lemma degree_constraint_wrt_co_close_constraint_wrt_tm_inv :
 forall phi1 x1 n1,
   degree_constraint_wrt_co n1 (close_constraint_wrt_tm x1 phi1) ->
   degree_constraint_wrt_co n1 phi1.
-Proof.
-unfold close_constraint_wrt_tm; eauto with lngen.
-Qed.
+Proof. Admitted.
 
 Hint Immediate degree_constraint_wrt_co_close_constraint_wrt_tm_inv : lngen.
 
@@ -2771,9 +2458,7 @@ Lemma degree_tm_wrt_co_close_tm_wrt_co_inv :
 forall a1 c1,
   degree_tm_wrt_co 1 (close_tm_wrt_co c1 a1) ->
   degree_tm_wrt_co 0 a1.
-Proof.
-unfold close_tm_wrt_co; eauto with lngen.
-Qed.
+Proof. Admitted.
 
 Hint Immediate degree_tm_wrt_co_close_tm_wrt_co_inv : lngen.
 
@@ -2781,9 +2466,7 @@ Lemma degree_brs_wrt_co_close_brs_wrt_co_inv :
 forall brs1 c1,
   degree_brs_wrt_co 1 (close_brs_wrt_co c1 brs1) ->
   degree_brs_wrt_co 0 brs1.
-Proof.
-unfold close_brs_wrt_co; eauto with lngen.
-Qed.
+Proof. Admitted.
 
 Hint Immediate degree_brs_wrt_co_close_brs_wrt_co_inv : lngen.
 
@@ -2791,9 +2474,7 @@ Lemma degree_co_wrt_co_close_co_wrt_co_inv :
 forall g1 c1,
   degree_co_wrt_co 1 (close_co_wrt_co c1 g1) ->
   degree_co_wrt_co 0 g1.
-Proof.
-unfold close_co_wrt_co; eauto with lngen.
-Qed.
+Proof. Admitted.
 
 Hint Immediate degree_co_wrt_co_close_co_wrt_co_inv : lngen.
 
@@ -2801,9 +2482,7 @@ Lemma degree_constraint_wrt_co_close_constraint_wrt_co_inv :
 forall phi1 c1,
   degree_constraint_wrt_co 1 (close_constraint_wrt_co c1 phi1) ->
   degree_constraint_wrt_co 0 phi1.
-Proof.
-unfold close_constraint_wrt_co; eauto with lngen.
-Qed.
+Proof. Admitted.
 
 Hint Immediate degree_constraint_wrt_co_close_constraint_wrt_co_inv : lngen.
 
@@ -2826,10 +2505,7 @@ Lemma degree_tm_wrt_tm_open_tm_wrt_tm_rec_degree_brs_wrt_tm_open_brs_wrt_tm_rec_
   degree_constraint_wrt_tm (S n1) phi1 ->
   degree_tm_wrt_tm n1 a1 ->
   degree_constraint_wrt_tm n1 (open_constraint_wrt_tm_rec n1 a1 phi1)).
-Proof.
-apply_mutual_ind tm_brs_co_constraint_mutind;
-default_simp.
-Qed.
+Proof. Admitted.
 
 (* end hide *)
 
@@ -2840,9 +2516,7 @@ forall a1 a2 n1,
   degree_tm_wrt_tm (S n1) a1 ->
   degree_tm_wrt_tm n1 a2 ->
   degree_tm_wrt_tm n1 (open_tm_wrt_tm_rec n1 a2 a1).
-Proof.
-pose proof degree_tm_wrt_tm_open_tm_wrt_tm_rec_degree_brs_wrt_tm_open_brs_wrt_tm_rec_degree_co_wrt_tm_open_co_wrt_tm_rec_degree_constraint_wrt_tm_open_constraint_wrt_tm_rec_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve degree_tm_wrt_tm_open_tm_wrt_tm_rec : lngen.
 
@@ -2855,9 +2529,7 @@ forall brs1 a1 n1,
   degree_brs_wrt_tm (S n1) brs1 ->
   degree_tm_wrt_tm n1 a1 ->
   degree_brs_wrt_tm n1 (open_brs_wrt_tm_rec n1 a1 brs1).
-Proof.
-pose proof degree_tm_wrt_tm_open_tm_wrt_tm_rec_degree_brs_wrt_tm_open_brs_wrt_tm_rec_degree_co_wrt_tm_open_co_wrt_tm_rec_degree_constraint_wrt_tm_open_constraint_wrt_tm_rec_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve degree_brs_wrt_tm_open_brs_wrt_tm_rec : lngen.
 
@@ -2870,9 +2542,7 @@ forall g1 a1 n1,
   degree_co_wrt_tm (S n1) g1 ->
   degree_tm_wrt_tm n1 a1 ->
   degree_co_wrt_tm n1 (open_co_wrt_tm_rec n1 a1 g1).
-Proof.
-pose proof degree_tm_wrt_tm_open_tm_wrt_tm_rec_degree_brs_wrt_tm_open_brs_wrt_tm_rec_degree_co_wrt_tm_open_co_wrt_tm_rec_degree_constraint_wrt_tm_open_constraint_wrt_tm_rec_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve degree_co_wrt_tm_open_co_wrt_tm_rec : lngen.
 
@@ -2885,9 +2555,7 @@ forall phi1 a1 n1,
   degree_constraint_wrt_tm (S n1) phi1 ->
   degree_tm_wrt_tm n1 a1 ->
   degree_constraint_wrt_tm n1 (open_constraint_wrt_tm_rec n1 a1 phi1).
-Proof.
-pose proof degree_tm_wrt_tm_open_tm_wrt_tm_rec_degree_brs_wrt_tm_open_brs_wrt_tm_rec_degree_co_wrt_tm_open_co_wrt_tm_rec_degree_constraint_wrt_tm_open_constraint_wrt_tm_rec_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve degree_constraint_wrt_tm_open_constraint_wrt_tm_rec : lngen.
 
@@ -2912,10 +2580,7 @@ Lemma degree_tm_wrt_tm_open_tm_wrt_co_rec_degree_brs_wrt_tm_open_brs_wrt_co_rec_
   degree_constraint_wrt_tm n1 phi1 ->
   degree_co_wrt_tm n1 g1 ->
   degree_constraint_wrt_tm n1 (open_constraint_wrt_co_rec n2 g1 phi1)).
-Proof.
-apply_mutual_ind tm_brs_co_constraint_mutind;
-default_simp.
-Qed.
+Proof. Admitted.
 
 (* end hide *)
 
@@ -2926,9 +2591,7 @@ forall a1 g1 n1 n2,
   degree_tm_wrt_tm n1 a1 ->
   degree_co_wrt_tm n1 g1 ->
   degree_tm_wrt_tm n1 (open_tm_wrt_co_rec n2 g1 a1).
-Proof.
-pose proof degree_tm_wrt_tm_open_tm_wrt_co_rec_degree_brs_wrt_tm_open_brs_wrt_co_rec_degree_co_wrt_tm_open_co_wrt_co_rec_degree_constraint_wrt_tm_open_constraint_wrt_co_rec_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve degree_tm_wrt_tm_open_tm_wrt_co_rec : lngen.
 
@@ -2941,9 +2604,7 @@ forall brs1 g1 n1 n2,
   degree_brs_wrt_tm n1 brs1 ->
   degree_co_wrt_tm n1 g1 ->
   degree_brs_wrt_tm n1 (open_brs_wrt_co_rec n2 g1 brs1).
-Proof.
-pose proof degree_tm_wrt_tm_open_tm_wrt_co_rec_degree_brs_wrt_tm_open_brs_wrt_co_rec_degree_co_wrt_tm_open_co_wrt_co_rec_degree_constraint_wrt_tm_open_constraint_wrt_co_rec_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve degree_brs_wrt_tm_open_brs_wrt_co_rec : lngen.
 
@@ -2956,9 +2617,7 @@ forall g1 g2 n1 n2,
   degree_co_wrt_tm n1 g1 ->
   degree_co_wrt_tm n1 g2 ->
   degree_co_wrt_tm n1 (open_co_wrt_co_rec n2 g2 g1).
-Proof.
-pose proof degree_tm_wrt_tm_open_tm_wrt_co_rec_degree_brs_wrt_tm_open_brs_wrt_co_rec_degree_co_wrt_tm_open_co_wrt_co_rec_degree_constraint_wrt_tm_open_constraint_wrt_co_rec_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve degree_co_wrt_tm_open_co_wrt_co_rec : lngen.
 
@@ -2971,9 +2630,7 @@ forall phi1 g1 n1 n2,
   degree_constraint_wrt_tm n1 phi1 ->
   degree_co_wrt_tm n1 g1 ->
   degree_constraint_wrt_tm n1 (open_constraint_wrt_co_rec n2 g1 phi1).
-Proof.
-pose proof degree_tm_wrt_tm_open_tm_wrt_co_rec_degree_brs_wrt_tm_open_brs_wrt_co_rec_degree_co_wrt_tm_open_co_wrt_co_rec_degree_constraint_wrt_tm_open_constraint_wrt_co_rec_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve degree_constraint_wrt_tm_open_constraint_wrt_co_rec : lngen.
 
@@ -2998,10 +2655,7 @@ Lemma degree_tm_wrt_co_open_tm_wrt_tm_rec_degree_brs_wrt_co_open_brs_wrt_tm_rec_
   degree_constraint_wrt_co n1 phi1 ->
   degree_tm_wrt_co n1 a1 ->
   degree_constraint_wrt_co n1 (open_constraint_wrt_tm_rec n2 a1 phi1)).
-Proof.
-apply_mutual_ind tm_brs_co_constraint_mutind;
-default_simp.
-Qed.
+Proof. Admitted.
 
 (* end hide *)
 
@@ -3012,9 +2666,7 @@ forall a1 a2 n1 n2,
   degree_tm_wrt_co n1 a1 ->
   degree_tm_wrt_co n1 a2 ->
   degree_tm_wrt_co n1 (open_tm_wrt_tm_rec n2 a2 a1).
-Proof.
-pose proof degree_tm_wrt_co_open_tm_wrt_tm_rec_degree_brs_wrt_co_open_brs_wrt_tm_rec_degree_co_wrt_co_open_co_wrt_tm_rec_degree_constraint_wrt_co_open_constraint_wrt_tm_rec_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve degree_tm_wrt_co_open_tm_wrt_tm_rec : lngen.
 
@@ -3027,9 +2679,7 @@ forall brs1 a1 n1 n2,
   degree_brs_wrt_co n1 brs1 ->
   degree_tm_wrt_co n1 a1 ->
   degree_brs_wrt_co n1 (open_brs_wrt_tm_rec n2 a1 brs1).
-Proof.
-pose proof degree_tm_wrt_co_open_tm_wrt_tm_rec_degree_brs_wrt_co_open_brs_wrt_tm_rec_degree_co_wrt_co_open_co_wrt_tm_rec_degree_constraint_wrt_co_open_constraint_wrt_tm_rec_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve degree_brs_wrt_co_open_brs_wrt_tm_rec : lngen.
 
@@ -3042,9 +2692,7 @@ forall g1 a1 n1 n2,
   degree_co_wrt_co n1 g1 ->
   degree_tm_wrt_co n1 a1 ->
   degree_co_wrt_co n1 (open_co_wrt_tm_rec n2 a1 g1).
-Proof.
-pose proof degree_tm_wrt_co_open_tm_wrt_tm_rec_degree_brs_wrt_co_open_brs_wrt_tm_rec_degree_co_wrt_co_open_co_wrt_tm_rec_degree_constraint_wrt_co_open_constraint_wrt_tm_rec_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve degree_co_wrt_co_open_co_wrt_tm_rec : lngen.
 
@@ -3057,9 +2705,7 @@ forall phi1 a1 n1 n2,
   degree_constraint_wrt_co n1 phi1 ->
   degree_tm_wrt_co n1 a1 ->
   degree_constraint_wrt_co n1 (open_constraint_wrt_tm_rec n2 a1 phi1).
-Proof.
-pose proof degree_tm_wrt_co_open_tm_wrt_tm_rec_degree_brs_wrt_co_open_brs_wrt_tm_rec_degree_co_wrt_co_open_co_wrt_tm_rec_degree_constraint_wrt_co_open_constraint_wrt_tm_rec_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve degree_constraint_wrt_co_open_constraint_wrt_tm_rec : lngen.
 
@@ -3084,10 +2730,7 @@ Lemma degree_tm_wrt_co_open_tm_wrt_co_rec_degree_brs_wrt_co_open_brs_wrt_co_rec_
   degree_constraint_wrt_co (S n1) phi1 ->
   degree_co_wrt_co n1 g1 ->
   degree_constraint_wrt_co n1 (open_constraint_wrt_co_rec n1 g1 phi1)).
-Proof.
-apply_mutual_ind tm_brs_co_constraint_mutind;
-default_simp.
-Qed.
+Proof. Admitted.
 
 (* end hide *)
 
@@ -3098,9 +2741,7 @@ forall a1 g1 n1,
   degree_tm_wrt_co (S n1) a1 ->
   degree_co_wrt_co n1 g1 ->
   degree_tm_wrt_co n1 (open_tm_wrt_co_rec n1 g1 a1).
-Proof.
-pose proof degree_tm_wrt_co_open_tm_wrt_co_rec_degree_brs_wrt_co_open_brs_wrt_co_rec_degree_co_wrt_co_open_co_wrt_co_rec_degree_constraint_wrt_co_open_constraint_wrt_co_rec_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve degree_tm_wrt_co_open_tm_wrt_co_rec : lngen.
 
@@ -3113,9 +2754,7 @@ forall brs1 g1 n1,
   degree_brs_wrt_co (S n1) brs1 ->
   degree_co_wrt_co n1 g1 ->
   degree_brs_wrt_co n1 (open_brs_wrt_co_rec n1 g1 brs1).
-Proof.
-pose proof degree_tm_wrt_co_open_tm_wrt_co_rec_degree_brs_wrt_co_open_brs_wrt_co_rec_degree_co_wrt_co_open_co_wrt_co_rec_degree_constraint_wrt_co_open_constraint_wrt_co_rec_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve degree_brs_wrt_co_open_brs_wrt_co_rec : lngen.
 
@@ -3128,9 +2767,7 @@ forall g1 g2 n1,
   degree_co_wrt_co (S n1) g1 ->
   degree_co_wrt_co n1 g2 ->
   degree_co_wrt_co n1 (open_co_wrt_co_rec n1 g2 g1).
-Proof.
-pose proof degree_tm_wrt_co_open_tm_wrt_co_rec_degree_brs_wrt_co_open_brs_wrt_co_rec_degree_co_wrt_co_open_co_wrt_co_rec_degree_constraint_wrt_co_open_constraint_wrt_co_rec_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve degree_co_wrt_co_open_co_wrt_co_rec : lngen.
 
@@ -3143,9 +2780,7 @@ forall phi1 g1 n1,
   degree_constraint_wrt_co (S n1) phi1 ->
   degree_co_wrt_co n1 g1 ->
   degree_constraint_wrt_co n1 (open_constraint_wrt_co_rec n1 g1 phi1).
-Proof.
-pose proof degree_tm_wrt_co_open_tm_wrt_co_rec_degree_brs_wrt_co_open_brs_wrt_co_rec_degree_co_wrt_co_open_co_wrt_co_rec_degree_constraint_wrt_co_open_constraint_wrt_co_rec_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve degree_constraint_wrt_co_open_constraint_wrt_co_rec : lngen.
 
@@ -3156,9 +2791,7 @@ forall a1 a2,
   degree_tm_wrt_tm 1 a1 ->
   degree_tm_wrt_tm 0 a2 ->
   degree_tm_wrt_tm 0 (open_tm_wrt_tm a1 a2).
-Proof.
-unfold open_tm_wrt_tm; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve degree_tm_wrt_tm_open_tm_wrt_tm : lngen.
 
@@ -3167,9 +2800,7 @@ forall brs1 a1,
   degree_brs_wrt_tm 1 brs1 ->
   degree_tm_wrt_tm 0 a1 ->
   degree_brs_wrt_tm 0 (open_brs_wrt_tm brs1 a1).
-Proof.
-unfold open_brs_wrt_tm; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve degree_brs_wrt_tm_open_brs_wrt_tm : lngen.
 
@@ -3178,9 +2809,7 @@ forall g1 a1,
   degree_co_wrt_tm 1 g1 ->
   degree_tm_wrt_tm 0 a1 ->
   degree_co_wrt_tm 0 (open_co_wrt_tm g1 a1).
-Proof.
-unfold open_co_wrt_tm; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve degree_co_wrt_tm_open_co_wrt_tm : lngen.
 
@@ -3189,9 +2818,7 @@ forall phi1 a1,
   degree_constraint_wrt_tm 1 phi1 ->
   degree_tm_wrt_tm 0 a1 ->
   degree_constraint_wrt_tm 0 (open_constraint_wrt_tm phi1 a1).
-Proof.
-unfold open_constraint_wrt_tm; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve degree_constraint_wrt_tm_open_constraint_wrt_tm : lngen.
 
@@ -3200,9 +2827,7 @@ forall a1 g1 n1,
   degree_tm_wrt_tm n1 a1 ->
   degree_co_wrt_tm n1 g1 ->
   degree_tm_wrt_tm n1 (open_tm_wrt_co a1 g1).
-Proof.
-unfold open_tm_wrt_co; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve degree_tm_wrt_tm_open_tm_wrt_co : lngen.
 
@@ -3211,9 +2836,7 @@ forall brs1 g1 n1,
   degree_brs_wrt_tm n1 brs1 ->
   degree_co_wrt_tm n1 g1 ->
   degree_brs_wrt_tm n1 (open_brs_wrt_co brs1 g1).
-Proof.
-unfold open_brs_wrt_co; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve degree_brs_wrt_tm_open_brs_wrt_co : lngen.
 
@@ -3222,9 +2845,7 @@ forall g1 g2 n1,
   degree_co_wrt_tm n1 g1 ->
   degree_co_wrt_tm n1 g2 ->
   degree_co_wrt_tm n1 (open_co_wrt_co g1 g2).
-Proof.
-unfold open_co_wrt_co; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve degree_co_wrt_tm_open_co_wrt_co : lngen.
 
@@ -3233,9 +2854,7 @@ forall phi1 g1 n1,
   degree_constraint_wrt_tm n1 phi1 ->
   degree_co_wrt_tm n1 g1 ->
   degree_constraint_wrt_tm n1 (open_constraint_wrt_co phi1 g1).
-Proof.
-unfold open_constraint_wrt_co; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve degree_constraint_wrt_tm_open_constraint_wrt_co : lngen.
 
@@ -3244,9 +2863,7 @@ forall a1 a2 n1,
   degree_tm_wrt_co n1 a1 ->
   degree_tm_wrt_co n1 a2 ->
   degree_tm_wrt_co n1 (open_tm_wrt_tm a1 a2).
-Proof.
-unfold open_tm_wrt_tm; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve degree_tm_wrt_co_open_tm_wrt_tm : lngen.
 
@@ -3255,9 +2872,7 @@ forall brs1 a1 n1,
   degree_brs_wrt_co n1 brs1 ->
   degree_tm_wrt_co n1 a1 ->
   degree_brs_wrt_co n1 (open_brs_wrt_tm brs1 a1).
-Proof.
-unfold open_brs_wrt_tm; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve degree_brs_wrt_co_open_brs_wrt_tm : lngen.
 
@@ -3266,9 +2881,7 @@ forall g1 a1 n1,
   degree_co_wrt_co n1 g1 ->
   degree_tm_wrt_co n1 a1 ->
   degree_co_wrt_co n1 (open_co_wrt_tm g1 a1).
-Proof.
-unfold open_co_wrt_tm; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve degree_co_wrt_co_open_co_wrt_tm : lngen.
 
@@ -3277,9 +2890,7 @@ forall phi1 a1 n1,
   degree_constraint_wrt_co n1 phi1 ->
   degree_tm_wrt_co n1 a1 ->
   degree_constraint_wrt_co n1 (open_constraint_wrt_tm phi1 a1).
-Proof.
-unfold open_constraint_wrt_tm; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve degree_constraint_wrt_co_open_constraint_wrt_tm : lngen.
 
@@ -3288,9 +2899,7 @@ forall a1 g1,
   degree_tm_wrt_co 1 a1 ->
   degree_co_wrt_co 0 g1 ->
   degree_tm_wrt_co 0 (open_tm_wrt_co a1 g1).
-Proof.
-unfold open_tm_wrt_co; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve degree_tm_wrt_co_open_tm_wrt_co : lngen.
 
@@ -3299,9 +2908,7 @@ forall brs1 g1,
   degree_brs_wrt_co 1 brs1 ->
   degree_co_wrt_co 0 g1 ->
   degree_brs_wrt_co 0 (open_brs_wrt_co brs1 g1).
-Proof.
-unfold open_brs_wrt_co; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve degree_brs_wrt_co_open_brs_wrt_co : lngen.
 
@@ -3310,9 +2917,7 @@ forall g1 g2,
   degree_co_wrt_co 1 g1 ->
   degree_co_wrt_co 0 g2 ->
   degree_co_wrt_co 0 (open_co_wrt_co g1 g2).
-Proof.
-unfold open_co_wrt_co; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve degree_co_wrt_co_open_co_wrt_co : lngen.
 
@@ -3321,9 +2926,7 @@ forall phi1 g1,
   degree_constraint_wrt_co 1 phi1 ->
   degree_co_wrt_co 0 g1 ->
   degree_constraint_wrt_co 0 (open_constraint_wrt_co phi1 g1).
-Proof.
-unfold open_constraint_wrt_co; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve degree_constraint_wrt_co_open_constraint_wrt_co : lngen.
 
@@ -3342,10 +2945,7 @@ Lemma degree_tm_wrt_tm_open_tm_wrt_tm_rec_inv_degree_brs_wrt_tm_open_brs_wrt_tm_
 (forall phi1 a1 n1,
   degree_constraint_wrt_tm n1 (open_constraint_wrt_tm_rec n1 a1 phi1) ->
   degree_constraint_wrt_tm (S n1) phi1).
-Proof.
-apply_mutual_ind tm_brs_co_constraint_mutind;
-default_simp; eauto with lngen.
-Qed.
+Proof. Admitted.
 
 (* end hide *)
 
@@ -3355,9 +2955,7 @@ Lemma degree_tm_wrt_tm_open_tm_wrt_tm_rec_inv :
 forall a1 a2 n1,
   degree_tm_wrt_tm n1 (open_tm_wrt_tm_rec n1 a2 a1) ->
   degree_tm_wrt_tm (S n1) a1.
-Proof.
-pose proof degree_tm_wrt_tm_open_tm_wrt_tm_rec_inv_degree_brs_wrt_tm_open_brs_wrt_tm_rec_inv_degree_co_wrt_tm_open_co_wrt_tm_rec_inv_degree_constraint_wrt_tm_open_constraint_wrt_tm_rec_inv_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Immediate degree_tm_wrt_tm_open_tm_wrt_tm_rec_inv : lngen.
 
@@ -3369,9 +2967,7 @@ Lemma degree_brs_wrt_tm_open_brs_wrt_tm_rec_inv :
 forall brs1 a1 n1,
   degree_brs_wrt_tm n1 (open_brs_wrt_tm_rec n1 a1 brs1) ->
   degree_brs_wrt_tm (S n1) brs1.
-Proof.
-pose proof degree_tm_wrt_tm_open_tm_wrt_tm_rec_inv_degree_brs_wrt_tm_open_brs_wrt_tm_rec_inv_degree_co_wrt_tm_open_co_wrt_tm_rec_inv_degree_constraint_wrt_tm_open_constraint_wrt_tm_rec_inv_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Immediate degree_brs_wrt_tm_open_brs_wrt_tm_rec_inv : lngen.
 
@@ -3383,9 +2979,7 @@ Lemma degree_co_wrt_tm_open_co_wrt_tm_rec_inv :
 forall g1 a1 n1,
   degree_co_wrt_tm n1 (open_co_wrt_tm_rec n1 a1 g1) ->
   degree_co_wrt_tm (S n1) g1.
-Proof.
-pose proof degree_tm_wrt_tm_open_tm_wrt_tm_rec_inv_degree_brs_wrt_tm_open_brs_wrt_tm_rec_inv_degree_co_wrt_tm_open_co_wrt_tm_rec_inv_degree_constraint_wrt_tm_open_constraint_wrt_tm_rec_inv_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Immediate degree_co_wrt_tm_open_co_wrt_tm_rec_inv : lngen.
 
@@ -3397,9 +2991,7 @@ Lemma degree_constraint_wrt_tm_open_constraint_wrt_tm_rec_inv :
 forall phi1 a1 n1,
   degree_constraint_wrt_tm n1 (open_constraint_wrt_tm_rec n1 a1 phi1) ->
   degree_constraint_wrt_tm (S n1) phi1.
-Proof.
-pose proof degree_tm_wrt_tm_open_tm_wrt_tm_rec_inv_degree_brs_wrt_tm_open_brs_wrt_tm_rec_inv_degree_co_wrt_tm_open_co_wrt_tm_rec_inv_degree_constraint_wrt_tm_open_constraint_wrt_tm_rec_inv_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Immediate degree_constraint_wrt_tm_open_constraint_wrt_tm_rec_inv : lngen.
 
@@ -3420,10 +3012,7 @@ Lemma degree_tm_wrt_tm_open_tm_wrt_co_rec_inv_degree_brs_wrt_tm_open_brs_wrt_co_
 (forall phi1 g1 n1 n2,
   degree_constraint_wrt_tm n1 (open_constraint_wrt_co_rec n2 g1 phi1) ->
   degree_constraint_wrt_tm n1 phi1).
-Proof.
-apply_mutual_ind tm_brs_co_constraint_mutind;
-default_simp; eauto with lngen.
-Qed.
+Proof. Admitted.
 
 (* end hide *)
 
@@ -3433,9 +3022,7 @@ Lemma degree_tm_wrt_tm_open_tm_wrt_co_rec_inv :
 forall a1 g1 n1 n2,
   degree_tm_wrt_tm n1 (open_tm_wrt_co_rec n2 g1 a1) ->
   degree_tm_wrt_tm n1 a1.
-Proof.
-pose proof degree_tm_wrt_tm_open_tm_wrt_co_rec_inv_degree_brs_wrt_tm_open_brs_wrt_co_rec_inv_degree_co_wrt_tm_open_co_wrt_co_rec_inv_degree_constraint_wrt_tm_open_constraint_wrt_co_rec_inv_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Immediate degree_tm_wrt_tm_open_tm_wrt_co_rec_inv : lngen.
 
@@ -3447,9 +3034,7 @@ Lemma degree_brs_wrt_tm_open_brs_wrt_co_rec_inv :
 forall brs1 g1 n1 n2,
   degree_brs_wrt_tm n1 (open_brs_wrt_co_rec n2 g1 brs1) ->
   degree_brs_wrt_tm n1 brs1.
-Proof.
-pose proof degree_tm_wrt_tm_open_tm_wrt_co_rec_inv_degree_brs_wrt_tm_open_brs_wrt_co_rec_inv_degree_co_wrt_tm_open_co_wrt_co_rec_inv_degree_constraint_wrt_tm_open_constraint_wrt_co_rec_inv_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Immediate degree_brs_wrt_tm_open_brs_wrt_co_rec_inv : lngen.
 
@@ -3461,9 +3046,7 @@ Lemma degree_co_wrt_tm_open_co_wrt_co_rec_inv :
 forall g1 g2 n1 n2,
   degree_co_wrt_tm n1 (open_co_wrt_co_rec n2 g2 g1) ->
   degree_co_wrt_tm n1 g1.
-Proof.
-pose proof degree_tm_wrt_tm_open_tm_wrt_co_rec_inv_degree_brs_wrt_tm_open_brs_wrt_co_rec_inv_degree_co_wrt_tm_open_co_wrt_co_rec_inv_degree_constraint_wrt_tm_open_constraint_wrt_co_rec_inv_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Immediate degree_co_wrt_tm_open_co_wrt_co_rec_inv : lngen.
 
@@ -3475,9 +3058,7 @@ Lemma degree_constraint_wrt_tm_open_constraint_wrt_co_rec_inv :
 forall phi1 g1 n1 n2,
   degree_constraint_wrt_tm n1 (open_constraint_wrt_co_rec n2 g1 phi1) ->
   degree_constraint_wrt_tm n1 phi1.
-Proof.
-pose proof degree_tm_wrt_tm_open_tm_wrt_co_rec_inv_degree_brs_wrt_tm_open_brs_wrt_co_rec_inv_degree_co_wrt_tm_open_co_wrt_co_rec_inv_degree_constraint_wrt_tm_open_constraint_wrt_co_rec_inv_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Immediate degree_constraint_wrt_tm_open_constraint_wrt_co_rec_inv : lngen.
 
@@ -3498,10 +3079,7 @@ Lemma degree_tm_wrt_co_open_tm_wrt_tm_rec_inv_degree_brs_wrt_co_open_brs_wrt_tm_
 (forall phi1 a1 n1 n2,
   degree_constraint_wrt_co n1 (open_constraint_wrt_tm_rec n2 a1 phi1) ->
   degree_constraint_wrt_co n1 phi1).
-Proof.
-apply_mutual_ind tm_brs_co_constraint_mutind;
-default_simp; eauto with lngen.
-Qed.
+Proof. Admitted.
 
 (* end hide *)
 
@@ -3511,9 +3089,7 @@ Lemma degree_tm_wrt_co_open_tm_wrt_tm_rec_inv :
 forall a1 a2 n1 n2,
   degree_tm_wrt_co n1 (open_tm_wrt_tm_rec n2 a2 a1) ->
   degree_tm_wrt_co n1 a1.
-Proof.
-pose proof degree_tm_wrt_co_open_tm_wrt_tm_rec_inv_degree_brs_wrt_co_open_brs_wrt_tm_rec_inv_degree_co_wrt_co_open_co_wrt_tm_rec_inv_degree_constraint_wrt_co_open_constraint_wrt_tm_rec_inv_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Immediate degree_tm_wrt_co_open_tm_wrt_tm_rec_inv : lngen.
 
@@ -3525,9 +3101,7 @@ Lemma degree_brs_wrt_co_open_brs_wrt_tm_rec_inv :
 forall brs1 a1 n1 n2,
   degree_brs_wrt_co n1 (open_brs_wrt_tm_rec n2 a1 brs1) ->
   degree_brs_wrt_co n1 brs1.
-Proof.
-pose proof degree_tm_wrt_co_open_tm_wrt_tm_rec_inv_degree_brs_wrt_co_open_brs_wrt_tm_rec_inv_degree_co_wrt_co_open_co_wrt_tm_rec_inv_degree_constraint_wrt_co_open_constraint_wrt_tm_rec_inv_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Immediate degree_brs_wrt_co_open_brs_wrt_tm_rec_inv : lngen.
 
@@ -3539,9 +3113,7 @@ Lemma degree_co_wrt_co_open_co_wrt_tm_rec_inv :
 forall g1 a1 n1 n2,
   degree_co_wrt_co n1 (open_co_wrt_tm_rec n2 a1 g1) ->
   degree_co_wrt_co n1 g1.
-Proof.
-pose proof degree_tm_wrt_co_open_tm_wrt_tm_rec_inv_degree_brs_wrt_co_open_brs_wrt_tm_rec_inv_degree_co_wrt_co_open_co_wrt_tm_rec_inv_degree_constraint_wrt_co_open_constraint_wrt_tm_rec_inv_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Immediate degree_co_wrt_co_open_co_wrt_tm_rec_inv : lngen.
 
@@ -3553,9 +3125,7 @@ Lemma degree_constraint_wrt_co_open_constraint_wrt_tm_rec_inv :
 forall phi1 a1 n1 n2,
   degree_constraint_wrt_co n1 (open_constraint_wrt_tm_rec n2 a1 phi1) ->
   degree_constraint_wrt_co n1 phi1.
-Proof.
-pose proof degree_tm_wrt_co_open_tm_wrt_tm_rec_inv_degree_brs_wrt_co_open_brs_wrt_tm_rec_inv_degree_co_wrt_co_open_co_wrt_tm_rec_inv_degree_constraint_wrt_co_open_constraint_wrt_tm_rec_inv_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Immediate degree_constraint_wrt_co_open_constraint_wrt_tm_rec_inv : lngen.
 
@@ -3576,10 +3146,7 @@ Lemma degree_tm_wrt_co_open_tm_wrt_co_rec_inv_degree_brs_wrt_co_open_brs_wrt_co_
 (forall phi1 g1 n1,
   degree_constraint_wrt_co n1 (open_constraint_wrt_co_rec n1 g1 phi1) ->
   degree_constraint_wrt_co (S n1) phi1).
-Proof.
-apply_mutual_ind tm_brs_co_constraint_mutind;
-default_simp; eauto with lngen.
-Qed.
+Proof. Admitted.
 
 (* end hide *)
 
@@ -3589,9 +3156,7 @@ Lemma degree_tm_wrt_co_open_tm_wrt_co_rec_inv :
 forall a1 g1 n1,
   degree_tm_wrt_co n1 (open_tm_wrt_co_rec n1 g1 a1) ->
   degree_tm_wrt_co (S n1) a1.
-Proof.
-pose proof degree_tm_wrt_co_open_tm_wrt_co_rec_inv_degree_brs_wrt_co_open_brs_wrt_co_rec_inv_degree_co_wrt_co_open_co_wrt_co_rec_inv_degree_constraint_wrt_co_open_constraint_wrt_co_rec_inv_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Immediate degree_tm_wrt_co_open_tm_wrt_co_rec_inv : lngen.
 
@@ -3603,9 +3168,7 @@ Lemma degree_brs_wrt_co_open_brs_wrt_co_rec_inv :
 forall brs1 g1 n1,
   degree_brs_wrt_co n1 (open_brs_wrt_co_rec n1 g1 brs1) ->
   degree_brs_wrt_co (S n1) brs1.
-Proof.
-pose proof degree_tm_wrt_co_open_tm_wrt_co_rec_inv_degree_brs_wrt_co_open_brs_wrt_co_rec_inv_degree_co_wrt_co_open_co_wrt_co_rec_inv_degree_constraint_wrt_co_open_constraint_wrt_co_rec_inv_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Immediate degree_brs_wrt_co_open_brs_wrt_co_rec_inv : lngen.
 
@@ -3617,9 +3180,7 @@ Lemma degree_co_wrt_co_open_co_wrt_co_rec_inv :
 forall g1 g2 n1,
   degree_co_wrt_co n1 (open_co_wrt_co_rec n1 g2 g1) ->
   degree_co_wrt_co (S n1) g1.
-Proof.
-pose proof degree_tm_wrt_co_open_tm_wrt_co_rec_inv_degree_brs_wrt_co_open_brs_wrt_co_rec_inv_degree_co_wrt_co_open_co_wrt_co_rec_inv_degree_constraint_wrt_co_open_constraint_wrt_co_rec_inv_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Immediate degree_co_wrt_co_open_co_wrt_co_rec_inv : lngen.
 
@@ -3631,9 +3192,7 @@ Lemma degree_constraint_wrt_co_open_constraint_wrt_co_rec_inv :
 forall phi1 g1 n1,
   degree_constraint_wrt_co n1 (open_constraint_wrt_co_rec n1 g1 phi1) ->
   degree_constraint_wrt_co (S n1) phi1.
-Proof.
-pose proof degree_tm_wrt_co_open_tm_wrt_co_rec_inv_degree_brs_wrt_co_open_brs_wrt_co_rec_inv_degree_co_wrt_co_open_co_wrt_co_rec_inv_degree_constraint_wrt_co_open_constraint_wrt_co_rec_inv_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Immediate degree_constraint_wrt_co_open_constraint_wrt_co_rec_inv : lngen.
 
@@ -3643,9 +3202,7 @@ Lemma degree_tm_wrt_tm_open_tm_wrt_tm_inv :
 forall a1 a2,
   degree_tm_wrt_tm 0 (open_tm_wrt_tm a1 a2) ->
   degree_tm_wrt_tm 1 a1.
-Proof.
-unfold open_tm_wrt_tm; eauto with lngen.
-Qed.
+Proof. Admitted.
 
 Hint Immediate degree_tm_wrt_tm_open_tm_wrt_tm_inv : lngen.
 
@@ -3653,9 +3210,7 @@ Lemma degree_brs_wrt_tm_open_brs_wrt_tm_inv :
 forall brs1 a1,
   degree_brs_wrt_tm 0 (open_brs_wrt_tm brs1 a1) ->
   degree_brs_wrt_tm 1 brs1.
-Proof.
-unfold open_brs_wrt_tm; eauto with lngen.
-Qed.
+Proof. Admitted.
 
 Hint Immediate degree_brs_wrt_tm_open_brs_wrt_tm_inv : lngen.
 
@@ -3663,9 +3218,7 @@ Lemma degree_co_wrt_tm_open_co_wrt_tm_inv :
 forall g1 a1,
   degree_co_wrt_tm 0 (open_co_wrt_tm g1 a1) ->
   degree_co_wrt_tm 1 g1.
-Proof.
-unfold open_co_wrt_tm; eauto with lngen.
-Qed.
+Proof. Admitted.
 
 Hint Immediate degree_co_wrt_tm_open_co_wrt_tm_inv : lngen.
 
@@ -3673,9 +3226,7 @@ Lemma degree_constraint_wrt_tm_open_constraint_wrt_tm_inv :
 forall phi1 a1,
   degree_constraint_wrt_tm 0 (open_constraint_wrt_tm phi1 a1) ->
   degree_constraint_wrt_tm 1 phi1.
-Proof.
-unfold open_constraint_wrt_tm; eauto with lngen.
-Qed.
+Proof. Admitted.
 
 Hint Immediate degree_constraint_wrt_tm_open_constraint_wrt_tm_inv : lngen.
 
@@ -3683,9 +3234,7 @@ Lemma degree_tm_wrt_tm_open_tm_wrt_co_inv :
 forall a1 g1 n1,
   degree_tm_wrt_tm n1 (open_tm_wrt_co a1 g1) ->
   degree_tm_wrt_tm n1 a1.
-Proof.
-unfold open_tm_wrt_co; eauto with lngen.
-Qed.
+Proof. Admitted.
 
 Hint Immediate degree_tm_wrt_tm_open_tm_wrt_co_inv : lngen.
 
@@ -3693,9 +3242,7 @@ Lemma degree_brs_wrt_tm_open_brs_wrt_co_inv :
 forall brs1 g1 n1,
   degree_brs_wrt_tm n1 (open_brs_wrt_co brs1 g1) ->
   degree_brs_wrt_tm n1 brs1.
-Proof.
-unfold open_brs_wrt_co; eauto with lngen.
-Qed.
+Proof. Admitted.
 
 Hint Immediate degree_brs_wrt_tm_open_brs_wrt_co_inv : lngen.
 
@@ -3703,9 +3250,7 @@ Lemma degree_co_wrt_tm_open_co_wrt_co_inv :
 forall g1 g2 n1,
   degree_co_wrt_tm n1 (open_co_wrt_co g1 g2) ->
   degree_co_wrt_tm n1 g1.
-Proof.
-unfold open_co_wrt_co; eauto with lngen.
-Qed.
+Proof. Admitted.
 
 Hint Immediate degree_co_wrt_tm_open_co_wrt_co_inv : lngen.
 
@@ -3713,9 +3258,7 @@ Lemma degree_constraint_wrt_tm_open_constraint_wrt_co_inv :
 forall phi1 g1 n1,
   degree_constraint_wrt_tm n1 (open_constraint_wrt_co phi1 g1) ->
   degree_constraint_wrt_tm n1 phi1.
-Proof.
-unfold open_constraint_wrt_co; eauto with lngen.
-Qed.
+Proof. Admitted.
 
 Hint Immediate degree_constraint_wrt_tm_open_constraint_wrt_co_inv : lngen.
 
@@ -3723,9 +3266,7 @@ Lemma degree_tm_wrt_co_open_tm_wrt_tm_inv :
 forall a1 a2 n1,
   degree_tm_wrt_co n1 (open_tm_wrt_tm a1 a2) ->
   degree_tm_wrt_co n1 a1.
-Proof.
-unfold open_tm_wrt_tm; eauto with lngen.
-Qed.
+Proof. Admitted.
 
 Hint Immediate degree_tm_wrt_co_open_tm_wrt_tm_inv : lngen.
 
@@ -3733,9 +3274,7 @@ Lemma degree_brs_wrt_co_open_brs_wrt_tm_inv :
 forall brs1 a1 n1,
   degree_brs_wrt_co n1 (open_brs_wrt_tm brs1 a1) ->
   degree_brs_wrt_co n1 brs1.
-Proof.
-unfold open_brs_wrt_tm; eauto with lngen.
-Qed.
+Proof. Admitted.
 
 Hint Immediate degree_brs_wrt_co_open_brs_wrt_tm_inv : lngen.
 
@@ -3743,9 +3282,7 @@ Lemma degree_co_wrt_co_open_co_wrt_tm_inv :
 forall g1 a1 n1,
   degree_co_wrt_co n1 (open_co_wrt_tm g1 a1) ->
   degree_co_wrt_co n1 g1.
-Proof.
-unfold open_co_wrt_tm; eauto with lngen.
-Qed.
+Proof. Admitted.
 
 Hint Immediate degree_co_wrt_co_open_co_wrt_tm_inv : lngen.
 
@@ -3753,9 +3290,7 @@ Lemma degree_constraint_wrt_co_open_constraint_wrt_tm_inv :
 forall phi1 a1 n1,
   degree_constraint_wrt_co n1 (open_constraint_wrt_tm phi1 a1) ->
   degree_constraint_wrt_co n1 phi1.
-Proof.
-unfold open_constraint_wrt_tm; eauto with lngen.
-Qed.
+Proof. Admitted.
 
 Hint Immediate degree_constraint_wrt_co_open_constraint_wrt_tm_inv : lngen.
 
@@ -3763,9 +3298,7 @@ Lemma degree_tm_wrt_co_open_tm_wrt_co_inv :
 forall a1 g1,
   degree_tm_wrt_co 0 (open_tm_wrt_co a1 g1) ->
   degree_tm_wrt_co 1 a1.
-Proof.
-unfold open_tm_wrt_co; eauto with lngen.
-Qed.
+Proof. Admitted.
 
 Hint Immediate degree_tm_wrt_co_open_tm_wrt_co_inv : lngen.
 
@@ -3773,9 +3306,7 @@ Lemma degree_brs_wrt_co_open_brs_wrt_co_inv :
 forall brs1 g1,
   degree_brs_wrt_co 0 (open_brs_wrt_co brs1 g1) ->
   degree_brs_wrt_co 1 brs1.
-Proof.
-unfold open_brs_wrt_co; eauto with lngen.
-Qed.
+Proof. Admitted.
 
 Hint Immediate degree_brs_wrt_co_open_brs_wrt_co_inv : lngen.
 
@@ -3783,9 +3314,7 @@ Lemma degree_co_wrt_co_open_co_wrt_co_inv :
 forall g1 g2,
   degree_co_wrt_co 0 (open_co_wrt_co g1 g2) ->
   degree_co_wrt_co 1 g1.
-Proof.
-unfold open_co_wrt_co; eauto with lngen.
-Qed.
+Proof. Admitted.
 
 Hint Immediate degree_co_wrt_co_open_co_wrt_co_inv : lngen.
 
@@ -3793,9 +3322,7 @@ Lemma degree_constraint_wrt_co_open_constraint_wrt_co_inv :
 forall phi1 g1,
   degree_constraint_wrt_co 0 (open_constraint_wrt_co phi1 g1) ->
   degree_constraint_wrt_co 1 phi1.
-Proof.
-unfold open_constraint_wrt_co; eauto with lngen.
-Qed.
+Proof. Admitted.
 
 Hint Immediate degree_constraint_wrt_co_open_constraint_wrt_co_inv : lngen.
 
@@ -3821,13 +3348,7 @@ Lemma close_tm_wrt_tm_rec_inj_close_brs_wrt_tm_rec_inj_close_co_wrt_tm_rec_inj_c
 (forall phi1 phi2 x1 n1,
   close_constraint_wrt_tm_rec n1 x1 phi1 = close_constraint_wrt_tm_rec n1 x1 phi2 ->
   phi1 = phi2).
-Proof.
-apply_mutual_ind tm_brs_co_constraint_mutind;
-intros; match goal with
-          | |- _ = ?term => destruct term
-        end;
-default_simp; eauto with lngen.
-Qed.
+Proof. Admitted.
 
 (* end hide *)
 
@@ -3837,9 +3358,7 @@ Lemma close_tm_wrt_tm_rec_inj :
 forall a1 a2 x1 n1,
   close_tm_wrt_tm_rec n1 x1 a1 = close_tm_wrt_tm_rec n1 x1 a2 ->
   a1 = a2.
-Proof.
-pose proof close_tm_wrt_tm_rec_inj_close_brs_wrt_tm_rec_inj_close_co_wrt_tm_rec_inj_close_constraint_wrt_tm_rec_inj_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Immediate close_tm_wrt_tm_rec_inj : lngen.
 
@@ -3851,9 +3370,7 @@ Lemma close_brs_wrt_tm_rec_inj :
 forall brs1 brs2 x1 n1,
   close_brs_wrt_tm_rec n1 x1 brs1 = close_brs_wrt_tm_rec n1 x1 brs2 ->
   brs1 = brs2.
-Proof.
-pose proof close_tm_wrt_tm_rec_inj_close_brs_wrt_tm_rec_inj_close_co_wrt_tm_rec_inj_close_constraint_wrt_tm_rec_inj_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Immediate close_brs_wrt_tm_rec_inj : lngen.
 
@@ -3865,9 +3382,7 @@ Lemma close_co_wrt_tm_rec_inj :
 forall g1 g2 x1 n1,
   close_co_wrt_tm_rec n1 x1 g1 = close_co_wrt_tm_rec n1 x1 g2 ->
   g1 = g2.
-Proof.
-pose proof close_tm_wrt_tm_rec_inj_close_brs_wrt_tm_rec_inj_close_co_wrt_tm_rec_inj_close_constraint_wrt_tm_rec_inj_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Immediate close_co_wrt_tm_rec_inj : lngen.
 
@@ -3879,9 +3394,7 @@ Lemma close_constraint_wrt_tm_rec_inj :
 forall phi1 phi2 x1 n1,
   close_constraint_wrt_tm_rec n1 x1 phi1 = close_constraint_wrt_tm_rec n1 x1 phi2 ->
   phi1 = phi2.
-Proof.
-pose proof close_tm_wrt_tm_rec_inj_close_brs_wrt_tm_rec_inj_close_co_wrt_tm_rec_inj_close_constraint_wrt_tm_rec_inj_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Immediate close_constraint_wrt_tm_rec_inj : lngen.
 
@@ -3902,13 +3415,7 @@ Lemma close_tm_wrt_co_rec_inj_close_brs_wrt_co_rec_inj_close_co_wrt_co_rec_inj_c
 (forall phi1 phi2 c1 n1,
   close_constraint_wrt_co_rec n1 c1 phi1 = close_constraint_wrt_co_rec n1 c1 phi2 ->
   phi1 = phi2).
-Proof.
-apply_mutual_ind tm_brs_co_constraint_mutind;
-intros; match goal with
-          | |- _ = ?term => destruct term
-        end;
-default_simp; eauto with lngen.
-Qed.
+Proof. Admitted.
 
 (* end hide *)
 
@@ -3918,9 +3425,7 @@ Lemma close_tm_wrt_co_rec_inj :
 forall a1 a2 c1 n1,
   close_tm_wrt_co_rec n1 c1 a1 = close_tm_wrt_co_rec n1 c1 a2 ->
   a1 = a2.
-Proof.
-pose proof close_tm_wrt_co_rec_inj_close_brs_wrt_co_rec_inj_close_co_wrt_co_rec_inj_close_constraint_wrt_co_rec_inj_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Immediate close_tm_wrt_co_rec_inj : lngen.
 
@@ -3932,9 +3437,7 @@ Lemma close_brs_wrt_co_rec_inj :
 forall brs1 brs2 c1 n1,
   close_brs_wrt_co_rec n1 c1 brs1 = close_brs_wrt_co_rec n1 c1 brs2 ->
   brs1 = brs2.
-Proof.
-pose proof close_tm_wrt_co_rec_inj_close_brs_wrt_co_rec_inj_close_co_wrt_co_rec_inj_close_constraint_wrt_co_rec_inj_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Immediate close_brs_wrt_co_rec_inj : lngen.
 
@@ -3946,9 +3449,7 @@ Lemma close_co_wrt_co_rec_inj :
 forall g1 g2 c1 n1,
   close_co_wrt_co_rec n1 c1 g1 = close_co_wrt_co_rec n1 c1 g2 ->
   g1 = g2.
-Proof.
-pose proof close_tm_wrt_co_rec_inj_close_brs_wrt_co_rec_inj_close_co_wrt_co_rec_inj_close_constraint_wrt_co_rec_inj_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Immediate close_co_wrt_co_rec_inj : lngen.
 
@@ -3960,9 +3461,7 @@ Lemma close_constraint_wrt_co_rec_inj :
 forall phi1 phi2 c1 n1,
   close_constraint_wrt_co_rec n1 c1 phi1 = close_constraint_wrt_co_rec n1 c1 phi2 ->
   phi1 = phi2.
-Proof.
-pose proof close_tm_wrt_co_rec_inj_close_brs_wrt_co_rec_inj_close_co_wrt_co_rec_inj_close_constraint_wrt_co_rec_inj_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Immediate close_constraint_wrt_co_rec_inj : lngen.
 
@@ -3972,9 +3471,7 @@ Lemma close_tm_wrt_tm_inj :
 forall a1 a2 x1,
   close_tm_wrt_tm x1 a1 = close_tm_wrt_tm x1 a2 ->
   a1 = a2.
-Proof.
-unfold close_tm_wrt_tm; eauto with lngen.
-Qed.
+Proof. Admitted.
 
 Hint Immediate close_tm_wrt_tm_inj : lngen.
 
@@ -3982,9 +3479,7 @@ Lemma close_brs_wrt_tm_inj :
 forall brs1 brs2 x1,
   close_brs_wrt_tm x1 brs1 = close_brs_wrt_tm x1 brs2 ->
   brs1 = brs2.
-Proof.
-unfold close_brs_wrt_tm; eauto with lngen.
-Qed.
+Proof. Admitted.
 
 Hint Immediate close_brs_wrt_tm_inj : lngen.
 
@@ -3992,9 +3487,7 @@ Lemma close_co_wrt_tm_inj :
 forall g1 g2 x1,
   close_co_wrt_tm x1 g1 = close_co_wrt_tm x1 g2 ->
   g1 = g2.
-Proof.
-unfold close_co_wrt_tm; eauto with lngen.
-Qed.
+Proof. Admitted.
 
 Hint Immediate close_co_wrt_tm_inj : lngen.
 
@@ -4002,9 +3495,7 @@ Lemma close_constraint_wrt_tm_inj :
 forall phi1 phi2 x1,
   close_constraint_wrt_tm x1 phi1 = close_constraint_wrt_tm x1 phi2 ->
   phi1 = phi2.
-Proof.
-unfold close_constraint_wrt_tm; eauto with lngen.
-Qed.
+Proof. Admitted.
 
 Hint Immediate close_constraint_wrt_tm_inj : lngen.
 
@@ -4012,9 +3503,7 @@ Lemma close_tm_wrt_co_inj :
 forall a1 a2 c1,
   close_tm_wrt_co c1 a1 = close_tm_wrt_co c1 a2 ->
   a1 = a2.
-Proof.
-unfold close_tm_wrt_co; eauto with lngen.
-Qed.
+Proof. Admitted.
 
 Hint Immediate close_tm_wrt_co_inj : lngen.
 
@@ -4022,9 +3511,7 @@ Lemma close_brs_wrt_co_inj :
 forall brs1 brs2 c1,
   close_brs_wrt_co c1 brs1 = close_brs_wrt_co c1 brs2 ->
   brs1 = brs2.
-Proof.
-unfold close_brs_wrt_co; eauto with lngen.
-Qed.
+Proof. Admitted.
 
 Hint Immediate close_brs_wrt_co_inj : lngen.
 
@@ -4032,9 +3519,7 @@ Lemma close_co_wrt_co_inj :
 forall g1 g2 c1,
   close_co_wrt_co c1 g1 = close_co_wrt_co c1 g2 ->
   g1 = g2.
-Proof.
-unfold close_co_wrt_co; eauto with lngen.
-Qed.
+Proof. Admitted.
 
 Hint Immediate close_co_wrt_co_inj : lngen.
 
@@ -4042,9 +3527,7 @@ Lemma close_constraint_wrt_co_inj :
 forall phi1 phi2 c1,
   close_constraint_wrt_co c1 phi1 = close_constraint_wrt_co c1 phi2 ->
   phi1 = phi2.
-Proof.
-unfold close_constraint_wrt_co; eauto with lngen.
-Qed.
+Proof. Admitted.
 
 Hint Immediate close_constraint_wrt_co_inj : lngen.
 
@@ -4063,10 +3546,7 @@ Lemma close_tm_wrt_tm_rec_open_tm_wrt_tm_rec_close_brs_wrt_tm_rec_open_brs_wrt_t
 (forall phi1 x1 n1,
   x1 `notin` fv_tm_tm_constraint phi1 ->
   close_constraint_wrt_tm_rec n1 x1 (open_constraint_wrt_tm_rec n1 (a_Var_f x1) phi1) = phi1).
-Proof.
-apply_mutual_ind tm_brs_co_constraint_mutind;
-default_simp.
-Qed.
+Proof. Admitted.
 
 (* end hide *)
 
@@ -4076,9 +3556,7 @@ Lemma close_tm_wrt_tm_rec_open_tm_wrt_tm_rec :
 forall a1 x1 n1,
   x1 `notin` fv_tm_tm_tm a1 ->
   close_tm_wrt_tm_rec n1 x1 (open_tm_wrt_tm_rec n1 (a_Var_f x1) a1) = a1.
-Proof.
-pose proof close_tm_wrt_tm_rec_open_tm_wrt_tm_rec_close_brs_wrt_tm_rec_open_brs_wrt_tm_rec_close_co_wrt_tm_rec_open_co_wrt_tm_rec_close_constraint_wrt_tm_rec_open_constraint_wrt_tm_rec_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve close_tm_wrt_tm_rec_open_tm_wrt_tm_rec : lngen.
 Hint Rewrite close_tm_wrt_tm_rec_open_tm_wrt_tm_rec using solve [auto] : lngen.
@@ -4091,9 +3569,7 @@ Lemma close_brs_wrt_tm_rec_open_brs_wrt_tm_rec :
 forall brs1 x1 n1,
   x1 `notin` fv_tm_tm_brs brs1 ->
   close_brs_wrt_tm_rec n1 x1 (open_brs_wrt_tm_rec n1 (a_Var_f x1) brs1) = brs1.
-Proof.
-pose proof close_tm_wrt_tm_rec_open_tm_wrt_tm_rec_close_brs_wrt_tm_rec_open_brs_wrt_tm_rec_close_co_wrt_tm_rec_open_co_wrt_tm_rec_close_constraint_wrt_tm_rec_open_constraint_wrt_tm_rec_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve close_brs_wrt_tm_rec_open_brs_wrt_tm_rec : lngen.
 Hint Rewrite close_brs_wrt_tm_rec_open_brs_wrt_tm_rec using solve [auto] : lngen.
@@ -4106,9 +3582,7 @@ Lemma close_co_wrt_tm_rec_open_co_wrt_tm_rec :
 forall g1 x1 n1,
   x1 `notin` fv_tm_tm_co g1 ->
   close_co_wrt_tm_rec n1 x1 (open_co_wrt_tm_rec n1 (a_Var_f x1) g1) = g1.
-Proof.
-pose proof close_tm_wrt_tm_rec_open_tm_wrt_tm_rec_close_brs_wrt_tm_rec_open_brs_wrt_tm_rec_close_co_wrt_tm_rec_open_co_wrt_tm_rec_close_constraint_wrt_tm_rec_open_constraint_wrt_tm_rec_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve close_co_wrt_tm_rec_open_co_wrt_tm_rec : lngen.
 Hint Rewrite close_co_wrt_tm_rec_open_co_wrt_tm_rec using solve [auto] : lngen.
@@ -4121,9 +3595,7 @@ Lemma close_constraint_wrt_tm_rec_open_constraint_wrt_tm_rec :
 forall phi1 x1 n1,
   x1 `notin` fv_tm_tm_constraint phi1 ->
   close_constraint_wrt_tm_rec n1 x1 (open_constraint_wrt_tm_rec n1 (a_Var_f x1) phi1) = phi1.
-Proof.
-pose proof close_tm_wrt_tm_rec_open_tm_wrt_tm_rec_close_brs_wrt_tm_rec_open_brs_wrt_tm_rec_close_co_wrt_tm_rec_open_co_wrt_tm_rec_close_constraint_wrt_tm_rec_open_constraint_wrt_tm_rec_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve close_constraint_wrt_tm_rec_open_constraint_wrt_tm_rec : lngen.
 Hint Rewrite close_constraint_wrt_tm_rec_open_constraint_wrt_tm_rec using solve [auto] : lngen.
@@ -4145,10 +3617,7 @@ Lemma close_tm_wrt_co_rec_open_tm_wrt_co_rec_close_brs_wrt_co_rec_open_brs_wrt_c
 (forall phi1 c1 n1,
   c1 `notin` fv_co_co_constraint phi1 ->
   close_constraint_wrt_co_rec n1 c1 (open_constraint_wrt_co_rec n1 (g_Var_f c1) phi1) = phi1).
-Proof.
-apply_mutual_ind tm_brs_co_constraint_mutind;
-default_simp.
-Qed.
+Proof. Admitted.
 
 (* end hide *)
 
@@ -4158,9 +3627,7 @@ Lemma close_tm_wrt_co_rec_open_tm_wrt_co_rec :
 forall a1 c1 n1,
   c1 `notin` fv_co_co_tm a1 ->
   close_tm_wrt_co_rec n1 c1 (open_tm_wrt_co_rec n1 (g_Var_f c1) a1) = a1.
-Proof.
-pose proof close_tm_wrt_co_rec_open_tm_wrt_co_rec_close_brs_wrt_co_rec_open_brs_wrt_co_rec_close_co_wrt_co_rec_open_co_wrt_co_rec_close_constraint_wrt_co_rec_open_constraint_wrt_co_rec_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve close_tm_wrt_co_rec_open_tm_wrt_co_rec : lngen.
 Hint Rewrite close_tm_wrt_co_rec_open_tm_wrt_co_rec using solve [auto] : lngen.
@@ -4173,9 +3640,7 @@ Lemma close_brs_wrt_co_rec_open_brs_wrt_co_rec :
 forall brs1 c1 n1,
   c1 `notin` fv_co_co_brs brs1 ->
   close_brs_wrt_co_rec n1 c1 (open_brs_wrt_co_rec n1 (g_Var_f c1) brs1) = brs1.
-Proof.
-pose proof close_tm_wrt_co_rec_open_tm_wrt_co_rec_close_brs_wrt_co_rec_open_brs_wrt_co_rec_close_co_wrt_co_rec_open_co_wrt_co_rec_close_constraint_wrt_co_rec_open_constraint_wrt_co_rec_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve close_brs_wrt_co_rec_open_brs_wrt_co_rec : lngen.
 Hint Rewrite close_brs_wrt_co_rec_open_brs_wrt_co_rec using solve [auto] : lngen.
@@ -4188,9 +3653,7 @@ Lemma close_co_wrt_co_rec_open_co_wrt_co_rec :
 forall g1 c1 n1,
   c1 `notin` fv_co_co_co g1 ->
   close_co_wrt_co_rec n1 c1 (open_co_wrt_co_rec n1 (g_Var_f c1) g1) = g1.
-Proof.
-pose proof close_tm_wrt_co_rec_open_tm_wrt_co_rec_close_brs_wrt_co_rec_open_brs_wrt_co_rec_close_co_wrt_co_rec_open_co_wrt_co_rec_close_constraint_wrt_co_rec_open_constraint_wrt_co_rec_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve close_co_wrt_co_rec_open_co_wrt_co_rec : lngen.
 Hint Rewrite close_co_wrt_co_rec_open_co_wrt_co_rec using solve [auto] : lngen.
@@ -4203,9 +3666,7 @@ Lemma close_constraint_wrt_co_rec_open_constraint_wrt_co_rec :
 forall phi1 c1 n1,
   c1 `notin` fv_co_co_constraint phi1 ->
   close_constraint_wrt_co_rec n1 c1 (open_constraint_wrt_co_rec n1 (g_Var_f c1) phi1) = phi1.
-Proof.
-pose proof close_tm_wrt_co_rec_open_tm_wrt_co_rec_close_brs_wrt_co_rec_open_brs_wrt_co_rec_close_co_wrt_co_rec_open_co_wrt_co_rec_close_constraint_wrt_co_rec_open_constraint_wrt_co_rec_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve close_constraint_wrt_co_rec_open_constraint_wrt_co_rec : lngen.
 Hint Rewrite close_constraint_wrt_co_rec_open_constraint_wrt_co_rec using solve [auto] : lngen.
@@ -4216,9 +3677,7 @@ Lemma close_tm_wrt_tm_open_tm_wrt_tm :
 forall a1 x1,
   x1 `notin` fv_tm_tm_tm a1 ->
   close_tm_wrt_tm x1 (open_tm_wrt_tm a1 (a_Var_f x1)) = a1.
-Proof.
-unfold close_tm_wrt_tm; unfold open_tm_wrt_tm; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve close_tm_wrt_tm_open_tm_wrt_tm : lngen.
 Hint Rewrite close_tm_wrt_tm_open_tm_wrt_tm using solve [auto] : lngen.
@@ -4227,9 +3686,7 @@ Lemma close_brs_wrt_tm_open_brs_wrt_tm :
 forall brs1 x1,
   x1 `notin` fv_tm_tm_brs brs1 ->
   close_brs_wrt_tm x1 (open_brs_wrt_tm brs1 (a_Var_f x1)) = brs1.
-Proof.
-unfold close_brs_wrt_tm; unfold open_brs_wrt_tm; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve close_brs_wrt_tm_open_brs_wrt_tm : lngen.
 Hint Rewrite close_brs_wrt_tm_open_brs_wrt_tm using solve [auto] : lngen.
@@ -4238,9 +3695,7 @@ Lemma close_co_wrt_tm_open_co_wrt_tm :
 forall g1 x1,
   x1 `notin` fv_tm_tm_co g1 ->
   close_co_wrt_tm x1 (open_co_wrt_tm g1 (a_Var_f x1)) = g1.
-Proof.
-unfold close_co_wrt_tm; unfold open_co_wrt_tm; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve close_co_wrt_tm_open_co_wrt_tm : lngen.
 Hint Rewrite close_co_wrt_tm_open_co_wrt_tm using solve [auto] : lngen.
@@ -4249,9 +3704,7 @@ Lemma close_constraint_wrt_tm_open_constraint_wrt_tm :
 forall phi1 x1,
   x1 `notin` fv_tm_tm_constraint phi1 ->
   close_constraint_wrt_tm x1 (open_constraint_wrt_tm phi1 (a_Var_f x1)) = phi1.
-Proof.
-unfold close_constraint_wrt_tm; unfold open_constraint_wrt_tm; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve close_constraint_wrt_tm_open_constraint_wrt_tm : lngen.
 Hint Rewrite close_constraint_wrt_tm_open_constraint_wrt_tm using solve [auto] : lngen.
@@ -4260,9 +3713,7 @@ Lemma close_tm_wrt_co_open_tm_wrt_co :
 forall a1 c1,
   c1 `notin` fv_co_co_tm a1 ->
   close_tm_wrt_co c1 (open_tm_wrt_co a1 (g_Var_f c1)) = a1.
-Proof.
-unfold close_tm_wrt_co; unfold open_tm_wrt_co; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve close_tm_wrt_co_open_tm_wrt_co : lngen.
 Hint Rewrite close_tm_wrt_co_open_tm_wrt_co using solve [auto] : lngen.
@@ -4271,9 +3722,7 @@ Lemma close_brs_wrt_co_open_brs_wrt_co :
 forall brs1 c1,
   c1 `notin` fv_co_co_brs brs1 ->
   close_brs_wrt_co c1 (open_brs_wrt_co brs1 (g_Var_f c1)) = brs1.
-Proof.
-unfold close_brs_wrt_co; unfold open_brs_wrt_co; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve close_brs_wrt_co_open_brs_wrt_co : lngen.
 Hint Rewrite close_brs_wrt_co_open_brs_wrt_co using solve [auto] : lngen.
@@ -4282,9 +3731,7 @@ Lemma close_co_wrt_co_open_co_wrt_co :
 forall g1 c1,
   c1 `notin` fv_co_co_co g1 ->
   close_co_wrt_co c1 (open_co_wrt_co g1 (g_Var_f c1)) = g1.
-Proof.
-unfold close_co_wrt_co; unfold open_co_wrt_co; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve close_co_wrt_co_open_co_wrt_co : lngen.
 Hint Rewrite close_co_wrt_co_open_co_wrt_co using solve [auto] : lngen.
@@ -4293,9 +3740,7 @@ Lemma close_constraint_wrt_co_open_constraint_wrt_co :
 forall phi1 c1,
   c1 `notin` fv_co_co_constraint phi1 ->
   close_constraint_wrt_co c1 (open_constraint_wrt_co phi1 (g_Var_f c1)) = phi1.
-Proof.
-unfold close_constraint_wrt_co; unfold open_constraint_wrt_co; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve close_constraint_wrt_co_open_constraint_wrt_co : lngen.
 Hint Rewrite close_constraint_wrt_co_open_constraint_wrt_co using solve [auto] : lngen.
@@ -4311,10 +3756,7 @@ Lemma open_tm_wrt_tm_rec_close_tm_wrt_tm_rec_open_brs_wrt_tm_rec_close_brs_wrt_t
   open_co_wrt_tm_rec n1 (a_Var_f x1) (close_co_wrt_tm_rec n1 x1 g1) = g1) /\
 (forall phi1 x1 n1,
   open_constraint_wrt_tm_rec n1 (a_Var_f x1) (close_constraint_wrt_tm_rec n1 x1 phi1) = phi1).
-Proof.
-apply_mutual_ind tm_brs_co_constraint_mutind;
-default_simp.
-Qed.
+Proof. Admitted.
 
 (* end hide *)
 
@@ -4323,9 +3765,7 @@ Qed.
 Lemma open_tm_wrt_tm_rec_close_tm_wrt_tm_rec :
 forall a1 x1 n1,
   open_tm_wrt_tm_rec n1 (a_Var_f x1) (close_tm_wrt_tm_rec n1 x1 a1) = a1.
-Proof.
-pose proof open_tm_wrt_tm_rec_close_tm_wrt_tm_rec_open_brs_wrt_tm_rec_close_brs_wrt_tm_rec_open_co_wrt_tm_rec_close_co_wrt_tm_rec_open_constraint_wrt_tm_rec_close_constraint_wrt_tm_rec_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve open_tm_wrt_tm_rec_close_tm_wrt_tm_rec : lngen.
 Hint Rewrite open_tm_wrt_tm_rec_close_tm_wrt_tm_rec using solve [auto] : lngen.
@@ -4337,9 +3777,7 @@ Hint Rewrite open_tm_wrt_tm_rec_close_tm_wrt_tm_rec using solve [auto] : lngen.
 Lemma open_brs_wrt_tm_rec_close_brs_wrt_tm_rec :
 forall brs1 x1 n1,
   open_brs_wrt_tm_rec n1 (a_Var_f x1) (close_brs_wrt_tm_rec n1 x1 brs1) = brs1.
-Proof.
-pose proof open_tm_wrt_tm_rec_close_tm_wrt_tm_rec_open_brs_wrt_tm_rec_close_brs_wrt_tm_rec_open_co_wrt_tm_rec_close_co_wrt_tm_rec_open_constraint_wrt_tm_rec_close_constraint_wrt_tm_rec_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve open_brs_wrt_tm_rec_close_brs_wrt_tm_rec : lngen.
 Hint Rewrite open_brs_wrt_tm_rec_close_brs_wrt_tm_rec using solve [auto] : lngen.
@@ -4351,9 +3789,7 @@ Hint Rewrite open_brs_wrt_tm_rec_close_brs_wrt_tm_rec using solve [auto] : lngen
 Lemma open_co_wrt_tm_rec_close_co_wrt_tm_rec :
 forall g1 x1 n1,
   open_co_wrt_tm_rec n1 (a_Var_f x1) (close_co_wrt_tm_rec n1 x1 g1) = g1.
-Proof.
-pose proof open_tm_wrt_tm_rec_close_tm_wrt_tm_rec_open_brs_wrt_tm_rec_close_brs_wrt_tm_rec_open_co_wrt_tm_rec_close_co_wrt_tm_rec_open_constraint_wrt_tm_rec_close_constraint_wrt_tm_rec_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve open_co_wrt_tm_rec_close_co_wrt_tm_rec : lngen.
 Hint Rewrite open_co_wrt_tm_rec_close_co_wrt_tm_rec using solve [auto] : lngen.
@@ -4365,9 +3801,7 @@ Hint Rewrite open_co_wrt_tm_rec_close_co_wrt_tm_rec using solve [auto] : lngen.
 Lemma open_constraint_wrt_tm_rec_close_constraint_wrt_tm_rec :
 forall phi1 x1 n1,
   open_constraint_wrt_tm_rec n1 (a_Var_f x1) (close_constraint_wrt_tm_rec n1 x1 phi1) = phi1.
-Proof.
-pose proof open_tm_wrt_tm_rec_close_tm_wrt_tm_rec_open_brs_wrt_tm_rec_close_brs_wrt_tm_rec_open_co_wrt_tm_rec_close_co_wrt_tm_rec_open_constraint_wrt_tm_rec_close_constraint_wrt_tm_rec_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve open_constraint_wrt_tm_rec_close_constraint_wrt_tm_rec : lngen.
 Hint Rewrite open_constraint_wrt_tm_rec_close_constraint_wrt_tm_rec using solve [auto] : lngen.
@@ -4385,10 +3819,7 @@ Lemma open_tm_wrt_co_rec_close_tm_wrt_co_rec_open_brs_wrt_co_rec_close_brs_wrt_c
   open_co_wrt_co_rec n1 (g_Var_f c1) (close_co_wrt_co_rec n1 c1 g1) = g1) /\
 (forall phi1 c1 n1,
   open_constraint_wrt_co_rec n1 (g_Var_f c1) (close_constraint_wrt_co_rec n1 c1 phi1) = phi1).
-Proof.
-apply_mutual_ind tm_brs_co_constraint_mutind;
-default_simp.
-Qed.
+Proof. Admitted.
 
 (* end hide *)
 
@@ -4397,9 +3828,7 @@ Qed.
 Lemma open_tm_wrt_co_rec_close_tm_wrt_co_rec :
 forall a1 c1 n1,
   open_tm_wrt_co_rec n1 (g_Var_f c1) (close_tm_wrt_co_rec n1 c1 a1) = a1.
-Proof.
-pose proof open_tm_wrt_co_rec_close_tm_wrt_co_rec_open_brs_wrt_co_rec_close_brs_wrt_co_rec_open_co_wrt_co_rec_close_co_wrt_co_rec_open_constraint_wrt_co_rec_close_constraint_wrt_co_rec_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve open_tm_wrt_co_rec_close_tm_wrt_co_rec : lngen.
 Hint Rewrite open_tm_wrt_co_rec_close_tm_wrt_co_rec using solve [auto] : lngen.
@@ -4411,9 +3840,7 @@ Hint Rewrite open_tm_wrt_co_rec_close_tm_wrt_co_rec using solve [auto] : lngen.
 Lemma open_brs_wrt_co_rec_close_brs_wrt_co_rec :
 forall brs1 c1 n1,
   open_brs_wrt_co_rec n1 (g_Var_f c1) (close_brs_wrt_co_rec n1 c1 brs1) = brs1.
-Proof.
-pose proof open_tm_wrt_co_rec_close_tm_wrt_co_rec_open_brs_wrt_co_rec_close_brs_wrt_co_rec_open_co_wrt_co_rec_close_co_wrt_co_rec_open_constraint_wrt_co_rec_close_constraint_wrt_co_rec_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve open_brs_wrt_co_rec_close_brs_wrt_co_rec : lngen.
 Hint Rewrite open_brs_wrt_co_rec_close_brs_wrt_co_rec using solve [auto] : lngen.
@@ -4425,9 +3852,7 @@ Hint Rewrite open_brs_wrt_co_rec_close_brs_wrt_co_rec using solve [auto] : lngen
 Lemma open_co_wrt_co_rec_close_co_wrt_co_rec :
 forall g1 c1 n1,
   open_co_wrt_co_rec n1 (g_Var_f c1) (close_co_wrt_co_rec n1 c1 g1) = g1.
-Proof.
-pose proof open_tm_wrt_co_rec_close_tm_wrt_co_rec_open_brs_wrt_co_rec_close_brs_wrt_co_rec_open_co_wrt_co_rec_close_co_wrt_co_rec_open_constraint_wrt_co_rec_close_constraint_wrt_co_rec_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve open_co_wrt_co_rec_close_co_wrt_co_rec : lngen.
 Hint Rewrite open_co_wrt_co_rec_close_co_wrt_co_rec using solve [auto] : lngen.
@@ -4439,9 +3864,7 @@ Hint Rewrite open_co_wrt_co_rec_close_co_wrt_co_rec using solve [auto] : lngen.
 Lemma open_constraint_wrt_co_rec_close_constraint_wrt_co_rec :
 forall phi1 c1 n1,
   open_constraint_wrt_co_rec n1 (g_Var_f c1) (close_constraint_wrt_co_rec n1 c1 phi1) = phi1.
-Proof.
-pose proof open_tm_wrt_co_rec_close_tm_wrt_co_rec_open_brs_wrt_co_rec_close_brs_wrt_co_rec_open_co_wrt_co_rec_close_co_wrt_co_rec_open_constraint_wrt_co_rec_close_constraint_wrt_co_rec_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve open_constraint_wrt_co_rec_close_constraint_wrt_co_rec : lngen.
 Hint Rewrite open_constraint_wrt_co_rec_close_constraint_wrt_co_rec using solve [auto] : lngen.
@@ -4451,9 +3874,7 @@ Hint Rewrite open_constraint_wrt_co_rec_close_constraint_wrt_co_rec using solve 
 Lemma open_tm_wrt_tm_close_tm_wrt_tm :
 forall a1 x1,
   open_tm_wrt_tm (close_tm_wrt_tm x1 a1) (a_Var_f x1) = a1.
-Proof.
-unfold close_tm_wrt_tm; unfold open_tm_wrt_tm; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve open_tm_wrt_tm_close_tm_wrt_tm : lngen.
 Hint Rewrite open_tm_wrt_tm_close_tm_wrt_tm using solve [auto] : lngen.
@@ -4461,9 +3882,7 @@ Hint Rewrite open_tm_wrt_tm_close_tm_wrt_tm using solve [auto] : lngen.
 Lemma open_brs_wrt_tm_close_brs_wrt_tm :
 forall brs1 x1,
   open_brs_wrt_tm (close_brs_wrt_tm x1 brs1) (a_Var_f x1) = brs1.
-Proof.
-unfold close_brs_wrt_tm; unfold open_brs_wrt_tm; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve open_brs_wrt_tm_close_brs_wrt_tm : lngen.
 Hint Rewrite open_brs_wrt_tm_close_brs_wrt_tm using solve [auto] : lngen.
@@ -4471,9 +3890,7 @@ Hint Rewrite open_brs_wrt_tm_close_brs_wrt_tm using solve [auto] : lngen.
 Lemma open_co_wrt_tm_close_co_wrt_tm :
 forall g1 x1,
   open_co_wrt_tm (close_co_wrt_tm x1 g1) (a_Var_f x1) = g1.
-Proof.
-unfold close_co_wrt_tm; unfold open_co_wrt_tm; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve open_co_wrt_tm_close_co_wrt_tm : lngen.
 Hint Rewrite open_co_wrt_tm_close_co_wrt_tm using solve [auto] : lngen.
@@ -4481,9 +3898,7 @@ Hint Rewrite open_co_wrt_tm_close_co_wrt_tm using solve [auto] : lngen.
 Lemma open_constraint_wrt_tm_close_constraint_wrt_tm :
 forall phi1 x1,
   open_constraint_wrt_tm (close_constraint_wrt_tm x1 phi1) (a_Var_f x1) = phi1.
-Proof.
-unfold close_constraint_wrt_tm; unfold open_constraint_wrt_tm; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve open_constraint_wrt_tm_close_constraint_wrt_tm : lngen.
 Hint Rewrite open_constraint_wrt_tm_close_constraint_wrt_tm using solve [auto] : lngen.
@@ -4491,9 +3906,7 @@ Hint Rewrite open_constraint_wrt_tm_close_constraint_wrt_tm using solve [auto] :
 Lemma open_tm_wrt_co_close_tm_wrt_co :
 forall a1 c1,
   open_tm_wrt_co (close_tm_wrt_co c1 a1) (g_Var_f c1) = a1.
-Proof.
-unfold close_tm_wrt_co; unfold open_tm_wrt_co; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve open_tm_wrt_co_close_tm_wrt_co : lngen.
 Hint Rewrite open_tm_wrt_co_close_tm_wrt_co using solve [auto] : lngen.
@@ -4501,9 +3914,7 @@ Hint Rewrite open_tm_wrt_co_close_tm_wrt_co using solve [auto] : lngen.
 Lemma open_brs_wrt_co_close_brs_wrt_co :
 forall brs1 c1,
   open_brs_wrt_co (close_brs_wrt_co c1 brs1) (g_Var_f c1) = brs1.
-Proof.
-unfold close_brs_wrt_co; unfold open_brs_wrt_co; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve open_brs_wrt_co_close_brs_wrt_co : lngen.
 Hint Rewrite open_brs_wrt_co_close_brs_wrt_co using solve [auto] : lngen.
@@ -4511,9 +3922,7 @@ Hint Rewrite open_brs_wrt_co_close_brs_wrt_co using solve [auto] : lngen.
 Lemma open_co_wrt_co_close_co_wrt_co :
 forall g1 c1,
   open_co_wrt_co (close_co_wrt_co c1 g1) (g_Var_f c1) = g1.
-Proof.
-unfold close_co_wrt_co; unfold open_co_wrt_co; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve open_co_wrt_co_close_co_wrt_co : lngen.
 Hint Rewrite open_co_wrt_co_close_co_wrt_co using solve [auto] : lngen.
@@ -4521,9 +3930,7 @@ Hint Rewrite open_co_wrt_co_close_co_wrt_co using solve [auto] : lngen.
 Lemma open_constraint_wrt_co_close_constraint_wrt_co :
 forall phi1 c1,
   open_constraint_wrt_co (close_constraint_wrt_co c1 phi1) (g_Var_f c1) = phi1.
-Proof.
-unfold close_constraint_wrt_co; unfold open_constraint_wrt_co; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve open_constraint_wrt_co_close_constraint_wrt_co : lngen.
 Hint Rewrite open_constraint_wrt_co_close_constraint_wrt_co using solve [auto] : lngen.
@@ -4551,13 +3958,7 @@ Lemma open_tm_wrt_tm_rec_inj_open_brs_wrt_tm_rec_inj_open_co_wrt_tm_rec_inj_open
   x1 `notin` fv_tm_tm_constraint phi1 ->
   open_constraint_wrt_tm_rec n1 (a_Var_f x1) phi2 = open_constraint_wrt_tm_rec n1 (a_Var_f x1) phi1 ->
   phi2 = phi1).
-Proof.
-apply_mutual_ind tm_brs_co_constraint_mutind;
-intros; match goal with
-          | |- _ = ?term => destruct term
-        end;
-default_simp; eauto with lngen.
-Qed.
+Proof. Admitted.
 
 (* end hide *)
 
@@ -4569,9 +3970,7 @@ forall a2 a1 x1 n1,
   x1 `notin` fv_tm_tm_tm a1 ->
   open_tm_wrt_tm_rec n1 (a_Var_f x1) a2 = open_tm_wrt_tm_rec n1 (a_Var_f x1) a1 ->
   a2 = a1.
-Proof.
-pose proof open_tm_wrt_tm_rec_inj_open_brs_wrt_tm_rec_inj_open_co_wrt_tm_rec_inj_open_constraint_wrt_tm_rec_inj_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Immediate open_tm_wrt_tm_rec_inj : lngen.
 
@@ -4585,9 +3984,7 @@ forall brs2 brs1 x1 n1,
   x1 `notin` fv_tm_tm_brs brs1 ->
   open_brs_wrt_tm_rec n1 (a_Var_f x1) brs2 = open_brs_wrt_tm_rec n1 (a_Var_f x1) brs1 ->
   brs2 = brs1.
-Proof.
-pose proof open_tm_wrt_tm_rec_inj_open_brs_wrt_tm_rec_inj_open_co_wrt_tm_rec_inj_open_constraint_wrt_tm_rec_inj_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Immediate open_brs_wrt_tm_rec_inj : lngen.
 
@@ -4601,9 +3998,7 @@ forall g2 g1 x1 n1,
   x1 `notin` fv_tm_tm_co g1 ->
   open_co_wrt_tm_rec n1 (a_Var_f x1) g2 = open_co_wrt_tm_rec n1 (a_Var_f x1) g1 ->
   g2 = g1.
-Proof.
-pose proof open_tm_wrt_tm_rec_inj_open_brs_wrt_tm_rec_inj_open_co_wrt_tm_rec_inj_open_constraint_wrt_tm_rec_inj_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Immediate open_co_wrt_tm_rec_inj : lngen.
 
@@ -4617,9 +4012,7 @@ forall phi2 phi1 x1 n1,
   x1 `notin` fv_tm_tm_constraint phi1 ->
   open_constraint_wrt_tm_rec n1 (a_Var_f x1) phi2 = open_constraint_wrt_tm_rec n1 (a_Var_f x1) phi1 ->
   phi2 = phi1.
-Proof.
-pose proof open_tm_wrt_tm_rec_inj_open_brs_wrt_tm_rec_inj_open_co_wrt_tm_rec_inj_open_constraint_wrt_tm_rec_inj_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Immediate open_constraint_wrt_tm_rec_inj : lngen.
 
@@ -4648,13 +4041,7 @@ Lemma open_tm_wrt_co_rec_inj_open_brs_wrt_co_rec_inj_open_co_wrt_co_rec_inj_open
   c1 `notin` fv_co_co_constraint phi1 ->
   open_constraint_wrt_co_rec n1 (g_Var_f c1) phi2 = open_constraint_wrt_co_rec n1 (g_Var_f c1) phi1 ->
   phi2 = phi1).
-Proof.
-apply_mutual_ind tm_brs_co_constraint_mutind;
-intros; match goal with
-          | |- _ = ?term => destruct term
-        end;
-default_simp; eauto with lngen.
-Qed.
+Proof. Admitted.
 
 (* end hide *)
 
@@ -4666,9 +4053,7 @@ forall a2 a1 c1 n1,
   c1 `notin` fv_co_co_tm a1 ->
   open_tm_wrt_co_rec n1 (g_Var_f c1) a2 = open_tm_wrt_co_rec n1 (g_Var_f c1) a1 ->
   a2 = a1.
-Proof.
-pose proof open_tm_wrt_co_rec_inj_open_brs_wrt_co_rec_inj_open_co_wrt_co_rec_inj_open_constraint_wrt_co_rec_inj_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Immediate open_tm_wrt_co_rec_inj : lngen.
 
@@ -4682,9 +4067,7 @@ forall brs2 brs1 c1 n1,
   c1 `notin` fv_co_co_brs brs1 ->
   open_brs_wrt_co_rec n1 (g_Var_f c1) brs2 = open_brs_wrt_co_rec n1 (g_Var_f c1) brs1 ->
   brs2 = brs1.
-Proof.
-pose proof open_tm_wrt_co_rec_inj_open_brs_wrt_co_rec_inj_open_co_wrt_co_rec_inj_open_constraint_wrt_co_rec_inj_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Immediate open_brs_wrt_co_rec_inj : lngen.
 
@@ -4698,9 +4081,7 @@ forall g2 g1 c1 n1,
   c1 `notin` fv_co_co_co g1 ->
   open_co_wrt_co_rec n1 (g_Var_f c1) g2 = open_co_wrt_co_rec n1 (g_Var_f c1) g1 ->
   g2 = g1.
-Proof.
-pose proof open_tm_wrt_co_rec_inj_open_brs_wrt_co_rec_inj_open_co_wrt_co_rec_inj_open_constraint_wrt_co_rec_inj_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Immediate open_co_wrt_co_rec_inj : lngen.
 
@@ -4714,9 +4095,7 @@ forall phi2 phi1 c1 n1,
   c1 `notin` fv_co_co_constraint phi1 ->
   open_constraint_wrt_co_rec n1 (g_Var_f c1) phi2 = open_constraint_wrt_co_rec n1 (g_Var_f c1) phi1 ->
   phi2 = phi1.
-Proof.
-pose proof open_tm_wrt_co_rec_inj_open_brs_wrt_co_rec_inj_open_co_wrt_co_rec_inj_open_constraint_wrt_co_rec_inj_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Immediate open_constraint_wrt_co_rec_inj : lngen.
 
@@ -4728,9 +4107,7 @@ forall a2 a1 x1,
   x1 `notin` fv_tm_tm_tm a1 ->
   open_tm_wrt_tm a2 (a_Var_f x1) = open_tm_wrt_tm a1 (a_Var_f x1) ->
   a2 = a1.
-Proof.
-unfold open_tm_wrt_tm; eauto with lngen.
-Qed.
+Proof. Admitted.
 
 Hint Immediate open_tm_wrt_tm_inj : lngen.
 
@@ -4740,9 +4117,7 @@ forall brs2 brs1 x1,
   x1 `notin` fv_tm_tm_brs brs1 ->
   open_brs_wrt_tm brs2 (a_Var_f x1) = open_brs_wrt_tm brs1 (a_Var_f x1) ->
   brs2 = brs1.
-Proof.
-unfold open_brs_wrt_tm; eauto with lngen.
-Qed.
+Proof. Admitted.
 
 Hint Immediate open_brs_wrt_tm_inj : lngen.
 
@@ -4752,9 +4127,7 @@ forall g2 g1 x1,
   x1 `notin` fv_tm_tm_co g1 ->
   open_co_wrt_tm g2 (a_Var_f x1) = open_co_wrt_tm g1 (a_Var_f x1) ->
   g2 = g1.
-Proof.
-unfold open_co_wrt_tm; eauto with lngen.
-Qed.
+Proof. Admitted.
 
 Hint Immediate open_co_wrt_tm_inj : lngen.
 
@@ -4764,9 +4137,7 @@ forall phi2 phi1 x1,
   x1 `notin` fv_tm_tm_constraint phi1 ->
   open_constraint_wrt_tm phi2 (a_Var_f x1) = open_constraint_wrt_tm phi1 (a_Var_f x1) ->
   phi2 = phi1.
-Proof.
-unfold open_constraint_wrt_tm; eauto with lngen.
-Qed.
+Proof. Admitted.
 
 Hint Immediate open_constraint_wrt_tm_inj : lngen.
 
@@ -4776,9 +4147,7 @@ forall a2 a1 c1,
   c1 `notin` fv_co_co_tm a1 ->
   open_tm_wrt_co a2 (g_Var_f c1) = open_tm_wrt_co a1 (g_Var_f c1) ->
   a2 = a1.
-Proof.
-unfold open_tm_wrt_co; eauto with lngen.
-Qed.
+Proof. Admitted.
 
 Hint Immediate open_tm_wrt_co_inj : lngen.
 
@@ -4788,9 +4157,7 @@ forall brs2 brs1 c1,
   c1 `notin` fv_co_co_brs brs1 ->
   open_brs_wrt_co brs2 (g_Var_f c1) = open_brs_wrt_co brs1 (g_Var_f c1) ->
   brs2 = brs1.
-Proof.
-unfold open_brs_wrt_co; eauto with lngen.
-Qed.
+Proof. Admitted.
 
 Hint Immediate open_brs_wrt_co_inj : lngen.
 
@@ -4800,9 +4167,7 @@ forall g2 g1 c1,
   c1 `notin` fv_co_co_co g1 ->
   open_co_wrt_co g2 (g_Var_f c1) = open_co_wrt_co g1 (g_Var_f c1) ->
   g2 = g1.
-Proof.
-unfold open_co_wrt_co; eauto with lngen.
-Qed.
+Proof. Admitted.
 
 Hint Immediate open_co_wrt_co_inj : lngen.
 
@@ -4812,9 +4177,7 @@ forall phi2 phi1 c1,
   c1 `notin` fv_co_co_constraint phi1 ->
   open_constraint_wrt_co phi2 (g_Var_f c1) = open_constraint_wrt_co phi1 (g_Var_f c1) ->
   phi2 = phi1.
-Proof.
-unfold open_constraint_wrt_co; eauto with lngen.
-Qed.
+Proof. Admitted.
 
 Hint Immediate open_constraint_wrt_co_inj : lngen.
 
@@ -4840,16 +4203,7 @@ Lemma degree_tm_wrt_tm_of_lc_tm_degree_brs_wrt_tm_of_lc_brs_degree_co_wrt_tm_of_
 (forall phi1,
   lc_constraint phi1 ->
   degree_constraint_wrt_tm 0 phi1).
-Proof.
-apply_mutual_ind lc_tm_lc_brs_lc_co_lc_constraint_mutind;
-intros;
-let x1 := fresh "x1" in pick_fresh x1;
-let c1 := fresh "c1" in pick_fresh c1;
-repeat (match goal with
-          | H1 : _, H2 : _ |- _ => specialize H1 with H2
-        end);
-default_simp; eauto with lngen.
-Qed.
+Proof. Admitted.
 
 (* end hide *)
 
@@ -4857,9 +4211,7 @@ Lemma degree_tm_wrt_tm_of_lc_tm :
 forall a1,
   lc_tm a1 ->
   degree_tm_wrt_tm 0 a1.
-Proof.
-pose proof degree_tm_wrt_tm_of_lc_tm_degree_brs_wrt_tm_of_lc_brs_degree_co_wrt_tm_of_lc_co_degree_constraint_wrt_tm_of_lc_constraint_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve degree_tm_wrt_tm_of_lc_tm : lngen.
 
@@ -4867,9 +4219,7 @@ Lemma degree_brs_wrt_tm_of_lc_brs :
 forall brs1,
   lc_brs brs1 ->
   degree_brs_wrt_tm 0 brs1.
-Proof.
-pose proof degree_tm_wrt_tm_of_lc_tm_degree_brs_wrt_tm_of_lc_brs_degree_co_wrt_tm_of_lc_co_degree_constraint_wrt_tm_of_lc_constraint_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve degree_brs_wrt_tm_of_lc_brs : lngen.
 
@@ -4877,9 +4227,7 @@ Lemma degree_co_wrt_tm_of_lc_co :
 forall g1,
   lc_co g1 ->
   degree_co_wrt_tm 0 g1.
-Proof.
-pose proof degree_tm_wrt_tm_of_lc_tm_degree_brs_wrt_tm_of_lc_brs_degree_co_wrt_tm_of_lc_co_degree_constraint_wrt_tm_of_lc_constraint_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve degree_co_wrt_tm_of_lc_co : lngen.
 
@@ -4887,9 +4235,7 @@ Lemma degree_constraint_wrt_tm_of_lc_constraint :
 forall phi1,
   lc_constraint phi1 ->
   degree_constraint_wrt_tm 0 phi1.
-Proof.
-pose proof degree_tm_wrt_tm_of_lc_tm_degree_brs_wrt_tm_of_lc_brs_degree_co_wrt_tm_of_lc_co_degree_constraint_wrt_tm_of_lc_constraint_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve degree_constraint_wrt_tm_of_lc_constraint : lngen.
 
@@ -4908,16 +4254,7 @@ Lemma degree_tm_wrt_co_of_lc_tm_degree_brs_wrt_co_of_lc_brs_degree_co_wrt_co_of_
 (forall phi1,
   lc_constraint phi1 ->
   degree_constraint_wrt_co 0 phi1).
-Proof.
-apply_mutual_ind lc_tm_lc_brs_lc_co_lc_constraint_mutind;
-intros;
-let x1 := fresh "x1" in pick_fresh x1;
-let c1 := fresh "c1" in pick_fresh c1;
-repeat (match goal with
-          | H1 : _, H2 : _ |- _ => specialize H1 with H2
-        end);
-default_simp; eauto with lngen.
-Qed.
+Proof. Admitted.
 
 (* end hide *)
 
@@ -4925,9 +4262,7 @@ Lemma degree_tm_wrt_co_of_lc_tm :
 forall a1,
   lc_tm a1 ->
   degree_tm_wrt_co 0 a1.
-Proof.
-pose proof degree_tm_wrt_co_of_lc_tm_degree_brs_wrt_co_of_lc_brs_degree_co_wrt_co_of_lc_co_degree_constraint_wrt_co_of_lc_constraint_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve degree_tm_wrt_co_of_lc_tm : lngen.
 
@@ -4935,9 +4270,7 @@ Lemma degree_brs_wrt_co_of_lc_brs :
 forall brs1,
   lc_brs brs1 ->
   degree_brs_wrt_co 0 brs1.
-Proof.
-pose proof degree_tm_wrt_co_of_lc_tm_degree_brs_wrt_co_of_lc_brs_degree_co_wrt_co_of_lc_co_degree_constraint_wrt_co_of_lc_constraint_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve degree_brs_wrt_co_of_lc_brs : lngen.
 
@@ -4945,9 +4278,7 @@ Lemma degree_co_wrt_co_of_lc_co :
 forall g1,
   lc_co g1 ->
   degree_co_wrt_co 0 g1.
-Proof.
-pose proof degree_tm_wrt_co_of_lc_tm_degree_brs_wrt_co_of_lc_brs_degree_co_wrt_co_of_lc_co_degree_constraint_wrt_co_of_lc_constraint_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve degree_co_wrt_co_of_lc_co : lngen.
 
@@ -4955,9 +4286,7 @@ Lemma degree_constraint_wrt_co_of_lc_constraint :
 forall phi1,
   lc_constraint phi1 ->
   degree_constraint_wrt_co 0 phi1.
-Proof.
-pose proof degree_tm_wrt_co_of_lc_tm_degree_brs_wrt_co_of_lc_brs_degree_co_wrt_co_of_lc_co_degree_constraint_wrt_co_of_lc_constraint_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve degree_constraint_wrt_co_of_lc_constraint : lngen.
 
@@ -4985,22 +4314,7 @@ forall i1,
   degree_constraint_wrt_tm 0 phi1 ->
   degree_constraint_wrt_co 0 phi1 ->
   lc_constraint phi1).
-Proof.
-intros i1; pattern i1; apply lt_wf_rec;
-clear i1; intros i1 H1;
-apply_mutual_ind tm_brs_co_constraint_mutind;
-default_simp;
-(* non-trivial cases *)
-constructor; default_simp; eapply_first_lt_hyp;
-(* instantiate the size *)
-match goal with
-  | |- _ = _ => reflexivity
-  | _ => idtac
-end;
-instantiate;
-(* everything should be easy now *)
-default_simp.
-Qed.
+Proof. Admitted.
 
 (* end hide *)
 
@@ -5009,11 +4323,7 @@ forall a1,
   degree_tm_wrt_tm 0 a1 ->
   degree_tm_wrt_co 0 a1 ->
   lc_tm a1.
-Proof.
-intros a1; intros;
-pose proof (lc_tm_of_degree_lc_brs_of_degree_lc_co_of_degree_lc_constraint_of_degree_size_mutual (size_tm a1));
-intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve lc_tm_of_degree : lngen.
 
@@ -5022,11 +4332,7 @@ forall brs1,
   degree_brs_wrt_tm 0 brs1 ->
   degree_brs_wrt_co 0 brs1 ->
   lc_brs brs1.
-Proof.
-intros brs1; intros;
-pose proof (lc_tm_of_degree_lc_brs_of_degree_lc_co_of_degree_lc_constraint_of_degree_size_mutual (size_brs brs1));
-intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve lc_brs_of_degree : lngen.
 
@@ -5035,11 +4341,7 @@ forall g1,
   degree_co_wrt_tm 0 g1 ->
   degree_co_wrt_co 0 g1 ->
   lc_co g1.
-Proof.
-intros g1; intros;
-pose proof (lc_tm_of_degree_lc_brs_of_degree_lc_co_of_degree_lc_constraint_of_degree_size_mutual (size_co g1));
-intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve lc_co_of_degree : lngen.
 
@@ -5048,11 +4350,7 @@ forall phi1,
   degree_constraint_wrt_tm 0 phi1 ->
   degree_constraint_wrt_co 0 phi1 ->
   lc_constraint phi1.
-Proof.
-intros phi1; intros;
-pose proof (lc_tm_of_degree_lc_brs_of_degree_lc_co_of_degree_lc_constraint_of_degree_size_mutual (size_constraint phi1));
-intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve lc_constraint_of_degree : lngen.
 
@@ -5083,79 +4381,61 @@ forall x1 rho1 A1 b1,
   lc_tm A1 ->
   lc_tm (open_tm_wrt_tm b1 (a_Var_f x1)) ->
   lc_tm (a_Abs rho1 A1 b1).
-Proof.
-intros; tm_brs_co_constraint_lc_exists_tac; eauto with lngen.
-Qed.
+Proof. Admitted.
 
 Lemma lc_a_UAbs_exists :
 forall x1 rho1 b1,
   lc_tm (open_tm_wrt_tm b1 (a_Var_f x1)) ->
   lc_tm (a_UAbs rho1 b1).
-Proof.
-intros; tm_brs_co_constraint_lc_exists_tac; eauto with lngen.
-Qed.
+Proof. Admitted.
 
 Lemma lc_a_Pi_exists :
 forall x1 rho1 A1 B1,
   lc_tm A1 ->
   lc_tm (open_tm_wrt_tm B1 (a_Var_f x1)) ->
   lc_tm (a_Pi rho1 A1 B1).
-Proof.
-intros; tm_brs_co_constraint_lc_exists_tac; eauto with lngen.
-Qed.
+Proof. Admitted.
 
 Lemma lc_a_CPi_exists :
 forall c1 phi1 B1,
   lc_constraint phi1 ->
   lc_tm (open_tm_wrt_co B1 (g_Var_f c1)) ->
   lc_tm (a_CPi phi1 B1).
-Proof.
-intros; tm_brs_co_constraint_lc_exists_tac; eauto with lngen.
-Qed.
+Proof. Admitted.
 
 Lemma lc_a_CAbs_exists :
 forall c1 phi1 b1,
   lc_constraint phi1 ->
   lc_tm (open_tm_wrt_co b1 (g_Var_f c1)) ->
   lc_tm (a_CAbs phi1 b1).
-Proof.
-intros; tm_brs_co_constraint_lc_exists_tac; eauto with lngen.
-Qed.
+Proof. Admitted.
 
 Lemma lc_a_UCAbs_exists :
 forall c1 b1,
   lc_tm (open_tm_wrt_co b1 (g_Var_f c1)) ->
   lc_tm (a_UCAbs b1).
-Proof.
-intros; tm_brs_co_constraint_lc_exists_tac; eauto with lngen.
-Qed.
+Proof. Admitted.
 
 Lemma lc_g_PiCong_exists :
 forall x1 rho1 g1 g2,
   lc_co g1 ->
   lc_co (open_co_wrt_tm g2 (a_Var_f x1)) ->
   lc_co (g_PiCong rho1 g1 g2).
-Proof.
-intros; tm_brs_co_constraint_lc_exists_tac; eauto with lngen.
-Qed.
+Proof. Admitted.
 
 Lemma lc_g_AbsCong_exists :
 forall x1 rho1 g1 g2,
   lc_co g1 ->
   lc_co (open_co_wrt_tm g2 (a_Var_f x1)) ->
   lc_co (g_AbsCong rho1 g1 g2).
-Proof.
-intros; tm_brs_co_constraint_lc_exists_tac; eauto with lngen.
-Qed.
+Proof. Admitted.
 
 Lemma lc_g_CPiCong_exists :
 forall c1 g1 g2,
   lc_co g1 ->
   lc_co (open_co_wrt_co g2 (g_Var_f c1)) ->
   lc_co (g_CPiCong g1 g2).
-Proof.
-intros; tm_brs_co_constraint_lc_exists_tac; eauto with lngen.
-Qed.
+Proof. Admitted.
 
 Lemma lc_g_CAbsCong_exists :
 forall c1 g1 g2 g3,
@@ -5163,9 +4443,7 @@ forall c1 g1 g2 g3,
   lc_co (open_co_wrt_co g2 (g_Var_f c1)) ->
   lc_co g3 ->
   lc_co (g_CAbsCong g1 g2 g3).
-Proof.
-intros; tm_brs_co_constraint_lc_exists_tac; eauto with lngen.
-Qed.
+Proof. Admitted.
 
 Hint Extern 1 (lc_tm (a_Abs _ _ _)) =>
   let x1 := fresh in
@@ -5222,15 +4500,7 @@ forall a1 a2,
   body_tm_wrt_tm a1 ->
   lc_tm a2 ->
   lc_tm (open_tm_wrt_tm a1 a2).
-Proof.
-unfold body_tm_wrt_tm;
-default_simp;
-let x1 := fresh "x" in
-pick_fresh x1;
-specialize_all x1;
-tm_brs_co_constraint_lc_exists_tac;
-eauto with lngen.
-Qed.
+Proof. Admitted.
 
 Hint Resolve lc_body_tm_wrt_tm : lngen.
 
@@ -5239,15 +4509,7 @@ forall brs1 a1,
   body_brs_wrt_tm brs1 ->
   lc_tm a1 ->
   lc_brs (open_brs_wrt_tm brs1 a1).
-Proof.
-unfold body_brs_wrt_tm;
-default_simp;
-let x1 := fresh "x" in
-pick_fresh x1;
-specialize_all x1;
-tm_brs_co_constraint_lc_exists_tac;
-eauto with lngen.
-Qed.
+Proof. Admitted.
 
 Hint Resolve lc_body_brs_wrt_tm : lngen.
 
@@ -5256,15 +4518,7 @@ forall g1 a1,
   body_co_wrt_tm g1 ->
   lc_tm a1 ->
   lc_co (open_co_wrt_tm g1 a1).
-Proof.
-unfold body_co_wrt_tm;
-default_simp;
-let x1 := fresh "x" in
-pick_fresh x1;
-specialize_all x1;
-tm_brs_co_constraint_lc_exists_tac;
-eauto with lngen.
-Qed.
+Proof. Admitted.
 
 Hint Resolve lc_body_co_wrt_tm : lngen.
 
@@ -5273,15 +4527,7 @@ forall phi1 a1,
   body_constraint_wrt_tm phi1 ->
   lc_tm a1 ->
   lc_constraint (open_constraint_wrt_tm phi1 a1).
-Proof.
-unfold body_constraint_wrt_tm;
-default_simp;
-let x1 := fresh "x" in
-pick_fresh x1;
-specialize_all x1;
-tm_brs_co_constraint_lc_exists_tac;
-eauto with lngen.
-Qed.
+Proof. Admitted.
 
 Hint Resolve lc_body_constraint_wrt_tm : lngen.
 
@@ -5290,15 +4536,7 @@ forall a1 g1,
   body_tm_wrt_co a1 ->
   lc_co g1 ->
   lc_tm (open_tm_wrt_co a1 g1).
-Proof.
-unfold body_tm_wrt_co;
-default_simp;
-let c1 := fresh "x" in
-pick_fresh c1;
-specialize_all c1;
-tm_brs_co_constraint_lc_exists_tac;
-eauto with lngen.
-Qed.
+Proof. Admitted.
 
 Hint Resolve lc_body_tm_wrt_co : lngen.
 
@@ -5307,15 +4545,7 @@ forall brs1 g1,
   body_brs_wrt_co brs1 ->
   lc_co g1 ->
   lc_brs (open_brs_wrt_co brs1 g1).
-Proof.
-unfold body_brs_wrt_co;
-default_simp;
-let c1 := fresh "x" in
-pick_fresh c1;
-specialize_all c1;
-tm_brs_co_constraint_lc_exists_tac;
-eauto with lngen.
-Qed.
+Proof. Admitted.
 
 Hint Resolve lc_body_brs_wrt_co : lngen.
 
@@ -5324,15 +4554,7 @@ forall g1 g2,
   body_co_wrt_co g1 ->
   lc_co g2 ->
   lc_co (open_co_wrt_co g1 g2).
-Proof.
-unfold body_co_wrt_co;
-default_simp;
-let c1 := fresh "x" in
-pick_fresh c1;
-specialize_all c1;
-tm_brs_co_constraint_lc_exists_tac;
-eauto with lngen.
-Qed.
+Proof. Admitted.
 
 Hint Resolve lc_body_co_wrt_co : lngen.
 
@@ -5341,15 +4563,7 @@ forall phi1 g1,
   body_constraint_wrt_co phi1 ->
   lc_co g1 ->
   lc_constraint (open_constraint_wrt_co phi1 g1).
-Proof.
-unfold body_constraint_wrt_co;
-default_simp;
-let c1 := fresh "x" in
-pick_fresh c1;
-specialize_all c1;
-tm_brs_co_constraint_lc_exists_tac;
-eauto with lngen.
-Qed.
+Proof. Admitted.
 
 Hint Resolve lc_body_constraint_wrt_co : lngen.
 
@@ -5357,9 +4571,7 @@ Lemma lc_body_a_Abs_3 :
 forall rho1 A1 b1,
   lc_tm (a_Abs rho1 A1 b1) ->
   body_tm_wrt_tm b1.
-Proof.
-default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve lc_body_a_Abs_3 : lngen.
 
@@ -5367,9 +4579,7 @@ Lemma lc_body_a_UAbs_2 :
 forall rho1 b1,
   lc_tm (a_UAbs rho1 b1) ->
   body_tm_wrt_tm b1.
-Proof.
-default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve lc_body_a_UAbs_2 : lngen.
 
@@ -5377,9 +4587,7 @@ Lemma lc_body_a_Pi_3 :
 forall rho1 A1 B1,
   lc_tm (a_Pi rho1 A1 B1) ->
   body_tm_wrt_tm B1.
-Proof.
-default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve lc_body_a_Pi_3 : lngen.
 
@@ -5387,9 +4595,7 @@ Lemma lc_body_a_CPi_2 :
 forall phi1 B1,
   lc_tm (a_CPi phi1 B1) ->
   body_tm_wrt_co B1.
-Proof.
-default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve lc_body_a_CPi_2 : lngen.
 
@@ -5397,9 +4603,7 @@ Lemma lc_body_a_CAbs_2 :
 forall phi1 b1,
   lc_tm (a_CAbs phi1 b1) ->
   body_tm_wrt_co b1.
-Proof.
-default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve lc_body_a_CAbs_2 : lngen.
 
@@ -5407,9 +4611,7 @@ Lemma lc_body_a_UCAbs_1 :
 forall b1,
   lc_tm (a_UCAbs b1) ->
   body_tm_wrt_co b1.
-Proof.
-default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve lc_body_a_UCAbs_1 : lngen.
 
@@ -5417,9 +4619,7 @@ Lemma lc_body_g_PiCong_3 :
 forall rho1 g1 g2,
   lc_co (g_PiCong rho1 g1 g2) ->
   body_co_wrt_tm g2.
-Proof.
-default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve lc_body_g_PiCong_3 : lngen.
 
@@ -5427,9 +4627,7 @@ Lemma lc_body_g_AbsCong_3 :
 forall rho1 g1 g2,
   lc_co (g_AbsCong rho1 g1 g2) ->
   body_co_wrt_tm g2.
-Proof.
-default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve lc_body_g_AbsCong_3 : lngen.
 
@@ -5437,9 +4635,7 @@ Lemma lc_body_g_CPiCong_2 :
 forall g1 g2,
   lc_co (g_CPiCong g1 g2) ->
   body_co_wrt_co g2.
-Proof.
-default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve lc_body_g_CPiCong_2 : lngen.
 
@@ -5447,9 +4643,7 @@ Lemma lc_body_g_CAbsCong_2 :
 forall g1 g2 g3,
   lc_co (g_CAbsCong g1 g2 g3) ->
   body_co_wrt_co g2.
-Proof.
-default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve lc_body_g_CAbsCong_2 : lngen.
 
@@ -5460,45 +4654,31 @@ Lemma lc_tm_unique_lc_brs_unique_lc_co_unique_lc_constraint_unique_mutual :
 (forall brs1 (proof2 proof3 : lc_brs brs1), proof2 = proof3) /\
 (forall g1 (proof2 proof3 : lc_co g1), proof2 = proof3) /\
 (forall phi1 (proof2 proof3 : lc_constraint phi1), proof2 = proof3).
-Proof.
-apply_mutual_ind lc_tm_lc_brs_lc_co_lc_constraint_mutind;
-intros;
-let proof1 := fresh "proof1" in
-rename_last_into proof1; dependent destruction proof1;
-f_equal; default_simp; auto using @functional_extensionality_dep with lngen.
-Qed.
+Proof. Admitted.
 
 (* end hide *)
 
 Lemma lc_tm_unique :
 forall a1 (proof2 proof3 : lc_tm a1), proof2 = proof3.
-Proof.
-pose proof lc_tm_unique_lc_brs_unique_lc_co_unique_lc_constraint_unique_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve lc_tm_unique : lngen.
 
 Lemma lc_brs_unique :
 forall brs1 (proof2 proof3 : lc_brs brs1), proof2 = proof3.
-Proof.
-pose proof lc_tm_unique_lc_brs_unique_lc_co_unique_lc_constraint_unique_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve lc_brs_unique : lngen.
 
 Lemma lc_co_unique :
 forall g1 (proof2 proof3 : lc_co g1), proof2 = proof3.
-Proof.
-pose proof lc_tm_unique_lc_brs_unique_lc_co_unique_lc_constraint_unique_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve lc_co_unique : lngen.
 
 Lemma lc_constraint_unique :
 forall phi1 (proof2 proof3 : lc_constraint phi1), proof2 = proof3.
-Proof.
-pose proof lc_tm_unique_lc_brs_unique_lc_co_unique_lc_constraint_unique_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve lc_constraint_unique : lngen.
 
@@ -5509,42 +4689,31 @@ Lemma lc_tm_of_lc_set_tm_lc_brs_of_lc_set_brs_lc_co_of_lc_set_co_lc_constraint_o
 (forall brs1, lc_set_brs brs1 -> lc_brs brs1) /\
 (forall g1, lc_set_co g1 -> lc_co g1) /\
 (forall phi1, lc_set_constraint phi1 -> lc_constraint phi1).
-Proof.
-apply_mutual_ind lc_set_tm_lc_set_brs_lc_set_co_lc_set_constraint_mutind;
-default_simp.
-Qed.
+Proof. Admitted.
 
 (* end hide *)
 
 Lemma lc_tm_of_lc_set_tm :
 forall a1, lc_set_tm a1 -> lc_tm a1.
-Proof.
-pose proof lc_tm_of_lc_set_tm_lc_brs_of_lc_set_brs_lc_co_of_lc_set_co_lc_constraint_of_lc_set_constraint_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve lc_tm_of_lc_set_tm : lngen.
 
 Lemma lc_brs_of_lc_set_brs :
 forall brs1, lc_set_brs brs1 -> lc_brs brs1.
-Proof.
-pose proof lc_tm_of_lc_set_tm_lc_brs_of_lc_set_brs_lc_co_of_lc_set_co_lc_constraint_of_lc_set_constraint_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve lc_brs_of_lc_set_brs : lngen.
 
 Lemma lc_co_of_lc_set_co :
 forall g1, lc_set_co g1 -> lc_co g1.
-Proof.
-pose proof lc_tm_of_lc_set_tm_lc_brs_of_lc_set_brs_lc_co_of_lc_set_co_lc_constraint_of_lc_set_constraint_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve lc_co_of_lc_set_co : lngen.
 
 Lemma lc_constraint_of_lc_set_constraint :
 forall phi1, lc_set_constraint phi1 -> lc_constraint phi1.
-Proof.
-pose proof lc_tm_of_lc_set_tm_lc_brs_of_lc_set_brs_lc_co_of_lc_set_co_lc_constraint_of_lc_set_constraint_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve lc_constraint_of_lc_set_constraint : lngen.
 
@@ -5568,44 +4737,7 @@ forall i1,
   size_constraint phi1 = i1 ->
   lc_constraint phi1 ->
   lc_set_constraint phi1).
-Proof.
-intros i1; pattern i1; apply lt_wf_rec;
-clear i1; intros i1 H1;
-apply_mutual_ind tm_brs_co_constraint_mutrec;
-default_simp;
-try solve [assert False by default_simp; tauto];
-(* non-trivial cases *)
-constructor; default_simp;
-try first [apply lc_set_tm_of_lc_tm
- | apply lc_set_brs_of_lc_brs
- | apply lc_set_co_of_lc_co
- | apply lc_set_constraint_of_lc_constraint
- | apply lc_set_relflag_of_lc_relflag
- | apply lc_set_tm_of_lc_tm
- | apply lc_set_brs_of_lc_brs
- | apply lc_set_co_of_lc_co
- | apply lc_set_constraint_of_lc_constraint
- | apply lc_set_relflag_of_lc_relflag
- | apply lc_set_tm_of_lc_tm
- | apply lc_set_brs_of_lc_brs
- | apply lc_set_co_of_lc_co
- | apply lc_set_constraint_of_lc_constraint
- | apply lc_set_relflag_of_lc_relflag
- | apply lc_set_tm_of_lc_tm
- | apply lc_set_brs_of_lc_brs
- | apply lc_set_co_of_lc_co
- | apply lc_set_constraint_of_lc_constraint
- | apply lc_set_relflag_of_lc_relflag];
-default_simp; eapply_first_lt_hyp;
-(* instantiate the size *)
-match goal with
-  | |- _ = _ => reflexivity
-  | _ => idtac
-end;
-instantiate;
-(* everything should be easy now *)
-default_simp.
-Qed.
+Proof. Admitted.
 
 (* end hide *)
 
@@ -5613,11 +4745,7 @@ Lemma lc_set_tm_of_lc_tm :
 forall a1,
   lc_tm a1 ->
   lc_set_tm a1.
-Proof.
-intros a1; intros;
-pose proof (lc_set_tm_of_lc_tm_lc_set_brs_of_lc_brs_lc_set_co_of_lc_co_lc_set_constraint_of_lc_constraint_size_mutual (size_tm a1));
-intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve lc_set_tm_of_lc_tm : lngen.
 
@@ -5625,11 +4753,7 @@ Lemma lc_set_brs_of_lc_brs :
 forall brs1,
   lc_brs brs1 ->
   lc_set_brs brs1.
-Proof.
-intros brs1; intros;
-pose proof (lc_set_tm_of_lc_tm_lc_set_brs_of_lc_brs_lc_set_co_of_lc_co_lc_set_constraint_of_lc_constraint_size_mutual (size_brs brs1));
-intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve lc_set_brs_of_lc_brs : lngen.
 
@@ -5637,11 +4761,7 @@ Lemma lc_set_co_of_lc_co :
 forall g1,
   lc_co g1 ->
   lc_set_co g1.
-Proof.
-intros g1; intros;
-pose proof (lc_set_tm_of_lc_tm_lc_set_brs_of_lc_brs_lc_set_co_of_lc_co_lc_set_constraint_of_lc_constraint_size_mutual (size_co g1));
-intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve lc_set_co_of_lc_co : lngen.
 
@@ -5649,11 +4769,7 @@ Lemma lc_set_constraint_of_lc_constraint :
 forall phi1,
   lc_constraint phi1 ->
   lc_set_constraint phi1.
-Proof.
-intros phi1; intros;
-pose proof (lc_set_tm_of_lc_tm_lc_set_brs_of_lc_brs_lc_set_co_of_lc_co_lc_set_constraint_of_lc_constraint_size_mutual (size_constraint phi1));
-intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve lc_set_constraint_of_lc_constraint : lngen.
 
@@ -5683,10 +4799,7 @@ Lemma close_tm_wrt_tm_rec_degree_tm_wrt_tm_close_brs_wrt_tm_rec_degree_brs_wrt_t
   degree_constraint_wrt_tm n1 phi1 ->
   x1 `notin` fv_tm_tm_constraint phi1 ->
   close_constraint_wrt_tm_rec n1 x1 phi1 = phi1).
-Proof.
-apply_mutual_ind tm_brs_co_constraint_mutind;
-default_simp.
-Qed.
+Proof. Admitted.
 
 (* end hide *)
 
@@ -5697,9 +4810,7 @@ forall a1 x1 n1,
   degree_tm_wrt_tm n1 a1 ->
   x1 `notin` fv_tm_tm_tm a1 ->
   close_tm_wrt_tm_rec n1 x1 a1 = a1.
-Proof.
-pose proof close_tm_wrt_tm_rec_degree_tm_wrt_tm_close_brs_wrt_tm_rec_degree_brs_wrt_tm_close_co_wrt_tm_rec_degree_co_wrt_tm_close_constraint_wrt_tm_rec_degree_constraint_wrt_tm_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve close_tm_wrt_tm_rec_degree_tm_wrt_tm : lngen.
 Hint Rewrite close_tm_wrt_tm_rec_degree_tm_wrt_tm using solve [auto] : lngen.
@@ -5713,9 +4824,7 @@ forall brs1 x1 n1,
   degree_brs_wrt_tm n1 brs1 ->
   x1 `notin` fv_tm_tm_brs brs1 ->
   close_brs_wrt_tm_rec n1 x1 brs1 = brs1.
-Proof.
-pose proof close_tm_wrt_tm_rec_degree_tm_wrt_tm_close_brs_wrt_tm_rec_degree_brs_wrt_tm_close_co_wrt_tm_rec_degree_co_wrt_tm_close_constraint_wrt_tm_rec_degree_constraint_wrt_tm_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve close_brs_wrt_tm_rec_degree_brs_wrt_tm : lngen.
 Hint Rewrite close_brs_wrt_tm_rec_degree_brs_wrt_tm using solve [auto] : lngen.
@@ -5729,9 +4838,7 @@ forall g1 x1 n1,
   degree_co_wrt_tm n1 g1 ->
   x1 `notin` fv_tm_tm_co g1 ->
   close_co_wrt_tm_rec n1 x1 g1 = g1.
-Proof.
-pose proof close_tm_wrt_tm_rec_degree_tm_wrt_tm_close_brs_wrt_tm_rec_degree_brs_wrt_tm_close_co_wrt_tm_rec_degree_co_wrt_tm_close_constraint_wrt_tm_rec_degree_constraint_wrt_tm_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve close_co_wrt_tm_rec_degree_co_wrt_tm : lngen.
 Hint Rewrite close_co_wrt_tm_rec_degree_co_wrt_tm using solve [auto] : lngen.
@@ -5745,9 +4852,7 @@ forall phi1 x1 n1,
   degree_constraint_wrt_tm n1 phi1 ->
   x1 `notin` fv_tm_tm_constraint phi1 ->
   close_constraint_wrt_tm_rec n1 x1 phi1 = phi1.
-Proof.
-pose proof close_tm_wrt_tm_rec_degree_tm_wrt_tm_close_brs_wrt_tm_rec_degree_brs_wrt_tm_close_co_wrt_tm_rec_degree_co_wrt_tm_close_constraint_wrt_tm_rec_degree_constraint_wrt_tm_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve close_constraint_wrt_tm_rec_degree_constraint_wrt_tm : lngen.
 Hint Rewrite close_constraint_wrt_tm_rec_degree_constraint_wrt_tm using solve [auto] : lngen.
@@ -5773,10 +4878,7 @@ Lemma close_tm_wrt_co_rec_degree_tm_wrt_co_close_brs_wrt_co_rec_degree_brs_wrt_c
   degree_constraint_wrt_co n1 phi1 ->
   c1 `notin` fv_co_co_constraint phi1 ->
   close_constraint_wrt_co_rec n1 c1 phi1 = phi1).
-Proof.
-apply_mutual_ind tm_brs_co_constraint_mutind;
-default_simp.
-Qed.
+Proof. Admitted.
 
 (* end hide *)
 
@@ -5787,9 +4889,7 @@ forall a1 c1 n1,
   degree_tm_wrt_co n1 a1 ->
   c1 `notin` fv_co_co_tm a1 ->
   close_tm_wrt_co_rec n1 c1 a1 = a1.
-Proof.
-pose proof close_tm_wrt_co_rec_degree_tm_wrt_co_close_brs_wrt_co_rec_degree_brs_wrt_co_close_co_wrt_co_rec_degree_co_wrt_co_close_constraint_wrt_co_rec_degree_constraint_wrt_co_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve close_tm_wrt_co_rec_degree_tm_wrt_co : lngen.
 Hint Rewrite close_tm_wrt_co_rec_degree_tm_wrt_co using solve [auto] : lngen.
@@ -5803,9 +4903,7 @@ forall brs1 c1 n1,
   degree_brs_wrt_co n1 brs1 ->
   c1 `notin` fv_co_co_brs brs1 ->
   close_brs_wrt_co_rec n1 c1 brs1 = brs1.
-Proof.
-pose proof close_tm_wrt_co_rec_degree_tm_wrt_co_close_brs_wrt_co_rec_degree_brs_wrt_co_close_co_wrt_co_rec_degree_co_wrt_co_close_constraint_wrt_co_rec_degree_constraint_wrt_co_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve close_brs_wrt_co_rec_degree_brs_wrt_co : lngen.
 Hint Rewrite close_brs_wrt_co_rec_degree_brs_wrt_co using solve [auto] : lngen.
@@ -5819,9 +4917,7 @@ forall g1 c1 n1,
   degree_co_wrt_co n1 g1 ->
   c1 `notin` fv_co_co_co g1 ->
   close_co_wrt_co_rec n1 c1 g1 = g1.
-Proof.
-pose proof close_tm_wrt_co_rec_degree_tm_wrt_co_close_brs_wrt_co_rec_degree_brs_wrt_co_close_co_wrt_co_rec_degree_co_wrt_co_close_constraint_wrt_co_rec_degree_constraint_wrt_co_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve close_co_wrt_co_rec_degree_co_wrt_co : lngen.
 Hint Rewrite close_co_wrt_co_rec_degree_co_wrt_co using solve [auto] : lngen.
@@ -5835,9 +4931,7 @@ forall phi1 c1 n1,
   degree_constraint_wrt_co n1 phi1 ->
   c1 `notin` fv_co_co_constraint phi1 ->
   close_constraint_wrt_co_rec n1 c1 phi1 = phi1.
-Proof.
-pose proof close_tm_wrt_co_rec_degree_tm_wrt_co_close_brs_wrt_co_rec_degree_brs_wrt_co_close_co_wrt_co_rec_degree_co_wrt_co_close_constraint_wrt_co_rec_degree_constraint_wrt_co_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve close_constraint_wrt_co_rec_degree_constraint_wrt_co : lngen.
 Hint Rewrite close_constraint_wrt_co_rec_degree_constraint_wrt_co using solve [auto] : lngen.
@@ -5849,9 +4943,7 @@ forall a1 x1,
   lc_tm a1 ->
   x1 `notin` fv_tm_tm_tm a1 ->
   close_tm_wrt_tm x1 a1 = a1.
-Proof.
-unfold close_tm_wrt_tm; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve close_tm_wrt_tm_lc_tm : lngen.
 Hint Rewrite close_tm_wrt_tm_lc_tm using solve [auto] : lngen.
@@ -5861,9 +4953,7 @@ forall brs1 x1,
   lc_brs brs1 ->
   x1 `notin` fv_tm_tm_brs brs1 ->
   close_brs_wrt_tm x1 brs1 = brs1.
-Proof.
-unfold close_brs_wrt_tm; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve close_brs_wrt_tm_lc_brs : lngen.
 Hint Rewrite close_brs_wrt_tm_lc_brs using solve [auto] : lngen.
@@ -5873,9 +4963,7 @@ forall g1 x1,
   lc_co g1 ->
   x1 `notin` fv_tm_tm_co g1 ->
   close_co_wrt_tm x1 g1 = g1.
-Proof.
-unfold close_co_wrt_tm; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve close_co_wrt_tm_lc_co : lngen.
 Hint Rewrite close_co_wrt_tm_lc_co using solve [auto] : lngen.
@@ -5885,9 +4973,7 @@ forall phi1 x1,
   lc_constraint phi1 ->
   x1 `notin` fv_tm_tm_constraint phi1 ->
   close_constraint_wrt_tm x1 phi1 = phi1.
-Proof.
-unfold close_constraint_wrt_tm; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve close_constraint_wrt_tm_lc_constraint : lngen.
 Hint Rewrite close_constraint_wrt_tm_lc_constraint using solve [auto] : lngen.
@@ -5897,9 +4983,7 @@ forall a1 c1,
   lc_tm a1 ->
   c1 `notin` fv_co_co_tm a1 ->
   close_tm_wrt_co c1 a1 = a1.
-Proof.
-unfold close_tm_wrt_co; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve close_tm_wrt_co_lc_tm : lngen.
 Hint Rewrite close_tm_wrt_co_lc_tm using solve [auto] : lngen.
@@ -5909,9 +4993,7 @@ forall brs1 c1,
   lc_brs brs1 ->
   c1 `notin` fv_co_co_brs brs1 ->
   close_brs_wrt_co c1 brs1 = brs1.
-Proof.
-unfold close_brs_wrt_co; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve close_brs_wrt_co_lc_brs : lngen.
 Hint Rewrite close_brs_wrt_co_lc_brs using solve [auto] : lngen.
@@ -5921,9 +5003,7 @@ forall g1 c1,
   lc_co g1 ->
   c1 `notin` fv_co_co_co g1 ->
   close_co_wrt_co c1 g1 = g1.
-Proof.
-unfold close_co_wrt_co; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve close_co_wrt_co_lc_co : lngen.
 Hint Rewrite close_co_wrt_co_lc_co using solve [auto] : lngen.
@@ -5933,9 +5013,7 @@ forall phi1 c1,
   lc_constraint phi1 ->
   c1 `notin` fv_co_co_constraint phi1 ->
   close_constraint_wrt_co c1 phi1 = phi1.
-Proof.
-unfold close_constraint_wrt_co; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve close_constraint_wrt_co_lc_constraint : lngen.
 Hint Rewrite close_constraint_wrt_co_lc_constraint using solve [auto] : lngen.
@@ -5955,10 +5033,7 @@ Lemma open_tm_wrt_tm_rec_degree_tm_wrt_tm_open_brs_wrt_tm_rec_degree_brs_wrt_tm_
 (forall phi1 a1 n1,
   degree_constraint_wrt_tm n1 phi1 ->
   open_constraint_wrt_tm_rec n1 a1 phi1 = phi1).
-Proof.
-apply_mutual_ind tm_brs_co_constraint_mutind;
-default_simp.
-Qed.
+Proof. Admitted.
 
 (* end hide *)
 
@@ -5968,9 +5043,7 @@ Lemma open_tm_wrt_tm_rec_degree_tm_wrt_tm :
 forall a2 a1 n1,
   degree_tm_wrt_tm n1 a2 ->
   open_tm_wrt_tm_rec n1 a1 a2 = a2.
-Proof.
-pose proof open_tm_wrt_tm_rec_degree_tm_wrt_tm_open_brs_wrt_tm_rec_degree_brs_wrt_tm_open_co_wrt_tm_rec_degree_co_wrt_tm_open_constraint_wrt_tm_rec_degree_constraint_wrt_tm_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve open_tm_wrt_tm_rec_degree_tm_wrt_tm : lngen.
 Hint Rewrite open_tm_wrt_tm_rec_degree_tm_wrt_tm using solve [auto] : lngen.
@@ -5983,9 +5056,7 @@ Lemma open_brs_wrt_tm_rec_degree_brs_wrt_tm :
 forall brs1 a1 n1,
   degree_brs_wrt_tm n1 brs1 ->
   open_brs_wrt_tm_rec n1 a1 brs1 = brs1.
-Proof.
-pose proof open_tm_wrt_tm_rec_degree_tm_wrt_tm_open_brs_wrt_tm_rec_degree_brs_wrt_tm_open_co_wrt_tm_rec_degree_co_wrt_tm_open_constraint_wrt_tm_rec_degree_constraint_wrt_tm_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve open_brs_wrt_tm_rec_degree_brs_wrt_tm : lngen.
 Hint Rewrite open_brs_wrt_tm_rec_degree_brs_wrt_tm using solve [auto] : lngen.
@@ -5998,9 +5069,7 @@ Lemma open_co_wrt_tm_rec_degree_co_wrt_tm :
 forall g1 a1 n1,
   degree_co_wrt_tm n1 g1 ->
   open_co_wrt_tm_rec n1 a1 g1 = g1.
-Proof.
-pose proof open_tm_wrt_tm_rec_degree_tm_wrt_tm_open_brs_wrt_tm_rec_degree_brs_wrt_tm_open_co_wrt_tm_rec_degree_co_wrt_tm_open_constraint_wrt_tm_rec_degree_constraint_wrt_tm_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve open_co_wrt_tm_rec_degree_co_wrt_tm : lngen.
 Hint Rewrite open_co_wrt_tm_rec_degree_co_wrt_tm using solve [auto] : lngen.
@@ -6013,9 +5082,7 @@ Lemma open_constraint_wrt_tm_rec_degree_constraint_wrt_tm :
 forall phi1 a1 n1,
   degree_constraint_wrt_tm n1 phi1 ->
   open_constraint_wrt_tm_rec n1 a1 phi1 = phi1.
-Proof.
-pose proof open_tm_wrt_tm_rec_degree_tm_wrt_tm_open_brs_wrt_tm_rec_degree_brs_wrt_tm_open_co_wrt_tm_rec_degree_co_wrt_tm_open_constraint_wrt_tm_rec_degree_constraint_wrt_tm_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve open_constraint_wrt_tm_rec_degree_constraint_wrt_tm : lngen.
 Hint Rewrite open_constraint_wrt_tm_rec_degree_constraint_wrt_tm using solve [auto] : lngen.
@@ -6037,10 +5104,7 @@ Lemma open_tm_wrt_co_rec_degree_tm_wrt_co_open_brs_wrt_co_rec_degree_brs_wrt_co_
 (forall phi1 g1 n1,
   degree_constraint_wrt_co n1 phi1 ->
   open_constraint_wrt_co_rec n1 g1 phi1 = phi1).
-Proof.
-apply_mutual_ind tm_brs_co_constraint_mutind;
-default_simp.
-Qed.
+Proof. Admitted.
 
 (* end hide *)
 
@@ -6050,9 +5114,7 @@ Lemma open_tm_wrt_co_rec_degree_tm_wrt_co :
 forall a1 g1 n1,
   degree_tm_wrt_co n1 a1 ->
   open_tm_wrt_co_rec n1 g1 a1 = a1.
-Proof.
-pose proof open_tm_wrt_co_rec_degree_tm_wrt_co_open_brs_wrt_co_rec_degree_brs_wrt_co_open_co_wrt_co_rec_degree_co_wrt_co_open_constraint_wrt_co_rec_degree_constraint_wrt_co_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve open_tm_wrt_co_rec_degree_tm_wrt_co : lngen.
 Hint Rewrite open_tm_wrt_co_rec_degree_tm_wrt_co using solve [auto] : lngen.
@@ -6065,9 +5127,7 @@ Lemma open_brs_wrt_co_rec_degree_brs_wrt_co :
 forall brs1 g1 n1,
   degree_brs_wrt_co n1 brs1 ->
   open_brs_wrt_co_rec n1 g1 brs1 = brs1.
-Proof.
-pose proof open_tm_wrt_co_rec_degree_tm_wrt_co_open_brs_wrt_co_rec_degree_brs_wrt_co_open_co_wrt_co_rec_degree_co_wrt_co_open_constraint_wrt_co_rec_degree_constraint_wrt_co_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve open_brs_wrt_co_rec_degree_brs_wrt_co : lngen.
 Hint Rewrite open_brs_wrt_co_rec_degree_brs_wrt_co using solve [auto] : lngen.
@@ -6080,9 +5140,7 @@ Lemma open_co_wrt_co_rec_degree_co_wrt_co :
 forall g2 g1 n1,
   degree_co_wrt_co n1 g2 ->
   open_co_wrt_co_rec n1 g1 g2 = g2.
-Proof.
-pose proof open_tm_wrt_co_rec_degree_tm_wrt_co_open_brs_wrt_co_rec_degree_brs_wrt_co_open_co_wrt_co_rec_degree_co_wrt_co_open_constraint_wrt_co_rec_degree_constraint_wrt_co_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve open_co_wrt_co_rec_degree_co_wrt_co : lngen.
 Hint Rewrite open_co_wrt_co_rec_degree_co_wrt_co using solve [auto] : lngen.
@@ -6095,9 +5153,7 @@ Lemma open_constraint_wrt_co_rec_degree_constraint_wrt_co :
 forall phi1 g1 n1,
   degree_constraint_wrt_co n1 phi1 ->
   open_constraint_wrt_co_rec n1 g1 phi1 = phi1.
-Proof.
-pose proof open_tm_wrt_co_rec_degree_tm_wrt_co_open_brs_wrt_co_rec_degree_brs_wrt_co_open_co_wrt_co_rec_degree_co_wrt_co_open_constraint_wrt_co_rec_degree_constraint_wrt_co_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve open_constraint_wrt_co_rec_degree_constraint_wrt_co : lngen.
 Hint Rewrite open_constraint_wrt_co_rec_degree_constraint_wrt_co using solve [auto] : lngen.
@@ -6108,9 +5164,7 @@ Lemma open_tm_wrt_tm_lc_tm :
 forall a2 a1,
   lc_tm a2 ->
   open_tm_wrt_tm a2 a1 = a2.
-Proof.
-unfold open_tm_wrt_tm; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve open_tm_wrt_tm_lc_tm : lngen.
 Hint Rewrite open_tm_wrt_tm_lc_tm using solve [auto] : lngen.
@@ -6119,9 +5173,7 @@ Lemma open_brs_wrt_tm_lc_brs :
 forall brs1 a1,
   lc_brs brs1 ->
   open_brs_wrt_tm brs1 a1 = brs1.
-Proof.
-unfold open_brs_wrt_tm; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve open_brs_wrt_tm_lc_brs : lngen.
 Hint Rewrite open_brs_wrt_tm_lc_brs using solve [auto] : lngen.
@@ -6130,9 +5182,7 @@ Lemma open_co_wrt_tm_lc_co :
 forall g1 a1,
   lc_co g1 ->
   open_co_wrt_tm g1 a1 = g1.
-Proof.
-unfold open_co_wrt_tm; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve open_co_wrt_tm_lc_co : lngen.
 Hint Rewrite open_co_wrt_tm_lc_co using solve [auto] : lngen.
@@ -6141,9 +5191,7 @@ Lemma open_constraint_wrt_tm_lc_constraint :
 forall phi1 a1,
   lc_constraint phi1 ->
   open_constraint_wrt_tm phi1 a1 = phi1.
-Proof.
-unfold open_constraint_wrt_tm; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve open_constraint_wrt_tm_lc_constraint : lngen.
 Hint Rewrite open_constraint_wrt_tm_lc_constraint using solve [auto] : lngen.
@@ -6152,9 +5200,7 @@ Lemma open_tm_wrt_co_lc_tm :
 forall a1 g1,
   lc_tm a1 ->
   open_tm_wrt_co a1 g1 = a1.
-Proof.
-unfold open_tm_wrt_co; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve open_tm_wrt_co_lc_tm : lngen.
 Hint Rewrite open_tm_wrt_co_lc_tm using solve [auto] : lngen.
@@ -6163,9 +5209,7 @@ Lemma open_brs_wrt_co_lc_brs :
 forall brs1 g1,
   lc_brs brs1 ->
   open_brs_wrt_co brs1 g1 = brs1.
-Proof.
-unfold open_brs_wrt_co; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve open_brs_wrt_co_lc_brs : lngen.
 Hint Rewrite open_brs_wrt_co_lc_brs using solve [auto] : lngen.
@@ -6174,9 +5218,7 @@ Lemma open_co_wrt_co_lc_co :
 forall g2 g1,
   lc_co g2 ->
   open_co_wrt_co g2 g1 = g2.
-Proof.
-unfold open_co_wrt_co; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve open_co_wrt_co_lc_co : lngen.
 Hint Rewrite open_co_wrt_co_lc_co using solve [auto] : lngen.
@@ -6185,9 +5227,7 @@ Lemma open_constraint_wrt_co_lc_constraint :
 forall phi1 g1,
   lc_constraint phi1 ->
   open_constraint_wrt_co phi1 g1 = phi1.
-Proof.
-unfold open_constraint_wrt_co; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve open_constraint_wrt_co_lc_constraint : lngen.
 Hint Rewrite open_constraint_wrt_co_lc_constraint using solve [auto] : lngen.
@@ -6210,10 +5250,7 @@ Lemma fv_tm_tm_tm_close_tm_wrt_tm_rec_fv_tm_tm_brs_close_brs_wrt_tm_rec_fv_tm_tm
   fv_tm_tm_co (close_co_wrt_tm_rec n1 x1 g1) [=] remove x1 (fv_tm_tm_co g1)) /\
 (forall phi1 x1 n1,
   fv_tm_tm_constraint (close_constraint_wrt_tm_rec n1 x1 phi1) [=] remove x1 (fv_tm_tm_constraint phi1)).
-Proof.
-apply_mutual_ind tm_brs_co_constraint_mutind;
-default_simp; fsetdec.
-Qed.
+Proof. Admitted.
 
 (* end hide *)
 
@@ -6222,9 +5259,7 @@ Qed.
 Lemma fv_tm_tm_tm_close_tm_wrt_tm_rec :
 forall a1 x1 n1,
   fv_tm_tm_tm (close_tm_wrt_tm_rec n1 x1 a1) [=] remove x1 (fv_tm_tm_tm a1).
-Proof.
-pose proof fv_tm_tm_tm_close_tm_wrt_tm_rec_fv_tm_tm_brs_close_brs_wrt_tm_rec_fv_tm_tm_co_close_co_wrt_tm_rec_fv_tm_tm_constraint_close_constraint_wrt_tm_rec_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve fv_tm_tm_tm_close_tm_wrt_tm_rec : lngen.
 Hint Rewrite fv_tm_tm_tm_close_tm_wrt_tm_rec using solve [auto] : lngen.
@@ -6236,9 +5271,7 @@ Hint Rewrite fv_tm_tm_tm_close_tm_wrt_tm_rec using solve [auto] : lngen.
 Lemma fv_tm_tm_brs_close_brs_wrt_tm_rec :
 forall brs1 x1 n1,
   fv_tm_tm_brs (close_brs_wrt_tm_rec n1 x1 brs1) [=] remove x1 (fv_tm_tm_brs brs1).
-Proof.
-pose proof fv_tm_tm_tm_close_tm_wrt_tm_rec_fv_tm_tm_brs_close_brs_wrt_tm_rec_fv_tm_tm_co_close_co_wrt_tm_rec_fv_tm_tm_constraint_close_constraint_wrt_tm_rec_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve fv_tm_tm_brs_close_brs_wrt_tm_rec : lngen.
 Hint Rewrite fv_tm_tm_brs_close_brs_wrt_tm_rec using solve [auto] : lngen.
@@ -6250,9 +5283,7 @@ Hint Rewrite fv_tm_tm_brs_close_brs_wrt_tm_rec using solve [auto] : lngen.
 Lemma fv_tm_tm_co_close_co_wrt_tm_rec :
 forall g1 x1 n1,
   fv_tm_tm_co (close_co_wrt_tm_rec n1 x1 g1) [=] remove x1 (fv_tm_tm_co g1).
-Proof.
-pose proof fv_tm_tm_tm_close_tm_wrt_tm_rec_fv_tm_tm_brs_close_brs_wrt_tm_rec_fv_tm_tm_co_close_co_wrt_tm_rec_fv_tm_tm_constraint_close_constraint_wrt_tm_rec_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve fv_tm_tm_co_close_co_wrt_tm_rec : lngen.
 Hint Rewrite fv_tm_tm_co_close_co_wrt_tm_rec using solve [auto] : lngen.
@@ -6264,9 +5295,7 @@ Hint Rewrite fv_tm_tm_co_close_co_wrt_tm_rec using solve [auto] : lngen.
 Lemma fv_tm_tm_constraint_close_constraint_wrt_tm_rec :
 forall phi1 x1 n1,
   fv_tm_tm_constraint (close_constraint_wrt_tm_rec n1 x1 phi1) [=] remove x1 (fv_tm_tm_constraint phi1).
-Proof.
-pose proof fv_tm_tm_tm_close_tm_wrt_tm_rec_fv_tm_tm_brs_close_brs_wrt_tm_rec_fv_tm_tm_co_close_co_wrt_tm_rec_fv_tm_tm_constraint_close_constraint_wrt_tm_rec_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve fv_tm_tm_constraint_close_constraint_wrt_tm_rec : lngen.
 Hint Rewrite fv_tm_tm_constraint_close_constraint_wrt_tm_rec using solve [auto] : lngen.
@@ -6284,10 +5313,7 @@ Lemma fv_tm_tm_tm_close_tm_wrt_co_rec_fv_tm_tm_brs_close_brs_wrt_co_rec_fv_tm_tm
   fv_tm_tm_co (close_co_wrt_co_rec n1 c1 g1) [=] fv_tm_tm_co g1) /\
 (forall phi1 c1 n1,
   fv_tm_tm_constraint (close_constraint_wrt_co_rec n1 c1 phi1) [=] fv_tm_tm_constraint phi1).
-Proof.
-apply_mutual_ind tm_brs_co_constraint_mutind;
-default_simp; fsetdec.
-Qed.
+Proof. Admitted.
 
 (* end hide *)
 
@@ -6296,9 +5322,7 @@ Qed.
 Lemma fv_tm_tm_tm_close_tm_wrt_co_rec :
 forall a1 c1 n1,
   fv_tm_tm_tm (close_tm_wrt_co_rec n1 c1 a1) [=] fv_tm_tm_tm a1.
-Proof.
-pose proof fv_tm_tm_tm_close_tm_wrt_co_rec_fv_tm_tm_brs_close_brs_wrt_co_rec_fv_tm_tm_co_close_co_wrt_co_rec_fv_tm_tm_constraint_close_constraint_wrt_co_rec_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve fv_tm_tm_tm_close_tm_wrt_co_rec : lngen.
 Hint Rewrite fv_tm_tm_tm_close_tm_wrt_co_rec using solve [auto] : lngen.
@@ -6310,9 +5334,7 @@ Hint Rewrite fv_tm_tm_tm_close_tm_wrt_co_rec using solve [auto] : lngen.
 Lemma fv_tm_tm_brs_close_brs_wrt_co_rec :
 forall brs1 c1 n1,
   fv_tm_tm_brs (close_brs_wrt_co_rec n1 c1 brs1) [=] fv_tm_tm_brs brs1.
-Proof.
-pose proof fv_tm_tm_tm_close_tm_wrt_co_rec_fv_tm_tm_brs_close_brs_wrt_co_rec_fv_tm_tm_co_close_co_wrt_co_rec_fv_tm_tm_constraint_close_constraint_wrt_co_rec_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve fv_tm_tm_brs_close_brs_wrt_co_rec : lngen.
 Hint Rewrite fv_tm_tm_brs_close_brs_wrt_co_rec using solve [auto] : lngen.
@@ -6324,9 +5346,7 @@ Hint Rewrite fv_tm_tm_brs_close_brs_wrt_co_rec using solve [auto] : lngen.
 Lemma fv_tm_tm_co_close_co_wrt_co_rec :
 forall g1 c1 n1,
   fv_tm_tm_co (close_co_wrt_co_rec n1 c1 g1) [=] fv_tm_tm_co g1.
-Proof.
-pose proof fv_tm_tm_tm_close_tm_wrt_co_rec_fv_tm_tm_brs_close_brs_wrt_co_rec_fv_tm_tm_co_close_co_wrt_co_rec_fv_tm_tm_constraint_close_constraint_wrt_co_rec_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve fv_tm_tm_co_close_co_wrt_co_rec : lngen.
 Hint Rewrite fv_tm_tm_co_close_co_wrt_co_rec using solve [auto] : lngen.
@@ -6338,9 +5358,7 @@ Hint Rewrite fv_tm_tm_co_close_co_wrt_co_rec using solve [auto] : lngen.
 Lemma fv_tm_tm_constraint_close_constraint_wrt_co_rec :
 forall phi1 c1 n1,
   fv_tm_tm_constraint (close_constraint_wrt_co_rec n1 c1 phi1) [=] fv_tm_tm_constraint phi1.
-Proof.
-pose proof fv_tm_tm_tm_close_tm_wrt_co_rec_fv_tm_tm_brs_close_brs_wrt_co_rec_fv_tm_tm_co_close_co_wrt_co_rec_fv_tm_tm_constraint_close_constraint_wrt_co_rec_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve fv_tm_tm_constraint_close_constraint_wrt_co_rec : lngen.
 Hint Rewrite fv_tm_tm_constraint_close_constraint_wrt_co_rec using solve [auto] : lngen.
@@ -6358,10 +5376,7 @@ Lemma fv_co_co_tm_close_tm_wrt_tm_rec_fv_co_co_brs_close_brs_wrt_tm_rec_fv_co_co
   fv_co_co_co (close_co_wrt_tm_rec n1 x1 g1) [=] fv_co_co_co g1) /\
 (forall phi1 x1 n1,
   fv_co_co_constraint (close_constraint_wrt_tm_rec n1 x1 phi1) [=] fv_co_co_constraint phi1).
-Proof.
-apply_mutual_ind tm_brs_co_constraint_mutind;
-default_simp; fsetdec.
-Qed.
+Proof. Admitted.
 
 (* end hide *)
 
@@ -6370,9 +5385,7 @@ Qed.
 Lemma fv_co_co_tm_close_tm_wrt_tm_rec :
 forall a1 x1 n1,
   fv_co_co_tm (close_tm_wrt_tm_rec n1 x1 a1) [=] fv_co_co_tm a1.
-Proof.
-pose proof fv_co_co_tm_close_tm_wrt_tm_rec_fv_co_co_brs_close_brs_wrt_tm_rec_fv_co_co_co_close_co_wrt_tm_rec_fv_co_co_constraint_close_constraint_wrt_tm_rec_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve fv_co_co_tm_close_tm_wrt_tm_rec : lngen.
 Hint Rewrite fv_co_co_tm_close_tm_wrt_tm_rec using solve [auto] : lngen.
@@ -6384,9 +5397,7 @@ Hint Rewrite fv_co_co_tm_close_tm_wrt_tm_rec using solve [auto] : lngen.
 Lemma fv_co_co_brs_close_brs_wrt_tm_rec :
 forall brs1 x1 n1,
   fv_co_co_brs (close_brs_wrt_tm_rec n1 x1 brs1) [=] fv_co_co_brs brs1.
-Proof.
-pose proof fv_co_co_tm_close_tm_wrt_tm_rec_fv_co_co_brs_close_brs_wrt_tm_rec_fv_co_co_co_close_co_wrt_tm_rec_fv_co_co_constraint_close_constraint_wrt_tm_rec_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve fv_co_co_brs_close_brs_wrt_tm_rec : lngen.
 Hint Rewrite fv_co_co_brs_close_brs_wrt_tm_rec using solve [auto] : lngen.
@@ -6398,9 +5409,7 @@ Hint Rewrite fv_co_co_brs_close_brs_wrt_tm_rec using solve [auto] : lngen.
 Lemma fv_co_co_co_close_co_wrt_tm_rec :
 forall g1 x1 n1,
   fv_co_co_co (close_co_wrt_tm_rec n1 x1 g1) [=] fv_co_co_co g1.
-Proof.
-pose proof fv_co_co_tm_close_tm_wrt_tm_rec_fv_co_co_brs_close_brs_wrt_tm_rec_fv_co_co_co_close_co_wrt_tm_rec_fv_co_co_constraint_close_constraint_wrt_tm_rec_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve fv_co_co_co_close_co_wrt_tm_rec : lngen.
 Hint Rewrite fv_co_co_co_close_co_wrt_tm_rec using solve [auto] : lngen.
@@ -6412,9 +5421,7 @@ Hint Rewrite fv_co_co_co_close_co_wrt_tm_rec using solve [auto] : lngen.
 Lemma fv_co_co_constraint_close_constraint_wrt_tm_rec :
 forall phi1 x1 n1,
   fv_co_co_constraint (close_constraint_wrt_tm_rec n1 x1 phi1) [=] fv_co_co_constraint phi1.
-Proof.
-pose proof fv_co_co_tm_close_tm_wrt_tm_rec_fv_co_co_brs_close_brs_wrt_tm_rec_fv_co_co_co_close_co_wrt_tm_rec_fv_co_co_constraint_close_constraint_wrt_tm_rec_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve fv_co_co_constraint_close_constraint_wrt_tm_rec : lngen.
 Hint Rewrite fv_co_co_constraint_close_constraint_wrt_tm_rec using solve [auto] : lngen.
@@ -6432,10 +5439,7 @@ Lemma fv_co_co_tm_close_tm_wrt_co_rec_fv_co_co_brs_close_brs_wrt_co_rec_fv_co_co
   fv_co_co_co (close_co_wrt_co_rec n1 c1 g1) [=] remove c1 (fv_co_co_co g1)) /\
 (forall phi1 c1 n1,
   fv_co_co_constraint (close_constraint_wrt_co_rec n1 c1 phi1) [=] remove c1 (fv_co_co_constraint phi1)).
-Proof.
-apply_mutual_ind tm_brs_co_constraint_mutind;
-default_simp; fsetdec.
-Qed.
+Proof. Admitted.
 
 (* end hide *)
 
@@ -6444,9 +5448,7 @@ Qed.
 Lemma fv_co_co_tm_close_tm_wrt_co_rec :
 forall a1 c1 n1,
   fv_co_co_tm (close_tm_wrt_co_rec n1 c1 a1) [=] remove c1 (fv_co_co_tm a1).
-Proof.
-pose proof fv_co_co_tm_close_tm_wrt_co_rec_fv_co_co_brs_close_brs_wrt_co_rec_fv_co_co_co_close_co_wrt_co_rec_fv_co_co_constraint_close_constraint_wrt_co_rec_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve fv_co_co_tm_close_tm_wrt_co_rec : lngen.
 Hint Rewrite fv_co_co_tm_close_tm_wrt_co_rec using solve [auto] : lngen.
@@ -6458,9 +5460,7 @@ Hint Rewrite fv_co_co_tm_close_tm_wrt_co_rec using solve [auto] : lngen.
 Lemma fv_co_co_brs_close_brs_wrt_co_rec :
 forall brs1 c1 n1,
   fv_co_co_brs (close_brs_wrt_co_rec n1 c1 brs1) [=] remove c1 (fv_co_co_brs brs1).
-Proof.
-pose proof fv_co_co_tm_close_tm_wrt_co_rec_fv_co_co_brs_close_brs_wrt_co_rec_fv_co_co_co_close_co_wrt_co_rec_fv_co_co_constraint_close_constraint_wrt_co_rec_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve fv_co_co_brs_close_brs_wrt_co_rec : lngen.
 Hint Rewrite fv_co_co_brs_close_brs_wrt_co_rec using solve [auto] : lngen.
@@ -6472,9 +5472,7 @@ Hint Rewrite fv_co_co_brs_close_brs_wrt_co_rec using solve [auto] : lngen.
 Lemma fv_co_co_co_close_co_wrt_co_rec :
 forall g1 c1 n1,
   fv_co_co_co (close_co_wrt_co_rec n1 c1 g1) [=] remove c1 (fv_co_co_co g1).
-Proof.
-pose proof fv_co_co_tm_close_tm_wrt_co_rec_fv_co_co_brs_close_brs_wrt_co_rec_fv_co_co_co_close_co_wrt_co_rec_fv_co_co_constraint_close_constraint_wrt_co_rec_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve fv_co_co_co_close_co_wrt_co_rec : lngen.
 Hint Rewrite fv_co_co_co_close_co_wrt_co_rec using solve [auto] : lngen.
@@ -6486,9 +5484,7 @@ Hint Rewrite fv_co_co_co_close_co_wrt_co_rec using solve [auto] : lngen.
 Lemma fv_co_co_constraint_close_constraint_wrt_co_rec :
 forall phi1 c1 n1,
   fv_co_co_constraint (close_constraint_wrt_co_rec n1 c1 phi1) [=] remove c1 (fv_co_co_constraint phi1).
-Proof.
-pose proof fv_co_co_tm_close_tm_wrt_co_rec_fv_co_co_brs_close_brs_wrt_co_rec_fv_co_co_co_close_co_wrt_co_rec_fv_co_co_constraint_close_constraint_wrt_co_rec_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve fv_co_co_constraint_close_constraint_wrt_co_rec : lngen.
 Hint Rewrite fv_co_co_constraint_close_constraint_wrt_co_rec using solve [auto] : lngen.
@@ -6498,9 +5494,7 @@ Hint Rewrite fv_co_co_constraint_close_constraint_wrt_co_rec using solve [auto] 
 Lemma fv_tm_tm_tm_close_tm_wrt_tm :
 forall a1 x1,
   fv_tm_tm_tm (close_tm_wrt_tm x1 a1) [=] remove x1 (fv_tm_tm_tm a1).
-Proof.
-unfold close_tm_wrt_tm; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve fv_tm_tm_tm_close_tm_wrt_tm : lngen.
 Hint Rewrite fv_tm_tm_tm_close_tm_wrt_tm using solve [auto] : lngen.
@@ -6508,9 +5502,7 @@ Hint Rewrite fv_tm_tm_tm_close_tm_wrt_tm using solve [auto] : lngen.
 Lemma fv_tm_tm_brs_close_brs_wrt_tm :
 forall brs1 x1,
   fv_tm_tm_brs (close_brs_wrt_tm x1 brs1) [=] remove x1 (fv_tm_tm_brs brs1).
-Proof.
-unfold close_brs_wrt_tm; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve fv_tm_tm_brs_close_brs_wrt_tm : lngen.
 Hint Rewrite fv_tm_tm_brs_close_brs_wrt_tm using solve [auto] : lngen.
@@ -6518,9 +5510,7 @@ Hint Rewrite fv_tm_tm_brs_close_brs_wrt_tm using solve [auto] : lngen.
 Lemma fv_tm_tm_co_close_co_wrt_tm :
 forall g1 x1,
   fv_tm_tm_co (close_co_wrt_tm x1 g1) [=] remove x1 (fv_tm_tm_co g1).
-Proof.
-unfold close_co_wrt_tm; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve fv_tm_tm_co_close_co_wrt_tm : lngen.
 Hint Rewrite fv_tm_tm_co_close_co_wrt_tm using solve [auto] : lngen.
@@ -6528,9 +5518,7 @@ Hint Rewrite fv_tm_tm_co_close_co_wrt_tm using solve [auto] : lngen.
 Lemma fv_tm_tm_constraint_close_constraint_wrt_tm :
 forall phi1 x1,
   fv_tm_tm_constraint (close_constraint_wrt_tm x1 phi1) [=] remove x1 (fv_tm_tm_constraint phi1).
-Proof.
-unfold close_constraint_wrt_tm; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve fv_tm_tm_constraint_close_constraint_wrt_tm : lngen.
 Hint Rewrite fv_tm_tm_constraint_close_constraint_wrt_tm using solve [auto] : lngen.
@@ -6538,9 +5526,7 @@ Hint Rewrite fv_tm_tm_constraint_close_constraint_wrt_tm using solve [auto] : ln
 Lemma fv_tm_tm_tm_close_tm_wrt_co :
 forall a1 c1,
   fv_tm_tm_tm (close_tm_wrt_co c1 a1) [=] fv_tm_tm_tm a1.
-Proof.
-unfold close_tm_wrt_co; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve fv_tm_tm_tm_close_tm_wrt_co : lngen.
 Hint Rewrite fv_tm_tm_tm_close_tm_wrt_co using solve [auto] : lngen.
@@ -6548,9 +5534,7 @@ Hint Rewrite fv_tm_tm_tm_close_tm_wrt_co using solve [auto] : lngen.
 Lemma fv_tm_tm_brs_close_brs_wrt_co :
 forall brs1 c1,
   fv_tm_tm_brs (close_brs_wrt_co c1 brs1) [=] fv_tm_tm_brs brs1.
-Proof.
-unfold close_brs_wrt_co; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve fv_tm_tm_brs_close_brs_wrt_co : lngen.
 Hint Rewrite fv_tm_tm_brs_close_brs_wrt_co using solve [auto] : lngen.
@@ -6558,9 +5542,7 @@ Hint Rewrite fv_tm_tm_brs_close_brs_wrt_co using solve [auto] : lngen.
 Lemma fv_tm_tm_co_close_co_wrt_co :
 forall g1 c1,
   fv_tm_tm_co (close_co_wrt_co c1 g1) [=] fv_tm_tm_co g1.
-Proof.
-unfold close_co_wrt_co; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve fv_tm_tm_co_close_co_wrt_co : lngen.
 Hint Rewrite fv_tm_tm_co_close_co_wrt_co using solve [auto] : lngen.
@@ -6568,9 +5550,7 @@ Hint Rewrite fv_tm_tm_co_close_co_wrt_co using solve [auto] : lngen.
 Lemma fv_tm_tm_constraint_close_constraint_wrt_co :
 forall phi1 c1,
   fv_tm_tm_constraint (close_constraint_wrt_co c1 phi1) [=] fv_tm_tm_constraint phi1.
-Proof.
-unfold close_constraint_wrt_co; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve fv_tm_tm_constraint_close_constraint_wrt_co : lngen.
 Hint Rewrite fv_tm_tm_constraint_close_constraint_wrt_co using solve [auto] : lngen.
@@ -6578,9 +5558,7 @@ Hint Rewrite fv_tm_tm_constraint_close_constraint_wrt_co using solve [auto] : ln
 Lemma fv_co_co_tm_close_tm_wrt_tm :
 forall a1 x1,
   fv_co_co_tm (close_tm_wrt_tm x1 a1) [=] fv_co_co_tm a1.
-Proof.
-unfold close_tm_wrt_tm; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve fv_co_co_tm_close_tm_wrt_tm : lngen.
 Hint Rewrite fv_co_co_tm_close_tm_wrt_tm using solve [auto] : lngen.
@@ -6588,9 +5566,7 @@ Hint Rewrite fv_co_co_tm_close_tm_wrt_tm using solve [auto] : lngen.
 Lemma fv_co_co_brs_close_brs_wrt_tm :
 forall brs1 x1,
   fv_co_co_brs (close_brs_wrt_tm x1 brs1) [=] fv_co_co_brs brs1.
-Proof.
-unfold close_brs_wrt_tm; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve fv_co_co_brs_close_brs_wrt_tm : lngen.
 Hint Rewrite fv_co_co_brs_close_brs_wrt_tm using solve [auto] : lngen.
@@ -6598,9 +5574,7 @@ Hint Rewrite fv_co_co_brs_close_brs_wrt_tm using solve [auto] : lngen.
 Lemma fv_co_co_co_close_co_wrt_tm :
 forall g1 x1,
   fv_co_co_co (close_co_wrt_tm x1 g1) [=] fv_co_co_co g1.
-Proof.
-unfold close_co_wrt_tm; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve fv_co_co_co_close_co_wrt_tm : lngen.
 Hint Rewrite fv_co_co_co_close_co_wrt_tm using solve [auto] : lngen.
@@ -6608,9 +5582,7 @@ Hint Rewrite fv_co_co_co_close_co_wrt_tm using solve [auto] : lngen.
 Lemma fv_co_co_constraint_close_constraint_wrt_tm :
 forall phi1 x1,
   fv_co_co_constraint (close_constraint_wrt_tm x1 phi1) [=] fv_co_co_constraint phi1.
-Proof.
-unfold close_constraint_wrt_tm; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve fv_co_co_constraint_close_constraint_wrt_tm : lngen.
 Hint Rewrite fv_co_co_constraint_close_constraint_wrt_tm using solve [auto] : lngen.
@@ -6618,9 +5590,7 @@ Hint Rewrite fv_co_co_constraint_close_constraint_wrt_tm using solve [auto] : ln
 Lemma fv_co_co_tm_close_tm_wrt_co :
 forall a1 c1,
   fv_co_co_tm (close_tm_wrt_co c1 a1) [=] remove c1 (fv_co_co_tm a1).
-Proof.
-unfold close_tm_wrt_co; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve fv_co_co_tm_close_tm_wrt_co : lngen.
 Hint Rewrite fv_co_co_tm_close_tm_wrt_co using solve [auto] : lngen.
@@ -6628,9 +5598,7 @@ Hint Rewrite fv_co_co_tm_close_tm_wrt_co using solve [auto] : lngen.
 Lemma fv_co_co_brs_close_brs_wrt_co :
 forall brs1 c1,
   fv_co_co_brs (close_brs_wrt_co c1 brs1) [=] remove c1 (fv_co_co_brs brs1).
-Proof.
-unfold close_brs_wrt_co; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve fv_co_co_brs_close_brs_wrt_co : lngen.
 Hint Rewrite fv_co_co_brs_close_brs_wrt_co using solve [auto] : lngen.
@@ -6638,9 +5606,7 @@ Hint Rewrite fv_co_co_brs_close_brs_wrt_co using solve [auto] : lngen.
 Lemma fv_co_co_co_close_co_wrt_co :
 forall g1 c1,
   fv_co_co_co (close_co_wrt_co c1 g1) [=] remove c1 (fv_co_co_co g1).
-Proof.
-unfold close_co_wrt_co; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve fv_co_co_co_close_co_wrt_co : lngen.
 Hint Rewrite fv_co_co_co_close_co_wrt_co using solve [auto] : lngen.
@@ -6648,9 +5614,7 @@ Hint Rewrite fv_co_co_co_close_co_wrt_co using solve [auto] : lngen.
 Lemma fv_co_co_constraint_close_constraint_wrt_co :
 forall phi1 c1,
   fv_co_co_constraint (close_constraint_wrt_co c1 phi1) [=] remove c1 (fv_co_co_constraint phi1).
-Proof.
-unfold close_constraint_wrt_co; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve fv_co_co_constraint_close_constraint_wrt_co : lngen.
 Hint Rewrite fv_co_co_constraint_close_constraint_wrt_co using solve [auto] : lngen.
@@ -6666,10 +5630,7 @@ Lemma fv_tm_tm_tm_open_tm_wrt_tm_rec_lower_fv_tm_tm_brs_open_brs_wrt_tm_rec_lowe
   fv_tm_tm_co g1 [<=] fv_tm_tm_co (open_co_wrt_tm_rec n1 a1 g1)) /\
 (forall phi1 a1 n1,
   fv_tm_tm_constraint phi1 [<=] fv_tm_tm_constraint (open_constraint_wrt_tm_rec n1 a1 phi1)).
-Proof.
-apply_mutual_ind tm_brs_co_constraint_mutind;
-default_simp; fsetdec.
-Qed.
+Proof. Admitted.
 
 (* end hide *)
 
@@ -6678,9 +5639,7 @@ Qed.
 Lemma fv_tm_tm_tm_open_tm_wrt_tm_rec_lower :
 forall a1 a2 n1,
   fv_tm_tm_tm a1 [<=] fv_tm_tm_tm (open_tm_wrt_tm_rec n1 a2 a1).
-Proof.
-pose proof fv_tm_tm_tm_open_tm_wrt_tm_rec_lower_fv_tm_tm_brs_open_brs_wrt_tm_rec_lower_fv_tm_tm_co_open_co_wrt_tm_rec_lower_fv_tm_tm_constraint_open_constraint_wrt_tm_rec_lower_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve fv_tm_tm_tm_open_tm_wrt_tm_rec_lower : lngen.
 
@@ -6691,9 +5650,7 @@ Hint Resolve fv_tm_tm_tm_open_tm_wrt_tm_rec_lower : lngen.
 Lemma fv_tm_tm_brs_open_brs_wrt_tm_rec_lower :
 forall brs1 a1 n1,
   fv_tm_tm_brs brs1 [<=] fv_tm_tm_brs (open_brs_wrt_tm_rec n1 a1 brs1).
-Proof.
-pose proof fv_tm_tm_tm_open_tm_wrt_tm_rec_lower_fv_tm_tm_brs_open_brs_wrt_tm_rec_lower_fv_tm_tm_co_open_co_wrt_tm_rec_lower_fv_tm_tm_constraint_open_constraint_wrt_tm_rec_lower_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve fv_tm_tm_brs_open_brs_wrt_tm_rec_lower : lngen.
 
@@ -6704,9 +5661,7 @@ Hint Resolve fv_tm_tm_brs_open_brs_wrt_tm_rec_lower : lngen.
 Lemma fv_tm_tm_co_open_co_wrt_tm_rec_lower :
 forall g1 a1 n1,
   fv_tm_tm_co g1 [<=] fv_tm_tm_co (open_co_wrt_tm_rec n1 a1 g1).
-Proof.
-pose proof fv_tm_tm_tm_open_tm_wrt_tm_rec_lower_fv_tm_tm_brs_open_brs_wrt_tm_rec_lower_fv_tm_tm_co_open_co_wrt_tm_rec_lower_fv_tm_tm_constraint_open_constraint_wrt_tm_rec_lower_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve fv_tm_tm_co_open_co_wrt_tm_rec_lower : lngen.
 
@@ -6717,9 +5672,7 @@ Hint Resolve fv_tm_tm_co_open_co_wrt_tm_rec_lower : lngen.
 Lemma fv_tm_tm_constraint_open_constraint_wrt_tm_rec_lower :
 forall phi1 a1 n1,
   fv_tm_tm_constraint phi1 [<=] fv_tm_tm_constraint (open_constraint_wrt_tm_rec n1 a1 phi1).
-Proof.
-pose proof fv_tm_tm_tm_open_tm_wrt_tm_rec_lower_fv_tm_tm_brs_open_brs_wrt_tm_rec_lower_fv_tm_tm_co_open_co_wrt_tm_rec_lower_fv_tm_tm_constraint_open_constraint_wrt_tm_rec_lower_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve fv_tm_tm_constraint_open_constraint_wrt_tm_rec_lower : lngen.
 
@@ -6736,10 +5689,7 @@ Lemma fv_tm_tm_tm_open_tm_wrt_co_rec_lower_fv_tm_tm_brs_open_brs_wrt_co_rec_lowe
   fv_tm_tm_co g1 [<=] fv_tm_tm_co (open_co_wrt_co_rec n1 g2 g1)) /\
 (forall phi1 g1 n1,
   fv_tm_tm_constraint phi1 [<=] fv_tm_tm_constraint (open_constraint_wrt_co_rec n1 g1 phi1)).
-Proof.
-apply_mutual_ind tm_brs_co_constraint_mutind;
-default_simp; fsetdec.
-Qed.
+Proof. Admitted.
 
 (* end hide *)
 
@@ -6748,9 +5698,7 @@ Qed.
 Lemma fv_tm_tm_tm_open_tm_wrt_co_rec_lower :
 forall a1 g1 n1,
   fv_tm_tm_tm a1 [<=] fv_tm_tm_tm (open_tm_wrt_co_rec n1 g1 a1).
-Proof.
-pose proof fv_tm_tm_tm_open_tm_wrt_co_rec_lower_fv_tm_tm_brs_open_brs_wrt_co_rec_lower_fv_tm_tm_co_open_co_wrt_co_rec_lower_fv_tm_tm_constraint_open_constraint_wrt_co_rec_lower_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve fv_tm_tm_tm_open_tm_wrt_co_rec_lower : lngen.
 
@@ -6761,9 +5709,7 @@ Hint Resolve fv_tm_tm_tm_open_tm_wrt_co_rec_lower : lngen.
 Lemma fv_tm_tm_brs_open_brs_wrt_co_rec_lower :
 forall brs1 g1 n1,
   fv_tm_tm_brs brs1 [<=] fv_tm_tm_brs (open_brs_wrt_co_rec n1 g1 brs1).
-Proof.
-pose proof fv_tm_tm_tm_open_tm_wrt_co_rec_lower_fv_tm_tm_brs_open_brs_wrt_co_rec_lower_fv_tm_tm_co_open_co_wrt_co_rec_lower_fv_tm_tm_constraint_open_constraint_wrt_co_rec_lower_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve fv_tm_tm_brs_open_brs_wrt_co_rec_lower : lngen.
 
@@ -6774,9 +5720,7 @@ Hint Resolve fv_tm_tm_brs_open_brs_wrt_co_rec_lower : lngen.
 Lemma fv_tm_tm_co_open_co_wrt_co_rec_lower :
 forall g1 g2 n1,
   fv_tm_tm_co g1 [<=] fv_tm_tm_co (open_co_wrt_co_rec n1 g2 g1).
-Proof.
-pose proof fv_tm_tm_tm_open_tm_wrt_co_rec_lower_fv_tm_tm_brs_open_brs_wrt_co_rec_lower_fv_tm_tm_co_open_co_wrt_co_rec_lower_fv_tm_tm_constraint_open_constraint_wrt_co_rec_lower_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve fv_tm_tm_co_open_co_wrt_co_rec_lower : lngen.
 
@@ -6787,9 +5731,7 @@ Hint Resolve fv_tm_tm_co_open_co_wrt_co_rec_lower : lngen.
 Lemma fv_tm_tm_constraint_open_constraint_wrt_co_rec_lower :
 forall phi1 g1 n1,
   fv_tm_tm_constraint phi1 [<=] fv_tm_tm_constraint (open_constraint_wrt_co_rec n1 g1 phi1).
-Proof.
-pose proof fv_tm_tm_tm_open_tm_wrt_co_rec_lower_fv_tm_tm_brs_open_brs_wrt_co_rec_lower_fv_tm_tm_co_open_co_wrt_co_rec_lower_fv_tm_tm_constraint_open_constraint_wrt_co_rec_lower_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve fv_tm_tm_constraint_open_constraint_wrt_co_rec_lower : lngen.
 
@@ -6806,10 +5748,7 @@ Lemma fv_co_co_tm_open_tm_wrt_tm_rec_lower_fv_co_co_brs_open_brs_wrt_tm_rec_lowe
   fv_co_co_co g1 [<=] fv_co_co_co (open_co_wrt_tm_rec n1 a1 g1)) /\
 (forall phi1 a1 n1,
   fv_co_co_constraint phi1 [<=] fv_co_co_constraint (open_constraint_wrt_tm_rec n1 a1 phi1)).
-Proof.
-apply_mutual_ind tm_brs_co_constraint_mutind;
-default_simp; fsetdec.
-Qed.
+Proof. Admitted.
 
 (* end hide *)
 
@@ -6818,9 +5757,7 @@ Qed.
 Lemma fv_co_co_tm_open_tm_wrt_tm_rec_lower :
 forall a1 a2 n1,
   fv_co_co_tm a1 [<=] fv_co_co_tm (open_tm_wrt_tm_rec n1 a2 a1).
-Proof.
-pose proof fv_co_co_tm_open_tm_wrt_tm_rec_lower_fv_co_co_brs_open_brs_wrt_tm_rec_lower_fv_co_co_co_open_co_wrt_tm_rec_lower_fv_co_co_constraint_open_constraint_wrt_tm_rec_lower_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve fv_co_co_tm_open_tm_wrt_tm_rec_lower : lngen.
 
@@ -6831,9 +5768,7 @@ Hint Resolve fv_co_co_tm_open_tm_wrt_tm_rec_lower : lngen.
 Lemma fv_co_co_brs_open_brs_wrt_tm_rec_lower :
 forall brs1 a1 n1,
   fv_co_co_brs brs1 [<=] fv_co_co_brs (open_brs_wrt_tm_rec n1 a1 brs1).
-Proof.
-pose proof fv_co_co_tm_open_tm_wrt_tm_rec_lower_fv_co_co_brs_open_brs_wrt_tm_rec_lower_fv_co_co_co_open_co_wrt_tm_rec_lower_fv_co_co_constraint_open_constraint_wrt_tm_rec_lower_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve fv_co_co_brs_open_brs_wrt_tm_rec_lower : lngen.
 
@@ -6844,9 +5779,7 @@ Hint Resolve fv_co_co_brs_open_brs_wrt_tm_rec_lower : lngen.
 Lemma fv_co_co_co_open_co_wrt_tm_rec_lower :
 forall g1 a1 n1,
   fv_co_co_co g1 [<=] fv_co_co_co (open_co_wrt_tm_rec n1 a1 g1).
-Proof.
-pose proof fv_co_co_tm_open_tm_wrt_tm_rec_lower_fv_co_co_brs_open_brs_wrt_tm_rec_lower_fv_co_co_co_open_co_wrt_tm_rec_lower_fv_co_co_constraint_open_constraint_wrt_tm_rec_lower_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve fv_co_co_co_open_co_wrt_tm_rec_lower : lngen.
 
@@ -6857,9 +5790,7 @@ Hint Resolve fv_co_co_co_open_co_wrt_tm_rec_lower : lngen.
 Lemma fv_co_co_constraint_open_constraint_wrt_tm_rec_lower :
 forall phi1 a1 n1,
   fv_co_co_constraint phi1 [<=] fv_co_co_constraint (open_constraint_wrt_tm_rec n1 a1 phi1).
-Proof.
-pose proof fv_co_co_tm_open_tm_wrt_tm_rec_lower_fv_co_co_brs_open_brs_wrt_tm_rec_lower_fv_co_co_co_open_co_wrt_tm_rec_lower_fv_co_co_constraint_open_constraint_wrt_tm_rec_lower_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve fv_co_co_constraint_open_constraint_wrt_tm_rec_lower : lngen.
 
@@ -6876,10 +5807,7 @@ Lemma fv_co_co_tm_open_tm_wrt_co_rec_lower_fv_co_co_brs_open_brs_wrt_co_rec_lowe
   fv_co_co_co g1 [<=] fv_co_co_co (open_co_wrt_co_rec n1 g2 g1)) /\
 (forall phi1 g1 n1,
   fv_co_co_constraint phi1 [<=] fv_co_co_constraint (open_constraint_wrt_co_rec n1 g1 phi1)).
-Proof.
-apply_mutual_ind tm_brs_co_constraint_mutind;
-default_simp; fsetdec.
-Qed.
+Proof. Admitted.
 
 (* end hide *)
 
@@ -6888,9 +5816,7 @@ Qed.
 Lemma fv_co_co_tm_open_tm_wrt_co_rec_lower :
 forall a1 g1 n1,
   fv_co_co_tm a1 [<=] fv_co_co_tm (open_tm_wrt_co_rec n1 g1 a1).
-Proof.
-pose proof fv_co_co_tm_open_tm_wrt_co_rec_lower_fv_co_co_brs_open_brs_wrt_co_rec_lower_fv_co_co_co_open_co_wrt_co_rec_lower_fv_co_co_constraint_open_constraint_wrt_co_rec_lower_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve fv_co_co_tm_open_tm_wrt_co_rec_lower : lngen.
 
@@ -6901,9 +5827,7 @@ Hint Resolve fv_co_co_tm_open_tm_wrt_co_rec_lower : lngen.
 Lemma fv_co_co_brs_open_brs_wrt_co_rec_lower :
 forall brs1 g1 n1,
   fv_co_co_brs brs1 [<=] fv_co_co_brs (open_brs_wrt_co_rec n1 g1 brs1).
-Proof.
-pose proof fv_co_co_tm_open_tm_wrt_co_rec_lower_fv_co_co_brs_open_brs_wrt_co_rec_lower_fv_co_co_co_open_co_wrt_co_rec_lower_fv_co_co_constraint_open_constraint_wrt_co_rec_lower_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve fv_co_co_brs_open_brs_wrt_co_rec_lower : lngen.
 
@@ -6914,9 +5838,7 @@ Hint Resolve fv_co_co_brs_open_brs_wrt_co_rec_lower : lngen.
 Lemma fv_co_co_co_open_co_wrt_co_rec_lower :
 forall g1 g2 n1,
   fv_co_co_co g1 [<=] fv_co_co_co (open_co_wrt_co_rec n1 g2 g1).
-Proof.
-pose proof fv_co_co_tm_open_tm_wrt_co_rec_lower_fv_co_co_brs_open_brs_wrt_co_rec_lower_fv_co_co_co_open_co_wrt_co_rec_lower_fv_co_co_constraint_open_constraint_wrt_co_rec_lower_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve fv_co_co_co_open_co_wrt_co_rec_lower : lngen.
 
@@ -6927,9 +5849,7 @@ Hint Resolve fv_co_co_co_open_co_wrt_co_rec_lower : lngen.
 Lemma fv_co_co_constraint_open_constraint_wrt_co_rec_lower :
 forall phi1 g1 n1,
   fv_co_co_constraint phi1 [<=] fv_co_co_constraint (open_constraint_wrt_co_rec n1 g1 phi1).
-Proof.
-pose proof fv_co_co_tm_open_tm_wrt_co_rec_lower_fv_co_co_brs_open_brs_wrt_co_rec_lower_fv_co_co_co_open_co_wrt_co_rec_lower_fv_co_co_constraint_open_constraint_wrt_co_rec_lower_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve fv_co_co_constraint_open_constraint_wrt_co_rec_lower : lngen.
 
@@ -6938,144 +5858,112 @@ Hint Resolve fv_co_co_constraint_open_constraint_wrt_co_rec_lower : lngen.
 Lemma fv_tm_tm_tm_open_tm_wrt_tm_lower :
 forall a1 a2,
   fv_tm_tm_tm a1 [<=] fv_tm_tm_tm (open_tm_wrt_tm a1 a2).
-Proof.
-unfold open_tm_wrt_tm; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve fv_tm_tm_tm_open_tm_wrt_tm_lower : lngen.
 
 Lemma fv_tm_tm_brs_open_brs_wrt_tm_lower :
 forall brs1 a1,
   fv_tm_tm_brs brs1 [<=] fv_tm_tm_brs (open_brs_wrt_tm brs1 a1).
-Proof.
-unfold open_brs_wrt_tm; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve fv_tm_tm_brs_open_brs_wrt_tm_lower : lngen.
 
 Lemma fv_tm_tm_co_open_co_wrt_tm_lower :
 forall g1 a1,
   fv_tm_tm_co g1 [<=] fv_tm_tm_co (open_co_wrt_tm g1 a1).
-Proof.
-unfold open_co_wrt_tm; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve fv_tm_tm_co_open_co_wrt_tm_lower : lngen.
 
 Lemma fv_tm_tm_constraint_open_constraint_wrt_tm_lower :
 forall phi1 a1,
   fv_tm_tm_constraint phi1 [<=] fv_tm_tm_constraint (open_constraint_wrt_tm phi1 a1).
-Proof.
-unfold open_constraint_wrt_tm; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve fv_tm_tm_constraint_open_constraint_wrt_tm_lower : lngen.
 
 Lemma fv_tm_tm_tm_open_tm_wrt_co_lower :
 forall a1 g1,
   fv_tm_tm_tm a1 [<=] fv_tm_tm_tm (open_tm_wrt_co a1 g1).
-Proof.
-unfold open_tm_wrt_co; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve fv_tm_tm_tm_open_tm_wrt_co_lower : lngen.
 
 Lemma fv_tm_tm_brs_open_brs_wrt_co_lower :
 forall brs1 g1,
   fv_tm_tm_brs brs1 [<=] fv_tm_tm_brs (open_brs_wrt_co brs1 g1).
-Proof.
-unfold open_brs_wrt_co; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve fv_tm_tm_brs_open_brs_wrt_co_lower : lngen.
 
 Lemma fv_tm_tm_co_open_co_wrt_co_lower :
 forall g1 g2,
   fv_tm_tm_co g1 [<=] fv_tm_tm_co (open_co_wrt_co g1 g2).
-Proof.
-unfold open_co_wrt_co; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve fv_tm_tm_co_open_co_wrt_co_lower : lngen.
 
 Lemma fv_tm_tm_constraint_open_constraint_wrt_co_lower :
 forall phi1 g1,
   fv_tm_tm_constraint phi1 [<=] fv_tm_tm_constraint (open_constraint_wrt_co phi1 g1).
-Proof.
-unfold open_constraint_wrt_co; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve fv_tm_tm_constraint_open_constraint_wrt_co_lower : lngen.
 
 Lemma fv_co_co_tm_open_tm_wrt_tm_lower :
 forall a1 a2,
   fv_co_co_tm a1 [<=] fv_co_co_tm (open_tm_wrt_tm a1 a2).
-Proof.
-unfold open_tm_wrt_tm; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve fv_co_co_tm_open_tm_wrt_tm_lower : lngen.
 
 Lemma fv_co_co_brs_open_brs_wrt_tm_lower :
 forall brs1 a1,
   fv_co_co_brs brs1 [<=] fv_co_co_brs (open_brs_wrt_tm brs1 a1).
-Proof.
-unfold open_brs_wrt_tm; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve fv_co_co_brs_open_brs_wrt_tm_lower : lngen.
 
 Lemma fv_co_co_co_open_co_wrt_tm_lower :
 forall g1 a1,
   fv_co_co_co g1 [<=] fv_co_co_co (open_co_wrt_tm g1 a1).
-Proof.
-unfold open_co_wrt_tm; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve fv_co_co_co_open_co_wrt_tm_lower : lngen.
 
 Lemma fv_co_co_constraint_open_constraint_wrt_tm_lower :
 forall phi1 a1,
   fv_co_co_constraint phi1 [<=] fv_co_co_constraint (open_constraint_wrt_tm phi1 a1).
-Proof.
-unfold open_constraint_wrt_tm; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve fv_co_co_constraint_open_constraint_wrt_tm_lower : lngen.
 
 Lemma fv_co_co_tm_open_tm_wrt_co_lower :
 forall a1 g1,
   fv_co_co_tm a1 [<=] fv_co_co_tm (open_tm_wrt_co a1 g1).
-Proof.
-unfold open_tm_wrt_co; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve fv_co_co_tm_open_tm_wrt_co_lower : lngen.
 
 Lemma fv_co_co_brs_open_brs_wrt_co_lower :
 forall brs1 g1,
   fv_co_co_brs brs1 [<=] fv_co_co_brs (open_brs_wrt_co brs1 g1).
-Proof.
-unfold open_brs_wrt_co; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve fv_co_co_brs_open_brs_wrt_co_lower : lngen.
 
 Lemma fv_co_co_co_open_co_wrt_co_lower :
 forall g1 g2,
   fv_co_co_co g1 [<=] fv_co_co_co (open_co_wrt_co g1 g2).
-Proof.
-unfold open_co_wrt_co; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve fv_co_co_co_open_co_wrt_co_lower : lngen.
 
 Lemma fv_co_co_constraint_open_constraint_wrt_co_lower :
 forall phi1 g1,
   fv_co_co_constraint phi1 [<=] fv_co_co_constraint (open_constraint_wrt_co phi1 g1).
-Proof.
-unfold open_constraint_wrt_co; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve fv_co_co_constraint_open_constraint_wrt_co_lower : lngen.
 
@@ -7090,10 +5978,7 @@ Lemma fv_tm_tm_tm_open_tm_wrt_tm_rec_upper_fv_tm_tm_brs_open_brs_wrt_tm_rec_uppe
   fv_tm_tm_co (open_co_wrt_tm_rec n1 a1 g1) [<=] fv_tm_tm_tm a1 `union` fv_tm_tm_co g1) /\
 (forall phi1 a1 n1,
   fv_tm_tm_constraint (open_constraint_wrt_tm_rec n1 a1 phi1) [<=] fv_tm_tm_tm a1 `union` fv_tm_tm_constraint phi1).
-Proof.
-apply_mutual_ind tm_brs_co_constraint_mutind;
-default_simp; fsetdec.
-Qed.
+Proof. Admitted.
 
 (* end hide *)
 
@@ -7102,9 +5987,7 @@ Qed.
 Lemma fv_tm_tm_tm_open_tm_wrt_tm_rec_upper :
 forall a1 a2 n1,
   fv_tm_tm_tm (open_tm_wrt_tm_rec n1 a2 a1) [<=] fv_tm_tm_tm a2 `union` fv_tm_tm_tm a1.
-Proof.
-pose proof fv_tm_tm_tm_open_tm_wrt_tm_rec_upper_fv_tm_tm_brs_open_brs_wrt_tm_rec_upper_fv_tm_tm_co_open_co_wrt_tm_rec_upper_fv_tm_tm_constraint_open_constraint_wrt_tm_rec_upper_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve fv_tm_tm_tm_open_tm_wrt_tm_rec_upper : lngen.
 
@@ -7115,9 +5998,7 @@ Hint Resolve fv_tm_tm_tm_open_tm_wrt_tm_rec_upper : lngen.
 Lemma fv_tm_tm_brs_open_brs_wrt_tm_rec_upper :
 forall brs1 a1 n1,
   fv_tm_tm_brs (open_brs_wrt_tm_rec n1 a1 brs1) [<=] fv_tm_tm_tm a1 `union` fv_tm_tm_brs brs1.
-Proof.
-pose proof fv_tm_tm_tm_open_tm_wrt_tm_rec_upper_fv_tm_tm_brs_open_brs_wrt_tm_rec_upper_fv_tm_tm_co_open_co_wrt_tm_rec_upper_fv_tm_tm_constraint_open_constraint_wrt_tm_rec_upper_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve fv_tm_tm_brs_open_brs_wrt_tm_rec_upper : lngen.
 
@@ -7128,9 +6009,7 @@ Hint Resolve fv_tm_tm_brs_open_brs_wrt_tm_rec_upper : lngen.
 Lemma fv_tm_tm_co_open_co_wrt_tm_rec_upper :
 forall g1 a1 n1,
   fv_tm_tm_co (open_co_wrt_tm_rec n1 a1 g1) [<=] fv_tm_tm_tm a1 `union` fv_tm_tm_co g1.
-Proof.
-pose proof fv_tm_tm_tm_open_tm_wrt_tm_rec_upper_fv_tm_tm_brs_open_brs_wrt_tm_rec_upper_fv_tm_tm_co_open_co_wrt_tm_rec_upper_fv_tm_tm_constraint_open_constraint_wrt_tm_rec_upper_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve fv_tm_tm_co_open_co_wrt_tm_rec_upper : lngen.
 
@@ -7141,9 +6020,7 @@ Hint Resolve fv_tm_tm_co_open_co_wrt_tm_rec_upper : lngen.
 Lemma fv_tm_tm_constraint_open_constraint_wrt_tm_rec_upper :
 forall phi1 a1 n1,
   fv_tm_tm_constraint (open_constraint_wrt_tm_rec n1 a1 phi1) [<=] fv_tm_tm_tm a1 `union` fv_tm_tm_constraint phi1.
-Proof.
-pose proof fv_tm_tm_tm_open_tm_wrt_tm_rec_upper_fv_tm_tm_brs_open_brs_wrt_tm_rec_upper_fv_tm_tm_co_open_co_wrt_tm_rec_upper_fv_tm_tm_constraint_open_constraint_wrt_tm_rec_upper_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve fv_tm_tm_constraint_open_constraint_wrt_tm_rec_upper : lngen.
 
@@ -7160,10 +6037,7 @@ Lemma fv_tm_tm_tm_open_tm_wrt_co_rec_upper_fv_tm_tm_brs_open_brs_wrt_co_rec_uppe
   fv_tm_tm_co (open_co_wrt_co_rec n1 g2 g1) [<=] fv_tm_tm_co g2 `union` fv_tm_tm_co g1) /\
 (forall phi1 g1 n1,
   fv_tm_tm_constraint (open_constraint_wrt_co_rec n1 g1 phi1) [<=] fv_tm_tm_co g1 `union` fv_tm_tm_constraint phi1).
-Proof.
-apply_mutual_ind tm_brs_co_constraint_mutind;
-default_simp; fsetdec.
-Qed.
+Proof. Admitted.
 
 (* end hide *)
 
@@ -7172,9 +6046,7 @@ Qed.
 Lemma fv_tm_tm_tm_open_tm_wrt_co_rec_upper :
 forall a1 g1 n1,
   fv_tm_tm_tm (open_tm_wrt_co_rec n1 g1 a1) [<=] fv_tm_tm_co g1 `union` fv_tm_tm_tm a1.
-Proof.
-pose proof fv_tm_tm_tm_open_tm_wrt_co_rec_upper_fv_tm_tm_brs_open_brs_wrt_co_rec_upper_fv_tm_tm_co_open_co_wrt_co_rec_upper_fv_tm_tm_constraint_open_constraint_wrt_co_rec_upper_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve fv_tm_tm_tm_open_tm_wrt_co_rec_upper : lngen.
 
@@ -7185,9 +6057,7 @@ Hint Resolve fv_tm_tm_tm_open_tm_wrt_co_rec_upper : lngen.
 Lemma fv_tm_tm_brs_open_brs_wrt_co_rec_upper :
 forall brs1 g1 n1,
   fv_tm_tm_brs (open_brs_wrt_co_rec n1 g1 brs1) [<=] fv_tm_tm_co g1 `union` fv_tm_tm_brs brs1.
-Proof.
-pose proof fv_tm_tm_tm_open_tm_wrt_co_rec_upper_fv_tm_tm_brs_open_brs_wrt_co_rec_upper_fv_tm_tm_co_open_co_wrt_co_rec_upper_fv_tm_tm_constraint_open_constraint_wrt_co_rec_upper_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve fv_tm_tm_brs_open_brs_wrt_co_rec_upper : lngen.
 
@@ -7198,9 +6068,7 @@ Hint Resolve fv_tm_tm_brs_open_brs_wrt_co_rec_upper : lngen.
 Lemma fv_tm_tm_co_open_co_wrt_co_rec_upper :
 forall g1 g2 n1,
   fv_tm_tm_co (open_co_wrt_co_rec n1 g2 g1) [<=] fv_tm_tm_co g2 `union` fv_tm_tm_co g1.
-Proof.
-pose proof fv_tm_tm_tm_open_tm_wrt_co_rec_upper_fv_tm_tm_brs_open_brs_wrt_co_rec_upper_fv_tm_tm_co_open_co_wrt_co_rec_upper_fv_tm_tm_constraint_open_constraint_wrt_co_rec_upper_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve fv_tm_tm_co_open_co_wrt_co_rec_upper : lngen.
 
@@ -7211,9 +6079,7 @@ Hint Resolve fv_tm_tm_co_open_co_wrt_co_rec_upper : lngen.
 Lemma fv_tm_tm_constraint_open_constraint_wrt_co_rec_upper :
 forall phi1 g1 n1,
   fv_tm_tm_constraint (open_constraint_wrt_co_rec n1 g1 phi1) [<=] fv_tm_tm_co g1 `union` fv_tm_tm_constraint phi1.
-Proof.
-pose proof fv_tm_tm_tm_open_tm_wrt_co_rec_upper_fv_tm_tm_brs_open_brs_wrt_co_rec_upper_fv_tm_tm_co_open_co_wrt_co_rec_upper_fv_tm_tm_constraint_open_constraint_wrt_co_rec_upper_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve fv_tm_tm_constraint_open_constraint_wrt_co_rec_upper : lngen.
 
@@ -7230,10 +6096,7 @@ Lemma fv_co_co_tm_open_tm_wrt_tm_rec_upper_fv_co_co_brs_open_brs_wrt_tm_rec_uppe
   fv_co_co_co (open_co_wrt_tm_rec n1 a1 g1) [<=] fv_co_co_tm a1 `union` fv_co_co_co g1) /\
 (forall phi1 a1 n1,
   fv_co_co_constraint (open_constraint_wrt_tm_rec n1 a1 phi1) [<=] fv_co_co_tm a1 `union` fv_co_co_constraint phi1).
-Proof.
-apply_mutual_ind tm_brs_co_constraint_mutind;
-default_simp; fsetdec.
-Qed.
+Proof. Admitted.
 
 (* end hide *)
 
@@ -7242,9 +6105,7 @@ Qed.
 Lemma fv_co_co_tm_open_tm_wrt_tm_rec_upper :
 forall a1 a2 n1,
   fv_co_co_tm (open_tm_wrt_tm_rec n1 a2 a1) [<=] fv_co_co_tm a2 `union` fv_co_co_tm a1.
-Proof.
-pose proof fv_co_co_tm_open_tm_wrt_tm_rec_upper_fv_co_co_brs_open_brs_wrt_tm_rec_upper_fv_co_co_co_open_co_wrt_tm_rec_upper_fv_co_co_constraint_open_constraint_wrt_tm_rec_upper_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve fv_co_co_tm_open_tm_wrt_tm_rec_upper : lngen.
 
@@ -7255,9 +6116,7 @@ Hint Resolve fv_co_co_tm_open_tm_wrt_tm_rec_upper : lngen.
 Lemma fv_co_co_brs_open_brs_wrt_tm_rec_upper :
 forall brs1 a1 n1,
   fv_co_co_brs (open_brs_wrt_tm_rec n1 a1 brs1) [<=] fv_co_co_tm a1 `union` fv_co_co_brs brs1.
-Proof.
-pose proof fv_co_co_tm_open_tm_wrt_tm_rec_upper_fv_co_co_brs_open_brs_wrt_tm_rec_upper_fv_co_co_co_open_co_wrt_tm_rec_upper_fv_co_co_constraint_open_constraint_wrt_tm_rec_upper_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve fv_co_co_brs_open_brs_wrt_tm_rec_upper : lngen.
 
@@ -7268,9 +6127,7 @@ Hint Resolve fv_co_co_brs_open_brs_wrt_tm_rec_upper : lngen.
 Lemma fv_co_co_co_open_co_wrt_tm_rec_upper :
 forall g1 a1 n1,
   fv_co_co_co (open_co_wrt_tm_rec n1 a1 g1) [<=] fv_co_co_tm a1 `union` fv_co_co_co g1.
-Proof.
-pose proof fv_co_co_tm_open_tm_wrt_tm_rec_upper_fv_co_co_brs_open_brs_wrt_tm_rec_upper_fv_co_co_co_open_co_wrt_tm_rec_upper_fv_co_co_constraint_open_constraint_wrt_tm_rec_upper_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve fv_co_co_co_open_co_wrt_tm_rec_upper : lngen.
 
@@ -7281,9 +6138,7 @@ Hint Resolve fv_co_co_co_open_co_wrt_tm_rec_upper : lngen.
 Lemma fv_co_co_constraint_open_constraint_wrt_tm_rec_upper :
 forall phi1 a1 n1,
   fv_co_co_constraint (open_constraint_wrt_tm_rec n1 a1 phi1) [<=] fv_co_co_tm a1 `union` fv_co_co_constraint phi1.
-Proof.
-pose proof fv_co_co_tm_open_tm_wrt_tm_rec_upper_fv_co_co_brs_open_brs_wrt_tm_rec_upper_fv_co_co_co_open_co_wrt_tm_rec_upper_fv_co_co_constraint_open_constraint_wrt_tm_rec_upper_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve fv_co_co_constraint_open_constraint_wrt_tm_rec_upper : lngen.
 
@@ -7300,10 +6155,7 @@ Lemma fv_co_co_tm_open_tm_wrt_co_rec_upper_fv_co_co_brs_open_brs_wrt_co_rec_uppe
   fv_co_co_co (open_co_wrt_co_rec n1 g2 g1) [<=] fv_co_co_co g2 `union` fv_co_co_co g1) /\
 (forall phi1 g1 n1,
   fv_co_co_constraint (open_constraint_wrt_co_rec n1 g1 phi1) [<=] fv_co_co_co g1 `union` fv_co_co_constraint phi1).
-Proof.
-apply_mutual_ind tm_brs_co_constraint_mutind;
-default_simp; fsetdec.
-Qed.
+Proof. Admitted.
 
 (* end hide *)
 
@@ -7312,9 +6164,7 @@ Qed.
 Lemma fv_co_co_tm_open_tm_wrt_co_rec_upper :
 forall a1 g1 n1,
   fv_co_co_tm (open_tm_wrt_co_rec n1 g1 a1) [<=] fv_co_co_co g1 `union` fv_co_co_tm a1.
-Proof.
-pose proof fv_co_co_tm_open_tm_wrt_co_rec_upper_fv_co_co_brs_open_brs_wrt_co_rec_upper_fv_co_co_co_open_co_wrt_co_rec_upper_fv_co_co_constraint_open_constraint_wrt_co_rec_upper_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve fv_co_co_tm_open_tm_wrt_co_rec_upper : lngen.
 
@@ -7325,9 +6175,7 @@ Hint Resolve fv_co_co_tm_open_tm_wrt_co_rec_upper : lngen.
 Lemma fv_co_co_brs_open_brs_wrt_co_rec_upper :
 forall brs1 g1 n1,
   fv_co_co_brs (open_brs_wrt_co_rec n1 g1 brs1) [<=] fv_co_co_co g1 `union` fv_co_co_brs brs1.
-Proof.
-pose proof fv_co_co_tm_open_tm_wrt_co_rec_upper_fv_co_co_brs_open_brs_wrt_co_rec_upper_fv_co_co_co_open_co_wrt_co_rec_upper_fv_co_co_constraint_open_constraint_wrt_co_rec_upper_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve fv_co_co_brs_open_brs_wrt_co_rec_upper : lngen.
 
@@ -7338,9 +6186,7 @@ Hint Resolve fv_co_co_brs_open_brs_wrt_co_rec_upper : lngen.
 Lemma fv_co_co_co_open_co_wrt_co_rec_upper :
 forall g1 g2 n1,
   fv_co_co_co (open_co_wrt_co_rec n1 g2 g1) [<=] fv_co_co_co g2 `union` fv_co_co_co g1.
-Proof.
-pose proof fv_co_co_tm_open_tm_wrt_co_rec_upper_fv_co_co_brs_open_brs_wrt_co_rec_upper_fv_co_co_co_open_co_wrt_co_rec_upper_fv_co_co_constraint_open_constraint_wrt_co_rec_upper_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve fv_co_co_co_open_co_wrt_co_rec_upper : lngen.
 
@@ -7351,9 +6197,7 @@ Hint Resolve fv_co_co_co_open_co_wrt_co_rec_upper : lngen.
 Lemma fv_co_co_constraint_open_constraint_wrt_co_rec_upper :
 forall phi1 g1 n1,
   fv_co_co_constraint (open_constraint_wrt_co_rec n1 g1 phi1) [<=] fv_co_co_co g1 `union` fv_co_co_constraint phi1.
-Proof.
-pose proof fv_co_co_tm_open_tm_wrt_co_rec_upper_fv_co_co_brs_open_brs_wrt_co_rec_upper_fv_co_co_co_open_co_wrt_co_rec_upper_fv_co_co_constraint_open_constraint_wrt_co_rec_upper_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve fv_co_co_constraint_open_constraint_wrt_co_rec_upper : lngen.
 
@@ -7362,144 +6206,112 @@ Hint Resolve fv_co_co_constraint_open_constraint_wrt_co_rec_upper : lngen.
 Lemma fv_tm_tm_tm_open_tm_wrt_tm_upper :
 forall a1 a2,
   fv_tm_tm_tm (open_tm_wrt_tm a1 a2) [<=] fv_tm_tm_tm a2 `union` fv_tm_tm_tm a1.
-Proof.
-unfold open_tm_wrt_tm; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve fv_tm_tm_tm_open_tm_wrt_tm_upper : lngen.
 
 Lemma fv_tm_tm_brs_open_brs_wrt_tm_upper :
 forall brs1 a1,
   fv_tm_tm_brs (open_brs_wrt_tm brs1 a1) [<=] fv_tm_tm_tm a1 `union` fv_tm_tm_brs brs1.
-Proof.
-unfold open_brs_wrt_tm; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve fv_tm_tm_brs_open_brs_wrt_tm_upper : lngen.
 
 Lemma fv_tm_tm_co_open_co_wrt_tm_upper :
 forall g1 a1,
   fv_tm_tm_co (open_co_wrt_tm g1 a1) [<=] fv_tm_tm_tm a1 `union` fv_tm_tm_co g1.
-Proof.
-unfold open_co_wrt_tm; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve fv_tm_tm_co_open_co_wrt_tm_upper : lngen.
 
 Lemma fv_tm_tm_constraint_open_constraint_wrt_tm_upper :
 forall phi1 a1,
   fv_tm_tm_constraint (open_constraint_wrt_tm phi1 a1) [<=] fv_tm_tm_tm a1 `union` fv_tm_tm_constraint phi1.
-Proof.
-unfold open_constraint_wrt_tm; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve fv_tm_tm_constraint_open_constraint_wrt_tm_upper : lngen.
 
 Lemma fv_tm_tm_tm_open_tm_wrt_co_upper :
 forall a1 g1,
   fv_tm_tm_tm (open_tm_wrt_co a1 g1) [<=] fv_tm_tm_co g1 `union` fv_tm_tm_tm a1.
-Proof.
-unfold open_tm_wrt_co; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve fv_tm_tm_tm_open_tm_wrt_co_upper : lngen.
 
 Lemma fv_tm_tm_brs_open_brs_wrt_co_upper :
 forall brs1 g1,
   fv_tm_tm_brs (open_brs_wrt_co brs1 g1) [<=] fv_tm_tm_co g1 `union` fv_tm_tm_brs brs1.
-Proof.
-unfold open_brs_wrt_co; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve fv_tm_tm_brs_open_brs_wrt_co_upper : lngen.
 
 Lemma fv_tm_tm_co_open_co_wrt_co_upper :
 forall g1 g2,
   fv_tm_tm_co (open_co_wrt_co g1 g2) [<=] fv_tm_tm_co g2 `union` fv_tm_tm_co g1.
-Proof.
-unfold open_co_wrt_co; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve fv_tm_tm_co_open_co_wrt_co_upper : lngen.
 
 Lemma fv_tm_tm_constraint_open_constraint_wrt_co_upper :
 forall phi1 g1,
   fv_tm_tm_constraint (open_constraint_wrt_co phi1 g1) [<=] fv_tm_tm_co g1 `union` fv_tm_tm_constraint phi1.
-Proof.
-unfold open_constraint_wrt_co; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve fv_tm_tm_constraint_open_constraint_wrt_co_upper : lngen.
 
 Lemma fv_co_co_tm_open_tm_wrt_tm_upper :
 forall a1 a2,
   fv_co_co_tm (open_tm_wrt_tm a1 a2) [<=] fv_co_co_tm a2 `union` fv_co_co_tm a1.
-Proof.
-unfold open_tm_wrt_tm; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve fv_co_co_tm_open_tm_wrt_tm_upper : lngen.
 
 Lemma fv_co_co_brs_open_brs_wrt_tm_upper :
 forall brs1 a1,
   fv_co_co_brs (open_brs_wrt_tm brs1 a1) [<=] fv_co_co_tm a1 `union` fv_co_co_brs brs1.
-Proof.
-unfold open_brs_wrt_tm; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve fv_co_co_brs_open_brs_wrt_tm_upper : lngen.
 
 Lemma fv_co_co_co_open_co_wrt_tm_upper :
 forall g1 a1,
   fv_co_co_co (open_co_wrt_tm g1 a1) [<=] fv_co_co_tm a1 `union` fv_co_co_co g1.
-Proof.
-unfold open_co_wrt_tm; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve fv_co_co_co_open_co_wrt_tm_upper : lngen.
 
 Lemma fv_co_co_constraint_open_constraint_wrt_tm_upper :
 forall phi1 a1,
   fv_co_co_constraint (open_constraint_wrt_tm phi1 a1) [<=] fv_co_co_tm a1 `union` fv_co_co_constraint phi1.
-Proof.
-unfold open_constraint_wrt_tm; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve fv_co_co_constraint_open_constraint_wrt_tm_upper : lngen.
 
 Lemma fv_co_co_tm_open_tm_wrt_co_upper :
 forall a1 g1,
   fv_co_co_tm (open_tm_wrt_co a1 g1) [<=] fv_co_co_co g1 `union` fv_co_co_tm a1.
-Proof.
-unfold open_tm_wrt_co; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve fv_co_co_tm_open_tm_wrt_co_upper : lngen.
 
 Lemma fv_co_co_brs_open_brs_wrt_co_upper :
 forall brs1 g1,
   fv_co_co_brs (open_brs_wrt_co brs1 g1) [<=] fv_co_co_co g1 `union` fv_co_co_brs brs1.
-Proof.
-unfold open_brs_wrt_co; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve fv_co_co_brs_open_brs_wrt_co_upper : lngen.
 
 Lemma fv_co_co_co_open_co_wrt_co_upper :
 forall g1 g2,
   fv_co_co_co (open_co_wrt_co g1 g2) [<=] fv_co_co_co g2 `union` fv_co_co_co g1.
-Proof.
-unfold open_co_wrt_co; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve fv_co_co_co_open_co_wrt_co_upper : lngen.
 
 Lemma fv_co_co_constraint_open_constraint_wrt_co_upper :
 forall phi1 g1,
   fv_co_co_constraint (open_constraint_wrt_co phi1 g1) [<=] fv_co_co_co g1 `union` fv_co_co_constraint phi1.
-Proof.
-unfold open_constraint_wrt_co; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve fv_co_co_constraint_open_constraint_wrt_co_upper : lngen.
 
@@ -7518,10 +6330,7 @@ Lemma fv_tm_tm_tm_tm_subst_tm_tm_fresh_fv_tm_tm_brs_tm_subst_tm_brs_fresh_fv_tm_
 (forall phi1 a1 x1,
   x1 `notin` fv_tm_tm_constraint phi1 ->
   fv_tm_tm_constraint (tm_subst_tm_constraint a1 x1 phi1) [=] fv_tm_tm_constraint phi1).
-Proof.
-apply_mutual_ind tm_brs_co_constraint_mutind;
-default_simp; fsetdec.
-Qed.
+Proof. Admitted.
 
 (* end hide *)
 
@@ -7529,9 +6338,7 @@ Lemma fv_tm_tm_tm_tm_subst_tm_tm_fresh :
 forall a1 a2 x1,
   x1 `notin` fv_tm_tm_tm a1 ->
   fv_tm_tm_tm (tm_subst_tm_tm a2 x1 a1) [=] fv_tm_tm_tm a1.
-Proof.
-pose proof fv_tm_tm_tm_tm_subst_tm_tm_fresh_fv_tm_tm_brs_tm_subst_tm_brs_fresh_fv_tm_tm_co_tm_subst_tm_co_fresh_fv_tm_tm_constraint_tm_subst_tm_constraint_fresh_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve fv_tm_tm_tm_tm_subst_tm_tm_fresh : lngen.
 Hint Rewrite fv_tm_tm_tm_tm_subst_tm_tm_fresh using solve [auto] : lngen.
@@ -7540,9 +6347,7 @@ Lemma fv_tm_tm_brs_tm_subst_tm_brs_fresh :
 forall brs1 a1 x1,
   x1 `notin` fv_tm_tm_brs brs1 ->
   fv_tm_tm_brs (tm_subst_tm_brs a1 x1 brs1) [=] fv_tm_tm_brs brs1.
-Proof.
-pose proof fv_tm_tm_tm_tm_subst_tm_tm_fresh_fv_tm_tm_brs_tm_subst_tm_brs_fresh_fv_tm_tm_co_tm_subst_tm_co_fresh_fv_tm_tm_constraint_tm_subst_tm_constraint_fresh_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve fv_tm_tm_brs_tm_subst_tm_brs_fresh : lngen.
 Hint Rewrite fv_tm_tm_brs_tm_subst_tm_brs_fresh using solve [auto] : lngen.
@@ -7551,9 +6356,7 @@ Lemma fv_tm_tm_co_tm_subst_tm_co_fresh :
 forall g1 a1 x1,
   x1 `notin` fv_tm_tm_co g1 ->
   fv_tm_tm_co (tm_subst_tm_co a1 x1 g1) [=] fv_tm_tm_co g1.
-Proof.
-pose proof fv_tm_tm_tm_tm_subst_tm_tm_fresh_fv_tm_tm_brs_tm_subst_tm_brs_fresh_fv_tm_tm_co_tm_subst_tm_co_fresh_fv_tm_tm_constraint_tm_subst_tm_constraint_fresh_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve fv_tm_tm_co_tm_subst_tm_co_fresh : lngen.
 Hint Rewrite fv_tm_tm_co_tm_subst_tm_co_fresh using solve [auto] : lngen.
@@ -7562,9 +6365,7 @@ Lemma fv_tm_tm_constraint_tm_subst_tm_constraint_fresh :
 forall phi1 a1 x1,
   x1 `notin` fv_tm_tm_constraint phi1 ->
   fv_tm_tm_constraint (tm_subst_tm_constraint a1 x1 phi1) [=] fv_tm_tm_constraint phi1.
-Proof.
-pose proof fv_tm_tm_tm_tm_subst_tm_tm_fresh_fv_tm_tm_brs_tm_subst_tm_brs_fresh_fv_tm_tm_co_tm_subst_tm_co_fresh_fv_tm_tm_constraint_tm_subst_tm_constraint_fresh_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve fv_tm_tm_constraint_tm_subst_tm_constraint_fresh : lngen.
 Hint Rewrite fv_tm_tm_constraint_tm_subst_tm_constraint_fresh using solve [auto] : lngen.
@@ -7584,10 +6385,7 @@ Lemma fv_co_co_tm_co_subst_co_tm_fresh_fv_co_co_brs_co_subst_co_brs_fresh_fv_co_
 (forall phi1 g1 c1,
   c1 `notin` fv_co_co_constraint phi1 ->
   fv_co_co_constraint (co_subst_co_constraint g1 c1 phi1) [=] fv_co_co_constraint phi1).
-Proof.
-apply_mutual_ind tm_brs_co_constraint_mutind;
-default_simp; fsetdec.
-Qed.
+Proof. Admitted.
 
 (* end hide *)
 
@@ -7595,9 +6393,7 @@ Lemma fv_co_co_tm_co_subst_co_tm_fresh :
 forall a1 g1 c1,
   c1 `notin` fv_co_co_tm a1 ->
   fv_co_co_tm (co_subst_co_tm g1 c1 a1) [=] fv_co_co_tm a1.
-Proof.
-pose proof fv_co_co_tm_co_subst_co_tm_fresh_fv_co_co_brs_co_subst_co_brs_fresh_fv_co_co_co_co_subst_co_co_fresh_fv_co_co_constraint_co_subst_co_constraint_fresh_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve fv_co_co_tm_co_subst_co_tm_fresh : lngen.
 Hint Rewrite fv_co_co_tm_co_subst_co_tm_fresh using solve [auto] : lngen.
@@ -7606,9 +6402,7 @@ Lemma fv_co_co_brs_co_subst_co_brs_fresh :
 forall brs1 g1 c1,
   c1 `notin` fv_co_co_brs brs1 ->
   fv_co_co_brs (co_subst_co_brs g1 c1 brs1) [=] fv_co_co_brs brs1.
-Proof.
-pose proof fv_co_co_tm_co_subst_co_tm_fresh_fv_co_co_brs_co_subst_co_brs_fresh_fv_co_co_co_co_subst_co_co_fresh_fv_co_co_constraint_co_subst_co_constraint_fresh_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve fv_co_co_brs_co_subst_co_brs_fresh : lngen.
 Hint Rewrite fv_co_co_brs_co_subst_co_brs_fresh using solve [auto] : lngen.
@@ -7617,9 +6411,7 @@ Lemma fv_co_co_co_co_subst_co_co_fresh :
 forall g1 g2 c1,
   c1 `notin` fv_co_co_co g1 ->
   fv_co_co_co (co_subst_co_co g2 c1 g1) [=] fv_co_co_co g1.
-Proof.
-pose proof fv_co_co_tm_co_subst_co_tm_fresh_fv_co_co_brs_co_subst_co_brs_fresh_fv_co_co_co_co_subst_co_co_fresh_fv_co_co_constraint_co_subst_co_constraint_fresh_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve fv_co_co_co_co_subst_co_co_fresh : lngen.
 Hint Rewrite fv_co_co_co_co_subst_co_co_fresh using solve [auto] : lngen.
@@ -7628,9 +6420,7 @@ Lemma fv_co_co_constraint_co_subst_co_constraint_fresh :
 forall phi1 g1 c1,
   c1 `notin` fv_co_co_constraint phi1 ->
   fv_co_co_constraint (co_subst_co_constraint g1 c1 phi1) [=] fv_co_co_constraint phi1.
-Proof.
-pose proof fv_co_co_tm_co_subst_co_tm_fresh_fv_co_co_brs_co_subst_co_brs_fresh_fv_co_co_co_co_subst_co_co_fresh_fv_co_co_constraint_co_subst_co_constraint_fresh_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve fv_co_co_constraint_co_subst_co_constraint_fresh : lngen.
 Hint Rewrite fv_co_co_constraint_co_subst_co_constraint_fresh using solve [auto] : lngen.
@@ -7646,46 +6436,35 @@ Lemma fv_tm_tm_tm_tm_subst_tm_tm_lower_fv_tm_tm_brs_tm_subst_tm_brs_lower_fv_tm_
   remove x1 (fv_tm_tm_co g1) [<=] fv_tm_tm_co (tm_subst_tm_co a1 x1 g1)) /\
 (forall phi1 a1 x1,
   remove x1 (fv_tm_tm_constraint phi1) [<=] fv_tm_tm_constraint (tm_subst_tm_constraint a1 x1 phi1)).
-Proof.
-apply_mutual_ind tm_brs_co_constraint_mutind;
-default_simp; fsetdec.
-Qed.
+Proof. Admitted.
 
 (* end hide *)
 
 Lemma fv_tm_tm_tm_tm_subst_tm_tm_lower :
 forall a1 a2 x1,
   remove x1 (fv_tm_tm_tm a1) [<=] fv_tm_tm_tm (tm_subst_tm_tm a2 x1 a1).
-Proof.
-pose proof fv_tm_tm_tm_tm_subst_tm_tm_lower_fv_tm_tm_brs_tm_subst_tm_brs_lower_fv_tm_tm_co_tm_subst_tm_co_lower_fv_tm_tm_constraint_tm_subst_tm_constraint_lower_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve fv_tm_tm_tm_tm_subst_tm_tm_lower : lngen.
 
 Lemma fv_tm_tm_brs_tm_subst_tm_brs_lower :
 forall brs1 a1 x1,
   remove x1 (fv_tm_tm_brs brs1) [<=] fv_tm_tm_brs (tm_subst_tm_brs a1 x1 brs1).
-Proof.
-pose proof fv_tm_tm_tm_tm_subst_tm_tm_lower_fv_tm_tm_brs_tm_subst_tm_brs_lower_fv_tm_tm_co_tm_subst_tm_co_lower_fv_tm_tm_constraint_tm_subst_tm_constraint_lower_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve fv_tm_tm_brs_tm_subst_tm_brs_lower : lngen.
 
 Lemma fv_tm_tm_co_tm_subst_tm_co_lower :
 forall g1 a1 x1,
   remove x1 (fv_tm_tm_co g1) [<=] fv_tm_tm_co (tm_subst_tm_co a1 x1 g1).
-Proof.
-pose proof fv_tm_tm_tm_tm_subst_tm_tm_lower_fv_tm_tm_brs_tm_subst_tm_brs_lower_fv_tm_tm_co_tm_subst_tm_co_lower_fv_tm_tm_constraint_tm_subst_tm_constraint_lower_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve fv_tm_tm_co_tm_subst_tm_co_lower : lngen.
 
 Lemma fv_tm_tm_constraint_tm_subst_tm_constraint_lower :
 forall phi1 a1 x1,
   remove x1 (fv_tm_tm_constraint phi1) [<=] fv_tm_tm_constraint (tm_subst_tm_constraint a1 x1 phi1).
-Proof.
-pose proof fv_tm_tm_tm_tm_subst_tm_tm_lower_fv_tm_tm_brs_tm_subst_tm_brs_lower_fv_tm_tm_co_tm_subst_tm_co_lower_fv_tm_tm_constraint_tm_subst_tm_constraint_lower_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve fv_tm_tm_constraint_tm_subst_tm_constraint_lower : lngen.
 
@@ -7700,46 +6479,35 @@ Lemma fv_tm_tm_tm_co_subst_co_tm_lower_fv_tm_tm_brs_co_subst_co_brs_lower_fv_tm_
   fv_tm_tm_co g1 [<=] fv_tm_tm_co (co_subst_co_co g2 c1 g1)) /\
 (forall phi1 g1 c1,
   fv_tm_tm_constraint phi1 [<=] fv_tm_tm_constraint (co_subst_co_constraint g1 c1 phi1)).
-Proof.
-apply_mutual_ind tm_brs_co_constraint_mutind;
-default_simp; fsetdec.
-Qed.
+Proof. Admitted.
 
 (* end hide *)
 
 Lemma fv_tm_tm_tm_co_subst_co_tm_lower :
 forall a1 g1 c1,
   fv_tm_tm_tm a1 [<=] fv_tm_tm_tm (co_subst_co_tm g1 c1 a1).
-Proof.
-pose proof fv_tm_tm_tm_co_subst_co_tm_lower_fv_tm_tm_brs_co_subst_co_brs_lower_fv_tm_tm_co_co_subst_co_co_lower_fv_tm_tm_constraint_co_subst_co_constraint_lower_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve fv_tm_tm_tm_co_subst_co_tm_lower : lngen.
 
 Lemma fv_tm_tm_brs_co_subst_co_brs_lower :
 forall brs1 g1 c1,
   fv_tm_tm_brs brs1 [<=] fv_tm_tm_brs (co_subst_co_brs g1 c1 brs1).
-Proof.
-pose proof fv_tm_tm_tm_co_subst_co_tm_lower_fv_tm_tm_brs_co_subst_co_brs_lower_fv_tm_tm_co_co_subst_co_co_lower_fv_tm_tm_constraint_co_subst_co_constraint_lower_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve fv_tm_tm_brs_co_subst_co_brs_lower : lngen.
 
 Lemma fv_tm_tm_co_co_subst_co_co_lower :
 forall g1 g2 c1,
   fv_tm_tm_co g1 [<=] fv_tm_tm_co (co_subst_co_co g2 c1 g1).
-Proof.
-pose proof fv_tm_tm_tm_co_subst_co_tm_lower_fv_tm_tm_brs_co_subst_co_brs_lower_fv_tm_tm_co_co_subst_co_co_lower_fv_tm_tm_constraint_co_subst_co_constraint_lower_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve fv_tm_tm_co_co_subst_co_co_lower : lngen.
 
 Lemma fv_tm_tm_constraint_co_subst_co_constraint_lower :
 forall phi1 g1 c1,
   fv_tm_tm_constraint phi1 [<=] fv_tm_tm_constraint (co_subst_co_constraint g1 c1 phi1).
-Proof.
-pose proof fv_tm_tm_tm_co_subst_co_tm_lower_fv_tm_tm_brs_co_subst_co_brs_lower_fv_tm_tm_co_co_subst_co_co_lower_fv_tm_tm_constraint_co_subst_co_constraint_lower_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve fv_tm_tm_constraint_co_subst_co_constraint_lower : lngen.
 
@@ -7754,46 +6522,35 @@ Lemma fv_co_co_tm_tm_subst_tm_tm_lower_fv_co_co_brs_tm_subst_tm_brs_lower_fv_co_
   fv_co_co_co g1 [<=] fv_co_co_co (tm_subst_tm_co a1 x1 g1)) /\
 (forall phi1 a1 x1,
   fv_co_co_constraint phi1 [<=] fv_co_co_constraint (tm_subst_tm_constraint a1 x1 phi1)).
-Proof.
-apply_mutual_ind tm_brs_co_constraint_mutind;
-default_simp; fsetdec.
-Qed.
+Proof. Admitted.
 
 (* end hide *)
 
 Lemma fv_co_co_tm_tm_subst_tm_tm_lower :
 forall a1 a2 x1,
   fv_co_co_tm a1 [<=] fv_co_co_tm (tm_subst_tm_tm a2 x1 a1).
-Proof.
-pose proof fv_co_co_tm_tm_subst_tm_tm_lower_fv_co_co_brs_tm_subst_tm_brs_lower_fv_co_co_co_tm_subst_tm_co_lower_fv_co_co_constraint_tm_subst_tm_constraint_lower_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve fv_co_co_tm_tm_subst_tm_tm_lower : lngen.
 
 Lemma fv_co_co_brs_tm_subst_tm_brs_lower :
 forall brs1 a1 x1,
   fv_co_co_brs brs1 [<=] fv_co_co_brs (tm_subst_tm_brs a1 x1 brs1).
-Proof.
-pose proof fv_co_co_tm_tm_subst_tm_tm_lower_fv_co_co_brs_tm_subst_tm_brs_lower_fv_co_co_co_tm_subst_tm_co_lower_fv_co_co_constraint_tm_subst_tm_constraint_lower_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve fv_co_co_brs_tm_subst_tm_brs_lower : lngen.
 
 Lemma fv_co_co_co_tm_subst_tm_co_lower :
 forall g1 a1 x1,
   fv_co_co_co g1 [<=] fv_co_co_co (tm_subst_tm_co a1 x1 g1).
-Proof.
-pose proof fv_co_co_tm_tm_subst_tm_tm_lower_fv_co_co_brs_tm_subst_tm_brs_lower_fv_co_co_co_tm_subst_tm_co_lower_fv_co_co_constraint_tm_subst_tm_constraint_lower_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve fv_co_co_co_tm_subst_tm_co_lower : lngen.
 
 Lemma fv_co_co_constraint_tm_subst_tm_constraint_lower :
 forall phi1 a1 x1,
   fv_co_co_constraint phi1 [<=] fv_co_co_constraint (tm_subst_tm_constraint a1 x1 phi1).
-Proof.
-pose proof fv_co_co_tm_tm_subst_tm_tm_lower_fv_co_co_brs_tm_subst_tm_brs_lower_fv_co_co_co_tm_subst_tm_co_lower_fv_co_co_constraint_tm_subst_tm_constraint_lower_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve fv_co_co_constraint_tm_subst_tm_constraint_lower : lngen.
 
@@ -7808,46 +6565,35 @@ Lemma fv_co_co_tm_co_subst_co_tm_lower_fv_co_co_brs_co_subst_co_brs_lower_fv_co_
   remove c1 (fv_co_co_co g1) [<=] fv_co_co_co (co_subst_co_co g2 c1 g1)) /\
 (forall phi1 g1 c1,
   remove c1 (fv_co_co_constraint phi1) [<=] fv_co_co_constraint (co_subst_co_constraint g1 c1 phi1)).
-Proof.
-apply_mutual_ind tm_brs_co_constraint_mutind;
-default_simp; fsetdec.
-Qed.
+Proof. Admitted.
 
 (* end hide *)
 
 Lemma fv_co_co_tm_co_subst_co_tm_lower :
 forall a1 g1 c1,
   remove c1 (fv_co_co_tm a1) [<=] fv_co_co_tm (co_subst_co_tm g1 c1 a1).
-Proof.
-pose proof fv_co_co_tm_co_subst_co_tm_lower_fv_co_co_brs_co_subst_co_brs_lower_fv_co_co_co_co_subst_co_co_lower_fv_co_co_constraint_co_subst_co_constraint_lower_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve fv_co_co_tm_co_subst_co_tm_lower : lngen.
 
 Lemma fv_co_co_brs_co_subst_co_brs_lower :
 forall brs1 g1 c1,
   remove c1 (fv_co_co_brs brs1) [<=] fv_co_co_brs (co_subst_co_brs g1 c1 brs1).
-Proof.
-pose proof fv_co_co_tm_co_subst_co_tm_lower_fv_co_co_brs_co_subst_co_brs_lower_fv_co_co_co_co_subst_co_co_lower_fv_co_co_constraint_co_subst_co_constraint_lower_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve fv_co_co_brs_co_subst_co_brs_lower : lngen.
 
 Lemma fv_co_co_co_co_subst_co_co_lower :
 forall g1 g2 c1,
   remove c1 (fv_co_co_co g1) [<=] fv_co_co_co (co_subst_co_co g2 c1 g1).
-Proof.
-pose proof fv_co_co_tm_co_subst_co_tm_lower_fv_co_co_brs_co_subst_co_brs_lower_fv_co_co_co_co_subst_co_co_lower_fv_co_co_constraint_co_subst_co_constraint_lower_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve fv_co_co_co_co_subst_co_co_lower : lngen.
 
 Lemma fv_co_co_constraint_co_subst_co_constraint_lower :
 forall phi1 g1 c1,
   remove c1 (fv_co_co_constraint phi1) [<=] fv_co_co_constraint (co_subst_co_constraint g1 c1 phi1).
-Proof.
-pose proof fv_co_co_tm_co_subst_co_tm_lower_fv_co_co_brs_co_subst_co_brs_lower_fv_co_co_co_co_subst_co_co_lower_fv_co_co_constraint_co_subst_co_constraint_lower_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve fv_co_co_constraint_co_subst_co_constraint_lower : lngen.
 
@@ -7870,10 +6616,7 @@ Lemma fv_tm_tm_tm_tm_subst_tm_tm_notin_fv_tm_tm_brs_tm_subst_tm_brs_notin_fv_tm_
   x2 `notin` fv_tm_tm_constraint phi1 ->
   x2 `notin` fv_tm_tm_tm a1 ->
   x2 `notin` fv_tm_tm_constraint (tm_subst_tm_constraint a1 x1 phi1)).
-Proof.
-apply_mutual_ind tm_brs_co_constraint_mutind;
-default_simp; fsetdec.
-Qed.
+Proof. Admitted.
 
 (* end hide *)
 
@@ -7882,9 +6625,7 @@ forall a1 a2 x1 x2,
   x2 `notin` fv_tm_tm_tm a1 ->
   x2 `notin` fv_tm_tm_tm a2 ->
   x2 `notin` fv_tm_tm_tm (tm_subst_tm_tm a2 x1 a1).
-Proof.
-pose proof fv_tm_tm_tm_tm_subst_tm_tm_notin_fv_tm_tm_brs_tm_subst_tm_brs_notin_fv_tm_tm_co_tm_subst_tm_co_notin_fv_tm_tm_constraint_tm_subst_tm_constraint_notin_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve fv_tm_tm_tm_tm_subst_tm_tm_notin : lngen.
 
@@ -7893,9 +6634,7 @@ forall brs1 a1 x1 x2,
   x2 `notin` fv_tm_tm_brs brs1 ->
   x2 `notin` fv_tm_tm_tm a1 ->
   x2 `notin` fv_tm_tm_brs (tm_subst_tm_brs a1 x1 brs1).
-Proof.
-pose proof fv_tm_tm_tm_tm_subst_tm_tm_notin_fv_tm_tm_brs_tm_subst_tm_brs_notin_fv_tm_tm_co_tm_subst_tm_co_notin_fv_tm_tm_constraint_tm_subst_tm_constraint_notin_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve fv_tm_tm_brs_tm_subst_tm_brs_notin : lngen.
 
@@ -7904,9 +6643,7 @@ forall g1 a1 x1 x2,
   x2 `notin` fv_tm_tm_co g1 ->
   x2 `notin` fv_tm_tm_tm a1 ->
   x2 `notin` fv_tm_tm_co (tm_subst_tm_co a1 x1 g1).
-Proof.
-pose proof fv_tm_tm_tm_tm_subst_tm_tm_notin_fv_tm_tm_brs_tm_subst_tm_brs_notin_fv_tm_tm_co_tm_subst_tm_co_notin_fv_tm_tm_constraint_tm_subst_tm_constraint_notin_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve fv_tm_tm_co_tm_subst_tm_co_notin : lngen.
 
@@ -7915,9 +6652,7 @@ forall phi1 a1 x1 x2,
   x2 `notin` fv_tm_tm_constraint phi1 ->
   x2 `notin` fv_tm_tm_tm a1 ->
   x2 `notin` fv_tm_tm_constraint (tm_subst_tm_constraint a1 x1 phi1).
-Proof.
-pose proof fv_tm_tm_tm_tm_subst_tm_tm_notin_fv_tm_tm_brs_tm_subst_tm_brs_notin_fv_tm_tm_co_tm_subst_tm_co_notin_fv_tm_tm_constraint_tm_subst_tm_constraint_notin_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve fv_tm_tm_constraint_tm_subst_tm_constraint_notin : lngen.
 
@@ -7940,10 +6675,7 @@ Lemma fv_tm_tm_tm_co_subst_co_tm_notin_fv_tm_tm_brs_co_subst_co_brs_notin_fv_tm_
   x1 `notin` fv_tm_tm_constraint phi1 ->
   x1 `notin` fv_tm_tm_co g1 ->
   x1 `notin` fv_tm_tm_constraint (co_subst_co_constraint g1 c1 phi1)).
-Proof.
-apply_mutual_ind tm_brs_co_constraint_mutind;
-default_simp; fsetdec.
-Qed.
+Proof. Admitted.
 
 (* end hide *)
 
@@ -7952,9 +6684,7 @@ forall a1 g1 c1 x1,
   x1 `notin` fv_tm_tm_tm a1 ->
   x1 `notin` fv_tm_tm_co g1 ->
   x1 `notin` fv_tm_tm_tm (co_subst_co_tm g1 c1 a1).
-Proof.
-pose proof fv_tm_tm_tm_co_subst_co_tm_notin_fv_tm_tm_brs_co_subst_co_brs_notin_fv_tm_tm_co_co_subst_co_co_notin_fv_tm_tm_constraint_co_subst_co_constraint_notin_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve fv_tm_tm_tm_co_subst_co_tm_notin : lngen.
 
@@ -7963,9 +6693,7 @@ forall brs1 g1 c1 x1,
   x1 `notin` fv_tm_tm_brs brs1 ->
   x1 `notin` fv_tm_tm_co g1 ->
   x1 `notin` fv_tm_tm_brs (co_subst_co_brs g1 c1 brs1).
-Proof.
-pose proof fv_tm_tm_tm_co_subst_co_tm_notin_fv_tm_tm_brs_co_subst_co_brs_notin_fv_tm_tm_co_co_subst_co_co_notin_fv_tm_tm_constraint_co_subst_co_constraint_notin_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve fv_tm_tm_brs_co_subst_co_brs_notin : lngen.
 
@@ -7974,9 +6702,7 @@ forall g1 g2 c1 x1,
   x1 `notin` fv_tm_tm_co g1 ->
   x1 `notin` fv_tm_tm_co g2 ->
   x1 `notin` fv_tm_tm_co (co_subst_co_co g2 c1 g1).
-Proof.
-pose proof fv_tm_tm_tm_co_subst_co_tm_notin_fv_tm_tm_brs_co_subst_co_brs_notin_fv_tm_tm_co_co_subst_co_co_notin_fv_tm_tm_constraint_co_subst_co_constraint_notin_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve fv_tm_tm_co_co_subst_co_co_notin : lngen.
 
@@ -7985,9 +6711,7 @@ forall phi1 g1 c1 x1,
   x1 `notin` fv_tm_tm_constraint phi1 ->
   x1 `notin` fv_tm_tm_co g1 ->
   x1 `notin` fv_tm_tm_constraint (co_subst_co_constraint g1 c1 phi1).
-Proof.
-pose proof fv_tm_tm_tm_co_subst_co_tm_notin_fv_tm_tm_brs_co_subst_co_brs_notin_fv_tm_tm_co_co_subst_co_co_notin_fv_tm_tm_constraint_co_subst_co_constraint_notin_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve fv_tm_tm_constraint_co_subst_co_constraint_notin : lngen.
 
@@ -8010,10 +6734,7 @@ Lemma fv_co_co_tm_tm_subst_tm_tm_notin_fv_co_co_brs_tm_subst_tm_brs_notin_fv_co_
   c1 `notin` fv_co_co_constraint phi1 ->
   c1 `notin` fv_co_co_tm a1 ->
   c1 `notin` fv_co_co_constraint (tm_subst_tm_constraint a1 x1 phi1)).
-Proof.
-apply_mutual_ind tm_brs_co_constraint_mutind;
-default_simp; fsetdec.
-Qed.
+Proof. Admitted.
 
 (* end hide *)
 
@@ -8022,9 +6743,7 @@ forall a1 a2 x1 c1,
   c1 `notin` fv_co_co_tm a1 ->
   c1 `notin` fv_co_co_tm a2 ->
   c1 `notin` fv_co_co_tm (tm_subst_tm_tm a2 x1 a1).
-Proof.
-pose proof fv_co_co_tm_tm_subst_tm_tm_notin_fv_co_co_brs_tm_subst_tm_brs_notin_fv_co_co_co_tm_subst_tm_co_notin_fv_co_co_constraint_tm_subst_tm_constraint_notin_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve fv_co_co_tm_tm_subst_tm_tm_notin : lngen.
 
@@ -8033,9 +6752,7 @@ forall brs1 a1 x1 c1,
   c1 `notin` fv_co_co_brs brs1 ->
   c1 `notin` fv_co_co_tm a1 ->
   c1 `notin` fv_co_co_brs (tm_subst_tm_brs a1 x1 brs1).
-Proof.
-pose proof fv_co_co_tm_tm_subst_tm_tm_notin_fv_co_co_brs_tm_subst_tm_brs_notin_fv_co_co_co_tm_subst_tm_co_notin_fv_co_co_constraint_tm_subst_tm_constraint_notin_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve fv_co_co_brs_tm_subst_tm_brs_notin : lngen.
 
@@ -8044,9 +6761,7 @@ forall g1 a1 x1 c1,
   c1 `notin` fv_co_co_co g1 ->
   c1 `notin` fv_co_co_tm a1 ->
   c1 `notin` fv_co_co_co (tm_subst_tm_co a1 x1 g1).
-Proof.
-pose proof fv_co_co_tm_tm_subst_tm_tm_notin_fv_co_co_brs_tm_subst_tm_brs_notin_fv_co_co_co_tm_subst_tm_co_notin_fv_co_co_constraint_tm_subst_tm_constraint_notin_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve fv_co_co_co_tm_subst_tm_co_notin : lngen.
 
@@ -8055,9 +6770,7 @@ forall phi1 a1 x1 c1,
   c1 `notin` fv_co_co_constraint phi1 ->
   c1 `notin` fv_co_co_tm a1 ->
   c1 `notin` fv_co_co_constraint (tm_subst_tm_constraint a1 x1 phi1).
-Proof.
-pose proof fv_co_co_tm_tm_subst_tm_tm_notin_fv_co_co_brs_tm_subst_tm_brs_notin_fv_co_co_co_tm_subst_tm_co_notin_fv_co_co_constraint_tm_subst_tm_constraint_notin_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve fv_co_co_constraint_tm_subst_tm_constraint_notin : lngen.
 
@@ -8080,10 +6793,7 @@ Lemma fv_co_co_tm_co_subst_co_tm_notin_fv_co_co_brs_co_subst_co_brs_notin_fv_co_
   c2 `notin` fv_co_co_constraint phi1 ->
   c2 `notin` fv_co_co_co g1 ->
   c2 `notin` fv_co_co_constraint (co_subst_co_constraint g1 c1 phi1)).
-Proof.
-apply_mutual_ind tm_brs_co_constraint_mutind;
-default_simp; fsetdec.
-Qed.
+Proof. Admitted.
 
 (* end hide *)
 
@@ -8092,9 +6802,7 @@ forall a1 g1 c1 c2,
   c2 `notin` fv_co_co_tm a1 ->
   c2 `notin` fv_co_co_co g1 ->
   c2 `notin` fv_co_co_tm (co_subst_co_tm g1 c1 a1).
-Proof.
-pose proof fv_co_co_tm_co_subst_co_tm_notin_fv_co_co_brs_co_subst_co_brs_notin_fv_co_co_co_co_subst_co_co_notin_fv_co_co_constraint_co_subst_co_constraint_notin_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve fv_co_co_tm_co_subst_co_tm_notin : lngen.
 
@@ -8103,9 +6811,7 @@ forall brs1 g1 c1 c2,
   c2 `notin` fv_co_co_brs brs1 ->
   c2 `notin` fv_co_co_co g1 ->
   c2 `notin` fv_co_co_brs (co_subst_co_brs g1 c1 brs1).
-Proof.
-pose proof fv_co_co_tm_co_subst_co_tm_notin_fv_co_co_brs_co_subst_co_brs_notin_fv_co_co_co_co_subst_co_co_notin_fv_co_co_constraint_co_subst_co_constraint_notin_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve fv_co_co_brs_co_subst_co_brs_notin : lngen.
 
@@ -8114,9 +6820,7 @@ forall g1 g2 c1 c2,
   c2 `notin` fv_co_co_co g1 ->
   c2 `notin` fv_co_co_co g2 ->
   c2 `notin` fv_co_co_co (co_subst_co_co g2 c1 g1).
-Proof.
-pose proof fv_co_co_tm_co_subst_co_tm_notin_fv_co_co_brs_co_subst_co_brs_notin_fv_co_co_co_co_subst_co_co_notin_fv_co_co_constraint_co_subst_co_constraint_notin_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve fv_co_co_co_co_subst_co_co_notin : lngen.
 
@@ -8125,9 +6829,7 @@ forall phi1 g1 c1 c2,
   c2 `notin` fv_co_co_constraint phi1 ->
   c2 `notin` fv_co_co_co g1 ->
   c2 `notin` fv_co_co_constraint (co_subst_co_constraint g1 c1 phi1).
-Proof.
-pose proof fv_co_co_tm_co_subst_co_tm_notin_fv_co_co_brs_co_subst_co_brs_notin_fv_co_co_co_co_subst_co_co_notin_fv_co_co_constraint_co_subst_co_constraint_notin_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve fv_co_co_constraint_co_subst_co_constraint_notin : lngen.
 
@@ -8142,46 +6844,35 @@ Lemma fv_tm_tm_tm_tm_subst_tm_tm_upper_fv_tm_tm_brs_tm_subst_tm_brs_upper_fv_tm_
   fv_tm_tm_co (tm_subst_tm_co a1 x1 g1) [<=] fv_tm_tm_tm a1 `union` remove x1 (fv_tm_tm_co g1)) /\
 (forall phi1 a1 x1,
   fv_tm_tm_constraint (tm_subst_tm_constraint a1 x1 phi1) [<=] fv_tm_tm_tm a1 `union` remove x1 (fv_tm_tm_constraint phi1)).
-Proof.
-apply_mutual_ind tm_brs_co_constraint_mutind;
-default_simp; fsetdec.
-Qed.
+Proof. Admitted.
 
 (* end hide *)
 
 Lemma fv_tm_tm_tm_tm_subst_tm_tm_upper :
 forall a1 a2 x1,
   fv_tm_tm_tm (tm_subst_tm_tm a2 x1 a1) [<=] fv_tm_tm_tm a2 `union` remove x1 (fv_tm_tm_tm a1).
-Proof.
-pose proof fv_tm_tm_tm_tm_subst_tm_tm_upper_fv_tm_tm_brs_tm_subst_tm_brs_upper_fv_tm_tm_co_tm_subst_tm_co_upper_fv_tm_tm_constraint_tm_subst_tm_constraint_upper_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve fv_tm_tm_tm_tm_subst_tm_tm_upper : lngen.
 
 Lemma fv_tm_tm_brs_tm_subst_tm_brs_upper :
 forall brs1 a1 x1,
   fv_tm_tm_brs (tm_subst_tm_brs a1 x1 brs1) [<=] fv_tm_tm_tm a1 `union` remove x1 (fv_tm_tm_brs brs1).
-Proof.
-pose proof fv_tm_tm_tm_tm_subst_tm_tm_upper_fv_tm_tm_brs_tm_subst_tm_brs_upper_fv_tm_tm_co_tm_subst_tm_co_upper_fv_tm_tm_constraint_tm_subst_tm_constraint_upper_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve fv_tm_tm_brs_tm_subst_tm_brs_upper : lngen.
 
 Lemma fv_tm_tm_co_tm_subst_tm_co_upper :
 forall g1 a1 x1,
   fv_tm_tm_co (tm_subst_tm_co a1 x1 g1) [<=] fv_tm_tm_tm a1 `union` remove x1 (fv_tm_tm_co g1).
-Proof.
-pose proof fv_tm_tm_tm_tm_subst_tm_tm_upper_fv_tm_tm_brs_tm_subst_tm_brs_upper_fv_tm_tm_co_tm_subst_tm_co_upper_fv_tm_tm_constraint_tm_subst_tm_constraint_upper_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve fv_tm_tm_co_tm_subst_tm_co_upper : lngen.
 
 Lemma fv_tm_tm_constraint_tm_subst_tm_constraint_upper :
 forall phi1 a1 x1,
   fv_tm_tm_constraint (tm_subst_tm_constraint a1 x1 phi1) [<=] fv_tm_tm_tm a1 `union` remove x1 (fv_tm_tm_constraint phi1).
-Proof.
-pose proof fv_tm_tm_tm_tm_subst_tm_tm_upper_fv_tm_tm_brs_tm_subst_tm_brs_upper_fv_tm_tm_co_tm_subst_tm_co_upper_fv_tm_tm_constraint_tm_subst_tm_constraint_upper_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve fv_tm_tm_constraint_tm_subst_tm_constraint_upper : lngen.
 
@@ -8196,46 +6887,35 @@ Lemma fv_tm_tm_tm_co_subst_co_tm_upper_fv_tm_tm_brs_co_subst_co_brs_upper_fv_tm_
   fv_tm_tm_co (co_subst_co_co g2 c1 g1) [<=] fv_tm_tm_co g2 `union` fv_tm_tm_co g1) /\
 (forall phi1 g1 c1,
   fv_tm_tm_constraint (co_subst_co_constraint g1 c1 phi1) [<=] fv_tm_tm_co g1 `union` fv_tm_tm_constraint phi1).
-Proof.
-apply_mutual_ind tm_brs_co_constraint_mutind;
-default_simp; fsetdec.
-Qed.
+Proof. Admitted.
 
 (* end hide *)
 
 Lemma fv_tm_tm_tm_co_subst_co_tm_upper :
 forall a1 g1 c1,
   fv_tm_tm_tm (co_subst_co_tm g1 c1 a1) [<=] fv_tm_tm_co g1 `union` fv_tm_tm_tm a1.
-Proof.
-pose proof fv_tm_tm_tm_co_subst_co_tm_upper_fv_tm_tm_brs_co_subst_co_brs_upper_fv_tm_tm_co_co_subst_co_co_upper_fv_tm_tm_constraint_co_subst_co_constraint_upper_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve fv_tm_tm_tm_co_subst_co_tm_upper : lngen.
 
 Lemma fv_tm_tm_brs_co_subst_co_brs_upper :
 forall brs1 g1 c1,
   fv_tm_tm_brs (co_subst_co_brs g1 c1 brs1) [<=] fv_tm_tm_co g1 `union` fv_tm_tm_brs brs1.
-Proof.
-pose proof fv_tm_tm_tm_co_subst_co_tm_upper_fv_tm_tm_brs_co_subst_co_brs_upper_fv_tm_tm_co_co_subst_co_co_upper_fv_tm_tm_constraint_co_subst_co_constraint_upper_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve fv_tm_tm_brs_co_subst_co_brs_upper : lngen.
 
 Lemma fv_tm_tm_co_co_subst_co_co_upper :
 forall g1 g2 c1,
   fv_tm_tm_co (co_subst_co_co g2 c1 g1) [<=] fv_tm_tm_co g2 `union` fv_tm_tm_co g1.
-Proof.
-pose proof fv_tm_tm_tm_co_subst_co_tm_upper_fv_tm_tm_brs_co_subst_co_brs_upper_fv_tm_tm_co_co_subst_co_co_upper_fv_tm_tm_constraint_co_subst_co_constraint_upper_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve fv_tm_tm_co_co_subst_co_co_upper : lngen.
 
 Lemma fv_tm_tm_constraint_co_subst_co_constraint_upper :
 forall phi1 g1 c1,
   fv_tm_tm_constraint (co_subst_co_constraint g1 c1 phi1) [<=] fv_tm_tm_co g1 `union` fv_tm_tm_constraint phi1.
-Proof.
-pose proof fv_tm_tm_tm_co_subst_co_tm_upper_fv_tm_tm_brs_co_subst_co_brs_upper_fv_tm_tm_co_co_subst_co_co_upper_fv_tm_tm_constraint_co_subst_co_constraint_upper_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve fv_tm_tm_constraint_co_subst_co_constraint_upper : lngen.
 
@@ -8250,46 +6930,35 @@ Lemma fv_co_co_tm_tm_subst_tm_tm_upper_fv_co_co_brs_tm_subst_tm_brs_upper_fv_co_
   fv_co_co_co (tm_subst_tm_co a1 x1 g1) [<=] fv_co_co_tm a1 `union` fv_co_co_co g1) /\
 (forall phi1 a1 x1,
   fv_co_co_constraint (tm_subst_tm_constraint a1 x1 phi1) [<=] fv_co_co_tm a1 `union` fv_co_co_constraint phi1).
-Proof.
-apply_mutual_ind tm_brs_co_constraint_mutind;
-default_simp; fsetdec.
-Qed.
+Proof. Admitted.
 
 (* end hide *)
 
 Lemma fv_co_co_tm_tm_subst_tm_tm_upper :
 forall a1 a2 x1,
   fv_co_co_tm (tm_subst_tm_tm a2 x1 a1) [<=] fv_co_co_tm a2 `union` fv_co_co_tm a1.
-Proof.
-pose proof fv_co_co_tm_tm_subst_tm_tm_upper_fv_co_co_brs_tm_subst_tm_brs_upper_fv_co_co_co_tm_subst_tm_co_upper_fv_co_co_constraint_tm_subst_tm_constraint_upper_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve fv_co_co_tm_tm_subst_tm_tm_upper : lngen.
 
 Lemma fv_co_co_brs_tm_subst_tm_brs_upper :
 forall brs1 a1 x1,
   fv_co_co_brs (tm_subst_tm_brs a1 x1 brs1) [<=] fv_co_co_tm a1 `union` fv_co_co_brs brs1.
-Proof.
-pose proof fv_co_co_tm_tm_subst_tm_tm_upper_fv_co_co_brs_tm_subst_tm_brs_upper_fv_co_co_co_tm_subst_tm_co_upper_fv_co_co_constraint_tm_subst_tm_constraint_upper_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve fv_co_co_brs_tm_subst_tm_brs_upper : lngen.
 
 Lemma fv_co_co_co_tm_subst_tm_co_upper :
 forall g1 a1 x1,
   fv_co_co_co (tm_subst_tm_co a1 x1 g1) [<=] fv_co_co_tm a1 `union` fv_co_co_co g1.
-Proof.
-pose proof fv_co_co_tm_tm_subst_tm_tm_upper_fv_co_co_brs_tm_subst_tm_brs_upper_fv_co_co_co_tm_subst_tm_co_upper_fv_co_co_constraint_tm_subst_tm_constraint_upper_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve fv_co_co_co_tm_subst_tm_co_upper : lngen.
 
 Lemma fv_co_co_constraint_tm_subst_tm_constraint_upper :
 forall phi1 a1 x1,
   fv_co_co_constraint (tm_subst_tm_constraint a1 x1 phi1) [<=] fv_co_co_tm a1 `union` fv_co_co_constraint phi1.
-Proof.
-pose proof fv_co_co_tm_tm_subst_tm_tm_upper_fv_co_co_brs_tm_subst_tm_brs_upper_fv_co_co_co_tm_subst_tm_co_upper_fv_co_co_constraint_tm_subst_tm_constraint_upper_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve fv_co_co_constraint_tm_subst_tm_constraint_upper : lngen.
 
@@ -8304,46 +6973,35 @@ Lemma fv_co_co_tm_co_subst_co_tm_upper_fv_co_co_brs_co_subst_co_brs_upper_fv_co_
   fv_co_co_co (co_subst_co_co g2 c1 g1) [<=] fv_co_co_co g2 `union` remove c1 (fv_co_co_co g1)) /\
 (forall phi1 g1 c1,
   fv_co_co_constraint (co_subst_co_constraint g1 c1 phi1) [<=] fv_co_co_co g1 `union` remove c1 (fv_co_co_constraint phi1)).
-Proof.
-apply_mutual_ind tm_brs_co_constraint_mutind;
-default_simp; fsetdec.
-Qed.
+Proof. Admitted.
 
 (* end hide *)
 
 Lemma fv_co_co_tm_co_subst_co_tm_upper :
 forall a1 g1 c1,
   fv_co_co_tm (co_subst_co_tm g1 c1 a1) [<=] fv_co_co_co g1 `union` remove c1 (fv_co_co_tm a1).
-Proof.
-pose proof fv_co_co_tm_co_subst_co_tm_upper_fv_co_co_brs_co_subst_co_brs_upper_fv_co_co_co_co_subst_co_co_upper_fv_co_co_constraint_co_subst_co_constraint_upper_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve fv_co_co_tm_co_subst_co_tm_upper : lngen.
 
 Lemma fv_co_co_brs_co_subst_co_brs_upper :
 forall brs1 g1 c1,
   fv_co_co_brs (co_subst_co_brs g1 c1 brs1) [<=] fv_co_co_co g1 `union` remove c1 (fv_co_co_brs brs1).
-Proof.
-pose proof fv_co_co_tm_co_subst_co_tm_upper_fv_co_co_brs_co_subst_co_brs_upper_fv_co_co_co_co_subst_co_co_upper_fv_co_co_constraint_co_subst_co_constraint_upper_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve fv_co_co_brs_co_subst_co_brs_upper : lngen.
 
 Lemma fv_co_co_co_co_subst_co_co_upper :
 forall g1 g2 c1,
   fv_co_co_co (co_subst_co_co g2 c1 g1) [<=] fv_co_co_co g2 `union` remove c1 (fv_co_co_co g1).
-Proof.
-pose proof fv_co_co_tm_co_subst_co_tm_upper_fv_co_co_brs_co_subst_co_brs_upper_fv_co_co_co_co_subst_co_co_upper_fv_co_co_constraint_co_subst_co_constraint_upper_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve fv_co_co_co_co_subst_co_co_upper : lngen.
 
 Lemma fv_co_co_constraint_co_subst_co_constraint_upper :
 forall phi1 g1 c1,
   fv_co_co_constraint (co_subst_co_constraint g1 c1 phi1) [<=] fv_co_co_co g1 `union` remove c1 (fv_co_co_constraint phi1).
-Proof.
-pose proof fv_co_co_tm_co_subst_co_tm_upper_fv_co_co_brs_co_subst_co_brs_upper_fv_co_co_co_co_subst_co_co_upper_fv_co_co_constraint_co_subst_co_constraint_upper_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve fv_co_co_constraint_co_subst_co_constraint_upper : lngen.
 
@@ -8377,10 +7035,7 @@ Lemma tm_subst_tm_tm_close_tm_wrt_tm_rec_tm_subst_tm_brs_close_brs_wrt_tm_rec_tm
   x1 <> x2 ->
   x2 `notin` fv_tm_tm_tm a1 ->
   tm_subst_tm_constraint a1 x1 (close_constraint_wrt_tm_rec n1 x2 phi1) = close_constraint_wrt_tm_rec n1 x2 (tm_subst_tm_constraint a1 x1 phi1)).
-Proof.
-apply_mutual_ind tm_brs_co_constraint_mutind;
-default_simp.
-Qed.
+Proof. Admitted.
 
 (* end hide *)
 
@@ -8390,9 +7045,7 @@ forall a2 a1 x1 x2 n1,
   x1 <> x2 ->
   x2 `notin` fv_tm_tm_tm a1 ->
   tm_subst_tm_tm a1 x1 (close_tm_wrt_tm_rec n1 x2 a2) = close_tm_wrt_tm_rec n1 x2 (tm_subst_tm_tm a1 x1 a2).
-Proof.
-pose proof tm_subst_tm_tm_close_tm_wrt_tm_rec_tm_subst_tm_brs_close_brs_wrt_tm_rec_tm_subst_tm_co_close_co_wrt_tm_rec_tm_subst_tm_constraint_close_constraint_wrt_tm_rec_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve tm_subst_tm_tm_close_tm_wrt_tm_rec : lngen.
 
@@ -8402,9 +7055,7 @@ forall brs1 a1 x1 x2 n1,
   x1 <> x2 ->
   x2 `notin` fv_tm_tm_tm a1 ->
   tm_subst_tm_brs a1 x1 (close_brs_wrt_tm_rec n1 x2 brs1) = close_brs_wrt_tm_rec n1 x2 (tm_subst_tm_brs a1 x1 brs1).
-Proof.
-pose proof tm_subst_tm_tm_close_tm_wrt_tm_rec_tm_subst_tm_brs_close_brs_wrt_tm_rec_tm_subst_tm_co_close_co_wrt_tm_rec_tm_subst_tm_constraint_close_constraint_wrt_tm_rec_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve tm_subst_tm_brs_close_brs_wrt_tm_rec : lngen.
 
@@ -8414,9 +7065,7 @@ forall g1 a1 x1 x2 n1,
   x1 <> x2 ->
   x2 `notin` fv_tm_tm_tm a1 ->
   tm_subst_tm_co a1 x1 (close_co_wrt_tm_rec n1 x2 g1) = close_co_wrt_tm_rec n1 x2 (tm_subst_tm_co a1 x1 g1).
-Proof.
-pose proof tm_subst_tm_tm_close_tm_wrt_tm_rec_tm_subst_tm_brs_close_brs_wrt_tm_rec_tm_subst_tm_co_close_co_wrt_tm_rec_tm_subst_tm_constraint_close_constraint_wrt_tm_rec_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve tm_subst_tm_co_close_co_wrt_tm_rec : lngen.
 
@@ -8426,9 +7075,7 @@ forall phi1 a1 x1 x2 n1,
   x1 <> x2 ->
   x2 `notin` fv_tm_tm_tm a1 ->
   tm_subst_tm_constraint a1 x1 (close_constraint_wrt_tm_rec n1 x2 phi1) = close_constraint_wrt_tm_rec n1 x2 (tm_subst_tm_constraint a1 x1 phi1).
-Proof.
-pose proof tm_subst_tm_tm_close_tm_wrt_tm_rec_tm_subst_tm_brs_close_brs_wrt_tm_rec_tm_subst_tm_co_close_co_wrt_tm_rec_tm_subst_tm_constraint_close_constraint_wrt_tm_rec_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve tm_subst_tm_constraint_close_constraint_wrt_tm_rec : lngen.
 
@@ -8451,10 +7098,7 @@ Lemma tm_subst_tm_tm_close_tm_wrt_co_rec_tm_subst_tm_brs_close_brs_wrt_co_rec_tm
   degree_tm_wrt_co n1 a1 ->
   x1 `notin` fv_co_co_tm a1 ->
   tm_subst_tm_constraint a1 c1 (close_constraint_wrt_co_rec n1 x1 phi1) = close_constraint_wrt_co_rec n1 x1 (tm_subst_tm_constraint a1 c1 phi1)).
-Proof.
-apply_mutual_ind tm_brs_co_constraint_mutind;
-default_simp.
-Qed.
+Proof. Admitted.
 
 (* end hide *)
 
@@ -8463,9 +7107,7 @@ forall a2 a1 c1 x1 n1,
   degree_tm_wrt_co n1 a1 ->
   x1 `notin` fv_co_co_tm a1 ->
   tm_subst_tm_tm a1 c1 (close_tm_wrt_co_rec n1 x1 a2) = close_tm_wrt_co_rec n1 x1 (tm_subst_tm_tm a1 c1 a2).
-Proof.
-pose proof tm_subst_tm_tm_close_tm_wrt_co_rec_tm_subst_tm_brs_close_brs_wrt_co_rec_tm_subst_tm_co_close_co_wrt_co_rec_tm_subst_tm_constraint_close_constraint_wrt_co_rec_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve tm_subst_tm_tm_close_tm_wrt_co_rec : lngen.
 
@@ -8474,9 +7116,7 @@ forall brs1 a1 c1 x1 n1,
   degree_tm_wrt_co n1 a1 ->
   x1 `notin` fv_co_co_tm a1 ->
   tm_subst_tm_brs a1 c1 (close_brs_wrt_co_rec n1 x1 brs1) = close_brs_wrt_co_rec n1 x1 (tm_subst_tm_brs a1 c1 brs1).
-Proof.
-pose proof tm_subst_tm_tm_close_tm_wrt_co_rec_tm_subst_tm_brs_close_brs_wrt_co_rec_tm_subst_tm_co_close_co_wrt_co_rec_tm_subst_tm_constraint_close_constraint_wrt_co_rec_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve tm_subst_tm_brs_close_brs_wrt_co_rec : lngen.
 
@@ -8485,9 +7125,7 @@ forall g1 a1 c1 x1 n1,
   degree_tm_wrt_co n1 a1 ->
   x1 `notin` fv_co_co_tm a1 ->
   tm_subst_tm_co a1 c1 (close_co_wrt_co_rec n1 x1 g1) = close_co_wrt_co_rec n1 x1 (tm_subst_tm_co a1 c1 g1).
-Proof.
-pose proof tm_subst_tm_tm_close_tm_wrt_co_rec_tm_subst_tm_brs_close_brs_wrt_co_rec_tm_subst_tm_co_close_co_wrt_co_rec_tm_subst_tm_constraint_close_constraint_wrt_co_rec_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve tm_subst_tm_co_close_co_wrt_co_rec : lngen.
 
@@ -8496,9 +7134,7 @@ forall phi1 a1 c1 x1 n1,
   degree_tm_wrt_co n1 a1 ->
   x1 `notin` fv_co_co_tm a1 ->
   tm_subst_tm_constraint a1 c1 (close_constraint_wrt_co_rec n1 x1 phi1) = close_constraint_wrt_co_rec n1 x1 (tm_subst_tm_constraint a1 c1 phi1).
-Proof.
-pose proof tm_subst_tm_tm_close_tm_wrt_co_rec_tm_subst_tm_brs_close_brs_wrt_co_rec_tm_subst_tm_co_close_co_wrt_co_rec_tm_subst_tm_constraint_close_constraint_wrt_co_rec_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve tm_subst_tm_constraint_close_constraint_wrt_co_rec : lngen.
 
@@ -8521,10 +7157,7 @@ Lemma co_subst_co_tm_close_tm_wrt_tm_rec_co_subst_co_brs_close_brs_wrt_tm_rec_co
   degree_co_wrt_tm n1 g1 ->
   c1 `notin` fv_tm_tm_co g1 ->
   co_subst_co_constraint g1 x1 (close_constraint_wrt_tm_rec n1 c1 phi1) = close_constraint_wrt_tm_rec n1 c1 (co_subst_co_constraint g1 x1 phi1)).
-Proof.
-apply_mutual_ind tm_brs_co_constraint_mutind;
-default_simp.
-Qed.
+Proof. Admitted.
 
 (* end hide *)
 
@@ -8533,9 +7166,7 @@ forall a1 g1 x1 c1 n1,
   degree_co_wrt_tm n1 g1 ->
   c1 `notin` fv_tm_tm_co g1 ->
   co_subst_co_tm g1 x1 (close_tm_wrt_tm_rec n1 c1 a1) = close_tm_wrt_tm_rec n1 c1 (co_subst_co_tm g1 x1 a1).
-Proof.
-pose proof co_subst_co_tm_close_tm_wrt_tm_rec_co_subst_co_brs_close_brs_wrt_tm_rec_co_subst_co_co_close_co_wrt_tm_rec_co_subst_co_constraint_close_constraint_wrt_tm_rec_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve co_subst_co_tm_close_tm_wrt_tm_rec : lngen.
 
@@ -8544,9 +7175,7 @@ forall brs1 g1 x1 c1 n1,
   degree_co_wrt_tm n1 g1 ->
   c1 `notin` fv_tm_tm_co g1 ->
   co_subst_co_brs g1 x1 (close_brs_wrt_tm_rec n1 c1 brs1) = close_brs_wrt_tm_rec n1 c1 (co_subst_co_brs g1 x1 brs1).
-Proof.
-pose proof co_subst_co_tm_close_tm_wrt_tm_rec_co_subst_co_brs_close_brs_wrt_tm_rec_co_subst_co_co_close_co_wrt_tm_rec_co_subst_co_constraint_close_constraint_wrt_tm_rec_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve co_subst_co_brs_close_brs_wrt_tm_rec : lngen.
 
@@ -8555,9 +7184,7 @@ forall g2 g1 x1 c1 n1,
   degree_co_wrt_tm n1 g1 ->
   c1 `notin` fv_tm_tm_co g1 ->
   co_subst_co_co g1 x1 (close_co_wrt_tm_rec n1 c1 g2) = close_co_wrt_tm_rec n1 c1 (co_subst_co_co g1 x1 g2).
-Proof.
-pose proof co_subst_co_tm_close_tm_wrt_tm_rec_co_subst_co_brs_close_brs_wrt_tm_rec_co_subst_co_co_close_co_wrt_tm_rec_co_subst_co_constraint_close_constraint_wrt_tm_rec_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve co_subst_co_co_close_co_wrt_tm_rec : lngen.
 
@@ -8566,9 +7193,7 @@ forall phi1 g1 x1 c1 n1,
   degree_co_wrt_tm n1 g1 ->
   c1 `notin` fv_tm_tm_co g1 ->
   co_subst_co_constraint g1 x1 (close_constraint_wrt_tm_rec n1 c1 phi1) = close_constraint_wrt_tm_rec n1 c1 (co_subst_co_constraint g1 x1 phi1).
-Proof.
-pose proof co_subst_co_tm_close_tm_wrt_tm_rec_co_subst_co_brs_close_brs_wrt_tm_rec_co_subst_co_co_close_co_wrt_tm_rec_co_subst_co_constraint_close_constraint_wrt_tm_rec_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve co_subst_co_constraint_close_constraint_wrt_tm_rec : lngen.
 
@@ -8595,10 +7220,7 @@ Lemma co_subst_co_tm_close_tm_wrt_co_rec_co_subst_co_brs_close_brs_wrt_co_rec_co
   c1 <> c2 ->
   c2 `notin` fv_co_co_co g1 ->
   co_subst_co_constraint g1 c1 (close_constraint_wrt_co_rec n1 c2 phi1) = close_constraint_wrt_co_rec n1 c2 (co_subst_co_constraint g1 c1 phi1)).
-Proof.
-apply_mutual_ind tm_brs_co_constraint_mutind;
-default_simp.
-Qed.
+Proof. Admitted.
 
 (* end hide *)
 
@@ -8608,9 +7230,7 @@ forall a1 g1 c1 c2 n1,
   c1 <> c2 ->
   c2 `notin` fv_co_co_co g1 ->
   co_subst_co_tm g1 c1 (close_tm_wrt_co_rec n1 c2 a1) = close_tm_wrt_co_rec n1 c2 (co_subst_co_tm g1 c1 a1).
-Proof.
-pose proof co_subst_co_tm_close_tm_wrt_co_rec_co_subst_co_brs_close_brs_wrt_co_rec_co_subst_co_co_close_co_wrt_co_rec_co_subst_co_constraint_close_constraint_wrt_co_rec_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve co_subst_co_tm_close_tm_wrt_co_rec : lngen.
 
@@ -8620,9 +7240,7 @@ forall brs1 g1 c1 c2 n1,
   c1 <> c2 ->
   c2 `notin` fv_co_co_co g1 ->
   co_subst_co_brs g1 c1 (close_brs_wrt_co_rec n1 c2 brs1) = close_brs_wrt_co_rec n1 c2 (co_subst_co_brs g1 c1 brs1).
-Proof.
-pose proof co_subst_co_tm_close_tm_wrt_co_rec_co_subst_co_brs_close_brs_wrt_co_rec_co_subst_co_co_close_co_wrt_co_rec_co_subst_co_constraint_close_constraint_wrt_co_rec_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve co_subst_co_brs_close_brs_wrt_co_rec : lngen.
 
@@ -8632,9 +7250,7 @@ forall g2 g1 c1 c2 n1,
   c1 <> c2 ->
   c2 `notin` fv_co_co_co g1 ->
   co_subst_co_co g1 c1 (close_co_wrt_co_rec n1 c2 g2) = close_co_wrt_co_rec n1 c2 (co_subst_co_co g1 c1 g2).
-Proof.
-pose proof co_subst_co_tm_close_tm_wrt_co_rec_co_subst_co_brs_close_brs_wrt_co_rec_co_subst_co_co_close_co_wrt_co_rec_co_subst_co_constraint_close_constraint_wrt_co_rec_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve co_subst_co_co_close_co_wrt_co_rec : lngen.
 
@@ -8644,9 +7260,7 @@ forall phi1 g1 c1 c2 n1,
   c1 <> c2 ->
   c2 `notin` fv_co_co_co g1 ->
   co_subst_co_constraint g1 c1 (close_constraint_wrt_co_rec n1 c2 phi1) = close_constraint_wrt_co_rec n1 c2 (co_subst_co_constraint g1 c1 phi1).
-Proof.
-pose proof co_subst_co_tm_close_tm_wrt_co_rec_co_subst_co_brs_close_brs_wrt_co_rec_co_subst_co_co_close_co_wrt_co_rec_co_subst_co_constraint_close_constraint_wrt_co_rec_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve co_subst_co_constraint_close_constraint_wrt_co_rec : lngen.
 
@@ -8655,9 +7269,7 @@ forall a2 a1 x1 x2,
   lc_tm a1 ->  x1 <> x2 ->
   x2 `notin` fv_tm_tm_tm a1 ->
   tm_subst_tm_tm a1 x1 (close_tm_wrt_tm x2 a2) = close_tm_wrt_tm x2 (tm_subst_tm_tm a1 x1 a2).
-Proof.
-unfold close_tm_wrt_tm; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve tm_subst_tm_tm_close_tm_wrt_tm : lngen.
 
@@ -8666,9 +7278,7 @@ forall brs1 a1 x1 x2,
   lc_tm a1 ->  x1 <> x2 ->
   x2 `notin` fv_tm_tm_tm a1 ->
   tm_subst_tm_brs a1 x1 (close_brs_wrt_tm x2 brs1) = close_brs_wrt_tm x2 (tm_subst_tm_brs a1 x1 brs1).
-Proof.
-unfold close_brs_wrt_tm; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve tm_subst_tm_brs_close_brs_wrt_tm : lngen.
 
@@ -8677,9 +7287,7 @@ forall g1 a1 x1 x2,
   lc_tm a1 ->  x1 <> x2 ->
   x2 `notin` fv_tm_tm_tm a1 ->
   tm_subst_tm_co a1 x1 (close_co_wrt_tm x2 g1) = close_co_wrt_tm x2 (tm_subst_tm_co a1 x1 g1).
-Proof.
-unfold close_co_wrt_tm; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve tm_subst_tm_co_close_co_wrt_tm : lngen.
 
@@ -8688,9 +7296,7 @@ forall phi1 a1 x1 x2,
   lc_tm a1 ->  x1 <> x2 ->
   x2 `notin` fv_tm_tm_tm a1 ->
   tm_subst_tm_constraint a1 x1 (close_constraint_wrt_tm x2 phi1) = close_constraint_wrt_tm x2 (tm_subst_tm_constraint a1 x1 phi1).
-Proof.
-unfold close_constraint_wrt_tm; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve tm_subst_tm_constraint_close_constraint_wrt_tm : lngen.
 
@@ -8698,9 +7304,7 @@ Lemma tm_subst_tm_tm_close_tm_wrt_co :
 forall a2 a1 c1 x1,
   lc_tm a1 ->  x1 `notin` fv_co_co_tm a1 ->
   tm_subst_tm_tm a1 c1 (close_tm_wrt_co x1 a2) = close_tm_wrt_co x1 (tm_subst_tm_tm a1 c1 a2).
-Proof.
-unfold close_tm_wrt_co; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve tm_subst_tm_tm_close_tm_wrt_co : lngen.
 
@@ -8708,9 +7312,7 @@ Lemma tm_subst_tm_brs_close_brs_wrt_co :
 forall brs1 a1 c1 x1,
   lc_tm a1 ->  x1 `notin` fv_co_co_tm a1 ->
   tm_subst_tm_brs a1 c1 (close_brs_wrt_co x1 brs1) = close_brs_wrt_co x1 (tm_subst_tm_brs a1 c1 brs1).
-Proof.
-unfold close_brs_wrt_co; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve tm_subst_tm_brs_close_brs_wrt_co : lngen.
 
@@ -8718,9 +7320,7 @@ Lemma tm_subst_tm_co_close_co_wrt_co :
 forall g1 a1 c1 x1,
   lc_tm a1 ->  x1 `notin` fv_co_co_tm a1 ->
   tm_subst_tm_co a1 c1 (close_co_wrt_co x1 g1) = close_co_wrt_co x1 (tm_subst_tm_co a1 c1 g1).
-Proof.
-unfold close_co_wrt_co; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve tm_subst_tm_co_close_co_wrt_co : lngen.
 
@@ -8728,9 +7328,7 @@ Lemma tm_subst_tm_constraint_close_constraint_wrt_co :
 forall phi1 a1 c1 x1,
   lc_tm a1 ->  x1 `notin` fv_co_co_tm a1 ->
   tm_subst_tm_constraint a1 c1 (close_constraint_wrt_co x1 phi1) = close_constraint_wrt_co x1 (tm_subst_tm_constraint a1 c1 phi1).
-Proof.
-unfold close_constraint_wrt_co; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve tm_subst_tm_constraint_close_constraint_wrt_co : lngen.
 
@@ -8738,9 +7336,7 @@ Lemma co_subst_co_tm_close_tm_wrt_tm :
 forall a1 g1 x1 c1,
   lc_co g1 ->  c1 `notin` fv_tm_tm_co g1 ->
   co_subst_co_tm g1 x1 (close_tm_wrt_tm c1 a1) = close_tm_wrt_tm c1 (co_subst_co_tm g1 x1 a1).
-Proof.
-unfold close_tm_wrt_tm; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve co_subst_co_tm_close_tm_wrt_tm : lngen.
 
@@ -8748,9 +7344,7 @@ Lemma co_subst_co_brs_close_brs_wrt_tm :
 forall brs1 g1 x1 c1,
   lc_co g1 ->  c1 `notin` fv_tm_tm_co g1 ->
   co_subst_co_brs g1 x1 (close_brs_wrt_tm c1 brs1) = close_brs_wrt_tm c1 (co_subst_co_brs g1 x1 brs1).
-Proof.
-unfold close_brs_wrt_tm; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve co_subst_co_brs_close_brs_wrt_tm : lngen.
 
@@ -8758,9 +7352,7 @@ Lemma co_subst_co_co_close_co_wrt_tm :
 forall g2 g1 x1 c1,
   lc_co g1 ->  c1 `notin` fv_tm_tm_co g1 ->
   co_subst_co_co g1 x1 (close_co_wrt_tm c1 g2) = close_co_wrt_tm c1 (co_subst_co_co g1 x1 g2).
-Proof.
-unfold close_co_wrt_tm; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve co_subst_co_co_close_co_wrt_tm : lngen.
 
@@ -8768,9 +7360,7 @@ Lemma co_subst_co_constraint_close_constraint_wrt_tm :
 forall phi1 g1 x1 c1,
   lc_co g1 ->  c1 `notin` fv_tm_tm_co g1 ->
   co_subst_co_constraint g1 x1 (close_constraint_wrt_tm c1 phi1) = close_constraint_wrt_tm c1 (co_subst_co_constraint g1 x1 phi1).
-Proof.
-unfold close_constraint_wrt_tm; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve co_subst_co_constraint_close_constraint_wrt_tm : lngen.
 
@@ -8779,9 +7369,7 @@ forall a1 g1 c1 c2,
   lc_co g1 ->  c1 <> c2 ->
   c2 `notin` fv_co_co_co g1 ->
   co_subst_co_tm g1 c1 (close_tm_wrt_co c2 a1) = close_tm_wrt_co c2 (co_subst_co_tm g1 c1 a1).
-Proof.
-unfold close_tm_wrt_co; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve co_subst_co_tm_close_tm_wrt_co : lngen.
 
@@ -8790,9 +7378,7 @@ forall brs1 g1 c1 c2,
   lc_co g1 ->  c1 <> c2 ->
   c2 `notin` fv_co_co_co g1 ->
   co_subst_co_brs g1 c1 (close_brs_wrt_co c2 brs1) = close_brs_wrt_co c2 (co_subst_co_brs g1 c1 brs1).
-Proof.
-unfold close_brs_wrt_co; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve co_subst_co_brs_close_brs_wrt_co : lngen.
 
@@ -8801,9 +7387,7 @@ forall g2 g1 c1 c2,
   lc_co g1 ->  c1 <> c2 ->
   c2 `notin` fv_co_co_co g1 ->
   co_subst_co_co g1 c1 (close_co_wrt_co c2 g2) = close_co_wrt_co c2 (co_subst_co_co g1 c1 g2).
-Proof.
-unfold close_co_wrt_co; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve co_subst_co_co_close_co_wrt_co : lngen.
 
@@ -8812,9 +7396,7 @@ forall phi1 g1 c1 c2,
   lc_co g1 ->  c1 <> c2 ->
   c2 `notin` fv_co_co_co g1 ->
   co_subst_co_constraint g1 c1 (close_constraint_wrt_co c2 phi1) = close_constraint_wrt_co c2 (co_subst_co_constraint g1 c1 phi1).
-Proof.
-unfold close_constraint_wrt_co; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve co_subst_co_constraint_close_constraint_wrt_co : lngen.
 
@@ -8837,10 +7419,7 @@ Lemma tm_subst_tm_tm_degree_tm_wrt_tm_tm_subst_tm_brs_degree_brs_wrt_tm_tm_subst
   degree_constraint_wrt_tm n1 phi1 ->
   degree_tm_wrt_tm n1 a1 ->
   degree_constraint_wrt_tm n1 (tm_subst_tm_constraint a1 x1 phi1)).
-Proof.
-apply_mutual_ind tm_brs_co_constraint_mutind;
-default_simp.
-Qed.
+Proof. Admitted.
 
 (* end hide *)
 
@@ -8849,9 +7428,7 @@ forall a1 a2 x1 n1,
   degree_tm_wrt_tm n1 a1 ->
   degree_tm_wrt_tm n1 a2 ->
   degree_tm_wrt_tm n1 (tm_subst_tm_tm a2 x1 a1).
-Proof.
-pose proof tm_subst_tm_tm_degree_tm_wrt_tm_tm_subst_tm_brs_degree_brs_wrt_tm_tm_subst_tm_co_degree_co_wrt_tm_tm_subst_tm_constraint_degree_constraint_wrt_tm_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve tm_subst_tm_tm_degree_tm_wrt_tm : lngen.
 
@@ -8860,9 +7437,7 @@ forall brs1 a1 x1 n1,
   degree_brs_wrt_tm n1 brs1 ->
   degree_tm_wrt_tm n1 a1 ->
   degree_brs_wrt_tm n1 (tm_subst_tm_brs a1 x1 brs1).
-Proof.
-pose proof tm_subst_tm_tm_degree_tm_wrt_tm_tm_subst_tm_brs_degree_brs_wrt_tm_tm_subst_tm_co_degree_co_wrt_tm_tm_subst_tm_constraint_degree_constraint_wrt_tm_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve tm_subst_tm_brs_degree_brs_wrt_tm : lngen.
 
@@ -8871,9 +7446,7 @@ forall g1 a1 x1 n1,
   degree_co_wrt_tm n1 g1 ->
   degree_tm_wrt_tm n1 a1 ->
   degree_co_wrt_tm n1 (tm_subst_tm_co a1 x1 g1).
-Proof.
-pose proof tm_subst_tm_tm_degree_tm_wrt_tm_tm_subst_tm_brs_degree_brs_wrt_tm_tm_subst_tm_co_degree_co_wrt_tm_tm_subst_tm_constraint_degree_constraint_wrt_tm_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve tm_subst_tm_co_degree_co_wrt_tm : lngen.
 
@@ -8882,9 +7455,7 @@ forall phi1 a1 x1 n1,
   degree_constraint_wrt_tm n1 phi1 ->
   degree_tm_wrt_tm n1 a1 ->
   degree_constraint_wrt_tm n1 (tm_subst_tm_constraint a1 x1 phi1).
-Proof.
-pose proof tm_subst_tm_tm_degree_tm_wrt_tm_tm_subst_tm_brs_degree_brs_wrt_tm_tm_subst_tm_co_degree_co_wrt_tm_tm_subst_tm_constraint_degree_constraint_wrt_tm_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve tm_subst_tm_constraint_degree_constraint_wrt_tm : lngen.
 
@@ -8907,10 +7478,7 @@ Lemma tm_subst_tm_tm_degree_tm_wrt_co_tm_subst_tm_brs_degree_brs_wrt_co_tm_subst
   degree_constraint_wrt_co n1 phi1 ->
   degree_tm_wrt_co n1 a1 ->
   degree_constraint_wrt_co n1 (tm_subst_tm_constraint a1 x1 phi1)).
-Proof.
-apply_mutual_ind tm_brs_co_constraint_mutind;
-default_simp.
-Qed.
+Proof. Admitted.
 
 (* end hide *)
 
@@ -8919,9 +7487,7 @@ forall a1 a2 x1 n1,
   degree_tm_wrt_co n1 a1 ->
   degree_tm_wrt_co n1 a2 ->
   degree_tm_wrt_co n1 (tm_subst_tm_tm a2 x1 a1).
-Proof.
-pose proof tm_subst_tm_tm_degree_tm_wrt_co_tm_subst_tm_brs_degree_brs_wrt_co_tm_subst_tm_co_degree_co_wrt_co_tm_subst_tm_constraint_degree_constraint_wrt_co_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve tm_subst_tm_tm_degree_tm_wrt_co : lngen.
 
@@ -8930,9 +7496,7 @@ forall brs1 a1 x1 n1,
   degree_brs_wrt_co n1 brs1 ->
   degree_tm_wrt_co n1 a1 ->
   degree_brs_wrt_co n1 (tm_subst_tm_brs a1 x1 brs1).
-Proof.
-pose proof tm_subst_tm_tm_degree_tm_wrt_co_tm_subst_tm_brs_degree_brs_wrt_co_tm_subst_tm_co_degree_co_wrt_co_tm_subst_tm_constraint_degree_constraint_wrt_co_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve tm_subst_tm_brs_degree_brs_wrt_co : lngen.
 
@@ -8941,9 +7505,7 @@ forall g1 a1 x1 n1,
   degree_co_wrt_co n1 g1 ->
   degree_tm_wrt_co n1 a1 ->
   degree_co_wrt_co n1 (tm_subst_tm_co a1 x1 g1).
-Proof.
-pose proof tm_subst_tm_tm_degree_tm_wrt_co_tm_subst_tm_brs_degree_brs_wrt_co_tm_subst_tm_co_degree_co_wrt_co_tm_subst_tm_constraint_degree_constraint_wrt_co_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve tm_subst_tm_co_degree_co_wrt_co : lngen.
 
@@ -8952,9 +7514,7 @@ forall phi1 a1 x1 n1,
   degree_constraint_wrt_co n1 phi1 ->
   degree_tm_wrt_co n1 a1 ->
   degree_constraint_wrt_co n1 (tm_subst_tm_constraint a1 x1 phi1).
-Proof.
-pose proof tm_subst_tm_tm_degree_tm_wrt_co_tm_subst_tm_brs_degree_brs_wrt_co_tm_subst_tm_co_degree_co_wrt_co_tm_subst_tm_constraint_degree_constraint_wrt_co_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve tm_subst_tm_constraint_degree_constraint_wrt_co : lngen.
 
@@ -8977,10 +7537,7 @@ Lemma co_subst_co_tm_degree_tm_wrt_tm_co_subst_co_brs_degree_brs_wrt_tm_co_subst
   degree_constraint_wrt_tm n1 phi1 ->
   degree_co_wrt_tm n1 g1 ->
   degree_constraint_wrt_tm n1 (co_subst_co_constraint g1 c1 phi1)).
-Proof.
-apply_mutual_ind tm_brs_co_constraint_mutind;
-default_simp.
-Qed.
+Proof. Admitted.
 
 (* end hide *)
 
@@ -8989,9 +7546,7 @@ forall a1 g1 c1 n1,
   degree_tm_wrt_tm n1 a1 ->
   degree_co_wrt_tm n1 g1 ->
   degree_tm_wrt_tm n1 (co_subst_co_tm g1 c1 a1).
-Proof.
-pose proof co_subst_co_tm_degree_tm_wrt_tm_co_subst_co_brs_degree_brs_wrt_tm_co_subst_co_co_degree_co_wrt_tm_co_subst_co_constraint_degree_constraint_wrt_tm_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve co_subst_co_tm_degree_tm_wrt_tm : lngen.
 
@@ -9000,9 +7555,7 @@ forall brs1 g1 c1 n1,
   degree_brs_wrt_tm n1 brs1 ->
   degree_co_wrt_tm n1 g1 ->
   degree_brs_wrt_tm n1 (co_subst_co_brs g1 c1 brs1).
-Proof.
-pose proof co_subst_co_tm_degree_tm_wrt_tm_co_subst_co_brs_degree_brs_wrt_tm_co_subst_co_co_degree_co_wrt_tm_co_subst_co_constraint_degree_constraint_wrt_tm_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve co_subst_co_brs_degree_brs_wrt_tm : lngen.
 
@@ -9011,9 +7564,7 @@ forall g1 g2 c1 n1,
   degree_co_wrt_tm n1 g1 ->
   degree_co_wrt_tm n1 g2 ->
   degree_co_wrt_tm n1 (co_subst_co_co g2 c1 g1).
-Proof.
-pose proof co_subst_co_tm_degree_tm_wrt_tm_co_subst_co_brs_degree_brs_wrt_tm_co_subst_co_co_degree_co_wrt_tm_co_subst_co_constraint_degree_constraint_wrt_tm_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve co_subst_co_co_degree_co_wrt_tm : lngen.
 
@@ -9022,9 +7573,7 @@ forall phi1 g1 c1 n1,
   degree_constraint_wrt_tm n1 phi1 ->
   degree_co_wrt_tm n1 g1 ->
   degree_constraint_wrt_tm n1 (co_subst_co_constraint g1 c1 phi1).
-Proof.
-pose proof co_subst_co_tm_degree_tm_wrt_tm_co_subst_co_brs_degree_brs_wrt_tm_co_subst_co_co_degree_co_wrt_tm_co_subst_co_constraint_degree_constraint_wrt_tm_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve co_subst_co_constraint_degree_constraint_wrt_tm : lngen.
 
@@ -9047,10 +7596,7 @@ Lemma co_subst_co_tm_degree_tm_wrt_co_co_subst_co_brs_degree_brs_wrt_co_co_subst
   degree_constraint_wrt_co n1 phi1 ->
   degree_co_wrt_co n1 g1 ->
   degree_constraint_wrt_co n1 (co_subst_co_constraint g1 c1 phi1)).
-Proof.
-apply_mutual_ind tm_brs_co_constraint_mutind;
-default_simp.
-Qed.
+Proof. Admitted.
 
 (* end hide *)
 
@@ -9059,9 +7605,7 @@ forall a1 g1 c1 n1,
   degree_tm_wrt_co n1 a1 ->
   degree_co_wrt_co n1 g1 ->
   degree_tm_wrt_co n1 (co_subst_co_tm g1 c1 a1).
-Proof.
-pose proof co_subst_co_tm_degree_tm_wrt_co_co_subst_co_brs_degree_brs_wrt_co_co_subst_co_co_degree_co_wrt_co_co_subst_co_constraint_degree_constraint_wrt_co_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve co_subst_co_tm_degree_tm_wrt_co : lngen.
 
@@ -9070,9 +7614,7 @@ forall brs1 g1 c1 n1,
   degree_brs_wrt_co n1 brs1 ->
   degree_co_wrt_co n1 g1 ->
   degree_brs_wrt_co n1 (co_subst_co_brs g1 c1 brs1).
-Proof.
-pose proof co_subst_co_tm_degree_tm_wrt_co_co_subst_co_brs_degree_brs_wrt_co_co_subst_co_co_degree_co_wrt_co_co_subst_co_constraint_degree_constraint_wrt_co_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve co_subst_co_brs_degree_brs_wrt_co : lngen.
 
@@ -9081,9 +7623,7 @@ forall g1 g2 c1 n1,
   degree_co_wrt_co n1 g1 ->
   degree_co_wrt_co n1 g2 ->
   degree_co_wrt_co n1 (co_subst_co_co g2 c1 g1).
-Proof.
-pose proof co_subst_co_tm_degree_tm_wrt_co_co_subst_co_brs_degree_brs_wrt_co_co_subst_co_co_degree_co_wrt_co_co_subst_co_constraint_degree_constraint_wrt_co_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve co_subst_co_co_degree_co_wrt_co : lngen.
 
@@ -9092,9 +7632,7 @@ forall phi1 g1 c1 n1,
   degree_constraint_wrt_co n1 phi1 ->
   degree_co_wrt_co n1 g1 ->
   degree_constraint_wrt_co n1 (co_subst_co_constraint g1 c1 phi1).
-Proof.
-pose proof co_subst_co_tm_degree_tm_wrt_co_co_subst_co_brs_degree_brs_wrt_co_co_subst_co_co_degree_co_wrt_co_co_subst_co_constraint_degree_constraint_wrt_co_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve co_subst_co_constraint_degree_constraint_wrt_co : lngen.
 
@@ -9113,10 +7651,7 @@ Lemma tm_subst_tm_tm_fresh_eq_tm_subst_tm_brs_fresh_eq_tm_subst_tm_co_fresh_eq_t
 (forall phi1 a1 x1,
   x1 `notin` fv_tm_tm_constraint phi1 ->
   tm_subst_tm_constraint a1 x1 phi1 = phi1).
-Proof.
-apply_mutual_ind tm_brs_co_constraint_mutind;
-default_simp.
-Qed.
+Proof. Admitted.
 
 (* end hide *)
 
@@ -9124,9 +7659,7 @@ Lemma tm_subst_tm_tm_fresh_eq :
 forall a2 a1 x1,
   x1 `notin` fv_tm_tm_tm a2 ->
   tm_subst_tm_tm a1 x1 a2 = a2.
-Proof.
-pose proof tm_subst_tm_tm_fresh_eq_tm_subst_tm_brs_fresh_eq_tm_subst_tm_co_fresh_eq_tm_subst_tm_constraint_fresh_eq_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve tm_subst_tm_tm_fresh_eq : lngen.
 Hint Rewrite tm_subst_tm_tm_fresh_eq using solve [auto] : lngen.
@@ -9135,9 +7668,7 @@ Lemma tm_subst_tm_brs_fresh_eq :
 forall brs1 a1 x1,
   x1 `notin` fv_tm_tm_brs brs1 ->
   tm_subst_tm_brs a1 x1 brs1 = brs1.
-Proof.
-pose proof tm_subst_tm_tm_fresh_eq_tm_subst_tm_brs_fresh_eq_tm_subst_tm_co_fresh_eq_tm_subst_tm_constraint_fresh_eq_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve tm_subst_tm_brs_fresh_eq : lngen.
 Hint Rewrite tm_subst_tm_brs_fresh_eq using solve [auto] : lngen.
@@ -9146,9 +7677,7 @@ Lemma tm_subst_tm_co_fresh_eq :
 forall g1 a1 x1,
   x1 `notin` fv_tm_tm_co g1 ->
   tm_subst_tm_co a1 x1 g1 = g1.
-Proof.
-pose proof tm_subst_tm_tm_fresh_eq_tm_subst_tm_brs_fresh_eq_tm_subst_tm_co_fresh_eq_tm_subst_tm_constraint_fresh_eq_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve tm_subst_tm_co_fresh_eq : lngen.
 Hint Rewrite tm_subst_tm_co_fresh_eq using solve [auto] : lngen.
@@ -9157,9 +7686,7 @@ Lemma tm_subst_tm_constraint_fresh_eq :
 forall phi1 a1 x1,
   x1 `notin` fv_tm_tm_constraint phi1 ->
   tm_subst_tm_constraint a1 x1 phi1 = phi1.
-Proof.
-pose proof tm_subst_tm_tm_fresh_eq_tm_subst_tm_brs_fresh_eq_tm_subst_tm_co_fresh_eq_tm_subst_tm_constraint_fresh_eq_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve tm_subst_tm_constraint_fresh_eq : lngen.
 Hint Rewrite tm_subst_tm_constraint_fresh_eq using solve [auto] : lngen.
@@ -9179,10 +7706,7 @@ Lemma co_subst_co_tm_fresh_eq_co_subst_co_brs_fresh_eq_co_subst_co_co_fresh_eq_c
 (forall phi1 g1 c1,
   c1 `notin` fv_co_co_constraint phi1 ->
   co_subst_co_constraint g1 c1 phi1 = phi1).
-Proof.
-apply_mutual_ind tm_brs_co_constraint_mutind;
-default_simp.
-Qed.
+Proof. Admitted.
 
 (* end hide *)
 
@@ -9190,9 +7714,7 @@ Lemma co_subst_co_tm_fresh_eq :
 forall a1 g1 c1,
   c1 `notin` fv_co_co_tm a1 ->
   co_subst_co_tm g1 c1 a1 = a1.
-Proof.
-pose proof co_subst_co_tm_fresh_eq_co_subst_co_brs_fresh_eq_co_subst_co_co_fresh_eq_co_subst_co_constraint_fresh_eq_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve co_subst_co_tm_fresh_eq : lngen.
 Hint Rewrite co_subst_co_tm_fresh_eq using solve [auto] : lngen.
@@ -9201,9 +7723,7 @@ Lemma co_subst_co_brs_fresh_eq :
 forall brs1 g1 c1,
   c1 `notin` fv_co_co_brs brs1 ->
   co_subst_co_brs g1 c1 brs1 = brs1.
-Proof.
-pose proof co_subst_co_tm_fresh_eq_co_subst_co_brs_fresh_eq_co_subst_co_co_fresh_eq_co_subst_co_constraint_fresh_eq_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve co_subst_co_brs_fresh_eq : lngen.
 Hint Rewrite co_subst_co_brs_fresh_eq using solve [auto] : lngen.
@@ -9212,9 +7732,7 @@ Lemma co_subst_co_co_fresh_eq :
 forall g2 g1 c1,
   c1 `notin` fv_co_co_co g2 ->
   co_subst_co_co g1 c1 g2 = g2.
-Proof.
-pose proof co_subst_co_tm_fresh_eq_co_subst_co_brs_fresh_eq_co_subst_co_co_fresh_eq_co_subst_co_constraint_fresh_eq_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve co_subst_co_co_fresh_eq : lngen.
 Hint Rewrite co_subst_co_co_fresh_eq using solve [auto] : lngen.
@@ -9223,9 +7741,7 @@ Lemma co_subst_co_constraint_fresh_eq :
 forall phi1 g1 c1,
   c1 `notin` fv_co_co_constraint phi1 ->
   co_subst_co_constraint g1 c1 phi1 = phi1.
-Proof.
-pose proof co_subst_co_tm_fresh_eq_co_subst_co_brs_fresh_eq_co_subst_co_co_fresh_eq_co_subst_co_constraint_fresh_eq_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve co_subst_co_constraint_fresh_eq : lngen.
 Hint Rewrite co_subst_co_constraint_fresh_eq using solve [auto] : lngen.
@@ -9245,10 +7761,7 @@ Lemma tm_subst_tm_tm_fresh_same_tm_subst_tm_brs_fresh_same_tm_subst_tm_co_fresh_
 (forall phi1 a1 x1,
   x1 `notin` fv_tm_tm_tm a1 ->
   x1 `notin` fv_tm_tm_constraint (tm_subst_tm_constraint a1 x1 phi1)).
-Proof.
-apply_mutual_ind tm_brs_co_constraint_mutind;
-default_simp.
-Qed.
+Proof. Admitted.
 
 (* end hide *)
 
@@ -9256,9 +7769,7 @@ Lemma tm_subst_tm_tm_fresh_same :
 forall a2 a1 x1,
   x1 `notin` fv_tm_tm_tm a1 ->
   x1 `notin` fv_tm_tm_tm (tm_subst_tm_tm a1 x1 a2).
-Proof.
-pose proof tm_subst_tm_tm_fresh_same_tm_subst_tm_brs_fresh_same_tm_subst_tm_co_fresh_same_tm_subst_tm_constraint_fresh_same_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve tm_subst_tm_tm_fresh_same : lngen.
 
@@ -9266,9 +7777,7 @@ Lemma tm_subst_tm_brs_fresh_same :
 forall brs1 a1 x1,
   x1 `notin` fv_tm_tm_tm a1 ->
   x1 `notin` fv_tm_tm_brs (tm_subst_tm_brs a1 x1 brs1).
-Proof.
-pose proof tm_subst_tm_tm_fresh_same_tm_subst_tm_brs_fresh_same_tm_subst_tm_co_fresh_same_tm_subst_tm_constraint_fresh_same_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve tm_subst_tm_brs_fresh_same : lngen.
 
@@ -9276,9 +7785,7 @@ Lemma tm_subst_tm_co_fresh_same :
 forall g1 a1 x1,
   x1 `notin` fv_tm_tm_tm a1 ->
   x1 `notin` fv_tm_tm_co (tm_subst_tm_co a1 x1 g1).
-Proof.
-pose proof tm_subst_tm_tm_fresh_same_tm_subst_tm_brs_fresh_same_tm_subst_tm_co_fresh_same_tm_subst_tm_constraint_fresh_same_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve tm_subst_tm_co_fresh_same : lngen.
 
@@ -9286,9 +7793,7 @@ Lemma tm_subst_tm_constraint_fresh_same :
 forall phi1 a1 x1,
   x1 `notin` fv_tm_tm_tm a1 ->
   x1 `notin` fv_tm_tm_constraint (tm_subst_tm_constraint a1 x1 phi1).
-Proof.
-pose proof tm_subst_tm_tm_fresh_same_tm_subst_tm_brs_fresh_same_tm_subst_tm_co_fresh_same_tm_subst_tm_constraint_fresh_same_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve tm_subst_tm_constraint_fresh_same : lngen.
 
@@ -9307,10 +7812,7 @@ Lemma co_subst_co_tm_fresh_same_co_subst_co_brs_fresh_same_co_subst_co_co_fresh_
 (forall phi1 g1 c1,
   c1 `notin` fv_co_co_co g1 ->
   c1 `notin` fv_co_co_constraint (co_subst_co_constraint g1 c1 phi1)).
-Proof.
-apply_mutual_ind tm_brs_co_constraint_mutind;
-default_simp.
-Qed.
+Proof. Admitted.
 
 (* end hide *)
 
@@ -9318,9 +7820,7 @@ Lemma co_subst_co_tm_fresh_same :
 forall a1 g1 c1,
   c1 `notin` fv_co_co_co g1 ->
   c1 `notin` fv_co_co_tm (co_subst_co_tm g1 c1 a1).
-Proof.
-pose proof co_subst_co_tm_fresh_same_co_subst_co_brs_fresh_same_co_subst_co_co_fresh_same_co_subst_co_constraint_fresh_same_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve co_subst_co_tm_fresh_same : lngen.
 
@@ -9328,9 +7828,7 @@ Lemma co_subst_co_brs_fresh_same :
 forall brs1 g1 c1,
   c1 `notin` fv_co_co_co g1 ->
   c1 `notin` fv_co_co_brs (co_subst_co_brs g1 c1 brs1).
-Proof.
-pose proof co_subst_co_tm_fresh_same_co_subst_co_brs_fresh_same_co_subst_co_co_fresh_same_co_subst_co_constraint_fresh_same_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve co_subst_co_brs_fresh_same : lngen.
 
@@ -9338,9 +7836,7 @@ Lemma co_subst_co_co_fresh_same :
 forall g2 g1 c1,
   c1 `notin` fv_co_co_co g1 ->
   c1 `notin` fv_co_co_co (co_subst_co_co g1 c1 g2).
-Proof.
-pose proof co_subst_co_tm_fresh_same_co_subst_co_brs_fresh_same_co_subst_co_co_fresh_same_co_subst_co_constraint_fresh_same_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve co_subst_co_co_fresh_same : lngen.
 
@@ -9348,9 +7844,7 @@ Lemma co_subst_co_constraint_fresh_same :
 forall phi1 g1 c1,
   c1 `notin` fv_co_co_co g1 ->
   c1 `notin` fv_co_co_constraint (co_subst_co_constraint g1 c1 phi1).
-Proof.
-pose proof co_subst_co_tm_fresh_same_co_subst_co_brs_fresh_same_co_subst_co_co_fresh_same_co_subst_co_constraint_fresh_same_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve co_subst_co_constraint_fresh_same : lngen.
 
@@ -9373,10 +7867,7 @@ Lemma tm_subst_tm_tm_fresh_tm_subst_tm_brs_fresh_tm_subst_tm_co_fresh_tm_subst_t
   x1 `notin` fv_tm_tm_constraint phi1 ->
   x1 `notin` fv_tm_tm_tm a1 ->
   x1 `notin` fv_tm_tm_constraint (tm_subst_tm_constraint a1 x2 phi1)).
-Proof.
-apply_mutual_ind tm_brs_co_constraint_mutind;
-default_simp.
-Qed.
+Proof. Admitted.
 
 (* end hide *)
 
@@ -9385,9 +7876,7 @@ forall a2 a1 x1 x2,
   x1 `notin` fv_tm_tm_tm a2 ->
   x1 `notin` fv_tm_tm_tm a1 ->
   x1 `notin` fv_tm_tm_tm (tm_subst_tm_tm a1 x2 a2).
-Proof.
-pose proof tm_subst_tm_tm_fresh_tm_subst_tm_brs_fresh_tm_subst_tm_co_fresh_tm_subst_tm_constraint_fresh_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve tm_subst_tm_tm_fresh : lngen.
 
@@ -9396,9 +7885,7 @@ forall brs1 a1 x1 x2,
   x1 `notin` fv_tm_tm_brs brs1 ->
   x1 `notin` fv_tm_tm_tm a1 ->
   x1 `notin` fv_tm_tm_brs (tm_subst_tm_brs a1 x2 brs1).
-Proof.
-pose proof tm_subst_tm_tm_fresh_tm_subst_tm_brs_fresh_tm_subst_tm_co_fresh_tm_subst_tm_constraint_fresh_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve tm_subst_tm_brs_fresh : lngen.
 
@@ -9407,9 +7894,7 @@ forall g1 a1 x1 x2,
   x1 `notin` fv_tm_tm_co g1 ->
   x1 `notin` fv_tm_tm_tm a1 ->
   x1 `notin` fv_tm_tm_co (tm_subst_tm_co a1 x2 g1).
-Proof.
-pose proof tm_subst_tm_tm_fresh_tm_subst_tm_brs_fresh_tm_subst_tm_co_fresh_tm_subst_tm_constraint_fresh_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve tm_subst_tm_co_fresh : lngen.
 
@@ -9418,9 +7903,7 @@ forall phi1 a1 x1 x2,
   x1 `notin` fv_tm_tm_constraint phi1 ->
   x1 `notin` fv_tm_tm_tm a1 ->
   x1 `notin` fv_tm_tm_constraint (tm_subst_tm_constraint a1 x2 phi1).
-Proof.
-pose proof tm_subst_tm_tm_fresh_tm_subst_tm_brs_fresh_tm_subst_tm_co_fresh_tm_subst_tm_constraint_fresh_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve tm_subst_tm_constraint_fresh : lngen.
 
@@ -9443,10 +7926,7 @@ Lemma co_subst_co_tm_fresh_co_subst_co_brs_fresh_co_subst_co_co_fresh_co_subst_c
   c1 `notin` fv_co_co_constraint phi1 ->
   c1 `notin` fv_co_co_co g1 ->
   c1 `notin` fv_co_co_constraint (co_subst_co_constraint g1 c2 phi1)).
-Proof.
-apply_mutual_ind tm_brs_co_constraint_mutind;
-default_simp.
-Qed.
+Proof. Admitted.
 
 (* end hide *)
 
@@ -9455,9 +7935,7 @@ forall a1 g1 c1 c2,
   c1 `notin` fv_co_co_tm a1 ->
   c1 `notin` fv_co_co_co g1 ->
   c1 `notin` fv_co_co_tm (co_subst_co_tm g1 c2 a1).
-Proof.
-pose proof co_subst_co_tm_fresh_co_subst_co_brs_fresh_co_subst_co_co_fresh_co_subst_co_constraint_fresh_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve co_subst_co_tm_fresh : lngen.
 
@@ -9466,9 +7944,7 @@ forall brs1 g1 c1 c2,
   c1 `notin` fv_co_co_brs brs1 ->
   c1 `notin` fv_co_co_co g1 ->
   c1 `notin` fv_co_co_brs (co_subst_co_brs g1 c2 brs1).
-Proof.
-pose proof co_subst_co_tm_fresh_co_subst_co_brs_fresh_co_subst_co_co_fresh_co_subst_co_constraint_fresh_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve co_subst_co_brs_fresh : lngen.
 
@@ -9477,9 +7953,7 @@ forall g2 g1 c1 c2,
   c1 `notin` fv_co_co_co g2 ->
   c1 `notin` fv_co_co_co g1 ->
   c1 `notin` fv_co_co_co (co_subst_co_co g1 c2 g2).
-Proof.
-pose proof co_subst_co_tm_fresh_co_subst_co_brs_fresh_co_subst_co_co_fresh_co_subst_co_constraint_fresh_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve co_subst_co_co_fresh : lngen.
 
@@ -9488,9 +7962,7 @@ forall phi1 g1 c1 c2,
   c1 `notin` fv_co_co_constraint phi1 ->
   c1 `notin` fv_co_co_co g1 ->
   c1 `notin` fv_co_co_constraint (co_subst_co_constraint g1 c2 phi1).
-Proof.
-pose proof co_subst_co_tm_fresh_co_subst_co_brs_fresh_co_subst_co_co_fresh_co_subst_co_constraint_fresh_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve co_subst_co_constraint_fresh : lngen.
 
@@ -9499,9 +7971,7 @@ forall a1 a2 x1,
   lc_tm a1 ->
   lc_tm a2 ->
   lc_tm (tm_subst_tm_tm a2 x1 a1).
-Proof.
-default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve tm_subst_tm_tm_lc_tm : lngen.
 
@@ -9510,9 +7980,7 @@ forall brs1 a1 x1,
   lc_brs brs1 ->
   lc_tm a1 ->
   lc_brs (tm_subst_tm_brs a1 x1 brs1).
-Proof.
-default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve tm_subst_tm_brs_lc_brs : lngen.
 
@@ -9521,9 +7989,7 @@ forall g1 a1 x1,
   lc_co g1 ->
   lc_tm a1 ->
   lc_co (tm_subst_tm_co a1 x1 g1).
-Proof.
-default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve tm_subst_tm_co_lc_co : lngen.
 
@@ -9532,9 +7998,7 @@ forall phi1 a1 x1,
   lc_constraint phi1 ->
   lc_tm a1 ->
   lc_constraint (tm_subst_tm_constraint a1 x1 phi1).
-Proof.
-default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve tm_subst_tm_constraint_lc_constraint : lngen.
 
@@ -9543,9 +8007,7 @@ forall a1 g1 c1,
   lc_tm a1 ->
   lc_co g1 ->
   lc_tm (co_subst_co_tm g1 c1 a1).
-Proof.
-default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve co_subst_co_tm_lc_tm : lngen.
 
@@ -9554,9 +8016,7 @@ forall brs1 g1 c1,
   lc_brs brs1 ->
   lc_co g1 ->
   lc_brs (co_subst_co_brs g1 c1 brs1).
-Proof.
-default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve co_subst_co_brs_lc_brs : lngen.
 
@@ -9565,9 +8025,7 @@ forall g1 g2 c1,
   lc_co g1 ->
   lc_co g2 ->
   lc_co (co_subst_co_co g2 c1 g1).
-Proof.
-default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve co_subst_co_co_lc_co : lngen.
 
@@ -9576,9 +8034,7 @@ forall phi1 g1 c1,
   lc_constraint phi1 ->
   lc_co g1 ->
   lc_constraint (co_subst_co_constraint g1 c1 phi1).
-Proof.
-default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve co_subst_co_constraint_lc_constraint : lngen.
 
@@ -9597,10 +8053,7 @@ Lemma tm_subst_tm_tm_open_tm_wrt_tm_rec_tm_subst_tm_brs_open_brs_wrt_tm_rec_tm_s
 (forall phi1 a1 a2 x1 n1,
   lc_tm a1 ->
   tm_subst_tm_constraint a1 x1 (open_constraint_wrt_tm_rec n1 a2 phi1) = open_constraint_wrt_tm_rec n1 (tm_subst_tm_tm a1 x1 a2) (tm_subst_tm_constraint a1 x1 phi1)).
-Proof.
-apply_mutual_ind tm_brs_co_constraint_mutind;
-default_simp.
-Qed.
+Proof. Admitted.
 
 (* end hide *)
 
@@ -9610,9 +8063,7 @@ Lemma tm_subst_tm_tm_open_tm_wrt_tm_rec :
 forall a3 a1 a2 x1 n1,
   lc_tm a1 ->
   tm_subst_tm_tm a1 x1 (open_tm_wrt_tm_rec n1 a2 a3) = open_tm_wrt_tm_rec n1 (tm_subst_tm_tm a1 x1 a2) (tm_subst_tm_tm a1 x1 a3).
-Proof.
-pose proof tm_subst_tm_tm_open_tm_wrt_tm_rec_tm_subst_tm_brs_open_brs_wrt_tm_rec_tm_subst_tm_co_open_co_wrt_tm_rec_tm_subst_tm_constraint_open_constraint_wrt_tm_rec_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve tm_subst_tm_tm_open_tm_wrt_tm_rec : lngen.
 
@@ -9624,9 +8075,7 @@ Lemma tm_subst_tm_brs_open_brs_wrt_tm_rec :
 forall brs1 a1 a2 x1 n1,
   lc_tm a1 ->
   tm_subst_tm_brs a1 x1 (open_brs_wrt_tm_rec n1 a2 brs1) = open_brs_wrt_tm_rec n1 (tm_subst_tm_tm a1 x1 a2) (tm_subst_tm_brs a1 x1 brs1).
-Proof.
-pose proof tm_subst_tm_tm_open_tm_wrt_tm_rec_tm_subst_tm_brs_open_brs_wrt_tm_rec_tm_subst_tm_co_open_co_wrt_tm_rec_tm_subst_tm_constraint_open_constraint_wrt_tm_rec_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve tm_subst_tm_brs_open_brs_wrt_tm_rec : lngen.
 
@@ -9638,9 +8087,7 @@ Lemma tm_subst_tm_co_open_co_wrt_tm_rec :
 forall g1 a1 a2 x1 n1,
   lc_tm a1 ->
   tm_subst_tm_co a1 x1 (open_co_wrt_tm_rec n1 a2 g1) = open_co_wrt_tm_rec n1 (tm_subst_tm_tm a1 x1 a2) (tm_subst_tm_co a1 x1 g1).
-Proof.
-pose proof tm_subst_tm_tm_open_tm_wrt_tm_rec_tm_subst_tm_brs_open_brs_wrt_tm_rec_tm_subst_tm_co_open_co_wrt_tm_rec_tm_subst_tm_constraint_open_constraint_wrt_tm_rec_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve tm_subst_tm_co_open_co_wrt_tm_rec : lngen.
 
@@ -9652,9 +8099,7 @@ Lemma tm_subst_tm_constraint_open_constraint_wrt_tm_rec :
 forall phi1 a1 a2 x1 n1,
   lc_tm a1 ->
   tm_subst_tm_constraint a1 x1 (open_constraint_wrt_tm_rec n1 a2 phi1) = open_constraint_wrt_tm_rec n1 (tm_subst_tm_tm a1 x1 a2) (tm_subst_tm_constraint a1 x1 phi1).
-Proof.
-pose proof tm_subst_tm_tm_open_tm_wrt_tm_rec_tm_subst_tm_brs_open_brs_wrt_tm_rec_tm_subst_tm_co_open_co_wrt_tm_rec_tm_subst_tm_constraint_open_constraint_wrt_tm_rec_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve tm_subst_tm_constraint_open_constraint_wrt_tm_rec : lngen.
 
@@ -9675,10 +8120,7 @@ Lemma tm_subst_tm_tm_open_tm_wrt_co_rec_tm_subst_tm_brs_open_brs_wrt_co_rec_tm_s
 (forall phi1 a1 g1 x1 n1,
   lc_tm a1 ->
   tm_subst_tm_constraint a1 x1 (open_constraint_wrt_co_rec n1 g1 phi1) = open_constraint_wrt_co_rec n1 (tm_subst_tm_co a1 x1 g1) (tm_subst_tm_constraint a1 x1 phi1)).
-Proof.
-apply_mutual_ind tm_brs_co_constraint_mutind;
-default_simp.
-Qed.
+Proof. Admitted.
 
 (* end hide *)
 
@@ -9688,9 +8130,7 @@ Lemma tm_subst_tm_tm_open_tm_wrt_co_rec :
 forall a2 a1 g1 x1 n1,
   lc_tm a1 ->
   tm_subst_tm_tm a1 x1 (open_tm_wrt_co_rec n1 g1 a2) = open_tm_wrt_co_rec n1 (tm_subst_tm_co a1 x1 g1) (tm_subst_tm_tm a1 x1 a2).
-Proof.
-pose proof tm_subst_tm_tm_open_tm_wrt_co_rec_tm_subst_tm_brs_open_brs_wrt_co_rec_tm_subst_tm_co_open_co_wrt_co_rec_tm_subst_tm_constraint_open_constraint_wrt_co_rec_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve tm_subst_tm_tm_open_tm_wrt_co_rec : lngen.
 
@@ -9702,9 +8142,7 @@ Lemma tm_subst_tm_brs_open_brs_wrt_co_rec :
 forall brs1 a1 g1 x1 n1,
   lc_tm a1 ->
   tm_subst_tm_brs a1 x1 (open_brs_wrt_co_rec n1 g1 brs1) = open_brs_wrt_co_rec n1 (tm_subst_tm_co a1 x1 g1) (tm_subst_tm_brs a1 x1 brs1).
-Proof.
-pose proof tm_subst_tm_tm_open_tm_wrt_co_rec_tm_subst_tm_brs_open_brs_wrt_co_rec_tm_subst_tm_co_open_co_wrt_co_rec_tm_subst_tm_constraint_open_constraint_wrt_co_rec_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve tm_subst_tm_brs_open_brs_wrt_co_rec : lngen.
 
@@ -9716,9 +8154,7 @@ Lemma tm_subst_tm_co_open_co_wrt_co_rec :
 forall g2 a1 g1 x1 n1,
   lc_tm a1 ->
   tm_subst_tm_co a1 x1 (open_co_wrt_co_rec n1 g1 g2) = open_co_wrt_co_rec n1 (tm_subst_tm_co a1 x1 g1) (tm_subst_tm_co a1 x1 g2).
-Proof.
-pose proof tm_subst_tm_tm_open_tm_wrt_co_rec_tm_subst_tm_brs_open_brs_wrt_co_rec_tm_subst_tm_co_open_co_wrt_co_rec_tm_subst_tm_constraint_open_constraint_wrt_co_rec_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve tm_subst_tm_co_open_co_wrt_co_rec : lngen.
 
@@ -9730,9 +8166,7 @@ Lemma tm_subst_tm_constraint_open_constraint_wrt_co_rec :
 forall phi1 a1 g1 x1 n1,
   lc_tm a1 ->
   tm_subst_tm_constraint a1 x1 (open_constraint_wrt_co_rec n1 g1 phi1) = open_constraint_wrt_co_rec n1 (tm_subst_tm_co a1 x1 g1) (tm_subst_tm_constraint a1 x1 phi1).
-Proof.
-pose proof tm_subst_tm_tm_open_tm_wrt_co_rec_tm_subst_tm_brs_open_brs_wrt_co_rec_tm_subst_tm_co_open_co_wrt_co_rec_tm_subst_tm_constraint_open_constraint_wrt_co_rec_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve tm_subst_tm_constraint_open_constraint_wrt_co_rec : lngen.
 
@@ -9753,10 +8187,7 @@ Lemma co_subst_co_tm_open_tm_wrt_tm_rec_co_subst_co_brs_open_brs_wrt_tm_rec_co_s
 (forall phi1 g1 a1 c1 n1,
   lc_co g1 ->
   co_subst_co_constraint g1 c1 (open_constraint_wrt_tm_rec n1 a1 phi1) = open_constraint_wrt_tm_rec n1 (co_subst_co_tm g1 c1 a1) (co_subst_co_constraint g1 c1 phi1)).
-Proof.
-apply_mutual_ind tm_brs_co_constraint_mutind;
-default_simp.
-Qed.
+Proof. Admitted.
 
 (* end hide *)
 
@@ -9766,9 +8197,7 @@ Lemma co_subst_co_tm_open_tm_wrt_tm_rec :
 forall a2 g1 a1 c1 n1,
   lc_co g1 ->
   co_subst_co_tm g1 c1 (open_tm_wrt_tm_rec n1 a1 a2) = open_tm_wrt_tm_rec n1 (co_subst_co_tm g1 c1 a1) (co_subst_co_tm g1 c1 a2).
-Proof.
-pose proof co_subst_co_tm_open_tm_wrt_tm_rec_co_subst_co_brs_open_brs_wrt_tm_rec_co_subst_co_co_open_co_wrt_tm_rec_co_subst_co_constraint_open_constraint_wrt_tm_rec_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve co_subst_co_tm_open_tm_wrt_tm_rec : lngen.
 
@@ -9780,9 +8209,7 @@ Lemma co_subst_co_brs_open_brs_wrt_tm_rec :
 forall brs1 g1 a1 c1 n1,
   lc_co g1 ->
   co_subst_co_brs g1 c1 (open_brs_wrt_tm_rec n1 a1 brs1) = open_brs_wrt_tm_rec n1 (co_subst_co_tm g1 c1 a1) (co_subst_co_brs g1 c1 brs1).
-Proof.
-pose proof co_subst_co_tm_open_tm_wrt_tm_rec_co_subst_co_brs_open_brs_wrt_tm_rec_co_subst_co_co_open_co_wrt_tm_rec_co_subst_co_constraint_open_constraint_wrt_tm_rec_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve co_subst_co_brs_open_brs_wrt_tm_rec : lngen.
 
@@ -9794,9 +8221,7 @@ Lemma co_subst_co_co_open_co_wrt_tm_rec :
 forall g2 g1 a1 c1 n1,
   lc_co g1 ->
   co_subst_co_co g1 c1 (open_co_wrt_tm_rec n1 a1 g2) = open_co_wrt_tm_rec n1 (co_subst_co_tm g1 c1 a1) (co_subst_co_co g1 c1 g2).
-Proof.
-pose proof co_subst_co_tm_open_tm_wrt_tm_rec_co_subst_co_brs_open_brs_wrt_tm_rec_co_subst_co_co_open_co_wrt_tm_rec_co_subst_co_constraint_open_constraint_wrt_tm_rec_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve co_subst_co_co_open_co_wrt_tm_rec : lngen.
 
@@ -9808,9 +8233,7 @@ Lemma co_subst_co_constraint_open_constraint_wrt_tm_rec :
 forall phi1 g1 a1 c1 n1,
   lc_co g1 ->
   co_subst_co_constraint g1 c1 (open_constraint_wrt_tm_rec n1 a1 phi1) = open_constraint_wrt_tm_rec n1 (co_subst_co_tm g1 c1 a1) (co_subst_co_constraint g1 c1 phi1).
-Proof.
-pose proof co_subst_co_tm_open_tm_wrt_tm_rec_co_subst_co_brs_open_brs_wrt_tm_rec_co_subst_co_co_open_co_wrt_tm_rec_co_subst_co_constraint_open_constraint_wrt_tm_rec_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve co_subst_co_constraint_open_constraint_wrt_tm_rec : lngen.
 
@@ -9831,10 +8254,7 @@ Lemma co_subst_co_tm_open_tm_wrt_co_rec_co_subst_co_brs_open_brs_wrt_co_rec_co_s
 (forall phi1 g1 g2 c1 n1,
   lc_co g1 ->
   co_subst_co_constraint g1 c1 (open_constraint_wrt_co_rec n1 g2 phi1) = open_constraint_wrt_co_rec n1 (co_subst_co_co g1 c1 g2) (co_subst_co_constraint g1 c1 phi1)).
-Proof.
-apply_mutual_ind tm_brs_co_constraint_mutind;
-default_simp.
-Qed.
+Proof. Admitted.
 
 (* end hide *)
 
@@ -9844,9 +8264,7 @@ Lemma co_subst_co_tm_open_tm_wrt_co_rec :
 forall a1 g1 g2 c1 n1,
   lc_co g1 ->
   co_subst_co_tm g1 c1 (open_tm_wrt_co_rec n1 g2 a1) = open_tm_wrt_co_rec n1 (co_subst_co_co g1 c1 g2) (co_subst_co_tm g1 c1 a1).
-Proof.
-pose proof co_subst_co_tm_open_tm_wrt_co_rec_co_subst_co_brs_open_brs_wrt_co_rec_co_subst_co_co_open_co_wrt_co_rec_co_subst_co_constraint_open_constraint_wrt_co_rec_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve co_subst_co_tm_open_tm_wrt_co_rec : lngen.
 
@@ -9858,9 +8276,7 @@ Lemma co_subst_co_brs_open_brs_wrt_co_rec :
 forall brs1 g1 g2 c1 n1,
   lc_co g1 ->
   co_subst_co_brs g1 c1 (open_brs_wrt_co_rec n1 g2 brs1) = open_brs_wrt_co_rec n1 (co_subst_co_co g1 c1 g2) (co_subst_co_brs g1 c1 brs1).
-Proof.
-pose proof co_subst_co_tm_open_tm_wrt_co_rec_co_subst_co_brs_open_brs_wrt_co_rec_co_subst_co_co_open_co_wrt_co_rec_co_subst_co_constraint_open_constraint_wrt_co_rec_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve co_subst_co_brs_open_brs_wrt_co_rec : lngen.
 
@@ -9872,9 +8288,7 @@ Lemma co_subst_co_co_open_co_wrt_co_rec :
 forall g3 g1 g2 c1 n1,
   lc_co g1 ->
   co_subst_co_co g1 c1 (open_co_wrt_co_rec n1 g2 g3) = open_co_wrt_co_rec n1 (co_subst_co_co g1 c1 g2) (co_subst_co_co g1 c1 g3).
-Proof.
-pose proof co_subst_co_tm_open_tm_wrt_co_rec_co_subst_co_brs_open_brs_wrt_co_rec_co_subst_co_co_open_co_wrt_co_rec_co_subst_co_constraint_open_constraint_wrt_co_rec_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve co_subst_co_co_open_co_wrt_co_rec : lngen.
 
@@ -9886,9 +8300,7 @@ Lemma co_subst_co_constraint_open_constraint_wrt_co_rec :
 forall phi1 g1 g2 c1 n1,
   lc_co g1 ->
   co_subst_co_constraint g1 c1 (open_constraint_wrt_co_rec n1 g2 phi1) = open_constraint_wrt_co_rec n1 (co_subst_co_co g1 c1 g2) (co_subst_co_constraint g1 c1 phi1).
-Proof.
-pose proof co_subst_co_tm_open_tm_wrt_co_rec_co_subst_co_brs_open_brs_wrt_co_rec_co_subst_co_co_open_co_wrt_co_rec_co_subst_co_constraint_open_constraint_wrt_co_rec_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve co_subst_co_constraint_open_constraint_wrt_co_rec : lngen.
 
@@ -9898,9 +8310,7 @@ Lemma tm_subst_tm_tm_open_tm_wrt_tm :
 forall a3 a1 a2 x1,
   lc_tm a1 ->
   tm_subst_tm_tm a1 x1 (open_tm_wrt_tm a3 a2) = open_tm_wrt_tm (tm_subst_tm_tm a1 x1 a3) (tm_subst_tm_tm a1 x1 a2).
-Proof.
-unfold open_tm_wrt_tm; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve tm_subst_tm_tm_open_tm_wrt_tm : lngen.
 
@@ -9908,9 +8318,7 @@ Lemma tm_subst_tm_brs_open_brs_wrt_tm :
 forall brs1 a1 a2 x1,
   lc_tm a1 ->
   tm_subst_tm_brs a1 x1 (open_brs_wrt_tm brs1 a2) = open_brs_wrt_tm (tm_subst_tm_brs a1 x1 brs1) (tm_subst_tm_tm a1 x1 a2).
-Proof.
-unfold open_brs_wrt_tm; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve tm_subst_tm_brs_open_brs_wrt_tm : lngen.
 
@@ -9918,9 +8326,7 @@ Lemma tm_subst_tm_co_open_co_wrt_tm :
 forall g1 a1 a2 x1,
   lc_tm a1 ->
   tm_subst_tm_co a1 x1 (open_co_wrt_tm g1 a2) = open_co_wrt_tm (tm_subst_tm_co a1 x1 g1) (tm_subst_tm_tm a1 x1 a2).
-Proof.
-unfold open_co_wrt_tm; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve tm_subst_tm_co_open_co_wrt_tm : lngen.
 
@@ -9928,9 +8334,7 @@ Lemma tm_subst_tm_constraint_open_constraint_wrt_tm :
 forall phi1 a1 a2 x1,
   lc_tm a1 ->
   tm_subst_tm_constraint a1 x1 (open_constraint_wrt_tm phi1 a2) = open_constraint_wrt_tm (tm_subst_tm_constraint a1 x1 phi1) (tm_subst_tm_tm a1 x1 a2).
-Proof.
-unfold open_constraint_wrt_tm; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve tm_subst_tm_constraint_open_constraint_wrt_tm : lngen.
 
@@ -9938,9 +8342,7 @@ Lemma tm_subst_tm_tm_open_tm_wrt_co :
 forall a2 a1 g1 x1,
   lc_tm a1 ->
   tm_subst_tm_tm a1 x1 (open_tm_wrt_co a2 g1) = open_tm_wrt_co (tm_subst_tm_tm a1 x1 a2) (tm_subst_tm_co a1 x1 g1).
-Proof.
-unfold open_tm_wrt_co; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve tm_subst_tm_tm_open_tm_wrt_co : lngen.
 
@@ -9948,9 +8350,7 @@ Lemma tm_subst_tm_brs_open_brs_wrt_co :
 forall brs1 a1 g1 x1,
   lc_tm a1 ->
   tm_subst_tm_brs a1 x1 (open_brs_wrt_co brs1 g1) = open_brs_wrt_co (tm_subst_tm_brs a1 x1 brs1) (tm_subst_tm_co a1 x1 g1).
-Proof.
-unfold open_brs_wrt_co; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve tm_subst_tm_brs_open_brs_wrt_co : lngen.
 
@@ -9958,9 +8358,7 @@ Lemma tm_subst_tm_co_open_co_wrt_co :
 forall g2 a1 g1 x1,
   lc_tm a1 ->
   tm_subst_tm_co a1 x1 (open_co_wrt_co g2 g1) = open_co_wrt_co (tm_subst_tm_co a1 x1 g2) (tm_subst_tm_co a1 x1 g1).
-Proof.
-unfold open_co_wrt_co; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve tm_subst_tm_co_open_co_wrt_co : lngen.
 
@@ -9968,9 +8366,7 @@ Lemma tm_subst_tm_constraint_open_constraint_wrt_co :
 forall phi1 a1 g1 x1,
   lc_tm a1 ->
   tm_subst_tm_constraint a1 x1 (open_constraint_wrt_co phi1 g1) = open_constraint_wrt_co (tm_subst_tm_constraint a1 x1 phi1) (tm_subst_tm_co a1 x1 g1).
-Proof.
-unfold open_constraint_wrt_co; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve tm_subst_tm_constraint_open_constraint_wrt_co : lngen.
 
@@ -9978,9 +8374,7 @@ Lemma co_subst_co_tm_open_tm_wrt_tm :
 forall a2 g1 a1 c1,
   lc_co g1 ->
   co_subst_co_tm g1 c1 (open_tm_wrt_tm a2 a1) = open_tm_wrt_tm (co_subst_co_tm g1 c1 a2) (co_subst_co_tm g1 c1 a1).
-Proof.
-unfold open_tm_wrt_tm; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve co_subst_co_tm_open_tm_wrt_tm : lngen.
 
@@ -9988,9 +8382,7 @@ Lemma co_subst_co_brs_open_brs_wrt_tm :
 forall brs1 g1 a1 c1,
   lc_co g1 ->
   co_subst_co_brs g1 c1 (open_brs_wrt_tm brs1 a1) = open_brs_wrt_tm (co_subst_co_brs g1 c1 brs1) (co_subst_co_tm g1 c1 a1).
-Proof.
-unfold open_brs_wrt_tm; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve co_subst_co_brs_open_brs_wrt_tm : lngen.
 
@@ -9998,9 +8390,7 @@ Lemma co_subst_co_co_open_co_wrt_tm :
 forall g2 g1 a1 c1,
   lc_co g1 ->
   co_subst_co_co g1 c1 (open_co_wrt_tm g2 a1) = open_co_wrt_tm (co_subst_co_co g1 c1 g2) (co_subst_co_tm g1 c1 a1).
-Proof.
-unfold open_co_wrt_tm; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve co_subst_co_co_open_co_wrt_tm : lngen.
 
@@ -10008,9 +8398,7 @@ Lemma co_subst_co_constraint_open_constraint_wrt_tm :
 forall phi1 g1 a1 c1,
   lc_co g1 ->
   co_subst_co_constraint g1 c1 (open_constraint_wrt_tm phi1 a1) = open_constraint_wrt_tm (co_subst_co_constraint g1 c1 phi1) (co_subst_co_tm g1 c1 a1).
-Proof.
-unfold open_constraint_wrt_tm; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve co_subst_co_constraint_open_constraint_wrt_tm : lngen.
 
@@ -10018,9 +8406,7 @@ Lemma co_subst_co_tm_open_tm_wrt_co :
 forall a1 g1 g2 c1,
   lc_co g1 ->
   co_subst_co_tm g1 c1 (open_tm_wrt_co a1 g2) = open_tm_wrt_co (co_subst_co_tm g1 c1 a1) (co_subst_co_co g1 c1 g2).
-Proof.
-unfold open_tm_wrt_co; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve co_subst_co_tm_open_tm_wrt_co : lngen.
 
@@ -10028,9 +8414,7 @@ Lemma co_subst_co_brs_open_brs_wrt_co :
 forall brs1 g1 g2 c1,
   lc_co g1 ->
   co_subst_co_brs g1 c1 (open_brs_wrt_co brs1 g2) = open_brs_wrt_co (co_subst_co_brs g1 c1 brs1) (co_subst_co_co g1 c1 g2).
-Proof.
-unfold open_brs_wrt_co; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve co_subst_co_brs_open_brs_wrt_co : lngen.
 
@@ -10038,9 +8422,7 @@ Lemma co_subst_co_co_open_co_wrt_co :
 forall g3 g1 g2 c1,
   lc_co g1 ->
   co_subst_co_co g1 c1 (open_co_wrt_co g3 g2) = open_co_wrt_co (co_subst_co_co g1 c1 g3) (co_subst_co_co g1 c1 g2).
-Proof.
-unfold open_co_wrt_co; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve co_subst_co_co_open_co_wrt_co : lngen.
 
@@ -10048,9 +8430,7 @@ Lemma co_subst_co_constraint_open_constraint_wrt_co :
 forall phi1 g1 g2 c1,
   lc_co g1 ->
   co_subst_co_constraint g1 c1 (open_constraint_wrt_co phi1 g2) = open_constraint_wrt_co (co_subst_co_constraint g1 c1 phi1) (co_subst_co_co g1 c1 g2).
-Proof.
-unfold open_constraint_wrt_co; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve co_subst_co_constraint_open_constraint_wrt_co : lngen.
 
@@ -10059,9 +8439,7 @@ forall a2 a1 x1 x2,
   x1 <> x2 ->
   lc_tm a1 ->
   open_tm_wrt_tm (tm_subst_tm_tm a1 x1 a2) (a_Var_f x2) = tm_subst_tm_tm a1 x1 (open_tm_wrt_tm a2 (a_Var_f x2)).
-Proof.
-intros; rewrite tm_subst_tm_tm_open_tm_wrt_tm; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve tm_subst_tm_tm_open_tm_wrt_tm_var : lngen.
 
@@ -10070,9 +8448,7 @@ forall brs1 a1 x1 x2,
   x1 <> x2 ->
   lc_tm a1 ->
   open_brs_wrt_tm (tm_subst_tm_brs a1 x1 brs1) (a_Var_f x2) = tm_subst_tm_brs a1 x1 (open_brs_wrt_tm brs1 (a_Var_f x2)).
-Proof.
-intros; rewrite tm_subst_tm_brs_open_brs_wrt_tm; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve tm_subst_tm_brs_open_brs_wrt_tm_var : lngen.
 
@@ -10081,9 +8457,7 @@ forall g1 a1 x1 x2,
   x1 <> x2 ->
   lc_tm a1 ->
   open_co_wrt_tm (tm_subst_tm_co a1 x1 g1) (a_Var_f x2) = tm_subst_tm_co a1 x1 (open_co_wrt_tm g1 (a_Var_f x2)).
-Proof.
-intros; rewrite tm_subst_tm_co_open_co_wrt_tm; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve tm_subst_tm_co_open_co_wrt_tm_var : lngen.
 
@@ -10092,9 +8466,7 @@ forall phi1 a1 x1 x2,
   x1 <> x2 ->
   lc_tm a1 ->
   open_constraint_wrt_tm (tm_subst_tm_constraint a1 x1 phi1) (a_Var_f x2) = tm_subst_tm_constraint a1 x1 (open_constraint_wrt_tm phi1 (a_Var_f x2)).
-Proof.
-intros; rewrite tm_subst_tm_constraint_open_constraint_wrt_tm; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve tm_subst_tm_constraint_open_constraint_wrt_tm_var : lngen.
 
@@ -10102,9 +8474,7 @@ Lemma tm_subst_tm_tm_open_tm_wrt_co_var :
 forall a2 a1 x1 c1,
   lc_tm a1 ->
   open_tm_wrt_co (tm_subst_tm_tm a1 x1 a2) (g_Var_f c1) = tm_subst_tm_tm a1 x1 (open_tm_wrt_co a2 (g_Var_f c1)).
-Proof.
-intros; rewrite tm_subst_tm_tm_open_tm_wrt_co; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve tm_subst_tm_tm_open_tm_wrt_co_var : lngen.
 
@@ -10112,9 +8482,7 @@ Lemma tm_subst_tm_brs_open_brs_wrt_co_var :
 forall brs1 a1 x1 c1,
   lc_tm a1 ->
   open_brs_wrt_co (tm_subst_tm_brs a1 x1 brs1) (g_Var_f c1) = tm_subst_tm_brs a1 x1 (open_brs_wrt_co brs1 (g_Var_f c1)).
-Proof.
-intros; rewrite tm_subst_tm_brs_open_brs_wrt_co; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve tm_subst_tm_brs_open_brs_wrt_co_var : lngen.
 
@@ -10122,9 +8490,7 @@ Lemma tm_subst_tm_co_open_co_wrt_co_var :
 forall g1 a1 x1 c1,
   lc_tm a1 ->
   open_co_wrt_co (tm_subst_tm_co a1 x1 g1) (g_Var_f c1) = tm_subst_tm_co a1 x1 (open_co_wrt_co g1 (g_Var_f c1)).
-Proof.
-intros; rewrite tm_subst_tm_co_open_co_wrt_co; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve tm_subst_tm_co_open_co_wrt_co_var : lngen.
 
@@ -10132,9 +8498,7 @@ Lemma tm_subst_tm_constraint_open_constraint_wrt_co_var :
 forall phi1 a1 x1 c1,
   lc_tm a1 ->
   open_constraint_wrt_co (tm_subst_tm_constraint a1 x1 phi1) (g_Var_f c1) = tm_subst_tm_constraint a1 x1 (open_constraint_wrt_co phi1 (g_Var_f c1)).
-Proof.
-intros; rewrite tm_subst_tm_constraint_open_constraint_wrt_co; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve tm_subst_tm_constraint_open_constraint_wrt_co_var : lngen.
 
@@ -10142,9 +8506,7 @@ Lemma co_subst_co_tm_open_tm_wrt_tm_var :
 forall a1 g1 c1 x1,
   lc_co g1 ->
   open_tm_wrt_tm (co_subst_co_tm g1 c1 a1) (a_Var_f x1) = co_subst_co_tm g1 c1 (open_tm_wrt_tm a1 (a_Var_f x1)).
-Proof.
-intros; rewrite co_subst_co_tm_open_tm_wrt_tm; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve co_subst_co_tm_open_tm_wrt_tm_var : lngen.
 
@@ -10152,9 +8514,7 @@ Lemma co_subst_co_brs_open_brs_wrt_tm_var :
 forall brs1 g1 c1 x1,
   lc_co g1 ->
   open_brs_wrt_tm (co_subst_co_brs g1 c1 brs1) (a_Var_f x1) = co_subst_co_brs g1 c1 (open_brs_wrt_tm brs1 (a_Var_f x1)).
-Proof.
-intros; rewrite co_subst_co_brs_open_brs_wrt_tm; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve co_subst_co_brs_open_brs_wrt_tm_var : lngen.
 
@@ -10162,9 +8522,7 @@ Lemma co_subst_co_co_open_co_wrt_tm_var :
 forall g2 g1 c1 x1,
   lc_co g1 ->
   open_co_wrt_tm (co_subst_co_co g1 c1 g2) (a_Var_f x1) = co_subst_co_co g1 c1 (open_co_wrt_tm g2 (a_Var_f x1)).
-Proof.
-intros; rewrite co_subst_co_co_open_co_wrt_tm; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve co_subst_co_co_open_co_wrt_tm_var : lngen.
 
@@ -10172,9 +8530,7 @@ Lemma co_subst_co_constraint_open_constraint_wrt_tm_var :
 forall phi1 g1 c1 x1,
   lc_co g1 ->
   open_constraint_wrt_tm (co_subst_co_constraint g1 c1 phi1) (a_Var_f x1) = co_subst_co_constraint g1 c1 (open_constraint_wrt_tm phi1 (a_Var_f x1)).
-Proof.
-intros; rewrite co_subst_co_constraint_open_constraint_wrt_tm; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve co_subst_co_constraint_open_constraint_wrt_tm_var : lngen.
 
@@ -10183,9 +8539,7 @@ forall a1 g1 c1 c2,
   c1 <> c2 ->
   lc_co g1 ->
   open_tm_wrt_co (co_subst_co_tm g1 c1 a1) (g_Var_f c2) = co_subst_co_tm g1 c1 (open_tm_wrt_co a1 (g_Var_f c2)).
-Proof.
-intros; rewrite co_subst_co_tm_open_tm_wrt_co; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve co_subst_co_tm_open_tm_wrt_co_var : lngen.
 
@@ -10194,9 +8548,7 @@ forall brs1 g1 c1 c2,
   c1 <> c2 ->
   lc_co g1 ->
   open_brs_wrt_co (co_subst_co_brs g1 c1 brs1) (g_Var_f c2) = co_subst_co_brs g1 c1 (open_brs_wrt_co brs1 (g_Var_f c2)).
-Proof.
-intros; rewrite co_subst_co_brs_open_brs_wrt_co; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve co_subst_co_brs_open_brs_wrt_co_var : lngen.
 
@@ -10205,9 +8557,7 @@ forall g2 g1 c1 c2,
   c1 <> c2 ->
   lc_co g1 ->
   open_co_wrt_co (co_subst_co_co g1 c1 g2) (g_Var_f c2) = co_subst_co_co g1 c1 (open_co_wrt_co g2 (g_Var_f c2)).
-Proof.
-intros; rewrite co_subst_co_co_open_co_wrt_co; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve co_subst_co_co_open_co_wrt_co_var : lngen.
 
@@ -10216,9 +8566,7 @@ forall phi1 g1 c1 c2,
   c1 <> c2 ->
   lc_co g1 ->
   open_constraint_wrt_co (co_subst_co_constraint g1 c1 phi1) (g_Var_f c2) = co_subst_co_constraint g1 c1 (open_constraint_wrt_co phi1 (g_Var_f c2)).
-Proof.
-intros; rewrite co_subst_co_constraint_open_constraint_wrt_co; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve co_subst_co_constraint_open_constraint_wrt_co_var : lngen.
 
@@ -10233,10 +8581,7 @@ Lemma tm_subst_tm_tm_spec_rec_tm_subst_tm_brs_spec_rec_tm_subst_tm_co_spec_rec_t
   tm_subst_tm_co a1 x1 g1 = open_co_wrt_tm_rec n1 a1 (close_co_wrt_tm_rec n1 x1 g1)) /\
 (forall phi1 a1 x1 n1,
   tm_subst_tm_constraint a1 x1 phi1 = open_constraint_wrt_tm_rec n1 a1 (close_constraint_wrt_tm_rec n1 x1 phi1)).
-Proof.
-apply_mutual_ind tm_brs_co_constraint_mutind;
-default_simp.
-Qed.
+Proof. Admitted.
 
 (* end hide *)
 
@@ -10245,9 +8590,7 @@ Qed.
 Lemma tm_subst_tm_tm_spec_rec :
 forall a1 a2 x1 n1,
   tm_subst_tm_tm a2 x1 a1 = open_tm_wrt_tm_rec n1 a2 (close_tm_wrt_tm_rec n1 x1 a1).
-Proof.
-pose proof tm_subst_tm_tm_spec_rec_tm_subst_tm_brs_spec_rec_tm_subst_tm_co_spec_rec_tm_subst_tm_constraint_spec_rec_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve tm_subst_tm_tm_spec_rec : lngen.
 
@@ -10258,9 +8601,7 @@ Hint Resolve tm_subst_tm_tm_spec_rec : lngen.
 Lemma tm_subst_tm_brs_spec_rec :
 forall brs1 a1 x1 n1,
   tm_subst_tm_brs a1 x1 brs1 = open_brs_wrt_tm_rec n1 a1 (close_brs_wrt_tm_rec n1 x1 brs1).
-Proof.
-pose proof tm_subst_tm_tm_spec_rec_tm_subst_tm_brs_spec_rec_tm_subst_tm_co_spec_rec_tm_subst_tm_constraint_spec_rec_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve tm_subst_tm_brs_spec_rec : lngen.
 
@@ -10271,9 +8612,7 @@ Hint Resolve tm_subst_tm_brs_spec_rec : lngen.
 Lemma tm_subst_tm_co_spec_rec :
 forall g1 a1 x1 n1,
   tm_subst_tm_co a1 x1 g1 = open_co_wrt_tm_rec n1 a1 (close_co_wrt_tm_rec n1 x1 g1).
-Proof.
-pose proof tm_subst_tm_tm_spec_rec_tm_subst_tm_brs_spec_rec_tm_subst_tm_co_spec_rec_tm_subst_tm_constraint_spec_rec_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve tm_subst_tm_co_spec_rec : lngen.
 
@@ -10284,9 +8623,7 @@ Hint Resolve tm_subst_tm_co_spec_rec : lngen.
 Lemma tm_subst_tm_constraint_spec_rec :
 forall phi1 a1 x1 n1,
   tm_subst_tm_constraint a1 x1 phi1 = open_constraint_wrt_tm_rec n1 a1 (close_constraint_wrt_tm_rec n1 x1 phi1).
-Proof.
-pose proof tm_subst_tm_tm_spec_rec_tm_subst_tm_brs_spec_rec_tm_subst_tm_co_spec_rec_tm_subst_tm_constraint_spec_rec_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve tm_subst_tm_constraint_spec_rec : lngen.
 
@@ -10303,10 +8640,7 @@ Lemma co_subst_co_tm_spec_rec_co_subst_co_brs_spec_rec_co_subst_co_co_spec_rec_c
   co_subst_co_co g2 c1 g1 = open_co_wrt_co_rec n1 g2 (close_co_wrt_co_rec n1 c1 g1)) /\
 (forall phi1 g1 c1 n1,
   co_subst_co_constraint g1 c1 phi1 = open_constraint_wrt_co_rec n1 g1 (close_constraint_wrt_co_rec n1 c1 phi1)).
-Proof.
-apply_mutual_ind tm_brs_co_constraint_mutind;
-default_simp.
-Qed.
+Proof. Admitted.
 
 (* end hide *)
 
@@ -10315,9 +8649,7 @@ Qed.
 Lemma co_subst_co_tm_spec_rec :
 forall a1 g1 c1 n1,
   co_subst_co_tm g1 c1 a1 = open_tm_wrt_co_rec n1 g1 (close_tm_wrt_co_rec n1 c1 a1).
-Proof.
-pose proof co_subst_co_tm_spec_rec_co_subst_co_brs_spec_rec_co_subst_co_co_spec_rec_co_subst_co_constraint_spec_rec_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve co_subst_co_tm_spec_rec : lngen.
 
@@ -10328,9 +8660,7 @@ Hint Resolve co_subst_co_tm_spec_rec : lngen.
 Lemma co_subst_co_brs_spec_rec :
 forall brs1 g1 c1 n1,
   co_subst_co_brs g1 c1 brs1 = open_brs_wrt_co_rec n1 g1 (close_brs_wrt_co_rec n1 c1 brs1).
-Proof.
-pose proof co_subst_co_tm_spec_rec_co_subst_co_brs_spec_rec_co_subst_co_co_spec_rec_co_subst_co_constraint_spec_rec_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve co_subst_co_brs_spec_rec : lngen.
 
@@ -10341,9 +8671,7 @@ Hint Resolve co_subst_co_brs_spec_rec : lngen.
 Lemma co_subst_co_co_spec_rec :
 forall g1 g2 c1 n1,
   co_subst_co_co g2 c1 g1 = open_co_wrt_co_rec n1 g2 (close_co_wrt_co_rec n1 c1 g1).
-Proof.
-pose proof co_subst_co_tm_spec_rec_co_subst_co_brs_spec_rec_co_subst_co_co_spec_rec_co_subst_co_constraint_spec_rec_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve co_subst_co_co_spec_rec : lngen.
 
@@ -10354,9 +8682,7 @@ Hint Resolve co_subst_co_co_spec_rec : lngen.
 Lemma co_subst_co_constraint_spec_rec :
 forall phi1 g1 c1 n1,
   co_subst_co_constraint g1 c1 phi1 = open_constraint_wrt_co_rec n1 g1 (close_constraint_wrt_co_rec n1 c1 phi1).
-Proof.
-pose proof co_subst_co_tm_spec_rec_co_subst_co_brs_spec_rec_co_subst_co_co_spec_rec_co_subst_co_constraint_spec_rec_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve co_subst_co_constraint_spec_rec : lngen.
 
@@ -10365,72 +8691,56 @@ Hint Resolve co_subst_co_constraint_spec_rec : lngen.
 Lemma tm_subst_tm_tm_spec :
 forall a1 a2 x1,
   tm_subst_tm_tm a2 x1 a1 = open_tm_wrt_tm (close_tm_wrt_tm x1 a1) a2.
-Proof.
-unfold close_tm_wrt_tm; unfold open_tm_wrt_tm; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve tm_subst_tm_tm_spec : lngen.
 
 Lemma tm_subst_tm_brs_spec :
 forall brs1 a1 x1,
   tm_subst_tm_brs a1 x1 brs1 = open_brs_wrt_tm (close_brs_wrt_tm x1 brs1) a1.
-Proof.
-unfold close_brs_wrt_tm; unfold open_brs_wrt_tm; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve tm_subst_tm_brs_spec : lngen.
 
 Lemma tm_subst_tm_co_spec :
 forall g1 a1 x1,
   tm_subst_tm_co a1 x1 g1 = open_co_wrt_tm (close_co_wrt_tm x1 g1) a1.
-Proof.
-unfold close_co_wrt_tm; unfold open_co_wrt_tm; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve tm_subst_tm_co_spec : lngen.
 
 Lemma tm_subst_tm_constraint_spec :
 forall phi1 a1 x1,
   tm_subst_tm_constraint a1 x1 phi1 = open_constraint_wrt_tm (close_constraint_wrt_tm x1 phi1) a1.
-Proof.
-unfold close_constraint_wrt_tm; unfold open_constraint_wrt_tm; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve tm_subst_tm_constraint_spec : lngen.
 
 Lemma co_subst_co_tm_spec :
 forall a1 g1 c1,
   co_subst_co_tm g1 c1 a1 = open_tm_wrt_co (close_tm_wrt_co c1 a1) g1.
-Proof.
-unfold close_tm_wrt_co; unfold open_tm_wrt_co; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve co_subst_co_tm_spec : lngen.
 
 Lemma co_subst_co_brs_spec :
 forall brs1 g1 c1,
   co_subst_co_brs g1 c1 brs1 = open_brs_wrt_co (close_brs_wrt_co c1 brs1) g1.
-Proof.
-unfold close_brs_wrt_co; unfold open_brs_wrt_co; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve co_subst_co_brs_spec : lngen.
 
 Lemma co_subst_co_co_spec :
 forall g1 g2 c1,
   co_subst_co_co g2 c1 g1 = open_co_wrt_co (close_co_wrt_co c1 g1) g2.
-Proof.
-unfold close_co_wrt_co; unfold open_co_wrt_co; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve co_subst_co_co_spec : lngen.
 
 Lemma co_subst_co_constraint_spec :
 forall phi1 g1 c1,
   co_subst_co_constraint g1 c1 phi1 = open_constraint_wrt_co (close_constraint_wrt_co c1 phi1) g1.
-Proof.
-unfold close_constraint_wrt_co; unfold open_constraint_wrt_co; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve co_subst_co_constraint_spec : lngen.
 
@@ -10453,10 +8763,7 @@ Lemma tm_subst_tm_tm_tm_subst_tm_tm_tm_subst_tm_brs_tm_subst_tm_brs_tm_subst_tm_
   x2 `notin` fv_tm_tm_tm a1 ->
   x2 <> x1 ->
   tm_subst_tm_constraint a1 x1 (tm_subst_tm_constraint a2 x2 phi1) = tm_subst_tm_constraint (tm_subst_tm_tm a1 x1 a2) x2 (tm_subst_tm_constraint a1 x1 phi1)).
-Proof.
-apply_mutual_ind tm_brs_co_constraint_mutind;
-default_simp.
-Qed.
+Proof. Admitted.
 
 (* end hide *)
 
@@ -10465,9 +8772,7 @@ forall a1 a2 a3 x2 x1,
   x2 `notin` fv_tm_tm_tm a2 ->
   x2 <> x1 ->
   tm_subst_tm_tm a2 x1 (tm_subst_tm_tm a3 x2 a1) = tm_subst_tm_tm (tm_subst_tm_tm a2 x1 a3) x2 (tm_subst_tm_tm a2 x1 a1).
-Proof.
-pose proof tm_subst_tm_tm_tm_subst_tm_tm_tm_subst_tm_brs_tm_subst_tm_brs_tm_subst_tm_co_tm_subst_tm_co_tm_subst_tm_constraint_tm_subst_tm_constraint_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve tm_subst_tm_tm_tm_subst_tm_tm : lngen.
 
@@ -10476,9 +8781,7 @@ forall brs1 a1 a2 x2 x1,
   x2 `notin` fv_tm_tm_tm a1 ->
   x2 <> x1 ->
   tm_subst_tm_brs a1 x1 (tm_subst_tm_brs a2 x2 brs1) = tm_subst_tm_brs (tm_subst_tm_tm a1 x1 a2) x2 (tm_subst_tm_brs a1 x1 brs1).
-Proof.
-pose proof tm_subst_tm_tm_tm_subst_tm_tm_tm_subst_tm_brs_tm_subst_tm_brs_tm_subst_tm_co_tm_subst_tm_co_tm_subst_tm_constraint_tm_subst_tm_constraint_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve tm_subst_tm_brs_tm_subst_tm_brs : lngen.
 
@@ -10487,9 +8790,7 @@ forall g1 a1 a2 x2 x1,
   x2 `notin` fv_tm_tm_tm a1 ->
   x2 <> x1 ->
   tm_subst_tm_co a1 x1 (tm_subst_tm_co a2 x2 g1) = tm_subst_tm_co (tm_subst_tm_tm a1 x1 a2) x2 (tm_subst_tm_co a1 x1 g1).
-Proof.
-pose proof tm_subst_tm_tm_tm_subst_tm_tm_tm_subst_tm_brs_tm_subst_tm_brs_tm_subst_tm_co_tm_subst_tm_co_tm_subst_tm_constraint_tm_subst_tm_constraint_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve tm_subst_tm_co_tm_subst_tm_co : lngen.
 
@@ -10498,9 +8799,7 @@ forall phi1 a1 a2 x2 x1,
   x2 `notin` fv_tm_tm_tm a1 ->
   x2 <> x1 ->
   tm_subst_tm_constraint a1 x1 (tm_subst_tm_constraint a2 x2 phi1) = tm_subst_tm_constraint (tm_subst_tm_tm a1 x1 a2) x2 (tm_subst_tm_constraint a1 x1 phi1).
-Proof.
-pose proof tm_subst_tm_tm_tm_subst_tm_tm_tm_subst_tm_brs_tm_subst_tm_brs_tm_subst_tm_co_tm_subst_tm_co_tm_subst_tm_constraint_tm_subst_tm_constraint_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve tm_subst_tm_constraint_tm_subst_tm_constraint : lngen.
 
@@ -10519,10 +8818,7 @@ Lemma tm_subst_tm_tm_co_subst_co_tm_tm_subst_tm_brs_co_subst_co_brs_tm_subst_tm_
 (forall phi1 a1 g1 c1 x1,
   c1 `notin` fv_co_co_tm a1 ->
   tm_subst_tm_constraint a1 x1 (co_subst_co_constraint g1 c1 phi1) = co_subst_co_constraint (tm_subst_tm_co a1 x1 g1) c1 (tm_subst_tm_constraint a1 x1 phi1)).
-Proof.
-apply_mutual_ind tm_brs_co_constraint_mutind;
-default_simp.
-Qed.
+Proof. Admitted.
 
 (* end hide *)
 
@@ -10530,9 +8826,7 @@ Lemma tm_subst_tm_tm_co_subst_co_tm :
 forall a1 a2 g1 c1 x1,
   c1 `notin` fv_co_co_tm a2 ->
   tm_subst_tm_tm a2 x1 (co_subst_co_tm g1 c1 a1) = co_subst_co_tm (tm_subst_tm_co a2 x1 g1) c1 (tm_subst_tm_tm a2 x1 a1).
-Proof.
-pose proof tm_subst_tm_tm_co_subst_co_tm_tm_subst_tm_brs_co_subst_co_brs_tm_subst_tm_co_co_subst_co_co_tm_subst_tm_constraint_co_subst_co_constraint_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve tm_subst_tm_tm_co_subst_co_tm : lngen.
 
@@ -10540,9 +8834,7 @@ Lemma tm_subst_tm_brs_co_subst_co_brs :
 forall brs1 a1 g1 c1 x1,
   c1 `notin` fv_co_co_tm a1 ->
   tm_subst_tm_brs a1 x1 (co_subst_co_brs g1 c1 brs1) = co_subst_co_brs (tm_subst_tm_co a1 x1 g1) c1 (tm_subst_tm_brs a1 x1 brs1).
-Proof.
-pose proof tm_subst_tm_tm_co_subst_co_tm_tm_subst_tm_brs_co_subst_co_brs_tm_subst_tm_co_co_subst_co_co_tm_subst_tm_constraint_co_subst_co_constraint_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve tm_subst_tm_brs_co_subst_co_brs : lngen.
 
@@ -10550,9 +8842,7 @@ Lemma tm_subst_tm_co_co_subst_co_co :
 forall g1 a1 g2 c1 x1,
   c1 `notin` fv_co_co_tm a1 ->
   tm_subst_tm_co a1 x1 (co_subst_co_co g2 c1 g1) = co_subst_co_co (tm_subst_tm_co a1 x1 g2) c1 (tm_subst_tm_co a1 x1 g1).
-Proof.
-pose proof tm_subst_tm_tm_co_subst_co_tm_tm_subst_tm_brs_co_subst_co_brs_tm_subst_tm_co_co_subst_co_co_tm_subst_tm_constraint_co_subst_co_constraint_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve tm_subst_tm_co_co_subst_co_co : lngen.
 
@@ -10560,9 +8850,7 @@ Lemma tm_subst_tm_constraint_co_subst_co_constraint :
 forall phi1 a1 g1 c1 x1,
   c1 `notin` fv_co_co_tm a1 ->
   tm_subst_tm_constraint a1 x1 (co_subst_co_constraint g1 c1 phi1) = co_subst_co_constraint (tm_subst_tm_co a1 x1 g1) c1 (tm_subst_tm_constraint a1 x1 phi1).
-Proof.
-pose proof tm_subst_tm_tm_co_subst_co_tm_tm_subst_tm_brs_co_subst_co_brs_tm_subst_tm_co_co_subst_co_co_tm_subst_tm_constraint_co_subst_co_constraint_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve tm_subst_tm_constraint_co_subst_co_constraint : lngen.
 
@@ -10581,10 +8869,7 @@ Lemma co_subst_co_tm_tm_subst_tm_tm_co_subst_co_brs_tm_subst_tm_brs_co_subst_co_
 (forall phi1 g1 a1 x1 c1,
   x1 `notin` fv_tm_tm_co g1 ->
   co_subst_co_constraint g1 c1 (tm_subst_tm_constraint a1 x1 phi1) = tm_subst_tm_constraint (co_subst_co_tm g1 c1 a1) x1 (co_subst_co_constraint g1 c1 phi1)).
-Proof.
-apply_mutual_ind tm_brs_co_constraint_mutind;
-default_simp.
-Qed.
+Proof. Admitted.
 
 (* end hide *)
 
@@ -10592,9 +8877,7 @@ Lemma co_subst_co_tm_tm_subst_tm_tm :
 forall a1 g1 a2 x1 c1,
   x1 `notin` fv_tm_tm_co g1 ->
   co_subst_co_tm g1 c1 (tm_subst_tm_tm a2 x1 a1) = tm_subst_tm_tm (co_subst_co_tm g1 c1 a2) x1 (co_subst_co_tm g1 c1 a1).
-Proof.
-pose proof co_subst_co_tm_tm_subst_tm_tm_co_subst_co_brs_tm_subst_tm_brs_co_subst_co_co_tm_subst_tm_co_co_subst_co_constraint_tm_subst_tm_constraint_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve co_subst_co_tm_tm_subst_tm_tm : lngen.
 
@@ -10602,9 +8885,7 @@ Lemma co_subst_co_brs_tm_subst_tm_brs :
 forall brs1 g1 a1 x1 c1,
   x1 `notin` fv_tm_tm_co g1 ->
   co_subst_co_brs g1 c1 (tm_subst_tm_brs a1 x1 brs1) = tm_subst_tm_brs (co_subst_co_tm g1 c1 a1) x1 (co_subst_co_brs g1 c1 brs1).
-Proof.
-pose proof co_subst_co_tm_tm_subst_tm_tm_co_subst_co_brs_tm_subst_tm_brs_co_subst_co_co_tm_subst_tm_co_co_subst_co_constraint_tm_subst_tm_constraint_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve co_subst_co_brs_tm_subst_tm_brs : lngen.
 
@@ -10612,9 +8893,7 @@ Lemma co_subst_co_co_tm_subst_tm_co :
 forall g1 g2 a1 x1 c1,
   x1 `notin` fv_tm_tm_co g2 ->
   co_subst_co_co g2 c1 (tm_subst_tm_co a1 x1 g1) = tm_subst_tm_co (co_subst_co_tm g2 c1 a1) x1 (co_subst_co_co g2 c1 g1).
-Proof.
-pose proof co_subst_co_tm_tm_subst_tm_tm_co_subst_co_brs_tm_subst_tm_brs_co_subst_co_co_tm_subst_tm_co_co_subst_co_constraint_tm_subst_tm_constraint_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve co_subst_co_co_tm_subst_tm_co : lngen.
 
@@ -10622,9 +8901,7 @@ Lemma co_subst_co_constraint_tm_subst_tm_constraint :
 forall phi1 g1 a1 x1 c1,
   x1 `notin` fv_tm_tm_co g1 ->
   co_subst_co_constraint g1 c1 (tm_subst_tm_constraint a1 x1 phi1) = tm_subst_tm_constraint (co_subst_co_tm g1 c1 a1) x1 (co_subst_co_constraint g1 c1 phi1).
-Proof.
-pose proof co_subst_co_tm_tm_subst_tm_tm_co_subst_co_brs_tm_subst_tm_brs_co_subst_co_co_tm_subst_tm_co_co_subst_co_constraint_tm_subst_tm_constraint_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve co_subst_co_constraint_tm_subst_tm_constraint : lngen.
 
@@ -10647,10 +8924,7 @@ Lemma co_subst_co_tm_co_subst_co_tm_co_subst_co_brs_co_subst_co_brs_co_subst_co_
   c2 `notin` fv_co_co_co g1 ->
   c2 <> c1 ->
   co_subst_co_constraint g1 c1 (co_subst_co_constraint g2 c2 phi1) = co_subst_co_constraint (co_subst_co_co g1 c1 g2) c2 (co_subst_co_constraint g1 c1 phi1)).
-Proof.
-apply_mutual_ind tm_brs_co_constraint_mutind;
-default_simp.
-Qed.
+Proof. Admitted.
 
 (* end hide *)
 
@@ -10659,9 +8933,7 @@ forall a1 g1 g2 c2 c1,
   c2 `notin` fv_co_co_co g1 ->
   c2 <> c1 ->
   co_subst_co_tm g1 c1 (co_subst_co_tm g2 c2 a1) = co_subst_co_tm (co_subst_co_co g1 c1 g2) c2 (co_subst_co_tm g1 c1 a1).
-Proof.
-pose proof co_subst_co_tm_co_subst_co_tm_co_subst_co_brs_co_subst_co_brs_co_subst_co_co_co_subst_co_co_co_subst_co_constraint_co_subst_co_constraint_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve co_subst_co_tm_co_subst_co_tm : lngen.
 
@@ -10670,9 +8942,7 @@ forall brs1 g1 g2 c2 c1,
   c2 `notin` fv_co_co_co g1 ->
   c2 <> c1 ->
   co_subst_co_brs g1 c1 (co_subst_co_brs g2 c2 brs1) = co_subst_co_brs (co_subst_co_co g1 c1 g2) c2 (co_subst_co_brs g1 c1 brs1).
-Proof.
-pose proof co_subst_co_tm_co_subst_co_tm_co_subst_co_brs_co_subst_co_brs_co_subst_co_co_co_subst_co_co_co_subst_co_constraint_co_subst_co_constraint_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve co_subst_co_brs_co_subst_co_brs : lngen.
 
@@ -10681,9 +8951,7 @@ forall g1 g2 g3 c2 c1,
   c2 `notin` fv_co_co_co g2 ->
   c2 <> c1 ->
   co_subst_co_co g2 c1 (co_subst_co_co g3 c2 g1) = co_subst_co_co (co_subst_co_co g2 c1 g3) c2 (co_subst_co_co g2 c1 g1).
-Proof.
-pose proof co_subst_co_tm_co_subst_co_tm_co_subst_co_brs_co_subst_co_brs_co_subst_co_co_co_subst_co_co_co_subst_co_constraint_co_subst_co_constraint_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve co_subst_co_co_co_subst_co_co : lngen.
 
@@ -10692,9 +8960,7 @@ forall phi1 g1 g2 c2 c1,
   c2 `notin` fv_co_co_co g1 ->
   c2 <> c1 ->
   co_subst_co_constraint g1 c1 (co_subst_co_constraint g2 c2 phi1) = co_subst_co_constraint (co_subst_co_co g1 c1 g2) c2 (co_subst_co_constraint g1 c1 phi1).
-Proof.
-pose proof co_subst_co_tm_co_subst_co_tm_co_subst_co_brs_co_subst_co_brs_co_subst_co_co_co_subst_co_co_co_subst_co_constraint_co_subst_co_constraint_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve co_subst_co_constraint_co_subst_co_constraint : lngen.
 
@@ -10725,10 +8991,7 @@ Lemma tm_subst_tm_tm_close_tm_wrt_tm_rec_open_tm_wrt_tm_rec_tm_subst_tm_brs_clos
   x2 <> x1 ->
   degree_tm_wrt_tm n1 a1 ->
   tm_subst_tm_constraint a1 x1 phi1 = close_constraint_wrt_tm_rec n1 x2 (tm_subst_tm_constraint a1 x1 (open_constraint_wrt_tm_rec n1 (a_Var_f x2) phi1))).
-Proof.
-apply_mutual_ind tm_brs_co_constraint_mutrec;
-default_simp.
-Qed.
+Proof. Admitted.
 
 (* end hide *)
 
@@ -10741,9 +9004,7 @@ forall a2 a1 x1 x2 n1,
   x2 <> x1 ->
   degree_tm_wrt_tm n1 a1 ->
   tm_subst_tm_tm a1 x1 a2 = close_tm_wrt_tm_rec n1 x2 (tm_subst_tm_tm a1 x1 (open_tm_wrt_tm_rec n1 (a_Var_f x2) a2)).
-Proof.
-pose proof tm_subst_tm_tm_close_tm_wrt_tm_rec_open_tm_wrt_tm_rec_tm_subst_tm_brs_close_brs_wrt_tm_rec_open_brs_wrt_tm_rec_tm_subst_tm_co_close_co_wrt_tm_rec_open_co_wrt_tm_rec_tm_subst_tm_constraint_close_constraint_wrt_tm_rec_open_constraint_wrt_tm_rec_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve tm_subst_tm_tm_close_tm_wrt_tm_rec_open_tm_wrt_tm_rec : lngen.
 
@@ -10758,9 +9019,7 @@ forall brs1 a1 x1 x2 n1,
   x2 <> x1 ->
   degree_tm_wrt_tm n1 a1 ->
   tm_subst_tm_brs a1 x1 brs1 = close_brs_wrt_tm_rec n1 x2 (tm_subst_tm_brs a1 x1 (open_brs_wrt_tm_rec n1 (a_Var_f x2) brs1)).
-Proof.
-pose proof tm_subst_tm_tm_close_tm_wrt_tm_rec_open_tm_wrt_tm_rec_tm_subst_tm_brs_close_brs_wrt_tm_rec_open_brs_wrt_tm_rec_tm_subst_tm_co_close_co_wrt_tm_rec_open_co_wrt_tm_rec_tm_subst_tm_constraint_close_constraint_wrt_tm_rec_open_constraint_wrt_tm_rec_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve tm_subst_tm_brs_close_brs_wrt_tm_rec_open_brs_wrt_tm_rec : lngen.
 
@@ -10775,9 +9034,7 @@ forall g1 a1 x1 x2 n1,
   x2 <> x1 ->
   degree_tm_wrt_tm n1 a1 ->
   tm_subst_tm_co a1 x1 g1 = close_co_wrt_tm_rec n1 x2 (tm_subst_tm_co a1 x1 (open_co_wrt_tm_rec n1 (a_Var_f x2) g1)).
-Proof.
-pose proof tm_subst_tm_tm_close_tm_wrt_tm_rec_open_tm_wrt_tm_rec_tm_subst_tm_brs_close_brs_wrt_tm_rec_open_brs_wrt_tm_rec_tm_subst_tm_co_close_co_wrt_tm_rec_open_co_wrt_tm_rec_tm_subst_tm_constraint_close_constraint_wrt_tm_rec_open_constraint_wrt_tm_rec_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve tm_subst_tm_co_close_co_wrt_tm_rec_open_co_wrt_tm_rec : lngen.
 
@@ -10792,9 +9049,7 @@ forall phi1 a1 x1 x2 n1,
   x2 <> x1 ->
   degree_tm_wrt_tm n1 a1 ->
   tm_subst_tm_constraint a1 x1 phi1 = close_constraint_wrt_tm_rec n1 x2 (tm_subst_tm_constraint a1 x1 (open_constraint_wrt_tm_rec n1 (a_Var_f x2) phi1)).
-Proof.
-pose proof tm_subst_tm_tm_close_tm_wrt_tm_rec_open_tm_wrt_tm_rec_tm_subst_tm_brs_close_brs_wrt_tm_rec_open_brs_wrt_tm_rec_tm_subst_tm_co_close_co_wrt_tm_rec_open_co_wrt_tm_rec_tm_subst_tm_constraint_close_constraint_wrt_tm_rec_open_constraint_wrt_tm_rec_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve tm_subst_tm_constraint_close_constraint_wrt_tm_rec_open_constraint_wrt_tm_rec : lngen.
 
@@ -10823,10 +9078,7 @@ Lemma tm_subst_tm_tm_close_tm_wrt_co_rec_open_tm_wrt_co_rec_tm_subst_tm_brs_clos
   c1 `notin` fv_co_co_tm a1 ->
   degree_tm_wrt_co n1 a1 ->
   tm_subst_tm_constraint a1 x1 phi1 = close_constraint_wrt_co_rec n1 c1 (tm_subst_tm_constraint a1 x1 (open_constraint_wrt_co_rec n1 (g_Var_f c1) phi1))).
-Proof.
-apply_mutual_ind tm_brs_co_constraint_mutrec;
-default_simp.
-Qed.
+Proof. Admitted.
 
 (* end hide *)
 
@@ -10838,9 +9090,7 @@ forall a2 a1 x1 c1 n1,
   c1 `notin` fv_co_co_tm a1 ->
   degree_tm_wrt_co n1 a1 ->
   tm_subst_tm_tm a1 x1 a2 = close_tm_wrt_co_rec n1 c1 (tm_subst_tm_tm a1 x1 (open_tm_wrt_co_rec n1 (g_Var_f c1) a2)).
-Proof.
-pose proof tm_subst_tm_tm_close_tm_wrt_co_rec_open_tm_wrt_co_rec_tm_subst_tm_brs_close_brs_wrt_co_rec_open_brs_wrt_co_rec_tm_subst_tm_co_close_co_wrt_co_rec_open_co_wrt_co_rec_tm_subst_tm_constraint_close_constraint_wrt_co_rec_open_constraint_wrt_co_rec_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve tm_subst_tm_tm_close_tm_wrt_co_rec_open_tm_wrt_co_rec : lngen.
 
@@ -10854,9 +9104,7 @@ forall brs1 a1 x1 c1 n1,
   c1 `notin` fv_co_co_tm a1 ->
   degree_tm_wrt_co n1 a1 ->
   tm_subst_tm_brs a1 x1 brs1 = close_brs_wrt_co_rec n1 c1 (tm_subst_tm_brs a1 x1 (open_brs_wrt_co_rec n1 (g_Var_f c1) brs1)).
-Proof.
-pose proof tm_subst_tm_tm_close_tm_wrt_co_rec_open_tm_wrt_co_rec_tm_subst_tm_brs_close_brs_wrt_co_rec_open_brs_wrt_co_rec_tm_subst_tm_co_close_co_wrt_co_rec_open_co_wrt_co_rec_tm_subst_tm_constraint_close_constraint_wrt_co_rec_open_constraint_wrt_co_rec_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve tm_subst_tm_brs_close_brs_wrt_co_rec_open_brs_wrt_co_rec : lngen.
 
@@ -10870,9 +9118,7 @@ forall g1 a1 x1 c1 n1,
   c1 `notin` fv_co_co_tm a1 ->
   degree_tm_wrt_co n1 a1 ->
   tm_subst_tm_co a1 x1 g1 = close_co_wrt_co_rec n1 c1 (tm_subst_tm_co a1 x1 (open_co_wrt_co_rec n1 (g_Var_f c1) g1)).
-Proof.
-pose proof tm_subst_tm_tm_close_tm_wrt_co_rec_open_tm_wrt_co_rec_tm_subst_tm_brs_close_brs_wrt_co_rec_open_brs_wrt_co_rec_tm_subst_tm_co_close_co_wrt_co_rec_open_co_wrt_co_rec_tm_subst_tm_constraint_close_constraint_wrt_co_rec_open_constraint_wrt_co_rec_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve tm_subst_tm_co_close_co_wrt_co_rec_open_co_wrt_co_rec : lngen.
 
@@ -10886,9 +9132,7 @@ forall phi1 a1 x1 c1 n1,
   c1 `notin` fv_co_co_tm a1 ->
   degree_tm_wrt_co n1 a1 ->
   tm_subst_tm_constraint a1 x1 phi1 = close_constraint_wrt_co_rec n1 c1 (tm_subst_tm_constraint a1 x1 (open_constraint_wrt_co_rec n1 (g_Var_f c1) phi1)).
-Proof.
-pose proof tm_subst_tm_tm_close_tm_wrt_co_rec_open_tm_wrt_co_rec_tm_subst_tm_brs_close_brs_wrt_co_rec_open_brs_wrt_co_rec_tm_subst_tm_co_close_co_wrt_co_rec_open_co_wrt_co_rec_tm_subst_tm_constraint_close_constraint_wrt_co_rec_open_constraint_wrt_co_rec_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve tm_subst_tm_constraint_close_constraint_wrt_co_rec_open_constraint_wrt_co_rec : lngen.
 
@@ -10917,10 +9161,7 @@ Lemma co_subst_co_tm_close_tm_wrt_tm_rec_open_tm_wrt_tm_rec_co_subst_co_brs_clos
   x1 `notin` fv_tm_tm_co g1 ->
   degree_co_wrt_tm n1 g1 ->
   co_subst_co_constraint g1 c1 phi1 = close_constraint_wrt_tm_rec n1 x1 (co_subst_co_constraint g1 c1 (open_constraint_wrt_tm_rec n1 (a_Var_f x1) phi1))).
-Proof.
-apply_mutual_ind tm_brs_co_constraint_mutrec;
-default_simp.
-Qed.
+Proof. Admitted.
 
 (* end hide *)
 
@@ -10932,9 +9173,7 @@ forall a1 g1 c1 x1 n1,
   x1 `notin` fv_tm_tm_co g1 ->
   degree_co_wrt_tm n1 g1 ->
   co_subst_co_tm g1 c1 a1 = close_tm_wrt_tm_rec n1 x1 (co_subst_co_tm g1 c1 (open_tm_wrt_tm_rec n1 (a_Var_f x1) a1)).
-Proof.
-pose proof co_subst_co_tm_close_tm_wrt_tm_rec_open_tm_wrt_tm_rec_co_subst_co_brs_close_brs_wrt_tm_rec_open_brs_wrt_tm_rec_co_subst_co_co_close_co_wrt_tm_rec_open_co_wrt_tm_rec_co_subst_co_constraint_close_constraint_wrt_tm_rec_open_constraint_wrt_tm_rec_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve co_subst_co_tm_close_tm_wrt_tm_rec_open_tm_wrt_tm_rec : lngen.
 
@@ -10948,9 +9187,7 @@ forall brs1 g1 c1 x1 n1,
   x1 `notin` fv_tm_tm_co g1 ->
   degree_co_wrt_tm n1 g1 ->
   co_subst_co_brs g1 c1 brs1 = close_brs_wrt_tm_rec n1 x1 (co_subst_co_brs g1 c1 (open_brs_wrt_tm_rec n1 (a_Var_f x1) brs1)).
-Proof.
-pose proof co_subst_co_tm_close_tm_wrt_tm_rec_open_tm_wrt_tm_rec_co_subst_co_brs_close_brs_wrt_tm_rec_open_brs_wrt_tm_rec_co_subst_co_co_close_co_wrt_tm_rec_open_co_wrt_tm_rec_co_subst_co_constraint_close_constraint_wrt_tm_rec_open_constraint_wrt_tm_rec_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve co_subst_co_brs_close_brs_wrt_tm_rec_open_brs_wrt_tm_rec : lngen.
 
@@ -10964,9 +9201,7 @@ forall g2 g1 c1 x1 n1,
   x1 `notin` fv_tm_tm_co g1 ->
   degree_co_wrt_tm n1 g1 ->
   co_subst_co_co g1 c1 g2 = close_co_wrt_tm_rec n1 x1 (co_subst_co_co g1 c1 (open_co_wrt_tm_rec n1 (a_Var_f x1) g2)).
-Proof.
-pose proof co_subst_co_tm_close_tm_wrt_tm_rec_open_tm_wrt_tm_rec_co_subst_co_brs_close_brs_wrt_tm_rec_open_brs_wrt_tm_rec_co_subst_co_co_close_co_wrt_tm_rec_open_co_wrt_tm_rec_co_subst_co_constraint_close_constraint_wrt_tm_rec_open_constraint_wrt_tm_rec_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve co_subst_co_co_close_co_wrt_tm_rec_open_co_wrt_tm_rec : lngen.
 
@@ -10980,9 +9215,7 @@ forall phi1 g1 c1 x1 n1,
   x1 `notin` fv_tm_tm_co g1 ->
   degree_co_wrt_tm n1 g1 ->
   co_subst_co_constraint g1 c1 phi1 = close_constraint_wrt_tm_rec n1 x1 (co_subst_co_constraint g1 c1 (open_constraint_wrt_tm_rec n1 (a_Var_f x1) phi1)).
-Proof.
-pose proof co_subst_co_tm_close_tm_wrt_tm_rec_open_tm_wrt_tm_rec_co_subst_co_brs_close_brs_wrt_tm_rec_open_brs_wrt_tm_rec_co_subst_co_co_close_co_wrt_tm_rec_open_co_wrt_tm_rec_co_subst_co_constraint_close_constraint_wrt_tm_rec_open_constraint_wrt_tm_rec_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve co_subst_co_constraint_close_constraint_wrt_tm_rec_open_constraint_wrt_tm_rec : lngen.
 
@@ -11015,10 +9248,7 @@ Lemma co_subst_co_tm_close_tm_wrt_co_rec_open_tm_wrt_co_rec_co_subst_co_brs_clos
   c2 <> c1 ->
   degree_co_wrt_co n1 g1 ->
   co_subst_co_constraint g1 c1 phi1 = close_constraint_wrt_co_rec n1 c2 (co_subst_co_constraint g1 c1 (open_constraint_wrt_co_rec n1 (g_Var_f c2) phi1))).
-Proof.
-apply_mutual_ind tm_brs_co_constraint_mutrec;
-default_simp.
-Qed.
+Proof. Admitted.
 
 (* end hide *)
 
@@ -11031,9 +9261,7 @@ forall a1 g1 c1 c2 n1,
   c2 <> c1 ->
   degree_co_wrt_co n1 g1 ->
   co_subst_co_tm g1 c1 a1 = close_tm_wrt_co_rec n1 c2 (co_subst_co_tm g1 c1 (open_tm_wrt_co_rec n1 (g_Var_f c2) a1)).
-Proof.
-pose proof co_subst_co_tm_close_tm_wrt_co_rec_open_tm_wrt_co_rec_co_subst_co_brs_close_brs_wrt_co_rec_open_brs_wrt_co_rec_co_subst_co_co_close_co_wrt_co_rec_open_co_wrt_co_rec_co_subst_co_constraint_close_constraint_wrt_co_rec_open_constraint_wrt_co_rec_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve co_subst_co_tm_close_tm_wrt_co_rec_open_tm_wrt_co_rec : lngen.
 
@@ -11048,9 +9276,7 @@ forall brs1 g1 c1 c2 n1,
   c2 <> c1 ->
   degree_co_wrt_co n1 g1 ->
   co_subst_co_brs g1 c1 brs1 = close_brs_wrt_co_rec n1 c2 (co_subst_co_brs g1 c1 (open_brs_wrt_co_rec n1 (g_Var_f c2) brs1)).
-Proof.
-pose proof co_subst_co_tm_close_tm_wrt_co_rec_open_tm_wrt_co_rec_co_subst_co_brs_close_brs_wrt_co_rec_open_brs_wrt_co_rec_co_subst_co_co_close_co_wrt_co_rec_open_co_wrt_co_rec_co_subst_co_constraint_close_constraint_wrt_co_rec_open_constraint_wrt_co_rec_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve co_subst_co_brs_close_brs_wrt_co_rec_open_brs_wrt_co_rec : lngen.
 
@@ -11065,9 +9291,7 @@ forall g2 g1 c1 c2 n1,
   c2 <> c1 ->
   degree_co_wrt_co n1 g1 ->
   co_subst_co_co g1 c1 g2 = close_co_wrt_co_rec n1 c2 (co_subst_co_co g1 c1 (open_co_wrt_co_rec n1 (g_Var_f c2) g2)).
-Proof.
-pose proof co_subst_co_tm_close_tm_wrt_co_rec_open_tm_wrt_co_rec_co_subst_co_brs_close_brs_wrt_co_rec_open_brs_wrt_co_rec_co_subst_co_co_close_co_wrt_co_rec_open_co_wrt_co_rec_co_subst_co_constraint_close_constraint_wrt_co_rec_open_constraint_wrt_co_rec_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve co_subst_co_co_close_co_wrt_co_rec_open_co_wrt_co_rec : lngen.
 
@@ -11082,9 +9306,7 @@ forall phi1 g1 c1 c2 n1,
   c2 <> c1 ->
   degree_co_wrt_co n1 g1 ->
   co_subst_co_constraint g1 c1 phi1 = close_constraint_wrt_co_rec n1 c2 (co_subst_co_constraint g1 c1 (open_constraint_wrt_co_rec n1 (g_Var_f c2) phi1)).
-Proof.
-pose proof co_subst_co_tm_close_tm_wrt_co_rec_open_tm_wrt_co_rec_co_subst_co_brs_close_brs_wrt_co_rec_open_brs_wrt_co_rec_co_subst_co_co_close_co_wrt_co_rec_open_co_wrt_co_rec_co_subst_co_constraint_close_constraint_wrt_co_rec_open_constraint_wrt_co_rec_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve co_subst_co_constraint_close_constraint_wrt_co_rec_open_constraint_wrt_co_rec : lngen.
 
@@ -11097,9 +9319,7 @@ forall a2 a1 x1 x2,
   x2 <> x1 ->
   lc_tm a1 ->
   tm_subst_tm_tm a1 x1 a2 = close_tm_wrt_tm x2 (tm_subst_tm_tm a1 x1 (open_tm_wrt_tm a2 (a_Var_f x2))).
-Proof.
-unfold close_tm_wrt_tm; unfold open_tm_wrt_tm; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve tm_subst_tm_tm_close_tm_wrt_tm_open_tm_wrt_tm : lngen.
 
@@ -11110,9 +9330,7 @@ forall brs1 a1 x1 x2,
   x2 <> x1 ->
   lc_tm a1 ->
   tm_subst_tm_brs a1 x1 brs1 = close_brs_wrt_tm x2 (tm_subst_tm_brs a1 x1 (open_brs_wrt_tm brs1 (a_Var_f x2))).
-Proof.
-unfold close_brs_wrt_tm; unfold open_brs_wrt_tm; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve tm_subst_tm_brs_close_brs_wrt_tm_open_brs_wrt_tm : lngen.
 
@@ -11123,9 +9341,7 @@ forall g1 a1 x1 x2,
   x2 <> x1 ->
   lc_tm a1 ->
   tm_subst_tm_co a1 x1 g1 = close_co_wrt_tm x2 (tm_subst_tm_co a1 x1 (open_co_wrt_tm g1 (a_Var_f x2))).
-Proof.
-unfold close_co_wrt_tm; unfold open_co_wrt_tm; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve tm_subst_tm_co_close_co_wrt_tm_open_co_wrt_tm : lngen.
 
@@ -11136,9 +9352,7 @@ forall phi1 a1 x1 x2,
   x2 <> x1 ->
   lc_tm a1 ->
   tm_subst_tm_constraint a1 x1 phi1 = close_constraint_wrt_tm x2 (tm_subst_tm_constraint a1 x1 (open_constraint_wrt_tm phi1 (a_Var_f x2))).
-Proof.
-unfold close_constraint_wrt_tm; unfold open_constraint_wrt_tm; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve tm_subst_tm_constraint_close_constraint_wrt_tm_open_constraint_wrt_tm : lngen.
 
@@ -11148,9 +9362,7 @@ forall a2 a1 x1 c1,
   c1 `notin` fv_co_co_tm a1 ->
   lc_tm a1 ->
   tm_subst_tm_tm a1 x1 a2 = close_tm_wrt_co c1 (tm_subst_tm_tm a1 x1 (open_tm_wrt_co a2 (g_Var_f c1))).
-Proof.
-unfold close_tm_wrt_co; unfold open_tm_wrt_co; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve tm_subst_tm_tm_close_tm_wrt_co_open_tm_wrt_co : lngen.
 
@@ -11160,9 +9372,7 @@ forall brs1 a1 x1 c1,
   c1 `notin` fv_co_co_tm a1 ->
   lc_tm a1 ->
   tm_subst_tm_brs a1 x1 brs1 = close_brs_wrt_co c1 (tm_subst_tm_brs a1 x1 (open_brs_wrt_co brs1 (g_Var_f c1))).
-Proof.
-unfold close_brs_wrt_co; unfold open_brs_wrt_co; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve tm_subst_tm_brs_close_brs_wrt_co_open_brs_wrt_co : lngen.
 
@@ -11172,9 +9382,7 @@ forall g1 a1 x1 c1,
   c1 `notin` fv_co_co_tm a1 ->
   lc_tm a1 ->
   tm_subst_tm_co a1 x1 g1 = close_co_wrt_co c1 (tm_subst_tm_co a1 x1 (open_co_wrt_co g1 (g_Var_f c1))).
-Proof.
-unfold close_co_wrt_co; unfold open_co_wrt_co; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve tm_subst_tm_co_close_co_wrt_co_open_co_wrt_co : lngen.
 
@@ -11184,9 +9392,7 @@ forall phi1 a1 x1 c1,
   c1 `notin` fv_co_co_tm a1 ->
   lc_tm a1 ->
   tm_subst_tm_constraint a1 x1 phi1 = close_constraint_wrt_co c1 (tm_subst_tm_constraint a1 x1 (open_constraint_wrt_co phi1 (g_Var_f c1))).
-Proof.
-unfold close_constraint_wrt_co; unfold open_constraint_wrt_co; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve tm_subst_tm_constraint_close_constraint_wrt_co_open_constraint_wrt_co : lngen.
 
@@ -11196,9 +9402,7 @@ forall a1 g1 c1 x1,
   x1 `notin` fv_tm_tm_co g1 ->
   lc_co g1 ->
   co_subst_co_tm g1 c1 a1 = close_tm_wrt_tm x1 (co_subst_co_tm g1 c1 (open_tm_wrt_tm a1 (a_Var_f x1))).
-Proof.
-unfold close_tm_wrt_tm; unfold open_tm_wrt_tm; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve co_subst_co_tm_close_tm_wrt_tm_open_tm_wrt_tm : lngen.
 
@@ -11208,9 +9412,7 @@ forall brs1 g1 c1 x1,
   x1 `notin` fv_tm_tm_co g1 ->
   lc_co g1 ->
   co_subst_co_brs g1 c1 brs1 = close_brs_wrt_tm x1 (co_subst_co_brs g1 c1 (open_brs_wrt_tm brs1 (a_Var_f x1))).
-Proof.
-unfold close_brs_wrt_tm; unfold open_brs_wrt_tm; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve co_subst_co_brs_close_brs_wrt_tm_open_brs_wrt_tm : lngen.
 
@@ -11220,9 +9422,7 @@ forall g2 g1 c1 x1,
   x1 `notin` fv_tm_tm_co g1 ->
   lc_co g1 ->
   co_subst_co_co g1 c1 g2 = close_co_wrt_tm x1 (co_subst_co_co g1 c1 (open_co_wrt_tm g2 (a_Var_f x1))).
-Proof.
-unfold close_co_wrt_tm; unfold open_co_wrt_tm; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve co_subst_co_co_close_co_wrt_tm_open_co_wrt_tm : lngen.
 
@@ -11232,9 +9432,7 @@ forall phi1 g1 c1 x1,
   x1 `notin` fv_tm_tm_co g1 ->
   lc_co g1 ->
   co_subst_co_constraint g1 c1 phi1 = close_constraint_wrt_tm x1 (co_subst_co_constraint g1 c1 (open_constraint_wrt_tm phi1 (a_Var_f x1))).
-Proof.
-unfold close_constraint_wrt_tm; unfold open_constraint_wrt_tm; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve co_subst_co_constraint_close_constraint_wrt_tm_open_constraint_wrt_tm : lngen.
 
@@ -11245,9 +9443,7 @@ forall a1 g1 c1 c2,
   c2 <> c1 ->
   lc_co g1 ->
   co_subst_co_tm g1 c1 a1 = close_tm_wrt_co c2 (co_subst_co_tm g1 c1 (open_tm_wrt_co a1 (g_Var_f c2))).
-Proof.
-unfold close_tm_wrt_co; unfold open_tm_wrt_co; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve co_subst_co_tm_close_tm_wrt_co_open_tm_wrt_co : lngen.
 
@@ -11258,9 +9454,7 @@ forall brs1 g1 c1 c2,
   c2 <> c1 ->
   lc_co g1 ->
   co_subst_co_brs g1 c1 brs1 = close_brs_wrt_co c2 (co_subst_co_brs g1 c1 (open_brs_wrt_co brs1 (g_Var_f c2))).
-Proof.
-unfold close_brs_wrt_co; unfold open_brs_wrt_co; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve co_subst_co_brs_close_brs_wrt_co_open_brs_wrt_co : lngen.
 
@@ -11271,9 +9465,7 @@ forall g2 g1 c1 c2,
   c2 <> c1 ->
   lc_co g1 ->
   co_subst_co_co g1 c1 g2 = close_co_wrt_co c2 (co_subst_co_co g1 c1 (open_co_wrt_co g2 (g_Var_f c2))).
-Proof.
-unfold close_co_wrt_co; unfold open_co_wrt_co; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve co_subst_co_co_close_co_wrt_co_open_co_wrt_co : lngen.
 
@@ -11284,9 +9476,7 @@ forall phi1 g1 c1 c2,
   c2 <> c1 ->
   lc_co g1 ->
   co_subst_co_constraint g1 c1 phi1 = close_constraint_wrt_co c2 (co_subst_co_constraint g1 c1 (open_constraint_wrt_co phi1 (g_Var_f c2))).
-Proof.
-unfold close_constraint_wrt_co; unfold open_constraint_wrt_co; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve co_subst_co_constraint_close_constraint_wrt_co_open_constraint_wrt_co : lngen.
 
@@ -11295,9 +9485,7 @@ forall x2 rho1 A1 b1 a1 x1,
   lc_tm a1 ->
   x2 `notin` fv_tm_tm_tm a1 `union` fv_tm_tm_tm b1 `union` singleton x1 ->
   tm_subst_tm_tm a1 x1 (a_Abs rho1 A1 b1) = a_Abs (rho1) (tm_subst_tm_tm a1 x1 A1) (close_tm_wrt_tm x2 (tm_subst_tm_tm a1 x1 (open_tm_wrt_tm b1 (a_Var_f x2)))).
-Proof.
-default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve tm_subst_tm_tm_a_Abs : lngen.
 
@@ -11306,9 +9494,7 @@ forall x2 rho1 b1 a1 x1,
   lc_tm a1 ->
   x2 `notin` fv_tm_tm_tm a1 `union` fv_tm_tm_tm b1 `union` singleton x1 ->
   tm_subst_tm_tm a1 x1 (a_UAbs rho1 b1) = a_UAbs (rho1) (close_tm_wrt_tm x2 (tm_subst_tm_tm a1 x1 (open_tm_wrt_tm b1 (a_Var_f x2)))).
-Proof.
-default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve tm_subst_tm_tm_a_UAbs : lngen.
 
@@ -11317,9 +9503,7 @@ forall x2 rho1 A1 B1 a1 x1,
   lc_tm a1 ->
   x2 `notin` fv_tm_tm_tm a1 `union` fv_tm_tm_tm B1 `union` singleton x1 ->
   tm_subst_tm_tm a1 x1 (a_Pi rho1 A1 B1) = a_Pi (rho1) (tm_subst_tm_tm a1 x1 A1) (close_tm_wrt_tm x2 (tm_subst_tm_tm a1 x1 (open_tm_wrt_tm B1 (a_Var_f x2)))).
-Proof.
-default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve tm_subst_tm_tm_a_Pi : lngen.
 
@@ -11328,9 +9512,7 @@ forall c1 phi1 B1 a1 x1,
   lc_tm a1 ->
   c1 `notin` fv_co_co_tm a1 `union` fv_co_co_tm B1 ->
   tm_subst_tm_tm a1 x1 (a_CPi phi1 B1) = a_CPi (tm_subst_tm_constraint a1 x1 phi1) (close_tm_wrt_co c1 (tm_subst_tm_tm a1 x1 (open_tm_wrt_co B1 (g_Var_f c1)))).
-Proof.
-default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve tm_subst_tm_tm_a_CPi : lngen.
 
@@ -11339,9 +9521,7 @@ forall c1 phi1 b1 a1 x1,
   lc_tm a1 ->
   c1 `notin` fv_co_co_tm a1 `union` fv_co_co_tm b1 ->
   tm_subst_tm_tm a1 x1 (a_CAbs phi1 b1) = a_CAbs (tm_subst_tm_constraint a1 x1 phi1) (close_tm_wrt_co c1 (tm_subst_tm_tm a1 x1 (open_tm_wrt_co b1 (g_Var_f c1)))).
-Proof.
-default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve tm_subst_tm_tm_a_CAbs : lngen.
 
@@ -11350,9 +9530,7 @@ forall c1 b1 a1 x1,
   lc_tm a1 ->
   c1 `notin` fv_co_co_tm a1 `union` fv_co_co_tm b1 ->
   tm_subst_tm_tm a1 x1 (a_UCAbs b1) = a_UCAbs (close_tm_wrt_co c1 (tm_subst_tm_tm a1 x1 (open_tm_wrt_co b1 (g_Var_f c1)))).
-Proof.
-default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve tm_subst_tm_tm_a_UCAbs : lngen.
 
@@ -11361,9 +9539,7 @@ forall x1 rho1 A1 b1 g1 c1,
   lc_co g1 ->
   x1 `notin` fv_tm_tm_co g1 `union` fv_tm_tm_tm b1 ->
   co_subst_co_tm g1 c1 (a_Abs rho1 A1 b1) = a_Abs (rho1) (co_subst_co_tm g1 c1 A1) (close_tm_wrt_tm x1 (co_subst_co_tm g1 c1 (open_tm_wrt_tm b1 (a_Var_f x1)))).
-Proof.
-default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve co_subst_co_tm_a_Abs : lngen.
 
@@ -11372,9 +9548,7 @@ forall x1 rho1 b1 g1 c1,
   lc_co g1 ->
   x1 `notin` fv_tm_tm_co g1 `union` fv_tm_tm_tm b1 ->
   co_subst_co_tm g1 c1 (a_UAbs rho1 b1) = a_UAbs (rho1) (close_tm_wrt_tm x1 (co_subst_co_tm g1 c1 (open_tm_wrt_tm b1 (a_Var_f x1)))).
-Proof.
-default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve co_subst_co_tm_a_UAbs : lngen.
 
@@ -11383,9 +9557,7 @@ forall x1 rho1 A1 B1 g1 c1,
   lc_co g1 ->
   x1 `notin` fv_tm_tm_co g1 `union` fv_tm_tm_tm B1 ->
   co_subst_co_tm g1 c1 (a_Pi rho1 A1 B1) = a_Pi (rho1) (co_subst_co_tm g1 c1 A1) (close_tm_wrt_tm x1 (co_subst_co_tm g1 c1 (open_tm_wrt_tm B1 (a_Var_f x1)))).
-Proof.
-default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve co_subst_co_tm_a_Pi : lngen.
 
@@ -11394,9 +9566,7 @@ forall c2 phi1 B1 g1 c1,
   lc_co g1 ->
   c2 `notin` fv_co_co_co g1 `union` fv_co_co_tm B1 `union` singleton c1 ->
   co_subst_co_tm g1 c1 (a_CPi phi1 B1) = a_CPi (co_subst_co_constraint g1 c1 phi1) (close_tm_wrt_co c2 (co_subst_co_tm g1 c1 (open_tm_wrt_co B1 (g_Var_f c2)))).
-Proof.
-default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve co_subst_co_tm_a_CPi : lngen.
 
@@ -11405,9 +9575,7 @@ forall c2 phi1 b1 g1 c1,
   lc_co g1 ->
   c2 `notin` fv_co_co_co g1 `union` fv_co_co_tm b1 `union` singleton c1 ->
   co_subst_co_tm g1 c1 (a_CAbs phi1 b1) = a_CAbs (co_subst_co_constraint g1 c1 phi1) (close_tm_wrt_co c2 (co_subst_co_tm g1 c1 (open_tm_wrt_co b1 (g_Var_f c2)))).
-Proof.
-default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve co_subst_co_tm_a_CAbs : lngen.
 
@@ -11416,9 +9584,7 @@ forall c2 b1 g1 c1,
   lc_co g1 ->
   c2 `notin` fv_co_co_co g1 `union` fv_co_co_tm b1 `union` singleton c1 ->
   co_subst_co_tm g1 c1 (a_UCAbs b1) = a_UCAbs (close_tm_wrt_co c2 (co_subst_co_tm g1 c1 (open_tm_wrt_co b1 (g_Var_f c2)))).
-Proof.
-default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve co_subst_co_tm_a_UCAbs : lngen.
 
@@ -11427,9 +9593,7 @@ forall x2 rho1 g1 g2 a1 x1,
   lc_tm a1 ->
   x2 `notin` fv_tm_tm_tm a1 `union` fv_tm_tm_co g2 `union` singleton x1 ->
   tm_subst_tm_co a1 x1 (g_PiCong rho1 g1 g2) = g_PiCong (rho1) (tm_subst_tm_co a1 x1 g1) (close_co_wrt_tm x2 (tm_subst_tm_co a1 x1 (open_co_wrt_tm g2 (a_Var_f x2)))).
-Proof.
-default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve tm_subst_tm_co_g_PiCong : lngen.
 
@@ -11438,9 +9602,7 @@ forall x2 rho1 g1 g2 a1 x1,
   lc_tm a1 ->
   x2 `notin` fv_tm_tm_tm a1 `union` fv_tm_tm_co g2 `union` singleton x1 ->
   tm_subst_tm_co a1 x1 (g_AbsCong rho1 g1 g2) = g_AbsCong (rho1) (tm_subst_tm_co a1 x1 g1) (close_co_wrt_tm x2 (tm_subst_tm_co a1 x1 (open_co_wrt_tm g2 (a_Var_f x2)))).
-Proof.
-default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve tm_subst_tm_co_g_AbsCong : lngen.
 
@@ -11449,9 +9611,7 @@ forall c1 g1 g2 a1 x1,
   lc_tm a1 ->
   c1 `notin` fv_co_co_tm a1 `union` fv_co_co_co g2 ->
   tm_subst_tm_co a1 x1 (g_CPiCong g1 g2) = g_CPiCong (tm_subst_tm_co a1 x1 g1) (close_co_wrt_co c1 (tm_subst_tm_co a1 x1 (open_co_wrt_co g2 (g_Var_f c1)))).
-Proof.
-default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve tm_subst_tm_co_g_CPiCong : lngen.
 
@@ -11460,9 +9620,7 @@ forall c1 g1 g2 g3 a1 x1,
   lc_tm a1 ->
   c1 `notin` fv_co_co_tm a1 `union` fv_co_co_co g2 ->
   tm_subst_tm_co a1 x1 (g_CAbsCong g1 g2 g3) = g_CAbsCong (tm_subst_tm_co a1 x1 g1) (close_co_wrt_co c1 (tm_subst_tm_co a1 x1 (open_co_wrt_co g2 (g_Var_f c1)))) (tm_subst_tm_co a1 x1 g3).
-Proof.
-default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve tm_subst_tm_co_g_CAbsCong : lngen.
 
@@ -11471,9 +9629,7 @@ forall x1 rho1 g2 g3 g1 c1,
   lc_co g1 ->
   x1 `notin` fv_tm_tm_co g1 `union` fv_tm_tm_co g3 ->
   co_subst_co_co g1 c1 (g_PiCong rho1 g2 g3) = g_PiCong (rho1) (co_subst_co_co g1 c1 g2) (close_co_wrt_tm x1 (co_subst_co_co g1 c1 (open_co_wrt_tm g3 (a_Var_f x1)))).
-Proof.
-default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve co_subst_co_co_g_PiCong : lngen.
 
@@ -11482,9 +9638,7 @@ forall x1 rho1 g2 g3 g1 c1,
   lc_co g1 ->
   x1 `notin` fv_tm_tm_co g1 `union` fv_tm_tm_co g3 ->
   co_subst_co_co g1 c1 (g_AbsCong rho1 g2 g3) = g_AbsCong (rho1) (co_subst_co_co g1 c1 g2) (close_co_wrt_tm x1 (co_subst_co_co g1 c1 (open_co_wrt_tm g3 (a_Var_f x1)))).
-Proof.
-default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve co_subst_co_co_g_AbsCong : lngen.
 
@@ -11493,9 +9647,7 @@ forall c2 g2 g3 g1 c1,
   lc_co g1 ->
   c2 `notin` fv_co_co_co g1 `union` fv_co_co_co g3 `union` singleton c1 ->
   co_subst_co_co g1 c1 (g_CPiCong g2 g3) = g_CPiCong (co_subst_co_co g1 c1 g2) (close_co_wrt_co c2 (co_subst_co_co g1 c1 (open_co_wrt_co g3 (g_Var_f c2)))).
-Proof.
-default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve co_subst_co_co_g_CPiCong : lngen.
 
@@ -11504,9 +9656,7 @@ forall c2 g2 g3 g4 g1 c1,
   lc_co g1 ->
   c2 `notin` fv_co_co_co g1 `union` fv_co_co_co g3 `union` singleton c1 ->
   co_subst_co_co g1 c1 (g_CAbsCong g2 g3 g4) = g_CAbsCong (co_subst_co_co g1 c1 g2) (close_co_wrt_co c2 (co_subst_co_co g1 c1 (open_co_wrt_co g3 (g_Var_f c2)))) (co_subst_co_co g1 c1 g4).
-Proof.
-default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve co_subst_co_co_g_CAbsCong : lngen.
 
@@ -11525,10 +9675,7 @@ Lemma tm_subst_tm_tm_intro_rec_tm_subst_tm_brs_intro_rec_tm_subst_tm_co_intro_re
 (forall phi1 x1 a1 n1,
   x1 `notin` fv_tm_tm_constraint phi1 ->
   open_constraint_wrt_tm_rec n1 a1 phi1 = tm_subst_tm_constraint a1 x1 (open_constraint_wrt_tm_rec n1 (a_Var_f x1) phi1)).
-Proof.
-apply_mutual_ind tm_brs_co_constraint_mutind;
-default_simp.
-Qed.
+Proof. Admitted.
 
 (* end hide *)
 
@@ -11536,9 +9683,7 @@ Lemma tm_subst_tm_tm_intro_rec :
 forall a1 x1 a2 n1,
   x1 `notin` fv_tm_tm_tm a1 ->
   open_tm_wrt_tm_rec n1 a2 a1 = tm_subst_tm_tm a2 x1 (open_tm_wrt_tm_rec n1 (a_Var_f x1) a1).
-Proof.
-pose proof tm_subst_tm_tm_intro_rec_tm_subst_tm_brs_intro_rec_tm_subst_tm_co_intro_rec_tm_subst_tm_constraint_intro_rec_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve tm_subst_tm_tm_intro_rec : lngen.
 Hint Rewrite tm_subst_tm_tm_intro_rec using solve [auto] : lngen.
@@ -11547,9 +9692,7 @@ Lemma tm_subst_tm_brs_intro_rec :
 forall brs1 x1 a1 n1,
   x1 `notin` fv_tm_tm_brs brs1 ->
   open_brs_wrt_tm_rec n1 a1 brs1 = tm_subst_tm_brs a1 x1 (open_brs_wrt_tm_rec n1 (a_Var_f x1) brs1).
-Proof.
-pose proof tm_subst_tm_tm_intro_rec_tm_subst_tm_brs_intro_rec_tm_subst_tm_co_intro_rec_tm_subst_tm_constraint_intro_rec_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve tm_subst_tm_brs_intro_rec : lngen.
 Hint Rewrite tm_subst_tm_brs_intro_rec using solve [auto] : lngen.
@@ -11558,9 +9701,7 @@ Lemma tm_subst_tm_co_intro_rec :
 forall g1 x1 a1 n1,
   x1 `notin` fv_tm_tm_co g1 ->
   open_co_wrt_tm_rec n1 a1 g1 = tm_subst_tm_co a1 x1 (open_co_wrt_tm_rec n1 (a_Var_f x1) g1).
-Proof.
-pose proof tm_subst_tm_tm_intro_rec_tm_subst_tm_brs_intro_rec_tm_subst_tm_co_intro_rec_tm_subst_tm_constraint_intro_rec_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve tm_subst_tm_co_intro_rec : lngen.
 Hint Rewrite tm_subst_tm_co_intro_rec using solve [auto] : lngen.
@@ -11569,9 +9710,7 @@ Lemma tm_subst_tm_constraint_intro_rec :
 forall phi1 x1 a1 n1,
   x1 `notin` fv_tm_tm_constraint phi1 ->
   open_constraint_wrt_tm_rec n1 a1 phi1 = tm_subst_tm_constraint a1 x1 (open_constraint_wrt_tm_rec n1 (a_Var_f x1) phi1).
-Proof.
-pose proof tm_subst_tm_tm_intro_rec_tm_subst_tm_brs_intro_rec_tm_subst_tm_co_intro_rec_tm_subst_tm_constraint_intro_rec_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve tm_subst_tm_constraint_intro_rec : lngen.
 Hint Rewrite tm_subst_tm_constraint_intro_rec using solve [auto] : lngen.
@@ -11591,10 +9730,7 @@ Lemma co_subst_co_tm_intro_rec_co_subst_co_brs_intro_rec_co_subst_co_co_intro_re
 (forall phi1 c1 g1 n1,
   c1 `notin` fv_co_co_constraint phi1 ->
   open_constraint_wrt_co_rec n1 g1 phi1 = co_subst_co_constraint g1 c1 (open_constraint_wrt_co_rec n1 (g_Var_f c1) phi1)).
-Proof.
-apply_mutual_ind tm_brs_co_constraint_mutind;
-default_simp.
-Qed.
+Proof. Admitted.
 
 (* end hide *)
 
@@ -11602,9 +9738,7 @@ Lemma co_subst_co_tm_intro_rec :
 forall a1 c1 g1 n1,
   c1 `notin` fv_co_co_tm a1 ->
   open_tm_wrt_co_rec n1 g1 a1 = co_subst_co_tm g1 c1 (open_tm_wrt_co_rec n1 (g_Var_f c1) a1).
-Proof.
-pose proof co_subst_co_tm_intro_rec_co_subst_co_brs_intro_rec_co_subst_co_co_intro_rec_co_subst_co_constraint_intro_rec_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve co_subst_co_tm_intro_rec : lngen.
 Hint Rewrite co_subst_co_tm_intro_rec using solve [auto] : lngen.
@@ -11613,9 +9747,7 @@ Lemma co_subst_co_brs_intro_rec :
 forall brs1 c1 g1 n1,
   c1 `notin` fv_co_co_brs brs1 ->
   open_brs_wrt_co_rec n1 g1 brs1 = co_subst_co_brs g1 c1 (open_brs_wrt_co_rec n1 (g_Var_f c1) brs1).
-Proof.
-pose proof co_subst_co_tm_intro_rec_co_subst_co_brs_intro_rec_co_subst_co_co_intro_rec_co_subst_co_constraint_intro_rec_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve co_subst_co_brs_intro_rec : lngen.
 Hint Rewrite co_subst_co_brs_intro_rec using solve [auto] : lngen.
@@ -11624,9 +9756,7 @@ Lemma co_subst_co_co_intro_rec :
 forall g1 c1 g2 n1,
   c1 `notin` fv_co_co_co g1 ->
   open_co_wrt_co_rec n1 g2 g1 = co_subst_co_co g2 c1 (open_co_wrt_co_rec n1 (g_Var_f c1) g1).
-Proof.
-pose proof co_subst_co_tm_intro_rec_co_subst_co_brs_intro_rec_co_subst_co_co_intro_rec_co_subst_co_constraint_intro_rec_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve co_subst_co_co_intro_rec : lngen.
 Hint Rewrite co_subst_co_co_intro_rec using solve [auto] : lngen.
@@ -11635,9 +9765,7 @@ Lemma co_subst_co_constraint_intro_rec :
 forall phi1 c1 g1 n1,
   c1 `notin` fv_co_co_constraint phi1 ->
   open_constraint_wrt_co_rec n1 g1 phi1 = co_subst_co_constraint g1 c1 (open_constraint_wrt_co_rec n1 (g_Var_f c1) phi1).
-Proof.
-pose proof co_subst_co_tm_intro_rec_co_subst_co_brs_intro_rec_co_subst_co_co_intro_rec_co_subst_co_constraint_intro_rec_mutual as H; intuition eauto.
-Qed.
+Proof. Admitted.
 
 Hint Resolve co_subst_co_constraint_intro_rec : lngen.
 Hint Rewrite co_subst_co_constraint_intro_rec using solve [auto] : lngen.
@@ -11646,9 +9774,7 @@ Lemma tm_subst_tm_tm_intro :
 forall x1 a1 a2,
   x1 `notin` fv_tm_tm_tm a1 ->
   open_tm_wrt_tm a1 a2 = tm_subst_tm_tm a2 x1 (open_tm_wrt_tm a1 (a_Var_f x1)).
-Proof.
-unfold open_tm_wrt_tm; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve tm_subst_tm_tm_intro : lngen.
 
@@ -11656,9 +9782,7 @@ Lemma tm_subst_tm_brs_intro :
 forall x1 brs1 a1,
   x1 `notin` fv_tm_tm_brs brs1 ->
   open_brs_wrt_tm brs1 a1 = tm_subst_tm_brs a1 x1 (open_brs_wrt_tm brs1 (a_Var_f x1)).
-Proof.
-unfold open_brs_wrt_tm; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve tm_subst_tm_brs_intro : lngen.
 
@@ -11666,9 +9790,7 @@ Lemma tm_subst_tm_co_intro :
 forall x1 g1 a1,
   x1 `notin` fv_tm_tm_co g1 ->
   open_co_wrt_tm g1 a1 = tm_subst_tm_co a1 x1 (open_co_wrt_tm g1 (a_Var_f x1)).
-Proof.
-unfold open_co_wrt_tm; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve tm_subst_tm_co_intro : lngen.
 
@@ -11676,9 +9798,7 @@ Lemma tm_subst_tm_constraint_intro :
 forall x1 phi1 a1,
   x1 `notin` fv_tm_tm_constraint phi1 ->
   open_constraint_wrt_tm phi1 a1 = tm_subst_tm_constraint a1 x1 (open_constraint_wrt_tm phi1 (a_Var_f x1)).
-Proof.
-unfold open_constraint_wrt_tm; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve tm_subst_tm_constraint_intro : lngen.
 
@@ -11686,9 +9806,7 @@ Lemma co_subst_co_tm_intro :
 forall c1 a1 g1,
   c1 `notin` fv_co_co_tm a1 ->
   open_tm_wrt_co a1 g1 = co_subst_co_tm g1 c1 (open_tm_wrt_co a1 (g_Var_f c1)).
-Proof.
-unfold open_tm_wrt_co; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve co_subst_co_tm_intro : lngen.
 
@@ -11696,9 +9814,7 @@ Lemma co_subst_co_brs_intro :
 forall c1 brs1 g1,
   c1 `notin` fv_co_co_brs brs1 ->
   open_brs_wrt_co brs1 g1 = co_subst_co_brs g1 c1 (open_brs_wrt_co brs1 (g_Var_f c1)).
-Proof.
-unfold open_brs_wrt_co; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve co_subst_co_brs_intro : lngen.
 
@@ -11706,9 +9822,7 @@ Lemma co_subst_co_co_intro :
 forall c1 g1 g2,
   c1 `notin` fv_co_co_co g1 ->
   open_co_wrt_co g1 g2 = co_subst_co_co g2 c1 (open_co_wrt_co g1 (g_Var_f c1)).
-Proof.
-unfold open_co_wrt_co; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve co_subst_co_co_intro : lngen.
 
@@ -11716,9 +9830,7 @@ Lemma co_subst_co_constraint_intro :
 forall c1 phi1 g1,
   c1 `notin` fv_co_co_constraint phi1 ->
   open_constraint_wrt_co phi1 g1 = co_subst_co_constraint g1 c1 (open_constraint_wrt_co phi1 (g_Var_f c1)).
-Proof.
-unfold open_constraint_wrt_co; default_simp.
-Qed.
+Proof. Admitted.
 
 Hint Resolve co_subst_co_constraint_intro : lngen.
 

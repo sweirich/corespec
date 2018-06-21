@@ -119,7 +119,7 @@ Proof.
   inversion ctx; subst; fsetdec.
 Qed.
 
-(* FIXME: should we remove this?
+(*
 Lemma co_subst_fresh :
 forall G phi a0 x s,
   AnnPropWff G phi -> AnnCtx ((x ~ s) ++ G) -> tm_subst_tm_constraint a0 x phi = phi.
@@ -169,6 +169,11 @@ Proof.
   destruct rho.
   constructor.
   auto.
+(*  autorewcs.
+  rewrite -subst_tm_erase_tm.
+  apply tm_subst_tm_tm_lc_tm. inversion RC. auto.
+  apply lc_erase.
+  apply (AnnTyping_lc T). *)
   inversion RC.
   constructor.
   autorewcs.
@@ -192,6 +197,9 @@ Proof.
 
   constructor.
   auto.
+(*  autorewcs.
+  rewrite -subst_co_erase_tm. auto.
+*)
   constructor.
   autorewcs.
   rewrite -subst_co_erase_tm.
@@ -376,6 +384,10 @@ Proof.
       eapply CON; eauto 2 using erase_subst_tm.
       autorewcs. rewrite -!subst_tm_erase_tm.
       eauto using Beta_tm_subst, lc_tm_erase, AnnTyping_lc1.
+    - econstructor; eauto.
+      intros.
+      erewrite tm_subst_tm_tm_open_tm_wrt_co_var; eauto.
+      erewrite e; eauto.
 
     (* context cases *)
     - ensure_case An_Empty.
@@ -612,6 +624,14 @@ Proof.
                 unfold "[<=]" in h4.
                 move => h6.
                 apply H9; auto.
+  - eapply An_EtaC with (L := union L (singleton c)); eauto.
+    intros. assert (Q: c0 `notin` L); eauto. eapply e in Q. 
+    erewrite co_subst_co_tm_open_tm_wrt_co_var; eauto.
+    erewrite e; eauto. assert (W: c0 `notin` singleton c). eauto. 
+    apply notin_singleton_1 in W. simpl. 
+    assert (X: (if c0 == c then g else g_Var_f c0) = g_Var_f c0).
+    destruct (c0 == c). contradict W. auto. auto.
+    rewrite X. auto.
 
   - induction F; done.
   - induction F; try done.
@@ -787,7 +807,7 @@ Ltac un_co_subst_co :=
 
 
 (*
-(* Pull a substitution out to prepare for an application of the substitution lemma above *)
+(* Pull a substitution out to prepare for an application of the substution lemma above *)
 Ltac un_co_subst_co_tm' C :=
   match goal with
   | [ |- context [co_subst_co_tm ?g ?c ?a] ] =>
@@ -810,8 +830,7 @@ Ltac un_co_subst_co_tm :=
     | [ |- AnnTyping _ _ a_Star ] => un_co_subst_co_tm' a_Star
     | [ |- AnnTyping _ a_Star _ ] => un_co_subst_co_tm' a_Star
     | [ |- AnnDefEq _ _ a_Star _ _ ] => un_co_subst_co_tm' a_Star
-    | [ |- AnnDefEq _ _ _ a_Star _ ] => un_co_subst_co_tm' a_Star
-    | [ |- AnnDefEq _ _ _ _ a_Star ] => un_co_subst_co_tm' a_Star
+    | [ |- AnnDefEq _ _ _ a_Star _ ] => un_co_subst_co_tm' a_Star                                               | [ |- AnnDefEq _ _ _ _ a_Star ] => un_co_subst_co_tm' a_Star
 
     | [ |- AnnTyping (a_Const ?T) _ ] => un_co_subst_co_tm' (a_Const T)
     | [ |- AnnTyping _ (a_Const ?T) ] => un_co_subst_co_tm' (a_Const T)
@@ -935,12 +954,22 @@ Proof.
     autorewcs.
     rewrite -!subst_co_erase_tm => /=.
     auto.
+  - eapply An_EtaC with (L := union L (singleton c)); try co_subst_hyp; 
+    eauto using erase_co_subst_tm.
+    intros. assert (X: c0 `notin` L). eauto. apply e in X. 
+    erewrite co_subst_co_tm_open_tm_wrt_co_var; eauto.
+    rewrite X. simpl.
+    assert (W: c0 `notin` singleton c). eauto.
+    apply notin_singleton_1 in W.
+    assert (Q: (if c0 == c then g else g_Var_f c0) = g_Var_f c0). 
+    destruct (c0 == c). contradict W. auto. auto. 
+    rewrite Q. auto.
 Qed.
 
 
 (* --------------------------------------------------------------------- *)
 
-(* Swapping lemmas ---> changing the name that is used to opened terms *)
+(* swapping lemmas ---> changing the name that is used to opened terms *)
 
 Lemma AnnTyping_tm_swap : forall c c0 B G a A,
     c `notin` fv_tm_tm_tm A ->
@@ -1084,7 +1113,7 @@ Qed.
 (* --------------------------------------------------------------------- *)
 
 (* This is the place for "smart constructors" and "smart inversion"
-   lemmas. They are especially useful for constructing derivations from a
+   lemmas. They are especialy useful for constructing derivations from a
    particular variable and avoiding the co-finite quantification stuff.  *)
 
 (* In a locally nameless development, these should be stated and immediately

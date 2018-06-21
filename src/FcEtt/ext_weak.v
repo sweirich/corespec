@@ -16,11 +16,8 @@ Set Bullet Behavior "Strict Subproofs".
 Set Implicit Arguments.
 
 (* TODO: this tactic is not so "automated" (e.g. has to link a_Pi to E_Pi),
-         but it is hard to make it more "searchy" without trying extensively
-         all the lemmas. We could probably work something out, though.
-         Could it be generated maybe?
-*)
-
+but it is hard to make it more
+         "searchy" without trying extensively all the lemmas. We could probably work something out, though *)
 (*
 Ltac E_pick_fresh x :=
   match goal with
@@ -64,7 +61,7 @@ Lemma respects_atoms_eq_mutual :
   (forall G D p1 p2, Iso G D p1 p2 -> forall D', D [=] D' -> Iso G D' p1 p2) /\
   (forall G D A B T,   DefEq G D A B T  -> forall D', D [=] D' -> DefEq G D' A B T) /\
   (forall G,           Ctx G           -> True).
-Proof.
+Proof. 
   ext_induction CON; intros; subst; eauto 2.
   all: try solve [eapply CON; eauto 2; try fsetdec].
 
@@ -120,7 +117,8 @@ Lemma strengthen_available_noncovar:
   (forall G1 ,        Ctx G1 -> True).
 Proof.
   eapply typing_wff_iso_defeq_mutual; eauto 3; try done.
-  all: intros; unfold not in *; try (E_pick_fresh y; eauto 3).
+  all: intros; unfold not in *. Focus 5. destruct rho. Unfocus.
+  all: try (E_pick_fresh y; eauto 3).
   all: try solve [destruct (x == c); [ subst; assert False; eauto | eauto]].
   all: try (eapply H0; auto; binds_cons).
   all: try (eapply H; auto; binds_cons).
@@ -242,9 +240,9 @@ Proof.
   (* TODO: move E_LeftRel etc. first using ensure_case *)
 
   all: try solve [eapply CON; eauto 2].
-  all: try solve [eapply CON; eauto 2; eapply DefEq_weaken_available; eauto 2].
+  all: try solve [eapply CON; eauto 2; eapply DefEq_weaken_available; eauto 2]. 
+  Focus 6. destruct rho. Unfocus.
   all: try solve [E_pick_fresh y; try auto_rew_env; apply_first_hyp; try simpl_env; eauto 3].
-
   (*
   eapply E_LeftRel with (b:=b)(b':=b'); eauto 2;
     try eapply DefEq_weaken_available; eauto 2.

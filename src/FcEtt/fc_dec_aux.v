@@ -58,7 +58,6 @@ Ltac threesub t2 :=
         try solve [right; intro h; inversion h; done]
          end.
 
-
 Lemma tm_eq_dec_mutual :
   ((forall t1 t2 : tm, {t1 = t2} +  {~ t1 = t2}) *
    (forall t1 t2 : brs, {t1 = t2} +  {~ t1 = t2}) *
@@ -76,7 +75,10 @@ Proof.
     intro H. inversion H. done. }
   { intro x. destruct t2.
     all : try solve [right; done].
-    edestruct (eq_atom_dec x x0). subst. left. auto. right.
+    (* edestruct (eq_atom_dec x x0). subst. left. auto. right.
+    intro H. inversion H. done. *)
+    edestruct (EqDec_atom x x0). inversion e.
+    subst. left. auto. right.
     intro H. inversion H. done. }
   { intros rho A t2 b t3 t0.
     destruct t0.
@@ -104,15 +106,19 @@ Proof.
   { intros F t2.
     destruct t2.
     all : try solve [right; done].
-    destruct (eq_atom_dec F F0). subst.
+    (* destruct (eq_atom_dec F F0). subst.
     left. auto.
-    right; intro H; inversion H; done. }
+    right; intro H; inversion H; done.*)
+    destruct (EqDec_atom F F0). inversion e. subst.
+    left. auto. right; intro H; inversion H; done. }
   { intros T t2.
     destruct t2.
     all : try solve [right; done].
-    destruct (eq_atom_dec T T0). subst.
+    (* destruct (eq_atom_dec T T0). subst.
     left. auto.
-    right; intro H; inversion H; done. }
+    right; intro H; inversion H; done. *)
+    destruct (EqDec_atom T T0). inversion e. subst.
+    left. auto. right; intro H; inversion H; done. }
   { intros.
     destruct t2.
     all : try solve [right; done].
@@ -124,15 +130,22 @@ Proof.
   { intros K t2.
     destruct t2.
     all : try solve [right; done].
-    edestruct (eq_atom_dec K K0). subst. left. auto. right.
-    intro H. inversion H. done. }
+    (* edestruct (eq_atom_dec K K0). subst. left. auto. right.
+    intro H. inversion H. done. *)
+    destruct (EqDec_atom K K0). inversion e. subst.
+    left. auto. right; intro H; inversion H; done. }
   { intros.
     destruct t2.
     all : try solve [right; done].
-    destruct (eq_atom_dec K K0). subst.
+    (* destruct (eq_atom_dec K K0). subst.
     destruct (H a0). subst.
     destruct (H0 t2). subst.
     left. auto.
+    all: right; intro h; inversion h; done.*)
+    destruct (EqDec_atom K K0). subst.
+    destruct (H a0). subst.
+    destruct (H0 t2). subst.
+    left. inversion e. auto.
     all: right; intro h; inversion h; done. }
   { intro n. destruct t2.
     all : try solve [right; done].
@@ -140,7 +153,9 @@ Proof.
     intro H. inversion H. done. }
   { intro x. destruct t2.
     all : try solve [right; done].
-    edestruct (eq_atom_dec x c). subst. left. auto. right.
+    (* edestruct (eq_atom_dec x c). subst. left. auto. right.
+    intro H. inversion H. done. *)
+    edestruct (EqDec_atom x c). inversion e. subst. left. auto. right.
     intro H. inversion H. done. }
   { intros.
     destruct t2.
@@ -282,6 +297,29 @@ Proof.
     }
 Qed.
 
+Lemma Path_dec : forall a, lc_tm a -> { T | Path T a } + { (forall T, not (Path T a)) }.
+Proof.
+  induction a; intros LC.
+  all: try solve [apply inleft; eauto].
+  all: try solve [apply inright; move => T h1; inversion h1].
+  - destruct IHa1 as [[T h0]|n].
+    { inversion LC. auto. }
+    apply inleft. eexists.
+    { inversion LC. eauto. }
+    apply inright. move => T h1. inversion h1.
+    subst. unfold not in n. eauto.
+  - destruct IHa as [[T h0]|n].
+    { inversion LC. auto. }
+    apply inleft. eexists.
+    { inversion LC. eauto. }
+    apply inright. intros T h; inversion h; subst; unfold not in n; eauto.
+  - destruct IHa as [[T h0]|n].
+    { inversion LC. eauto. }
+    apply inleft. exists T.
+    { inversion LC. eauto. }
+    apply inright. intros T h; inversion h; subst; unfold not in n; eauto.
+Qed.
+
 Lemma Value_AbsIrrel_inversion : forall A a,
     Value (a_Abs Irrel A a)
     -> lc_tm A /\ forall x, x `notin` fv_tm a -> CoercedValue (open_tm_wrt_tm a (a_Var_f x)).
@@ -356,6 +394,33 @@ Proof.
   auto.
 Qed.
 
+Lemma DataTy_Star_dec : forall A, lc_set_tm A -> { DataTy A a_Star } + { not (DataTy A a_Star) }.
+Proof.
+  intros A LC.
+  induction LC.
+  all: try solve [apply right; move => h; inversion h].
+  all: try solve [apply left; eauto].
+  + pick fresh x.
+    move: (H x) => [D | ND].
+    - left. pick fresh y and apply DT_Pi; eauto_lc.
+      rewrite (tm_subst_tm_tm_intro x); auto.
+      eapply DataTy_tm_subst_tm_tm; eauto_lc.
+    - right. move => h; inversion h; subst.
+      eapply ND.
+      pick fresh y.
+      rewrite (tm_subst_tm_tm_intro y); auto.
+      eapply DataTy_tm_subst_tm_tm; eauto_lc.
+  + pick fresh x.
+    move: (H x) => [D | ND].
+    - left. pick fresh y and apply DT_CPi; eauto_lc.
+      rewrite (co_subst_co_tm_intro x); auto.
+      eapply DataTy_co_subst_co_tm; eauto_lc.
+    - right. move => h; inversion h; subst.
+      eapply ND.
+      pick fresh y.
+      rewrite (co_subst_co_tm_intro y); auto.
+      eapply DataTy_co_subst_co_tm; eauto_lc.
+Qed.
 
 Lemma binds_dec_ax : forall x G, {A, B | binds x (Ax A B) G} + {(forall A B, ¬ binds x (Ax A B) G)}.
 Proof.
@@ -387,7 +452,6 @@ Definition rho_eq_dec : forall rho rho' : relflag, {rho = rho'} + {rho <> rho'}.
 Proof. decide equality. Defined.
 
 
-
 Lemma beta_dec : forall a1 a2, lc_tm a1 -> {Beta a1 a2} + {¬ Beta a1 a2}.
 Proof.
   intros a1 a2 LC1.
@@ -399,10 +463,15 @@ Proof.
     destruct (tm_eq_dec a2 (open_tm_wrt_tm a1_1 a1_2)).
     destruct (@Value_dec (a_UAbs rho0 a1_1)).
     { inversion LC1. auto. }
-    { subst. left. eapply Beta_AppAbs; eauto; inversion LC1; auto. }
-    { right. move => h. inversion h. subst. ok. }
-    { right; move => h; inversion h. subst. ok. }
-    { right; move => h; inversion h. subst. ok. }
+    { destruct rho. subst. left.
+      eapply Beta_AppAbs; eauto; inversion LC1; auto.
+      subst.
+      destruct a1_2;
+        try solve [right; move => h; inversion h].
+      left. eapply Beta_AppAbsIrrel; eauto. }
+    { right. move => h. inversion h. subst. ok. ok. }
+    { right; move => h; inversion h. subst. ok. ok. }
+    { right; move => h; inversion h. subst. ok. ok. }
 
   }
   {
@@ -435,8 +504,8 @@ Unset Implicit Arguments.
 Program Fixpoint RhoCheck_erase_dec rho x a (_ : lc_tm a) : {RhoCheck rho x (erase_tm a)} + {¬ RhoCheck rho x (erase_tm a)} :=
   let a' := erase a in
   match rho with
-    | Rel   => yeah
-    | Irrel => not_in_dec x (fv_tm_tm_tm a') >--> yeah
+    | Rel => yeah
+    | Irrel =>  not_in_dec x (fv_tm_tm_tm a') >--> yeah
   end.
 
 Next Obligation.
