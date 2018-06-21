@@ -211,7 +211,48 @@ Proof.
            end.
 
 
-  (* Four last hard cases *)
+  (* Eta cases *)
+
+  all: try match goal with 
+      [ IN : ?y `in` ?fv_tm_tm_tm ?a, 
+        H : ∀ a : atom, a `in` ?fv_tm_tm_tm ?b → a `in` dom ?G,
+        e : ∀ x : atom,
+            (x `in` ?L → False) → 
+            ?open_tm_wrt_tm ?a (a_Var_f x) = ?c
+       |- _ ] => 
+      eapply H; pick fresh x; move: (e x ltac:(auto)) => h0;
+      assert (x <> y); [ fsetdec|];
+      clear Fr;
+      have h1: y `in` fv_tm_tm_tm (open_tm_wrt_tm a (a_Var_f x));
+      [ move: (fv_tm_tm_tm_open_tm_wrt_tm_lower a (a_Var_f x)) => ?;
+        move: (fv_co_co_tm_open_tm_wrt_tm_lower a (a_Var_f x)) => ?;
+        fsetdec|
+      rewrite h0 in h1; 
+      simpl in h1;
+      fsetdec ]
+    end.
+
+  all: try match goal with 
+      [ IN : ?y `in` ?fv_tm_tm_tm ?a, 
+        H : ∀ a : atom, a `in` ?fv_tm_tm_tm ?b → a `in` dom ?G,
+        e : ∀ x : atom,
+            (x `in` ?L → False) → 
+            ?open_tm_wrt_tm ?a (g_Var_f x) = ?c
+       |- _ ] => 
+      eapply H; pick fresh x; move: (e x ltac:(auto)) => h0;
+      assert (x <> y); [ fsetdec|];
+      clear Fr;
+      have h1: y `in` fv_tm_tm_tm (open_tm_wrt_tm a (g_Var_f x));
+      [ move: (fv_tm_tm_tm_open_tm_wrt_co_lower a (g_Var_f x)) => ?;
+        move: (fv_co_co_tm_open_tm_wrt_co_lower a (g_Var_f x)) => ?;
+        fsetdec|];
+      rewrite h0 in h1; 
+      simpl in h1;
+      fsetdec
+    end.
+
+
+  (* last hard cases *)
   - assert (FR1 : x `notin` L) by auto. assert (FR2 : x <> y) by auto.
     clear Fr. clear H0. clear r. clear r0.
     clear H19. clear H20. clear H22. clear H24.
@@ -250,29 +291,7 @@ Proof.
     assert (y `in` dom ((x ~ Tm A1) ++ G)). eapply H24.
     eapply fv_co_co_tm_open_tm_wrt_tm_lower.  auto.
     simpl in H0; apply F.add_neq_iff in H0; auto.
-  - eapply H. clear H0 H1 H2.
-    pick fresh x.
-    move: (e x ltac:(auto)) => h0.
-    have h1: y `in` fv_tm_tm_tm (open_tm_wrt_tm a (a_Var_f x)).
-    move: (fv_tm_tm_tm_open_tm_wrt_tm_lower a (a_Var_f x)) => h2.
-    fsetdec.
-    rewrite h0 in h1.
-    simpl in h1.
-    move: (AtomSetProperties.Dec.F.union_iff (fv_tm_tm_tm b) {{x}} y) => [h3 h4].
-    destruct (h3 h1). auto.
-    assert (x <> y). fsetdec. clear Fr.
-    fsetdec.
-  - eapply H0. clear H H1 H2.
-    pick fresh x.
-    move: (e x ltac:(auto)) => h0.
-    have h1: y `in` fv_co_co_tm (open_tm_wrt_tm a (a_Var_f x)).
-    move: (fv_co_co_tm_open_tm_wrt_tm_lower a (a_Var_f x)) => h2.
-    fsetdec.
-    rewrite h0 in h1.
-    simpl in h1.
-    clear Fr.
-    fsetdec.
-Admitted.
+Qed.
 
 Definition AnnTyping_context_fv  := @first  _ _ _ _ _ ann_context_fv_mutual.
 Definition AnnPropWff_context_fv := @second _ _ _ _ _ ann_context_fv_mutual.

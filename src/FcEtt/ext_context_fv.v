@@ -197,31 +197,43 @@ Proof.
   (* all: try solve [ assert (c = y) by auto; subst; eapply binds_In; eauto ]. *)
   all: try solve [ destruct (H0 _ _ b0); simpl in *; eauto].
 
-  - (* exactly the same case as in fc version *)
-    eapply H. clear H0 H1 H2.
-    pick fresh x.
-    move: (e x ltac:(auto)) => h0.
-    have h1: y `in` fv_tm_tm_tm (open_tm_wrt_tm a (a_Var_f x)).
-    move: (fv_tm_tm_tm_open_tm_wrt_tm_lower a (a_Var_f x)) => h2.
-    fsetdec.
-    rewrite h0 in h1.
-    simpl in h1.
-    move: (AtomSetProperties.Dec.F.union_iff (fv_tm_tm_tm b) {{x}} y) => [h3 h4].
-    destruct (h3 h1). auto.
-    assert (x <> y). fsetdec. clear Fr.
-    fsetdec.
-  -  eapply H0. clear H H1 H2.
-    pick fresh x.
-    move: (e x ltac:(auto)) => h0.
-    have h1: y `in` fv_co_co_tm (open_tm_wrt_tm a (a_Var_f x)).
-    move: (fv_co_co_tm_open_tm_wrt_tm_lower a (a_Var_f x)) => h2.
-    fsetdec.
-    rewrite h0 in h1.
-    simpl in h1.
-    clear Fr.
-    fsetdec.
-Admitted.
-(* Qed. (* Free variables are described by the context *) *)
+  all: try match goal with 
+      [ IN : ?y `in` ?fv_tm_tm_tm ?a, 
+        H : ∀ a : atom, a `in` ?fv_tm_tm_tm ?b → a `in` dom ?G,
+        e : ∀ x : atom,
+            (x `in` ?L → False) → 
+            ?open_tm_wrt_tm ?a (a_Var_f x) = ?c
+       |- _ ] => 
+      eapply H; pick fresh x; move: (e x ltac:(auto)) => h0;
+      assert (x <> y); [ fsetdec|];
+      clear Fr;
+      have h1: y `in` fv_tm_tm_tm (open_tm_wrt_tm a (a_Var_f x));
+      [ move: (fv_tm_tm_tm_open_tm_wrt_tm_lower a (a_Var_f x)) => ?;
+        move: (fv_co_co_tm_open_tm_wrt_tm_lower a (a_Var_f x)) => ?;
+        fsetdec|
+      rewrite h0 in h1; 
+      simpl in h1;
+      fsetdec ]
+    end.
+
+  all: try match goal with 
+      [ IN : ?y `in` ?fv_tm_tm_tm ?a, 
+        H : ∀ a : atom, a `in` ?fv_tm_tm_tm ?b → a `in` dom ?G,
+        e : ∀ x : atom,
+            (x `in` ?L → False) → 
+            ?open_tm_wrt_tm ?a (g_Var_f x) = ?c
+       |- _ ] => 
+      eapply H; pick fresh x; move: (e x ltac:(auto)) => h0;
+      clear Fr;
+      have h1: y `in` fv_tm_tm_tm (open_tm_wrt_tm a (g_Var_f x));
+      [ move: (fv_tm_tm_tm_open_tm_wrt_co_lower a (g_Var_f x)) => ?;
+        move: (fv_co_co_tm_open_tm_wrt_co_lower a (g_Var_f x)) => ?;
+        fsetdec|];
+      rewrite h0 in h1; 
+      simpl in h1;
+      fsetdec
+    end.
+Qed.
 
 
 Definition Typing_context_fv  := first context_fv_mutual.
