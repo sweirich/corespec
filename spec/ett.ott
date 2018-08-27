@@ -304,6 +304,9 @@ available_props, D {{ tex \Delta }} :: 'D_' ::= {{ coq atoms }} {{ coq-universe 
    | ( D )           :: M  :: Paren   {{ coq ([[D]]) }}
 
 
+Nat, N {{ tex \mathbb{N} }} :: 'N_' ::= {{ coq nat }}
+   | length a :: S :: Pattern_length {{ coq (pattern_length [[a]]) }} {{ tex | [[a]] | }}
+
 
 substitutions
   single G x :: ctx_subst_tm
@@ -400,6 +403,10 @@ formula, Fm {{tex \psi}} :: 'formula_' ::=
     {{ coq ~ AtomSetImpl.In [[T]] (dom [[S]]) }}
   | F notin dom S            ::   :: notInSF
     {{ coq ~ AtomSetImpl.In [[F]] (dom [[S]]) }}
+  | N1 < N2                  ::   :: length_less
+    {{ coq [[N1]] < [[N2]] }}
+  | N1 <= N2                 ::   :: length_leq
+    {{ coq [[N1]] <= [[N2]] }}{{ tex [[N1]] \leq [[N2]] }}
   | R1 = R2                  ::   :: role_equal
     {{ coq ([[R1]] = [[R2]]) }}
   | a = b                    ::   :: equal
@@ -529,6 +536,13 @@ end.
 Definition erase_context G r := map (fun s => erase_sort s r) G.
 Definition erase_sig S r := map (fun s => erase_csort s r) S.
 
+Fixpoint pattern_length (a : tm) : nat := match a with
+   a_Fam F => 0
+ | a_App a nu b => pattern_length a + 1
+ | a_CApp a g_Triv => pattern_length a + 1
+ | _ => 0
+ end.
+
 (* -------------- A specific signature with Fix ------------ *)
 Definition Fix : atom.
   pick fresh F.
@@ -620,33 +634,6 @@ Path a = F @ Rs
 ---------------------- :: CApp
 Path (a [o]) = F @ Rs
 
-defns
-   JCasePath :: '' ::=
-
-defn
-CasePath R a = F  ::  :: CasePath :: 'CasePath_'
-{{ com Type headed by constant (role-sensitive partial function used in case) }}
-{{ tex \mathsf{CasePath}_{[[R]]}\ [[a]] = [[F]] }}
-by
-
-F : A @ Rs in toplevel
---------------------- :: AbsConst
-CasePath R F = F
-
-F : p ~ a : A/R1 @ Rs in toplevel
-not (R1 <= R)
--------------------------- :: Const
-CasePath R F = F
-
-CasePath R a = F
----------------------------- :: App
-CasePath R (a rho b') = F
-
-CasePath R a = F
----------------------- :: CApp
-CasePath R (a [o]) = F
-
-
 
 defns
 JPatCtx :: '' ::=
@@ -723,6 +710,78 @@ match a1 with a2 -> b1 = b2
 match (a1 [o]) with (a2 [o]) -> b1 = b2
 
 defns
+JTmPatternAgree :: '' ::=
+
+defn
+a <-> p :: :: tm_pattern_agree :: 'tm_pattern_agree_'
+{{ com term and pattern agree }}
+{{ tex [[a]] [[<->]] [[p]] }}
+by
+
+----------------------------:: Const
+ F <-> F
+
+a1 <-> p1
+----------------------------:: AppRelR
+(a1 R a2) <-> (p1 R x)
+
+a1 <-> p1
+----------------------------:: AppIrrel
+(a1 - []) <-> (p1 - [])
+
+a1 <-> p1
+-----------------------------:: CApp
+(a1 [o]) <-> (p1 [o])
+
+defns
+JTmSubPatternAgree :: '' ::=
+
+defn
+a + = p :: :: tm_subpattern_agree :: 'tm_subpattern_agree_'
+{{ com sub-pattern agrees with term }}
+{{ tex [[a]]^+ = [[p]] }}
+by
+
+a <-> p
+---------:: Base
+a + = p
+
+a + = p
+-------------- :: AppRelR
+a + = (p R x)
+
+a + = p
+--------------- :: AppIrrel
+a + = (p - [])
+
+a + = p
+----------------- :: CAppp
+a + = (p [o])
+
+
+defns
+JSubTmPatternAgree :: '' ::=
+
+defn
+a = p + :: :: subtm_pattern_agree :: 'subtm_pattern_agree_'
+{{ com sub-term agrees with pattern }}
+{{ tex [[a]] = [[p]]^+ }}
+by
+
+a <-> p
+---------:: Base
+a = p +
+
+a = p +
+-------------- :: App
+a nu a2 = p +
+
+a = p +
+----------------- :: CAppp
+a [o] = p +
+
+
+defns
    JValuePath :: '' ::=
 
 defn
@@ -747,6 +806,33 @@ ValuePath a = F
 ---------------------- :: CApp
 ValuePath (a [o]) = F
 
+
+defns
+   JCasePath :: '' ::=
+
+defn
+CasePath R a = F  ::  :: CasePath :: 'CasePath_'
+{{ com Type headed by constant (role-sensitive partial function used in case) }}
+{{ tex \mathsf{CasePath}_{[[R]]}\ [[a]] = [[F]] }}
+by
+
+ValuePath a = F
+F : A @ Rs in toplevel
+----------------------- :: AbsConst
+CasePath R a = F
+
+ValuePath a = F
+F : p ~ b : A/R1 @ Rs in toplevel
+not (R1 <= R)
+----------------------------------- :: Const
+CasePath R a = F
+
+ValuePath a = F
+F : p ~ b : A/R1 @ Rs in toplevel
+not (a  =  p +)
+------------------------------------- :: UnMatch
+CasePath R a = F
+
 defns
 JApplyArgs :: '' ::=
 
@@ -761,7 +847,7 @@ apply args F to b -> b
 
 apply args a to b -> b'
 ------------------------------------------------------- :: App
-apply args a rho a' to b -> b' rho a'
+apply args a nu a' to b -> b' nu a'
 
 apply args a to b -> b'
 ------------------------------------------------------- :: CApp
@@ -802,22 +888,8 @@ Value R /\c:phi.a
 --------------------- :: UCAbs
 Value R /\c .a
 
-ValuePath a = F
-F : A @ Rs in toplevel
---------------------------- :: Const
-Value R a
-
-ValuePath a = F
-F : p ~ b : A/R1 @ Rs in toplevel
-not (match a with p -> [] = []) 
----------------------------------- :: Path
-Value R a
-
-ValuePath a = F
-F : p ~ b : A/R1 @ Rs in toplevel
-match a with p -> [] = []
-not (R1 <= R)
----------------------------------- :: PathMatch
+CasePath R a = F
+----------------- :: Path
 Value R a
 
 
@@ -909,7 +981,11 @@ W |= (\rho x.a) : R
 W |= a : R
 W |= b : Nom
 ----------------------------- :: App
-W |= (a rho b) : R
+W |= (a + b) : R
+
+W |= a : R
+----------------------------- :: IApp
+W |= (a - []) : R
 
 W |= a : R
 Path a = F @ R1, Rs
@@ -977,7 +1053,6 @@ x notin fv A
 
 defns
   Jpar :: '' ::=
-
 
 defn
  W |= a => b / R ::  :: Par :: 'Par_'
