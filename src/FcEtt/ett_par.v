@@ -16,7 +16,6 @@ Require Import FcEtt.ett_roleing.
 Require Import FcEtt.ett_path.
 
 Import ext_wf.
-Require Import FcEtt.ett_match.
 
 
 (* Require Import FcEtt.erase_syntax. *)
@@ -38,7 +37,8 @@ Proof. intros W1 W2 W3 a a' R U H. generalize dependent W2.
         - eapply Par_Pi with (L := union L (dom (W1 ++ W2 ++ W3))); eauto.
           intros. rewrite <- app_assoc.
           eapply H1; eauto. simpl_env. auto.
-Qed.
+        - admit.
+Admitted.
 
 (* ------------------------------------------ *)
 
@@ -281,8 +281,8 @@ Proof.
     apply Typing_context_fv in H.
     split_hyp. simpl in *.
     fsetdec. *)
-  - eapply Par_PatternTrue; eauto. eapply Path_subst; eauto.
-    eapply roleing_lc; eauto. admit.
+  - eapply Par_PatternTrue; eauto. admit. (* eapply Path_subst; eauto.
+    eapply roleing_lc; eauto. *) admit.
   - eapply Par_PatternFalse; eauto.
     eapply Value_tm_subst_tm_tm; eauto. eapply roleing_lc; eauto.
     intro. admit. (* eapply subst_Path in H1; eauto. eapply roleing_lc; eauto. *)
@@ -340,7 +340,8 @@ Proof.
     apply Typing_context_fv in H.
     split_hyp. simpl in *.
     fsetdec. *)
-  - eapply Par_PatternTrue; eauto. eapply Path_subst_co; eauto. admit.
+  - eapply Par_PatternTrue; eauto. admit. (* eapply Path_subst_co; eauto. *)
+    admit.
   - eapply Par_PatternFalse; eauto. eapply Value_co_subst_co_tm; eauto.
     intro.  admit. (* apply H1. eapply subst_co_Path; eauto. *)
 Admitted.
@@ -511,10 +512,10 @@ Lemma multipar_Pi_A_proj: ∀ W rho (A B A' B' : tm) R',
 Proof.
   intros W rho A B A' B' R' h1.
   dependent induction h1.
-  - inversion H. constructor. auto.
+  - inversion H. subst. constructor. auto.
   - inversion H. subst. eapply IHh1; eauto.
     apply mp_step with (b := A'0). auto.
-    eapply IHh1; eauto. subst. inversion H4.
+    eapply IHh1; eauto. subst. inversion H3.
 Qed.
 
 Lemma multipar_Pi_B_proj: ∀ W rho (A B A' B' : tm) R',
@@ -529,7 +530,7 @@ Proof.
   - inversion H; subst.
     eapply IHh1; eauto.
     destruct (IHh1 rho A'0 B'0 A' B') as [L0 h0]; auto.
-    exists (L \u L0); eauto. inversion H4.
+    exists (L \u L0); eauto. inversion H3.
 Qed.
 
 
@@ -590,7 +591,7 @@ Proof.
   - inversion H; subst.
     eapply IHh1; eauto.
     destruct (IHh1 _ _ _ _ _ _ _ _ _ _ ltac:(auto) ltac:(auto)) as [L0 h0]; auto.
-    exists (L \u L0); eauto. inversion H4.
+    exists (L \u L0); eauto. inversion H3.
 Qed.
 
 Lemma multipar_CPi_phi_proj:  ∀ W (A B a A' B' a' T T': tm) R R1 R',
@@ -613,7 +614,7 @@ Proof.
     apply mp_step with (b := a'0); auto.
     apply mp_step with (b := b'); auto.
     apply mp_step with (b := A'0); auto.
-    eapply Par_sub; eauto. inversion H5.
+    eapply Par_sub; eauto. inversion H4.
 Qed.
 
 
@@ -687,68 +688,3 @@ Proof.
   rewrite h0.
   eauto.
 Qed.
-(*
-(* Properties of Path and Value *)
-
-Lemma Par_Path : forall F a R W a', Path F a R -> Par W a a' R -> Path F a' R.
-Proof. intros. generalize dependent a'. induction H; intros.
-       - inversion H0; subst. eauto. have E: (Ax a' A0 R1 = Cs A).
-         eapply binds_unique; eauto using uniq_toplevel.
-         inversion E.
-       - inversion H1; subst. eauto. have E: (Ax a A R1 = Ax a' A0 R2).
-         eapply binds_unique; eauto using uniq_toplevel.
-         inversion E. subst. contradiction.
-       - inversion H1; subst. eauto. apply IHPath in H9.
-         inversion H9. apply IHPath in H9. econstructor; auto.
-         apply Par_roleing_tm_snd in H10. eapply roleing_lc; eauto.
-       - inversion H0; subst. eauto. apply IHPath in H3. inversion H3.
-         apply IHPath in H3. econstructor; auto.
-Qed.
-
-Lemma Path_Par : forall F a R W a', Value R a' -> Path F a R -> Par W a' a R -> Path F a' R.
-Proof. intros. induction H.
-          - inversion H1; subst. inversion H0.
-          - inversion H1; subst. inversion H0. inversion H0.
-          - inversion H1; subst. inversion H0. inversion H0.
-          - inversion H1; subst. inversion H0.
-          - inversion H1; subst. inversion H0. inversion H0.
-          - inversion H1; subst. inversion H0. inversion H0.
-          - inversion H1; subst. inversion H0.
-          - inversion H1; subst. inversion H0. inversion H0.
-          - eapply Par_Path in H1; eauto. assert (F = F0).
-            eapply uniq_Path; eauto. subst. auto.
-Qed.
-
-Lemma Value_par_Value : forall R v W v', Value R v -> Par W v v' R -> Value R v'.
-Proof. intros. generalize dependent W. generalize dependent v'.
-       induction H; intros.
-        - inversion H0; subst. auto.
-        - inversion H1; subst. auto.
-          apply Par_lc2 in H1. econstructor.
-          inversion H1; auto. auto.
-        - inversion H1; subst. auto.
-          apply Par_lc2 in H1. econstructor.
-          inversion H1; auto. auto.
-        - inversion H1; subst. auto.
-        - inversion H0; subst. auto.
-          apply Par_lc2 in H0. econstructor. auto.
-        - inversion H1; subst. eauto. eapply Value_UAbsIrrel with (L := L \u L0).
-          intros. eapply H0. auto. eapply H8; eauto.
-        - inversion H1; subst. auto.
-        - inversion H0; subst. auto. econstructor.
-          eapply Par_lc2; eauto.
-        - eapply Value_Path. eapply Par_Path; eauto.
-Qed.
-
-Lemma multipar_Path :  forall F a R W a', Path F a R -> multipar W a a' R ->
-                       Path F a' R.
-Proof. intros. induction H0; auto. apply IHmultipar. eapply Par_Path; eauto.
-Qed.
-
-Lemma multipar_Path_join_head : forall F1 F2 W a1 a2 c R,
-      multipar W a1 c R -> multipar W a2 c R ->
-      Path F1 a1 R -> Path F2 a2 R -> F1 = F2.
-Proof. intros. eapply multipar_Path in H; eauto.
-       eapply multipar_Path in H0; eauto. eapply uniq_Path; eauto.
-Qed.
-*)

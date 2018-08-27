@@ -11,6 +11,7 @@ Require Export FcEtt.ett_roleing.
 Require Import FcEtt.ett_path.
 Require Export FcEtt.ett_par.
 Require Import FcEtt.ext_wf.
+Require Import FcEtt.ett_match.
 (* Require Import FcEtt.ext_invert.
 Require Import FcEtt.ext_red_one. *)
 Require Import FcEtt.param.
@@ -22,7 +23,7 @@ Set Bullet Behavior "Strict Subproofs".
   forall c1 A B1 T1 R,
     binds c1 (Co (Eq A B1 T1 R)) G
     -> c1 `in` D
-    -> exists C, Par (ctx_to_rctx G) A C R /\ Par (ctx_to_rctx G) B1 C R.
+    -> exists C, Par (ctx_nom G) A C R /\ Par (ctx_nom G) B1 C R.
 
 (* ---------------------------------------- *)
 
@@ -63,7 +64,7 @@ Lemma a_Pi_head : forall W b A rho B R',
 Proof.
   intros. inversion H. subst.
   inversion H0. subst.  exists A , B, L. split; auto.
-  subst. exists A', B', L.  split; auto. inversion H4.
+  subst. exists A', B', L.  split; auto. inversion H3.
 Qed.
 
 Lemma Par_Abs_inversion : forall W a b rho R',
@@ -91,7 +92,7 @@ Proof.
     eapply subst2. simpl_env.
     eapply par_app_rctx; simpl_env.
     solve_uniq. auto. econstructor. solve_uniq. auto. auto.
-  + inversion H3.
+  + inversion H2.
 Qed.
 
 
@@ -177,7 +178,7 @@ Proof.
   (* TODO: there may be a way to check the number of subgoals (and guard against a innvalid number) *)
 
   all: try_Refl_left.
-  all: try_Refl_right. Locate invert_syntactic_equality.
+  all: try_Refl_right.
   all: try invert_syntactic_equality.
   all: simpl in SZ; destruct n; try solve [ inversion SZ ].
 
@@ -202,11 +203,17 @@ Proof.
      + split. pick fresh x; eapply open2. auto. eauto.
        eauto using Par_sub, param_sub1.
        eapply Par_Beta; eauto.
-     + inversion H7.
-  - destruct rho. inversion H9.
-    destruct b; try (inversion H9; fail).
-    inversion H9; subst.
-    
+     + inversion H4.
+  - assert False.
+    eapply pattern_like_tm_par_abs_cabs_contr. apply H. auto.
+    exists F, p, b0, A, R2, Rs; split; auto.
+    assert (P : tm_pattern_agree (a_App a0 (Rho rho) b) p).
+    eapply tm_pattern_agree_rename_inv_2; eauto.
+    eapply MatchSubst_match; eauto.
+    split. eapply tm_subpattern_agree_sub_app. econstructor. eauto.
+    intro. apply tm_pattern_agree_length_same in P.
+    apply tm_pattern_agree_length_same in H1. simpl in P. omega.
+    contradiction.
   - (* app cong / app beta *)
     use_size_induction a0 ac Par1 Par2.
     use_size_induction b bc Par3 Par4.
@@ -216,23 +223,35 @@ Proof.
        pick fresh x; eapply open2. auto. eauto. eauto using Par_sub, param_sub1.
      + split. eapply Par_Beta; eauto. 
        pick fresh x; eapply open2. auto. eauto. eauto using Par_sub, param_sub1.
-     + admit.
+     + inversion H4.
   - (* app cong / app cong *)
     use_size_induction a0 ac Par1 Par2.
     use_size_induction b bc Par3 Par4.
     exists (a_App ac (Rho rho) bc). split; auto.
-  - admit.
+  - destruct rho. inversion H8.
+    destruct b; try (inversion H8; fail).
+    inversion H0; subst.
+    assert (a' = a0). eapply par_pattern_like_tm; eauto.
+    exists F, p, b0, A, R2, Rs; split; eauto.
+    assert (P : tm_pattern_agree (a_App a0 (Rho Irrel) a_Bullet) p).
+    eapply tm_pattern_agree_rename_inv_2; eauto.
+    eapply MatchSubst_match; eauto.
+    split. eapply tm_subpattern_agree_sub_app. econstructor. eauto.
+    intro. apply tm_pattern_agree_length_same in P.
+    apply tm_pattern_agree_length_same in H2. simpl in P. omega.
+    subst. exists a2; split; eauto. econstructor.
+    eapply Par_roleing_tm_snd. eauto. inversion H4.
   - (* two cbetas *)
     use_size_induction a0 ac Par1 Par2. inversion Par1; subst.
     + exists (open_tm_wrt_co a' g_Triv); split.
       econstructor. eapply Par_roleing_tm_snd. eauto.
       inversion Par2; subst. econstructor. eapply Par_roleing_tm_snd. eauto.
-      pick fresh c. eapply open3 with (c := c) (L := L); eauto. inversion H6.
+      pick fresh c. eapply open3 with (c := c) (L := L); eauto. inversion H5.
     + exists (open_tm_wrt_co a'1 g_Triv); split.
       pick fresh c. eapply open3 with (c := c) (L := L); eauto.
       inversion Par2; subst. econstructor. eapply Par_roleing_tm_snd. eauto.
-      pick fresh c. eapply open3 with (c := c) (L := L); eauto. inversion H6.
-    + admit.
+      pick fresh c. eapply open3 with (c := c) (L := L); eauto. inversion H5.
+    + inversion H3.
   - (* cbeta / capp cong *)
     use_size_induction a0 ac Par1 Par2.
     inversion Par1; subst.
@@ -242,8 +261,17 @@ Proof.
     + exists (open_tm_wrt_co a'1 g_Triv). split.
       pick fresh c. eapply open3 with (c := c) (L := L); eauto.
       econstructor. eauto.
-    + admit.
-  - admit.
+    + inversion H3.
+  - assert False.
+    eapply pattern_like_tm_par_abs_cabs_contr. apply H. auto.
+    exists F, p, b, A, R2, Rs; split; auto.
+    assert (P : tm_pattern_agree (a_CApp a0 g_Triv) p).
+    eapply tm_pattern_agree_rename_inv_2; eauto.
+    eapply MatchSubst_match; eauto.
+    split. eapply tm_subpattern_agree_sub_capp. econstructor. eauto.
+    intro. apply tm_pattern_agree_length_same in P.
+    apply tm_pattern_agree_length_same in H0. simpl in P. omega.
+    contradiction.
   - (* capp cong / cbeta *)
     use_size_induction a0 ac Par1 Par2.
     inversion Par2; subst.
@@ -251,26 +279,39 @@ Proof.
       econstructor. eapply Par_roleing_tm_snd. eauto.
     + exists (open_tm_wrt_co a'1 g_Triv). split. econstructor. eauto.
       pick fresh c. eapply open3 with (c := c) (L := L); eauto.
-    + admit.
+    + inversion H3.
   - (* capp cong / capp cong *)
     use_size_induction a0 ac Par1 Par2.
     exists (a_CApp ac g_Triv). auto.
+  - assert (a' = a0). eapply par_pattern_like_tm; eauto.
+    exists F, p, b, A, R2, Rs; split; eauto.
+    assert (P : tm_pattern_agree (a_CApp a0 g_Triv) p).
+    eapply tm_pattern_agree_rename_inv_2; eauto.
+    eapply MatchSubst_match; eauto.
+    split. eapply tm_subpattern_agree_sub_capp. econstructor. eauto.
+    intro. apply tm_pattern_agree_length_same in P.
+    apply tm_pattern_agree_length_same in H0. simpl in P. omega.
+    subst. exists a2; split; eauto. econstructor.
+    eapply Par_roleing_tm_snd. eauto.
   - (* abs cong / abs cong *)
     pick fresh x.
     use_size_induction_open a0 x ac Par1 Par2.
-    exists (a_UAbs rho R1 (close_tm_wrt_tm x ac)).
+    exists (a_UAbs rho (close_tm_wrt_tm x ac)).
     split; apply (@Par_Abs_exists x); eauto.
+  - inversion H7.
   - (* pi cong / pi cong *)
     pick fresh x.
     use_size_induction A ac Par1 Par2.
     use_size_induction_open B x bc Par3 Par4.
-    exists (a_Pi rho ac R1 (close_tm_wrt_tm x bc)).
+    exists (a_Pi rho ac (close_tm_wrt_tm x bc)).
     split; apply (@Par_Pi_exists x); eauto.
+  - inversion H8.
   - (* cabs cong / cabs cong *)
     pick fresh c.
     use_size_induction_open a0 c ac Par1 Par2.
     exists (a_UCAbs (close_tm_wrt_co c ac)).
     split; apply (@Par_CAbs_exists c); eauto.
+  - inversion H7.
   - (* cpi cong / cpi cong *) 
     apply Par_sub with (R2 := Rep) in H; auto.
     apply Par_sub with (R2 := Rep) in H7; auto.
@@ -281,52 +322,132 @@ Proof.
     use_size_induction_open B c BC Par7 Par8.
     exists (a_CPi (Eq aC bC AC R1) (close_tm_wrt_co c BC)).
     split; apply (@Par_CPi_exists c); eauto.
+  - inversion H10.
+  - assert False.
+    eapply pattern_like_tm_par_abs_cabs_contr. apply H8. auto.
+    exists F, p, b, A, R1, Rs; split; auto.
+    assert (P : tm_pattern_agree (a_App a3 (Rho rho) b0) p).
+    eapply tm_pattern_agree_rename_inv_2; eauto.
+    eapply MatchSubst_match; eauto.
+    split. eapply tm_subpattern_agree_sub_app. econstructor. eauto.
+    intro. apply tm_pattern_agree_length_same in P.
+    apply tm_pattern_agree_length_same in H4. simpl in P. omega.
+    contradiction.
+  - destruct rho. inversion H2.
+    destruct b0; try (inversion H2; fail).
+    inversion H9; subst.
+    assert (a'0 = a3). eapply par_pattern_like_tm; eauto.
+    exists F, p, b, A, R1, Rs; split; eauto.
+    assert (P : tm_pattern_agree (a_App a3 (Rho Irrel) a_Bullet) p).
+    eapply tm_pattern_agree_rename_inv_2; eauto.
+    eapply MatchSubst_match; eauto.
+    split. eapply tm_subpattern_agree_sub_app. econstructor. eauto.
+    intro. apply tm_pattern_agree_length_same in P.
+    apply tm_pattern_agree_length_same in H5. simpl in P. omega.
+    subst. exists a1; split; eauto. econstructor.
+    eapply Par_roleing_tm_snd. eauto. inversion H7.
+  - assert False.
+    eapply pattern_like_tm_par_abs_cabs_contr. apply H8. auto.
+    exists F, p, b, A, R1, Rs; split; auto.
+    assert (P : tm_pattern_agree (a_CApp a3 g_Triv) p).
+    eapply tm_pattern_agree_rename_inv_2; eauto.
+    eapply MatchSubst_match; eauto.
+    split. eapply tm_subpattern_agree_sub_capp. econstructor. eauto.
+    intro. apply tm_pattern_agree_length_same in P.
+    apply tm_pattern_agree_length_same in H4. simpl in P. omega.
+    contradiction.
+  - assert (a'0 = a3). eapply par_pattern_like_tm; eauto.
+    exists F, p, b, A, R1, Rs; split; eauto.
+    assert (P : tm_pattern_agree (a_CApp a3 g_Triv) p).
+    eapply tm_pattern_agree_rename_inv_2; eauto.
+    eapply MatchSubst_match; eauto.
+    split. eapply tm_subpattern_agree_sub_capp. econstructor. eauto.
+    intro. apply tm_pattern_agree_length_same in P.
+    apply tm_pattern_agree_length_same in H4. simpl in P. omega.
+    subst. exists a1; split; eauto. econstructor.
+    eapply Par_roleing_tm_snd. eauto.
+  - inversion H2.
+  - inversion H2.
+  - inversion H2.
+  - inversion H2.
   - (* fam / fam *)
-    have E: (Ax a1 A R1 = Ax a2 A0 R3).
+    assert (head_const a = a_Fam F). eapply transitivity.
+    eapply tm_pattern_agree_const_same.
+    eapply tm_pattern_agree_rename_inv_2. eapply MatchSubst_match.
+    apply H2. eauto. eapply axiom_pattern_head; eauto.
+    assert (head_const a = a_Fam F0). eapply transitivity.
+    eapply tm_pattern_agree_const_same.
+    eapply tm_pattern_agree_rename_inv_2. eapply MatchSubst_match.
+    apply H11. eauto. eapply axiom_pattern_head; eauto.
+    rewrite H4 in H5. inversion H5. subst.
+    have E: (Ax p b A R1 Rs = Ax p0 b0 A0 R3 Rs0).
     eapply binds_unique; eauto using uniq_toplevel.
-    inversion E. subst.
-    exists a2. split; econstructor; eapply Par_roleing_tm_snd; eauto.
+    inversion E. subst. admit.
+  - admit.
+  - inversion H2.
+  - inversion H2.
+  - inversion H2.
+  - inversion H9.
     (* Patterns *)
   - use_size_induction a0 ac Par1 Par2.
     use_size_induction b1 b1c Par3 Par4.
     use_size_induction b2 b2c Par5 Par6.
-    exists (a_Pattern R0 (a_Fam F) ac b1c b2c).
-    split; econstructor; eauto.
+    exists (a_Pattern R0 ac F b1c b2c).
+    split; eapply Par_Pattern; eauto.
   - use_size_induction a0 ac Par1 Par2.
     use_size_induction b1 b1c Par3 Par4.
     use_size_induction b2 b2c Par5 Par6.
-    eapply Par_Path in H10; eauto.
+    pose (P := Par_CasePath H9 Par2).
+    exists (a_CApp (applyArgs ac b1c) g_Triv).
+    assert (ApplyArgs ac b1c (applyArgs ac b1c)).
+    {eapply applyArgs_ApplyArgs; eauto. eapply Par_lc2; eauto. }
+    split. eapply Par_PatternTrue; eauto.
+    econstructor. eapply apply_args_par; eauto.
   - use_size_induction a0 ac Par1 Par2.
     use_size_induction b1 b1c Par3 Par4.
     use_size_induction b2 b2c Par5 Par6.
-    assert (~ Path F ac R0). intro. apply H12.
-    eapply Path_Par; eauto. exists b2c. split; eauto.
+    assert (~ CasePath R0 ac F). intro. apply H10.
+    eapply CasePath_Par; eauto. exists b2c. split; eauto.
+    eapply Par_PatternFalse; eauto. eapply Value_par_Value; eauto.
+  - inversion H11.
+  - use_size_induction a0 ac Par1 Par2.
+    use_size_induction b1 b1c Par3 Par4.
+    use_size_induction b2 b2c Par5 Par6.
+    pose (P := Par_CasePath H2 Par1).
+    exists (a_CApp (applyArgs ac b1c) g_Triv).
+    assert (ApplyArgs ac b1c (applyArgs ac b1c)).
+    {eapply applyArgs_ApplyArgs; eauto. eapply Par_lc2; eauto. }
+    split. econstructor. eapply apply_args_par; eauto.
+    eapply Par_PatternTrue; eauto.
+  - use_size_induction a0 ac Par1 Par2.
+    use_size_induction b1 b1c Par3 Par4.
+    use_size_induction b2 b2c Par5 Par6.
+    pose (P := Par_CasePath H2 Par1).
+    pose (Q := Par_CasePath H11 Par2).
+    exists (a_CApp (applyArgs ac b1c) g_Triv).
+    assert (ApplyArgs ac b1c (applyArgs ac b1c)).
+    {eapply applyArgs_ApplyArgs; eauto. eapply Par_lc2; eauto. }
+    split. econstructor. eapply apply_args_par; eauto.
+    econstructor. eapply apply_args_par; eauto.
+  - use_size_induction a0 ac Par1 Par2.
+    pose (P := H2). eapply Par_CasePath in P; eauto.
+    assert (~ CasePath R0 ac F). intro. apply H12.
+    eapply CasePath_Par; eauto. contradiction.
+  - inversion H11.
+  - use_size_induction a0 ac Par1 Par2.
+    use_size_induction b1 b1c Par3 Par4.
+    use_size_induction b2 b2c Par5 Par6.
+    assert (~ CasePath R0 ac F). intro. apply H3.
+    eapply CasePath_Par; eauto. exists b2c. split; eauto.
     eapply Par_PatternFalse; eauto. eapply Value_par_Value; eauto.
   - use_size_induction a0 ac Par1 Par2.
-    use_size_induction b1 b1c Par3 Par4.
-    use_size_induction b2 b2c Par5 Par6.
-    eapply Par_Path in H2; eauto.
+    pose (P := H11). eapply Par_CasePath in P; eauto.
+    assert (~ CasePath R0 ac F). intro. apply H3.
+    eapply CasePath_Par; eauto. contradiction.
   - use_size_induction a0 ac Par1 Par2.
     use_size_induction b1 b1c Par3 Par4.
     use_size_induction b2 b2c Par5 Par6. eauto.
-  - use_size_induction a0 ac Par1 Par2.
-    pose (P := H2). eapply Par_Path in P; eauto.
-    assert (~ Path F ac R0). intro. apply H12.
-    eapply Path_Par; eauto. contradiction.
-  - use_size_induction a0 ac Par1 Par2.
-    use_size_induction b1 b1c Par3 Par4.
-    use_size_induction b2 b2c Par5 Par6.
-    assert (~ Path F ac R0). intro. apply H4.
-    eapply Path_Par; eauto. exists b2c. split; eauto.
-    eapply Par_PatternFalse; eauto. eapply Value_par_Value; eauto.
-  - use_size_induction a0 ac Par1 Par2.
-    pose (P := H12). eapply Par_Path in P; eauto.
-    assert (~ Path F ac R0). intro. apply H4.
-    eapply Path_Par; eauto. contradiction.
-  - use_size_induction a0 ac Par1 Par2.
-    use_size_induction b1 b1c Par3 Par4.
-    use_size_induction b2 b2c Par5 Par6. eauto.
-Qed.
+Admitted.
 
 Lemma confluence : forall W a a1 R, Par W a a1 R -> 
                    forall a2, Par W a a2 R -> exists b,
@@ -350,24 +471,24 @@ Qed.
 Lemma multipar_Star : forall W A B R, multipar W A B R -> A = a_Star -> B = a_Star.
 Proof.
   intros W A B R H. induction H. auto.
-  inversion H; intro K; auto; try inversion K.
+  inversion H; intro K; auto; try inversion K. subst. inversion H4.
 Qed.
 
 
 Lemma multipar_Bullet : forall W B R, multipar W a_Bullet B R -> B = a_Bullet.
 Proof.
   intros W B R H. dependent induction H. auto.
-  inversion H; auto; try inversion K.
+  inversion H; auto; try inversion K. inversion H4.
 Qed.
 
 
 Lemma multipar_Pi : forall W rho A B R', multipar W A B R' -> 
-      forall A1 R A2, A = a_Pi rho A1 R A2 -> exists B1 B2, B = (a_Pi rho B1 R B2).
+      forall A1 A2, A = a_Pi rho A1 A2 -> exists B1 B2, B = (a_Pi rho B1 B2).
 Proof.
 intros W rho A B R' H. induction H. intros. subst. exists A1, A2. auto.
 intros. subst.
-inversion H; subst; destruct (IHmultipar _ _ _ eq_refl) as [B1 [B2 EQ]]; auto;
-exists B1, B2; auto.
+inversion H; subst; try (destruct (IHmultipar _ _ eq_refl) as [B1 [B2 EQ]]; auto;
+exists B1, B2; auto). inversion H4.
 Qed.
 
 Lemma multipar_CPi : forall W A C R', multipar W A C R' -> 
@@ -376,18 +497,18 @@ Lemma multipar_CPi : forall W A C R', multipar W A C R' ->
 Proof.
   intros W A C R' H. induction H; intros; subst.
   exists A1, A2, A3, B. auto.
-  inversion H; subst; destruct (IHmultipar _ _ _ _ _ eq_refl) as [B1 [B2 [C2 EQ]]];
-    auto; exists B1, B2, C2; auto.
+  inversion H; subst; try (destruct (IHmultipar _ _ _ _ _ eq_refl) as [B1 [B2 [C2 EQ]]];
+  auto; exists B1, B2, C2; auto). inversion H4.
 Qed.
 
-Lemma multipar_UAbs : forall W rho R a b R',
-    multipar W (a_UAbs rho R a) b R' ->
-    (exists b2, b = (a_UAbs rho R b2)).
+Lemma multipar_UAbs : forall W rho a b R',
+    multipar W (a_UAbs rho a) b R' ->
+    (exists b2, b = (a_UAbs rho b2)).
 Proof.
-  intros W rho R a b R' H. dependent induction H.
+  intros W rho a b R' H. dependent induction H.
   - exists a. auto.
   - destruct (Par_Abs_inversion H) as [a' [EQ _]]; subst.
-    destruct (IHmultipar _ _ a' eq_refl) as [b2 EQ2]; subst; clear IHmultipar.
+    destruct (IHmultipar _ a' eq_refl) as [b2 EQ2]; subst; clear IHmultipar.
     exists b2. auto.
 Qed.
 
@@ -397,8 +518,8 @@ Lemma multipar_CAbs : forall W A C R', multipar W A C R' ->
 Proof.
   intros W A C R' H. induction H; intros; subst.
   exists A1, A2, A3, B. auto.
-  inversion H; subst; destruct (IHmultipar _ _ _ _ _ eq_refl) as [B1 [B2 [C2 EQ]]];
-    auto; exists B1, B2, C2; auto.
+  inversion H; subst; try (destruct (IHmultipar _ _ _ _ _ eq_refl) as [B1 [B2 [C2 EQ]]];
+    auto; exists B1, B2, C2; auto). inversion H4.
 Qed.
 
 Lemma consist_sym : forall a b R, consistent a b R -> consistent b a R.
@@ -411,17 +532,16 @@ Qed.
 
 Inductive Path_head_form : tm -> Prop :=
    | head_Fam : forall F, Path_head_form (a_Fam F)
-   | head_App : forall a rho R b, Path_head_form (a_App a rho R b)
+   | head_App : forall a nu b, Path_head_form (a_App a nu b)
    | head_CApp : forall a g, Path_head_form (a_CApp a g).
-(*    | head_Conv : forall a R g, Path_head_form (a_Conv a R g). *)
 Hint Constructors Path_head_form.
 
 Inductive not_Path_head_form : tm -> Prop :=
-   | not_head_Pi : forall rho A R b, not_Path_head_form (a_Pi rho A R b)
+   | not_head_Pi : forall rho A b, not_Path_head_form (a_Pi rho A b)
    | not_head_CPi : forall phi b, not_Path_head_form (a_CPi phi b).
 Hint Constructors not_Path_head_form.
-
-Lemma Path_head_form_Path_consist : forall W F a b R, Path F a R ->
+(*
+Lemma Path_head_form_Path_consist : forall W F a b R, CasePath R a F ->
                        multipar W a b R -> consistent a b R.
 Proof. intros. eapply consistent_a_Path; eauto. eapply multipar_Path; eauto.
 Qed.
@@ -654,7 +774,7 @@ Proof. intros. dependent induction H0.
           apply Path_par_capp with (F := F) in H4; auto 1.
           eapply mp_step; eauto.
 Qed.
-
+*)
 (* ------------------------------------------------------ *)
 
 Lemma joins_lc_fst : forall W a b R, joins W a b R -> lc_tm a.
@@ -682,7 +802,7 @@ Ltac multipar_step :=
   | [ SIDE : multipar _ a_Star _ _ |- _ ] =>
     apply multipar_Star in SIDE; auto; subst
   (* *)
-  | [ SIDE : multipar _ (a_Pi _ _ _ _) _ _ |- _ ] =>
+  | [ SIDE : multipar _ (a_Pi _ _ _) _ _ |- _ ] =>
     destruct (multipar_Pi SIDE eq_refl) as [b1' [b2' EQ]]; clear SIDE; subst
   | [ SIDE : multipar _ (a_CPi ?phi _) _ _ |- _ ] =>
     try (destruct phi); destruct (multipar_CPi SIDE eq_refl)
@@ -701,7 +821,7 @@ Proof.
   all: try (eapply Path_head_form_consist; eauto; fail).
   all: try (eapply Path_head_form_join_consist; eauto; fail).
   all: try (eapply Path_head_not_head_join_consist; eauto; fail).
-  all: try (eapply Path_not_head_head_join_consist; eauto; fail).
+  all: try (eapply Path_not_head_head_join_consist; eauto; fail). (*
   - destruct (multipar_Pi MSL eq_refl) as [c1 [c2 EQ]].
     inversion EQ; subst. econstructor. apply joins_lc_fst in H'.
     inversion H'; auto. eapply joins_lc_fst; eauto. apply joins_lc_snd in H'.
@@ -711,7 +831,7 @@ Proof.
     apply joins_lc_fst in H'. inversion H'; auto. 
     eapply joins_lc_fst; eauto. apply joins_lc_snd in H'.
     inversion H'; auto. eapply joins_lc_snd; eauto.
-Qed.
+Qed. *) Admitted.
 
 (*
 
@@ -803,36 +923,36 @@ Qed.
 
 Hint Resolve Good_NoAssn.
 
-Lemma Good_add_tm: forall G D x A R, Good G D -> x `notin` (dom G) ->
-                                     Good ((x, Tm A R)::G ) D.
+Lemma Good_add_tm: forall G D x A, Good G D -> x `notin` (dom G) ->
+                                     Good ((x, Tm A)::G ) D.
 Proof.
   intros.
   unfold Good in *.
   intros. apply binds_cons_iff in H1.
   inversion H1 as [P1 | P2]. inversion P1. inversion H4.
-  destruct (H c1 A0 B1 T1 R0 P2 H2) as (t & Eq). simpl.
-  replace ((x, R) :: (ctx_to_rctx G)) with (nil ++ [(x, R)] ++ (ctx_to_rctx G)); auto.
+  destruct (H c1 A0 B1 T1 R P2 H2) as (t & Eq). simpl.
+  replace ((x, Nom) :: (ctx_nom G)) with (nil ++ [(x, Nom)] ++ (ctx_nom G)); auto.
   inversion Eq. pose (Q := Par_rctx_uniq H3). apply notin_ctx_rctx in H0.
   exists t; split; eapply par_app_rctx; simpl_env; eauto.
 Qed.
 
-Lemma Good_add_tm_2: forall G D x A R, x `notin` dom G -> Good G D -> Good ((x, Tm A R)::G ) (add x D).
+Lemma Good_add_tm_2: forall G D x A, x `notin` dom G -> Good G D -> Good ((x, Tm A)::G ) (add x D).
 Proof.
-  intros G D x A R N H0.
+  intros G D x A N H0.
   unfold Good in *. intros.
   apply binds_cons_1 in H.
   destruct H. destruct H. inversion H2.
-  destruct (H0 c1 A0 B1 T1 R0 H) as [C [H2 H3]].
+  destruct (H0 c1 A0 B1 T1 R H) as [C [H2 H3]].
   move: (binds_In _ c1 _ _ H) => b0. fsetdec. simpl.
-  replace ((x, R) :: (ctx_to_rctx G)) with (nil ++ [(x, R)] ++ (ctx_to_rctx G)); auto.
+  replace ((x, Nom) :: (ctx_nom G)) with (nil ++ [(x, Nom)] ++ (ctx_nom G)); auto.
   pose (Q := Par_rctx_uniq H3). apply notin_ctx_rctx in N.
   exists C; split; eapply par_app_rctx; simpl_env; eauto.
 Qed.
 
 
 Lemma multipar_app_left:
-  forall rho R R' a a' c' W, roleing W a R -> multipar W a' c' (param R' R) ->
-                      multipar W (a_App a rho R' a') (a_App a rho R' c') R.
+  forall rho R a a' c' W, roleing W a R -> multipar W a' c' Nom ->
+                      multipar W (a_App a (Rho rho) a') (a_App a (Rho rho) c') R.
 Proof.
   intros. dependent induction H0; eauto; try done.
 Qed.
@@ -856,35 +976,35 @@ Proof.
   apply multipar_capp_left; auto.
 Qed.
 
-Lemma multipar_app_lr: forall rho R R' a a' c c' W,
-                       multipar W a c R -> multipar W  a' c' (param R' R) ->
-                       multipar W (a_App a rho R' a') (a_App c rho R' c') R.
+Lemma multipar_app_lr: forall rho R a a' c c' W,
+                       multipar W a c R -> multipar W  a' c' Nom ->
+                       multipar W (a_App a (Rho rho) a') (a_App c (Rho rho) c') R.
 Proof. intros. induction H.
   eapply multipar_app_left; auto.
-  apply (@mp_step W _ _ (a_App b rho R' a')); eauto.
+  apply (@mp_step W _ _ (a_App b (Rho rho) a')); eauto.
   econstructor. auto. econstructor. eapply multipar_roleing_tm_fst; eauto.
 Qed.
 
-Lemma join_app: forall rho R R' a a' b b' W, joins W a b R ->
-                       joins W a' b' (param R' R) ->
-                       joins W (a_App a rho R' a') (a_App b rho R' b') R.
+Lemma join_app: forall rho R a a' b b' W, joins W a b R ->
+                       joins W a' b' Nom ->
+                       joins W (a_App a (Rho rho) a') (a_App b (Rho rho) b') R.
 Proof.
   unfold joins.
-  intros rho R R' a a' b b' W H H0.
+  intros rho R a a' b b' W H H0.
   destruct H as [ac h0].
   destruct H0 as [ac' h1].
   split_hyp.
-  exists (a_App ac rho R' ac').
+  exists (a_App ac (Rho rho) ac').
   repeat split; eauto.
   apply multipar_app_lr; auto; try solve [eapply roleing_lc; eauto].
   apply multipar_app_lr; auto; try solve [eapply roleing_lc; eauto].
 Qed.
 
 
-Lemma multipar_UAbs_exists :  ∀ (x : atom) W(rho : relflag) R R' (a a' : tm),
+Lemma multipar_UAbs_exists :  ∀ (x : atom) W(rho : relflag) R' (a a' : tm),
     x `notin` fv_tm_tm_tm a
-       → multipar ([(x,R)] ++ W) (open_tm_wrt_tm a (a_Var_f x)) a' R'
-       → multipar W (a_UAbs rho R a) (a_UAbs rho R (close_tm_wrt_tm x a')) R'.
+       → multipar ([(x,Nom)] ++ W) (open_tm_wrt_tm a (a_Var_f x)) a' R'
+       → multipar W (a_UAbs rho a) (a_UAbs rho (close_tm_wrt_tm x a')) R'.
 Proof.
   intros.
   dependent induction H0.
@@ -892,8 +1012,8 @@ Proof.
   apply (role_a_Abs (union (singleton x) (dom W))); eauto.
   intros x0 h0.
   rewrite (tm_subst_tm_tm_intro x a (a_Var_f x0)); auto.
-  replace ([(x0,R)] ++ W) with (nil ++ [(x0,R)] ++ W); auto.
-  assert (uniq ([(x,R)] ++ W)). {eapply rctx_uniq; eauto. }
+  replace ([(x0,Nom)] ++ W) with (nil ++ [(x0,Nom)] ++ W); auto.
+  assert (uniq ([(x,Nom)] ++ W)). {eapply rctx_uniq; eauto. }
   eapply subst_tm_roleing. simpl_env. eapply roleing_app_rctx; eauto.
   econstructor; eauto. solve_uniq.
   eapply mp_step.
@@ -902,11 +1022,11 @@ Proof.
   autorewrite with lngen. auto.
 Qed.
 
-Lemma multipar_iapp : forall W a c y L R R',
+Lemma multipar_iapp : forall W a c y L R',
     y `notin` fv_tm_tm_tm a \u L ->
     (forall x, x `notin` L -> RhoCheck Irrel x (open_tm_wrt_tm a (a_Var_f x))) ->
-    multipar ([(y,R)] ++ W) (open_tm_wrt_tm a a_Bullet) c R' ->
-    multipar W (a_UAbs Irrel R a) (a_UAbs Irrel R (close_tm_wrt_tm y c)) R'.
+    multipar ([(y,Nom)] ++ W) (open_tm_wrt_tm a a_Bullet) c R' ->
+    multipar W (a_UAbs Irrel a) (a_UAbs Irrel (close_tm_wrt_tm y c)) R'.
 Proof.
   intros.
   eapply multipar_UAbs_exists; auto.
@@ -916,39 +1036,39 @@ Proof.
   rewrite - tm_subst_tm_tm_intro; eauto.
 Qed.
 
-Lemma joins_iapp : forall W a1 a2 L1 L2 R R',
+Lemma joins_iapp : forall W a1 a2 L1 L2 R',
     (forall x, x `notin` L1 -> RhoCheck Irrel x (open_tm_wrt_tm a1 (a_Var_f x))) ->
     (forall x, x `notin` L2 -> RhoCheck Irrel x (open_tm_wrt_tm a2 (a_Var_f x))) ->
     joins W (open_tm_wrt_tm a1 a_Bullet) (open_tm_wrt_tm a2 a_Bullet) R' ->
-    joins W (a_UAbs Irrel R a1) (a_UAbs Irrel R a2) R'.
+    joins W (a_UAbs Irrel a1) (a_UAbs Irrel a2) R'.
 Proof.
   intros.
   destruct H1 as (T & P1 & P2).
   unfold joins.
   pick fresh y.
-  exists (a_UAbs Irrel R (close_tm_wrt_tm y T)).
+  exists (a_UAbs Irrel (close_tm_wrt_tm y T)).
   assert (uniq W). { eapply rctx_uniq. eapply multipar_roleing_tm_fst; eauto. }
   repeat split; eauto.
   eapply multipar_iapp with L1; auto.
-  replace ([(y,R)] ++ W) with (nil ++ [(y,R)] ++ W); auto.
+  replace ([(y,Nom)] ++ W) with (nil ++ [(y,Nom)] ++ W); auto.
   apply multipar_app_rctx; auto.
   eapply multipar_iapp with L2; auto.
-  replace ([(y,R)] ++ W) with (nil ++ [(y,R)] ++ W); auto.
+  replace ([(y,Nom)] ++ W) with (nil ++ [(y,Nom)] ++ W); auto.
   apply multipar_app_rctx; auto.
 Qed.
 
 Lemma multipar_Pattern: forall W F s R a a' b1 b1' b2 b2' R0,
           binds F s toplevel ->
           multipar W a a' R -> multipar W b1 b1' R0 -> multipar W b2 b2' R0 ->
-          multipar W (a_Pattern R (a_Fam F) a b1 b2) (a_Pattern R (a_Fam F) a' b1' b2') R0.
+          multipar W (a_Pattern R a F b1 b2) (a_Pattern R a' F b1' b2') R0.
 Proof. intros. induction H0. induction H1. induction H2. eauto.
-  eapply mp_step with (b := (a_Pattern R (a_Fam F) a a0 b)).
-  econstructor; eauto. auto.
-  eapply mp_step with (b := (a_Pattern R (a_Fam F) a b b2)).
-  econstructor; eauto. econstructor. eapply multipar_roleing_tm_fst; eauto.
+  eapply mp_step with (b := (a_Pattern R a F a0 b)).
+  eapply Par_Pattern; eauto. auto.
+  eapply mp_step with (b := (a_Pattern R a F b b2)).
+  eapply Par_Pattern; eauto. econstructor. eapply multipar_roleing_tm_fst; eauto.
   auto.
-  eapply mp_step with (b := (a_Pattern R (a_Fam F) b b1 b2)).
-  econstructor; eauto. econstructor. eapply multipar_roleing_tm_fst; eauto.
+  eapply mp_step with (b := (a_Pattern R b F b1 b2)).
+  eapply Par_Pattern; eauto. econstructor. eapply multipar_roleing_tm_fst; eauto.
   econstructor. eapply multipar_roleing_tm_fst; eauto. auto.
 Qed.
 
@@ -976,13 +1096,13 @@ Proof. intros. generalize dependent c. induction H; auto.
 Qed.
 
 Lemma consistent_mutual:
-  (forall S a A R,   Typing S a A R -> True) /\
+  (forall S a A,   Typing S a A -> True) /\
   (forall S phi,   PropWff S phi -> True) /\
   (forall S D p1 p2, Iso S D p1 p2 -> Good S D -> (forall A1 B1 T1 A2 B2 T2 R1 R2,
                      p1 = Eq A1 B1 T1 R1 -> p2 = Eq A2 B2 T2 R2 ->
-    (R1 = R2 /\ joins (ctx_to_rctx S) A1 A2 R1 /\ joins (ctx_to_rctx S) B1 B2 R1 /\ 
-     joins (ctx_to_rctx S) T1 T2 Rep))) /\
-  (forall S D A B T R,   DefEq S D A B T R -> Good S D -> joins(ctx_to_rctx S) A B R) /\
+    (R1 = R2 /\ joins (ctx_nom S) A1 A2 R1 /\ joins (ctx_nom S) B1 B2 R1 /\ 
+     joins (ctx_nom S) T1 T2 Rep))) /\
+  (forall S D A B T R,   DefEq S D A B T R -> Good S D -> joins(ctx_nom S) A B R) /\
   (forall S,       Ctx S -> True).
 Proof.
   apply typing_wff_iso_defeq_mutual; eauto; try done.
@@ -990,8 +1110,8 @@ Proof.
     inversion H2; subst.
     inversion H3; subst.
     repeat split; eauto. unfold joins.
-    exists T2; eauto. apply DefEq_regularity in d0. inversion d0; subst.
-    split; econstructor; eapply Typing_roleing; eauto.
+    exists T2; eauto. admit. (* apply DefEq_regularity in d0. inversion d0; subst.
+    split; econstructor; eapply Typing_roleing; eauto. *)
   - intros. inversion H3; subst.
     inversion H4; subst.
     eapply typing_roleing_mutual in p; eauto; inversion p as [px [py pz]].
@@ -1017,7 +1137,8 @@ Proof.
     exists x; split; apply par_multipar; auto.
   - (* refl *)
     intros.
-    unfold joins. exists a; split; econstructor; eapply Typing_roleing; eauto.
+    unfold joins. exists a; split; econstructor; eapply roleing_sub;
+    try eapply Typing_roleing; eauto.
   - (* symmetry *)
     intros.
     unfold joins in *. destruct H as [c [L R0]]; auto.
@@ -1029,49 +1150,50 @@ Proof.
     exists c; split; eapply multipar_sub; eauto.
   - (* confluence *)
     intros.
-    unfold joins in *.
-    have p: Par (ctx_to_rctx G) a1 a2 R.
+    unfold joins in *. admit. (*
+    have p: Par (ctx_nom G) a1 a2 R.
     { inversion b; subst; apply Typing_roleing in t; inversion t; subst.
       econstructor; econstructor; eauto. econstructor; econstructor; eauto.
       econstructor; eauto. econstructor; eauto. econstructor; eauto.
       eapply Par_PatternFalse; eauto.
       }
     exists a2; split; econstructor; eauto.
-    econstructor. all: eapply Par_roleing_tm_snd; eauto.
+    econstructor. all: eapply Par_roleing_tm_snd; eauto. *)
   - (* pi-cong *)
     intros. destruct (H H4) as [Ax [P1 P2]].
     pick fresh x.
     destruct (H0 x ltac:(auto) (Good_add_tm H4 ltac:(auto))) as [Bx [Q1 Q2]].
-    unfold joins. exists (a_Pi rho Ax R (close_tm_wrt_tm x Bx)); split;
+    unfold joins. exists (a_Pi rho Ax (close_tm_wrt_tm x Bx)); split;
     apply multipar_Pi_exists; eauto.
   - (* abs-cong *)
     intros. pick fresh x.
     destruct (H x ltac:(auto) (Good_add_tm H1 ltac:(auto))) as [b [Q1 Q2]].
-    unfold joins. exists (a_UAbs rho R (close_tm_wrt_tm x b)); split;
+    unfold joins. exists (a_UAbs rho (close_tm_wrt_tm x b)); split;
     apply multipar_Abs_exists; eauto.
   - intros.
     apply join_app; auto.
   - intros. destruct (H H1) as [T [P1 P2]].
-    apply multipar_roleing_tm_fst in P1. apply rctx_uniq in P1.
+    apply multipar_roleing_tm_fst in P1. apply rctx_uniq in P1. admit. (*
     apply join_app; auto.
-    exists a_Bullet. repeat split; econstructor; econstructor; auto.
-  - intros. destruct (H H0) as [T [P1 P2]].
+    exists a_Bullet. repeat split; econstructor; econstructor; auto. *)
+  - intros. destruct (H H1) as [T [P1 P2]]. admit. (* 
     destruct (multipar_Pi P1 eq_refl) as [Ax [Bx P]]. subst.
     apply multipar_Pi_A_proj in P1.
     apply multipar_Pi_A_proj in P2.
-    exists Ax; auto.
-  - intros. destruct (H H1) as [T [P1 P2]].
+    exists Ax; auto. *)
+  - intros. destruct (H H0) as [T [P1 P2]].
     destruct (multipar_Pi P1 eq_refl) as [Ax [Bx P]]. subst.
     apply (multipar_Pi_B_proj) in P1.
     apply (multipar_Pi_B_proj) in P2.
     inversion P1 as [L1 Q1]. inversion P2 as [L2 Q2].
-    destruct (H0 H1) as [ax [P3 P4]].
-    pick fresh x.
+    destruct (H H0) as [ax [P3 P4]].
+    pick fresh x. admit. (*
     rewrite (tm_subst_tm_tm_intro x); auto.
     rewrite (tm_subst_tm_tm_intro x B2); auto.
     replace (ctx_to_rctx G) with (nil ++ (ctx_to_rctx G)); auto.
     exists (tm_subst_tm_tm ax x (open_tm_wrt_tm Bx (a_Var_f x))); split;
-    eapply multipar_subst3; simpl_env; eauto using param_sub1, multipar_sub.
+    eapply multipar_subst3; simpl_env; eauto using param_sub1, multipar_sub. *)
+  - admit.
   - (* cpi-cong *)
     intros. destruct (H H4 a1 b1 A1 a2 b2 A2 R R eq_refl eq_refl) as [_ [J1 [J2 J3]]].
     inversion J1 as [ax [P1 P2]]. inversion J2 as [bx [P3 P4]].
@@ -1106,45 +1228,45 @@ Proof.
     apply H in P1. apply H0 in P2. apply H1 in P3. unfold joins in *.
     inversion P1 as [ac [Q1 Q2]]. inversion P2 as [b1c [Q3 Q4]].
     inversion P3 as [b2c [Q5 Q6]].
-    exists (a_Pattern R (a_Fam F) ac b1c b2c); split;
-    eapply multipar_Pattern; eauto.
+    exists (a_Pattern R ac F b1c b2c); split;
+    eapply multipar_Pattern; eauto. admit. admit.
   - intros. apply H3 in H5. unfold joins in H5.
     inversion H5 as [c [P1 P2]].
-    pose (P3 := P1). pose (P4 := P1).
+    pose (P3 := P1). pose (P4 := P1). admit. (*
     eapply Path_multipar_app_inversion with (F := F) in P3; eauto 1.
     inversion P3 as [a1 [b1 Q]]. subst.
     eapply Path_multipar_app_fst with (F := F) in P2; eauto 1.
     eapply Path_multipar_app_fst with (F := F) in P4; eauto 1.
-    exists a1. split; auto.
+    exists a1. split; auto. *)
   - intros. apply H3 in H5. unfold joins in H5.
     inversion H5 as [c [P1 P2]].
-    pose (P3 := P1). pose (P4 := P1).
+    pose (P3 := P1). pose (P4 := P1). admit. (*
     eapply Path_multipar_app_inversion with (F := F) in P3; eauto 1.
     inversion P3 as [a1 [b1 Q]]. subst.
     eapply Path_multipar_app_fst with (F := F) in P2; eauto 1.
     eapply Path_multipar_app_fst with (F := F) in P4; eauto 1.
-    exists a1. split; auto.
+    exists a1. split; auto. *)
   - intros. apply H3 in H5. unfold joins in H5.
     inversion H5 as [c [P1 P2]].
-    pose (P3 := P1). pose (P4 := P1).
+    pose (P3 := P1). pose (P4 := P1). admit. (*
     eapply Path_multipar_app_inversion with (F := F) in P3; eauto 1.
     inversion P3 as [a1 [b1 Q]]. subst.
     eapply Path_multipar_app_snd with (F := F) in P2; eauto 1.
     eapply Path_multipar_app_snd with (F := F) in P4; eauto 1.
-    exists b1. split; auto.
+    exists b1. split; auto. *)
   - intros. apply H2 in H3. unfold joins in H3.
     inversion H3 as [c [P1 P2]].
-    pose (P3 := P1). pose (P4 := P1).
+    pose (P3 := P1). pose (P4 := P1). admit. (*
     eapply Path_multipar_capp_inversion with (F := F) in P3; eauto 1.
     inversion P3 as [a0 Q]. subst.
     eapply Path_multipar_capp with (F := F) in P2; eauto 1.
     eapply Path_multipar_capp with (F := F) in P4; eauto 1.
-    exists a0. split; auto.
-Qed.
+    exists a0. split; auto. *)
+Admitted.
 
 
 Lemma defeq_joins: forall S D A B T R, DefEq S D A B T R -> Good S D ->
-                                         joins (ctx_to_rctx S) A B R.
+                                         joins (ctx_nom S) A B R.
 Proof.
   apply consistent_mutual.
 Qed.
@@ -1156,14 +1278,14 @@ Qed.
 
 (* ------------------------------------------------------- *)
 
-Lemma no_aAbs : forall G rho A' a A R R', Typing G (a_Abs rho A' R' a) A R -> False.
+Lemma no_aAbs : forall G rho A' a A, Typing G (a_Abs rho A' a) A -> False.
 Proof.
-  intros. dependent induction H. by apply: IHTyping. by apply: IHTyping1.
+  intros. dependent induction H. by apply: IHTyping1.
 Qed.
 
-Lemma no_aCAbs : forall G A' a A R, Typing G (a_CAbs A' a) A R -> False.
+Lemma no_aCAbs : forall G A' a A, Typing G (a_CAbs A' a) A -> False.
 Proof.
-  intros. dependent induction H. by apply: IHTyping. by apply: IHTyping1.
+  intros. dependent induction H. by apply: IHTyping1.
 Qed.
 
 Lemma consistent_Star : forall A0 R,
@@ -1198,7 +1320,7 @@ Ltac impossible_defeq :=
 
 
 Lemma canonical_forms_Star : forall G a R, Good G (dom G) ->
-    Typing G a a_Star R -> Value R a -> value_type R a.
+    Typing G a a_Star -> Value R a -> value_type R a.
 Proof.
   intros. induction H1; eauto.
   - assert False. eapply no_aAbs. eauto 2. done.

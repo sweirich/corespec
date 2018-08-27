@@ -78,7 +78,6 @@ Inductive roleing_sort (W : role_context) : sort -> Prop :=
 
 (* Check Forall_forall FIXME:?? *)
 
-
 Inductive roleing_context : role_context -> context -> Prop :=
  | nil_roleing_ctx : roleing_context nil nil
  | co_roleing_ctx : forall W G c a b A R,
@@ -190,19 +189,19 @@ Proof. intros. apply (role_a_Pi (union (singleton x) (dom W)));
        eapply subst_tm_roleing. simpl_env. apply roleing_app_rctx; eauto.
        econstructor. solve_uniq. auto. auto.
 Qed.
-(*
+
 Lemma typing_roleing_mutual:
-    (forall G b A R, Typing G b A R -> roleing (ctx_to_rctx G) b R) /\
+    (forall G b A, Typing G b A -> roleing (ctx_nom G) b Nom) /\
     (forall G0 phi  (H : PropWff G0 phi ),
-        forall A B T R', phi = Eq A B T R' -> roleing (ctx_to_rctx G0) A R' /\ 
-        roleing (ctx_to_rctx G0) B R' /\ roleing (ctx_to_rctx G0) T Rep) /\
+        forall A B T R', phi = Eq A B T R' -> roleing (ctx_nom G0) A R' /\ 
+        roleing (ctx_nom G0) B R' /\ roleing (ctx_nom G0) T Rep) /\
      (forall G0 D p1 p2  (H : Iso G0 D p1 p2 ), True ) /\
      (forall G0 D A B T R (H : DefEq G0 D A B T R), True) /\
      (forall G0 (H : Ctx G0), True).
 Proof. 
   apply typing_wff_iso_defeq_mutual; intros; repeat split; split_hyp; subst; 
   simpl; auto.
-  all : try solve [inversion H2; subst; auto].
+  all : try solve [inversion H2; subst; eapply roleing_sub; eauto].
   all : try solve [econstructor; eauto].
   all : try solve [eauto using roleing_sub].
   all : try solve [econstructor; eauto using ctx_to_rctx_uniq, ctx_to_rctx_binds_tm].
@@ -212,14 +211,14 @@ Proof.
 Qed.
 
 
-Lemma Typing_roleing: forall G b A R, Typing G b A R -> 
-                                     roleing (ctx_to_rctx G) b R.
+Lemma Typing_roleing: forall G b A, Typing G b A -> 
+                                     roleing (ctx_nom G) b Nom.
 Proof.
   apply typing_roleing_mutual.
 Qed.
 
 Hint Resolve Typing_roleing : roleing.
-
+(*
 Lemma toplevel_roleing1 : forall W F a A R, binds F (Ax a A R) toplevel -> 
                                            uniq W -> roleing W a R.
 Proof.

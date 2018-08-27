@@ -39,13 +39,13 @@ Proof.
     match goal with [ H : (_,_) = (_,_) |- _ ] => inversion H end.
     subst. exists W, G, B. eauto. eauto.
 Qed.
-
+(*
 Lemma var_pat_ctx : forall W G F A p B, PatternContexts W G F A p B ->
                                         var_pat p = W.
 Proof. intros. induction H; simpl; auto. subst. auto.
 Qed.
 
-(*
+
 Lemma toplevel_closed_const : forall F A, binds F (Cs A) toplevel ->
                                  Typing nil A a_Star Rep.
 Proof.
