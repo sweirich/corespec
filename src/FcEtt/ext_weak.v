@@ -54,7 +54,7 @@ Ltac E_pick_fresh x :=
 
 (* Can replace set with an equivalent *)
 Lemma respects_atoms_eq_mutual :
-  (forall G a A R,     Typing  G a A R       -> True) /\
+  (forall G a A,     Typing  G a A       -> True) /\
   (forall G phi ,     PropWff G phi       -> True) /\
   (forall G D p1 p2 , Iso G D p1 p2  -> forall D', D [=] D' -> Iso G D' p1 p2 ) /\
   (forall G D A B T R,   DefEq G D A B T R -> forall D', D [=] D' -> DefEq G D' A B T R) /\
@@ -102,7 +102,7 @@ Ltac binds_cons :=
 
 
 Lemma strengthen_available_noncovar:
-  (forall G1  a A R,    Typing G1 a A R -> True) /\
+  (forall G1  a A,    Typing G1 a A -> True) /\
   (forall G1  phi ,    PropWff G1 phi  -> True) /\
   (forall G1 D p1 p2 , Iso G1 D p1 p2  -> forall x, not (exists phi, binds x (Co phi) G1) ->
                  Iso G1 (remove x D) p1 p2 ) /\
@@ -141,7 +141,7 @@ Qed.
 (* ----- *)
 
 Lemma weaken_available_mutual:
-  (forall G1  a A R,   Typing G1 a A R -> True) /\
+  (forall G1  a A,   Typing G1 a A -> True) /\
   (forall G1  phi ,   PropWff G1 phi  -> True) /\
   (forall G1 D p1 p2 , Iso G1 D p1 p2  -> forall D', D [<=] D' -> Iso G1 D' p1 p2 ) /\
   (forall G1 D A B T R,   DefEq G1 D A B T R -> forall D', D [<=] D' -> DefEq G1 D' A B T R) /\
@@ -156,7 +156,7 @@ Proof.
 Qed.
 
 Lemma remove_available_mutual:
-  (forall G1  a A R,   Typing G1 a A R -> True) /\
+  (forall G1  a A,   Typing G1 a A -> True) /\
   (forall G1  phi ,   PropWff G1 phi  -> True) /\
   (forall G1 D p1 p2 , Iso G1 D p1 p2  ->
                    Iso G1 (AtomSetImpl.inter D (dom G1)) p1 p2 ) /\
@@ -215,8 +215,8 @@ Qed.
 Hint Resolve DefEq_weaken_available Iso_weaken_available.
 
 Lemma typing_weakening_mutual:
-  (forall G0 a A R,   Typing G0 a A R ->
-     forall E F G, (G0 = F ++ G) -> Ctx (F ++ E ++ G) -> Typing (F ++ E ++ G) a A R) /\
+  (forall G0 a A,   Typing G0 a A ->
+     forall E F G, (G0 = F ++ G) -> Ctx (F ++ E ++ G) -> Typing (F ++ E ++ G) a A) /\
   (forall G0 phi ,   PropWff G0 phi  ->
      forall E F G, (G0 = F ++ G) -> Ctx (F ++ E ++ G) -> PropWff (F ++ E ++ G) phi ) /\
   (forall G0 D p1 p2 , Iso G0 D p1 p2  ->

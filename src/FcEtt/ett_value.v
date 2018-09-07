@@ -40,10 +40,10 @@ Qed.
 
 (* ------------------------------------------------- *)
 
-Lemma Value_UAbsIrrel_exists : ∀ x (a : tm) R R1,
+Lemma Value_UAbsIrrel_exists : ∀ x (a : tm) R,
     x `notin` fv_tm a
     → (Value R (open_tm_wrt_tm a (a_Var_f x)))
-    → Value R (a_UAbs Irrel R1 a).
+    → Value R (a_UAbs Irrel a).
 Proof.
   intros.
   eapply (Value_UAbsIrrel ({{x}})); eauto.

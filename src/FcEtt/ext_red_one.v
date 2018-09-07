@@ -92,11 +92,11 @@ Proof.
 Qed.
 
 
-Lemma E_AbsTerm_exists : ∀ x (a a' : tm) R R',
+Lemma E_AbsTerm_exists : ∀ x (a a' : tm) R,
     x `notin` (fv_tm_tm_tm a \u fv_tm_tm_tm a') ->
      reduction_in_one (open_tm_wrt_tm a (a_Var_f x))
-                       (open_tm_wrt_tm a' (a_Var_f x)) R'
-    → reduction_in_one (a_UAbs Irrel R a) (a_UAbs Irrel R a') R'.
+                       (open_tm_wrt_tm a' (a_Var_f x)) R
+    → reduction_in_one (a_UAbs Irrel a) (a_UAbs Irrel a') R.
 Proof.
   intros.
   eapply (E_AbsTerm ({{x}})).

@@ -10,29 +10,85 @@ Require Import FcEtt.toplevel.
 Require Import FcEtt.ett_roleing.
 Require Import FcEtt.ext_wf.
 
-Lemma CasePath_lc : forall F a R, CasePath R a F -> lc_tm a.
+Lemma CasePath_ValuePath : forall R a F, CasePath R a F -> ValuePath a F.
 Proof. intros. induction H; eauto.
 Qed.
 
-Lemma CasePath_binds_toplevel : forall F a R, CasePath R a F ->
-                     (exists A Rs, binds F (Cs A Rs) toplevel) \/
-                     (exists p a0 A0 R0 Rs, binds F (Ax p a0 A0 R0 Rs) toplevel
-                                                  /\ ~(SubRole R0 R)).
-Proof. intros. induction H. left. exists A, Rs; auto.
-       right. exists p, a, A, R1, Rs; auto. auto. auto.
+Lemma CasePath_app : forall R a nu a' F, CasePath R (a_App a nu a') F ->
+                            CasePath R a F.
+Proof. intros. dependent induction H; inversion H; subst; eauto.
 Qed.
 
-Lemma CasePath_subst : forall F a b R x, CasePath R a F -> lc_tm b ->
-                   CasePath R (tm_subst_tm_tm b x a) F.
+Lemma CasePath_capp : forall R a F, CasePath R (a_CApp a g_Triv) F ->
+                            CasePath R a F.
+Proof. intros. dependent induction H; inversion H; subst; eauto.
+Qed.
+
+Lemma ValuePath_lc : forall F a, ValuePath a F -> lc_tm a.
+Proof. intros. induction H; eauto.
+Qed.
+
+Lemma CasePath_lc : forall F a R, CasePath R a F -> lc_tm a.
+Proof. intros. apply CasePath_ValuePath in H. eapply ValuePath_lc; eauto.
+Qed.
+
+Lemma ValuePath_subst : forall F a b x, ValuePath a F -> lc_tm b ->
+                   ValuePath (tm_subst_tm_tm b x a) F.
+Proof. intros. induction H; simpl; eauto. econstructor; eauto with lngen lc.
+Qed.
+
+Lemma ValuePath_subst_co : forall F a b c, ValuePath a F -> lc_co b ->
+                   ValuePath (co_subst_co_tm b c a) F.
 Proof. intros. induction H; simpl; eauto.
        econstructor; eauto with lngen lc.
 Qed.
+
+Lemma tm_pattern_agree_subst : forall a p b x, lc_tm b -> tm_pattern_agree a p ->
+                         tm_pattern_agree (tm_subst_tm_tm b x a) p.
+Proof. intros.
+       induction H0; simpl; eauto. econstructor.
+       eapply tm_subst_tm_tm_lc_tm; eauto. auto.
+Qed.
+
+Lemma tm_subpattern_agree_subst : forall a p b x, lc_tm b ->
+      tm_subpattern_agree a p -> tm_subpattern_agree (tm_subst_tm_tm b x a) p.
+Proof. intros. induction H0; eauto. econstructor.
+       eapply tm_pattern_agree_subst; eauto.
+Qed.
+
+Lemma tm_pattern_agree_unsubst : forall a b x R F p, CasePath R a F ->
+           tm_pattern_agree (tm_subst_tm_tm b x a) p -> tm_pattern_agree a p.
+Proof. intros. generalize dependent x. generalize dependent p.
+       induction a; intros p x0 H0; try (simpl in H0; inversion H0; fail).
+       apply CasePath_ValuePath in H. inversion H. simpl in H0.
+       pose (P := CasePath_lc H). inversion P; subst.
+       inversion H0; subst. econstructor. auto. eapply IHa1; eauto.
+       eapply CasePath_app; eauto.
+Admitted.
+
+Lemma subtm_pattern_agree_unsubst : forall a b x R F p, CasePath R a F ->
+      subtm_pattern_agree (tm_subst_tm_tm b x a) p -> subtm_pattern_agree a p.
+Proof. intros. dependent induction H0; eauto.
+       econstructor. eapply tm_pattern_agree_unsubst; eauto.
+       destruct a; try (simpl in x; inversion x; fail).
+       apply CasePath_ValuePath in H; inversion H. simpl in x.
+       inversion x; subst. eapply IHsubtm_pattern_agree.
+Admitted.
+
+Lemma CasePath_subst : forall F a b R x, CasePath R a F -> lc_tm b ->
+                   CasePath R (tm_subst_tm_tm b x a) F.
+Proof. intros. inversion H; subst. eapply CasePath_AbsConst; eauto.
+       apply ValuePath_subst; auto. eapply CasePath_Const; eauto.
+       apply ValuePath_subst; auto. eapply CasePath_UnMatch; eauto.
+       apply ValuePath_subst; auto. intro. eapply H3. (* eapply tm_subpattern_agree_unsubst; eauto. simpl; eauto.
+       econstructor; eauto with lngen lc. *)
+Admitted.
 
 Lemma CasePath_subst_co : forall F a b R c, CasePath R a F -> lc_co b ->
                    CasePath R (co_subst_co_tm b c a) F.
 Proof. intros. induction H; simpl; eauto.
        econstructor; eauto with lngen lc.
-Qed.
+Admitted.
 
 Lemma role_dec : forall (R1 : role) R2, R1 = R2 \/ ~(R1 = R2).
 Proof. intros. destruct R1, R2; auto. right. intro. inversion H.
@@ -76,18 +132,6 @@ Proof. intros. generalize dependent a.
           right; intro P; inversion P; contradiction.
 Qed.
 
-Lemma CasePath_ValuePath : forall R a F, CasePath R a F -> ValuePath a F.
-Proof. intros. induction H; eauto.
-Qed.
-
-Lemma CasePath_Value : forall R a F, CasePath R a F -> Value R a.
-Proof. intros. pose (P := CasePath_binds_toplevel H).
-       inversion P as [[A [Rs Q]] | [p [a0 [A0 [R0 [Rs [Q1 Q2]]]]]]].
-       pose (Q' := H). apply CasePath_ValuePath in Q'. eauto.
-       pose (Q' := H). apply CasePath_ValuePath in Q'.
-       pose (Q3 := match_dec). pose (Q4 := Q3 a p (CasePath_lc H)).
-       inversion Q4; eauto.
-Qed.
 
 Fixpoint var_patt (p : tm) : atoms := 
    match p with
@@ -181,10 +225,10 @@ Proof. intros. induction H.
         - apply IHPath in H0. eauto.
         - apply IHPath in H0. eauto.
 Qed.
-
-Lemma decide_Path : forall W a R, roleing W a R -> (exists F, Path F a R) \/
-                                     (forall F, not (Path F a R)).
-Proof.
+*)
+Lemma decide_CasePath : forall W a R, roleing W a R -> (exists F, CasePath R a F) \/
+                                     (forall F, ~(CasePath R a F)).
+Proof. (*
   induction a; intros R' E.
   all: try solve [right; move => F h1; inversion h1].
   - inversion E; subst. apply IHa1 in H5. destruct H5 as [[F h0]|n].
@@ -203,9 +247,10 @@ Proof.
     left. exists F. eauto. right. intros. intro. inversion H; subst.
     pose (Q := n F). contradiction.
 Qed.
-
-Lemma Path_dec : forall W a R F, roleing W a R -> Path F a R \/ ~Path F a R.
-Proof. induction a; intros R' E.
+*)
+Admitted.
+Lemma CasePath_dec : forall W a R F, roleing W a R -> CasePath R a F \/ ~CasePath R a F.
+Proof. (* induction a; intros R' E.
        all: try solve [right; move => h1; inversion h1].
         - intros. inversion H; subst. pose (P := IHa1 R' E H6).
           inversion P as [P1 | P2]. left; econstructor.
@@ -225,4 +270,4 @@ Proof. induction a; intros R' E.
         - intros. inversion H; subst. pose (P := IHa R' E H4).
           inversion P as [P1 | P2]. left; eauto.
           right. intro. inversion H0; subst. contradiction.
-Qed. *)
+Qed. *) Admitted.
