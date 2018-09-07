@@ -5,7 +5,7 @@ Require Export Metalib.Metatheory.
 
 (* TODO: Modularize, so we can import on demand *)
 (* Typing *)
-Notation "Γ ⊨ a : A / R"            := (Typing Γ a A R)      (at level 80, a at level 35, A at level 35)  : type_scope.
+Notation "Γ ⊨ a : A"                := (Typing Γ a A)      (at level 80, a at level 35, A at level 35)  : type_scope.
 (* FIXME: the semicolon in the following notations breaks the corresponding ltac operator *)
 Notation "Γ / Δ ⊨ a₁ == a₂ : A / R" := (DefEq Γ Δ a₁ a₂ A R) (at level 80, a₁ at level 35, A at level 35) : type_scope.
 Notation "Γ / Δ ⊨ φ₁ == φ₂"         := (Iso Γ Δ φ₁ φ₂)       (at level 80, φ₁ at level 35, φ₂ at level 35): type_scope. 

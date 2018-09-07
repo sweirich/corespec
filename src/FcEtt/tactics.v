@@ -1,6 +1,5 @@
 Require Import FcEtt.imports.
 
-
 (* FIXME; instead of importing inf, import only the right metalib module *)
 Require Import FcEtt.ett_inf.
 
@@ -11,6 +10,7 @@ Import AtomSetFacts AtomSetProperties.
 
 Require Import FcEtt.notations.
 
+Require Export FcEtt.tactics_safe.
 
 (**** Tactics for the project ****)
 
@@ -23,12 +23,10 @@ Require Import FcEtt.notations.
 *)
 
 
+Module TacticsInternals.
 (*******************************)
 (**** Basic Building Blocks ****)
 (*******************************)
-Ltac only_one_goal :=
-  let n:= numgoals in guard n=1.
-
 
 (* Shorthands for instantiation/specialization *)
 Ltac spec2 H x xL := specialize (H x xL).
@@ -195,10 +193,10 @@ Lemma AnnCtx_uniq G : AnnCtx G -> uniq G.
 Proof. by elim=> * //=; apply uniq_cons. Qed.
 
 Ltac prove_this stmt name :=
-(*
-  let name := fresh in
-*)
+(* let name := fresh in *)
   match stmt with
+    | uniq toplevel =>
+      have name: uniq toplevel by eauto
     | uniq ?G =>
       match goal with
       | [ HG : AnnCtx G |- _ ] =>
@@ -240,7 +238,8 @@ Ltac pair_coupled_hyps :=
       prove_this (uniq G) unG;
       move: (binds_unique _ _ _ _ _ H1 H2 unG) => ?; wrap_hyp H2
 
-  end.
+  end;
+  unwrap_all.
 
 
 Ltac simp_hyp H :=
@@ -270,8 +269,6 @@ Ltac fwd :=
 (* Put hyps in a more exploitable shape *)
 Ltac pcess_hyps :=
   find_invertible_hyps;
-
-  pair_coupled_hyps;
 
   repeat (
     match goal with
@@ -308,7 +305,9 @@ Ltac pcess_hyps :=
       | [ H : ?C _ _ _ _ _ _ _ _ _ _ _ _ _ = ?C _ _ _ _ _ _ _ _ _ _ _ _ _ |- _ ] => injection H; clear H; intros; try subst
 
 
-    end).
+    end);
+
+  pair_coupled_hyps.
 
 Ltac pre :=
   repeat (intros; try split);
@@ -371,10 +370,6 @@ Ltac autofresh_fixed_param tac x :=
    unwrap_all.
 
 
-Tactic Notation "autofresh"  "with" hyp(x) := autofresh_fixed_param spec2 x.
-Tactic Notation "autofresh+" "with" hyp(x) := autofresh_fixed_param inst2 x.
-
-Tactic Notation "autofresh" "for" "all" := fail "TODO". (* /!| issues with unwrap_all *)
 
  (* General version that picks up a fresh variable instead *)
  Ltac autofresh_param tac :=
@@ -382,8 +377,6 @@ Tactic Notation "autofresh" "for" "all" := fail "TODO". (* /!| issues with unwra
    pick fresh x;
    autofresh_fixed_param tac x.
 
-Tactic Notation "autofresh"  := autofresh_param spec2.
-Tactic Notation "autofresh+" := autofresh_param inst2.
 
 
 (** General purpose automation tactic tailored for this development **)
@@ -393,10 +386,33 @@ Tactic Notation "tactic-not-avail" ident(name) :=
   idtac "Info: tactic" name "isn't implemented at this point in the proof.";
   idtac "Make sure to import the corresponding file if it is needed.".
 
-Ltac autoreg := tactic-not-avail autoreg.
-Ltac autoinv := tactic-not-avail autoinv.
 
-(* TODO: call on autoreg, autoinv, etc *)
+
+(* Try to find some kind of contradiction (for the most common cases of contradiction we encounter here) *)
+Ltac contra_solve := 
+  try discriminate
+
+  (* TODO: other cases *)
+
+(*   repeat match goal with
+  end *) .
+
+(* Stand-alone version *)
+Ltac autocontra :=
+  pcess_hyps;
+  contra_solve.
+
+
+(* Doing as much forward reasoning as possible *)
+Ltac autofwd :=
+  pcess_hyps;
+  try fwd;
+  try contra_solve
+  (* TODO: what else? *).
+
+
+
+(* TODO: rely on autoreg, autoinv, etc *)
 Ltac autotype :=
   pcess_hyps;
 
@@ -513,7 +529,34 @@ Ltac autofv :=
   autofv_solve.
 
 
-(**** Aliases for manual proofs ****)
-Ltac ok := autotype.
+End TacticsInternals.
 
-Ltac depind x := dependent induction x.
+
+
+(**** High-level tactics (made for users) ****)
+(* TODO: when tactics are fully implemented, we might want to put this in a different file *)
+
+(* Add pointers to canonical examples *)
+
+(* General purpose solver. Does a bunch of domain-specific reasoning *)
+Ltac autotype   := TacticsInternals.autotype.
+Ltac ok         := autotype.
+
+(* Does as much forward reasoning as possible (includes deriving contradictions) *)
+Ltac autofwd    := TacticsInternals.autofwd.
+Ltac introfwd   := intros; autofwd.
+
+(* TODO Tries to solve free variable obligations *)
+Ltac autofv     := TacticsInternals.autofv.
+
+(* Tries to find some kind of contradiction (for the most common cases of contradiction we encounter here) *)
+Ltac autocontra := TacticsInternals.autocontra.
+
+(* Automatically pick fresh variables and solve freshness conditions *)
+Tactic Notation "autofresh"  "with" hyp(x) := TacticsInternals.autofresh_fixed_param TacticsInternals.spec2 x.
+Tactic Notation "autofresh+" "with" hyp(x) := TacticsInternals.autofresh_fixed_param TacticsInternals.inst2 x.
+Tactic Notation "autofresh" "for" "all" := fail "TODO". (* /!\ issues with unwrap_all *)
+Tactic Notation "autofresh"  := TacticsInternals.autofresh_param TacticsInternals.spec2.
+Tactic Notation "autofresh+" := TacticsInternals.autofresh_param TacticsInternals.inst2.
+
+Ltac depind x   := dependent induction x.

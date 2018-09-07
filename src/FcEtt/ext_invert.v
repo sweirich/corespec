@@ -81,12 +81,13 @@ Proof.
 Qed.
 
 
+(* FIXME: fix roles in the statement *)
 Lemma invert_a_Fam : `(
     Typing G (a_Fam F) A ->
     (exists B, DefEq G (dom G) A B a_Star Rep /\
-           binds F (Cs B) toplevel /\ Typing nil B a_Star) \/
+           binds F (Cs B R) toplevel /\ Typing nil B a_Star) \/
     (exists a B R', DefEq G (dom G) A B a_Star Rep /\
-           binds F (Ax a B R') toplevel /\ Typing nil B a_Star)).
+           binds F (Ax a B R' R'' R''') toplevel /\ Typing nil B a_Star)).
 Proof.
   intros G F A R H. dependent induction H.
   - destruct (IHTyping F) as [(B & h1 & h2 & h3) | (a & B1 & R' & h0 & h1 & h3)]; try done.
@@ -394,11 +395,38 @@ Proof.
     apply (E_Trans _ _ _ _ _ _ A); auto.
 Qed.
 
+Lemma invert_a_App_Role: `(
+    Typing G (a_App a (Role R) b) C ->
+    exists A B, Typing G a (a_Pi Rel A B) /\
+           Typing G b A /\
+           DefEq G (dom G) C (open_tm_wrt_tm B b) a_Star Rep).
+Proof.
+  intros G a b C R R'.
+  move e : (a_App a Irrel R b) => t1.
+  move => h1.
+  induction h1; auto; try done.
+  - destruct (IHh1 e) as [A0 [B [b0 [R3 [h0 [h2 h3]]]]]].
+    exists A0, B, b0. repeat split; eauto 3 using param_covariant.
+  - exists A, B, a0. inversion e; subst.
+    assert (h2 : Typing G (open_tm_wrt_tm B a0) a_Star Rep).
+    + (have: Typing G (a_Pi Irrel A R0 B) a_Star Rep by apply (Typing_regularity h1_1)) => h3.
+      destruct (invert_a_Pi h3) as [_ [[L h4] h5]].
+      pick fresh x.
+      rewrite (tm_subst_tm_tm_intro x); auto.
+      replace a_Star with (tm_subst_tm_tm a0 x a_Star); auto.
+      apply Typing_tm_subst with (A := A) (R := R0); eauto using param_sub1.
+    + repeat split; auto.
+  - destruct (IHh1_1 e) as [A0 [B0 [b0 [R2 [h3 [h2 h4]]]]]].
+    exists A0, B0, b0.
+    repeat split; auto.
+    apply (E_Trans _ _ _ _ _ _ A); auto.
+Qed.
+
 Lemma invert_a_CApp : `(
     Typing G (a_CApp a g) A ->
     g = g_Triv /\
     exists a1 b1 A1 R1 B, Typing G a (a_CPi (Eq a1 b1 A1 R1) B) /\
-             DefEq G (dom G) a1 b1 A1 (param R1 R) /\
+             DefEq G (dom G) a1 b1 A1 R1 /\
              DefEq G (dom G) A (open_tm_wrt_co B g_Triv) a_Star Rep). 
 Proof.
   intros G a g A R H.
@@ -1242,9 +1270,10 @@ Proof.
   inversion h1. auto.
 Qed.
 
-Lemma E_Fam2 : ∀ (G : context) F (A a : tm) R,
+
+Lemma E_Fam2 : ∀ (G : context) F (A a : tm) R R' R'',
        Ctx G
-       → binds F (Ax a A R) toplevel → Typing G (a_Fam F) A R.
+       → binds F (Ax a A R R' R'') toplevel → Typing G (a_Fam F) A.
 Proof.
   intros.
   eapply E_Fam; eauto 2.
@@ -1263,8 +1292,8 @@ Qed.
 (****************************)
 (**** Regularity Tactics ****)
 (****************************)
+Print Implicit Typing_Ctx.
 
-(*
 Ltac reg H :=
   match type of H with
   (*
@@ -1296,28 +1325,33 @@ Ltac reg H :=
       let pwfp2 := fresh "pwf" phi2 in
       move: (AnnIso_regularity H) => [pwfp1 pwfp2]
       *)
-    | _ ⊨ _ : a_Star / _ => fail 1
-    | _ ⊨ _ : _ / _ =>
-      move: (Typing_regularity H) => ?
+    | _ ⊨ _ : a_Star =>
+      move: (Typing_Ctx H) => ?;
+      TacticsInternals.wrap_hyp H (* FIXME: hack (inconsisten (can't just fail here)) *)
+    | _ ⊨ _ : _ =>
+      move: (Typing_regularity H) => ?;
+      move: (Typing_Ctx H) => ?
     | DefEq _ _ _ _ _ _ => (* TODO: do we want to name arguments? (like above) *)
-      move: (DefEq_regularity2 H) => [? ?]
+      move: (PropWff_regularity (DefEq_regularity H)) => [? ?]
     
 
   end. 
+
 
 (* TODO: extend (for now, it assumes that we only need regularity on defeq hyps - there are other use cases in other files) *)
 Ltac autoreg :=
   repeat match goal with
     | [ H: AnnDefEq _ _ _ _ _ |- _ ] =>
-      reg H; wrap_hyp H
+      reg H; TacticsInternals.wrap_hyp H
     | [ H: AnnIso _ _ _ _ _ |- _ ] =>
-      reg H; wrap_hyp H
-    | [ H: _ ⊨ _ : _ / _ |- _ ] =>
-      reg H; wrap_hyp H
+      reg H; TacticsInternals.wrap_hyp H
+    | [ H: Typing _ _ _ |- _ ] =>
+      reg H; TacticsInternals.wrap_hyp H
     | [ H: DefEq _ _ _ _ _ _ |- _ ] =>
-      reg H; wrap_hyp H
+      reg H; TacticsInternals.wrap_hyp H
   end;
-  unwrap_all. *)
+  TacticsInternals.unwrap_all.
+
 
 
 (****************************)
@@ -1326,12 +1360,14 @@ Ltac autoreg :=
 
 Ltac autoinv :=
   repeat match goal with  
-    | [H : _ ⊨ a_App _ Rel _ _   : _ / _ |- _] => eapply invert_a_App_Rel in H; pcess_hyps
-    | [H : _ ⊨ a_App _ Irrel _ _ : _ / _ |- _] => eapply invert_a_App_Irrel in H; pcess_hyps
-    | [H : _ ⊨ a_App _ ?ρ _ _    : _ / _ |- _] => destruct ρ
-    | [H : _ ⊨ a_CApp _ _        : _ / _ |- _] => eapply invert_a_CApp in H; pcess_hyps
-    | [H : _ ⊨ a_UAbs _ _ _      : _ / _ |- _] => eapply invert_a_UAbs in H; pcess_hyps
-    | [H : _ ⊨ a_UCAbs _         : _ / _ |- _] => eapply invert_a_UCAbs in H; pcess_hyps
+    | [H : _ ⊨ a_App _ (Rho Rel)   _ : _ |- _] => eapply invert_a_App_Rel in H; autofwd
+    | [H : _ ⊨ a_App _ (Rho Irrel) _ : _ |- _] => eapply invert_a_App_Irrel in H; autofwd
+    | [H : _ ⊨ a_App _ (Rho ?ρ)    _ : _ |- _] => destruct ρ
+    | [H : _ ⊨ a_App _ (Role ?R)   _ : _ |- _] => eapply invert_a_App_Role in H; autofwd
+    | [H : _ ⊨ a_CApp _ _        : _ |- _] => eapply invert_a_CApp in H; autofwd
+    | [H : _ ⊨ a_UAbs _ _ _      : _ |- _] => eapply invert_a_UAbs in H; autofwd
+    | [H : _ ⊨ a_UCAbs _         : _ |- _] => eapply invert_a_UCAbs in H; autofwd
+    | [H : _ ⊨ a_Fam _           : _ |- _] => eapply invert_a_Fam in H; destruct H; autofwd
 (*    | [H : _ ⊨ a_Conv _ _ _      : _ / _ |- _] => eapply invert_a_Conv in H; pcess_hyps *)
   (* TODO *)
   end.

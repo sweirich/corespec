@@ -15,12 +15,13 @@ Set Implicit Arguments.
 (* --------------------------------------------------------------------------- *)
 (* --------------------------------------------------------------------------- *)
 
+(* TODO (tactics): integrate *)
 Ltac solve_binds :=
   match goal with
     | [ b : binds ?v _ ?G
       , H : forall v' _, binds v' _ ?G -> _ [<=] dom ?G ∧ _ [<=] dom ?G
       |- _ ] =>
-      apply H in b; simpl in b; split_hyp; (done || fsetdec)
+      apply H in b; simpl in b; autofwd; (done || fsetdec)
   end.
 
 
@@ -73,7 +74,7 @@ Proof.
   all: autounfold.
 
   (* We can't just use `repeat split` because we don't want to split under foralls *)
-  all: intros; repeat match goal with |- _ ∧ _ => split end; split_hyp; simpl.
+  all: intros; repeat match goal with |- _ ∧ _ => split end; TacticsInternal.split_hyp; simpl.
   all: eauto 1.
   (* split all asummptions about unions *)
 
@@ -188,11 +189,12 @@ Definition ProfWff_context_fv := second context_fv_mutual.
 Definition Iso_context_fv     := third context_fv_mutual.
 Definition DefEq_context_fv   := fourth context_fv_mutual.
 
+(* TODO (tactics): integrate *)
 Ltac show_fresh :=
   match goal with 
   | [H: Typing _ ?T _ |- ?c `notin` _ ?T ] => 
-    move: (Typing_context_fv H) => ?; split_hyp; auto
+    move: (Typing_context_fv H) => ?; autofwd; auto
   | [H: Typing _ _ ?T |- ?c `notin` _ ?T ] => 
-    move: (Typing_context_fv H) => ?; split_hyp; auto
+    move: (Typing_context_fv H) => ?; autofwd; auto
 
   end.

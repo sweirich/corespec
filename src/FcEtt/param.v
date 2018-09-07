@@ -22,3 +22,10 @@ Lemma param_sub1 : forall R R1, SubRole (param R1 R) R1.
 Proof. intros. unfold param; destruct str; simpl; auto.
 unfold min. destruct R1; destruct R; simpl; auto.
 Qed.
+
+
+Lemma param_rep_r : `(param R Rep = R).
+Proof.
+  intros; unfold param; case str; auto.
+  case R; reflexivity.
+Qed.

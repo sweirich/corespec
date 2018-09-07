@@ -10,11 +10,16 @@ Require Export FcEtt.ett_ott.
 
 (* SSReflect *)
 
-Require Export mathcomp.ssreflect.ssreflect.
+(* Require Export mathcomp.ssreflect.ssreflect. *)
+From Coq Require Export ssreflect ssrfun ssrbool.
 Close Scope boolean_if_scope.
 Global Open Scope general_if_scope.
 (* From mathcomp Require Export ssrfun ssrmatching. *)
 
+
+(* Basic datatypes *)
+Require Export List.
+Export ListNotations.
 
 
 (**** Global imports and settings ****)
@@ -23,6 +28,7 @@ Global Open Scope general_if_scope.
 
 Global Set Implicit Arguments.
 Global Set Bullet Behavior "Strict Subproofs".
+Global Unset SsrIdents. (* TODO: when proofs are properly automatized, this shouldn't be necessary *)
 
 (* Masking this nasty notation from the stdlib *)
 Notation sort := sort (only parsing).

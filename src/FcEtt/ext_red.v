@@ -1,50 +1,68 @@
 Require Import FcEtt.imports.
+Require Import FcEtt.tactics.
+
 Require Import FcEtt.ett_ott.
 
 Require Import FcEtt.ett_inf.
-Require Import FcEtt.ett_par.
-
 Require Import FcEtt.ett_ind.
+(*
+Require Import FcEtt.ett_par.
+*)
+
 
 Require Import FcEtt.ext_wf.
-
-Require Import FcEtt.ext_red_one.
-
-Require Import FcEtt.tactics.
-
 Require Export FcEtt.ext_invert.
-
-Require Export FcEtt.ext_red_one.
 Require Export FcEtt.ext_weak.
 Require Export FcEtt.ext_subst.
 Require Import FcEtt.ett_roleing.
+
 Require Import FcEtt.param.
+
+Require Export FcEtt.ext_red_one.
+Require Import FcEtt.ett_match.
+
+Require Import FcEtt.notations.
 
 Set Bullet Behavior "Strict Subproofs".
 Set Implicit Arguments.
 
 
-Lemma Beta_preservation : forall a b R, Beta a b R -> 
-                                   forall G A, Typing G a A R -> Typing G b A R.
+(* TMP *)
+Generalizable All Variables.
+
+(* TODO: import RetType and update statement correspondingly *)
+Lemma MatchSubst_preservation: `{
+  MatchSubst a p b b' →
+  forall Γ Γ' Ω A A' A'' p1 b1,
+  Rename p1 b1 p b ((ℱν a) ∪ (ℱν p1)) →
+  PatternContexts Ω Γ' F A' p1 A'' →
+  Γ' ⊨ b : A'' →
+  MatchSubst a p A'' A →
+   Typing Γ a A → Typing Γ b' A}.
 Proof.
-  intros a b R B. destruct B; intros G A0 TH.
+Admitted.
+
+
+Lemma Beta_preservation : `(Beta a b R →  forall G A, Typing G a A -> Typing G b A).
+Proof.
+(*
+  induction 1; intros G A0 TH.
   - have CT: Ctx G by eauto.
-    have RA: Typing G A0 a_Star Rep by eauto using Typing_regularity.
+    have RA: Typing G A0 a_Star by eauto using Typing_regularity.
     destruct rho.
     + destruct (invert_a_App_Rel TH) as (A & B & TB & DE & h).
       destruct (invert_a_UAbs TB) as (A1 & B1 & DE2 & [L TB1] & TA1 ).
       eapply E_Conv with (A := (open_tm_wrt_tm B1 b)); eauto 2.
       pick fresh x.
       move: (TB1 x ltac:(auto)) =>  [T1 [T2 RC]].
-      rewrite (tm_subst_tm_tm_intro x v); eauto 2. 
-      rewrite (tm_subst_tm_tm_intro x B1); eauto 2.
-      
-      eapply Typing_tm_subst with (A:=A1); eauto 2.
-      eapply E_Conv with (A := A); eauto 2 using E_SubRole, param_sub1.
+      rewrite (tm_subst_tm_tm_intro x v); eauto 2.
+      rewrite (tm_subst_tm_tm_intro x B1); eauto.
+
+      eapply Typing_tm_subst with (A:=A1); eauto 5.
       eapply E_Sym.
-      eapply E_Trans with (a1:= open_tm_wrt_tm B b); eauto 3.
+      eapply E_Trans with (a1:= open_tm_wrt_tm B b); eauto 2.
       eapply E_PiSnd; eauto 1.
-      eapply E_Refl; eauto using param_covariant.
+      eauto.
 
     + destruct (invert_a_App_Irrel TH) as (A & B & b0 & Tb & Tb2 & EQ & DE ).
       subst.
@@ -63,7 +81,7 @@ Proof.
       eapply E_Trans with (a1 := open_tm_wrt_tm B b0). auto.
       eapply E_PiSnd; eauto using E_Refl, param_covariant.
    - have CT: Ctx G by eauto.
-     have RA: Typing G A0 a_Star Rep by eauto using Typing_regularity.
+     have RA: Typing G A0 a_Star by eauto using Typing_regularity.
      destruct (invert_a_CApp TH) as (eq & a1 & b1 & A1 & R1 & B1 & h0 & h1 & h2 ).
      destruct (invert_a_UCAbs h0) as (a2 & b2 & A2 & R3 & B2 & h4 & h5 & [L h6] ).
      pick fresh c.
@@ -77,12 +95,22 @@ Proof.
      eapply Typing_co_subst; eauto.
      eapply E_Sym.
      eapply E_Trans with (a1 := open_tm_wrt_co B1 g_Triv). auto.
-     eapply E_CPiSnd; eauto 2. eapply E_Sub with (R1 := param R1 R).
-     auto. apply param_covariant; auto.
-     apply E_CPiFst in h5. apply E_Cast in h5.
-     eapply E_Sub with (R1 := param R3 R3). rewrite param_same.
-     auto. apply param_covariant; auto. eapply E_Sub; eauto using param_sub1.
-   - destruct (invert_a_Fam TH) as [(b & h1 & h2 & h3) | (b & B & R2 & h1 & h2 & h3)].
+     eapply E_CPiSnd; eauto 2.
+     apply E_CPiFst in h5. apply E_Cast in h5; auto 1.
+     all: rewrite param_rep_r; eauto 2.
+   -
+     autofwd.
+     autoinv.
+     move: H.
+     move/toplevel_inversion. introfwd.
+     eapply MatchSubst_preservation.
+     eauto 1.
+     eauto 1.
+     eapply H.
+     eauto 1.
+     eauto 1.
+   
+(*      destruct (invert_a_Fam TH) as [(b & h1 & h2 & h3) | (b & B & R2 & h1 & h2 & h3)].
      assert (Cs b = Ax a A R). eapply binds_unique; eauto using uniq_toplevel.
      inversion H1.
      assert (Ax a A R = Ax b B R2). eapply binds_unique; eauto using uniq_toplevel.
@@ -94,15 +122,26 @@ Proof.
      eauto 2.
      eapply E_Sym. eauto.
      eapply Typing_regularity. 
-     eauto.
-   - dependent induction TH; eauto.
+     eauto. *)
+
+   - dependent induction TH.
+     + eapply E_Conv.
+       eapply IHTH1; try eauto.
+         eauto.
+         ok.
+     + autofresh.
+       erewrite <- open_tm_wrt_co_lc_tm; last first.
+       * eapply BranchTyping_lc_last in H2. eauto.
+       * eapply E_CApp.
+
    - dependent induction TH; eauto.
      Unshelve. exact (dom G). exact (dom G).
-Qed.
+*)
+Admitted.
 
 
 Lemma E_Beta2 :  ∀ (G : context) (D : available_props) (a1 a2 B : tm) R,
-       Typing G a1 B R → Beta a1 a2 R → DefEq G D a1 a2 B R.
+       Typing G a1 B → Beta a1 a2 R → DefEq G D a1 a2 B R.
 Proof.
   intros; eapply E_Beta; eauto.
   eapply Beta_preservation; eauto.
@@ -226,7 +265,7 @@ Proof.
 Qed.
 
 Lemma reduction_preservation : forall a a' R, reduction_in_one a a' R -> forall G A, 
-      Typing G a A R -> Typing G a' A R.
+      Typing G a A -> Typing G a' A.
 Proof.
   (* TODO: clean and make more robust *)
   move=> a a' R r.
