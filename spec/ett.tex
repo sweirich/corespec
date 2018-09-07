@@ -1067,7 +1067,7 @@
 
 
 \newcommand{\ottdrulevalueXXtypeXXValuePath}[1]{\ottdrule[#1]{%
-\ottpremise{ \mathsf{ValuePath} \  \ottnt{a}  =  \ottmv{F} }%
+\ottpremise{ \mathsf{CasePath}_{ \ottnt{R} }\  \ottnt{a}  =  \ottmv{F} }%
 }{
  \mathsf{ValueType}_{ \ottnt{R} }\  \ottnt{a} }{%
 {\ottdrulename{value\_type\_ValuePath}}{}%
@@ -1107,12 +1107,12 @@
 }}
 
 
-\newcommand{\ottdruleconsistentXXaXXValuePath}[1]{\ottdrule[#1]{%
-\ottpremise{ \mathsf{ValuePath} \  \ottnt{a_{{\mathrm{1}}}}  =  \ottmv{F} }%
-\ottpremise{ \mathsf{ValuePath} \  \ottnt{a_{{\mathrm{2}}}}  =  \ottmv{F} }%
+\newcommand{\ottdruleconsistentXXaXXCasePath}[1]{\ottdrule[#1]{%
+\ottpremise{ \mathsf{CasePath}_{ \ottnt{R} }\  \ottnt{a_{{\mathrm{1}}}}  =  \ottmv{F} }%
+\ottpremise{ \mathsf{CasePath}_{ \ottnt{R} }\  \ottnt{a_{{\mathrm{2}}}}  =  \ottmv{F} }%
 }{
  \suppress{\mathsf{consistent}_{ \ottnt{R} }\  \ottnt{a_{{\mathrm{1}}}}  \  \ottnt{a_{{\mathrm{2}}}}  } }{%
-{\ottdrulename{consistent\_a\_ValuePath}}{}%
+{\ottdrulename{consistent\_a\_CasePath}}{}%
 }}
 
 
@@ -1135,7 +1135,7 @@
 \ottusedrule{\ottdruleconsistentXXaXXStar{}}
 \ottusedrule{\ottdruleconsistentXXaXXPi{}}
 \ottusedrule{\ottdruleconsistentXXaXXCPi{}}
-\ottusedrule{\ottdruleconsistentXXaXXValuePath{}}
+\ottusedrule{\ottdruleconsistentXXaXXCasePath{}}
 \ottusedrule{\ottdruleconsistentXXaXXStepXXR{}}
 \ottusedrule{\ottdruleconsistentXXaXXStepXXL{}}
 \end{ottdefnblock}}
@@ -1981,7 +1981,7 @@
 
 \newcommand{\ottdruleEXXPiSnd}[1]{\ottdrule[#1]{%
 \ottpremise{\Gamma  \ottsym{;}  \Delta  \vDash   \mathrm{\Pi}^ \rho \ottmv{x} \!:\! \ottnt{A_{{\mathrm{1}}}} \to \ottnt{B_{{\mathrm{1}}}}   \equiv   \mathrm{\Pi}^ \rho \ottmv{x} \!:\! \ottnt{A_{{\mathrm{2}}}} \to \ottnt{B_{{\mathrm{2}}}}   \ottsym{:}   \star   \ottsym{/}  \ottnt{R'}}%
-\ottpremise{\Gamma  \ottsym{;}  \Delta  \vDash  \ottnt{a_{{\mathrm{1}}}}  \equiv  \ottnt{a_{{\mathrm{2}}}}  \ottsym{:}  \ottnt{A_{{\mathrm{1}}}}  \ottsym{/}  \ottnt{R'}}%
+\ottpremise{\Gamma  \ottsym{;}  \Delta  \vDash  \ottnt{a_{{\mathrm{1}}}}  \equiv  \ottnt{a_{{\mathrm{2}}}}  \ottsym{:}  \ottnt{A_{{\mathrm{1}}}}  \ottsym{/}  \ottkw{Nom}}%
 }{
 \Gamma  \ottsym{;}  \Delta  \vDash  \ottnt{B_{{\mathrm{1}}}}  \lbrace  \ottnt{a_{{\mathrm{1}}}}  \ottsym{/}  \ottmv{x}  \rbrace  \equiv  \ottnt{B_{{\mathrm{2}}}}  \lbrace  \ottnt{a_{{\mathrm{2}}}}  \ottsym{/}  \ottmv{x}  \rbrace  \ottsym{:}   \star   \ottsym{/}  \ottnt{R'}}{%
 {\ottdrulename{E\_PiSnd}}{}%

@@ -911,7 +911,7 @@ ValueType R all rho x : A  -> B
 -------------------- :: CPi
 ValueType R all c : phi. B
 
-ValuePath a = F
+CasePath R a = F
 ------------------------ :: ValuePath
 ValueType R a
 
@@ -938,9 +938,9 @@ consistent (all rho x1:A1 -> B1) (all rho x2:A2 -> B2) R'
 ------------------------ :: CPi
 consistent (all c1:phi1. A1) (all c2 :phi2. A2) R
 
-ValuePath a1 = F
-ValuePath a2 = F
------------------------- :: ValuePath
+CasePath R a1 = F
+CasePath R a2 = F
+------------------------ :: CasePath
 consistent a1 a2 R
 
 not ValueType R b
@@ -1478,7 +1478,7 @@ G ; D |= all rho x:A1 -> B1 == all rho x:A2 -> B2 : TYPE/R'
 G ; D |=  A1 == A2 : TYPE/ R'
 
 G ; D |= all rho x:A1 -> B1 == all rho x:A2 -> B2 : TYPE/R'
-G ; D |= a1 == a2 : A1/ R'
+G ; D |= a1 == a2 : A1/ Nom
 ------------------------------------------------------------ :: PiSnd
 G ; D |=  B1 {a1 /x}  == B2 {a2/x} : TYPE/R'
 

@@ -1090,7 +1090,7 @@ Inductive value_type : role -> tm -> Prop :=    (* defn value_type *)
      lc_tm (a_CPi phi B) ->
      value_type R (a_CPi phi B)
  | value_type_ValuePath : forall (R:role) (a:tm) (F:const),
-     ValuePath a F ->
+     CasePath R a F ->
      value_type R a.
 
 (* defns Jconsistent *)
@@ -1109,9 +1109,9 @@ Inductive consistent : tm -> tm -> role -> Prop :=    (* defn consistent *)
      lc_constraint phi2 ->
      lc_tm (a_CPi phi2 A2) ->
      consistent  ( (a_CPi phi1 A1) )   ( (a_CPi phi2 A2) )  R
- | consistent_a_ValuePath : forall (a1 a2:tm) (R:role) (F:const),
-     ValuePath a1 F ->
-     ValuePath a2 F ->
+ | consistent_a_CasePath : forall (a1 a2:tm) (R:role) (F:const),
+     CasePath R a1 F ->
+     CasePath R a2 F ->
      consistent a1 a2 R
  | consistent_a_Step_R : forall (a b:tm) (R:role),
      lc_tm a ->
@@ -1478,7 +1478,7 @@ with DefEq : context -> available_props -> tm -> tm -> tm -> role -> Prop :=    
      DefEq G D A1 A2 a_Star R'
  | E_PiSnd : forall (G:context) (D:available_props) (B1 a1 B2 a2:tm) (R':role) (rho:relflag) (A1 A2:tm),
      DefEq G D (a_Pi rho A1 B1) (a_Pi rho A2 B2) a_Star R' ->
-     DefEq G D a1 a2 A1 R' ->
+     DefEq G D a1 a2 A1 Nom ->
      DefEq G D  (open_tm_wrt_tm  B1   a1 )   (open_tm_wrt_tm  B2   a2 )  a_Star R'
  | E_CPiCong : forall (L:vars) (G:context) (D:available_props) (a1 b1 A1:tm) (R:role) (A a2 b2 A2 B:tm) (R':role),
      Iso G D (Eq a1 b1 A1 R) (Eq a2 b2 A2 R) ->
