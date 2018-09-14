@@ -6,7 +6,6 @@ Require Export FcEtt.fset_facts.
 Require Export FcEtt.ett_inf.
 Require Export FcEtt.tactics.
 
-
 (* This file contains:
 
    - Syntactic stuff that should be defined by lngen

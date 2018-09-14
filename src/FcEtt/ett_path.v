@@ -10,6 +10,11 @@ Require Import FcEtt.toplevel.
 Require Import FcEtt.ett_roleing.
 Require Import FcEtt.ext_wf.
 
+Lemma Path_ValuePath : forall a F Rs, Path a F Rs -> ValuePath a F.
+Proof. intros. induction H; eauto.
+Qed.
+
+
 Lemma CasePath_ValuePath : forall R a F, CasePath R a F -> ValuePath a F.
 Proof. intros. induction H; eauto.
 Qed.

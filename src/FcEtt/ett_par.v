@@ -24,6 +24,26 @@ Require Export FcEtt.toplevel.
 
 Require Export FcEtt.ett_value.
 
+Lemma MatchSubst_lc_1 : forall a p b b', MatchSubst a p b b' →  lc_tm a.
+Proof.
+  induction 1; auto.
+Qed.
+
+Lemma MatchSubst_lc_2 : forall a p b b', MatchSubst a p b b' →  lc_tm b.
+Proof.
+  induction 1; auto.
+Qed.
+
+Lemma MatchSubst_lc_3 : forall a p b b', MatchSubst a p b b' →  lc_tm b'.
+Proof.
+  induction 1;
+    eauto using tm_subst_tm_tm_lc_tm, co_subst_co_tm_lc_tm.
+Qed.
+
+Lemma ApplyArgs_lc_3 : forall a b c, ApplyArgs a b c → lc_tm c.
+Proof.
+  induction 1; eauto.
+Qed.
 
 Lemma par_app_rctx : forall W1 W2 W3 a a' R, uniq (W1 ++ W2 ++ W3) ->
                      Par (W1 ++ W3) a a' R ->
@@ -92,6 +112,13 @@ Proof.
 Qed.
 
 Hint Resolve MatchSubst_lc_1 MatchSubst_lc_3 ApplyArgs_lc_3 Par_lc1 Par_lc2 : lc.
+
+Fixpoint var_pat (p : tm) := match p with
+   | a_Fam F => nil
+   | a_App p1 nu (a_Var_f x) => (x,Nom) :: var_pat p1
+   | a_CApp p1 g_Triv => var_pat p1
+   | _ => nil
+   end.
 
 Lemma roleing_match : forall W1 a R1 W2 p b R2 b', roleing W1 a R1 ->
                       roleing (W2 ++ (var_pat p)) b R2 -> MatchSubst a p b b' ->

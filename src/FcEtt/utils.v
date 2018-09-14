@@ -2,7 +2,7 @@ Require Import FcEtt.imports.
 
 Set Bullet Behavior "Strict Subproofs".
 Set Implicit Arguments.
-
+Definition map := EnvImpl.map.
 
 (**** Auxiliary definitions ****)
 

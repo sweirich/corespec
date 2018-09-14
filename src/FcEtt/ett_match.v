@@ -84,6 +84,7 @@ Proof. intros. assert (P : Sig toplevel). apply Sig_toplevel.
        eauto.
 Qed.
 
+
 Lemma matchsubst_ind_fun : forall a p b b',
       MatchSubst a p b b' -> matchsubst a p b = b'.
 Proof. intros. induction H.
@@ -106,6 +107,10 @@ Qed.
 
 Lemma tm_pattern_agree_pattern : forall a p, tm_pattern_agree a p -> Pattern p.
 Proof. intros. induction H; eauto.
+Qed.
+
+Lemma subtm_pattern_agree_pattern : forall a p, subtm_pattern_agree a p -> Pattern p.
+Proof. intros. induction H; eauto. eapply tm_pattern_agree_pattern; eauto.
 Qed.
 
 Lemma tm_pattern_agree_const_same : forall a p, tm_pattern_agree a p ->
@@ -187,20 +192,41 @@ Inductive Abs_CAbs_head_form : tm -> Prop :=
   | head_CAbs : forall a, Abs_CAbs_head_form (a_UCAbs a).
 Hint Constructors Abs_CAbs_head_form.
 
-Inductive App_CApp_head_form : tm -> Prop :=
-  | head_App : forall nu a b, App_CApp_head_form (a_App a nu b)
-  | head_CApp : forall a, App_CApp_head_form (a_CApp a g_Triv).
-Hint Constructors App_CApp_head_form.
-
 Inductive Const_App_CApp_head_form : tm -> Prop :=
    | head_Fam : forall F, Const_App_CApp_head_form (a_Fam F)
-   | head_App_CApp : forall a, App_CApp_head_form a -> Const_App_CApp_head_form a.
+   | head_App : forall nu a b, Const_App_CApp_head_form (a_App a nu b)
+  | head_CApp : forall a, Const_App_CApp_head_form (a_CApp a g_Triv).
 Hint Constructors Const_App_CApp_head_form.
 
 Lemma tm_pattern_agree_tm_const_app : forall a p, tm_pattern_agree a p ->
        Const_App_CApp_head_form a.
 Proof. intros. induction H; eauto.
 Qed.
+
+Lemma subtm_pattern_agree_tm_const_app : forall a p, subtm_pattern_agree a p ->
+       Const_App_CApp_head_form a.
+Proof. intros. induction H; eauto. eapply tm_pattern_agree_tm_const_app; eauto.
+Qed.
+
+Lemma subtm_pattern_agree_dec : forall a p, lc_tm a -> subtm_pattern_agree a p \/
+                                        ~(subtm_pattern_agree a p).
+Proof. intros.
+       induction a; try(right; intro P;
+       apply subtm_pattern_agree_tm_const_app in P; inversion P; fail).
+         - inversion H; subst. destruct (IHa1 H2) as [Q1 | Q2].
+           left; eauto. pose (Q := tm_pattern_agree_dec p H).
+           destruct Q as [Q3 | Q4]. left; eauto. right; intro.
+           inversion H0; subst; contradiction.
+         - destruct g; try (right; intro P;
+           apply subtm_pattern_agree_tm_const_app in P; inversion P; fail).
+           inversion H; subst. destruct (IHa H2) as [Q1 | Q2].
+           left; eauto. pose (Q := tm_pattern_agree_dec p H).
+           destruct Q as [Q3 | Q4]. left; eauto. right; intro.
+           inversion H0; subst; contradiction.
+         - pose (P := tm_pattern_agree_dec p H). destruct P as [P1 | P2].
+           left; eauto. right; intro. inversion H0; subst; contradiction.
+Qed.
+
 
 (* If a agrees with p, then a can be substituted for p in b *)
 
@@ -531,21 +557,7 @@ Proof. intros. generalize dependent p. generalize dependent b.
        destruct nu0; eauto. destruct R, R0; eauto; simpl.
 
 *)
-Lemma MatchSubst_lc_1 : forall a p b b', MatchSubst a p b b' →  lc_tm a.
-Proof.
-  induction 1; auto.
-Qed.
 
-Lemma MatchSubst_lc_2 : forall a p b b', MatchSubst a p b b' →  lc_tm b.
-Proof.
-  induction 1; auto.
-Qed.
-
-Lemma MatchSubst_lc_3 : forall a p b b', MatchSubst a p b b' →  lc_tm b'.
-Proof.
-  induction 1;
-    eauto using tm_subst_tm_tm_lc_tm, co_subst_co_tm_lc_tm.
-Qed.
 (*
 Lemma ax_const_rs_nil : forall F F0 a A R Rs S, Sig S ->
                  binds F (Ax (a_Fam F0) a A R Rs) S -> F = F0 /\ Rs = nil.
@@ -566,10 +578,7 @@ Proof. intros. induction H0. pose (H' := H).
        Admitted.
 *)
 
-Lemma ApplyArgs_lc_3 : forall a b c, ApplyArgs a b c → lc_tm c.
-Proof.
-  induction 1; eauto.
-Qed.
+
 
 Lemma tm_subpattern_agree_const_same : forall a p, tm_subpattern_agree a p ->
  head_const a = head_const p.
@@ -591,6 +600,12 @@ Qed.
 
 Lemma tm_subpattern_agree_length_leq : forall a p, tm_subpattern_agree a p ->
       pattern_length a <= pattern_length p.
+Proof. intros. induction H; simpl; try omega.
+       eapply tm_pattern_agree_length_same in H; omega.
+Qed.
+
+Lemma subtm_pattern_agree_length_geq : forall a p, subtm_pattern_agree a p ->
+      pattern_length a >= pattern_length p.
 Proof. intros. induction H; simpl; try omega.
        eapply tm_pattern_agree_length_same in H; omega.
 Qed.
@@ -1089,3 +1104,56 @@ Proof. intros. generalize dependent a'. generalize dependent b'.
                eapply CasePath_capp; eauto.
              + assert False. eapply CasePath_ax_par_contr; eauto. contradiction.
 Admitted.
+
+Fixpoint tm_to_roles (a : tm) : roles := match a with
+    | a_Fam F => nil
+    | a_App a1 (Role R) _ => tm_to_roles a1 ++ [ R ]
+    | a_App a1 (Rho _) _ => tm_to_roles a1
+    | a_CApp a1 _ => tm_to_roles a1
+    | _ => nil
+    end.
+
+Lemma Path_inversion : forall a F Rs, Path a F Rs->
+         (exists A, binds F (Cs A (tm_to_roles a ++ Rs)) toplevel) \/
+         (exists p b A R, binds F (Ax p b A R (tm_to_roles a ++ Rs)) toplevel).
+Proof. intros. induction H; simpl; eauto.
+        - right. exists p, a, A, R1; eauto.
+        - inversion IHPath as [[A H1] | [p [a1 [A [R2 H1]]]]].
+          left. exists A. rewrite <- app_assoc. eauto.
+          right. exists p, a1, A, R2. rewrite <- app_assoc. eauto.
+Qed.
+
+Lemma PatternContexts_roles : forall W G p F B A, PatternContexts W G F B p A ->
+      tm_to_roles p = range W.
+Proof. intros. induction H; simpl; eauto. rewrite IHPatternContexts; eauto.
+Qed.
+
+Lemma tm_pattern_agree_roles : forall a p, tm_pattern_agree a p ->
+      tm_to_roles a = tm_to_roles p.
+Proof. intros. induction H; simpl; eauto. f_equal; eauto.
+Qed.
+
+Lemma subtm_pattern_agree_roles : forall a p, subtm_pattern_agree a p ->
+      exists Rs', tm_to_roles a = tm_to_roles p ++ Rs'.
+Proof. intros. induction H; simpl; eauto.
+       exists nil; rewrite app_nil_r; apply tm_pattern_agree_roles; auto.
+       destruct nu; eauto. inversion IHsubtm_pattern_agree as [Rs' H1].
+       exists (Rs' ++ [R]). rewrite H1. rewrite app_assoc; auto.
+Qed.
+
+Lemma Path_subtm_pattern_agree_contr : forall a F p b A R Rs R0 Rs',
+      Path a F (R0 :: Rs') -> binds F (Ax p b A R Rs) toplevel ->
+      ~(subtm_pattern_agree a p).
+Proof. intros. apply Path_inversion in H.
+       inversion H as [[A1 H1] | [p1 [b1 [A1 [R1 H1]]]]].
+        - axioms_head_same.
+        - axioms_head_same. intro. apply toplevel_inversion in H0.
+          inversion H0 as [W [G [B [H3 [H4 [H5 H6]]]]]].
+          apply PatternContexts_roles in H3. rewrite <- H6 in H3.
+          apply subtm_pattern_agree_roles in H2.
+          inversion H2 as [Rs'' H7]. rewrite H7 in H3.
+          rewrite <- app_assoc in H3.
+          rewrite <- app_nil_r with (l := tm_to_roles p1) in H3.
+          rewrite <- app_assoc in H3. apply app_inv_head in H3.
+          apply app_cons_not_nil in H3. auto.
+Qed.

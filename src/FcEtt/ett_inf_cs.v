@@ -53,7 +53,7 @@ Module Operators.
   (* TODO; open, fv *)
   Structure type := Pack {stxsort : Type; class_close : Close.class stxsort; class_Erase : Erase.class stxsort; class_Fv : FV.class stxsort}.
 
-  Definition close_tm' (e : type) : tmvar -> stxsort e -> stxsort e :=
+(*  Definition close_tm' (e : type) : tmvar -> stxsort e -> stxsort e :=
     let 'Pack (Close.Class (Close.Class1 c _) _) _ _ := e return tmvar -> stxsort e -> stxsort e in c.
 
   Definition close_tm_rec' (e : type) : nat -> tmvar -> stxsort e -> stxsort e :=
@@ -95,11 +95,11 @@ Module Operators.
     Notation fv_tm := fv_tm'.
     Notation fv_co := fv_co'.
 
-  End Theory.
+  End Theory. *)
 
 End Operators.
 
-Export Operators.Theory.
+(* Export Operators.Theory. *)
 
 
 Definition tm_Closecl         : Operators.Close.class tm         := Operators.Close.Class (Operators.Close.Class1 close_tm_wrt_tm close_tm_wrt_tm_rec)                 (Operators.Close.Class1 close_tm_wrt_co close_tm_wrt_co_rec).
@@ -144,7 +144,7 @@ Module Test.
 
 End Test.
 
-
+(*
 (* TODO: could be nicer with some more canonical structures *)
 Module Rew.
   Definition r_erase_tm         : forall R x, erase_tm x R = erase x R         := fun _ _ => eq_refl.
@@ -203,4 +203,4 @@ Module Rew.
   End Exprt.
 End Rew.
 
-Export Rew.Exprt.
+Export Rew.Exprt. *)

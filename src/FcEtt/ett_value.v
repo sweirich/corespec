@@ -17,6 +17,9 @@ Require Import FcEtt.utils.
 Require Export FcEtt.toplevel.
 Require Import FcEtt.ett_path.
 
+Lemma Value_lc : forall R a, Value R a -> lc_tm a.
+Proof. Admitted.
+
 Lemma Value_tm_subst_tm_tm : forall R v, Value R v ->
         forall b x,  lc_tm b -> Value R (tm_subst_tm_tm b x v).
 Proof.
@@ -41,7 +44,7 @@ Qed.
 (* ------------------------------------------------- *)
 
 Lemma Value_UAbsIrrel_exists : ∀ x (a : tm) R,
-    x `notin` fv_tm a
+    x `notin` fv_tm_tm_tm a
     → (Value R (open_tm_wrt_tm a (a_Var_f x)))
     → Value R (a_UAbs Irrel a).
 Proof.

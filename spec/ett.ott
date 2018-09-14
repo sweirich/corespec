@@ -572,7 +572,7 @@ Definition toplevel : sig := erase_sig an_toplevel Nom.
 Fixpoint range (L : role_context) : roles :=
   match L with
   | nil => nil
-  | (x,R) :: L' => R :: range(L')
+  | (x,R) :: L' => range(L') ++ [ R ]
   end.
 }}
 

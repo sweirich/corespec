@@ -9,7 +9,7 @@ Require Import FcEtt.ext_wf.
 
 Set Bullet Behavior "Strict Subproofs".
 Set Implicit Arguments.
-
+Definition remove := AtomSetImpl.remove.
 (* TODO: this tactic is not so "automated" (e.g. has to link a_Pi to E_Pi),
          but it is hard to make it more "searchy" without trying extensively
          all the lemmas. We could probably work something out, though.
@@ -100,7 +100,6 @@ Ltac binds_cons :=
     try done; eauto
   end.
 
-
 Lemma strengthen_available_noncovar:
   (forall G1  a A,    Typing G1 a A -> True) /\
   (forall G1  phi ,    PropWff G1 phi  -> True) /\
@@ -124,7 +123,7 @@ Proof.
 Qed.  (* strengthen_available_nocovar *)
 
 Lemma DefEq_strengthen_available_tmvar :
-  forall G D g A B R, DefEq G D g A B R ->  forall x A' R', binds x (Tm A' R') G ->
+  forall G D g A B R, DefEq G D g A B R ->  forall x A', binds x (Tm A') G ->
                     forall D', D' [=] remove x D ->
                     DefEq G D' g A B R.
 Proof.

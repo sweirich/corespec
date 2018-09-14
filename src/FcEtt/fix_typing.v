@@ -41,7 +41,7 @@ Definition FixTy : tm :=
              (a_Var_b 1)).
  *)
 
-Lemma AxFix : binds Fix (Ax FixDef FixTy Nom) an_toplevel.
+Lemma AxFix : binds Fix (Ax FixDef FixTy FixTy Nom [Nom]) an_toplevel.
   unfold an_toplevel.
   eauto.
 Qed.
@@ -55,9 +55,9 @@ Ltac an_use_binder f x :=
   end.
 
 Lemma An_App_intro :
-  forall (G : context) (b : tm) (rho : relflag) (R R': role) (a B A C : tm),
-       AnnTyping G b (a_Pi rho A R B) R' -> (open_tm_wrt_tm B a) = C ->
-       AnnTyping G a A R -> AnnTyping G (a_App b rho R a) C R'.
+  forall (G : context) (b : tm) (rho : relflag) R (a B A C : tm),
+       AnnTyping G b (a_Pi rho A B) R -> (open_tm_wrt_tm B a) = C ->
+       AnnTyping G a A R -> AnnTyping G (a_App b (Rho rho) a) C R.
 Proof.
   intros. subst. eapply An_App; eauto.
 Qed.
@@ -96,7 +96,7 @@ Proof.
     }
   }
 Qed.
-
+(*
 Lemma AnnSig_an_toplevel: AnnSig an_toplevel.
 Proof.
   unfold an_toplevel.
@@ -104,7 +104,7 @@ Proof.
 (*  eapply AxFix. *)
   eapply FixTy_Star. eauto.
   eapply FixDef_FixTy.
-Qed.
+Qed.*)
 
 (* ---------------------------------------------------------- *)
 
@@ -112,29 +112,29 @@ Ltac use_binder f x :=
   pick fresh x and apply f;
   unfold open_tm_wrt_tm; simpl; simpl_env; eauto;
   match goal with
-    [ |- Typing ?ctx ?a ?A ?R ] =>
+    [ |- Typing ?ctx ?a ?A ] =>
     assert (Ctx ctx); [econstructor; eauto|idtac]
   end.
 
 
 Lemma E_App_intro :
-  forall (G : context) (b : tm) (R R' : role)(a B A C : tm),
-       Typing G b (a_Pi Rel A R B) R' -> (open_tm_wrt_tm B a) = C ->
-       Typing G a A (param R R') -> Typing G (a_App b Rel R a) C R'.
+  forall (G : context) (b : tm)(a B A C : tm),
+       Typing G b (a_Pi Rel A B) -> (open_tm_wrt_tm B a) = C ->
+       Typing G a A -> Typing G (a_App b (Rho Rel) a) C.
 Proof.
   intros. subst.  eapply E_App; eauto.
 Qed.
 
 Lemma E_IApp_intro :
-  forall (G : context) (b : tm) (a B A C : tm) (R R' : role),
-       Typing G b (a_Pi Irrel A R B) R' -> (open_tm_wrt_tm B a) = C ->
-       Typing G a A (param R R') -> Typing G (a_App b Irrel R a_Bullet) C R'.
+  forall (G : context) (b : tm) (a B A C : tm),
+       Typing G b (a_Pi Irrel A B) -> (open_tm_wrt_tm B a) = C ->
+       Typing G a A -> Typing G (a_App b (Rho Irrel) a_Bullet) C.
 Proof.
   intros. subst.  eapply E_IApp; eauto.
 Qed.
 
 Lemma FixTy_erase :
-  Typing nil (erase_tm FixTy Nom) a_Star Nom.
+  Typing nil (erase_tm FixTy Nom) a_Star.
 Proof.
   use_binder E_Pi X.
   use_binder E_Pi Z.
@@ -146,7 +146,7 @@ Proof.
 Qed.
 
 Lemma FixDef_FixTy_erase :
-  Typing nil (erase_tm FixDef Nom) (erase_tm FixTy Nom) Nom.
+  Typing nil (erase_tm FixDef Nom) (erase_tm FixTy Nom).
 Proof.
   pose (H := AxFix). clearbody H.
   unfold FixDef,FixTy; simpl.

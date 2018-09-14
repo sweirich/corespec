@@ -539,6 +539,8 @@ End TacticsInternals.
 (* Add pointers to canonical examples *)
 
 (* General purpose solver. Does a bunch of domain-specific reasoning *)
+Ltac basic_solve := TacticsInternals.basic_solve.
+Ltac split_hyp := TacticsInternals.split_hyp.
 Ltac autotype   := TacticsInternals.autotype.
 Ltac ok         := autotype.
 

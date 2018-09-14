@@ -22,6 +22,7 @@ fset_facts.v
 imports.v
 notations.v
 tactics.v
+tactics_safe.v
 toplevel.v
 utils.v
 beta.v

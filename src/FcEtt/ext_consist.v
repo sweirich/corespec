@@ -54,7 +54,6 @@ Proof.
   eapply subst4; eauto.
 Qed.
 
-
 Lemma a_Pi_head : forall W b A rho B R',
     Par W (a_Pi rho A B) b R' -> exists A' B' L,
       b = a_Pi rho A' B' /\ Par W A A' R' /\
@@ -63,7 +62,8 @@ Lemma a_Pi_head : forall W b A rho B R',
                                (open_tm_wrt_tm B' (a_Var_f x)) R').
 Proof.
   intros. inversion H. subst.
-  inversion H0. subst.  exists A , B, L. split; auto.
+  inversion H0. subst.  exists A , B, L. repeat split; auto.
+  intros. econstructor; eauto.
   subst. exists A', B', L.  split; auto. inversion H3.
 Qed.
 
@@ -1013,7 +1013,6 @@ Proof.
   apply multipar_app_lr; auto; try solve [eapply roleing_lc; eauto].
 Qed.
 
-
 Lemma multipar_UAbs_exists :  ∀ (x : atom) W(rho : relflag) R' (a a' : tm),
     x `notin` fv_tm_tm_tm a
        → multipar ([(x,Nom)] ++ W) (open_tm_wrt_tm a (a_Var_f x)) a' R'
@@ -1024,16 +1023,16 @@ Proof.
   autorewrite with lngen. econstructor.
   apply (role_a_Abs (union (singleton x) (dom W))); eauto.
   intros x0 h0.
-  rewrite (tm_subst_tm_tm_intro x a (a_Var_f x0)); auto.
+  rewrite (tm_subst_tm_tm_intro x a (a_Var_f x0)); auto. (*
   replace ([(x0,Nom)] ++ W) with (nil ++ [(x0,Nom)] ++ W); auto.
   assert (uniq ([(x,Nom)] ++ W)). {eapply rctx_uniq; eauto. }
   eapply subst_tm_roleing. simpl_env. eapply roleing_app_rctx; eauto.
-  econstructor; eauto. solve_uniq.
+  econstructor; eauto. solve_uniq. *) admit.
   eapply mp_step.
   eapply Par_Abs_exists with (x:=x); eauto.
   eapply IHmultipar; eauto. autorewrite with lngen. auto.
   autorewrite with lngen. auto.
-Qed.
+Admitted.
 
 Lemma multipar_iapp : forall W a c y L R',
     y `notin` fv_tm_tm_tm a \u L ->
@@ -1122,8 +1121,8 @@ Proof.
     inversion H2; subst.
     inversion H3; subst.
     repeat split; eauto. unfold joins.
-    exists T2; eauto. admit. (* apply DefEq_regularity in d0. inversion d0; subst.
-    split; econstructor; eapply Typing_roleing; eauto. *)
+    exists T2; eauto. apply DefEq_regularity in d0. inversion d0; subst.
+    split; econstructor; eapply roleing_sub; try eapply Typing_roleing; eauto.
   - intros. inversion H3; subst.
     inversion H4; subst.
     eapply typing_roleing_mutual in p; eauto; inversion p as [px [py pz]].
@@ -1162,15 +1161,29 @@ Proof.
     exists c; split; eapply multipar_sub; eauto.
   - (* confluence *)
     intros.
-    unfold joins in *. admit. (*
+    unfold joins in *.
     have p: Par (ctx_nom G) a1 a2 R.
-    { inversion b; subst; apply Typing_roleing in t; inversion t; subst.
-      econstructor; econstructor; eauto. econstructor; econstructor; eauto.
-      econstructor; eauto. econstructor; eauto. econstructor; eauto.
-      eapply Par_PatternFalse; eauto.
+    { inversion b; subst.
+       - apply Typing_roleing in t; inversion t; subst.
+         econstructor; econstructor; eauto.
+         eapply roleing_sub; eauto.
+         econstructor; econstructor; eauto. eapply roleing_sub; eauto.
+         econstructor. eapply rctx_uniq; eauto.
+       - apply Typing_roleing in t; inversion t; subst.
+         econstructor; eauto. econstructor; eauto. eapply roleing_sub; eauto.
+       - eapply Par_Axiom; eauto. apply Typing_roleing in t.
+         eapply roleing_sub; eauto. admit.
+       - apply Typing_roleing in t; inversion t; subst.
+         eapply Par_PatternTrue; eauto.
+         econstructor; eapply roleing_sub; eauto.
+         econstructor; eapply roleing_sub; eauto.
+       - apply Typing_roleing in t; inversion t; subst.
+         eapply Par_PatternFalse; eauto.
+         econstructor; eapply roleing_sub; eauto.
+         econstructor; eapply roleing_sub; eauto.
       }
     exists a2; split; econstructor; eauto.
-    econstructor. all: eapply Par_roleing_tm_snd; eauto. *)
+    econstructor. all: eapply Par_roleing_tm_snd; eauto.
   - (* pi-cong *)
     intros. destruct (H H4) as [Ax [P1 P2]].
     pick fresh x.
@@ -1466,10 +1479,35 @@ Proof. intros. assert (lc_tm a). {eapply Typing_lc1; eauto. }
       intros. pose (Q := H3 x A0 H8). simpl in Q. eauto.
     + apply canonical_forms_Pi with (R' := R) in H; auto.
       destruct H as [[a1 e1] | [F Q]]; subst. right.
-      exists (open_tm_wrt_tm a1 a); eauto. admit.
-      (* left. eauto. *)
+      exists (open_tm_wrt_tm a1 a); eauto. inversion Q; subst.
+        * left; eauto.
+        * left; eauto.
+        * pose (P1 := sub_dec R1 R). inversion P1 as [P11 | P11].
+           ** pose (P2 := subtm_pattern_agree_dec p H1).
+              inversion P2 as [P21 | P21]. inversion P21; subst.
+              right. exists (matchsubst (a_App b (Rho Rel) a) p b0).
+              eapply E_Prim. eapply Beta_Axiom; eauto. admit.
+              eapply matchsubst_fun_ind. eauto.
+              pose (P3 := toplevel_inversion H5).
+              inversion P3 as [W [G1 [B1 [P31 [P32 P33]]]]].
+              apply Typing_lc in P32. eapply P32. auto.
+              contradiction. left; eauto.
+           ** left; eauto.
     + right. exists (a_App b' (Rho Rel) a); eauto.
-  - admit.
+  - pose (P0 := Path_ValuePath H3). pose (P1 := Path_inversion H3).
+    inversion H1; subst.
+    inversion P1 as [[A1 Q] | [p [b1 [A1 [R1 Q]]]]].
+    left; eauto. pose (P2 := sub_dec R1 R).
+    inversion P2. pose (P3 := tm_pattern_agree_dec p H1).
+    inversion P3. right. exists (matchsubst (a_App b (Role R0) a) p b1).
+    eapply E_Prim. eapply Beta_Axiom; eauto. admit.
+    pose (P4 := toplevel_inversion Q).
+    inversion P4 as [W [G1 [B1 [P41 [P42 P43]]]]].
+    apply Typing_lc in P42. destruct P42. eapply matchsubst_fun_ind; eauto.
+    assert (~subtm_pattern_agree (a_App b (Role R0) a) p). {
+    intro. inversion H7; subst. contradiction.
+    pose (Q1 := Path_subtm_pattern_agree_contr H3 Q). contradiction. }
+    left; eauto. left; eauto.
   - inversion H1; subst. unfold irrelevant in H0. inversion H0.
     case IHTyping1; auto.
     + split; auto. intros. pose (Q := H3 x A0 H6). simpl in Q. eauto.
@@ -1477,8 +1515,20 @@ Proof. intros. assert (lc_tm a). {eapply Typing_lc1; eauto. }
       destruct H as [[a1 e1] | [F Q]]; subst. 
       right.
       exists (open_tm_wrt_tm a1 a_Bullet); eauto.
-      admit.
-      (* left. eauto. *)
+      inversion Q; subst.
+        * left; eauto.
+        * left; eauto.
+        * pose (P1 := sub_dec R1 R). inversion P1 as [P11 | P11].
+           ** pose (P2 := subtm_pattern_agree_dec p H1).
+              inversion P2 as [P21 | P21]. inversion P21; subst.
+              right. exists (matchsubst (a_App b (Rho Irrel) a_Bullet) p b0).
+              eapply E_Prim. eapply Beta_Axiom; eauto. admit.
+              eapply matchsubst_fun_ind. eauto.
+              pose (P3 := toplevel_inversion H6).
+              inversion P3 as [W [G1 [B1 [P31 [P32 P33]]]]].
+              apply Typing_lc in P32. eapply P32. auto.
+              contradiction. left; eauto.
+           ** left; eauto.
     + move => h1. destruct h1 as [b' h0]. right.
       exists (a_App b' (Rho Irrel) a_Bullet); eauto.
   - left. constructor; eauto. inversion H1; auto.
@@ -1488,12 +1538,27 @@ Proof. intros. assert (lc_tm a). {eapply Typing_lc1; eauto. }
     + move => h1.  apply canonical_forms_CPi with (R := R) in H; auto.
       destruct H as [[a2 e1] | [F Q]]; subst. right.
       exists (open_tm_wrt_co a2 g_Triv); eauto.
-      admit. (* left. eauto. *)
+      inversion Q; subst.
+        * left; eauto.
+        * left; eauto.
+        * pose (P1 := sub_dec R2 R). inversion P1 as [P11 | P11].
+           ** pose (P2 := subtm_pattern_agree_dec p H1).
+              inversion P2 as [P21 | P21]. inversion P21; subst.
+              right. exists (matchsubst (a_CApp a1 g_Triv) p b0).
+              eapply E_Prim. eapply Beta_Axiom; eauto. admit.
+              eapply matchsubst_fun_ind. eauto.
+              pose (P3 := toplevel_inversion H7).
+              inversion P3 as [W [G1 [B2 [P31 [P32 P33]]]]].
+              apply Typing_lc in P32. eapply P32. auto.
+              contradiction. left; eauto.
+           ** left; eauto.
     + intros H8. destruct H8 as [a' h0]. right.
       exists (a_CApp a' g_Triv); eauto.
   - destruct (sub_dec R1 R) as [S1 | S2].
-    admit. (* right; exists a; econstructor; eauto. *)
-    left. eauto.
+    pose (P := subtm_pattern_agree_dec p H1). inversion P as [P1 | P1].
+    inversion P1; subst. inversion H3; subst. right. exists a.
+    eapply E_Prim. eapply Beta_Axiom; eauto. admit. admit.
+    left; eauto. left; eauto.
   - inversion H1; subst. unfold irrelevant in H0. inversion H0.
     assert (irrelevant G (dom G) a). split; auto 1. intros. admit. (*
     pose (Q := H5 x A0 H7). simpl in Q. eauto.
