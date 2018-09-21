@@ -883,6 +883,7 @@ Fixpoint range (L : role_context) : roles :=
   end.
 
 
+
 (** definitions *)
 
 (* defns JSubRole *)
@@ -910,9 +911,10 @@ Inductive Path : tm -> const -> roles -> Prop :=    (* defn Path *)
      lc_tm b' ->
      Path a F  ( R1 :: Rs )  ->
      Path  ( (a_App a (Role R1) b') )  F Rs
- | Path_IApp : forall (a:tm) (F:const) (Rs:roles),
+ | Path_IApp : forall (a b:tm) (F:const) (Rs:roles),
+     lc_tm b ->
      Path a F Rs ->
-     Path  ( (a_App a (Rho Irrel) a_Bullet) )  F Rs
+     Path  ( (a_App a (Rho Irrel) b) )  F Rs
  | Path_CApp : forall (a:tm) (F:const) (Rs:roles),
      Path a F Rs ->
      Path  ( (a_CApp a g_Triv) )  F Rs.
@@ -953,13 +955,14 @@ Inductive MatchSubst : tm -> tm -> tm -> tm -> Prop :=    (* defn MatchSubst *)
  | MatchSubst_Const : forall (F:const) (b:tm),
      lc_tm b ->
      MatchSubst (a_Fam F) (a_Fam F) b b
- | MatchSubst_AppRelR : forall (a1:tm) (R:role) (a a2:tm) (x:tmvar) (b1 b2:tm),
+ | MatchSubst_AppRelR : forall (a1:tm) (R:role) (a p1:tm) (x:tmvar) (b1 b2:tm),
      lc_tm a ->
-     MatchSubst a1 a2 b1 b2 ->
-     MatchSubst  ( (a_App a1 (Role R) a) )   ( (a_App a2 (Role R) (a_Var_f x)) )  b1  (  (tm_subst_tm_tm  a   x   b2 )  ) 
- | MatchSubst_AppIrrel : forall (a1 a2 b1 b2:tm),
-     MatchSubst a1 a2 b1 b2 ->
-     MatchSubst  ( (a_App a1 (Rho Irrel) a_Bullet) )   ( (a_App a2 (Rho Irrel) a_Bullet) )  b1 b2
+     MatchSubst a1 p1 b1 b2 ->
+     MatchSubst  ( (a_App a1 (Role R) a) )   ( (a_App p1 (Role R) (a_Var_f x)) )  b1  (  (tm_subst_tm_tm  a   x   b2 )  ) 
+ | MatchSubst_AppIrrel : forall (a1 a p1 b1 b2:tm),
+     lc_tm a ->
+     MatchSubst a1 p1 b1 b2 ->
+     MatchSubst  ( (a_App a1 (Rho Irrel) a) )   ( (a_App p1 (Rho Irrel) a_Bullet) )  b1 b2
  | MatchSubst_CApp : forall (a1 a2 b1 b2:tm),
      MatchSubst a1 a2 b1 b2 ->
      MatchSubst  ( (a_CApp a1 g_Triv) )   ( (a_CApp a2 g_Triv) )  b1 b2.
@@ -972,9 +975,10 @@ Inductive tm_pattern_agree : tm -> tm -> Prop :=    (* defn tm_pattern_agree *)
      lc_tm a2 ->
      tm_pattern_agree a1 p1 ->
      tm_pattern_agree  ( (a_App a1 (Role R) a2) )   ( (a_App p1 (Role R) (a_Var_f x)) ) 
- | tm_pattern_agree_AppIrrel : forall (a1 p1:tm),
+ | tm_pattern_agree_AppIrrel : forall (a1 a p1:tm),
+     lc_tm a ->
      tm_pattern_agree a1 p1 ->
-     tm_pattern_agree  ( (a_App a1 (Rho Irrel) a_Bullet) )   ( (a_App p1 (Rho Irrel) a_Bullet) ) 
+     tm_pattern_agree  ( (a_App a1 (Rho Irrel) a) )   ( (a_App p1 (Rho Irrel) a_Bullet) ) 
  | tm_pattern_agree_CApp : forall (a1 p1:tm),
      tm_pattern_agree a1 p1 ->
      tm_pattern_agree  ( (a_CApp a1 g_Triv) )   ( (a_CApp p1 g_Triv) ) .
@@ -1147,13 +1151,10 @@ Inductive roleing : role_context -> tm -> role -> Prop :=    (* defn roleing *)
  | role_a_Abs : forall (L:vars) (W:role_context) (rho:relflag) (a:tm) (R:role),
       ( forall x , x \notin  L  -> roleing  (( x  ~  Nom ) ++  W )   ( open_tm_wrt_tm a (a_Var_f x) )  R )  ->
      roleing W  ( (a_UAbs rho a) )  R
- | role_a_App : forall (W:role_context) (a b:tm) (R:role),
+ | role_a_App : forall (W:role_context) (a:tm) (rho:relflag) (b:tm) (R:role),
      roleing W a R ->
      roleing W b Nom ->
-     roleing W  ( (a_App a (Rho Rel) b) )  R
- | role_a_IApp : forall (W:role_context) (a:tm) (R:role),
-     roleing W a R ->
-     roleing W  ( (a_App a (Rho Irrel) a_Bullet) )  R
+     roleing W  ( (a_App a (Rho rho) b) )  R
  | role_a_TApp : forall (W:role_context) (a:tm) (R1:role) (b:tm) (R:role) (F:const) (Rs:roles),
      roleing W a R ->
      Path a F  ( R1 :: Rs )  ->
@@ -1207,10 +1208,10 @@ Inductive Par : role_context -> tm -> tm -> role -> Prop :=    (* defn Par *)
      Par W a  ( (a_UAbs rho a') )  R ->
      Par W b b' Nom ->
      Par W (a_App a (Rho rho) b)  (open_tm_wrt_tm  a'   b' )  R
- | Par_App : forall (W:role_context) (a:tm) (rho:relflag) (b a' b':tm) (R:role),
+ | Par_App : forall (W:role_context) (a:tm) (nu:appflag) (b a' b':tm) (R:role),
      Par W a a' R ->
-     Par W b b' Nom ->
-     Par W (a_App a (Rho rho) b) (a_App a' (Rho rho) b') R
+     Par W b b'  (  app_role  nu  )  ->
+     Par W (a_App a nu b) (a_App a' nu b') R
  | Par_CBeta : forall (W:role_context) (a a':tm) (R:role),
      Par W a  ( (a_UCAbs a') )  R ->
      Par W (a_CApp a g_Triv)  (open_tm_wrt_co  a'   g_Triv )  R
@@ -1233,13 +1234,26 @@ Inductive Par : role_context -> tm -> tm -> role -> Prop :=    (* defn Par *)
      Par W b b' R1 ->
       ( forall c , c \notin  L  -> Par W  ( open_tm_wrt_co B (g_Var_f c) )   ( open_tm_wrt_co B' (g_Var_f c) )  R )  ->
      Par W (a_CPi (Eq a b A R1) B) (a_CPi (Eq a' b' A' R1) B') R
- | Par_Axiom : forall (W:role_context) (a a':tm) (R:role) (F:const) (p b A:tm) (R1:role) (Rs:roles) (p' b':tm),
-      binds  F  ( (Ax p b A R1 Rs) )   toplevel   ->
-     roleing W a R ->
-     Rename p b p' b'  (  (  (dom  W )   `union`   (fv_tm_tm_tm  p )  )  )  ->
-     MatchSubst a p' b' a' ->
+ | Par_AxiomBase : forall (W:role_context) (F:const) (b:tm) (R:role) (A:tm) (R1:role) (Rs:roles),
+      binds  F  ( (Ax (a_Fam F) b A R1 Rs) )   toplevel   ->
      SubRole R1 R ->
-     Par W a a' R
+      uniq  W  ->
+     Par W (a_Fam F) b R
+ | Par_AxiomApp : forall (W:role_context) (a:tm) (nu:appflag) (a1 a2:tm) (R:role) (F:const) (p b A:tm) (R1:role) (Rs:roles) (a' a1' p' b':tm),
+      binds  F  ( (Ax p b A R1 Rs) )   toplevel   ->
+     Par W a a' R ->
+     Par W a1 a1'  (  app_role  nu  )  ->
+     Rename p b p' b'  (  (  (dom  W )   `union`   (fv_tm_tm_tm  p )  )  )  ->
+     MatchSubst  ( (a_App a' nu a1') )  p' b' a2 ->
+     SubRole R1 R ->
+     Par W (a_App a nu a1) a2 R
+ | Par_AxiomCApp : forall (W:role_context) (a a2:tm) (R:role) (F:const) (p b A:tm) (R1:role) (Rs:roles) (a' p' b':tm),
+      binds  F  ( (Ax p b A R1 Rs) )   toplevel   ->
+     Par W a a' R ->
+     Rename p b p' b'  (  (  (dom  W )   `union`   (fv_tm_tm_tm  p )  )  )  ->
+     MatchSubst  ( (a_CApp a' g_Triv) )  p' b' a2 ->
+     SubRole R1 R ->
+     Par W (a_CApp a g_Triv) a2 R
  | Par_Pattern : forall (W:role_context) (R:role) (a:tm) (F:const) (b1 b2 a' b1' b2':tm) (R0:role),
      Par W a a' R ->
      Par W b1 b1' R0 ->
@@ -1303,10 +1317,10 @@ with reduction_in_one : tm -> tm -> role -> Prop :=    (* defn reduction_in_one 
  | E_AbsTerm : forall (L:vars) (a a':tm) (R1:role),
       ( forall x , x \notin  L  -> reduction_in_one  ( open_tm_wrt_tm a (a_Var_f x) )   ( open_tm_wrt_tm a' (a_Var_f x) )  R1 )  ->
      reduction_in_one (a_UAbs Irrel a) (a_UAbs Irrel a') R1
- | E_AppLeft : forall (a:tm) (rho:relflag) (b a':tm) (R1:role),
+ | E_AppLeft : forall (a:tm) (nu:appflag) (b a':tm) (R1:role),
      lc_tm b ->
      reduction_in_one a a' R1 ->
-     reduction_in_one (a_App a (Rho rho) b) (a_App a' (Rho rho) b) R1
+     reduction_in_one (a_App a nu b) (a_App a' nu b) R1
  | E_CAppLeft : forall (a a':tm) (R:role),
      reduction_in_one a a' R ->
      reduction_in_one (a_CApp a g_Triv) (a_CApp a' g_Triv) R
@@ -1474,7 +1488,7 @@ with DefEq : context -> available_props -> tm -> tm -> tm -> role -> Prop :=    
      DefEq G D (a_App a1 (Rho Rel) a2) (a_App b1 (Rho Rel) b2)  (  (open_tm_wrt_tm  B   a2 )  )  R'
  | E_TAppCong : forall (G:context) (D:available_props) (a1:tm) (R:role) (a2 b1 b2 B:tm) (R':role) (A:tm) (F:const) (Rs:roles) (F':const) (Rs':roles),
      DefEq G D a1 b1  ( (a_Pi Rel A B) )  R' ->
-     DefEq G D a2 b2 A  (param R   R' )  ->
+     DefEq G D a2 b2 A R ->
      Path a1 F  ( R :: Rs )  ->
      Path b1 F'  ( R :: Rs' )  ->
      DefEq G D (a_App a1 (Role R) a2) (a_App b1 (Role R) b2)  (  (open_tm_wrt_tm  B   a2 )  )  R'

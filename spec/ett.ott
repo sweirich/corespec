@@ -52,7 +52,7 @@ role, R :: '' ::= {{ com Role }}
   | Rep         ::   :: Rep
   | min R1 R2   :: S :: Min
   | param R1 R2 :: S :: Param
-  | app_role nu :: S :: App
+  | app_role nu :: S :: App {{ coq app_role [[nu]] }}
   | ( R )       :: S :: RParen
 
 
@@ -574,6 +574,7 @@ Fixpoint range (L : role_context) : roles :=
   | nil => nil
   | (x,R) :: L' => range(L') ++ [ R ]
   end.
+
 }}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -628,7 +629,7 @@ Path (a R1 b') = F @ Rs
 
 Path a = F @ Rs
 ---------------------- :: IApp
-Path (a - []) = F @ Rs
+Path (a - b) = F @ Rs
 
 Path a = F @ Rs
 ---------------------- :: CApp
@@ -697,13 +698,13 @@ by
 ----------------------------------------- :: Const
 match F with F -> b = b
 
-match a1 with a2 -> b1 = b2
+match a1 with p1 -> b1 = b2
 ------------------------------------------------------- :: AppRelR
-match (a1 R a) with (a2 R x) -> b1 = (b2 {`a/x`})
+match (a1 R a) with (p1 R x) -> b1 = (b2 {`a/x`})
 
-match a1 with a2 -> b1 = b2
+match a1 with p1 -> b1 = b2
 -------------------------------------------------------- :: AppIrrel
-match (a1 - []) with (a2 - []) -> b1 = b2
+match (a1 - a) with (p1 - []) -> b1 = b2
 
 match a1 with a2 -> b1 = b2
 ------------------------------------------------------ :: CApp
@@ -727,7 +728,7 @@ a1 <-> p1
 
 a1 <-> p1
 ----------------------------:: AppIrrel
-(a1 - []) <-> (p1 - [])
+(a1 - a) <-> (p1 - [])
 
 a1 <-> p1
 -----------------------------:: CApp
@@ -981,11 +982,7 @@ W |= (\rho x.a) : R
 W |= a : R
 W |= b : Nom
 ----------------------------- :: App
-W |= (a + b) : R
-
-W |= a : R
------------------------------ :: IApp
-W |= (a - []) : R
+W |= (a rho b) : R
 
 W |= a : R
 Path a = F @ R1, Rs
@@ -1071,9 +1068,9 @@ W |= b => b' / Nom
 W |= a rho b => a' { b' / x } / R
 
 W |= a => a' / R
-W |= b => b' / Nom
+W |= b => b' / (app_role nu)
 ------------------------------------------- :: App
-W |= a rho b => a' rho b' / R
+W |= a nu b => a' nu b' / R
 
 W |= a => (/\c .a')  / R
 ----------------------- :: CBeta
@@ -1103,13 +1100,28 @@ W |= B => B' / R
 ------------------------------------------------------------------ :: CPi
 W |= all c:a~b:A/R1. B => all c:a'~b':A'/R1. B' / R
 
-F : p ~ b : A/R1 @ Rs in toplevel
-W |= a : R
-rename p -> b to p' -> b' excluding (dom W, fv p) 
-match a with p' -> b' = a'
+F : F ~ b : A/R1 @ Rs in toplevel
 R1 <= R
-------------------------------------------------------------------- :: Axiom
+rctx_uniq W
+------------------------------------------------------------------- :: AxiomBase
+W |= F => b / R
+
+F : p ~ b : A/R1 @ Rs in toplevel
 W |= a => a' / R
+W |= a1 => a1' / (app_role nu)
+rename p -> b to p' -> b' excluding (dom W, fv p) 
+match (a' nu a1') with p' -> b' = a2
+R1 <= R
+------------------------------------------------------------------- :: AxiomApp
+W |= a nu a1 => a2 / R
+
+F : p ~ b : A/R1 @ Rs in toplevel
+W |= a => a' / R
+rename p -> b to p' -> b' excluding (dom W, fv p) 
+match (a' [o]) with p' -> b' = a2
+R1 <= R
+------------------------------------------------------------------- :: AxiomCApp
+W |= a [o] => a2 / R
 
 W |= a => a' / R
 W |= b1 => b1' / R0
@@ -1206,7 +1218,7 @@ by
 
 |= a ~> a' / R1
 -------------------------  :: AppLeft
-|= a rho b ~> a' rho b / R1
+|= a nu b ~> a' nu b / R1
 
 |= a  ~> a' / R
 -----------------------------   :: CAppLeft
@@ -1461,7 +1473,7 @@ G ; D |= a2 == b2 : A/ Nom
 G ; D |= a1 + a2 == b1 + b2 : (B { a2 / x })/R'
 
 G ; D |= a1 == b1 : (all + x:A -> B)/R'
-G ; D |= a2 == b2 : A/ param R R'
+G ; D |= a2 == b2 : A/ R
 Path a1 = F @ R, Rs
 Path b1 = F' @ R, Rs'
 ------------------------------------------------ :: TAppCong

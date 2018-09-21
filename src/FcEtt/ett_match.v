@@ -29,10 +29,8 @@ Hint Constructors Pattern.
 
 Inductive Pattern_like_tm : tm -> Prop :=
   | Pat_tm_Fam : forall F, Pattern_like_tm (a_Fam F)
-  | Pat_tm_AppR : forall a1 R a2, Pattern_like_tm a1 ->
-                                  Pattern_like_tm (a_App a1 (Role R) a2)
-  | Pat_tm_IApp : forall a1, Pattern_like_tm a1 ->
-                             Pattern_like_tm (a_App a1 (Rho Irrel) a_Bullet)
+  | Pat_tm_AppR : forall a1 nu a2, Pattern_like_tm a1 -> lc_tm a2 ->
+                                  Pattern_like_tm (a_App a1 nu a2)
   | Pat_tm_CApp : forall a1, Pattern_like_tm a1 ->
                              Pattern_like_tm (a_CApp a1 g_Triv).
 
@@ -44,7 +42,7 @@ Fixpoint matchsubst a p b : tm := match (a,p) with
          tm_subst_tm_tm a2 x (matchsubst a1 p1 b)
   | (a_App a1 (Role Rep) a2, a_App p1 (Role Rep) (a_Var_f x)) =>
          tm_subst_tm_tm a2 x (matchsubst a1 p1 b)
-  | (a_App a1 (Rho Irrel) a_Bullet, a_App p1 (Rho Irrel) a_Bullet) =>
+  | (a_App a1 (Rho Irrel) a', a_App p1 (Rho Irrel) a_Bullet) =>
          matchsubst a1 p1 b
   | (a_CApp a1 g_Triv, a_CApp p1 g_Triv) => matchsubst a1 p1 b
   | (_,_) => b
@@ -101,7 +99,7 @@ Proof. intros. apply matchsubst_ind_fun in H.
        apply matchsubst_ind_fun in H0. rewrite H in H0. auto.
 Qed.
 
-Lemma tm_pattern_agree_tm : forall a p, tm_pattern_agree a p -> Pattern_like_tm p.
+Lemma tm_pattern_agree_tm : forall a p, tm_pattern_agree a p -> Pattern_like_tm a.
 Proof. intros. induction H; eauto.
 Qed.
 
@@ -111,6 +109,14 @@ Qed.
 
 Lemma subtm_pattern_agree_pattern : forall a p, subtm_pattern_agree a p -> Pattern p.
 Proof. intros. induction H; eauto. eapply tm_pattern_agree_pattern; eauto.
+Qed.
+
+Lemma subtm_pattern_agree_tm : forall a p, subtm_pattern_agree a p -> Pattern_like_tm a.
+Proof. intros. induction H; eauto. eapply tm_pattern_agree_tm; eauto.
+Qed.
+
+Lemma tm_subpattern_agree_tm : forall a p, tm_subpattern_agree a p -> Pattern_like_tm a.
+Proof. intros. induction H; eauto. eapply tm_pattern_agree_tm; eauto.
 Qed.
 
 Lemma tm_pattern_agree_const_same : forall a p, tm_pattern_agree a p ->
@@ -236,7 +242,7 @@ Proof. intros a p H. induction H; intros.
         - exists b; auto.
         - pose (P := IHtm_pattern_agree b H1). inversion P as [b1 Q].
           exists (tm_subst_tm_tm a2 x b1). eauto.
-        - pose (P := IHtm_pattern_agree b H0). inversion P as [b1 Q].
+        - pose (P := IHtm_pattern_agree b H1). inversion P as [b1 Q].
           exists b1; eauto.
         - pose (P := IHtm_pattern_agree b H0). inversion P as [b1 Q].
           exists b1; eauto.
@@ -625,8 +631,8 @@ Lemma tm_subpattern_agree_pattern_contr : forall R a F b1 b2 p,
 Proof. intros. dependent induction H; eauto. inversion H.
 Qed.
 
-Lemma tm_subpattern_agree_app_contr : forall rho a b p, tm_pattern_agree a p ->
-                  tm_subpattern_agree (a_App a (Rho rho) b) p -> False.
+Lemma tm_subpattern_agree_app_contr : forall nu a b p, tm_pattern_agree a p ->
+                  tm_subpattern_agree (a_App a nu b) p -> False.
 Proof. intros. apply tm_pattern_agree_length_same in H.
        apply tm_subpattern_agree_length_leq in H0. simpl in H0. omega.
 Qed.
@@ -637,10 +643,11 @@ Proof. intros. apply tm_pattern_agree_length_same in H.
        apply tm_subpattern_agree_length_leq in H0. simpl in H0. omega.
 Qed.
 
-Lemma tm_subpattern_agree_sub_app : forall a rho b p,
-              tm_subpattern_agree (a_App a (Rho rho) b) p ->
+Lemma tm_subpattern_agree_sub_app : forall a nu b p,
+              tm_subpattern_agree (a_App a nu b) p ->
               tm_subpattern_agree a p.
 Proof. intros. dependent induction H; eauto. inversion H; subst. eauto.
+       eauto.
 Qed.
 
 Lemma tm_subpattern_agree_sub_capp : forall a p,
@@ -653,11 +660,11 @@ Lemma tm_subpattern_agree_rel_contr : forall a b p, tm_subpattern_agree
       (a_App a (Rho Rel) b) p -> False.
 Proof. intros. dependent induction H; eauto. inversion H.
 Qed.
-
+(*
 Lemma tm_subpattern_agree_irrel_bullet : forall a b p, tm_subpattern_agree
       (a_App a (Rho Irrel) b) p -> b = a_Bullet.
 Proof. intros. dependent induction H; eauto. inversion H. auto.
-Qed.
+Qed. *)
 
 Ltac pattern_head := match goal with
       | [ P1 : binds ?F (Ax ?p _ _ _ _) toplevel,
@@ -688,54 +695,140 @@ Ltac pattern_head_tm_agree := match goal with
 
 Ltac axioms_head_same := match goal with
      | [ P11 : binds ?F (Ax ?p1 ?b1 ?A1 ?R1 ?Rs1) toplevel,
+         P12 : binds ?F (Cs ?A2 ?Rs2) toplevel |- _ ] =>
+         assert (P13 : Ax p1 b1 A1 R1 Rs1 = Cs A2 Rs2);
+         [ eapply binds_unique; eauto using uniq_toplevel | inversion P13]
+     | [ P11 : binds ?F (Ax ?p1 ?b1 ?A1 ?R1 ?Rs1) toplevel,
          P12 : binds ?F (Ax ?p2 ?b2 ?A2 ?R2 ?Rs2) toplevel |- _ ] =>
          assert (P13 : Ax p1 b1 A1 R1 Rs1 = Ax p2 b2 A2 R2 Rs2);
          [ eapply binds_unique; eauto using uniq_toplevel |
                             inversion P13; subst; clear P13]
-     | [ P11 : binds ?F (Ax ?p1 ?b1 ?A1 ?R1 ?Rs1) toplevel,
-         P12 : binds ?F (Cs ?A2 ?Rs2) toplevel |- _ ] =>
-         assert (P13 : Ax p1 b1 A1 R1 Rs1 = Cs A2 Rs2);
-         [ eapply binds_unique; eauto using uniq_toplevel | inversion P13]
      end.
 
+Inductive tm_tm_agree : tm -> tm -> Prop :=
+  | tm_tm_agree_const : forall F, tm_tm_agree (a_Fam F) (a_Fam F)
+  | tm_tm_agree_app_relR : forall a1 a2 nu b1 b2, tm_tm_agree a1 a2 -> lc_tm b1 ->
+       lc_tm b2 -> tm_tm_agree (a_App a1 nu b1) (a_App a2 nu b2)
+  | tm_tm_agree_capp : forall a1 a2, tm_tm_agree a1 a2 ->
+                      tm_tm_agree (a_CApp a1 g_Triv) (a_CApp a2 g_Triv).
+Hint Constructors tm_tm_agree.
+
+
+Lemma tm_tm_agree_sym : forall a1 a2, tm_tm_agree a1 a2 -> tm_tm_agree a2 a1.
+Proof. intros. induction H; eauto.
+Qed.
+
+Lemma tm_pattern_agree_cong : forall a1 a2 p, tm_pattern_agree a1 p ->
+              tm_tm_agree a1 a2 -> tm_pattern_agree a2 p.
+Proof. intros. generalize dependent p. induction H0; intros; eauto.
+         - destruct nu. inversion H2; subst. eauto.
+           destruct rho. inversion H2. inversion H2; subst. eauto.
+         - inversion H; subst. eauto.
+Qed.
+
+Lemma subtm_pattern_agree_cong : forall a1 a2 p, subtm_pattern_agree a1 p ->
+              tm_tm_agree a1 a2 -> subtm_pattern_agree a2 p.
+Proof. intros. generalize dependent a2. induction H; intros; eauto.
+        - econstructor. eapply tm_pattern_agree_cong; eauto.
+        - destruct nu. inversion H1; subst. eauto.
+          destruct rho. inversion H1; subst; eauto.
+          inversion H1; subst; eauto.
+        - inversion H0; subst. eauto.
+Qed.
+
+Lemma tm_tm_agree_refl : forall a, Pattern_like_tm a -> tm_tm_agree a a.
+Proof. intros. induction H; eauto.
+Qed.
+
+Lemma tm_tm_agree_head_same : forall a1 a2, tm_tm_agree a1 a2 ->
+      head_const a1 = head_const a2.
+Proof. intros. induction H; eauto.
+Qed.
+
 Lemma pattern_like_tm_par_abs_cabs_contr : forall a a1 W R,
-      Par W a a1 R -> Abs_CAbs_head_form a1 ->
-     (exists F p b A R1 Rs, binds F (Ax p b A R1 Rs) toplevel /\
-      tm_subpattern_agree a p /\ ~(tm_pattern_agree a p)) -> False.
+      Par W a a1 R -> (exists F p b A R1 Rs, binds F (Ax p b A R1 Rs) toplevel /\
+      tm_subpattern_agree a p /\ ~(tm_pattern_agree a p)) ->
+      (Abs_CAbs_head_form a1 -> False) /\ tm_tm_agree a a1.
 Proof. intros. dependent induction H; eauto.
-         - inversion H1 as [F [p [b [A [R1 [Rs [H2 [H3 H4]]]]]]]].
-           eapply tm_subpattern_agree_abs_cabs_contr; eauto.
-         - eapply IHPar1; eauto. inversion H2 as
+         - inversion H0 as [F [p [b [A [R1 [Rs [H2 [H3 H4]]]]]]]].
+           split. intro. eapply tm_subpattern_agree_abs_cabs_contr; eauto.
+           apply tm_tm_agree_refl. eapply tm_subpattern_agree_tm; eauto.
+         - assert False. eapply IHPar1; eauto. inversion H1 as
            [F [p [b1 [A [R1 [Rs [H3 [H4 H5]]]]]]]].
            exists F, p, b1, A, R1, Rs; repeat split; auto.
            eapply tm_subpattern_agree_sub_app; eauto.
            intro. eapply tm_subpattern_agree_app_contr; eauto.
-         - inversion H1.
-         - eapply IHPar; eauto. inversion H1 as
+           contradiction.
+         - split. intro. inversion H2. econstructor. eapply IHPar1.
+           inversion H1 as [F [p [b1 [A [R1 [Rs [H3 [H4 H5]]]]]]]].
+           exists F, p, b1, A, R1, Rs; repeat split; auto.
+           eapply tm_subpattern_agree_sub_app; eauto.
+           intro. eapply tm_subpattern_agree_app_contr; eauto.
+           eapply Par_lc1; eauto. eapply Par_lc2; eauto.
+         - assert False. eapply IHPar; eauto. inversion H0 as
            [F [p [b1 [A [R1 [Rs [H3 [H4 H5]]]]]]]].
            exists F, p, b1, A, R1, Rs; repeat split; auto.
            eapply tm_subpattern_agree_sub_capp; eauto.
+           intro. eapply tm_subpattern_agree_capp_contr; eauto. contradiction.
+         - split. intro. inversion H1. econstructor. eapply IHPar.
+           inversion H0 as [F [p [b1 [A [R1 [Rs [H3 [H4 H5]]]]]]]].
+           exists F, p, b1, A, R1, Rs; repeat split; auto.
+           eapply tm_subpattern_agree_sub_capp; eauto.
            intro. eapply tm_subpattern_agree_capp_contr; eauto.
-         - inversion H0.
-         - inversion H2 as [F [p [b1 [A [R1 [Rs [H3 [H4 H5]]]]]]]].
+         - assert False. inversion H1 as [F [p [b1 [A [R1 [Rs [H3 [H4 H5]]]]]]]].
            eapply tm_subpattern_agree_abs_cabs_contr; eauto.
-         - inversion H2.
-         - inversion H2 as [F [p [b1 [A [R1 [Rs [H3 [H4 H5]]]]]]]].
-           eapply tm_subpattern_agree_abs_cabs_contr; eauto.
-         - inversion H4.
-         - inversion H5 as [F0 [p0 [b1 [A0 [R0 [Rs0 [H6 [H7 H8]]]]]]]].
-           pattern_head. pattern_head_tm_agree. rewrite U in U1.
-           inversion U1; subst. axioms_head_same.
-           assert (tm_pattern_agree a p0).
-           eapply tm_pattern_agree_rename_inv_2; eauto.
-           eapply MatchSubst_match; eauto. contradiction.
+           contradiction.
+         - split. intro. inversion H3.
+           inversion H2 as [F [p [b1 [A1 [R1 [Rs [H3 [H4 H5]]]]]]]].
+           assert False. eapply tm_subpattern_agree_pi_cpi_contr; eauto.
+           contradiction.
+         - assert False. inversion H1 as [F [p [b1 [A [R1 [Rs [H3 [H4 H5]]]]]]]].
+           eapply tm_subpattern_agree_abs_cabs_contr; eauto. contradiction.
+         - split. intro. inversion H5.
+           inversion H4 as [F [p [b1 [A1 [R2 [Rs [H6 [H7 H8]]]]]]]].
+           assert False. eapply tm_subpattern_agree_pi_cpi_contr; eauto.
+           contradiction.
+         - inversion H2 as [F0 [p0 [b1 [A0 [R0 [Rs0 [H6 [H7 H8]]]]]]]].
+           pattern_head_tm_agree. simpl in U1.
+           inversion U1; subst. axioms_head_same. inversion H7; subst.
+           contradiction.
+         - inversion H5 as [F0 [p0 [b1 [A0 [R0 [Rs0 [H7 [H8 H9]]]]]]]].
+           pattern_head. pattern_head_tm_agree. simpl in U1.
+           assert (P : tm_tm_agree a a'). { apply IHPar1.
+           exists F0, p0, b1, A0, R0, Rs0. repeat split. auto.
+           eapply tm_subpattern_agree_sub_app; eauto. intro.
+           apply tm_pattern_agree_length_same in H6.
+           apply tm_subpattern_agree_length_leq in H8. simpl in H8.
+           omega. } assert (F = F0). { apply tm_tm_agree_head_same in P.
+           rewrite U in P. rewrite U1 in P. inversion P; auto.  } subst.
+           axioms_head_same.
+           pose (P1 := tm_pattern_agree_rename_inv_2 (MatchSubst_match H3) H2).
+           assert False. apply H9. eapply tm_pattern_agree_cong. apply P1.
+           econstructor. apply tm_tm_agree_sym; auto.
+           eapply Par_lc2; eauto. eapply Par_lc1; eauto. contradiction.
+         - inversion H4 as [F0 [p0 [b1 [A0 [R0 [Rs0 [H7 [H8 H9]]]]]]]].
+           pattern_head. pattern_head_tm_agree. simpl in U1.
+           rewrite U in U1. inversion U1; subst. axioms_head_same.
+           pose (P := tm_pattern_agree_rename_inv_2 (MatchSubst_match H2) H1).
+           contradiction.
          - inversion H2.
          - inversion H4.
          - inversion H5 as [F0 [p [b [A [R1 [Rs [H6 [H7 H8]]]]]]]].
            eapply tm_subpattern_agree_pattern_contr; eauto.
 Qed.
 
+Lemma tm_subpattern_agree_par_tm_agree : forall a a' W R F p b A R1 Rs,
+      Par W a a' R -> binds F (Ax p b A R1 Rs) toplevel ->
+      (tm_subpattern_agree a p /\ ~(tm_pattern_agree a p)) ->
+      tm_tm_agree a a'.
+Proof. intros. generalize dependent p. induction H; intros.
+        - inversion H1.
+Admitted.
 
+
+
+
+(*
 Lemma par_pattern_like_tm : forall a a' W R, Par W a a' R ->
                      (exists F p b A R1 Rs, binds F (Ax p b A R1 Rs) toplevel /\
                       tm_subpattern_agree a p /\ ~(tm_pattern_agree a p)) ->
@@ -787,7 +880,7 @@ Proof. intros. induction H; eauto.
         - inversion H0 as [F0 [p [b' [A [R1 [Rs [H6 [H7 H8]]]]]]]]. assert False.
           eapply tm_subpattern_agree_pattern_contr; eauto. contradiction.
 Qed.
-
+*)
 
 Fixpoint applyArgs (a : tm) (b : tm) : tm := match a with
    | a_Fam F => b
@@ -865,8 +958,7 @@ Qed.
 Lemma ValuePath_cs_par_ValuePath : forall a F A Rs W a' R, ValuePath a F ->
                  binds F (Cs A Rs) toplevel -> Par W a a' R -> ValuePath a' F.
 Proof. intros. generalize dependent a'. induction H; intros; eauto.
-        - inversion H1; subst; eauto. pattern_head. inversion U; subst.
-          axioms_head_same.
+        - inversion H1; subst; eauto. axioms_head_same.
         - axioms_head_same.
         - inversion H2; subst. auto. assert (ValuePath (a_UAbs rho a'0) F).
           apply IHValuePath; auto. subst. inversion H3.
@@ -882,7 +974,7 @@ Proof. intros. generalize dependent a'. generalize dependent p.
        induction H; intros; eauto.
          - axioms_head_same.
          - axioms_head_same. inversion H2; subst.
-           split; eauto. pattern_head. inversion U; subst. axioms_head_same.
+           split; eauto. axioms_head_same.
            contradiction.
          - inversion H3; subst. 
            + split; eauto.
@@ -906,50 +998,6 @@ Lemma tm_subpattern_agree_base : forall F p, Pattern p ->
 Proof. intros. induction H; eauto. simpl in H0. inversion H0; eauto.
 Qed.
 
-
-Inductive tm_tm_agree : tm -> tm -> Prop :=
-  | tm_tm_agree_const : forall F, tm_tm_agree (a_Fam F) (a_Fam F)
-  | tm_tm_agree_app_relR : forall a1 a2 R b1 b2, tm_tm_agree a1 a2 -> lc_tm b1 ->
-       lc_tm b2 -> tm_tm_agree (a_App a1 (Role R) b1) (a_App a2 (Role R) b2)
-  | tm_tm_agree_app_rel : forall a1 a2 b1 b2, tm_tm_agree a1 a2 -> lc_tm b1 ->
-       lc_tm b2 -> tm_tm_agree (a_App a1 (Rho Rel) b1) (a_App a2 (Rho Rel) b2)
-  | tm_tm_agree_app_irrel : forall a1 a2, tm_tm_agree a1 a2 ->
-     tm_tm_agree (a_App a1 (Rho Irrel) a_Bullet) (a_App a2 (Rho Irrel) a_Bullet)
-  | tm_tm_agree_capp : forall a1 a2, tm_tm_agree a1 a2 ->
-                      tm_tm_agree (a_CApp a1 g_Triv) (a_CApp a2 g_Triv).
-Hint Constructors tm_tm_agree.
-
-Lemma tm_tm_agree_sym : forall a1 a2, tm_tm_agree a1 a2 -> tm_tm_agree a2 a1.
-Proof. intros. induction H; eauto.
-Qed.
-
-Lemma tm_pattern_agree_cong : forall a1 a2 p, tm_pattern_agree a1 p ->
-              tm_tm_agree a1 a2 -> tm_pattern_agree a2 p.
-Proof. intros. generalize dependent p. induction H0; intros; eauto.
-         - inversion H2; subst. eauto.
-         - inversion H2.
-         - inversion H; subst. eauto.
-         - inversion H; subst. eauto.
-Qed.
-
-Lemma subtm_pattern_agree_cong : forall a1 a2 p, subtm_pattern_agree a1 p ->
-              tm_tm_agree a1 a2 -> subtm_pattern_agree a2 p.
-Proof. intros. generalize dependent a2. induction H; intros; eauto.
-        - econstructor. eapply tm_pattern_agree_cong; eauto.
-        - destruct nu. inversion H1; subst. eauto.
-          destruct rho. inversion H1; subst; eauto.
-          inversion H1; subst; eauto.
-        - inversion H0; subst. eauto.
-Qed.
-
-Lemma tm_tm_agree_refl : forall a F W R, ValuePath a F -> roleing W a R ->
-                                tm_tm_agree a a.
-Proof. intros. induction H; auto.
-       destruct nu. inversion H0; subst. econstructor; eauto.
-       destruct rho. inversion H0; eauto. inversion H0; subst. eauto.
-       inversion H0; eauto.
-Qed.
-
 Lemma ValuePath_ax_par_ValuePath_2 : forall a F p b A R1 Rs W a' R,
       ValuePath a F -> binds F (Ax p b A R1 Rs) toplevel ->
       ~(subtm_pattern_agree a p) -> Par W a a' R -> ValuePath a' F /\
@@ -957,10 +1005,8 @@ Lemma ValuePath_ax_par_ValuePath_2 : forall a F p b A R1 Rs W a' R,
 Proof. intros. generalize dependent a'. generalize dependent p.
        induction H; intros; eauto.
          - axioms_head_same.
-         - inversion H2; subst. eauto. pattern_head. inversion U; subst.
-           axioms_head_same.
-           inversion H6; subst. inversion H5; subst.
-           assert False. apply H1. eauto. contradiction.
+         - inversion H2; subst. eauto.
+           axioms_head_same. assert False. apply H1. eauto. contradiction.
          - inversion H3; subst.
            + repeat split; simpl in *; eauto. eapply tm_tm_agree_refl; eauto.
            + assert (ValuePath (a_UAbs rho a'0) F).
@@ -968,15 +1014,12 @@ Proof. intros. generalize dependent a'. generalize dependent p.
            + pose (P := IHValuePath p H1 ltac:(eauto) a'0 H10).
              inversion P as [P1 [P2 P3]].
              split; eauto. econstructor. eapply Par_lc2; eauto. auto.
-             assert (Q : tm_tm_agree (a_App a'0 (Rho rho) b'0) (a_App a (Rho rho) b')).
-             { apply tm_tm_agree_sym in P3. destruct rho. econstructor. eauto.
-             eapply Par_lc2; eauto. auto. pose (H5 := H3). pose (H6 := H3).
-             eapply Par_roleing_tm_fst in H5. eapply Par_roleing_tm_snd in H6.
-             inversion H5; subst. inversion H6; subst. eauto. } split.
-             intro. apply H2. eapply subtm_pattern_agree_cong; eauto.
+             assert (Q : tm_tm_agree (a_App a'0 nu b'0) (a_App a nu b')).
+             { apply tm_tm_agree_sym in P3. apply Par_lc2 in H11. eauto. }
+             split. intro. apply H2. eapply subtm_pattern_agree_cong; eauto.
              apply tm_tm_agree_sym; auto.
            + pattern_head_same.
-             pose (Q1 := tm_pattern_agree_rename_inv_2 (MatchSubst_match H7) H6).
+             pose (Q1 := tm_pattern_agree_rename_inv_2 (MatchSubst_match H14) H11).
              assert False. eapply H2; eauto. contradiction.
           - inversion H2; subst.
            + repeat split; simpl in *; eauto. eapply tm_tm_agree_refl; eauto.
@@ -988,7 +1031,7 @@ Proof. intros. generalize dependent a'. generalize dependent p.
              apply H1. pose (Q := tm_tm_agree_sym P3).
              eapply subtm_pattern_agree_cong; eauto. eauto.
            + pattern_head_same.
-             pose (Q1 := tm_pattern_agree_rename_inv_2 (MatchSubst_match H6) H5).
+             pose (Q1 := tm_pattern_agree_rename_inv_2 (MatchSubst_match H7) H6).
              assert False. eapply H1; eauto. contradiction.
 Qed.
 
@@ -1025,21 +1068,21 @@ Qed.
 Lemma Value_par_Value : forall R v W v', Value R v -> Par W v v' R -> Value R v'.
 Proof. intros. generalize dependent W. generalize dependent v'.
        induction H; intros.
-        - inversion H0; subst. auto. inversion H3.
-        - inversion H1; subst. auto.
-          apply Par_lc2 in H1. econstructor.
-          inversion H1; auto. auto. inversion H5.
-        - inversion H1; subst. auto.
-          apply Par_lc2 in H1. econstructor.
-          inversion H1; auto. auto. inversion H5.
-        - inversion H1; subst. auto. inversion H5.
         - inversion H0; subst. auto.
-          apply Par_lc2 in H0. econstructor. auto. inversion H4.
+        - inversion H1; subst. auto.
+          apply Par_lc2 in H1. econstructor.
+          inversion H1; auto. auto.
+        - inversion H1; subst. auto.
+          apply Par_lc2 in H1. econstructor.
+          inversion H1; auto. auto.
+        - inversion H1; subst. auto.
+        - inversion H0; subst. auto.
+          apply Par_lc2 in H0. econstructor. auto.
         - inversion H1; subst. eauto. eapply Value_UAbsIrrel with (L := L \u L0).
-          intros. eapply H0. auto. eapply H7; eauto. inversion H5.
-        - inversion H1; subst. auto. inversion H5.
+          intros. eapply H0. auto. eapply H7; eauto.
+        - inversion H1; subst. auto.
         - inversion H0; subst. auto. econstructor.
-          eapply Par_lc2; eauto. inversion H4.
+          eapply Par_lc2; eauto.
         - pose (P := Par_CasePath H H0). eauto.
 Qed.
 
@@ -1054,13 +1097,13 @@ Lemma multipar_CasePath_join_head : forall F1 F2 W a1 a2 c R,
 Proof. intros. eapply multipar_CasePath in H; eauto.
        eapply multipar_CasePath in H0; eauto. eapply uniq_CasePath; eauto.
 Qed.
-
+(*
 Lemma app_roleing_nom : forall W a rho b R, roleing W (a_App a (Rho rho) b) R ->
                                roleing W b Nom.
 Proof. intros. dependent induction H; eauto. eapply role_a_Bullet.
        eapply rctx_uniq; eauto.
 Qed.
-
+*)
 Lemma CasePath_ax_par_contr : forall R a F F' p b A R1 Rs p' b' D a',
        CasePath R a F -> binds F' (Ax p b A R1 Rs) toplevel ->
        Rename p b p' b' D -> MatchSubst a p' b' a' -> SubRole R1 R -> False.
@@ -1082,28 +1125,31 @@ Lemma apply_args_par : forall a b c a' b' c' W R1 R2 F, ApplyArgs a b c ->
 Proof. intros. generalize dependent a'. generalize dependent b'.
        generalize dependent c'. induction H; intros.
          - inversion H1; subst. inversion H3; subst. auto.
-           pattern_head. inversion U; subst. pose (P2 := CasePath_head H0).
-           simpl in P2; inversion P2; subst. assert False.
-           eapply CasePath_ax_par_contr; eauto. contradiction.
+           assert (F0 = F). { eapply CasePath_head in H0; simpl in H0; 
+           inversion H0; auto. } subst.
+           inversion H0; subst; axioms_head_same. contradiction. assert False.
+           apply H9. eauto. contradiction.
          - inversion H3; subst.
-             + inversion H4; subst. admit.
-               (* eapply IHApplyArgs; eauto. eapply CasePath_app; eauto.
-               inversion H5; eauto. econstructor. eapply app_roleing_nom; eauto.*)
+             + inversion H4; subst. econstructor.
+               eapply IHApplyArgs; eauto. eapply CasePath_app; eauto.
+               inversion H5; eauto. econstructor.
+               destruct nu. inversion H5; eauto.
+               destruct rho; inversion H5; eauto.
              + eapply CasePath_app in H0. pose (P := Par_CasePath H0 H11).
                apply CasePath_ValuePath in P. inversion P.
              + inversion H4; subst. econstructor. eapply IHApplyArgs; eauto.
                eapply CasePath_app; eauto. auto.
              + assert False. eapply CasePath_ax_par_contr; eauto. contradiction.
          - inversion H1; subst.
-             + inversion H3; subst. admit. (* econstructor.
+             + inversion H3; subst. econstructor.
                eapply IHApplyArgs; eauto. eapply CasePath_capp; eauto.
-               inversion H4; eauto. *)
+               inversion H4; eauto.
              + eapply CasePath_capp in H0. pose (P := Par_CasePath H0 H6).
                apply CasePath_ValuePath in P. inversion P.
              + inversion H3; subst. econstructor. eapply IHApplyArgs; eauto.
                eapply CasePath_capp; eauto.
              + assert False. eapply CasePath_ax_par_contr; eauto. contradiction.
-Admitted.
+Qed.
 
 Fixpoint tm_to_roles (a : tm) : roles := match a with
     | a_Fam F => nil
@@ -1157,3 +1203,39 @@ Proof. intros. apply Path_inversion in H.
           rewrite <- app_assoc in H3. apply app_inv_head in H3.
           apply app_cons_not_nil in H3. auto.
 Qed.
+(*
+Lemma ValuePath_dec : forall W a R F, roleing W a R -> ValuePath a F \/ ~(ValuePath a F).
+Proof. intros. induction a; try(right; intro h1; inversion h1; fail).
+        - inversion H; subst. destruct (IHa1 H2). left; eauto.
+          right; intro H3; inversion H3; subst; contradiction.
+        - inversion H; subst.
+          destruct g; try (right; intro P; inversion P; fail).
+          destruct (IHa H2). left; eauto.
+          right; intro Q; inversion Q; contradiction. 
+        - 
+Qed.
+
+Lemma CasePath_dec : forall W a R F, roleing W a R -> CasePath R a F \/ ~CasePath R a F.
+Proof. intros. generalize dependent R. induction a; intros R' H.
+
+       all: try solve [right; move => h1;
+                       apply CasePath_ValuePath in h1; inversion h1].
+        - intros. inversion H; subst. pose (P := IHa1 R' E H6).
+          inversion P as [P1 | P2]. left; econstructor.
+          eapply roleing_lc; eauto. auto. right. intro.
+          inversion H0; subst. contradiction.
+        - intros. inversion H; subst. destruct (E == F). subst.
+          left. eauto. right. intro. inversion H0; subst.
+          contradiction. contradiction.
+          pose (P := sub_dec R R').
+          inversion P as [P1 | P2]. right. intro. inversion H0; subst.
+          assert (Q : Ax a A R = Cs A0). eapply binds_unique; eauto.
+          eapply uniq_toplevel. inversion Q.
+          assert (Ax a A R = Ax a0 A0 R1). eapply binds_unique; eauto.
+          eapply uniq_toplevel. inversion H2; subst. contradiction.
+          destruct (E == F). subst. left. eauto. right. intro.
+          inversion H0; subst. contradiction. contradiction.
+        - intros. inversion H; subst. pose (P := IHa R' E H4).
+          inversion P as [P1 | P2]. left; eauto.
+          right. intro. inversion H0; subst. contradiction.
+Qed.*)

@@ -52,6 +52,7 @@ Lemma tm_pattern_agree_subst : forall a p b x, lc_tm b -> tm_pattern_agree a p -
                          tm_pattern_agree (tm_subst_tm_tm b x a) p.
 Proof. intros.
        induction H0; simpl; eauto. econstructor.
+       eapply tm_subst_tm_tm_lc_tm; eauto. auto. econstructor.
        eapply tm_subst_tm_tm_lc_tm; eauto. auto.
 Qed.
 
@@ -109,24 +110,26 @@ Lemma match_dec : forall a p, lc_tm a -> MatchSubst a p a_Bullet a_Bullet \/ ~(M
 Proof. intros. generalize dependent a.
        induction p; intros; try (right; intro P; inversion P; fail).
         - destruct nu. destruct a; try (right; intro P; inversion P; fail).
-          destruct nu; try (right; intro P; inversion P; fail).
-          destruct p2; try (right; intro P; inversion P; fail).
-          pose (P := role_dec R0 R). inversion P. subst.
-          inversion H; subst. pose (Q := IHp1 a1 H2). inversion Q.
-          assert (Q' : a_Bullet = (tm_subst_tm_tm a2 x a_Bullet)). {auto. }
-          left. apply MatchSubst_AppRelR with (R := R)(a := a2)(x := x) in H0.
-          rewrite <- Q' in H0. auto. auto.
-          right. intro Q1. inversion Q1; subst. rewrite H10 in H11.
-          pose (Q2 := H11). apply match_bullet in Q2. subst. contradiction.
-          right; intro P1; inversion P1; contradiction.
-          destruct rho. right; intro P1; inversion P1.
-          destruct p2; try (right; intro P; inversion P; fail).
-          destruct a; try (right; intro P; inversion P; fail).
-          destruct nu; try (right; intro P; inversion P; fail).
-          destruct rho; try (right; intro P1; inversion P1; fail).
-          destruct a2; try (right; intro P; inversion P; fail).
-          inversion H; subst. pose (Q := IHp1 a1 H2). inversion Q.
-          left; eauto. right. intro P. inversion P. contradiction.
+           + destruct nu; try (right; intro P; inversion P; fail).
+             destruct p2; try (right; intro P; inversion P; fail).
+             pose (P := role_dec R0 R). inversion P; subst.
+              * inversion H; subst. pose (Q := IHp1 a1 H2). inversion Q.
+                  ** assert (Q' : a_Bullet = (tm_subst_tm_tm a2 x a_Bullet)).
+                    {auto. }
+                    left. apply MatchSubst_AppRelR with
+                    (R := R)(a := a2)(x := x) in H0. rewrite <- Q' in H0. auto.
+                    auto.
+                  ** right. intro Q1. inversion Q1; subst. rewrite H10 in H11.
+                     pose (Q2 := H11). apply match_bullet in Q2. subst.
+                     contradiction.
+              * right; intro P1; inversion P1; contradiction.
+           + destruct rho. right; intro P1; inversion P1.
+             destruct p2; try (right; intro P; inversion P; fail).
+             destruct a; try (right; intro P; inversion P; fail).
+             destruct nu; try (right; intro P; inversion P; fail).
+             destruct rho; try (right; intro P1; inversion P1; fail).
+             inversion H; subst. pose (Q := IHp1 a1 H2). inversion Q.
+             left; eauto. right. intro P. inversion P. contradiction.
         - destruct g; try (right; intro P; inversion P; fail).
           destruct a; try (right; intro P; inversion P; fail).
           destruct g; try (right; intro P; inversion P; fail).
@@ -170,7 +173,7 @@ Proof. intros. generalize dependent p2. generalize dependent a2.
         - inversion H0; subst. eauto.
         - inversion H1; subst. apply IHMatchSubst in H9.
           eapply MatchSubst_AppRelR in H9; auto. admit.
-        - inversion H; subst. eauto.
+        - inversion H1; subst. eauto.
         - inversion H; subst. eauto.
 Admitted.
 (*
@@ -254,25 +257,4 @@ Proof. (*
 Qed.
 *)
 Admitted.
-Lemma CasePath_dec : forall W a R F, roleing W a R -> CasePath R a F \/ ~CasePath R a F.
-Proof. (* induction a; intros R' E.
-       all: try solve [right; move => h1; inversion h1].
-        - intros. inversion H; subst. pose (P := IHa1 R' E H6).
-          inversion P as [P1 | P2]. left; econstructor.
-          eapply roleing_lc; eauto. auto. right. intro.
-          inversion H0; subst. contradiction.
-        - intros. inversion H; subst. destruct (E == F). subst.
-          left. eauto. right. intro. inversion H0; subst.
-          contradiction. contradiction.
-          pose (P := sub_dec R R').
-          inversion P as [P1 | P2]. right. intro. inversion H0; subst.
-          assert (Q : Ax a A R = Cs A0). eapply binds_unique; eauto.
-          eapply uniq_toplevel. inversion Q.
-          assert (Ax a A R = Ax a0 A0 R1). eapply binds_unique; eauto.
-          eapply uniq_toplevel. inversion H2; subst. contradiction.
-          destruct (E == F). subst. left. eauto. right. intro.
-          inversion H0; subst. contradiction. contradiction.
-        - intros. inversion H; subst. pose (P := IHa R' E H4).
-          inversion P as [P1 | P2]. left; eauto.
-          right. intro. inversion H0; subst. contradiction.
-Qed. *) Admitted.
+
