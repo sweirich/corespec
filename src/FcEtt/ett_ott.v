@@ -1241,6 +1241,7 @@ Inductive Par : role_context -> tm -> tm -> role -> Prop :=    (* defn Par *)
      Par W (a_Fam F) b R
  | Par_AxiomApp : forall (W:role_context) (a:tm) (nu:appflag) (a1 a2:tm) (R:role) (F:const) (p b A:tm) (R1:role) (Rs:roles) (a' a1' p' b':tm),
       binds  F  ( (Ax p b A R1 Rs) )   toplevel   ->
+      tm_subpattern_agree a p  /\   not (  ( tm_pattern_agree a p )  )   ->
      Par W a a' R ->
      Par W a1 a1'  (  app_role  nu  )  ->
      Rename p b p' b'  (  (  (dom  W )   `union`   (fv_tm_tm_tm  p )  )  )  ->
@@ -1249,6 +1250,7 @@ Inductive Par : role_context -> tm -> tm -> role -> Prop :=    (* defn Par *)
      Par W (a_App a nu a1) a2 R
  | Par_AxiomCApp : forall (W:role_context) (a a2:tm) (R:role) (F:const) (p b A:tm) (R1:role) (Rs:roles) (a' p' b':tm),
       binds  F  ( (Ax p b A R1 Rs) )   toplevel   ->
+      tm_subpattern_agree a p  /\   not (  ( tm_pattern_agree a p )  )   ->
      Par W a a' R ->
      Rename p b p' b'  (  (  (dom  W )   `union`   (fv_tm_tm_tm  p )  )  )  ->
      MatchSubst  ( (a_CApp a' g_Triv) )  p' b' a2 ->

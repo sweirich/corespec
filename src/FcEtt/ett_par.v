@@ -52,12 +52,13 @@ Proof. intros W1 W2 W3 a a' R U H. generalize dependent W2.
        dependent induction H; intros; eauto.
        all: try solve [econstructor; eauto 3 using roleing_app_rctx].
         - eapply Par_Abs with (L := union L (dom (W1 ++ W2 ++ W3))).
-          intros. rewrite <- app_assoc.
+          intros. rewrite app_assoc.
           eapply H0; eauto. simpl_env. auto.
         - eapply Par_Pi with (L := union L (dom (W1 ++ W2 ++ W3))); eauto.
-          intros. rewrite <- app_assoc.
+          intros. rewrite app_assoc.
           eapply H1; eauto. simpl_env. auto.
-        - admit.
+        - eapply Par_AxiomApp; eauto. admit.
+        - eapply Par_AxiomCApp; eauto. admit.
 Admitted.
 
 (* ------------------------------------------ *)
@@ -85,9 +86,6 @@ Proof. intros W1 W2 W3 a a' R U H. generalize dependent W2.
         - econstructor; eauto. apply par_app_rctx; auto.
 Qed.
 
-(* TODO: where? *)
-Generalizable All Variables.
-
 Definition joins W a b R := exists c, multipar W a c R /\ multipar W b c R.
 
 (* FIXME: find a good place for this tactic. *)
@@ -99,17 +97,16 @@ Ltac lc_toplevel_inversion :=
 end.
 
 Lemma Par_lc1 : forall W a a' R, Par W a a' R → lc_tm a.
-  induction 1; eauto using roleing_lc, MatchSubst_lc_1.
+Proof. induction 1; eauto using roleing_lc, MatchSubst_lc_1.
 Qed.
 
 
 Lemma Par_lc2 : forall W a a' R, Par W a a' R → lc_tm a'.
-Proof.
-  induction 1;
-    eauto using MatchSubst_lc_3, ApplyArgs_lc_3;
-    lc_solve.
-  Unshelve. all: auto.
-Qed.
+Proof. intros. induction H; eauto. eapply roleing_lc; eauto.
+       lc_solve. lc_solve. admit. eapply MatchSubst_lc_3; eauto.
+       eapply MatchSubst_lc_3; eauto.
+       econstructor. eapply ApplyArgs_lc_3; eauto. eauto.
+Admitted.
 
 Hint Resolve MatchSubst_lc_1 MatchSubst_lc_3 ApplyArgs_lc_3 Par_lc1 Par_lc2 : lc.
 

@@ -1107,6 +1107,7 @@ rctx_uniq W
 W |= F => b / R
 
 F : p ~ b : A/R1 @ Rs in toplevel
+a + = p /\ not (a <-> p)
 W |= a => a' / R
 W |= a1 => a1' / (app_role nu)
 rename p -> b to p' -> b' excluding (dom W, fv p) 
@@ -1116,6 +1117,7 @@ R1 <= R
 W |= a nu a1 => a2 / R
 
 F : p ~ b : A/R1 @ Rs in toplevel
+a + = p /\ not (a <-> p)
 W |= a => a' / R
 rename p -> b to p' -> b' excluding (dom W, fv p) 
 match (a' [o]) with p' -> b' = a2

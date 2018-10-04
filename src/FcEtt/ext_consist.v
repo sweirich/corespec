@@ -202,14 +202,8 @@ Proof.
      + split. pick fresh x; eapply open2. auto. eauto.
        eauto using Par_sub, param_sub1.
        eapply Par_Beta; eauto.
-  - assert False.
-    eapply pattern_like_tm_par_abs_cabs_contr. apply H. auto.
-    exists F, p, b0, A, R2, Rs; split; auto. inversion H9; subst.
-    inversion H8; subst.
-    pose (P := tm_pattern_agree_rename_inv_2 (MatchSubst_match H14) H4).
-    split. eapply tm_subpattern_agree_sub_app. econstructor.
-    intro. apply tm_pattern_agree_length_same in P.
-    apply tm_pattern_agree_length_same in H1. simpl in P. omega.
+  - inversion H6. assert False.
+    eapply pattern_like_tm_par; try apply H; eauto.
     contradiction.
   - (* app cong / app beta *)
     use_size_induction a0 ac Par1 Par2.
@@ -224,19 +218,49 @@ Proof.
     use_size_induction a0 ac Par1 Par2.
     use_size_induction b bc Par3 Par4.
     exists (a_App ac nu bc). split; auto.
-  - destruct rho. inversion H8.
-    destruct b; try (inversion H8; fail).
-    inversion H0; subst.
-    assert (a' = a0). eapply par_pattern_like_tm; eauto.
-    exists F, p, b0, A, R2, Rs; split; eauto.
-    assert (P : tm_pattern_agree (a_App a0 (Rho Irrel) a_Bullet) p).
-    eapply tm_pattern_agree_rename_inv_2; eauto.
-    eapply MatchSubst_match; eauto.
-    split. eapply tm_subpattern_agree_sub_app. econstructor. eauto.
-    intro. apply tm_pattern_agree_length_same in P.
-    apply tm_pattern_agree_length_same in H2. simpl in P. omega.
-    subst. exists a2; split; eauto. econstructor.
-    eapply Par_roleing_tm_snd. eauto. inversion H4.
+  - inversion H6.
+    assert (tm_tm_agree a0 a'). eapply pattern_like_tm_par; eauto.
+    use_size_induction a0 ac Par1 Par2.
+    use_size_induction b bc Par3 Par4.
+    pose (Q1 := tm_pattern_agree_rename_inv_2 (MatchSubst_match H10) H9).
+    assert (tm_tm_agree a'0 ac).
+        { eapply pattern_like_tm_par; eauto.
+          eapply tm_subpattern_agree_sub_app; eauto.
+          intro. eapply tm_subpattern_agree_app_contr; eauto.
+         }
+    exists (matchsubst (a_App ac nu bc) p' b'0). split.
+     + eapply Par_AxiomApp; eauto.
+       split. eapply tm_subpattern_agree_cong. eapply H1. auto.
+       intro. apply H2. eapply tm_pattern_agree_cong; eauto.
+       apply tm_tm_agree_sym; auto. eapply matchsubst_fun_ind.
+       eapply tm_pattern_agree_cong. eapply MatchSubst_match; eauto.
+       econstructor. auto. eapply Par_lc2; eauto. eapply Par_lc2; eauto.
+       eapply MatchSubst_lc3; eauto. auto.
+     + inversion H10; subst.
+       assert (Par W b2 (matchsubst ac p1 b'0) R).
+        { eapply MatchSubst_par with (p1 := p). eauto.
+          intro. apply tm_pattern_agree_length_same in Q1.
+          apply tm_pattern_agree_length_same in H12. simpl in Q1. omega.
+          eapply tm_subpattern_agree_sub_app; eauto. eauto.
+          admit. eauto. eapply matchsubst_fun_ind.
+          eapply tm_pattern_agree_cong. eapply MatchSubst_match; eauto.
+          auto. eapply MatchSubst_lc3; eauto. auto.
+         } destruct R0; simpl.
+        * replace W with (nil ++ W); eauto.
+          eapply subst3. eapply par_app_rctx. admit.
+          simpl_env. auto. eauto.
+        * replace W with (nil ++ W); eauto.
+          eapply subst3. eapply par_app_rctx. admit.
+          simpl_env. auto. eauto.
+        * assert (Par W a2 (matchsubst ac p1 b'0) R).
+        { eapply MatchSubst_par with (p1 := p). eauto.
+          intro. apply tm_pattern_agree_length_same in Q1.
+          apply tm_pattern_agree_length_same in H12. simpl in Q1. omega.
+          eapply tm_subpattern_agree_sub_app; eauto. eauto.
+          admit. eauto. eapply matchsubst_fun_ind.
+          eapply tm_pattern_agree_cong. eapply MatchSubst_match; eauto.
+          auto. eapply MatchSubst_lc3; eauto. auto.
+         } simpl. auto.
   - (* two cbetas *)
     use_size_induction a0 ac Par1 Par2. inversion Par1; subst.
     + exists (open_tm_wrt_co a' g_Triv); split.
@@ -256,15 +280,8 @@ Proof.
     + exists (open_tm_wrt_co a'1 g_Triv). split.
       pick fresh c. eapply open3 with (c := c) (L := L); eauto.
       econstructor. eauto.
-  - assert False.
-    eapply pattern_like_tm_par_abs_cabs_contr. apply H. auto.
-    exists F, p, b, A, R2, Rs; split; auto.
-    assert (P : tm_pattern_agree (a_CApp a0 g_Triv) p).
-    eapply tm_pattern_agree_rename_inv_2; eauto.
-    eapply MatchSubst_match; eauto.
-    split. eapply tm_subpattern_agree_sub_capp. econstructor. eauto.
-    intro. apply tm_pattern_agree_length_same in P.
-    apply tm_pattern_agree_length_same in H0. simpl in P. omega.
+  - inversion H5. assert False.
+    eapply pattern_like_tm_par; try apply H; eauto.
     contradiction.
   - (* capp cong / cbeta *)
     use_size_induction a0 ac Par1 Par2.
@@ -276,16 +293,32 @@ Proof.
   - (* capp cong / capp cong *)
     use_size_induction a0 ac Par1 Par2.
     exists (a_CApp ac g_Triv). auto.
-  - admit. (* assert (a' = a0). eapply par_pattern_like_tm; eauto.
-    exists F, p, b, A, R2, Rs; split; eauto.
-    assert (P : tm_pattern_agree (a_CApp a0 g_Triv) p).
-    eapply tm_pattern_agree_rename_inv_2; eauto.
-    eapply MatchSubst_match; eauto.
-    split. eapply tm_subpattern_agree_sub_capp. econstructor. eauto.
-    intro. apply tm_pattern_agree_length_same in P.
-    apply tm_pattern_agree_length_same in H0. simpl in P. omega.
-    subst. exists a2; split; eauto. econstructor.
-    eapply Par_roleing_tm_snd. eauto. *)
+  - inversion H5.
+    assert (tm_tm_agree a0 a'). eapply pattern_like_tm_par; eauto.
+    use_size_induction a0 ac Par1 Par2.
+    pose (Q1 := tm_pattern_agree_rename_inv_2 (MatchSubst_match H8) H7).
+    assert (tm_tm_agree a'0 ac).
+        { eapply pattern_like_tm_par; eauto.
+          eapply tm_subpattern_agree_sub_capp; eauto.
+          intro. eapply tm_subpattern_agree_capp_contr; eauto.
+         }
+    exists (matchsubst (a_CApp ac g_Triv) p' b'). split.
+     + eapply Par_AxiomCApp; eauto.
+       split. eapply tm_subpattern_agree_cong. eapply H0. auto.
+       intro. apply H1. eapply tm_pattern_agree_cong; eauto.
+       apply tm_tm_agree_sym; auto. eapply matchsubst_fun_ind.
+       eapply tm_pattern_agree_cong. eapply MatchSubst_match; eauto. eauto.
+       eapply MatchSubst_lc3; eauto. auto.
+     + inversion H8; subst.
+       assert (Par W a2 (matchsubst ac a3 b') R).
+        { eapply MatchSubst_par with (p1 := p). eauto.
+          intro. eapply tm_pattern_agree_length_same in Q1.
+          apply tm_pattern_agree_length_same in H10. simpl in Q1. omega.
+          eapply tm_subpattern_agree_sub_capp; eauto. eauto.
+          admit. eauto. eapply matchsubst_fun_ind.
+          eapply tm_pattern_agree_cong. eapply MatchSubst_match; eauto.
+          auto. eapply MatchSubst_lc3; eauto. auto.
+         } simpl; auto.
   - (* abs cong / abs cong *)
     pick fresh x.
     use_size_induction_open a0 x ac Par1 Par2.
@@ -313,69 +346,96 @@ Proof.
     exists (a_CPi (Eq aC bC AC R1) (close_tm_wrt_co c BC)).
     split; apply (@Par_CPi_exists c); eauto.
   - axioms_head_same. apply Par_roleing_tm_snd in P1. exists a2; split; eauto.
-  - assert False.
-    eapply pattern_like_tm_par_abs_cabs_contr. apply H9. auto.
-    exists F, p, b, A, R1, Rs; split; auto.
-    pose (P := tm_pattern_agree_rename_inv_2 (MatchSubst_match H3) H2).
-    split. eapply tm_subpattern_agree_sub_app. econstructor. eauto.
-    intro. apply tm_pattern_agree_length_same in P.
-    apply tm_pattern_agree_length_same in H5. simpl in P. omega.
+  - inversion H0. assert False.
+    eapply pattern_like_tm_par; try apply H10; eauto.
     contradiction.
-  - destruct nu. destruct rho. inversion H2.
-    destruct b0; try (inversion H2; fail).
-    inversion H9; subst.
-    assert (a'0 = a3). eapply par_pattern_like_tm; eauto.
-    exists F, p, b, A, R1, Rs; split; eauto.
-    assert (P : tm_pattern_agree (a_App a3 (Rho Irrel) a_Bullet) p).
-    eapply tm_pattern_agree_rename_inv_2; eauto.
-    eapply MatchSubst_match; eauto.
-    split. eapply tm_subpattern_agree_sub_app. econstructor. eauto.
-    intro. apply tm_pattern_agree_length_same in P.
-    apply tm_pattern_agree_length_same in H5. simpl in P. omega.
-    subst. exists a1; split; eauto. econstructor.
-    eapply Par_roleing_tm_snd. eauto. inversion H7.
-  - assert False.
-    eapply pattern_like_tm_par_abs_cabs_contr. apply H8. auto.
-    exists F, p, b, A, R1, Rs; split; auto.
-    assert (P : tm_pattern_agree (a_CApp a3 g_Triv) p).
-    eapply tm_pattern_agree_rename_inv_2; eauto.
-    eapply MatchSubst_match; eauto.
-    split. eapply tm_subpattern_agree_sub_capp. econstructor. eauto.
-    intro. apply tm_pattern_agree_length_same in P.
-    apply tm_pattern_agree_length_same in H4. simpl in P. omega.
+  - inversion H0.
+    assert (tm_tm_agree a0 a'0). eapply pattern_like_tm_par; eauto.
+    use_size_induction a0 ac Par1 Par2.
+    use_size_induction a3 bc Par3 Par4.
+    pose (Q1 := tm_pattern_agree_rename_inv_2 (MatchSubst_match H4) H3).
+    assert (tm_tm_agree a' ac).
+        { eapply pattern_like_tm_par; eauto.
+          eapply tm_subpattern_agree_sub_app; eauto.
+          intro. eapply tm_subpattern_agree_app_contr; eauto.
+         }
+    exists (matchsubst (a_App ac nu bc) p' b'). split.
+     + inversion H4; subst.
+       assert (Par W b2 (matchsubst ac p1 b') R).
+        { eapply MatchSubst_par with (p1 := p). eauto.
+          intro. apply tm_pattern_agree_length_same in Q1.
+          apply tm_pattern_agree_length_same in H12. simpl in Q1. omega.
+          eapply tm_subpattern_agree_sub_app; eauto. eauto.
+          admit. eauto. eapply matchsubst_fun_ind.
+          eapply tm_pattern_agree_cong. eapply MatchSubst_match; eauto.
+          auto. eapply MatchSubst_lc3; eauto. auto.
+         } destruct R0; simpl.
+        * replace W with (nil ++ W); eauto.
+          eapply subst3. eapply par_app_rctx. admit.
+          simpl_env. auto. eauto.
+        * replace W with (nil ++ W); eauto.
+          eapply subst3. eapply par_app_rctx. admit.
+          simpl_env. auto. eauto.
+        * assert (Par W a1 (matchsubst ac p1 b') R).
+        { eapply MatchSubst_par with (p1 := p). eauto.
+          intro. apply tm_pattern_agree_length_same in Q1.
+          apply tm_pattern_agree_length_same in H12. simpl in Q1. omega.
+          eapply tm_subpattern_agree_sub_app; eauto. eauto.
+          admit. eauto. eapply matchsubst_fun_ind.
+          eapply tm_pattern_agree_cong. eapply MatchSubst_match; eauto.
+          auto. eapply MatchSubst_lc3; eauto. auto.
+         } simpl. auto.
+     + eapply Par_AxiomApp; eauto.
+       split. eapply tm_subpattern_agree_cong. eapply H6. auto.
+       intro. apply H7. eapply tm_pattern_agree_cong; eauto.
+       apply tm_tm_agree_sym; auto. eapply matchsubst_fun_ind.
+       eapply tm_pattern_agree_cong. eapply MatchSubst_match; eauto.
+       econstructor. auto. eapply Par_lc2; eauto. eapply Par_lc2; eauto.
+       eapply MatchSubst_lc3; eauto. auto.
+  - inversion H0; subst. inversion H11; subst.
+    pose (Q1 := tm_subpattern_agree_const_same H6).
+    pose (Q2 := tm_subpattern_agree_const_same H8).
+    pose (Q3 := axiom_pattern_head H).
+    pose (Q4 := axiom_pattern_head H10).
+    assert (a_Fam F = a_Fam F0).
+      { eapply transitivity. symmetry. eauto.
+        eapply transitivity. symmetry. eauto.
+        eapply transitivity; eauto.
+      }
+    inversion H17; subst. axioms_head_same.
+    use_size_induction a0 ac Par1 Par2.
+    use_size_induction a3 bc Par3 Par4.
+    admit.
+  - inversion H0. assert False.
+    eapply pattern_like_tm_par; try apply H9; eauto.
     contradiction.
-  - assert (a'0 = a3). eapply par_pattern_like_tm; eauto.
-    exists F, p, b, A, R1, Rs; split; eauto.
-    assert (P : tm_pattern_agree (a_CApp a3 g_Triv) p).
-    eapply tm_pattern_agree_rename_inv_2; eauto.
-    eapply MatchSubst_match; eauto.
-    split. eapply tm_subpattern_agree_sub_capp. econstructor. eauto.
-    intro. apply tm_pattern_agree_length_same in P.
-    apply tm_pattern_agree_length_same in H4. simpl in P. omega.
-    subst. exists a1; split; eauto. econstructor.
-    eapply Par_roleing_tm_snd. eauto.
-  - inversion H2.
-  - inversion H2.
-  - inversion H2.
-  - inversion H2.
-  - (* fam / fam *)
-    assert (head_const a = a_Fam F). eapply transitivity.
-    eapply tm_pattern_agree_const_same.
-    eapply tm_pattern_agree_rename_inv_2. eapply MatchSubst_match.
-    apply H2. eauto. eapply axiom_pattern_head; eauto.
-    assert (head_const a = a_Fam F0). eapply transitivity.
-    eapply tm_pattern_agree_const_same.
-    eapply tm_pattern_agree_rename_inv_2. eapply MatchSubst_match.
-    apply H11. eauto. eapply axiom_pattern_head; eauto.
-    rewrite H4 in H5. inversion H5. subst.
-    have E: (Ax p b A R1 Rs = Ax p0 b0 A0 R3 Rs0).
-    eapply binds_unique; eauto using uniq_toplevel.
-    inversion E. subst. admit.
+  - inversion H0.
+    assert (tm_tm_agree a0 a'0). eapply pattern_like_tm_par; eauto.
+    use_size_induction a0 ac Par1 Par2.
+    pose (Q1 := tm_pattern_agree_rename_inv_2 (MatchSubst_match H3) H2).
+    assert (tm_tm_agree a' ac).
+        { eapply pattern_like_tm_par; eauto.
+          eapply tm_subpattern_agree_sub_capp; eauto.
+          intro. eapply tm_subpattern_agree_capp_contr; eauto.
+         }
+    exists (matchsubst (a_CApp ac g_Triv) p' b'). split.
+     + inversion H3; subst.
+       assert (Par W a1 (matchsubst ac a3 b') R).
+        { eapply MatchSubst_par with (p1 := p). eauto.
+          intro. eapply tm_pattern_agree_length_same in Q1.
+          apply tm_pattern_agree_length_same in H10. simpl in Q1. omega.
+          eapply tm_subpattern_agree_sub_capp; eauto. eauto.
+          admit. eauto. eapply matchsubst_fun_ind.
+          eapply tm_pattern_agree_cong. eapply MatchSubst_match; eauto.
+          auto. eapply MatchSubst_lc3; eauto. auto.
+         } simpl; auto.
+     + eapply Par_AxiomCApp; eauto.
+       split. eapply tm_subpattern_agree_cong. eapply H5. auto.
+       intro. apply H6. eapply tm_pattern_agree_cong; eauto.
+       apply tm_tm_agree_sym; auto. eapply matchsubst_fun_ind.
+       eapply tm_pattern_agree_cong. eapply MatchSubst_match; eauto. eauto.
+       eapply MatchSubst_lc3; eauto. auto.
   - admit.
-  - inversion H2.
-  - inversion H2.
-  - inversion H2.
-  - inversion H9.
     (* Patterns *)
   - use_size_induction a0 ac Par1 Par2.
     use_size_induction b1 b1c Par3 Par4.
@@ -397,7 +457,6 @@ Proof.
     assert (~ CasePath R0 ac F). intro. apply H10.
     eapply CasePath_Par; eauto. exists b2c. split; eauto.
     eapply Par_PatternFalse; eauto. eapply Value_par_Value; eauto.
-  - inversion H11.
   - use_size_induction a0 ac Par1 Par2.
     use_size_induction b1 b1c Par3 Par4.
     use_size_induction b2 b2c Par5 Par6.
@@ -421,7 +480,6 @@ Proof.
     pose (P := H2). eapply Par_CasePath in P; eauto.
     assert (~ CasePath R0 ac F). intro. apply H12.
     eapply CasePath_Par; eauto. contradiction.
-  - inversion H11.
   - use_size_induction a0 ac Par1 Par2.
     use_size_induction b1 b1c Par3 Par4.
     use_size_induction b2 b2c Par5 Par6.
@@ -459,14 +517,14 @@ Qed.
 Lemma multipar_Star : forall W A B R, multipar W A B R -> A = a_Star -> B = a_Star.
 Proof.
   intros W A B R H. induction H. auto.
-  inversion H; intro K; auto; try inversion K. subst. inversion H4.
+  inversion H; intro K; auto; try inversion K.
 Qed.
 
 
 Lemma multipar_Bullet : forall W B R, multipar W a_Bullet B R -> B = a_Bullet.
 Proof.
   intros W B R H. dependent induction H. auto.
-  inversion H; auto; try inversion K. inversion H4.
+  inversion H; auto; try inversion K.
 Qed.
 
 
@@ -476,7 +534,7 @@ Proof.
 intros W rho A B R' H. induction H. intros. subst. exists A1, A2. auto.
 intros. subst.
 inversion H; subst; try (destruct (IHmultipar _ _ eq_refl) as [B1 [B2 EQ]]; auto;
-exists B1, B2; auto). inversion H4.
+exists B1, B2; auto).
 Qed.
 
 Lemma multipar_CPi : forall W A C R', multipar W A C R' -> 
@@ -486,7 +544,7 @@ Proof.
   intros W A C R' H. induction H; intros; subst.
   exists A1, A2, A3, B. auto.
   inversion H; subst; try (destruct (IHmultipar _ _ _ _ _ eq_refl) as [B1 [B2 [C2 EQ]]];
-  auto; exists B1, B2, C2; auto). inversion H4.
+  auto; exists B1, B2, C2; auto).
 Qed.
 
 Lemma multipar_UAbs : forall W rho a b R',
@@ -507,7 +565,7 @@ Proof.
   intros W A C R' H. induction H; intros; subst.
   exists A1, A2, A3, B. auto.
   inversion H; subst; try (destruct (IHmultipar _ _ _ _ _ eq_refl) as [B1 [B2 [C2 EQ]]];
-    auto; exists B1, B2, C2; auto). inversion H4.
+    auto; exists B1, B2, C2; auto).
 Qed.
 
 Lemma consist_sym : forall a b R, consistent a b R -> consistent b a R.
@@ -952,11 +1010,13 @@ Qed.
 
 
 Lemma multipar_app_left:
-  forall nu R a a' c' W, roleing W a R -> multipar W a' c' Nom ->
+  forall nu R a a' c' W, roleing W a R -> multipar W a' c' (app_role nu) ->
                       multipar W (a_App a nu a') (a_App a nu c') R.
 Proof.
-  intros. dependent induction H0; eauto; try done.
-Admitted.
+  intros.
+  dependent induction H0; intros; eauto; try done.
+  eapply par_multipar. eapply Par_App; eauto.
+Qed.
 
 Lemma multipar_capp_left: forall a a' W R, multipar W a a' R ->
                      multipar W (a_CApp a g_Triv) (a_CApp a' g_Triv) R.
@@ -978,16 +1038,16 @@ Proof.
 Qed.
 
 Lemma multipar_app_lr: forall nu R a a' c c' W,
-                       multipar W a c R -> multipar W  a' c' Nom ->
+                       multipar W a c R -> multipar W  a' c' (app_role nu) ->
                        multipar W (a_App a nu a') (a_App c nu c') R.
 Proof. intros. induction H.
   eapply multipar_app_left; auto.
-  apply (@mp_step W _ _ (a_App b nu a')); eauto. admit.
-  (* econstructor. auto. econstructor. eapply multipar_roleing_tm_fst; eauto.
-Qed. *) Admitted.
+  apply (@mp_step W _ _ (a_App b nu a')); eauto. eapply Par_App; auto.
+  eapply Par_sub. econstructor. eapply multipar_roleing_tm_fst; eauto. auto.
+Qed.
 
 Lemma join_app: forall nu R a a' b b' W, joins W a b R ->
-                       joins W a' b' Nom ->
+                       joins W a' b' (app_role nu) ->
                        joins W (a_App a nu a') (a_App b nu b') R.
 Proof.
   unfold joins.
@@ -1155,12 +1215,31 @@ Proof.
        - apply Typing_roleing in t; inversion t; subst.
          econstructor; econstructor; eauto.
          eapply roleing_sub; eauto.
-         econstructor; econstructor; eauto. eapply roleing_sub; eauto.
-         econstructor. eapply rctx_uniq; eauto.
        - apply Typing_roleing in t; inversion t; subst.
          econstructor; eauto. econstructor; eauto. eapply roleing_sub; eauto.
-       - eapply Par_Axiom; eauto. apply Typing_roleing in t.
-         eapply roleing_sub; eauto. admit.
+       - inversion H4; subst.
+           + inversion H3; subst. assert (a_Fam F = a_Fam F0).
+             eapply transitivity. symmetry. eapply axiom_pattern_head; eauto.
+             auto. inversion H7; subst. eapply Par_AxiomBase.
+             eauto. auto. eapply rctx_uniq. eapply Typing_roleing; eauto.
+           + apply Typing_roleing in t; inversion t; subst.
+             eapply Par_AxiomApp. eauto.
+             pose (Q := tm_pattern_agree_rename_inv_2 (MatchSubst_match H4) H3).
+             split. eapply tm_subpattern_agree_sub_app; eauto.
+             intro. eapply tm_pattern_agree_app_contr; try apply Q; eauto.
+             eapply Par_sub; eauto. simpl. eauto. admit. eauto. auto.
+           + apply Typing_roleing in t; inversion t; subst.
+             eapply Par_AxiomApp. eauto.
+             pose (Q := tm_pattern_agree_rename_inv_2 (MatchSubst_match H4) H3).
+             split. eapply tm_subpattern_agree_sub_app; eauto.
+             intro. eapply tm_pattern_agree_app_contr; try apply Q; eauto.
+             eapply Par_sub; eauto. simpl. eauto. admit. eauto. auto.
+           + apply Typing_roleing in t; inversion t; subst.
+             eapply Par_AxiomCApp. eauto.
+             pose (Q := tm_pattern_agree_rename_inv_2 (MatchSubst_match H4) H3).
+             split. eapply tm_subpattern_agree_sub_capp; eauto.
+             intro. eapply tm_pattern_agree_capp_contr; try apply Q; eauto.
+             eapply Par_sub; eauto. admit. eauto. auto.
        - apply Typing_roleing in t; inversion t; subst.
          eapply Par_PatternTrue; eauto.
          econstructor; eapply roleing_sub; eauto.
@@ -1185,10 +1264,7 @@ Proof.
     apply multipar_Abs_exists; eauto.
   - intros.
     apply join_app; auto.
-  - intros. destruct (H H1) as [T [P1 P2]].
-    apply multipar_roleing_tm_fst in P1. apply rctx_uniq in P1.
-    apply join_app; auto. admit. (*
-    exists a_Bullet. repeat split; econstructor; econstructor; auto. *)
+  - intros. eapply join_app; eauto.
   - intros. destruct (H H1) as [T [P1 P2]]. apply join_app. apply H; auto.
     apply multipar_rctx_uniq in P1.
     unfold joins; exists a_Bullet; split; econstructor; econstructor; eauto.
