@@ -665,26 +665,26 @@ defns
 JRename :: '' ::=
 
 defn
-rename p -> a to p' -> a' excluding D :: :: Rename :: 'Rename_'
+rename p -> a to p' -> a' excluding D and D' :: :: Rename :: 'Rename_'
 {{ com rename with fresh variables }}
-{{ tex \mathsf{rename} \ [[p]] \rightarrow [[a]] \ \mathsf{to} \ [[p']] \rightarrow [[a']] \ \mathsf{excluding} \ [[D]] }}
+{{ tex \mathsf{rename} \ [[p]] \rightarrow [[a]] \ \mathsf{to} \ [[p']] \rightarrow [[a']] \ \mathsf{excluding} \ [[D]] \ \mathsf{and} \ [[D']] }}
 by
 
 ------------------------------------------------ :: Base
-rename F -> a to F -> a excluding D
+rename F -> a to F -> a excluding D and emptyD
 
-rename p1 -> a1 to p2 -> a2 excluding D
-y notin D
+rename p1 -> a1 to p2 -> a2 excluding D and D'
+y notin (D, D')
 --------------------------------------------------------------------------- :: AppRel
-rename (p1 R x) -> a1 to (p2 R y) -> (a2 {`y/x`}) excluding (D, y)
+rename (p1 R x) -> a1 to (p2 R y) -> (a2 {`y/x`}) excluding D and (D',y)
 
-rename p1 -> a1 to p2 -> a2 excluding D
---------------------------------------------------------- :: AppIrrel
-rename (p1 - []) -> a1 to (p2 - []) -> a2 excluding D
+rename p1 -> a1 to p2 -> a2 excluding D and D'
+------------------------------------------------------------ :: AppIrrel
+rename (p1 - []) -> a1 to (p2 - []) -> a2 excluding D and D'
 
-rename p1 -> a1 to p2 -> a2 excluding D
----------------------------------------------------------- :: CApp
-rename (p1 [o]) -> a1 to (p2 [o]) -> a2 excluding D
+rename p1 -> a1 to p2 -> a2 excluding D and D'
+----------------------------------------------------------- :: CApp
+rename (p1 [o]) -> a1 to (p2 [o]) -> a2 excluding D and D'
 
 defns
 JMatchSubst :: '' ::=
@@ -1110,7 +1110,7 @@ F : p ~ b : A/R1 @ Rs in toplevel
 a + = p /\ not (a <-> p)
 W |= a => a' / R
 W |= a1 => a1' / (app_role nu)
-rename p -> b to p' -> b' excluding (dom W, fv p) 
+rename p -> b to p' -> b' excluding (dom W, fv p) and D' 
 match (a' nu a1') with p' -> b' = a2
 R1 <= R
 ------------------------------------------------------------------- :: AxiomApp
@@ -1119,7 +1119,7 @@ W |= a nu a1 => a2 / R
 F : p ~ b : A/R1 @ Rs in toplevel
 a + = p /\ not (a <-> p)
 W |= a => a' / R
-rename p -> b to p' -> b' excluding (dom W, fv p) 
+rename p -> b to p' -> b' excluding (dom W, fv p) and D' 
 match (a' [o]) with p' -> b' = a2
 R1 <= R
 ------------------------------------------------------------------- :: AxiomCApp
@@ -1193,10 +1193,10 @@ Value R1 (\rho x. v)
 
 
 F : p ~ b : A/R1 @ Rs in toplevel
-rename p -> b to p1 -> b1 excluding (fv a, fv p)
+rename p -> b to p1 -> b1 excluding (fv a, fv p) and D'
 match a with p1 -> b1 = b'
 R1 <= R
------------------------------------------------- :: Axiom
+-------------------------------------------------------- :: Axiom
 |= a > b' / R
 
 CasePath R a = F

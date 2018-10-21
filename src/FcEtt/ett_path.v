@@ -165,14 +165,14 @@ Proof. intros. dependent induction H.
         - simpl in *. eauto.
 Admitted.
 
-Lemma MatchSubst_Rename : forall p1 p2 a1 a2 W a b, Rename p1 a1 p2 a2 W ->
+Lemma MatchSubst_Rename : forall p1 p2 a1 a2 W W' a b, Rename p1 a1 p2 a2 W W' ->
                                  MatchSubst a p1 a1 b ->
                                  MatchSubst a p2 a2 b.
 Proof. intros. generalize dependent p2. generalize dependent a2.
-       generalize dependent W. induction H0; intros.
+       generalize dependent W. generalize dependent W'. induction H0; intros.
         - inversion H0; subst. eauto.
-        - inversion H1; subst. apply IHMatchSubst in H9.
-          eapply MatchSubst_AppRelR in H9; auto. admit.
+        - inversion H1; subst. apply IHMatchSubst in H10.
+          eapply MatchSubst_AppRelR in H10; auto. admit.
         - inversion H1; subst. eauto.
         - inversion H; subst. eauto.
 Admitted.

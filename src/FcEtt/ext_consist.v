@@ -247,11 +247,13 @@ Proof.
           auto. eapply MatchSubst_lc3; eauto. auto.
          } destruct R0; simpl.
         * replace W with (nil ++ W); eauto.
-          eapply subst3. eapply par_app_rctx. admit.
-          simpl_env. auto. eauto.
+          eapply subst3. eapply par_app_rctx.
+          simpl_env. econstructor. eapply Par_rctx_uniq; eauto.
+          inversion H9; subst. fsetdec. auto. eauto.
         * replace W with (nil ++ W); eauto.
-          eapply subst3. eapply par_app_rctx. admit.
-          simpl_env. auto. eauto.
+          eapply subst3. eapply par_app_rctx.
+          simpl_env. econstructor. eapply Par_rctx_uniq; eauto.
+          inversion H9; subst. fsetdec. auto. eauto.
         * assert (Par W a2 (matchsubst ac p1 b'0) R).
         { eapply MatchSubst_par with (p1 := p). eauto.
           intro. apply tm_pattern_agree_length_same in Q1.
@@ -371,11 +373,13 @@ Proof.
           auto. eapply MatchSubst_lc3; eauto. auto.
          } destruct R0; simpl.
         * replace W with (nil ++ W); eauto.
-          eapply subst3. eapply par_app_rctx. admit.
-          simpl_env. auto. eauto.
+          eapply subst3. eapply par_app_rctx.
+          simpl_env. econstructor. eapply Par_rctx_uniq; eauto.
+          inversion H3; subst. fsetdec. auto. eauto.
         * replace W with (nil ++ W); eauto.
-          eapply subst3. eapply par_app_rctx. admit.
-          simpl_env. auto. eauto.
+          eapply subst3. eapply par_app_rctx.
+          simpl_env. econstructor. eapply Par_rctx_uniq; eauto.
+          inversion H3; subst. fsetdec. auto. eauto.
         * assert (Par W a1 (matchsubst ac p1 b') R).
         { eapply MatchSubst_par with (p1 := p). eauto.
           intro. apply tm_pattern_agree_length_same in Q1.
@@ -435,7 +439,44 @@ Proof.
        apply tm_tm_agree_sym; auto. eapply matchsubst_fun_ind.
        eapply tm_pattern_agree_cong. eapply MatchSubst_match; eauto. eauto.
        eapply MatchSubst_lc3; eauto. auto.
-  - admit.
+  - inversion H0. inversion H10.
+    assert (P : a_Fam F = a_Fam F0).
+    { eapply transitivity. symmetry. eapply axiom_pattern_head; eauto.
+      eapply transitivity. symmetry.
+      eapply tm_subpattern_agree_const_same; eauto.
+      eapply transitivity. eapply tm_subpattern_agree_const_same; eauto.
+       eapply axiom_pattern_head; eauto. }
+    inversion P; subst. axioms_head_same.
+    use_size_induction a0 ac Par1 Par2.
+    assert (Q1: tm_tm_agree a0 a'). eapply pattern_like_tm_par; eauto.
+    pose (Q2 := tm_pattern_agree_rename_inv_2 (MatchSubst_match H3) H2).
+    assert (Q3 : tm_tm_agree a' ac).
+        { eapply pattern_like_tm_par; eauto.
+          eapply tm_subpattern_agree_sub_capp; eauto.
+          intro. eapply tm_subpattern_agree_capp_contr; eauto.
+         }
+    inversion H3; subst. inversion H2; subst.
+    inversion H13; subst. inversion H12; subst. admit.
+    (* exists (matchsubst (a_CApp ac g_Triv)
+     (rename p0 b0 ((dom W) \u (fv_tm_tm_tm p0))).1.1
+     (rename p0 b0 ((dom W) \u (fv_tm_tm_tm p0))).1.2). split.
+    + inversion H3; subst.
+       assert (Par W a1 (matchsubst ac a4 b') R).
+        { eapply MatchSubst_par with (p1 := p0). eauto.
+          intro. eapply H8. eapply tm_pattern_agree_cong; eauto.
+          apply tm_tm_agree_sym; auto.
+          eapply tm_subpattern_agree_cong; eauto. eauto.
+          admit. eauto. eapply matchsubst_fun_ind.
+          eapply tm_pattern_agree_cong. eapply MatchSubst_match; eauto.
+          auto. eapply MatchSubst_lc3; eauto. auto.
+         } simpl;auto.
+    
+    pose (Q4 := tm_tm_agree_trans Q1 Q3).
+    assert (Q5 : tm_subpattern_agree ac p0).
+    {  }
+    assert (Q6 : ~tm_pattern_agree ac p0).
+    { intro. eapply H8. eapply tm_pattern_agree_cong; eauto.
+      apply tm_tm_agree_sym; auto. } *)
     (* Patterns *)
   - use_size_induction a0 ac Par1 Par2.
     use_size_induction b1 b1c Par3 Par4.
@@ -1353,7 +1394,6 @@ Proof.
     exists a0. split; auto. *)
 Admitted.
 
-
 Lemma defeq_joins: forall S D A B T R, DefEq S D A B T R -> Good S D ->
                                          joins (ctx_nom S) A B R.
 Proof.
@@ -1488,6 +1528,16 @@ Proof.
   - assert False. eapply no_aCAbs. eauto 2. done.
 Qed.
 
+(*
+Lemma BranchTyping_CasePath : forall G R a A F A1 B C,
+      BranchTyping G R a A (a_Fam F) A1 B C -> Value R a -> CasePath R a F.
+Proof. intros. dependent induction H. Admitted.
+
+Lemma canonical_forms_Pattern : forall F a R b1 b2 G A, Good G (dom G) ->
+  Typing G (a_Pattern R a F b1 b2) A -> Value R a -> CasePath R a F.
+Proof. intros. dependent induction H. eapply IHTyping1; eauto.
+       inversion H3; subst. inversion H9; subst. inversion H14; subst.
+*)
 
 
 Definition irrelevant G D (a : tm) :=

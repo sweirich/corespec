@@ -1771,23 +1771,6 @@ Proof. intros. apply Rename_fv_body in H. apply MatchSubst_fv in H0.
        fsetdec.
 Qed.
 
-Lemma MatchSubst_correspondence : forall a p1 p2 b1 b2 b1' b2' x x1 x2,
-     tm_pattern_agree a p1 -> MatchSubst a p1 b1 b1' -> MatchSubst a p2 b2 b2' ->
-     tm_subst_tm_tm (a_Var_f x) x1 b1' = tm_subst_tm_tm (a_Var_f x) x2 b2' ->
-     x `notin` fv_tm_tm_tm b1 -> x `notin` fv_tm_tm_tm b2 ->
-    fv_tm_tm_tm_correspondence b1' b2' x.
-Proof. intros. generalize dependent b1. generalize dependent b1'.
-       generalize dependent p2. generalize dependent b2.
-       generalize dependent b2'. generalize dependent x1.
-       generalize dependent x2. generalize dependent x.
-       induction H; intros.
-        -inversion H0; subst. inversion H1; subst.
-         apply correspondence_notin_fv_tm; auto.
-        -inversion H1;subst. inversion H3;subst. admit.
-        -inversion H1;subst. inversion H3;subst. eauto.
-        -inversion H1;subst. inversion H0;subst. eauto.
-Admitted.
-
 Theorem MatchSubst_Rename_preserve : forall p b D D' p1 b1 D1 p2 b2 D2 a a1 a2,
    tm_pattern_agree a p -> Rename p b p1 b1 D D1 -> Rename p b p2 b2 D' D2 ->
    AtomSetImpl.Subset (fv_tm_tm_tm a \u fv_tm_tm_tm p \u fv_tm_tm_tm b) D ->
@@ -1802,7 +1785,7 @@ Proof. intros. generalize dependent p1. generalize dependent b1.
            inversion H5; subst. inversion H1; subst. auto.
          - simpl in H2. simpl in H3. inversion H5; subst.
            inversion H1; subst. inversion H6; subst. inversion H4; subst.
-         (* assert (tm_subst_tm_tm (a_Var_f x) x1 b2 =
+           assert (tm_subst_tm_tm (a_Var_f x) x1 b2 =
                    tm_subst_tm_tm (a_Var_f x) x0 b3).
            { eapply IHtm_pattern_agree with (b := b)(D' := D') (D := D).
            + fsetdec.
@@ -1832,7 +1815,7 @@ Proof. intros. generalize dependent p1. generalize dependent b1.
                    x `notin` fv_tm_tm_tm (a_App a1 (Role R) a2)).
            fsetdec. inversion H8.
          + eapply tm_subst_tm_tm_hole; eauto. fsetdec. fsetdec. admit.
-         + eapply f_equal with (f := tm_subst_tm_tm a2 x) in H7.
+        (* + eapply f_equal with (f := tm_subst_tm_tm a2 x) in H7.
            assert (~(eq x1 x)). fsetdec. assert (~(eq x0 x)). fsetdec.
            rewrite tm_subst_tm_tm_tm_subst_tm_tm in H7. fsetdec. auto.
            simpl in H7. destruct (eq_dec x x); [| contradiction].
@@ -1867,6 +1850,4 @@ Proof. intros. generalize dependent p1. generalize dependent b1.
            simpl in H3. admit. eapply H12. auto.
            simpl in H2. admit. eapply H10. auto. *)
 Admitted.
-
-
 

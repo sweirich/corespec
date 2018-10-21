@@ -241,8 +241,6 @@ Definition open_sort_wrt_tm_rec (k:nat) (a5:tm) (sort5:sort) : sort :=
   | (Co phi) => Co (open_constraint_wrt_tm_rec k a5 phi)
 end.
 
-Definition open_brs_wrt_tm a5 brs_6 := open_brs_wrt_tm_rec 0 brs_6 a5.
-
 Definition open_sort_wrt_co g5 sort5 := open_sort_wrt_co_rec 0 sort5 g5.
 
 Definition open_sig_sort_wrt_co g5 sig_sort5 := open_sig_sort_wrt_co_rec 0 sig_sort5 g5.
@@ -264,6 +262,8 @@ Definition open_tm_wrt_tm a5 a_6 := open_tm_wrt_tm_rec 0 a_6 a5.
 Definition open_brs_wrt_co g5 brs_6 := open_brs_wrt_co_rec 0 brs_6 g5.
 
 Definition open_tm_wrt_co g5 a5 := open_tm_wrt_co_rec 0 a5 g5.
+
+Definition open_brs_wrt_tm a5 brs_6 := open_brs_wrt_tm_rec 0 brs_6 a5.
 
 (** terms are locally-closed pre-terms *)
 (** definitions *)
@@ -926,20 +926,20 @@ Inductive PatternContexts : role_context -> context -> const -> tm -> tm -> tm -
       ( forall c , c \notin  L  -> PatternContexts W  (( c ~ Co  phi ) ++  G )  F B (a_CApp p g_Triv)  ( open_tm_wrt_co A (g_Var_f c) )  ) .
 
 (* defns JRename *)
-Inductive Rename : tm -> tm -> tm -> tm -> available_props -> Prop :=    (* defn Rename *)
+Inductive Rename : tm -> tm -> tm -> tm -> available_props -> available_props -> Prop :=    (* defn Rename *)
  | Rename_Base : forall (F:const) (a:tm) (D:available_props),
      lc_tm a ->
-     Rename (a_Fam F) a (a_Fam F) a D
- | Rename_AppRel : forall (p1:tm) (R:role) (x:tmvar) (a1 p2:tm) (y:tmvar) (a2:tm) (D:available_props),
-     Rename p1 a1 p2 a2 D ->
-      ~ AtomSetImpl.In  y   D  ->
-     Rename  ( (a_App p1 (Role R) (a_Var_f x)) )  a1  ( (a_App p2 (Role R) (a_Var_f y)) )   (  (tm_subst_tm_tm  (a_Var_f y)   x   a2 )  )   (  (singleton  y  \u  D )  ) 
- | Rename_AppIrrel : forall (p1 a1 p2 a2:tm) (D:available_props),
-     Rename p1 a1 p2 a2 D ->
-     Rename  ( (a_App p1 (Rho Irrel) a_Bullet) )  a1  ( (a_App p2 (Rho Irrel) a_Bullet) )  a2 D
- | Rename_CApp : forall (p1 a1 p2 a2:tm) (D:available_props),
-     Rename p1 a1 p2 a2 D ->
-     Rename  ( (a_CApp p1 g_Triv) )  a1  ( (a_CApp p2 g_Triv) )  a2 D.
+     Rename (a_Fam F) a (a_Fam F) a D  AtomSetImpl.empty 
+ | Rename_AppRel : forall (p1:tm) (R:role) (x:tmvar) (a1 p2:tm) (y:tmvar) (a2:tm) (D D':available_props),
+     Rename p1 a1 p2 a2 D D' ->
+      ~ AtomSetImpl.In  y    (  ( D  `union`  D' )  )   ->
+     Rename  ( (a_App p1 (Role R) (a_Var_f x)) )  a1  ( (a_App p2 (Role R) (a_Var_f y)) )   (  (tm_subst_tm_tm  (a_Var_f y)   x   a2 )  )  D  (  (singleton  y  \u  D' )  ) 
+ | Rename_AppIrrel : forall (p1 a1 p2 a2:tm) (D D':available_props),
+     Rename p1 a1 p2 a2 D D' ->
+     Rename  ( (a_App p1 (Rho Irrel) a_Bullet) )  a1  ( (a_App p2 (Rho Irrel) a_Bullet) )  a2 D D'
+ | Rename_CApp : forall (p1 a1 p2 a2:tm) (D D':available_props),
+     Rename p1 a1 p2 a2 D D' ->
+     Rename  ( (a_CApp p1 g_Triv) )  a1  ( (a_CApp p2 g_Triv) )  a2 D D'.
 
 (* defns JMatchSubst *)
 Inductive MatchSubst : tm -> tm -> tm -> tm -> Prop :=    (* defn MatchSubst *)
@@ -1230,20 +1230,20 @@ Inductive Par : role_context -> tm -> tm -> role -> Prop :=    (* defn Par *)
      SubRole R1 R ->
       uniq  W  ->
      Par W (a_Fam F) b R
- | Par_AxiomApp : forall (W:role_context) (a:tm) (nu:appflag) (a1 a2:tm) (R:role) (F:const) (p b A:tm) (R1:role) (Rs:roles) (a' a1' p' b':tm),
+ | Par_AxiomApp : forall (W:role_context) (a:tm) (nu:appflag) (a1 a2:tm) (R:role) (F:const) (p b A:tm) (R1:role) (Rs:roles) (a' a1' p' b':tm) (D':available_props),
       binds  F  ( (Ax p b A R1 Rs) )   toplevel   ->
       tm_subpattern_agree a p  /\   not (  ( tm_pattern_agree a p )  )   ->
      Par W a a' R ->
      Par W a1 a1'  (  app_role  nu  )  ->
-     Rename p b p' b'  (  (  (dom  W )   `union`   (fv_tm_tm_tm  p )  )  )  ->
+     Rename p b p' b'  (  (  (dom  W )   `union`   (fv_tm_tm_tm  p )  )  )  D' ->
      MatchSubst  ( (a_App a' nu a1') )  p' b' a2 ->
      SubRole R1 R ->
      Par W (a_App a nu a1) a2 R
- | Par_AxiomCApp : forall (W:role_context) (a a2:tm) (R:role) (F:const) (p b A:tm) (R1:role) (Rs:roles) (a' p' b':tm),
+ | Par_AxiomCApp : forall (W:role_context) (a a2:tm) (R:role) (F:const) (p b A:tm) (R1:role) (Rs:roles) (a' p' b':tm) (D':available_props),
       binds  F  ( (Ax p b A R1 Rs) )   toplevel   ->
       tm_subpattern_agree a p  /\   not (  ( tm_pattern_agree a p )  )   ->
      Par W a a' R ->
-     Rename p b p' b'  (  (  (dom  W )   `union`   (fv_tm_tm_tm  p )  )  )  ->
+     Rename p b p' b'  (  (  (dom  W )   `union`   (fv_tm_tm_tm  p )  )  )  D' ->
      MatchSubst  ( (a_CApp a' g_Triv) )  p' b' a2 ->
      SubRole R1 R ->
      Par W (a_CApp a g_Triv) a2 R
@@ -1289,9 +1289,9 @@ Inductive Beta : tm -> tm -> role -> Prop :=    (* defn Beta *)
  | Beta_CAppCAbs : forall (a':tm) (R:role),
      lc_tm (a_UCAbs a') ->
      Beta (a_CApp  ( (a_UCAbs a') )  g_Triv)  (open_tm_wrt_co  a'   g_Triv )  R
- | Beta_Axiom : forall (a b':tm) (R:role) (F:const) (p b A:tm) (R1:role) (Rs:roles) (p1 b1:tm),
+ | Beta_Axiom : forall (a b':tm) (R:role) (F:const) (p b A:tm) (R1:role) (Rs:roles) (p1 b1:tm) (D':available_props),
       binds  F  ( (Ax p b A R1 Rs) )   toplevel   ->
-     Rename p b p1 b1  (  (  (fv_tm_tm_tm  a )   `union`   (fv_tm_tm_tm  p )  )  )  ->
+     Rename p b p1 b1  (  (  (fv_tm_tm_tm  a )   `union`   (fv_tm_tm_tm  p )  )  )  D' ->
      MatchSubst a p1 b1 b' ->
      SubRole R1 R ->
      Beta a b' R
