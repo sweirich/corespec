@@ -36,11 +36,29 @@ Inductive Pattern_like_tm : tm -> Prop :=
 
 Hint Constructors Pattern_like_tm.
 
+Fixpoint vars_Pattern (p : tm) := match p with
+   | a_Fam F => []
+   | a_App p1 (Role _) (a_Var_f x) => vars_Pattern p1 ++ [ x ]
+   | a_App p1 (Rho Irrel) a_Bullet => vars_Pattern p1
+   | a_CApp p1 g_Triv => vars_Pattern p1
+   | _ => []
+   end.
+
+Fixpoint tms_Pattern_like_tm (a : tm) := match a with
+   | a_Fam F => []
+   | a_App a1 (Role _) a' => tms_Pattern_like_tm a1 ++ [ a' ]
+   | a_App a1 (Rho Irrel) a_Bullet => tms_Pattern_like_tm a1
+   | a_CApp a1 g_Triv => tms_Pattern_like_tm a1
+   | _ => []
+   end.
+
+Definition uniq_atoms L := uniq (List.map (fun x => (x, Nom)) L).
+
+Definition uniq_atoms_pattern p := uniq_atoms (vars_Pattern p).
+
 Fixpoint matchsubst a p b : tm := match (a,p) with
   | (a_Fam F, a_Fam F') => b
-  | (a_App a1 (Role Nom) a2, a_App p1 (Role Nom) (a_Var_f x)) =>
-         tm_subst_tm_tm a2 x (matchsubst a1 p1 b)
-  | (a_App a1 (Role Rep) a2, a_App p1 (Role Rep) (a_Var_f x)) =>
+  | (a_App a1 (Role R) a2, a_App p1 (Role R') (a_Var_f x)) =>
          tm_subst_tm_tm a2 x (matchsubst a1 p1 b)
   | (a_App a1 (Rho Irrel) a', a_App p1 (Rho Irrel) a_Bullet) =>
          matchsubst a1 p1 b
@@ -1458,125 +1476,151 @@ Lemma tm_subst_tm_tm_back_forth : forall x y b, y `notin` fv_tm_tm_tm b ->
       tm_subst_tm_tm (a_Var_f x) y (tm_subst_tm_tm (a_Var_f y) x b) = b.
 Proof. eapply tm_subst_tm_tm_back_forth_mutual; eauto.
 Qed.
-
-Fixpoint fv_tm_tm_tm_correspondence a b y := 
+(*
+Fixpoint fv_tm_tm_tm_correspondence a b x y := 
    match a, b with
+   | a_Star, a_Star => True
+   | a_Var_b _, a_Var_b _ => True
+   | a_Var_f x1, a_Var_f x2 => (x1 = x /\ x2 = y) \/ (x1 <> x /\ x2 <> y)
    | a_Abs _ A1 b1, a_Abs _ A2 b2 =>
-       fv_tm_tm_tm_correspondence A1 A2 y /\
-       fv_tm_tm_tm_correspondence b1 b2 y
+       fv_tm_tm_tm_correspondence A1 A2 x y /\
+       fv_tm_tm_tm_correspondence b1 b2 x y
    | a_UAbs _ a1, a_UAbs _ a2 =>
-       fv_tm_tm_tm_correspondence a1 a2 y
+       fv_tm_tm_tm_correspondence a1 a2 x y
    | a_App a1 _ b1, a_App a2 _ b2 =>
-      fv_tm_tm_tm_correspondence a1 a2 y /\
-      fv_tm_tm_tm_correspondence b1 b2 y
+      fv_tm_tm_tm_correspondence a1 a2 x y /\
+      fv_tm_tm_tm_correspondence b1 b2 x y
    | a_Pi _ A1 B1, a_Pi _ A2 B2 =>
-       fv_tm_tm_tm_correspondence A1 A2 y /\
-       fv_tm_tm_tm_correspondence B1 B2 y
+       fv_tm_tm_tm_correspondence A1 A2 x y /\
+       fv_tm_tm_tm_correspondence B1 B2 x y
    | a_CAbs phi1 b1, a_CAbs phi2 b2 =>
-       fv_tm_tm_constraint_correspondence phi1 phi2 y /\
-       fv_tm_tm_tm_correspondence b1 b2 y
+       fv_tm_tm_constraint_correspondence phi1 phi2 x y /\
+       fv_tm_tm_tm_correspondence b1 b2 x y
    | a_UCAbs b1, a_UCAbs b2 =>
-       fv_tm_tm_tm_correspondence b1 b2 y
+       fv_tm_tm_tm_correspondence b1 b2 x y
    | a_CApp a1 g1, a_CApp a2 g2 =>
-      fv_tm_tm_tm_correspondence a1 a2 y /\
-      fv_tm_tm_co_correspondence g1 g2 y
+      fv_tm_tm_tm_correspondence a1 a2 x y /\
+      fv_tm_tm_co_correspondence g1 g2 x y
    | a_CPi phi1 B1, a_CPi phi2 B2 =>
-      fv_tm_tm_constraint_correspondence phi1 phi2 y /\
-       fv_tm_tm_tm_correspondence B1 B2 y
+      fv_tm_tm_constraint_correspondence phi1 phi2 x y /\
+       fv_tm_tm_tm_correspondence B1 B2 x y
    | a_Conv a1 _ g1, a_Conv a2 _ g2 =>
-      fv_tm_tm_tm_correspondence a1 a2 y /\
-      fv_tm_tm_co_correspondence g1 g2 y
+      fv_tm_tm_tm_correspondence a1 a2 x y /\
+      fv_tm_tm_co_correspondence g1 g2 x y
+   | a_Fam _, a_Fam _ => True
+   | a_Bullet, a_Bullet => True
    | a_Pattern _ a1 _ b1 b1', a_Pattern _ a2 _ b2 b2' => 
-      fv_tm_tm_tm_correspondence a1 a2 y /\
-      fv_tm_tm_tm_correspondence b1 b2 y /\
-      fv_tm_tm_tm_correspondence b1' b2' y
+      fv_tm_tm_tm_correspondence a1 a2 x y /\
+      fv_tm_tm_tm_correspondence b1 b2 x y /\
+      fv_tm_tm_tm_correspondence b1' b2' x y
+   | a_DataCon _, a_DataCon _ => True
    | a_Case a1 brs1, a_Case a2 brs2 =>
-      fv_tm_tm_tm_correspondence a1 a2 y /\
-      fv_tm_tm_brs_correspondence brs1 brs2 y
+      fv_tm_tm_tm_correspondence a1 a2 x y /\
+      fv_tm_tm_brs_correspondence brs1 brs2 x y
    | a_Sub _ a1, a_Sub _ a2 =>
-      fv_tm_tm_tm_correspondence a1 a2 y
-   | a1 , a2 => (y `in` fv_tm_tm_tm a1 <-> y `in` fv_tm_tm_tm a2)
+      fv_tm_tm_tm_correspondence a1 a2 x y
+   | _ , _ => False
    end
 
-with fv_tm_tm_brs_correspondence brs1 brs2 y := match brs1, brs2 with
+with fv_tm_tm_brs_correspondence brs1 brs2 x y := match brs1, brs2 with
+   | br_None, br_None => True
    | br_One _ a1 br1, br_One _ a2 br2 =>
-      fv_tm_tm_tm_correspondence a1 a2 y /\
-      fv_tm_tm_brs_correspondence br1 br2 y
-   | br1, br2 => (y `in` fv_tm_tm_brs br1 <-> y `in` fv_tm_tm_brs br2)
+      fv_tm_tm_tm_correspondence a1 a2 x y /\
+      fv_tm_tm_brs_correspondence br1 br2 x y
+   | _ , _ => False
    end
 
-with fv_tm_tm_co_correspondence g h y := match g, h with
+with fv_tm_tm_co_correspondence g h x y := match g, h with
+  | g_Triv, g_Triv => True
+  | g_Var_b _, g_Var_b _ => True
+  | g_Var_f _ , g_Var_f _ => True
   | g_Beta a1 b1, g_Beta a2 b2 =>
-      fv_tm_tm_tm_correspondence a1 a2 y /\
-      fv_tm_tm_tm_correspondence b1 b2 y
+      fv_tm_tm_tm_correspondence a1 a2 x y /\
+      fv_tm_tm_tm_correspondence b1 b2 x y
+  | g_Refl a1, g_Refl a2 => fv_tm_tm_tm_correspondence a1 a2 x y
   | g_Refl2 a1 b1 g1, g_Refl2 a2 b2 g2 =>
-      fv_tm_tm_tm_correspondence a1 a2 y /\
-      fv_tm_tm_tm_correspondence b1 b2 y /\
-      fv_tm_tm_co_correspondence g1 g2 y
+      fv_tm_tm_tm_correspondence a1 a2 x y /\
+      fv_tm_tm_tm_correspondence b1 b2 x y /\
+      fv_tm_tm_co_correspondence g1 g2 x y
+  | g_Sym g1, g_Sym g2 => fv_tm_tm_co_correspondence g1 g2 x y
   | g_Trans g1 h1, g_Trans g2 h2 =>
-      fv_tm_tm_co_correspondence g1 g2 y /\
-      fv_tm_tm_co_correspondence h1 h2 y
+      fv_tm_tm_co_correspondence g1 g2 x y /\
+      fv_tm_tm_co_correspondence h1 h2 x y
+  | g_Sub g1, g_Sub g2 => fv_tm_tm_co_correspondence g1 g2 x y
   | g_PiCong _ _ g1 h1, g_PiCong _ _ g2 h2 =>
-      fv_tm_tm_co_correspondence g1 g2 y /\
-      fv_tm_tm_co_correspondence h1 h2 y
+      fv_tm_tm_co_correspondence g1 g2 x y /\
+      fv_tm_tm_co_correspondence h1 h2 x y
   | g_AbsCong _ _ g1 h1, g_AbsCong _ _ g2 h2 =>
-      fv_tm_tm_co_correspondence g1 g2 y /\
-      fv_tm_tm_co_correspondence h1 h2 y
+      fv_tm_tm_co_correspondence g1 g2 x y /\
+      fv_tm_tm_co_correspondence h1 h2 x y
   | g_AppCong g1 _ _ h1, g_AppCong g2 _ _ h2 =>
-      fv_tm_tm_co_correspondence g1 g2 y /\
-      fv_tm_tm_co_correspondence h1 h2 y
+      fv_tm_tm_co_correspondence g1 g2 x y /\
+      fv_tm_tm_co_correspondence h1 h2 x y
+  | g_PiFst g1, g_PiFst g2 => fv_tm_tm_co_correspondence g1 g2 x y
+  | g_CPiFst g1, g_CPiFst g2 => fv_tm_tm_co_correspondence g1 g2 x y
+  | g_IsoSnd g1, g_IsoSnd g2 => fv_tm_tm_co_correspondence g1 g2 x y
   | g_PiSnd g1 h1, g_PiSnd g2 h2 =>
-      fv_tm_tm_co_correspondence g1 g2 y /\
-      fv_tm_tm_co_correspondence h1 h2 y
+      fv_tm_tm_co_correspondence g1 g2 x y /\
+      fv_tm_tm_co_correspondence h1 h2 x y
   | g_CPiCong g1 h1, g_CPiCong g2 h2 =>
-      fv_tm_tm_co_correspondence g1 g2 y /\
-      fv_tm_tm_co_correspondence h1 h2 y
+      fv_tm_tm_co_correspondence g1 g2 x y /\
+      fv_tm_tm_co_correspondence h1 h2 x y
   | g_CAbsCong g1 h1 i1, g_CAbsCong g2 h2 i2 =>
-      fv_tm_tm_co_correspondence g1 g2 y /\
-      fv_tm_tm_co_correspondence h1 h2 y /\
-      fv_tm_tm_co_correspondence i1 i2 y
+      fv_tm_tm_co_correspondence g1 g2 x y /\
+      fv_tm_tm_co_correspondence h1 h2 x y /\
+      fv_tm_tm_co_correspondence i1 i2 x y
   | g_CAppCong g1 h1 i1, g_CAppCong g2 h2 i2 =>
-      fv_tm_tm_co_correspondence g1 g2 y /\
-      fv_tm_tm_co_correspondence h1 h2 y /\
-      fv_tm_tm_co_correspondence i1 i2 y
+      fv_tm_tm_co_correspondence g1 g2 x y /\
+      fv_tm_tm_co_correspondence h1 h2 x y /\
+      fv_tm_tm_co_correspondence i1 i2 x y
   | g_CPiSnd g1 h1 i1, g_CPiSnd g2 h2 i2 =>
-      fv_tm_tm_co_correspondence g1 g2 y /\
-      fv_tm_tm_co_correspondence h1 h2 y /\
-      fv_tm_tm_co_correspondence i1 i2 y
+      fv_tm_tm_co_correspondence g1 g2 x y /\
+      fv_tm_tm_co_correspondence h1 h2 x y /\
+      fv_tm_tm_co_correspondence i1 i2 x y
   | g_Cast g1 _ h1, g_Cast g2 _ h2 =>
-     fv_tm_tm_co_correspondence g1 g2 y /\
-     fv_tm_tm_co_correspondence h1 h2 y
+     fv_tm_tm_co_correspondence g1 g2 x y /\
+     fv_tm_tm_co_correspondence h1 h2 x y
   | g_EqCong g1 A1 h1, g_EqCong g2 A2 h2 =>
-      fv_tm_tm_co_correspondence g1 g2 y /\
-      fv_tm_tm_tm_correspondence A1 A2 y /\
-      fv_tm_tm_co_correspondence h1 h2 y
+      fv_tm_tm_co_correspondence g1 g2 x y /\
+      fv_tm_tm_tm_correspondence A1 A2 x y /\
+      fv_tm_tm_co_correspondence h1 h2 x y
   | g_IsoConv phi1 phi1' g1, g_IsoConv phi2 phi2' g2 =>
-      fv_tm_tm_constraint_correspondence phi1 phi2 y /\
-      fv_tm_tm_constraint_correspondence phi1' phi2' y /\
-      fv_tm_tm_co_correspondence g1 g2 y
+      fv_tm_tm_constraint_correspondence phi1 phi2 x y /\
+      fv_tm_tm_constraint_correspondence phi1' phi2' x y /\
+      fv_tm_tm_co_correspondence g1 g2 x y
+  | g_Eta a1, g_Eta a2 => fv_tm_tm_tm_correspondence a1 a2 x y
   | g_Left g1 h1, g_Left g2 h2 =>
-      fv_tm_tm_co_correspondence g1 g2 y /\
-      fv_tm_tm_co_correspondence h1 h2 y
+      fv_tm_tm_co_correspondence g1 g2 x y /\
+      fv_tm_tm_co_correspondence h1 h2 x y
   | g_Right g1 h1, g_Right g2 h2 =>
-      fv_tm_tm_co_correspondence g1 g2 y /\
-      fv_tm_tm_co_correspondence h1 h2 y
-  | g_Refl a1, g_Refl a2 => fv_tm_tm_tm_correspondence a1 a2 y
-  | g_Sym g1, g_Sym g2 => fv_tm_tm_co_correspondence g1 g2 y
-  | g_Sub g1, g_Sub g2 => fv_tm_tm_co_correspondence g1 g2 y
-  | g_PiFst g1, g_PiFst g2 => fv_tm_tm_co_correspondence g1 g2 y
-  | g_CPiFst g1, g_CPiFst g2 => fv_tm_tm_co_correspondence g1 g2 y
-  | g_IsoSnd g1, g_IsoSnd g2 => fv_tm_tm_co_correspondence g1 g2 y
-  | g_Eta a1, g_Eta a2 => fv_tm_tm_tm_correspondence a1 a2 y
-  | g1, g2 => (y `in` fv_tm_tm_co g1 <-> y `in` fv_tm_tm_co g2)
+      fv_tm_tm_co_correspondence g1 g2 x y /\
+      fv_tm_tm_co_correspondence h1 h2 x y
+  | _, _ => False
   end
 
-with fv_tm_tm_constraint_correspondence phi psi y :=
+with fv_tm_tm_constraint_correspondence phi psi x y :=
   match phi, psi with
   | Eq a1 b1 A1 _, Eq a2 b2 A2 _ =>
-      fv_tm_tm_tm_correspondence a1 a2 y /\
-      fv_tm_tm_tm_correspondence b1 b2 y /\
-      fv_tm_tm_tm_correspondence A1 A2 y
+      fv_tm_tm_tm_correspondence a1 a2 x y /\
+      fv_tm_tm_tm_correspondence b1 b2 x y /\
+      fv_tm_tm_tm_correspondence A1 A2 x y
   end.
+
+Lemma fv_tm_correspondence_refl : forall x,
+     (forall a1, fv_tm_tm_tm_correspondence a1 a1 x x) /\
+     (forall a1, fv_tm_tm_brs_correspondence a1 a1 x x) /\
+     (forall a1, fv_tm_tm_co_correspondence a1 a1 x x) /\
+     (forall a1, fv_tm_tm_constraint_correspondence a1 a1 x x).
+Proof. intro x. apply tm_brs_co_constraint_mutind; try intros; simpl; eauto.
+       assert (x0 = x \/ x0 <> x). fsetdec. inversion H. left; split; auto.
+       right; split; auto.
+Qed.
+
+Lemma fv_tm_tm_correspondence_refl : forall x a1,
+      fv_tm_tm_tm_correspondence a1 a1 x x.
+Proof. intros. eapply fv_tm_correspondence_refl; eauto.
+Qed.
+
 (*
 Lemma fv_tm_tm_correspondence_subst : forall x e
       (forall a1 d2, x `notin` fv_tm_tm_tm a1 -> x `notin` fv_tm_tm_tm d2 ->
@@ -1590,16 +1634,16 @@ Lemma fv_tm_tm_correspondence_subst : forall x e
       fv_tm_tm_constraint_correspondence a1 d2 x ). *)
 
 Lemma tm_subst_tm_hole : forall x1 x2 y a2, y <> x1 -> y <> x2 ->
-      (forall b1 d2, fv_tm_tm_tm_correspondence b1 d2 y ->
+      (forall b1 d2, fv_tm_tm_tm_correspondence b1 d2 x1 x2 ->
        tm_subst_tm_tm (a_Var_f y) x1 b1 = tm_subst_tm_tm (a_Var_f y) x2 d2 ->
        tm_subst_tm_tm a2 x1 b1 = tm_subst_tm_tm a2 x2 d2) /\
-      (forall brs1 d2, fv_tm_tm_brs_correspondence brs1 d2 y ->
+      (forall brs1 d2, fv_tm_tm_brs_correspondence brs1 d2 x1 x2 ->
       tm_subst_tm_brs (a_Var_f y) x1 brs1 = tm_subst_tm_brs (a_Var_f y) x2 d2 ->
       tm_subst_tm_brs a2 x1 brs1 = tm_subst_tm_brs a2 x2 d2) /\
-      (forall g1 d2, fv_tm_tm_co_correspondence g1 d2 y ->
+      (forall g1 d2, fv_tm_tm_co_correspondence g1 d2 x1 x2 ->
       tm_subst_tm_co (a_Var_f y) x1 g1 = tm_subst_tm_co (a_Var_f y) x2 d2 ->
       tm_subst_tm_co a2 x1 g1 = tm_subst_tm_co a2 x2 d2) /\
-      (forall phi1 d2, fv_tm_tm_constraint_correspondence phi1 d2 y ->
+      (forall phi1 d2, fv_tm_tm_constraint_correspondence phi1 d2 x1 x2 ->
       tm_subst_tm_constraint (a_Var_f y) x1 phi1 =
       tm_subst_tm_constraint (a_Var_f y) x2 d2 ->
       tm_subst_tm_constraint a2 x1 phi1 = tm_subst_tm_constraint a2 x2 d2).
@@ -1610,21 +1654,22 @@ Proof. (* intros x1 x2 y a2 Q1 Q2. apply tm_brs_co_constraint_mutind; intros;
        try (destruct (eq_var x x1); inversion P2; fail).
        all: try (simpl in P1; split_hyp; inversion P2;
                  subst; simpl; f_equal; auto; fail).
-        - simpl in *. destruct (eq_var x x1); destruct (eq_var x0 x2).
-          auto. inversion P2; subst. assert False. apply Q1. symmetry.
-          apply AtomSetImpl.singleton_1. apply P1. simpl. fsetdec.
-          contradiction. inversion P2; subst. assert False. apply Q2. symmetry.
-          apply AtomSetImpl.singleton_1. apply P1. simpl. fsetdec.
-          contradiction. auto.
+        - simpl. destruct (eq_var x x1); destruct (eq_var x0 x2).
+          + auto.
+          + inversion P2; subst. simpl in P1. inversion P1; inversion H.
+            symmetry in H0. contradiction. contradiction.
+          + inversion P2; subst. simpl in P1. inversion P1; inversion H.
+            symmetry in H1. contradiction. contradiction.
+          + auto.
 Qed. *) Admitted.
 
 Lemma tm_subst_tm_tm_hole : forall x1 x2 y a2 b1 d2, y <> x1 -> y <> x2 ->
-       fv_tm_tm_tm_correspondence b1 d2 y ->
+       fv_tm_tm_tm_correspondence b1 d2 x1 x2 ->
        tm_subst_tm_tm (a_Var_f y) x1 b1 = tm_subst_tm_tm (a_Var_f y) x2 d2 ->
        tm_subst_tm_tm a2 x1 b1 = tm_subst_tm_tm a2 x2 d2.
 Proof. intros. eapply tm_subst_tm_hole; eauto.
 Qed.
-
+(*
 Lemma correspondence_notin_fv : forall x,
       (forall a1 d2, x `notin` fv_tm_tm_tm a1 -> x `notin` fv_tm_tm_tm d2 ->
        fv_tm_tm_tm_correspondence a1 d2 x) /\
@@ -1693,9 +1738,9 @@ Proof. (* intros. apply tm_brs_co_constraint_mutind; intros;
        1-200 : try fsetdec. eauto. eauto. eauto.
        1-100 : try fsetdec. eauto. eauto. eauto.
        1-200 : try fsetdec. all: try fsetdec. eauto.
-Qed. *) Admitted.
+Qed. *) Admitted. *)
 
-
+*)
 Lemma MatchSubst_subst : forall a p x y b b',
    tm_pattern_agree a p -> lc_tm b -> x `notin` fv_tm_tm_tm p ->
    y `notin` (fv_tm_tm_tm a \u fv_tm_tm_tm p \u fv_tm_tm_tm b) ->
@@ -1771,28 +1816,108 @@ Proof. intros. apply Rename_fv_body in H. apply MatchSubst_fv in H0.
        fsetdec.
 Qed.
 
+(*
 Lemma MatchSubst_correspondence : forall a p1 p2 b1 b2 b1' b2' x x1 x2,
-     tm_pattern_agree a p1 -> MatchSubst a p1 b1 b1' -> MatchSubst a p2 b2 b2' ->
      tm_subst_tm_tm (a_Var_f x) x1 b1' = tm_subst_tm_tm (a_Var_f x) x2 b2' ->
+     tm_pattern_agree a p1 -> MatchSubst a p1 b1 b1' -> MatchSubst a p2 b2 b2' ->
      x `notin` fv_tm_tm_tm b1 -> x `notin` fv_tm_tm_tm b2 ->
+     x1 `notin` fv_tm_tm_tm a -> x2 `notin` fv_tm_tm_tm a ->
     fv_tm_tm_tm_correspondence b1' b2' x.
-Proof. intros. generalize dependent b1. generalize dependent b1'.
+Proof. intros. generalize dependent b1.
        generalize dependent p2. generalize dependent b2.
-       generalize dependent b2'. generalize dependent x1.
-       generalize dependent x2. generalize dependent x.
-       induction H; intros.
-        -inversion H0; subst. inversion H1; subst.
+       induction H0; intros.
+        -inversion H1; subst. inversion H2; subst.
          apply correspondence_notin_fv_tm; auto.
-        -inversion H1;subst. inversion H3;subst. admit.
+        -inversion H3;subst. inversion H2;subst. simpl in H5, H6.
+         eapply IHtm_pattern_agree. fsetdec. fsetdec.
+         eapply H4.
+         rewrite tm_subst_tm_tm_tm_subst_tm_tm in H2. simpl. admit.
         -inversion H1;subst. inversion H3;subst. eauto.
         -inversion H1;subst. inversion H0;subst. eauto.
 Admitted.
+
+
+Lemma correspondence_subst : forall x x1 x2 a, x <> x1 -> x <> x2 ->
+      (forall a1 d2, fv_tm_tm_tm_correspondence (tm_subst_tm_tm a x1 a1)
+          (tm_subst_tm_tm a x2 d2) x1 x2 ->
+      tm_subst_tm_tm (a_Var_f x) x1 a1 = tm_subst_tm_tm (a_Var_f x) x2 d2 ->
+      fv_tm_tm_tm_correspondence a1 d2 x1 x2) /\
+      (forall a1 d2, fv_tm_tm_brs_correspondence (tm_subst_tm_brs a x1 a1)
+          (tm_subst_tm_brs a x2 d2) x1 x2 ->
+      tm_subst_tm_brs (a_Var_f x) x1 a1 = tm_subst_tm_brs (a_Var_f x) x2 d2 ->
+      fv_tm_tm_brs_correspondence a1 d2 x1 x2) /\
+      (forall a1 d2, fv_tm_tm_co_correspondence (tm_subst_tm_co a x1 a1)
+          (tm_subst_tm_co a x2 d2) x1 x2 ->
+      tm_subst_tm_co (a_Var_f x) x1 a1 = tm_subst_tm_co (a_Var_f x) x2 d2 ->
+      fv_tm_tm_co_correspondence a1 d2 x1 x2) /\
+      (forall a1 d2, fv_tm_tm_constraint_correspondence
+          (tm_subst_tm_constraint a x1 a1)
+          (tm_subst_tm_constraint a x2 d2) x1 x2 ->
+      tm_subst_tm_constraint (a_Var_f x) x1 a1 =
+              tm_subst_tm_constraint (a_Var_f x) x2 d2 ->
+      fv_tm_tm_constraint_correspondence a1 d2 x1 x2).
+Proof. intros x x1 x2 a P1 P2. apply tm_brs_co_constraint_mutind; intros;
+       generalize dependent d2; destruct d2; intros Q1 Q2;
+       try (simpl in *; eauto 1; fail).
+       all: try (simpl in *; destruct (eq_var x0 x2); destruct a;
+             eauto; try inversion Q2; fail).
+       all: try (simpl in *; destruct (eq_var x0 x1); destruct a;
+             eauto; try inversion Q2; fail).
+       simpl in *. destruct (eq_var x0 x1); destruct (eq_var x3 x2).
+       left; auto.
+       destruct a; simpl in Q1; try contradiction.
+       inversion Q1; inversion H; subst. left; auto.
+       right; split; fsetdec.
+       destruct a; simpl in Q1; try contradiction.
+       inversion Q1; inversion H; subst. left; split; fsetdec.
+       right; split; fsetdec.
+       assert (x0 = x \/ x0 <> x). fsetdec. inversion H. subst.
+       left. split; fsetdec. right; split; fsetdec.
+       all: (simpl in *; split_hyp; repeat split). eapply H; eauto. eauto.
+ 
+       inversion Q1; inversion H; subst. simpl in; right; split. eauto. eauto. try contradiction.
+       all: try (inversion Q1; destruct (eq_var x0 x2); simpl in *; fsetdec).
+Admitted.
+
+Lemma correspondence_subst_tm : forall x x1 x2 a a1 a2, x <> x1 -> x <> x2 ->
+      fv_tm_tm_tm_correspondence (tm_subst_tm_tm a x1 a1)
+          (tm_subst_tm_tm a x2 a2) x ->
+      fv_tm_tm_tm_correspondence a1 d2 x
+
+Lemma MatchSubst_correspondence : forall p b D D' p1 b1 D1 p2 b2 D2 a a1 a2,
+   tm_pattern_agree a p -> Rename p b p1 b1 D D1 -> Rename p b p2 b2 D' D2 ->
+   AtomSetImpl.Subset (fv_tm_tm_tm a \u fv_tm_tm_tm p \u fv_tm_tm_tm b) D ->
+   AtomSetImpl.Subset (fv_tm_tm_tm a \u fv_tm_tm_tm p \u fv_tm_tm_tm b) D' ->
+   MatchSubst a p1 b1 a1 -> MatchSubst a p2 b2 a2 ->
+  (forall x, x `in` fv_tm_tm_tm a -> fv_tm_tm_tm_correspondence a1 a2 x).
+Proof. intros. generalize dependent p1. generalize dependent b1.
+       generalize dependent D. generalize dependent D1. generalize dependent a1.
+       generalize dependent a2. generalize dependent p2. generalize dependent b2.
+       generalize dependent D'. generalize dependent D2. generalize dependent b.
+       induction H; intros.
+         - inversion H4; subst. inversion H0; subst.
+           inversion H5; subst. inversion H1; subst.
+           apply fv_tm_tm_correspondence_refl.
+         - inversion H1; subst. inversion H5; subst.
+           inversion H4; subst. inversion H7; subst.
+           eapply MatchSubst_subst in H18. eapply MatchSubst_subst in H22.
+           assert (x `in` fv_tm_tm_tm a1 \/ x `notin` fv_tm_tm_tm a1).
+           fsetdec. inversion H8.
+           assert (fv_tm_tm_tm_correspondence
+            (tm_subst_tm_tm (a_Var_f x0) y0 b0)
+            (tm_subst_tm_tm (a_Var_f x0) y b2) x).
+           eapply IHtm_pattern_agree. auto. fsetdec.
+           auto. ea 
+Admitted.
+*)
+
 
 Theorem MatchSubst_Rename_preserve : forall p b D D' p1 b1 D1 p2 b2 D2 a a1 a2,
    tm_pattern_agree a p -> Rename p b p1 b1 D D1 -> Rename p b p2 b2 D' D2 ->
    AtomSetImpl.Subset (fv_tm_tm_tm a \u fv_tm_tm_tm p \u fv_tm_tm_tm b) D ->
    AtomSetImpl.Subset (fv_tm_tm_tm a \u fv_tm_tm_tm p \u fv_tm_tm_tm b) D' ->
-   MatchSubst a p1 b1 a1 -> MatchSubst a p2 b2 a2 -> a1 = a2.
+   MatchSubst a p1 b1 a1 -> MatchSubst a p2 b2 a2 ->
+   a1 = a2.
 Proof. intros. generalize dependent p1. generalize dependent b1.
        generalize dependent D. generalize dependent D1. generalize dependent a1.
        generalize dependent a2. generalize dependent p2. generalize dependent b2.
@@ -1802,7 +1927,7 @@ Proof. intros. generalize dependent p1. generalize dependent b1.
            inversion H5; subst. inversion H1; subst. auto.
          - simpl in H2. simpl in H3. inversion H5; subst.
            inversion H1; subst. inversion H6; subst. inversion H4; subst.
-         (* assert (tm_subst_tm_tm (a_Var_f x) x1 b2 =
+           assert (tm_subst_tm_tm (a_Var_f x) x1 b2 =
                    tm_subst_tm_tm (a_Var_f x) x0 b3).
            { eapply IHtm_pattern_agree with (b := b)(D' := D') (D := D).
            + fsetdec.
@@ -1830,8 +1955,13 @@ Proof. intros. generalize dependent p1. generalize dependent b1.
              fsetdec. fsetdec. auto. }
            assert (x `in` fv_tm_tm_tm (a_App a1 (Role R) a2) \/
                    x `notin` fv_tm_tm_tm (a_App a1 (Role R) a2)).
-           fsetdec. inversion H8.
-         + eapply tm_subst_tm_tm_hole; eauto. fsetdec. fsetdec. admit.
+           fsetdec. inversion H8. admit. admit. (*
+         + eapply tm_subst_tm_tm_hole; eauto. fsetdec. fsetdec.
+           assert (Q : fv_tm_tm_tm_correspondence (tm_subst_tm_tm a2 x1 b2)
+                 (tm_subst_tm_tm a2 x0 b3) x).
+           eapply MatchSubst_correspondence with (a := a_App a1 (Role R) a2)
+           (p := a_App p1 (Role R) (a_Var_f x)). eauto. eapply H4. eapply H1.
+           all: eauto. admit.
          + eapply f_equal with (f := tm_subst_tm_tm a2 x) in H7.
            assert (~(eq x1 x)). fsetdec. assert (~(eq x0 x)). fsetdec.
            rewrite tm_subst_tm_tm_tm_subst_tm_tm in H7. fsetdec. auto.
@@ -1855,7 +1985,7 @@ Proof. intros. generalize dependent p1. generalize dependent b1.
               pose (Q := Superset_cont_sub P H20).
               apply union_iff in Q. inversion Q. apply diff_iff in H21.
               inversion H21. apply H25. fsetdec. contradiction. }
-           rewrite H17 in H7. auto.
+           rewrite H17 in H7. auto. *)
          - inversion H5; subst. inversion H1; subst.
            inversion H6; subst. inversion H4; subst.
            eapply IHtm_pattern_agree with (b := b)(D' := D') (D := D).
@@ -1865,7 +1995,7 @@ Proof. intros. generalize dependent p1. generalize dependent b1.
            inversion H5; subst. inversion H1; subst.
            eapply IHtm_pattern_agree with (b := b)(D' := D') (D := D).
            simpl in H3. admit. eapply H12. auto.
-           simpl in H2. admit. eapply H10. auto. *)
+           simpl in H2. admit. eapply H10. auto.
 Admitted.
 
 
