@@ -166,11 +166,15 @@ Proof. intros. generalize dependent p1. generalize dependent b1.
              { eapply Rename_pattern_renamed; eauto. }
            assert (L4 : pattern_renamed p1 p5 D' D'1).
              { eapply Rename_pattern_renamed; eauto. }
-           pose (P1 := matchsubst_ind_fun H18).
-           pose (P2 := matchsubst_ind_fun H20). rewrite <- P1. rewrite <- P2.
+           pose (P1 := matchsubst_ind_fun H18). clearbody P1.
+           move: (matchsubst_ind_fun H20) => P2.
+           rewrite <- P1. rewrite <- P2.
            rewrite matchsubst_chain_subst. auto.
            rewrite matchsubst_chain_subst. auto.
-           pose (P3 := Rename_chain_subst H16).
+          
+           move: (Rename_chain_subst H16) => P3.
+(* How to find properties about sets of atoms. *)
+(* SearchAbout atoms AtomSetImpl.Subset. *)
            pose (P4 := Rename_chain_subst H27). rewrite P3. rewrite P4.
            pick fresh z.
            assert 
@@ -183,19 +187,30 @@ Proof. intros. generalize dependent p1. generalize dependent b1.
              (b1 := chain_subst p4 p1 (tm_subst_tm_tm (a_Var_f z) x b))
              (D' := D' \u singleton z)(D2 := D'1)(p2 := p5)
              (b2 := chain_subst p5 p1 (tm_subst_tm_tm (a_Var_f z) x b)).
-             unfold uniq_atoms in *.
-             eapply uniq_app_1. rewrite map_app in H4. eauto.
-             pose (R1 := fv_tm_tm_tm_tm_subst_tm_tm_upper b (a_Var_f z) x).
-             simpl in R1. apply Subset_trans with (D2 := fv_tm_tm_tm a1 \u
-             fv_tm_tm_tm p1 \u singleton z \u 
-             (Metatheory.remove x (fv_tm_tm_tm b))). eapply Subset_union.
-             eauto. eapply Subset_union. eauto. auto. fsetdec.
+             -- unfold uniq_atoms in *.
+                eapply uniq_app_1. rewrite map_app in H4. eauto.
+             -- rewrite (fv_tm_tm_tm_tm_subst_tm_tm_upper b (a_Var_f z) x).
+                simpl. 
+                assert (h0 : singleton z [<=] singleton z). auto.
+                apply (Subset_union H3) in h0.
+                eapply (Subset_trans _ h0).
+             -- admit.               
+             -- admit.
+             -- rewrite (fv_tm_tm_tm_tm_subst_tm_tm_upper b (a_Var_f z) x).
+                simpl.
+                assert (h0 : singleton z [<=] singleton z). auto.
+                apply (Subset_union H2) in h0.
+                eapply (Subset_trans _ h0).
+             -- admit.
+             -- admit.
+           }
            rewrite <- tm_subst_tm_tm_back_forth with (x := y) (y := z)
           (b := tm_subst_tm_tm (a_Var_f y) x (chain_subst p4 p1 b)).
            rewrite -> subst_via_tm with (y := y) (b := chain_subst p4 p1 b).
            rewrite -> chain_subst_subst_commute with (a' := a_Var_f y) (x := z).
            rewrite -> subst_via_tm with (y := y).
            rewrite <- chain_subst_subst_commute with (a' := a_Var_f z).
+           all: admit.          
          - unfold uniq_atoms_pattern in *. simpl in *.
            inversion H5; subst. inversion H7; inversion H1; subst.
            inversion H6; subst.
