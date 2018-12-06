@@ -52,9 +52,15 @@ Fixpoint tms_Pattern_like_tm (a : tm) := match a with
    | _ => []
    end.
 
-Definition uniq_atoms L := uniq (List.map (fun x => (x, Nom)) L).
+Definition uniq_atoms_pattern p := NoDup (vars_Pattern p).
 
-Definition uniq_atoms_pattern p := uniq_atoms (vars_Pattern p).
+Lemma pattern_fv : forall p, Pattern p ->
+                  (forall x, x `in` fv_tm_tm_tm p -> In x (vars_Pattern p)).
+Proof. intros. induction H; simpl in *. fsetdec.
+       apply AtomSetImpl.union_1 in H0. apply in_or_app. inversion H0.
+       left. eauto. right. apply AtomSetImpl.singleton_1 in H1. subst.
+       apply in_eq. eapply IHPattern. fsetdec. eapply IHPattern. fsetdec.
+Qed.
 
 Fixpoint matchsubst a p b : tm := match (a,p) with
   | (a_Fam F, a_Fam F') => b
@@ -786,6 +792,11 @@ Lemma tm_tm_agree_trans : forall a1 a2 a3, tm_tm_agree a1 a2 ->
       tm_tm_agree a2 a3 -> tm_tm_agree a1 a3.
 Proof. intros. generalize dependent a3. induction H; intros; eauto.
        inversion H2; subst. eauto. inversion H0; subst; eauto.
+Qed.
+
+Lemma tm_pattern_agree_tm_tm_agree : forall a p, tm_pattern_agree a p ->
+      tm_tm_agree a p.
+Proof. intros. induction H; eauto.
 Qed.
 
 Lemma tm_pattern_agree_cong : forall a1 a2 p, tm_pattern_agree a1 p ->

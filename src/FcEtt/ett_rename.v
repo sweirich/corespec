@@ -22,6 +22,20 @@ Inductive pattern_renamed : tm -> tm -> available_props ->
 
 Hint Constructors pattern_renamed.
 
+Lemma pattern_renamed_extend_support : forall p p' D D' D1,
+      pattern_renamed p p' D D' ->
+      AtomSetImpl.inter (fv_tm_tm_tm p') D1 [<=] empty ->
+      pattern_renamed p p' (D \u D1) D'.
+Proof. intros. induction H; simpl in *; eauto.
+        - constructor. eapply IHpattern_renamed.
+          eapply (Subset_trans _ H0). fsetdec.
+        - constructor. eapply IHpattern_renamed.
+          eapply (Subset_trans _ H0).
+        - constructor. eapply IHpattern_renamed.
+          eapply (Subset_trans _ H0).
+          Unshelve. all: clear. all:fsetdec.
+Qed.
+
 Fixpoint tm_var_pairs (a p : tm) : list (tm * var) :=
    match (a,p) with
  | (a_Fam F, a_Fam F') => []
@@ -36,6 +50,13 @@ Fixpoint tm_var_pairs (a p : tm) : list (tm * var) :=
 Definition chain_subst a p b := fold_left
        (fun b' a'x' => tm_subst_tm_tm a'x'.1 a'x'.2 b') (tm_var_pairs a p) b.
 
+Lemma chain_subst_lc : forall a p b, tm_pattern_agree a p -> lc_tm b ->
+      lc_tm (chain_subst a p b).
+Proof. intros. induction H; simpl; auto.
+       unfold chain_subst in *. simpl. rewrite fold_left_app. simpl.
+       apply tm_subst_tm_tm_lc_tm. auto. auto.
+Qed.
+
 Lemma chain_subst_fv : forall a p b, tm_pattern_agree a p ->
       fv_tm_tm_tm (chain_subst a p b) [<=]
         (AtomSetImpl.diff (fv_tm_tm_tm b) (fv_tm_tm_tm p)) \u (fv_tm_tm_tm a).
@@ -45,6 +66,11 @@ Proof. intros. induction H; eauto.
           eapply Subset_trans. eapply P. fsetdec.
         - unfold chain_subst in *. simpl. fsetdec.
         - unfold chain_subst in *. simpl. fsetdec.
+Qed.
+
+Lemma Rename_lc_body : forall p p' b b' D D', Rename p b p' b' D D' ->
+      lc_tm b.
+Proof. intros. induction H; eauto.
 Qed.
 
 Lemma Rename_pattern_renamed : forall p b p' b' D D', Rename p b p' b' D D' ->
@@ -158,6 +184,7 @@ Proof. intros. generalize dependent p1. generalize dependent b1.
          - unfold uniq_atoms_pattern in *. simpl in *.
            inversion H5; subst. inversion H7; inversion H1; subst.
            inversion H6; subst.
+           assert (L0 : lc_tm b). { eapply Rename_lc_body; eauto. }
            assert (L1 : tm_pattern_agree a1 p4).
              { eapply MatchSubst_match; eauto. }
            assert (L2 : tm_pattern_agree a1 p5).
@@ -166,12 +193,17 @@ Proof. intros. generalize dependent p1. generalize dependent b1.
              { eapply Rename_pattern_renamed; eauto. }
            assert (L4 : pattern_renamed p1 p5 D' D'1).
              { eapply Rename_pattern_renamed; eauto. }
+           assert (L5 : tm_pattern_agree p4 p1).
+             { eapply tm_pattern_agree_cong; eauto.
+               apply tm_pattern_agree_tm_tm_agree; auto. }
+           assert (L6 : tm_pattern_agree p5 p1).
+             { eapply tm_pattern_agree_cong. eapply H0.
+               apply tm_pattern_agree_tm_tm_agree; auto. }
            pose (P1 := matchsubst_ind_fun H18). clearbody P1.
            move: (matchsubst_ind_fun H20) => P2.
            rewrite <- P1. rewrite <- P2.
            rewrite matchsubst_chain_subst. auto.
            rewrite matchsubst_chain_subst. auto.
-          
            move: (Rename_chain_subst H16) => P3.
 (* How to find properties about sets of atoms. *)
 (* SearchAbout atoms AtomSetImpl.Subset. *)
@@ -182,27 +214,39 @@ Proof. intros. generalize dependent p1. generalize dependent b1.
                       (tm_subst_tm_tm (a_Var_f z) x b)) =
                   chain_subst a1 p5 (chain_subst p5 p1
                       (tm_subst_tm_tm (a_Var_f z) x b))).
-           { apply IHtm_pattern_agree with (b := tm_subst_tm_tm (a_Var_f z) x b)
+           { assert (lc_tm (tm_subst_tm_tm (a_Var_f z) x b)).
+             { eapply tm_subst_tm_tm_lc_tm; eauto. }
+             apply IHtm_pattern_agree with (b := tm_subst_tm_tm (a_Var_f z) x b)
              (D := D \u singleton z)(D1 := D'0)(p3 := p4)
              (b1 := chain_subst p4 p1 (tm_subst_tm_tm (a_Var_f z) x b))
              (D' := D' \u singleton z)(D2 := D'1)(p2 := p5)
              (b2 := chain_subst p5 p1 (tm_subst_tm_tm (a_Var_f z) x b)).
-             -- unfold uniq_atoms in *.
-                eapply uniq_app_1. rewrite map_app in H4. eauto.
+             -- rewrite <- app_nil_r. eapply NoDup_remove_1. eauto.
              -- rewrite (fv_tm_tm_tm_tm_subst_tm_tm_upper b (a_Var_f z) x).
-                simpl. 
+                simpl.
                 assert (h0 : singleton z [<=] singleton z). auto.
                 apply (Subset_union H3) in h0.
                 eapply (Subset_trans _ h0).
-             -- admit.               
-             -- admit.
+             -- apply chain_subst_Rename.
+                eapply pattern_renamed_extend_support; eauto.
+                clear - Fr. assert (z `notin` fv_tm_tm_tm p5).
+                fsetdec. clear - H. fsetdec. auto.
+             -- apply matchsubst_fun_ind. eauto.
+                eapply chain_subst_lc; eauto. auto.
+                apply matchsubst_chain_subst; auto.
              -- rewrite (fv_tm_tm_tm_tm_subst_tm_tm_upper b (a_Var_f z) x).
                 simpl.
                 assert (h0 : singleton z [<=] singleton z). auto.
                 apply (Subset_union H2) in h0.
                 eapply (Subset_trans _ h0).
-             -- admit.
-             -- admit.
+             -- apply chain_subst_Rename.
+                eapply pattern_renamed_extend_support; eauto.
+                clear - Fr. assert (z `notin` fv_tm_tm_tm p4).
+                fsetdec. clear - H. fsetdec. auto.
+             -- apply matchsubst_fun_ind. eauto.
+                eapply chain_subst_lc; eauto. auto.
+                apply matchsubst_chain_subst; auto.
+                Unshelve. all: clear. all: fsetdec.
            }
            rewrite <- tm_subst_tm_tm_back_forth with (x := y) (y := z)
           (b := tm_subst_tm_tm (a_Var_f y) x (chain_subst p4 p1 b)).
@@ -210,7 +254,72 @@ Proof. intros. generalize dependent p1. generalize dependent b1.
            rewrite -> chain_subst_subst_commute with (a' := a_Var_f y) (x := z).
            rewrite -> subst_via_tm with (y := y).
            rewrite <- chain_subst_subst_commute with (a' := a_Var_f z).
-           all: admit.          
+           rewrite HYP.
+           rewrite <- subst_via_tm with (y := y0)(z := z).
+           rewrite <- chain_subst_subst_commute with (a' := a_Var_f y0) (x := z).
+           rewrite -> chain_subst_subst_commute with (a' := a_Var_f z) (x := x).
+           rewrite -> subst_via_tm with (y := z)(z := x). auto.
+           -- rewrite chain_subst_fv. clear - Fr.
+              rewrite AtomSetProperties.diff_subset. fsetdec. auto.
+           -- auto.
+           -- move: (Rename_fv_new_pattern H27) => M1. rewrite M1.
+              move: (Rename_inter_empty H27) => M2. apply M2.
+              clear - H3. fsetdec.
+           -- move: (tm_pattern_agree_pattern H0) => M1.
+              intro. move: (pattern_fv M1 H8) => M2.
+              clear - H4 M2. apply NoDup_remove in H4. 
+              inversion H4. rewrite app_nil_r in H0. contradiction.
+           -- clear - Fr. simpl. assert (z `notin` fv_tm_tm_tm p1).
+              fsetdec. clear - H. fsetdec.
+           -- auto.
+           -- clear - Fr. simpl. assert (z `notin` fv_tm_tm_tm a1).
+              fsetdec. clear - H. fsetdec.
+           -- clear - Fr. simpl. assert (z `notin` fv_tm_tm_tm p5).
+              fsetdec. clear - H. fsetdec.
+           -- simpl. move: (Rename_fv_new_pattern H27) => M1.
+              clear - H28 M1. fsetdec.
+           -- repeat rewrite chain_subst_fv.
+              rewrite fv_tm_tm_tm_tm_subst_tm_tm_upper. simpl.
+              apply AtomSetProperties.not_in_union.
+              repeat rewrite AtomSetProperties.diff_subset.
+              apply AtomSetProperties.not_in_union.
+              apply AtomSetProperties.not_in_union.
+              clear - Fr. fsetdec. clear - H3 H28. fsetdec.
+              move: (Rename_fv_new_pattern H27) => M1. clear - M1 H28.
+              fsetdec. clear - H3 H28. fsetdec. auto. auto.
+           -- auto.
+           -- move: (Rename_fv_new_pattern H16) => M1. rewrite M1.
+              move: (Rename_inter_empty H16) => M2. apply M2.
+              clear - H2. fsetdec. 
+           -- move: (tm_pattern_agree_pattern H0) => M1.
+              intro. move: (pattern_fv M1 H8) => M2.
+              clear - H4 M2. apply NoDup_remove in H4.
+              inversion H4. rewrite app_nil_r in H0. contradiction.
+           -- clear - Fr. simpl. assert (z `notin` fv_tm_tm_tm p1).
+              fsetdec. clear - H. fsetdec.
+           -- rewrite chain_subst_fv.
+              rewrite fv_tm_tm_tm_tm_subst_tm_tm_upper. simpl.
+              apply AtomSetProperties.not_in_union.
+              rewrite AtomSetProperties.diff_subset.
+              apply AtomSetProperties.not_in_union.
+              clear - Fr. fsetdec. rewrite chain_subst_fv.
+              rewrite AtomSetProperties.diff_subset.
+              move: (Rename_fv_new_pattern H16) => M1. clear - H2 H17 M1.
+              fsetdec. auto. clear - H2 H17. fsetdec. auto.
+           -- auto.
+           -- clear - Fr. fsetdec.
+           -- clear - Fr. fsetdec.
+           -- move: (Rename_fv_new_pattern H16) => M1. clear - H17 M1.
+              simpl. fsetdec.
+           -- rewrite chain_subst_fv. rewrite AtomSetProperties.diff_subset.
+              apply AtomSetProperties.not_in_union. clear - H2 H17. fsetdec.
+              move: (Rename_fv_new_pattern H16) => M1. rewrite M1. clear - H17.
+              fsetdec. auto.
+           -- rewrite fv_tm_tm_tm_tm_subst_tm_tm_upper. simpl.
+              apply AtomSetProperties.not_in_union. clear - Fr.
+              do 6 apply notin_union_2 in Fr. apply notin_union_1 in Fr. auto.
+              rewrite chain_subst_fv. rewrite AtomSetProperties.diff_subset.
+              clear - Fr. fsetdec. auto.
          - unfold uniq_atoms_pattern in *. simpl in *.
            inversion H5; subst. inversion H7; inversion H1; subst.
            inversion H6; subst.
@@ -221,4 +330,4 @@ Proof. intros. generalize dependent p1. generalize dependent b1.
            inversion H6; subst.
            eapply IHtm_pattern_agree with (b := b)(D' := D') (D := D). auto.
            fsetdec. eapply H14. auto. fsetdec. eapply H8. auto.
-Admitted.
+Qed.
