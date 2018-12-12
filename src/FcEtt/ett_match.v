@@ -1920,7 +1920,7 @@ Proof. intros. generalize dependent p1. generalize dependent b1.
            eapply IHtm_pattern_agree. auto. fsetdec.
            auto. ea 
 Admitted.
-*)
+
 
 
 Theorem MatchSubst_Rename_preserve : forall p b D D' p1 b1 D1 p2 b2 D2 a a1 a2,
@@ -2008,6 +2008,6 @@ Proof. intros. generalize dependent p1. generalize dependent b1.
            simpl in H3. admit. eapply H12. auto.
            simpl in H2. admit. eapply H10. auto.
 Admitted.
-
+*)
 
 

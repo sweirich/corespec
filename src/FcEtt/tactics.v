@@ -562,3 +562,6 @@ Tactic Notation "autofresh"  := TacticsInternals.autofresh_param TacticsInternal
 Tactic Notation "autofresh+" := TacticsInternals.autofresh_param TacticsInternals.inst2.
 
 Ltac depind x   := dependent induction x.
+
+Tactic Notation "basic_nosolve_n" int_or_var(n) := intuition (subst; eauto n).
+Tactic Notation "basic_solve_n" int_or_var(n) := try solve [basic_nosolve_n n].

@@ -1420,11 +1420,12 @@ with Typing : context -> tm -> tm -> Prop :=    (* defn Typing *)
  | E_Const : forall (G:context) (F:const) (A:tm) (Rs:roles),
      Ctx G ->
       binds  F  ( (Cs A Rs) )   toplevel   ->
-     Typing  nil  A a_Star ->
+      ( Typing  nil  A a_Star )  ->
      Typing G (a_Fam F) A
  | E_Fam : forall (G:context) (F:const) (A p a:tm) (R1:role) (Rs:roles),
      Ctx G ->
       binds  F  ( (Ax p a A R1 Rs) )   toplevel   ->
+      ( Typing  nil  A a_Star )  ->
      Typing G (a_Fam F) A
  | E_Case : forall (G:context) (R:role) (a:tm) (F:const) (b1 b2 C A A1 B:tm),
      Typing G a A ->

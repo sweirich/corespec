@@ -106,8 +106,8 @@ Lemma lc_mutual :
   (forall G0 D A B T R, DefEq G0 D A B T R -> lc_tm A /\ lc_tm B /\ lc_tm T) /\
   (forall G0, Ctx G0 -> forall x s , binds x s G0 -> lc_sort s).
 Proof.
-  eapply typing_wff_iso_defeq_mutual. 
-  all: pre; basic_solve_n 2.
+  eapply typing_wff_iso_defeq_mutual.
+  all: TacticsInternals.pre; basic_solve_n 2.
   all: split_hyp.
   all: lc_solve.
 Qed.
@@ -157,7 +157,8 @@ Proof. induction Sig_toplevel.
        - intros. destruct H1. inversion H1. subst.
          simpl in H0. eauto. eauto with lc.
          eauto.
-       - intros. destruct H1. inversion H1. subst.
-         simpl in H0. eauto. eauto with lc.
-         eauto.
+       - intros.
+         destruct (binds_cons_1 _ _ _ _ _ _ H4); basic_solve. inversion H5.
+         subst. econstructor. eapply PatCtx_lcp; eauto. eapply Typing_lc1; eauto.
+         eapply Typing_lc1; eauto.
 Qed.

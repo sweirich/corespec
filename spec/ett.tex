@@ -1805,7 +1805,7 @@
 \newcommand{\ottdruleEXXConst}[1]{\ottdrule[#1]{%
 \ottpremise{\vDash  \Gamma}%
 \ottpremise{\ottmv{F}  \ottsym{:}  \ottnt{A}  \ottsym{@}  \ottnt{Rs} \, \in \,  \Sigma_0 }%
-\ottpremise{\varnothing  \vDash  \ottnt{A}  \ottsym{:}   \star }%
+\ottpremise{ \suppress{ \varnothing  \vDash  \ottnt{A}  \ottsym{:}   \star  } }%
 }{
 \Gamma  \vDash  \ottmv{F}  \ottsym{:}  \ottnt{A}}{%
 {\ottdrulename{E\_Const}}{}%
@@ -1815,6 +1815,7 @@
 \newcommand{\ottdruleEXXFam}[1]{\ottdrule[#1]{%
 \ottpremise{\vDash  \Gamma}%
 \ottpremise{\ottmv{F}  \ottsym{:}   \,  \ottnt{p}  \sim  \ottnt{a}  :  \ottnt{A}  /  \ottnt{R_{{\mathrm{1}}}}  @  \ottnt{Rs}  \, \in \,  \Sigma_0 }%
+\ottpremise{ \suppress{ \varnothing  \vDash  \ottnt{A}  \ottsym{:}   \star  } }%
 }{
 \Gamma  \vDash  \ottmv{F}  \ottsym{:}  \ottnt{A}}{%
 {\ottdrulename{E\_Fam}}{}%
@@ -2322,6 +2323,6 @@
 
 \begin{verbatim}
 Definition rules:        159 good    0 bad
-Definition rule clauses: 445 good    0 bad
+Definition rule clauses: 446 good    0 bad
 \end{verbatim}
 \end{document}

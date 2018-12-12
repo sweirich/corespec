@@ -74,7 +74,7 @@ Proof.
   all: autounfold.
 
   (* We can't just use `repeat split` because we don't want to split under foralls *)
-  all: intros; repeat match goal with |- _ ∧ _ => split end; TacticsInternal.split_hyp; simpl.
+  all: intros; repeat match goal with |- _ ∧ _ => split end; split_hyp; simpl.
   all: eauto 1.
   (* split all asummptions about unions *)
 
