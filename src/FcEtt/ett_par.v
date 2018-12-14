@@ -57,7 +57,7 @@ Proof. intros W1 W2 W3 a a' R U H. generalize dependent W2.
         - eapply Par_Pi with (L := union L (dom (W1 ++ W2 ++ W3))); eauto.
           intros. rewrite app_assoc.
           eapply H1; eauto. simpl_env. auto.
-        - eapply Par_AxiomApp; eauto. admit.
+        - eapply Par_AxiomApp; eauto.  admit.
         - eapply Par_AxiomCApp; eauto. admit.
 Admitted.
 
@@ -112,7 +112,8 @@ Hint Resolve MatchSubst_lc_1 MatchSubst_lc_3 ApplyArgs_lc_3 Par_lc1 Par_lc2 : lc
 
 Fixpoint var_pat (p : tm) := match p with
    | a_Fam F => nil
-   | a_App p1 nu (a_Var_f x) => (x,Nom) :: var_pat p1
+   | a_App p1 nu (a_Var_f x) => (x,app_role nu) :: var_pat p1
+   | a_App p1 _ _ => var_pat p1
    | a_CApp p1 g_Triv => var_pat p1
    | _ => nil
    end.
@@ -126,23 +127,25 @@ Proof. intros. generalize dependent W1. generalize dependent W2.
         - simpl in H0.
           replace (W2 ++ W1) with (W2 ++ W1 ++ nil).
           apply roleing_app_rctx. simpl_env. auto. auto. rewrite app_nil_r. auto.
-        - simpl in H0. inversion H2; subst. eapply subst_tm_roleing; eauto.
-          rewrite <- app_assoc. eapply IHMatchSubst; eauto.
-          rewrite app_assoc. eauto. simpl in H3. solve_uniq.
-        - simpl in H0. inversion H; subst. eauto.
+        - inversion H2; subst. eapply subst_tm_roleing. rewrite app_assoc.
+          eapply IHMatchSubst. simpl in H0. rewrite <- app_assoc. eauto.
+          auto. clear - H3. simpl in H3. solve_uniq. auto.
+        - simpl in H0. inversion H2; subst. eauto.
         - simpl in H0. inversion H; subst. eauto.
 Qed.
 
+(*
 Lemma roleing_apply : forall W a R0 b c R, roleing W a R0 -> roleing W b R ->
                       ApplyArgs a b c -> roleing W c R.
 Proof. intros. generalize dependent W. induction H1; intros; auto.
-        - inversion H0; subst. econstructor; eauto.
+        - inversion H0; subst; eauto. econstructor. eauto.
         - inversion H; subst. econstructor; eauto.
-Qed.
+Qed.*)
 
 Lemma Par_roleing_tm_fst : forall W a a' R, Par W a a' R -> 
                                                roleing W a R.
-Proof. intros W a a' R H. induction H; eauto.
+Proof. intros W a a' R H. induction H; eauto. destruct nu; eauto.
+       simpl in *. econstructor. inversion IHPar2; subst; eauto.
 Qed.
 
 Lemma multipar_roleing_tm_fst: forall W a a' R, multipar W a a' R ->
