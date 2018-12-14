@@ -23,8 +23,10 @@ imports.v
 notations.v
 tactics.v
 tactics_safe.v
+tactics_ecomp.v
 toplevel.v
 utils.v
+utils_fun.v
 beta.v
 congruence.v
 param.v

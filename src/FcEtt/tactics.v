@@ -11,6 +11,7 @@ Import AtomSetFacts AtomSetProperties.
 Require Import FcEtt.notations.
 
 Require Export FcEtt.tactics_safe.
+Require Export FcEtt.tactics_ecomp.
 
 (**** Tactics for the project ****)
 
@@ -74,6 +75,10 @@ Ltac find_eq_rew_clear :=
 
   end.
 
+Ltac clearall :=
+  repeat match goal with
+    | [ H : _ |- _ ] => clear H
+  end.
 
 (* Tactic equivalent to subst, but which also tries to rewrite universally quantified equalities *)
 (* FIXME: better name *)
@@ -81,6 +86,7 @@ Ltac subst_forall :=
   repeat find_eq_rew_clear.
 
 
+Ltac check_num_goals_eq g := let n:= numgoals in guard n=g.
 
 (*****************)
 (**** Solvers ****)
@@ -563,5 +569,14 @@ Tactic Notation "autofresh+" := TacticsInternals.autofresh_param TacticsInternal
 
 Ltac depind x   := dependent induction x.
 
+
+(* Misc *)
+Ltac clearall := TacticsInternals.clearall.
+Tactic Notation "clear all" := TacticsInternals.clearall.
+
+Tactic Notation "exactly" integer(n) "goals" := TacticsInternals.check_num_goals_eq n.
+
+(* FIXME: rely on internals *)
 Tactic Notation "basic_nosolve_n" int_or_var(n) := intuition (subst; eauto n).
 Tactic Notation "basic_solve_n" int_or_var(n) := try solve [basic_nosolve_n n].
+

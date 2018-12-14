@@ -319,6 +319,23 @@ freevars
 
 
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%_ Pattern-specific stuff _%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+grammar
+
+pattern_arg :: 'pat_arg_' ::= {{ com Pattern arguments }}
+  | \Rel a R       ::   :: ArgRel
+  | \Irr a         ::   :: ArgIrr
+  | \Coe g         ::   :: ArgCoe
+
+
+pattern_args, PA :: 'pat_args_' ::= {{ coq list pattern_arg }}
+  | none                  ::   :: None {{ coq nil }}
+  | PA , pattern_arg      ::   :: Cons {{ coq (cons [[pattern_arg]] [[PA]]) }}
+
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%__ Terminals __%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -581,7 +598,7 @@ Fixpoint range (L : role_context) : roles :=
 %%%%%%%%%%%%%%%%%__ "Syntactic" definitions __%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-defns 
+defns
 JSubRole :: '' ::=
 
 defn
@@ -709,6 +726,80 @@ match (a1 - a) with (p1 - []) -> b1 = b2
 match a1 with a2 -> b1 = b2
 ------------------------------------------------------ :: CApp
 match (a1 [o]) with (a2 [o]) -> b1 = b2
+
+
+defns
+JPatData :: '' ::=
+
+defn
+uncurry p = F @ PA :: :: PatData :: 'PatData_'
+{{ com Pattern data (head & arguments) }}
+by
+
+
+-------------------- :: Head
+uncurry F = F @ none
+
+
+uncurry p = F @ PA
+---------------------------------- :: Rel
+uncurry (p R a) = F @ PA, \Rel a R
+
+% TODO: other cases (left out for now for development purposes)
+
+% TODO: If possible, I think we should just scrap that relation and
+%       use `pattern` + `head_const` & `pattern_args` instead.
+%       If needed, we can always add these two functions right after
+%       the definition of `pattern`
+
+defns
+JIsPattern :: '' ::=
+
+defn
+pattern p  :: :: Pattern :: 'Pattern_'
+by
+
+
+--------- :: Head
+pattern F
+
+
+pattern p
+--------------- :: Rel
+pattern (p R a)
+
+
+% TODO: other cases (left out for now for development purposes)
+
+
+defns
+JSubPat :: '' ::=
+
+defn
+subpattern p' p :: :: SubPat :: 'SubPat_'
+{{ com Subpattern }}
+by
+
+% The premise is just here to check that p is indeed a pattern
+pattern p
+------------------ :: Refl
+subpattern p p
+
+
+subpattern p' p
+--------------------- :: Rel
+subpattern p' (p R x)
+
+subpattern p' p
+---------------------- :: Irr
+subpattern p' (p - [])
+
+
+subpattern p' p
+--------------------- :: Coe
+subpattern p' (p [o])
+
+
 
 defns
 JTmPatternAgree :: '' ::=
@@ -1110,7 +1201,7 @@ F : p ~ b : A/R1 @ Rs in toplevel
 a + = p /\ not (a <-> p)
 W |= a => a' / R
 W |= a1 => a1' / (app_role nu)
-rename p -> b to p' -> b' excluding (dom W, fv p) and D' 
+rename p -> b to p' -> b' excluding (dom W, fv p) and D'
 match (a' nu a1') with p' -> b' = a2
 R1 <= R
 ------------------------------------------------------------------- :: AxiomApp
@@ -1119,7 +1210,7 @@ W |= a nu a1 => a2 / R
 F : p ~ b : A/R1 @ Rs in toplevel
 a + = p /\ not (a <-> p)
 W |= a => a' / R
-rename p -> b to p' -> b' excluding (dom W, fv p) and D' 
+rename p -> b to p' -> b' excluding (dom W, fv p) and D'
 match (a' [o]) with p' -> b' = a2
 R1 <= R
 ------------------------------------------------------------------- :: AxiomCApp
