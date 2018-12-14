@@ -1462,12 +1462,13 @@ G |= a1 [ o ] : B1 { o / c }
 
 |= G
 F : A @ Rs in toplevel
-empty |= A : TYPE
+[ empty |= A : TYPE ]
 ------------------------- :: Const
 G |= F : A
 
 |= G
 F : p ~ a : A / R1 @ Rs in toplevel
+[ empty |= A : TYPE ]
 ---------------------------- :: Fam
 G |= F : A
 

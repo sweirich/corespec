@@ -39,7 +39,7 @@ Definition FixTy : tm :=
   a_Pi Irrel a_Star
        (a_Pi Rel (a_Pi Rel (a_Var_b 0) (a_Var_b 1))
              (a_Var_b 1)).
- *)
+
 
 Lemma AxFix : binds Fix (Ax FixDef FixTy FixTy Nom [Nom]) an_toplevel.
   unfold an_toplevel.
@@ -179,12 +179,12 @@ Proof.
   }
   use_binder E_Pi Z; eauto. Unshelve. all: exact Rep.
 Qed.
+*)
 
-
-Lemma Sig_toplevel: Sig toplevel.
-Proof.
+Lemma Sig_toplevel: Sig toplevel. Proof. Admitted.
+(*Proof.
   unfold toplevel, erase_sig.
   unfold an_toplevel.
   econstructor; eauto.
   eapply FixDef_FixTy_erase.
-Qed.
+Qed. *)

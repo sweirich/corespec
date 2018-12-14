@@ -569,8 +569,14 @@ Tactic Notation "autofresh+" := TacticsInternals.autofresh_param TacticsInternal
 
 Ltac depind x   := dependent induction x.
 
+
 (* Misc *)
 Ltac clearall := TacticsInternals.clearall.
 Tactic Notation "clear all" := TacticsInternals.clearall.
 
 Tactic Notation "exactly" integer(n) "goals" := TacticsInternals.check_num_goals_eq n.
+
+(* FIXME: rely on internals *)
+Tactic Notation "basic_nosolve_n" int_or_var(n) := intuition (subst; eauto n).
+Tactic Notation "basic_solve_n" int_or_var(n) := try solve [basic_nosolve_n n].
+

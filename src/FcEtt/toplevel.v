@@ -24,10 +24,14 @@ Proof.
   induction Sig_toplevel; auto.
 Qed.
 
+Lemma PatCtx_lcp : forall W G F p A B, PatternContexts W G F A p B -> lc_tm p.
+Proof. intros. induction H; eauto.
+Qed.
+
 (* ------------------------------------------ *)
 Lemma toplevel_inversion : forall F p a A R Rs, binds F (Ax p a A R Rs) toplevel ->
                                  (exists W G B, PatternContexts W G F A p B /\
-                                Typing G a B /\ roleing W a Rep /\ Rs = range W).
+                                Typing G a B /\ roleing W a R /\ Rs = range W).
 Proof.
   have st: Sig toplevel by apply Sig_toplevel.
   induction st.

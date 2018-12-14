@@ -118,8 +118,8 @@ Ltac lc_solve_binds :=
   (* binds nil case *)
   | [ H : binds ?x ?s nil |- _ ] => inversion H; clear H
   (* binds cons case *)
-  | [ H : binds _ ?s ([(_,_)] ++ _) |- _ ?s] =>
-      destruct (binds_cons_1 _ _ _ _ _ _ H); basic_solve
+  | [ H : binds _ ?s (_ ++ _) |- _ ?s] =>
+      destruct (binds_cons_1 _ _ _ _ _ _ H); basic_solve; eauto
   (* variable cases *)
   | [ b : binds ?x _ ?G, H : ∀ (x' : atom) _, binds x' _ ?G → _ |- _] =>
       by apply H in b; inversion b; try done;
@@ -733,8 +733,8 @@ Proof.
   pick fresh c.
   rewrite (co_subst_co_tm_intro c); auto.
   eapply co_subst_co_tm_lc_tm; auto.
-  rewrite (co_subst_co_tm_intro c) in H0.
-  eapply (@co_subst_co_tm_lc_tm_inverse g_Triv c); eauto 2. auto.
+  rewrite (co_subst_co_tm_intro c) in H0. fsetdec.
+  eapply (@co_subst_co_tm_lc_tm_inverse g_Triv c); eauto 2.
 Qed.
 
 Hint Resolve lc_open_switch_co.

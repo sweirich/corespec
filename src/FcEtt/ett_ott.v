@@ -6,13 +6,13 @@ Definition datacon := atom.
 Definition const := atom.
 Definition index := nat. (*r indices *)
 
-Inductive relflag : Set :=  (*r relevance flag *)
- | Rel : relflag
- | Irrel : relflag.
-
 Inductive role : Set :=  (*r Role *)
  | Nom : role
  | Rep : role.
+
+Inductive relflag : Set :=  (*r relevance flag *)
+ | Rel : relflag
+ | Irrel : relflag.
 
 Inductive appflag : Set :=  (*r applicative flag *)
  | Role (R:role)
@@ -72,6 +72,11 @@ with co : Set :=  (*r explicit coercions *)
 
 Definition roles : Set := list role.
 
+Inductive pattern_arg : Set :=  (*r Pattern arguments *)
+ | pat_arg_ArgRel (a:tm) (R:role)
+ | pat_arg_ArgIrr (a:tm)
+ | pat_arg_ArgCoe (g:co).
+
 Inductive sort : Set :=  (*r binding classifier *)
  | Tm (A:tm)
  | Co (phi:constraint).
@@ -80,11 +85,13 @@ Inductive sig_sort : Set :=  (*r signature classifier *)
  | Cs (A:tm) (Rs:roles)
  | Ax (p:tm) (a:tm) (A:tm) (R:role) (Rs:roles).
 
-Definition context : Set := list ( atom * sort ).
+Definition available_props : Type := atoms.
+
+Definition pattern_args : Set := list pattern_arg.
 
 Definition role_context : Set := list ( atom * role ).
 
-Definition available_props : Type := atoms.
+Definition context : Set := list ( atom * sort ).
 
 Definition sig : Set := list (atom * sig_sort).
 
@@ -232,6 +239,13 @@ Definition open_sort_wrt_co_rec (k:nat) (g5:co) (sort5:sort) : sort :=
   | (Co phi) => Co (open_constraint_wrt_co_rec k g5 phi)
 end.
 
+Definition open_pattern_arg_wrt_tm_rec (k:nat) (a5:tm) (pattern_arg5:pattern_arg) : pattern_arg :=
+  match pattern_arg5 with
+  | (pat_arg_ArgRel a R) => pat_arg_ArgRel (open_tm_wrt_tm_rec k a5 a) R
+  | (pat_arg_ArgIrr a) => pat_arg_ArgIrr (open_tm_wrt_tm_rec k a5 a)
+  | (pat_arg_ArgCoe g) => pat_arg_ArgCoe (open_co_wrt_tm_rec k a5 g)
+end.
+
 Definition open_sig_sort_wrt_co_rec (k:nat) (g5:co) (sig_sort5:sig_sort) : sig_sort :=
   match sig_sort5 with
   | (Cs A Rs) => Cs (open_tm_wrt_co_rec k g5 A) Rs
@@ -244,19 +258,36 @@ Definition open_sig_sort_wrt_tm_rec (k:nat) (a5:tm) (sig_sort5:sig_sort) : sig_s
   | (Ax p a A R Rs) => Ax (open_tm_wrt_tm_rec k a5 p) (open_tm_wrt_tm_rec k a5 a) (open_tm_wrt_tm_rec k a5 A) R Rs
 end.
 
+Definition open_pattern_arg_wrt_co_rec (k:nat) (g5:co) (pattern_arg5:pattern_arg) : pattern_arg :=
+  match pattern_arg5 with
+  | (pat_arg_ArgRel a R) => pat_arg_ArgRel (open_tm_wrt_co_rec k g5 a) R
+  | (pat_arg_ArgIrr a) => pat_arg_ArgIrr (open_tm_wrt_co_rec k g5 a)
+  | (pat_arg_ArgCoe g) => pat_arg_ArgCoe (open_co_wrt_co_rec k g5 g)
+end.
+
 Definition open_sort_wrt_tm_rec (k:nat) (a5:tm) (sort5:sort) : sort :=
   match sort5 with
   | (Tm A) => Tm (open_tm_wrt_tm_rec k a5 A)
   | (Co phi) => Co (open_constraint_wrt_tm_rec k a5 phi)
 end.
 
+Definition open_brs_wrt_co g5 brs_6 := open_brs_wrt_co_rec 0 brs_6 g5.
+
+Definition open_tm_wrt_co g5 a5 := open_tm_wrt_co_rec 0 a5 g5.
+
+Definition open_brs_wrt_tm a5 brs_6 := open_brs_wrt_tm_rec 0 brs_6 a5.
+
 Definition open_sort_wrt_co g5 sort5 := open_sort_wrt_co_rec 0 sort5 g5.
+
+Definition open_pattern_arg_wrt_tm a5 pattern_arg5 := open_pattern_arg_wrt_tm_rec 0 pattern_arg5 a5.
 
 Definition open_sig_sort_wrt_co g5 sig_sort5 := open_sig_sort_wrt_co_rec 0 sig_sort5 g5.
 
 Definition open_co_wrt_co g_5 g__6 := open_co_wrt_co_rec 0 g__6 g_5.
 
 Definition open_sig_sort_wrt_tm a5 sig_sort5 := open_sig_sort_wrt_tm_rec 0 sig_sort5 a5.
+
+Definition open_pattern_arg_wrt_co g5 pattern_arg5 := open_pattern_arg_wrt_co_rec 0 pattern_arg5 g5.
 
 Definition open_constraint_wrt_co g5 phi5 := open_constraint_wrt_co_rec 0 phi5 g5.
 
@@ -267,12 +298,6 @@ Definition open_co_wrt_tm a5 g_5 := open_co_wrt_tm_rec 0 g_5 a5.
 Definition open_sort_wrt_tm a5 sort5 := open_sort_wrt_tm_rec 0 sort5 a5.
 
 Definition open_tm_wrt_tm a5 a_6 := open_tm_wrt_tm_rec 0 a_6 a5.
-
-Definition open_brs_wrt_co g5 brs_6 := open_brs_wrt_co_rec 0 brs_6 g5.
-
-Definition open_tm_wrt_co g5 a5 := open_tm_wrt_co_rec 0 a5 g5.
-
-Definition open_brs_wrt_tm a5 brs_6 := open_brs_wrt_tm_rec 0 brs_6 a5.
 
 (** terms are locally-closed pre-terms *)
 (** definitions *)
@@ -445,6 +470,18 @@ with lc_constraint : constraint -> Prop :=    (* defn lc_constraint *)
      (lc_tm A) ->
      (lc_constraint (Eq a b A R)).
 
+(* defns LC_pattern_arg *)
+Inductive lc_pattern_arg : pattern_arg -> Prop :=    (* defn lc_pattern_arg *)
+ | lc_pat_arg_ArgRel : forall (a:tm) (R:role),
+     (lc_tm a) ->
+     (lc_pattern_arg (pat_arg_ArgRel a R))
+ | lc_pat_arg_ArgIrr : forall (a:tm),
+     (lc_tm a) ->
+     (lc_pattern_arg (pat_arg_ArgIrr a))
+ | lc_pat_arg_ArgCoe : forall (g:co),
+     (lc_co g) ->
+     (lc_pattern_arg (pat_arg_ArgCoe g)).
+
 (* defns LC_sort *)
 Inductive lc_sort : sort -> Prop :=    (* defn lc_sort *)
  | lc_Tm : forall (A:tm),
@@ -591,16 +628,11 @@ Definition fv_tm_tm_sort (sort5:sort) : vars :=
   | (Co phi) => (fv_tm_tm_constraint phi)
 end.
 
-Definition fv_co_co_sort (sort5:sort) : vars :=
-  match sort5 with
-  | (Tm A) => (fv_co_co_tm A)
-  | (Co phi) => (fv_co_co_constraint phi)
-end.
-
-Definition fv_tm_tm_sig_sort (sig_sort5:sig_sort) : vars :=
-  match sig_sort5 with
-  | (Cs A Rs) => (fv_tm_tm_tm A)
-  | (Ax p a A R Rs) => (fv_tm_tm_tm p) \u (fv_tm_tm_tm a) \u (fv_tm_tm_tm A)
+Definition fv_co_co_pattern_arg (pattern_arg5:pattern_arg) : vars :=
+  match pattern_arg5 with
+  | (pat_arg_ArgRel a R) => (fv_co_co_tm a)
+  | (pat_arg_ArgIrr a) => (fv_co_co_tm a)
+  | (pat_arg_ArgCoe g) => (fv_co_co_co g)
 end.
 
 Definition fv_co_co_sig_sort (sig_sort5:sig_sort) : vars :=
@@ -609,7 +641,86 @@ Definition fv_co_co_sig_sort (sig_sort5:sig_sort) : vars :=
   | (Ax p a A R Rs) => (fv_co_co_tm p) \u (fv_co_co_tm a) \u (fv_co_co_tm A)
 end.
 
+Definition fv_co_co_sort (sort5:sort) : vars :=
+  match sort5 with
+  | (Tm A) => (fv_co_co_tm A)
+  | (Co phi) => (fv_co_co_constraint phi)
+end.
+
+Definition fv_tm_tm_pattern_arg (pattern_arg5:pattern_arg) : vars :=
+  match pattern_arg5 with
+  | (pat_arg_ArgRel a R) => (fv_tm_tm_tm a)
+  | (pat_arg_ArgIrr a) => (fv_tm_tm_tm a)
+  | (pat_arg_ArgCoe g) => (fv_tm_tm_co g)
+end.
+
+Definition fv_tm_tm_sig_sort (sig_sort5:sig_sort) : vars :=
+  match sig_sort5 with
+  | (Cs A Rs) => (fv_tm_tm_tm A)
+  | (Ax p a A R Rs) => (fv_tm_tm_tm p) \u (fv_tm_tm_tm a) \u (fv_tm_tm_tm A)
+end.
+
 (** substitutions *)
+Fixpoint co_subst_co_brs (g5:co) (c5:covar) (brs_6:brs) {struct brs_6} : brs :=
+  match brs_6 with
+  | br_None => br_None 
+  | (br_One K a brs5) => br_One K (co_subst_co_tm g5 c5 a) (co_subst_co_brs g5 c5 brs5)
+end
+with co_subst_co_tm (g5:co) (c5:covar) (a5:tm) {struct a5} : tm :=
+  match a5 with
+  | a_Star => a_Star 
+  | (a_Var_b nat) => a_Var_b nat
+  | (a_Var_f x) => a_Var_f x
+  | (a_Abs rho A b) => a_Abs rho (co_subst_co_tm g5 c5 A) (co_subst_co_tm g5 c5 b)
+  | (a_UAbs rho b) => a_UAbs rho (co_subst_co_tm g5 c5 b)
+  | (a_App a nu b) => a_App (co_subst_co_tm g5 c5 a) nu (co_subst_co_tm g5 c5 b)
+  | (a_Pi rho A B) => a_Pi rho (co_subst_co_tm g5 c5 A) (co_subst_co_tm g5 c5 B)
+  | (a_CAbs phi b) => a_CAbs (co_subst_co_constraint g5 c5 phi) (co_subst_co_tm g5 c5 b)
+  | (a_UCAbs b) => a_UCAbs (co_subst_co_tm g5 c5 b)
+  | (a_CApp a g) => a_CApp (co_subst_co_tm g5 c5 a) (co_subst_co_co g5 c5 g)
+  | (a_CPi phi B) => a_CPi (co_subst_co_constraint g5 c5 phi) (co_subst_co_tm g5 c5 B)
+  | (a_Conv a R g) => a_Conv (co_subst_co_tm g5 c5 a) R (co_subst_co_co g5 c5 g)
+  | (a_Fam F) => a_Fam F
+  | a_Bullet => a_Bullet 
+  | (a_Pattern R a F b1 b2) => a_Pattern R (co_subst_co_tm g5 c5 a) F (co_subst_co_tm g5 c5 b1) (co_subst_co_tm g5 c5 b2)
+  | (a_DataCon K) => a_DataCon K
+  | (a_Case a brs5) => a_Case (co_subst_co_tm g5 c5 a) (co_subst_co_brs g5 c5 brs5)
+  | (a_Sub R a) => a_Sub R (co_subst_co_tm g5 c5 a)
+end
+with co_subst_co_constraint (g5:co) (c5:covar) (phi5:constraint) {struct phi5} : constraint :=
+  match phi5 with
+  | (Eq a b A R) => Eq (co_subst_co_tm g5 c5 a) (co_subst_co_tm g5 c5 b) (co_subst_co_tm g5 c5 A) R
+end
+with co_subst_co_co (g_5:co) (c5:covar) (g__6:co) {struct g__6} : co :=
+  match g__6 with
+  | g_Triv => g_Triv 
+  | (g_Var_b nat) => g_Var_b nat
+  | (g_Var_f c) => (if eq_var c c5 then g_5 else (g_Var_f c))
+  | (g_Beta a b) => g_Beta (co_subst_co_tm g_5 c5 a) (co_subst_co_tm g_5 c5 b)
+  | (g_Refl a) => g_Refl (co_subst_co_tm g_5 c5 a)
+  | (g_Refl2 a b g) => g_Refl2 (co_subst_co_tm g_5 c5 a) (co_subst_co_tm g_5 c5 b) (co_subst_co_co g_5 c5 g)
+  | (g_Sym g) => g_Sym (co_subst_co_co g_5 c5 g)
+  | (g_Trans g1 g2) => g_Trans (co_subst_co_co g_5 c5 g1) (co_subst_co_co g_5 c5 g2)
+  | (g_Sub g) => g_Sub (co_subst_co_co g_5 c5 g)
+  | (g_PiCong rho R g1 g2) => g_PiCong rho R (co_subst_co_co g_5 c5 g1) (co_subst_co_co g_5 c5 g2)
+  | (g_AbsCong rho R g1 g2) => g_AbsCong rho R (co_subst_co_co g_5 c5 g1) (co_subst_co_co g_5 c5 g2)
+  | (g_AppCong g1 rho R g2) => g_AppCong (co_subst_co_co g_5 c5 g1) rho R (co_subst_co_co g_5 c5 g2)
+  | (g_PiFst g) => g_PiFst (co_subst_co_co g_5 c5 g)
+  | (g_CPiFst g) => g_CPiFst (co_subst_co_co g_5 c5 g)
+  | (g_IsoSnd g) => g_IsoSnd (co_subst_co_co g_5 c5 g)
+  | (g_PiSnd g1 g2) => g_PiSnd (co_subst_co_co g_5 c5 g1) (co_subst_co_co g_5 c5 g2)
+  | (g_CPiCong g1 g3) => g_CPiCong (co_subst_co_co g_5 c5 g1) (co_subst_co_co g_5 c5 g3)
+  | (g_CAbsCong g1 g3 g4) => g_CAbsCong (co_subst_co_co g_5 c5 g1) (co_subst_co_co g_5 c5 g3) (co_subst_co_co g_5 c5 g4)
+  | (g_CAppCong g g1 g2) => g_CAppCong (co_subst_co_co g_5 c5 g) (co_subst_co_co g_5 c5 g1) (co_subst_co_co g_5 c5 g2)
+  | (g_CPiSnd g g1 g2) => g_CPiSnd (co_subst_co_co g_5 c5 g) (co_subst_co_co g_5 c5 g1) (co_subst_co_co g_5 c5 g2)
+  | (g_Cast g1 R g2) => g_Cast (co_subst_co_co g_5 c5 g1) R (co_subst_co_co g_5 c5 g2)
+  | (g_EqCong g1 A g2) => g_EqCong (co_subst_co_co g_5 c5 g1) (co_subst_co_tm g_5 c5 A) (co_subst_co_co g_5 c5 g2)
+  | (g_IsoConv phi1 phi2 g) => g_IsoConv (co_subst_co_constraint g_5 c5 phi1) (co_subst_co_constraint g_5 c5 phi2) (co_subst_co_co g_5 c5 g)
+  | (g_Eta a) => g_Eta (co_subst_co_tm g_5 c5 a)
+  | (g_Left g g') => g_Left (co_subst_co_co g_5 c5 g) (co_subst_co_co g_5 c5 g')
+  | (g_Right g g') => g_Right (co_subst_co_co g_5 c5 g) (co_subst_co_co g_5 c5 g')
+end.
+
 Fixpoint tm_subst_tm_co (a5:tm) (x5:tmvar) (g_5:co) {struct g_5} : co :=
   match g_5 with
   | g_Triv => g_Triv 
@@ -670,64 +781,23 @@ with tm_subst_tm_constraint (a5:tm) (x5:tmvar) (phi5:constraint) {struct phi5} :
   | (Eq a b A R) => Eq (tm_subst_tm_tm a5 x5 a) (tm_subst_tm_tm a5 x5 b) (tm_subst_tm_tm a5 x5 A) R
 end.
 
-Fixpoint co_subst_co_co (g_5:co) (c5:covar) (g__6:co) {struct g__6} : co :=
-  match g__6 with
-  | g_Triv => g_Triv 
-  | (g_Var_b nat) => g_Var_b nat
-  | (g_Var_f c) => (if eq_var c c5 then g_5 else (g_Var_f c))
-  | (g_Beta a b) => g_Beta (co_subst_co_tm g_5 c5 a) (co_subst_co_tm g_5 c5 b)
-  | (g_Refl a) => g_Refl (co_subst_co_tm g_5 c5 a)
-  | (g_Refl2 a b g) => g_Refl2 (co_subst_co_tm g_5 c5 a) (co_subst_co_tm g_5 c5 b) (co_subst_co_co g_5 c5 g)
-  | (g_Sym g) => g_Sym (co_subst_co_co g_5 c5 g)
-  | (g_Trans g1 g2) => g_Trans (co_subst_co_co g_5 c5 g1) (co_subst_co_co g_5 c5 g2)
-  | (g_Sub g) => g_Sub (co_subst_co_co g_5 c5 g)
-  | (g_PiCong rho R g1 g2) => g_PiCong rho R (co_subst_co_co g_5 c5 g1) (co_subst_co_co g_5 c5 g2)
-  | (g_AbsCong rho R g1 g2) => g_AbsCong rho R (co_subst_co_co g_5 c5 g1) (co_subst_co_co g_5 c5 g2)
-  | (g_AppCong g1 rho R g2) => g_AppCong (co_subst_co_co g_5 c5 g1) rho R (co_subst_co_co g_5 c5 g2)
-  | (g_PiFst g) => g_PiFst (co_subst_co_co g_5 c5 g)
-  | (g_CPiFst g) => g_CPiFst (co_subst_co_co g_5 c5 g)
-  | (g_IsoSnd g) => g_IsoSnd (co_subst_co_co g_5 c5 g)
-  | (g_PiSnd g1 g2) => g_PiSnd (co_subst_co_co g_5 c5 g1) (co_subst_co_co g_5 c5 g2)
-  | (g_CPiCong g1 g3) => g_CPiCong (co_subst_co_co g_5 c5 g1) (co_subst_co_co g_5 c5 g3)
-  | (g_CAbsCong g1 g3 g4) => g_CAbsCong (co_subst_co_co g_5 c5 g1) (co_subst_co_co g_5 c5 g3) (co_subst_co_co g_5 c5 g4)
-  | (g_CAppCong g g1 g2) => g_CAppCong (co_subst_co_co g_5 c5 g) (co_subst_co_co g_5 c5 g1) (co_subst_co_co g_5 c5 g2)
-  | (g_CPiSnd g g1 g2) => g_CPiSnd (co_subst_co_co g_5 c5 g) (co_subst_co_co g_5 c5 g1) (co_subst_co_co g_5 c5 g2)
-  | (g_Cast g1 R g2) => g_Cast (co_subst_co_co g_5 c5 g1) R (co_subst_co_co g_5 c5 g2)
-  | (g_EqCong g1 A g2) => g_EqCong (co_subst_co_co g_5 c5 g1) (co_subst_co_tm g_5 c5 A) (co_subst_co_co g_5 c5 g2)
-  | (g_IsoConv phi1 phi2 g) => g_IsoConv (co_subst_co_constraint g_5 c5 phi1) (co_subst_co_constraint g_5 c5 phi2) (co_subst_co_co g_5 c5 g)
-  | (g_Eta a) => g_Eta (co_subst_co_tm g_5 c5 a)
-  | (g_Left g g') => g_Left (co_subst_co_co g_5 c5 g) (co_subst_co_co g_5 c5 g')
-  | (g_Right g g') => g_Right (co_subst_co_co g_5 c5 g) (co_subst_co_co g_5 c5 g')
-end
-with co_subst_co_brs (g5:co) (c5:covar) (brs_6:brs) {struct brs_6} : brs :=
-  match brs_6 with
-  | br_None => br_None 
-  | (br_One K a brs5) => br_One K (co_subst_co_tm g5 c5 a) (co_subst_co_brs g5 c5 brs5)
-end
-with co_subst_co_tm (g5:co) (c5:covar) (a5:tm) {struct a5} : tm :=
-  match a5 with
-  | a_Star => a_Star 
-  | (a_Var_b nat) => a_Var_b nat
-  | (a_Var_f x) => a_Var_f x
-  | (a_Abs rho A b) => a_Abs rho (co_subst_co_tm g5 c5 A) (co_subst_co_tm g5 c5 b)
-  | (a_UAbs rho b) => a_UAbs rho (co_subst_co_tm g5 c5 b)
-  | (a_App a nu b) => a_App (co_subst_co_tm g5 c5 a) nu (co_subst_co_tm g5 c5 b)
-  | (a_Pi rho A B) => a_Pi rho (co_subst_co_tm g5 c5 A) (co_subst_co_tm g5 c5 B)
-  | (a_CAbs phi b) => a_CAbs (co_subst_co_constraint g5 c5 phi) (co_subst_co_tm g5 c5 b)
-  | (a_UCAbs b) => a_UCAbs (co_subst_co_tm g5 c5 b)
-  | (a_CApp a g) => a_CApp (co_subst_co_tm g5 c5 a) (co_subst_co_co g5 c5 g)
-  | (a_CPi phi B) => a_CPi (co_subst_co_constraint g5 c5 phi) (co_subst_co_tm g5 c5 B)
-  | (a_Conv a R g) => a_Conv (co_subst_co_tm g5 c5 a) R (co_subst_co_co g5 c5 g)
-  | (a_Fam F) => a_Fam F
-  | a_Bullet => a_Bullet 
-  | (a_Pattern R a F b1 b2) => a_Pattern R (co_subst_co_tm g5 c5 a) F (co_subst_co_tm g5 c5 b1) (co_subst_co_tm g5 c5 b2)
-  | (a_DataCon K) => a_DataCon K
-  | (a_Case a brs5) => a_Case (co_subst_co_tm g5 c5 a) (co_subst_co_brs g5 c5 brs5)
-  | (a_Sub R a) => a_Sub R (co_subst_co_tm g5 c5 a)
-end
-with co_subst_co_constraint (g5:co) (c5:covar) (phi5:constraint) {struct phi5} : constraint :=
-  match phi5 with
-  | (Eq a b A R) => Eq (co_subst_co_tm g5 c5 a) (co_subst_co_tm g5 c5 b) (co_subst_co_tm g5 c5 A) R
+Definition co_subst_co_sort (g5:co) (c5:covar) (sort5:sort) : sort :=
+  match sort5 with
+  | (Tm A) => Tm (co_subst_co_tm g5 c5 A)
+  | (Co phi) => Co (co_subst_co_constraint g5 c5 phi)
+end.
+
+Definition tm_subst_tm_pattern_arg (a5:tm) (x5:tmvar) (pattern_arg5:pattern_arg) : pattern_arg :=
+  match pattern_arg5 with
+  | (pat_arg_ArgRel a R) => pat_arg_ArgRel (tm_subst_tm_tm a5 x5 a) R
+  | (pat_arg_ArgIrr a) => pat_arg_ArgIrr (tm_subst_tm_tm a5 x5 a)
+  | (pat_arg_ArgCoe g) => pat_arg_ArgCoe (tm_subst_tm_co a5 x5 g)
+end.
+
+Definition tm_subst_tm_sig_sort (a5:tm) (x5:tmvar) (sig_sort5:sig_sort) : sig_sort :=
+  match sig_sort5 with
+  | (Cs A Rs) => Cs (tm_subst_tm_tm a5 x5 A) Rs
+  | (Ax p a A R Rs) => Ax (tm_subst_tm_tm a5 x5 p) (tm_subst_tm_tm a5 x5 a) (tm_subst_tm_tm a5 x5 A) R Rs
 end.
 
 Definition tm_subst_tm_sort (a5:tm) (x5:tmvar) (sort5:sort) : sort :=
@@ -736,16 +806,11 @@ Definition tm_subst_tm_sort (a5:tm) (x5:tmvar) (sort5:sort) : sort :=
   | (Co phi) => Co (tm_subst_tm_constraint a5 x5 phi)
 end.
 
-Definition co_subst_co_sort (g5:co) (c5:covar) (sort5:sort) : sort :=
-  match sort5 with
-  | (Tm A) => Tm (co_subst_co_tm g5 c5 A)
-  | (Co phi) => Co (co_subst_co_constraint g5 c5 phi)
-end.
-
-Definition tm_subst_tm_sig_sort (a5:tm) (x5:tmvar) (sig_sort5:sig_sort) : sig_sort :=
-  match sig_sort5 with
-  | (Cs A Rs) => Cs (tm_subst_tm_tm a5 x5 A) Rs
-  | (Ax p a A R Rs) => Ax (tm_subst_tm_tm a5 x5 p) (tm_subst_tm_tm a5 x5 a) (tm_subst_tm_tm a5 x5 A) R Rs
+Definition co_subst_co_pattern_arg (g5:co) (c5:covar) (pattern_arg5:pattern_arg) : pattern_arg :=
+  match pattern_arg5 with
+  | (pat_arg_ArgRel a R) => pat_arg_ArgRel (co_subst_co_tm g5 c5 a) R
+  | (pat_arg_ArgIrr a) => pat_arg_ArgIrr (co_subst_co_tm g5 c5 a)
+  | (pat_arg_ArgCoe g) => pat_arg_ArgCoe (co_subst_co_co g5 c5 g)
 end.
 
 Definition co_subst_co_sig_sort (g5:co) (c5:covar) (sig_sort5:sig_sort) : sig_sort :=
@@ -966,6 +1031,39 @@ Inductive MatchSubst : tm -> tm -> tm -> tm -> Prop :=    (* defn MatchSubst *)
  | MatchSubst_CApp : forall (a1 a2 b1 b2:tm),
      MatchSubst a1 a2 b1 b2 ->
      MatchSubst  ( (a_CApp a1 g_Triv) )   ( (a_CApp a2 g_Triv) )  b1 b2.
+
+(* defns JPatData *)
+Inductive PatData : tm -> const -> pattern_args -> Prop :=    (* defn PatData *)
+ | PatData_Head : forall (F:const),
+     PatData (a_Fam F) F  nil 
+ | PatData_Rel : forall (p:tm) (R:role) (a:tm) (F:const) (PA:pattern_args),
+     lc_tm a ->
+     PatData p F PA ->
+     PatData  ( (a_App p (Role R) a) )  F  (cons  (pat_arg_ArgRel a R)   PA ) .
+
+(* defns JIsPattern *)
+Inductive Pattern : tm -> Prop :=    (* defn Pattern *)
+ | Pattern_Head : forall (F:const),
+     Pattern (a_Fam F)
+ | Pattern_Rel : forall (p:tm) (R:role) (a:tm),
+     lc_tm a ->
+     Pattern p ->
+     Pattern  ( (a_App p (Role R) a) ) .
+
+(* defns JSubPat *)
+Inductive SubPat : tm -> tm -> Prop :=    (* defn SubPat *)
+ | SubPat_Refl : forall (p:tm),
+     Pattern p ->
+     SubPat p p
+ | SubPat_Rel : forall (p' p:tm) (R:role) (x:tmvar),
+     SubPat p' p ->
+     SubPat p'  ( (a_App p (Role R) (a_Var_f x)) ) 
+ | SubPat_Irr : forall (p' p:tm),
+     SubPat p' p ->
+     SubPat p'  ( (a_App p (Rho Irrel) a_Bullet) ) 
+ | SubPat_Coe : forall (p' p:tm),
+     SubPat p' p ->
+     SubPat p'  ( (a_CApp p g_Triv) ) .
 
 (* defns JTmPatternAgree *)
 Inductive tm_pattern_agree : tm -> tm -> Prop :=    (* defn tm_pattern_agree *)
@@ -1420,11 +1518,12 @@ with Typing : context -> tm -> tm -> Prop :=    (* defn Typing *)
  | E_Const : forall (G:context) (F:const) (A:tm) (Rs:roles),
      Ctx G ->
       binds  F  ( (Cs A Rs) )   toplevel   ->
-     Typing  nil  A a_Star ->
+      ( Typing  nil  A a_Star )  ->
      Typing G (a_Fam F) A
  | E_Fam : forall (G:context) (F:const) (A p a:tm) (R1:role) (Rs:roles),
      Ctx G ->
       binds  F  ( (Ax p a A R1 Rs) )   toplevel   ->
+      ( Typing  nil  A a_Star )  ->
      Typing G (a_Fam F) A
  | E_Case : forall (G:context) (R:role) (a:tm) (F:const) (b1 b2 C A A1 B:tm),
      Typing G a A ->
@@ -1624,6 +1723,6 @@ Inductive head_reduction : context -> tm -> tm -> role -> Prop :=    (* defn hea
 
 
 (** infrastructure *)
-Hint Constructors SubRole Path PatternContexts Rename MatchSubst tm_pattern_agree tm_subpattern_agree subtm_pattern_agree ValuePath CasePath ApplyArgs Value value_type consistent roleing RhoCheck Par MultiPar joins Beta reduction_in_one reduction BranchTyping PropWff Typing Iso DefEq Ctx Sig AnnPropWff AnnTyping AnnIso AnnDefEq AnnCtx head_reduction lc_co lc_brs lc_tm lc_constraint lc_sort lc_sig_sort.
+Hint Constructors SubRole Path PatternContexts Rename MatchSubst PatData Pattern SubPat tm_pattern_agree tm_subpattern_agree subtm_pattern_agree ValuePath CasePath ApplyArgs Value value_type consistent roleing RhoCheck Par MultiPar joins Beta reduction_in_one reduction BranchTyping PropWff Typing Iso DefEq Ctx Sig AnnPropWff AnnTyping AnnIso AnnDefEq AnnCtx head_reduction lc_co lc_brs lc_tm lc_constraint lc_pattern_arg lc_sort lc_sig_sort.
 
 
