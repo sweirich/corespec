@@ -43,6 +43,32 @@ Hint Resolve binds_In AtomSetImpl.singleton_1 in_singleton_subset.
 (*
 *)
 
+Theorem rctx_fv : forall W a R, roleing W a R -> fv_tm_tm_tm a [<=] dom W.
+Proof. intros. induction H; simpl in *; autounfold.
+       all: try (intros x h; apply empty_iff in h; contradiction).
+       all: try (intros x h; apply union_iff in h; inversion h as [h1 | h2];
+            eauto).
+       all: try (apply union_iff in h1; inversion h1 as [h11 | h2]; auto).
+       all: try (apply union_iff in h2; inversion h2 as [h21 | h22]; auto).
+       all: intros.
+       all: try (
+       pick fresh y;
+      match goal with
+        [ P : _ `in` fv_tm_tm_tm _,
+          Q : forall _, _ -> fv_tm_tm_tm (open_tm_wrt_tm _ _) [<=] _
+          |- _ ] =>
+       eapply (fv_tm_tm_tm_open_tm_wrt_tm_lower _ (a_Var_f y)) in P;
+       eapply add_3; [ eauto | eapply AtomSetProperties.in_subset; eauto ]
+      | [ P : _ `in` fv_tm_tm_tm _,
+          Q : forall _, _ -> fv_tm_tm_tm (open_tm_wrt_co _ _) [<=] _
+          |- _ ] =>
+       eapply (fv_tm_tm_tm_open_tm_wrt_co_lower _ (g_Var_f y)) in P;
+       eapply AtomSetProperties.in_subset; eauto
+       end; fail).
+       - apply singleton_iff in H2; subst. eapply binds_In; eauto.
+       - apply empty_iff in h2; contradiction.
+Qed.
+
 Theorem context_fv_mutual :
   (forall G (a : tm) A (H: Typing G a A),
       fv_tm_tm_tm a [<=] dom G /\ fv_co_co_tm a [<=] dom G /\
@@ -107,7 +133,7 @@ Proof.
   all: try solve [apply H1; eauto; simpl; auto].
   all: try solve [apply H2; eauto; simpl; auto].
   all: try solve [apply H3; eauto; simpl; auto].
-  all: try solve [apply H4; eauto; simpl; auto].
+  all: try solve [apply H0; eauto; simpl; auto].
 
 
   all: try match goal with
@@ -119,8 +145,8 @@ Proof.
     [ H4 : ?y `in` fv_tm_tm_tm ?B,
       H5 : ∀ a : atom,
        a `in` fv_tm_tm_tm (open_tm_wrt_tm ?B (a_Var_f ?x))
-            → a `in` dom ([(?x, ?s)] ++ ?G) |- _ ] =>
-    assert (h0: y `in` dom ([(x,s)] ++ G)) by
+            → a `in` dom (?x ~ ?s ++ ?G) |- _ ] =>
+    assert (h0: y `in` dom (x ~ s ++ G)) by
     (eapply H5; eauto;
     eapply fv_tm_tm_tm_open_tm_wrt_tm_lower; auto);
       simpl in h0; apply F.add_neq_iff in h0; auto
@@ -129,8 +155,8 @@ Proof.
     [ H4 : ?y `in` fv_co_co_tm ?B,
       H5 : ∀ a : atom,
        a `in` fv_co_co_tm (open_tm_wrt_tm ?B (a_Var_f ?x))
-            → a `in` dom ([(?x, ?s)] ++ ?G) |- _ ] =>
-    assert (h0: y `in` dom ([(x,s)] ++ G)) by
+            → a `in` dom (?x ~ ?s ++ ?G) |- _ ] =>
+    assert (h0: y `in` dom (x ~ s ++ G)) by
     (eapply H5; eauto;
     eapply fv_co_co_tm_open_tm_wrt_tm_lower; auto);
       simpl in h0; apply F.add_neq_iff in h0; auto
@@ -139,8 +165,8 @@ Proof.
     [ H4 : ?y `in` fv_tm_tm_tm ?B,
       H5 : ∀ a : atom,
        a `in` fv_tm_tm_tm (open_tm_wrt_co ?B (g_Var_f ?x))
-            → a `in` dom ([(?x, ?s)] ++ ?G) |- _ ] =>
-    assert (h0: y `in` dom ([(x,s)] ++ G)) by
+            → a `in` dom (?x ~ ?s ++ ?G) |- _ ] =>
+    assert (h0: y `in` dom (x ~ s ++ G)) by
     (eapply H5; eauto;
     eapply fv_tm_tm_tm_open_tm_wrt_co_lower; auto);
     simpl in h0; apply F.add_neq_iff in h0; auto
@@ -149,8 +175,8 @@ Proof.
     [ H4 : ?y `in` fv_co_co_tm ?B,
       H5 : ∀ a : atom,
        a `in` fv_co_co_tm (open_tm_wrt_co ?B (g_Var_f ?x))
-            → a `in` dom ([(?x, ?s)] ++ ?G) |- _ ] =>
-    assert (h0: y `in` dom ([(x,s)] ++ G)) by
+            → a `in` dom (?x ~ ?s ++ ?G) |- _ ] =>
+    assert (h0: y `in` dom (x ~ s ++ G)) by
     (eapply H5; eauto;
     eapply fv_co_co_tm_open_tm_wrt_co_lower; auto);
       simpl in h0; apply F.add_neq_iff in h0; auto
@@ -178,10 +204,10 @@ Proof.
 
   all: try solve [ simpl in *; eauto].
 
-  (* all: try solve [ assert (c = y) by auto; subst; eapply binds_In; eauto ]. *)
+  all: try solve [ assert (c = y) by auto; subst; eapply binds_In; eauto ].
   all: try solve [ destruct (H0 _ _ b0); simpl in *; eauto].
 
-Admitted.
+Qed.
 
 
 Definition Typing_context_fv  := first context_fv_mutual.

@@ -234,27 +234,4 @@ Proof. intros. induction H.
         - apply IHPath in H0. eauto.
 Qed.
 *)
-Lemma decide_CasePath : forall W a R, roleing W a R -> (exists F, CasePath R a F) \/
-                                     (forall F, ~(CasePath R a F)).
-Proof. (*
-  induction a; intros R' E.
-  all: try solve [right; move => F h1; inversion h1].
-  - inversion E; subst. apply IHa1 in H5. destruct H5 as [[F h0]|n].
-    left. exists F. econstructor; auto. eapply roleing_lc; eauto.
-    right. intros. intro. inversion H; subst. pose (Q := n F). contradiction.
-  - inversion E; subst. left. exists F; eauto.
-    destruct (sub_dec R R') as [P1 | P2].
-    right. intros. intro. inversion H; subst.
-    have Q: (Ax a A R = Cs A0).
-    eapply binds_unique; eauto using uniq_toplevel.
-    inversion Q.
-    have Q: (Ax a A R = Ax a0 A0 R1).
-    eapply binds_unique; eauto using uniq_toplevel.
-    inversion Q. subst. contradiction. left. exists F. eauto.
-  - inversion E; subst. apply IHa in H3. destruct H3 as [[F h0]|n].
-    left. exists F. eauto. right. intros. intro. inversion H; subst.
-    pose (Q := n F). contradiction.
-Qed.
-*)
-Admitted.
 

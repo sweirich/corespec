@@ -14,6 +14,7 @@ Require Export FcEtt.ext_context_fv.
 Require Import FcEtt.ext_wf.
 Require Import FcEtt.ett_roleing.
 Require Import FcEtt.ett_path.
+Require Import ett_rename.
 
 Import ext_wf.
 
@@ -24,25 +25,10 @@ Require Export FcEtt.toplevel.
 
 Require Export FcEtt.ett_value.
 
-Lemma MatchSubst_lc_1 : forall a p b b', MatchSubst a p b b' →  lc_tm a.
-Proof.
-  induction 1; auto.
-Qed.
-
-Lemma MatchSubst_lc_2 : forall a p b b', MatchSubst a p b b' →  lc_tm b.
-Proof.
-  induction 1; auto.
-Qed.
-
-Lemma MatchSubst_lc_3 : forall a p b b', MatchSubst a p b b' →  lc_tm b'.
-Proof.
-  induction 1;
-    eauto using tm_subst_tm_tm_lc_tm, co_subst_co_tm_lc_tm.
-Qed.
-
-Lemma ApplyArgs_lc_3 : forall a b c, ApplyArgs a b c → lc_tm c.
-Proof.
-  induction 1; eauto.
+Lemma Par_roleing_tm_fst : forall W a a' R, Par W a a' R -> 
+                                               roleing W a R.
+Proof. intros W a a' R H. induction H; eauto. destruct nu; eauto.
+       simpl in *. econstructor. inversion IHPar2; subst; eauto.
 Qed.
 
 Lemma par_app_rctx : forall W1 W2 W3 a a' R, uniq (W1 ++ W2 ++ W3) ->
@@ -57,7 +43,7 @@ Proof. intros W1 W2 W3 a a' R U H. generalize dependent W2.
         - eapply Par_Pi with (L := union L (dom (W1 ++ W2 ++ W3))); eauto.
           intros. rewrite app_assoc.
           eapply H1; eauto. simpl_env. auto.
-        - eapply Par_AxiomApp; eauto.  admit.
+        - eapply Par_AxiomApp. eauto. eauto. eauto. eauto.  admit.
         - eapply Par_AxiomCApp; eauto. admit.
 Admitted.
 
@@ -69,13 +55,6 @@ Admitted.
 
 
 (* TODO: move these definitions to the OTT file. *)
-
-Inductive multipar W ( a : tm) : tm -> role -> Prop :=
-| mp_refl : forall R, roleing W a R -> multipar W a a R
-| mp_step : forall R b c, Par W a b R -> multipar W b c R ->
-                                             multipar W a c R.
-
-Hint Constructors multipar.
 
 Lemma multipar_app_rctx : forall W1 W2 W3 a a' R, uniq (W1 ++ W2 ++ W3) ->
                      multipar (W1 ++ W3) a a' R ->
@@ -95,20 +74,6 @@ Ltac lc_toplevel_inversion :=
   | [ b : binds ?F _ toplevel |- _ ] =>
     apply Toplevel_lc in b; inversion b; auto
 end.
-
-Lemma Par_lc1 : forall W a a' R, Par W a a' R → lc_tm a.
-Proof. induction 1; eauto using roleing_lc, MatchSubst_lc_1.
-Qed.
-
-
-Lemma Par_lc2 : forall W a a' R, Par W a a' R → lc_tm a'.
-Proof. intros. induction H; eauto. eapply roleing_lc; eauto.
-       lc_solve. lc_solve. admit. eapply MatchSubst_lc_3; eauto.
-       eapply MatchSubst_lc_3; eauto.
-       econstructor. eapply ApplyArgs_lc_3; eauto. eauto.
-Admitted.
-
-Hint Resolve MatchSubst_lc_1 MatchSubst_lc_3 ApplyArgs_lc_3 Par_lc1 Par_lc2 : lc.
 
 Fixpoint var_pat (p : tm) := match p with
    | a_Fam F => nil
@@ -141,12 +106,6 @@ Proof. intros. generalize dependent W. induction H1; intros; auto.
         - inversion H0; subst; eauto. econstructor. eauto.
         - inversion H; subst. econstructor; eauto.
 Qed.*)
-
-Lemma Par_roleing_tm_fst : forall W a a' R, Par W a a' R -> 
-                                               roleing W a R.
-Proof. intros W a a' R H. induction H; eauto. destruct nu; eauto.
-       simpl in *. econstructor. inversion IHPar2; subst; eauto.
-Qed.
 
 Lemma multipar_roleing_tm_fst: forall W a a' R, multipar W a a' R ->
                                                roleing W a R.
@@ -715,3 +674,106 @@ Proof.
   rewrite h0.
   eauto.
 Qed.
+
+Lemma MatchSubst_par : forall a1 p b b' b'' W a2 R F p1 b1 A R1 Rs,
+       MatchSubst a1 p b b' -> ~tm_pattern_agree a1 p1 ->
+       tm_subpattern_agree a1 p1 -> binds F (Ax p1 b1 A R1 Rs) toplevel ->
+       roleing W b R -> Par W a1 a2 R -> MatchSubst a2 p b b'' -> Par W b' b'' R.
+Proof. intros. generalize dependent a2. generalize dependent b''.
+       generalize dependent p1. generalize dependent W.
+       induction H; intros; eauto.
+        - inversion H5; subst. eauto.
+        - inversion H6; subst. inversion H5; subst.
+          + replace W with (nil ++ W); eauto.
+            inversion H12; subst. eapply subst2; eauto.
+            eapply IHMatchSubst; eauto. eapply roleing_app_rctx.
+            admit. simpl_env. auto. intro.
+            eapply tm_subpattern_agree_app_contr; eauto.
+            eapply tm_subpattern_agree_sub_app; eauto.
+            econstructor. eapply roleing_app_rctx. admit. simpl_env. auto.
+          + replace W with (nil ++ W); eauto.
+            eapply subst3; eauto.
+            eapply IHMatchSubst; eauto.
+            eapply roleing_app_rctx. admit. simpl_env. auto.
+            intro. eapply tm_subpattern_agree_app_contr; eauto.
+            eapply tm_subpattern_agree_sub_app; eauto.
+            eapply par_app_rctx. admit. simpl_env. auto.
+          + inversion H11.
+            assert (a_Fam F = a_Fam F0).
+             { eapply transitivity. symmetry.
+               eapply axiom_pattern_head; eauto.
+               eapply transitivity. symmetry.
+               eapply tm_subpattern_agree_const_same; eauto.
+               simpl. eapply transitivity.
+               eapply tm_subpattern_agree_const_same; eauto.
+               eapply axiom_pattern_head; eauto.
+              }
+            inversion H9; subst. axioms_head_same.
+            assert (tm_tm_agree a1 a'). eapply pattern_like_tm_par; eauto.
+            assert False. eapply H1. eapply tm_pattern_agree_cong.
+            eapply tm_pattern_agree_rename_inv_2.
+            eapply MatchSubst_match. eapply H20. eauto.
+            econstructor. eapply tm_tm_agree_sym; eauto.
+            eapply Par_lc2; eauto. eapply Par_lc1; eauto.
+            contradiction.
+        - inversion H6; subst. inversion H5; subst.
+          + inversion H14; subst.
+            eapply IHMatchSubst; eauto. intro.
+            eapply tm_subpattern_agree_app_contr; eauto.
+            eapply tm_subpattern_agree_sub_app; eauto.
+          + assert False. eapply pattern_like_tm_par.
+            eapply H15. eapply H4. eapply tm_subpattern_agree_sub_app; eauto.
+            intro. eapply tm_subpattern_agree_app_contr; eauto. eauto.
+            contradiction.
+          + eapply IHMatchSubst; eauto.
+            intro. eapply tm_subpattern_agree_app_contr; eauto.
+            eapply tm_subpattern_agree_sub_app; eauto.
+          + inversion H13.
+            assert (a_Fam F = a_Fam F0).
+             { eapply transitivity. symmetry.
+               eapply axiom_pattern_head; eauto.
+               eapply transitivity. symmetry.
+               eapply tm_subpattern_agree_const_same; eauto.
+               simpl. eapply transitivity.
+               eapply tm_subpattern_agree_const_same; eauto.
+               eapply axiom_pattern_head; eauto.
+              }
+            inversion H11; subst. axioms_head_same.
+            assert (tm_tm_agree a1 a'). eapply pattern_like_tm_par; eauto.
+            assert False. eapply H1. eapply tm_pattern_agree_cong.
+            eapply tm_pattern_agree_rename_inv_2.
+            eapply MatchSubst_match. eapply H20. eauto.
+            econstructor. eapply tm_tm_agree_sym; eauto.
+            eapply Par_lc2; eauto. eapply Par_lc1; eauto.
+            contradiction.
+        - inversion H5; subst. inversion H4; subst.
+          + inversion H10; subst.
+            eapply IHMatchSubst; eauto. intro.
+            eapply tm_subpattern_agree_capp_contr; eauto.
+            eapply tm_subpattern_agree_sub_capp; eauto.
+          + assert False. eapply pattern_like_tm_par.
+            eapply H10. eapply H2. eapply tm_subpattern_agree_sub_capp; eauto.
+            intro. eapply tm_subpattern_agree_capp_contr; eauto. eauto.
+            contradiction.
+          + eapply IHMatchSubst; eauto.
+            intro. eapply tm_subpattern_agree_capp_contr; eauto.
+            eapply tm_subpattern_agree_sub_capp; eauto.
+          + inversion H9.
+            assert (a_Fam F = a_Fam F0).
+             { eapply transitivity. symmetry.
+               eapply axiom_pattern_head; eauto.
+               eapply transitivity. symmetry.
+               eapply tm_subpattern_agree_const_same; eauto.
+               simpl. eapply transitivity.
+               eapply tm_subpattern_agree_const_same; eauto.
+               eapply axiom_pattern_head; eauto.
+              }
+            inversion H15; subst. axioms_head_same.
+            assert (tm_tm_agree a1 a'). eapply pattern_like_tm_par; eauto.
+            assert False. eapply H0. eapply tm_pattern_agree_cong.
+            eapply tm_pattern_agree_rename_inv_2.
+            eapply MatchSubst_match. eapply H12. eauto.
+            econstructor. eapply tm_tm_agree_sym; eauto.
+            contradiction.
+Admitted.
+

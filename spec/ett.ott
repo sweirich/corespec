@@ -424,6 +424,8 @@ formula, Fm {{tex \psi}} :: 'formula_' ::=
     {{ coq [[N1]] < [[N2]] }}
   | N1 <= N2                 ::   :: length_leq
     {{ coq [[N1]] <= [[N2]] }}{{ tex [[N1]] \leq [[N2]] }}
+  | nu_rho nu                ::   :: nu_rho_eq
+    {{ coq (nu_rho [[ nu]]) }} {{ tex [[nu]] = \rho }}
   | R1 = R2                  ::   :: role_equal
     {{ coq ([[R1]] = [[R2]]) }}
   | a = b                    ::   :: equal
@@ -476,6 +478,12 @@ Definition app_rho (rr : appflag) : relflag :=
   | Rho p => p
   | Role _ => Rel
   end.
+
+Definition nu_rho (nu : appflag) : Prop :=
+ match nu with
+ | Rho _ => True
+ | Role _ => False
+ end.
 
 Definition min (r1 : role) (r2 : role) : role :=
   match r1 , r2 with
@@ -831,7 +839,7 @@ JTmSubPatternAgree :: '' ::=
 defn
 a + = p :: :: tm_subpattern_agree :: 'tm_subpattern_agree_'
 {{ com sub-pattern agrees with term }}
-{{ tex [[a]]^+ = [[p]] }}
+{{ tex [[a]] \sqsubseteq [[p]] }}
 by
 
 a <-> p
@@ -857,7 +865,7 @@ JSubTmPatternAgree :: '' ::=
 defn
 a = p + :: :: subtm_pattern_agree :: 'subtm_pattern_agree_'
 {{ com sub-term agrees with pattern }}
-{{ tex [[a]] = [[p]]^+ }}
+{{ tex [[a]] \sqsupseteq [[p]] }}
 by
 
 a <-> p
@@ -1160,7 +1168,7 @@ W |= a rho b => a' { b' / x } / R
 
 W |= a => a' / R
 W |= b => b' / (app_role nu)
-------------------------------------------- :: App
+---------------------------------------------- :: App
 W |= a nu b => a' nu b' / R
 
 W |= a => (/\c .a')  / R
