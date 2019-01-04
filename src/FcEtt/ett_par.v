@@ -13,8 +13,9 @@ Require Export FcEtt.ext_context_fv.
 
 Require Import FcEtt.ext_wf.
 Require Import FcEtt.ett_roleing.
+Require Import FcEtt.ett_match.
 Require Import FcEtt.ett_path.
-Require Import ett_rename.
+Require Import FcEtt.ett_rename.
 
 Import ext_wf.
 
@@ -29,7 +30,7 @@ Lemma Par_roleing_tm_fst : forall W a a' R, Par W a a' R ->
                                                roleing W a R.
 Proof. intros W a a' R H. induction H; eauto. destruct nu; eauto.
        simpl in *. econstructor. inversion IHPar2; subst; eauto.
-Qed.
+Admitted.
 
 Lemma par_app_rctx : forall W1 W2 W3 a a' R, uniq (W1 ++ W2 ++ W3) ->
                      Par (W1 ++ W3) a a' R ->
@@ -43,7 +44,7 @@ Proof. intros W1 W2 W3 a a' R U H. generalize dependent W2.
         - eapply Par_Pi with (L := union L (dom (W1 ++ W2 ++ W3))); eauto.
           intros. rewrite app_assoc.
           eapply H1; eauto. simpl_env. auto.
-        - eapply Par_AxiomApp. eauto. eauto. eauto. eauto.  admit.
+        - eapply Par_AxiomApp. eauto. eauto. eauto. eauto.  all: admit.
         - eapply Par_AxiomCApp; eauto. admit.
 Admitted.
 
@@ -118,15 +119,16 @@ Proof. intros W a a' R H. induction H; eauto.
         - inversion IHPar1; subst. pick fresh x.
           erewrite tm_subst_tm_tm_intro; eauto.
           replace W with (nil ++ W); auto. eapply subst_tm_roleing; eauto.
+        - admit.
         - inversion IHPar; subst. pick fresh c.
           erewrite co_subst_co_tm_intro; eauto.
           replace W with (nil ++ W); auto. eapply subst_co_roleing; eauto.
-        - apply toplevel_inversion in H.
+        (* - apply toplevel_inversion in H.
           inversion H as [W1 [G1 [B1 [P1 [P2 [P3 P4]]]]]].
           replace W with (nil ++ W); auto. eapply roleing_match; eauto 1.
           simpl_env. apply var_pat_ctx in P1. subst. admit. admit.
         - econstructor. eapply roleing_apply. eapply IHPar1.
-          eapply IHPar2. eauto.
+          eapply IHPar2. eauto. *)
 Admitted.
 
 Lemma multipar_roleing_tm_snd : forall W a a' R, multipar W a a' R ->
@@ -156,7 +158,6 @@ Lemma Par_sub: forall W a a' R1 R2, Par W a a' R1 -> SubRole R1 R2 ->
                                       Par W a a' R2.
 Proof. intros W a a' R1 R2 H SR. generalize dependent R2.
        induction H; intros; eauto. econstructor.
-       eapply roleing_sub; eauto. eapply Par_Axiom; eauto.
        eapply roleing_sub; eauto.
 Qed.
 
@@ -177,35 +178,33 @@ Proof.
    - destruct (x0 == x); auto.
      + subst. assert (P:R = R1).
        eapply binds_mid_eq; eauto. subst. replace W with (nil ++ W); eauto.
-       rewrite app_assoc. eapply par_app_rctx.
+       rewrite <- app_assoc. eapply par_app_rctx.
        simpl_env. eapply uniq_remove_mid; eauto.
        simpl_env; eauto. eapply Par_sub; eauto.
      + econstructor. econstructor. eapply uniq_remove_mid; eauto.
        eapply binds_remove_mid; eauto. auto.
    - eapply Par_Abs with (L := union (singleton x) L).
      intros x0 H1.
-     rewrite tm_subst_tm_tm_open_tm_wrt_tm_var; auto 1.
-     rewrite tm_subst_tm_tm_open_tm_wrt_tm_var; auto 1.
-     rewrite <- app_assoc. eapply H0; eauto.
-     eapply Par_lc2; eauto. eapply Par_lc1; eauto.
+     rewrite tm_subst_tm_tm_open_tm_wrt_tm_var; auto 1. eapply Par_lc1; eauto.
+     rewrite tm_subst_tm_tm_open_tm_wrt_tm_var; auto 1. eapply Par_lc2; eauto.
+     rewrite app_assoc. eapply H0; eauto.
    - econstructor; eauto.
    - admit.
    - eapply Par_Pi with (L := union (singleton x) L); eauto.
      intros x0 h1.
-     rewrite tm_subst_tm_tm_open_tm_wrt_tm_var; auto 1.
-     rewrite tm_subst_tm_tm_open_tm_wrt_tm_var; auto 1.
-     rewrite <- app_assoc. eapply H0; eauto.
-     eapply Par_lc2; eauto. eapply Par_lc1; eauto.
+     rewrite tm_subst_tm_tm_open_tm_wrt_tm_var; auto 1. eapply Par_lc1; eauto.
+     rewrite tm_subst_tm_tm_open_tm_wrt_tm_var; auto 1. eapply Par_lc2; eauto.
+     rewrite app_assoc. eapply H0; eauto.
    - eapply Par_CPi with (L := union L (singleton x)); eauto.
      intros c h1.
-     rewrite tm_subst_tm_tm_open_tm_wrt_co_var; auto 1.
-     rewrite tm_subst_tm_tm_open_tm_wrt_co_var; auto 1. eapply H0; eauto.
-     eapply Par_lc2; eauto. eapply Par_lc1; eauto.
+     rewrite tm_subst_tm_tm_open_tm_wrt_co_var; auto 1. eapply Par_lc1; eauto.
+     rewrite tm_subst_tm_tm_open_tm_wrt_co_var; auto 1. eapply Par_lc2; eauto.
+     eapply H0; eauto.
    - eapply Par_CAbs with (L := union L (singleton x)); eauto.
      intros c h1.
-     rewrite tm_subst_tm_tm_open_tm_wrt_co_var; auto 1.
-     rewrite tm_subst_tm_tm_open_tm_wrt_co_var; auto 1. eapply H0; eauto.
-     eapply Par_lc2; eauto. eapply Par_lc1; eauto.
+     rewrite tm_subst_tm_tm_open_tm_wrt_co_var; auto 1. eapply Par_lc1; eauto.
+     rewrite tm_subst_tm_tm_open_tm_wrt_co_var; auto 1. eapply Par_lc2; eauto.
+     eapply H0; eauto.
    - econstructor; eauto.
    - econstructor; eauto.
    - econstructor; eauto.
@@ -239,34 +238,34 @@ Proof.
   - econstructor. eapply subst_tm_roleing; eauto.
   - eapply Par_Abs with (L := union L (singleton x)).
     intros x0 H1.
-    rewrite tm_subst_tm_tm_open_tm_wrt_tm_var; auto 1.
-    rewrite tm_subst_tm_tm_open_tm_wrt_tm_var; auto 1.
-    rewrite <- app_assoc. eapply H0. auto. simpl_env; auto.
-    auto. eapply roleing_lc; eauto. eapply roleing_lc; eauto.
+    rewrite tm_subst_tm_tm_open_tm_wrt_tm_var; auto 1. eapply roleing_lc; eauto.
+    rewrite tm_subst_tm_tm_open_tm_wrt_tm_var; auto 1. eapply roleing_lc; eauto.
+    rewrite app_assoc. eapply H0. auto. simpl_env; auto.
+    auto.
   - eapply Par_Pi with (L := union L (singleton x)); eauto.
     intros x0 H2.
-    rewrite tm_subst_tm_tm_open_tm_wrt_tm_var; auto 1.
-    rewrite tm_subst_tm_tm_open_tm_wrt_tm_var; auto 1.
-    rewrite <- app_assoc. eapply H0. auto. simpl_env; auto.
-    auto. eapply roleing_lc; eauto. eapply roleing_lc; eauto.
+    rewrite tm_subst_tm_tm_open_tm_wrt_tm_var; auto 1. eapply roleing_lc; eauto.
+    rewrite tm_subst_tm_tm_open_tm_wrt_tm_var; auto 1. eapply roleing_lc; eauto.
+    rewrite app_assoc. eapply H0. auto. simpl_env; auto.
+    auto.
   - eapply Par_CAbs with (L := union L (singleton x)).
     intros x0 H1.
-    rewrite tm_subst_tm_tm_open_tm_wrt_co_var; auto 1.
-    rewrite tm_subst_tm_tm_open_tm_wrt_co_var; auto 1.
+    rewrite tm_subst_tm_tm_open_tm_wrt_co_var; auto 1. eapply roleing_lc; eauto.
+    rewrite tm_subst_tm_tm_open_tm_wrt_co_var; auto 1. eapply roleing_lc; eauto.
     eapply H0. auto. eauto. auto.
-    eapply roleing_lc; eauto. eapply roleing_lc; eauto.
   - eapply Par_CPi with (L := union L (singleton x)); eauto.
     intros x0 H4.
-    rewrite tm_subst_tm_tm_open_tm_wrt_co_var; auto 1.
-    rewrite tm_subst_tm_tm_open_tm_wrt_co_var; auto 1.
+    rewrite tm_subst_tm_tm_open_tm_wrt_co_var; auto 1. eapply roleing_lc; eauto.
+    rewrite tm_subst_tm_tm_open_tm_wrt_co_var; auto 1. eapply roleing_lc; eauto.
     eapply H0. auto. eauto. auto.
-    eapply roleing_lc; eauto. eapply roleing_lc; eauto.
   - admit. (* eapply Par_Axiom; eauto.
     rewrite tm_subst_tm_tm_fresh_eq. eauto.
     apply toplevel_closed in H.
     apply Typing_context_fv in H.
     split_hyp. simpl in *.
     fsetdec. *)
+  - admit.
+  - admit.
   - eapply Par_PatternTrue; eauto. admit. (* eapply Path_subst; eauto.
     eapply roleing_lc; eauto. *) admit.
   - eapply Par_PatternFalse; eauto.
@@ -287,22 +286,23 @@ Proof.
   - eapply subst1; eauto.
   - eapply Par_Abs with (L := union L (singleton x)).
     intros x0 H2.
-    rewrite tm_subst_tm_tm_open_tm_wrt_tm_var; auto 1.
-    rewrite tm_subst_tm_tm_open_tm_wrt_tm_var; auto 1.
-    rewrite <- app_assoc. eapply H0. auto. simpl_env; auto.
-    auto. eapply Par_lc2; eauto. eapply Par_lc1; eauto.
+    rewrite tm_subst_tm_tm_open_tm_wrt_tm_var; auto 1. eapply Par_lc1; eauto.
+    rewrite tm_subst_tm_tm_open_tm_wrt_tm_var; auto 1. eapply Par_lc2; eauto.
+    rewrite app_assoc. eapply H0. auto. simpl_env; auto.
+    auto.
   - eapply Par_Pi with (L := union (singleton x) L); eauto.
     intros x0 h3.
-    rewrite tm_subst_tm_tm_open_tm_wrt_tm_var; auto 1.
-    rewrite tm_subst_tm_tm_open_tm_wrt_tm_var; auto 1.
-    rewrite <- app_assoc. eapply H1; eauto. simpl_env; auto.
-    eapply Par_lc2; eauto. eapply Par_lc1; eauto.
-  - eapply Par_Axiom; eauto.
-    rewrite tm_subst_tm_tm_fresh_eq. eauto. admit. admit. admit. admit.
+    rewrite tm_subst_tm_tm_open_tm_wrt_tm_var; auto 1. eapply Par_lc1; eauto.
+    rewrite tm_subst_tm_tm_open_tm_wrt_tm_var; auto 1. eapply Par_lc2; eauto.
+    rewrite app_assoc. eapply H1; eauto. simpl_env; auto.
+  - eapply Par_AxiomBase; eauto.
+    rewrite tm_subst_tm_tm_fresh_eq. eauto. admit. admit.
     (* apply toplevel_closed in H.
     apply Typing_context_fv in H.
     split_hyp. simpl in *.
     fsetdec. *)
+  - admit.
+  - admit.
   - eapply Par_Pattern; eauto.
   - eapply Par_PatternTrue; eauto. eapply CasePath_subst; eauto.
     eapply Par_lc2; eauto. admit.
@@ -326,6 +326,8 @@ Proof.
     apply Typing_context_fv in H.
     split_hyp. simpl in *.
     fsetdec. *)
+  - admit.
+  - admit.
   - eapply Par_PatternTrue; eauto. admit. (* eapply Path_subst_co; eauto. *)
     admit.
   - eapply Par_PatternFalse; eauto. eapply Value_co_subst_co_tm; eauto.
@@ -383,7 +385,7 @@ Proof.
   intros x0 h0.
   rewrite -tm_subst_tm_tm_spec.
   rewrite (tm_subst_tm_tm_intro x B (a_Var_f x0)); auto.
-  replace ([(x0,Nom)] ++ W) with (nil ++ [(x0,Nom)] ++ W); auto.
+  replace (x0 ~ Nom ++ W) with (nil ++ [(x0,Nom)] ++ W); auto.
   assert (uniq ([(x,Nom)] ++ W)). {eapply Par_rctx_uniq; eauto. }
   eapply subst2; eauto.
   simpl_env. apply par_app_rctx; eauto 1. solve_uniq.
@@ -415,7 +417,7 @@ Proof.
   intros x0 h0.
   rewrite -tm_subst_tm_tm_spec.
   rewrite (tm_subst_tm_tm_intro x a (a_Var_f x0)); auto.
-  replace ([(x0,Nom)] ++ W) with (nil ++ [(x0,Nom)] ++ W); auto.
+  replace (x0 ~ Nom ++ W) with (nil ++ [(x0,Nom)] ++ W); auto.
   assert (uniq ([(x,Nom)] ++ W)). {eapply Par_rctx_uniq; eauto. }
   eapply subst2; eauto.
   simpl_env. apply par_app_rctx; eauto 1.
@@ -485,7 +487,7 @@ Proof.
     auto. intros. econstructor.
     assert (uniq ([(x,Nom)] ++ W)). {eapply multipar_rctx_uniq; eauto. }
     rewrite (tm_subst_tm_tm_intro x B (a_Var_f x0)); auto.
-    replace ([(x0,Nom)] ++ W) with (nil ++ [(x0,Nom)] ++ W); auto.
+    replace (x0 ~ Nom ++ W) with (nil ++ [(x0,Nom)] ++ W); auto.
     eapply subst_tm_roleing. simpl_env. apply roleing_app_rctx.
     solve_uniq. eapply multipar_roleing_tm_fst; eauto.
     econstructor. solve_uniq. eauto. eauto.
@@ -501,7 +503,7 @@ Proof.
   - inversion H. subst. constructor. auto.
   - inversion H. subst. eapply IHh1; eauto.
     apply mp_step with (b := A'0). auto.
-    eapply IHh1; eauto. subst. inversion H3.
+    eapply IHh1; eauto.
 Qed.
 
 Lemma multipar_Pi_B_proj: ∀ W rho (A B A' B' : tm) R',
@@ -512,11 +514,11 @@ Proof.
   intros W rho A B A' B' R' h1.
   dependent induction h1; eauto.
   - inversion H. subst. exists L. intros.
-    constructor. auto.
+    constructor. replace [(x,Nom)] with (x ~ Nom). auto. auto.
   - inversion H; subst.
     eapply IHh1; eauto.
     destruct (IHh1 rho A'0 B'0 A' B') as [L0 h0]; auto.
-    exists (L \u L0); eauto. inversion H3.
+    exists (L \u L0); eauto.
 Qed.
 
 
@@ -535,12 +537,12 @@ Proof.
       * dependent induction H2; eauto 1.
         rewrite close_tm_wrt_co_open_tm_wrt_co; auto.
         constructor. econstructor; eauto 1.
-        intros. rewrite (co_subst_co_tm_intro c).
-        apply subst_co_roleing. auto. auto. auto.
+        intros. rewrite (co_subst_co_tm_intro c). auto.
+        apply subst_co_roleing. auto. auto.
         apply mp_step with (b:= (a_CPi (Eq a0 a1 b R) a)); eauto.
         econstructor; eauto 2. intros. constructor.
-        rewrite (co_subst_co_tm_intro c).
-        apply subst_co_roleing. auto. auto. auto.
+        rewrite (co_subst_co_tm_intro c). auto.
+        apply subst_co_roleing. auto. auto.
       * eapply mp_step with (b:= (a_CPi (Eq a0 a1 T R) (close_tm_wrt_co c b))); eauto.
         -- apply Par_CPi_exists; auto 2. constructor.
            eapply multipar_roleing_tm_fst; eauto.
@@ -551,17 +553,16 @@ Proof.
       + eapply mp_step with (b:= (a_CPi (Eq a0 b T R) a)); eauto.
         -- eapply (Par_CPi (singleton c)); eauto 2.
            constructor. eapply multipar_roleing_tm_fst; eauto.
-           intros. constructor. rewrite (co_subst_co_tm_intro c).
+           intros. constructor. rewrite (co_subst_co_tm_intro c). auto.
            apply subst_co_roleing. auto. eapply multipar_roleing_tm_fst; eauto.
-           auto. 
   - apply mp_step with (b:= (a_CPi (Eq b B T R) a)); auto.
      eapply (Par_CPi (singleton c)); eauto.
      constructor. eapply multipar_roleing_tm_fst; eauto.
      constructor. eapply roleing_sub. eapply multipar_roleing_tm_fst; eauto.
-     auto. intros. constructor. rewrite (co_subst_co_tm_intro c).
+     auto. intros. constructor. rewrite (co_subst_co_tm_intro c). auto.
      apply subst_co_roleing. auto.
      eapply multipar_roleing_tm_fst; eauto.
-     auto. Unshelve. all:eauto. apply (fv_co_co_tm a). apply (fv_co_co_tm a).
+     Unshelve. all:eauto. apply (fv_co_co_tm a). apply (fv_co_co_tm a).
 Qed.
 
 
@@ -577,7 +578,7 @@ Proof.
   - inversion H; subst.
     eapply IHh1; eauto.
     destruct (IHh1 _ _ _ _ _ _ _ _ _ _ ltac:(auto) ltac:(auto)) as [L0 h0]; auto.
-    exists (L \u L0); eauto. inversion H3.
+    exists (L \u L0); eauto.
 Qed.
 
 Lemma multipar_CPi_phi_proj:  ∀ W (A B a A' B' a' T T': tm) R R1 R',
@@ -600,7 +601,7 @@ Proof.
     apply mp_step with (b := a'0); auto.
     apply mp_step with (b := b'); auto.
     apply mp_step with (b := A'0); auto.
-    eapply Par_sub; eauto. inversion H4.
+    eapply Par_sub; eauto.
 Qed.
 
 
@@ -615,7 +616,7 @@ Proof.
     assert (uniq ([(x,Nom)] ++ W)). {eapply rctx_uniq; eauto. }
     apply role_a_Abs with (L := union (singleton x) (dom W)).
     intros. rewrite (tm_subst_tm_tm_intro x B (a_Var_f x0)); auto.
-    replace ([(x0,Nom)] ++ W) with (nil ++ [(x0,Nom)] ++ W); auto.
+    replace (x0 ~ Nom ++ W) with (nil ++ [(x0,Nom)] ++ W); auto.
     apply subst_tm_roleing with (R1 := Nom). simpl_env. apply roleing_app_rctx.
     solve_uniq. auto. econstructor; auto. solve_uniq.
   - assert (Par W (a_UAbs rho B) (a_UAbs rho (close_tm_wrt_tm x b)) R).

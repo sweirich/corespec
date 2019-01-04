@@ -39,10 +39,6 @@ Qed.
 Hint Unfold AtomSetImpl.Subset.
 Hint Resolve binds_In AtomSetImpl.singleton_1 in_singleton_subset.
 
-
-(*
-*)
-
 Theorem rctx_fv : forall W a R, roleing W a R -> fv_tm_tm_tm a [<=] dom W.
 Proof. intros. induction H; simpl in *; autounfold.
        all: try (intros x h; apply empty_iff in h; contradiction).
@@ -67,6 +63,13 @@ Proof. intros. induction H; simpl in *; autounfold.
        end; fail).
        - apply singleton_iff in H2; subst. eapply binds_In; eauto.
        - apply empty_iff in h2; contradiction.
+Qed.
+
+Lemma axiom_body_fv_in_pattern : forall F p b A R Rs,
+      binds F (Ax p b A R Rs) toplevel -> fv_tm_tm_tm b [<=] fv_tm_tm_tm p.
+Proof. intros. apply toplevel_inversion in H.
+       inversion H as [W [G [B [H1 [_ [H2 H3]]]]]].
+       apply rctx_fv in H2. apply pat_ctx_fv in H1. eapply Subset_trans; eauto.
 Qed.
 
 Theorem context_fv_mutual :

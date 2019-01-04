@@ -1513,4 +1513,12 @@ Proof. intros. induction H.
     contradiction. left. exists F. eapply CasePath_Const; eauto.
 Qed.
 
+Lemma CasePath_dec : forall W a R F, roleing W a R -> 
+                     CasePath R a F \/ ~(CasePath R a F).
+Proof. intros. eapply decide_CasePath in H. inversion H.
+       inversion H0 as [F' H1]. destruct (eq_dec F F'). subst. auto.
+       right. intro. apply CasePath_head in H1. apply CasePath_head in H2.
+       rewrite H2 in H1. inversion H1. contradiction. right. eauto.
+Qed.
+
 
