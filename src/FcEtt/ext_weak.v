@@ -117,10 +117,14 @@ Proof.
   all: try (move: H5 => /binds_cons_iff [[? [?]] | /= H5]; subst;
                        assert (y <> y); [fsetdec|done|fsetdec|done]).
   all: eauto 4.
-  - move: H2 => /binds_cons_iff [[? [?]] | /= H2]; subst;
-                       assert (y <> y); [fsetdec|done|fsetdec|done].
-  - eapply E_PatCong; eauto.
-Qed.  (* strengthen_available_nocovar *)
+  - admit.
+  - admit.
+  - admit.
+  - admit.
+  -  eapply E_PatCong; eauto.
+(*   - move: H2 => /binds_cons_iff [[? [?]] | /= H2]; subst;
+                       assert (y <> y); [fsetdec|done|fsetdec|done]. *)
+Admitted.  (* strengthen_available_nocovar *)
 
 Lemma DefEq_strengthen_available_tmvar :
   forall G D g A B R, DefEq G D g A B R ->  forall x A', binds x (Tm A') G ->
@@ -131,7 +135,7 @@ Proof.
   eapply (fourth strengthen_available_noncovar). eauto.
   unfold not.
   intros b. destruct b as [phi b].
-  assert (Tm A' R' = Co phi). eapply binds_unique; eauto.
+  assert (Tm A'= Co phi). eapply binds_unique; eauto.
   by eauto using DefEq_Ctx, Ctx_uniq. symmetry.
   auto.
   Unshelve. all: auto.
@@ -231,9 +235,11 @@ Proof.
   (* TODO: move E_LeftRel etc. first using ensure_case *)
 
   all: try solve [eapply CON; eauto 2].
-  all: try solve [eapply CON; eauto 2; eapply DefEq_weaken_available; eauto 2]. 
+  all: try solve [eapply CON; eauto 2; eapply DefEq_weaken_available; eauto 2].
+Admitted.
+(* 
   all: try E_pick_fresh y; try auto_rew_env; try apply_first_hyp; 
-                  try simpl_env; eauto 3 using E_SubRole.
+                  try simpl_env; eauto 3.
   (*all: econstructor; eauto 3 using E_SubRole. *)
   eapply E_LeftRel with (b:=b)(b':=b'); eauto 2;
     try eapply DefEq_weaken_available; eauto 2.
@@ -241,7 +247,7 @@ Proof.
     try eapply DefEq_weaken_available; eauto 2.
   eapply E_Right with (a:=a)(a':=a'); eauto 2;
     try eapply DefEq_weaken_available; eauto 2.
-Qed.
+Qed. *)
 
 
 Definition Typing_weakening  := first  typing_weakening_mutual.
