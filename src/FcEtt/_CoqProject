@@ -30,3 +30,4 @@ utils_fun.v
 beta.v
 congruence.v
 param.v
+pattern.v
