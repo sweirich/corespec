@@ -216,6 +216,17 @@
 \ottrulehead{\ottnt{Nat}  ,\ \mathbb{N}}{::=}{}\ottprodnewline
 \ottfirstprodline{|}{ |  \ottnt{a}  | } {\textsf{S}}{}{}{}}
 
+\newcommand{\ottpatternXXarg}{
+\ottrulehead{\ottnt{pattern\_arg}}{::=}{\ottcom{Pattern arguments}}\ottprodnewline
+\ottfirstprodline{|}{\ottsym{\mbox{$\backslash{}$}Rel}  \ottnt{a} \, \ottnt{R}}{}{}{}{}\ottprodnewline
+\ottprodline{|}{\ottsym{\mbox{$\backslash{}$}Irr}  \ottnt{a}}{}{}{}{}\ottprodnewline
+\ottprodline{|}{\ottsym{\mbox{$\backslash{}$}Coe}  \gamma}{}{}{}{}}
+
+\newcommand{\ottpatternXXargs}{
+\ottrulehead{\ottnt{pattern\_args}  ,\ \ottnt{PA}}{::=}{}\ottprodnewline
+\ottfirstprodline{|}{\ottkw{none}}{}{}{}{}\ottprodnewline
+\ottprodline{|}{\ottnt{PA}  \ottsym{,}  \ottnt{pattern\_arg}}{}{}{}{}}
+
 \newcommand{\ottterminals}{
 \ottrulehead{\ottnt{terminals}}{::=}{}\ottprodnewline
 \ottfirstprodline{|}{ \leftrightarrow }{}{}{}{}\ottprodnewline
@@ -280,6 +291,7 @@
 \ottprodline{|}{\ottmv{F} \, \not\in \, \mathsf{dom} \, \Sigma}{}{}{}{}\ottprodnewline
 \ottprodline{|}{\mathbb{N}_{{\mathrm{1}}}  \ottsym{<}  \mathbb{N}_{{\mathrm{2}}}}{}{}{}{}\ottprodnewline
 \ottprodline{|}{ \mathbb{N}_{{\mathrm{1}}}  \leq  \mathbb{N}_{{\mathrm{2}}} }{}{}{}{}\ottprodnewline
+\ottprodline{|}{ \nu  = \rho }{}{}{}{}\ottprodnewline
 \ottprodline{|}{\ottnt{R_{{\mathrm{1}}}}  \ottsym{=}  \ottnt{R_{{\mathrm{2}}}}}{}{}{}{}\ottprodnewline
 \ottprodline{|}{\ottnt{a}  \ottsym{=}  \ottnt{b}}{}{}{}{}\ottprodnewline
 \ottprodline{|}{\phi_{{\mathrm{1}}}  \ottsym{=}  \phi_{{\mathrm{2}}}}{}{}{}{}\ottprodnewline
@@ -314,17 +326,29 @@
 \ottrulehead{\ottnt{JMatchSubst}}{::=}{}\ottprodnewline
 \ottfirstprodline{|}{ \mathsf{match} \  \ottnt{a_{{\mathrm{1}}}}  \ \mathsf{with} \  \ottnt{p}  \rightarrow  \ottnt{b_{{\mathrm{1}}}}  =  \ottnt{b_{{\mathrm{2}}}} }{}{}{}{\ottcom{match and substitute}}}
 
+\newcommand{\ottJPatData}{
+\ottrulehead{\ottnt{JPatData}}{::=}{}\ottprodnewline
+\ottfirstprodline{|}{\ottkw{uncurry} \, \ottnt{p}  \ottsym{=}  \ottmv{F}  \ottsym{@}  \ottnt{PA}}{}{}{}{\ottcom{Pattern data (head & arguments)}}}
+
+\newcommand{\ottJIsPattern}{
+\ottrulehead{\ottnt{JIsPattern}}{::=}{}\ottprodnewline
+\ottfirstprodline{|}{\ottkw{pattern} \, \ottnt{p}}{}{}{}{}}
+
+\newcommand{\ottJSubPat}{
+\ottrulehead{\ottnt{JSubPat}}{::=}{}\ottprodnewline
+\ottfirstprodline{|}{\ottkw{subpattern} \, \ottnt{p'} \, \ottnt{p}}{}{}{}{\ottcom{Subpattern}}}
+
 \newcommand{\ottJTmPatternAgree}{
 \ottrulehead{\ottnt{JTmPatternAgree}}{::=}{}\ottprodnewline
 \ottfirstprodline{|}{ \ottnt{a}   \leftrightarrow   \ottnt{p} }{}{}{}{\ottcom{term and pattern agree}}}
 
 \newcommand{\ottJTmSubPatternAgree}{
 \ottrulehead{\ottnt{JTmSubPatternAgree}}{::=}{}\ottprodnewline
-\ottfirstprodline{|}{ \ottnt{a} ^+ =  \ottnt{p} }{}{}{}{\ottcom{sub-pattern agrees with term}}}
+\ottfirstprodline{|}{ \ottnt{a}  \sqsubseteq  \ottnt{p} }{}{}{}{\ottcom{sub-pattern agrees with term}}}
 
 \newcommand{\ottJSubTmPatternAgree}{
 \ottrulehead{\ottnt{JSubTmPatternAgree}}{::=}{}\ottprodnewline
-\ottfirstprodline{|}{ \ottnt{a}  =  \ottnt{p} ^+ }{}{}{}{\ottcom{sub-term agrees with pattern}}}
+\ottfirstprodline{|}{ \ottnt{a}  \sqsupseteq  \ottnt{p} }{}{}{}{\ottcom{sub-term agrees with pattern}}}
 
 \newcommand{\ottJValuePath}{
 \ottrulehead{\ottnt{JValuePath}}{::=}{}\ottprodnewline
@@ -406,6 +430,9 @@
 \ottprodline{|}{\ottnt{JPatCtx}}{}{}{}{}\ottprodnewline
 \ottprodline{|}{\ottnt{JRename}}{}{}{}{}\ottprodnewline
 \ottprodline{|}{\ottnt{JMatchSubst}}{}{}{}{}\ottprodnewline
+\ottprodline{|}{\ottnt{JPatData}}{}{}{}{}\ottprodnewline
+\ottprodline{|}{\ottnt{JIsPattern}}{}{}{}{}\ottprodnewline
+\ottprodline{|}{\ottnt{JSubPat}}{}{}{}{}\ottprodnewline
 \ottprodline{|}{\ottnt{JTmPatternAgree}}{}{}{}{}\ottprodnewline
 \ottprodline{|}{\ottnt{JTmSubPatternAgree}}{}{}{}{}\ottprodnewline
 \ottprodline{|}{\ottnt{JSubTmPatternAgree}}{}{}{}{}\ottprodnewline
@@ -447,6 +474,8 @@
 \ottprodline{|}{\ottnt{sig}}{}{}{}{}\ottprodnewline
 \ottprodline{|}{\ottnt{available\_props}}{}{}{}{}\ottprodnewline
 \ottprodline{|}{\ottnt{Nat}}{}{}{}{}\ottprodnewline
+\ottprodline{|}{\ottnt{pattern\_arg}}{}{}{}{}\ottprodnewline
+\ottprodline{|}{\ottnt{pattern\_args}}{}{}{}{}\ottprodnewline
 \ottprodline{|}{\ottnt{terminals}}{}{}{}{}\ottprodnewline
 \ottprodline{|}{\ottnt{formula}}{}{}{}{}}
 
@@ -466,6 +495,8 @@
 \ottsig\ottinterrule
 \ottavailableXXprops\ottinterrule
 \ottNat\ottinterrule
+\ottpatternXXarg\ottinterrule
+\ottpatternXXargs\ottinterrule
 \ottterminals\ottinterrule
 \ottformula\ottinterrule
 \ottJSubRole\ottinterrule
@@ -473,6 +504,9 @@
 \ottJPatCtx\ottinterrule
 \ottJRename\ottinterrule
 \ottJMatchSubst\ottinterrule
+\ottJPatData\ottinterrule
+\ottJIsPattern\ottinterrule
+\ottJSubPat\ottinterrule
 \ottJTmPatternAgree\ottinterrule
 \ottJTmSubPatternAgree\ottinterrule
 \ottJSubTmPatternAgree\ottinterrule
@@ -721,6 +755,100 @@
 \newcommand{\ottdefnsJMatchSubst}{
 \ottdefnMatchSubst{}}
 
+% defns JPatData
+%% defn PatData
+\newcommand{\ottdrulePatDataXXHead}[1]{\ottdrule[#1]{%
+}{
+\ottkw{uncurry} \, \ottmv{F}  \ottsym{=}  \ottmv{F}  \ottsym{@}  \ottkw{none}}{%
+{\ottdrulename{PatData\_Head}}{}%
+}}
+
+
+\newcommand{\ottdrulePatDataXXRel}[1]{\ottdrule[#1]{%
+\ottpremise{\ottkw{uncurry} \, \ottnt{p}  \ottsym{=}  \ottmv{F}  \ottsym{@}  \ottnt{PA}}%
+}{
+\ottkw{uncurry} \, \ottsym{(}   \ottnt{p} \  \ottnt{a} ^{ \ottnt{R} }   \ottsym{)}  \ottsym{=}  \ottmv{F}  \ottsym{@}  \ottnt{PA}  \ottsym{,}  \ottsym{\mbox{$\backslash{}$}Rel}  \ottnt{a} \, \ottnt{R}}{%
+{\ottdrulename{PatData\_Rel}}{}%
+}}
+
+\newcommand{\ottdefnPatData}[1]{\begin{ottdefnblock}[#1]{$\ottkw{uncurry} \, \ottnt{p}  \ottsym{=}  \ottmv{F}  \ottsym{@}  \ottnt{PA}$}{\ottcom{Pattern data (head & arguments)}}
+\ottusedrule{\ottdrulePatDataXXHead{}}
+\ottusedrule{\ottdrulePatDataXXRel{}}
+\end{ottdefnblock}}
+
+
+\newcommand{\ottdefnsJPatData}{
+\ottdefnPatData{}}
+
+% defns JIsPattern
+%% defn Pattern
+\newcommand{\ottdrulePatternXXHead}[1]{\ottdrule[#1]{%
+}{
+\ottkw{pattern} \, \ottmv{F}}{%
+{\ottdrulename{Pattern\_Head}}{}%
+}}
+
+
+\newcommand{\ottdrulePatternXXRel}[1]{\ottdrule[#1]{%
+\ottpremise{\ottkw{pattern} \, \ottnt{p}}%
+}{
+\ottkw{pattern} \, \ottsym{(}   \ottnt{p} \  \ottnt{a} ^{ \ottnt{R} }   \ottsym{)}}{%
+{\ottdrulename{Pattern\_Rel}}{}%
+}}
+
+\newcommand{\ottdefnPattern}[1]{\begin{ottdefnblock}[#1]{$\ottkw{pattern} \, \ottnt{p}$}{}
+\ottusedrule{\ottdrulePatternXXHead{}}
+\ottusedrule{\ottdrulePatternXXRel{}}
+\end{ottdefnblock}}
+
+
+\newcommand{\ottdefnsJIsPattern}{
+\ottdefnPattern{}}
+
+% defns JSubPat
+%% defn SubPat
+\newcommand{\ottdruleSubPatXXRefl}[1]{\ottdrule[#1]{%
+\ottpremise{\ottkw{pattern} \, \ottnt{p}}%
+}{
+\ottkw{subpattern} \, \ottnt{p} \, \ottnt{p}}{%
+{\ottdrulename{SubPat\_Refl}}{}%
+}}
+
+
+\newcommand{\ottdruleSubPatXXRel}[1]{\ottdrule[#1]{%
+\ottpremise{\ottkw{subpattern} \, \ottnt{p'} \, \ottnt{p}}%
+}{
+\ottkw{subpattern} \, \ottnt{p'} \, \ottsym{(}   \ottnt{p} \  \ottmv{x} ^{ \ottnt{R} }   \ottsym{)}}{%
+{\ottdrulename{SubPat\_Rel}}{}%
+}}
+
+
+\newcommand{\ottdruleSubPatXXIrr}[1]{\ottdrule[#1]{%
+\ottpremise{\ottkw{subpattern} \, \ottnt{p'} \, \ottnt{p}}%
+}{
+\ottkw{subpattern} \, \ottnt{p'} \, \ottsym{(}   \ottnt{p} \  \Box ^{ \ottsym{-} }   \ottsym{)}}{%
+{\ottdrulename{SubPat\_Irr}}{}%
+}}
+
+
+\newcommand{\ottdruleSubPatXXCoe}[1]{\ottdrule[#1]{%
+\ottpremise{\ottkw{subpattern} \, \ottnt{p'} \, \ottnt{p}}%
+}{
+\ottkw{subpattern} \, \ottnt{p'} \, \ottsym{(}  \ottnt{p}  \ottsym{[}  \bullet  \ottsym{]}  \ottsym{)}}{%
+{\ottdrulename{SubPat\_Coe}}{}%
+}}
+
+\newcommand{\ottdefnSubPat}[1]{\begin{ottdefnblock}[#1]{$\ottkw{subpattern} \, \ottnt{p'} \, \ottnt{p}$}{\ottcom{Subpattern}}
+\ottusedrule{\ottdruleSubPatXXRefl{}}
+\ottusedrule{\ottdruleSubPatXXRel{}}
+\ottusedrule{\ottdruleSubPatXXIrr{}}
+\ottusedrule{\ottdruleSubPatXXCoe{}}
+\end{ottdefnblock}}
+
+
+\newcommand{\ottdefnsJSubPat}{
+\ottdefnSubPat{}}
+
 % defns JTmPatternAgree
 %% defn tm_pattern_agree
 \newcommand{\ottdruletmXXpatternXXagreeXXConst}[1]{\ottdrule[#1]{%
@@ -769,35 +897,35 @@
 \newcommand{\ottdruletmXXsubpatternXXagreeXXBase}[1]{\ottdrule[#1]{%
 \ottpremise{ \ottnt{a}   \leftrightarrow   \ottnt{p} }%
 }{
- \ottnt{a} ^+ =  \ottnt{p} }{%
+ \ottnt{a}  \sqsubseteq  \ottnt{p} }{%
 {\ottdrulename{tm\_subpattern\_agree\_Base}}{}%
 }}
 
 
 \newcommand{\ottdruletmXXsubpatternXXagreeXXAppRelR}[1]{\ottdrule[#1]{%
-\ottpremise{ \ottnt{a} ^+ =  \ottnt{p} }%
+\ottpremise{ \ottnt{a}  \sqsubseteq  \ottnt{p} }%
 }{
- \ottnt{a} ^+ =  \ottsym{(}   \ottnt{p} \  \ottmv{x} ^{ \ottnt{R} }   \ottsym{)} }{%
+ \ottnt{a}  \sqsubseteq  \ottsym{(}   \ottnt{p} \  \ottmv{x} ^{ \ottnt{R} }   \ottsym{)} }{%
 {\ottdrulename{tm\_subpattern\_agree\_AppRelR}}{}%
 }}
 
 
 \newcommand{\ottdruletmXXsubpatternXXagreeXXAppIrrel}[1]{\ottdrule[#1]{%
-\ottpremise{ \ottnt{a} ^+ =  \ottnt{p} }%
+\ottpremise{ \ottnt{a}  \sqsubseteq  \ottnt{p} }%
 }{
- \ottnt{a} ^+ =  \ottsym{(}   \ottnt{p} \  \Box ^{ \ottsym{-} }   \ottsym{)} }{%
+ \ottnt{a}  \sqsubseteq  \ottsym{(}   \ottnt{p} \  \Box ^{ \ottsym{-} }   \ottsym{)} }{%
 {\ottdrulename{tm\_subpattern\_agree\_AppIrrel}}{}%
 }}
 
 
 \newcommand{\ottdruletmXXsubpatternXXagreeXXCAppp}[1]{\ottdrule[#1]{%
-\ottpremise{ \ottnt{a} ^+ =  \ottnt{p} }%
+\ottpremise{ \ottnt{a}  \sqsubseteq  \ottnt{p} }%
 }{
- \ottnt{a} ^+ =  \ottsym{(}  \ottnt{p}  \ottsym{[}  \bullet  \ottsym{]}  \ottsym{)} }{%
+ \ottnt{a}  \sqsubseteq  \ottsym{(}  \ottnt{p}  \ottsym{[}  \bullet  \ottsym{]}  \ottsym{)} }{%
 {\ottdrulename{tm\_subpattern\_agree\_CAppp}}{}%
 }}
 
-\newcommand{\ottdefntmXXsubpatternXXagree}[1]{\begin{ottdefnblock}[#1]{$ \ottnt{a} ^+ =  \ottnt{p} $}{\ottcom{sub-pattern agrees with term}}
+\newcommand{\ottdefntmXXsubpatternXXagree}[1]{\begin{ottdefnblock}[#1]{$ \ottnt{a}  \sqsubseteq  \ottnt{p} $}{\ottcom{sub-pattern agrees with term}}
 \ottusedrule{\ottdruletmXXsubpatternXXagreeXXBase{}}
 \ottusedrule{\ottdruletmXXsubpatternXXagreeXXAppRelR{}}
 \ottusedrule{\ottdruletmXXsubpatternXXagreeXXAppIrrel{}}
@@ -813,27 +941,27 @@
 \newcommand{\ottdrulesubtmXXpatternXXagreeXXBase}[1]{\ottdrule[#1]{%
 \ottpremise{ \ottnt{a}   \leftrightarrow   \ottnt{p} }%
 }{
- \ottnt{a}  =  \ottnt{p} ^+ }{%
+ \ottnt{a}  \sqsupseteq  \ottnt{p} }{%
 {\ottdrulename{subtm\_pattern\_agree\_Base}}{}%
 }}
 
 
 \newcommand{\ottdrulesubtmXXpatternXXagreeXXApp}[1]{\ottdrule[#1]{%
-\ottpremise{ \ottnt{a}  =  \ottnt{p} ^+ }%
+\ottpremise{ \ottnt{a}  \sqsupseteq  \ottnt{p} }%
 }{
-  \ottnt{a} \  \ottnt{a_{{\mathrm{2}}}} ^{ \nu }   =  \ottnt{p} ^+ }{%
+  \ottnt{a} \  \ottnt{a_{{\mathrm{2}}}} ^{ \nu }   \sqsupseteq  \ottnt{p} }{%
 {\ottdrulename{subtm\_pattern\_agree\_App}}{}%
 }}
 
 
 \newcommand{\ottdrulesubtmXXpatternXXagreeXXCAppp}[1]{\ottdrule[#1]{%
-\ottpremise{ \ottnt{a}  =  \ottnt{p} ^+ }%
+\ottpremise{ \ottnt{a}  \sqsupseteq  \ottnt{p} }%
 }{
- \ottnt{a}  \ottsym{[}  \bullet  \ottsym{]}  =  \ottnt{p} ^+ }{%
+ \ottnt{a}  \ottsym{[}  \bullet  \ottsym{]}  \sqsupseteq  \ottnt{p} }{%
 {\ottdrulename{subtm\_pattern\_agree\_CAppp}}{}%
 }}
 
-\newcommand{\ottdefnsubtmXXpatternXXagree}[1]{\begin{ottdefnblock}[#1]{$ \ottnt{a}  =  \ottnt{p} ^+ $}{\ottcom{sub-term agrees with pattern}}
+\newcommand{\ottdefnsubtmXXpatternXXagree}[1]{\begin{ottdefnblock}[#1]{$ \ottnt{a}  \sqsupseteq  \ottnt{p} $}{\ottcom{sub-term agrees with pattern}}
 \ottusedrule{\ottdrulesubtmXXpatternXXagreeXXBase{}}
 \ottusedrule{\ottdrulesubtmXXpatternXXagreeXXApp{}}
 \ottusedrule{\ottdrulesubtmXXpatternXXagreeXXCAppp{}}
@@ -911,7 +1039,7 @@
 \newcommand{\ottdruleCasePathXXUnMatch}[1]{\ottdrule[#1]{%
 \ottpremise{ \mathsf{ValuePath} \  \ottnt{a}  =  \ottmv{F} }%
 \ottpremise{\ottmv{F}  \ottsym{:}   \,  \ottnt{p}  \sim  \ottnt{b}  :  \ottnt{A}  /  \ottnt{R_{{\mathrm{1}}}}  @  \ottnt{Rs}  \, \in \,  \Sigma_0 }%
-\ottpremise{ \neg  \ottsym{(}   \ottnt{a}  =  \ottnt{p} ^+   \ottsym{)} }%
+\ottpremise{ \neg  \ottsym{(}   \ottnt{a}  \sqsupseteq  \ottnt{p}   \ottsym{)} }%
 }{
  \mathsf{CasePath}_{ \ottnt{R} }\  \ottnt{a}  =  \ottmv{F} }{%
 {\ottdrulename{CasePath\_UnMatch}}{}%
@@ -1400,7 +1528,7 @@
 
 \newcommand{\ottdruleParXXAxiomApp}[1]{\ottdrule[#1]{%
 \ottpremise{\ottmv{F}  \ottsym{:}   \,  \ottnt{p}  \sim  \ottnt{b}  :  \ottnt{A}  /  \ottnt{R_{{\mathrm{1}}}}  @  \ottnt{Rs}  \, \in \,  \Sigma_0 }%
-\ottpremise{  \ottnt{a} ^+ =  \ottnt{p}   \wedge   \neg  \ottsym{(}   \ottnt{a}   \leftrightarrow   \ottnt{p}   \ottsym{)}  }%
+\ottpremise{  \ottnt{a}  \sqsubseteq  \ottnt{p}   \wedge   \neg  \ottsym{(}   \ottnt{a}   \leftrightarrow   \ottnt{p}   \ottsym{)}  }%
 \ottpremise{ \Omega  \vDash  \ottnt{a}   \Rightarrow _{ \ottnt{R} }  \ottnt{a'} }%
 \ottpremise{ \Omega  \vDash  \ottnt{a_{{\mathrm{1}}}}   \Rightarrow _{ \ottsym{(}  \ottkw{app\_role} \, \nu  \ottsym{)} }  \ottnt{a'_{{\mathrm{1}}}} }%
 \ottpremise{ \mathsf{rename} \  \ottnt{p}  \rightarrow  \ottnt{b}  \ \mathsf{to} \  \ottnt{p'}  \rightarrow  \ottnt{b'}  \ \mathsf{excluding} \  \ottsym{(}    \widetilde { \Omega }  ,  \mathsf{fv}\! \, \ottnt{p}   \ottsym{)}  \ \mathsf{and} \  \Delta' }%
@@ -1414,7 +1542,7 @@
 
 \newcommand{\ottdruleParXXAxiomCApp}[1]{\ottdrule[#1]{%
 \ottpremise{\ottmv{F}  \ottsym{:}   \,  \ottnt{p}  \sim  \ottnt{b}  :  \ottnt{A}  /  \ottnt{R_{{\mathrm{1}}}}  @  \ottnt{Rs}  \, \in \,  \Sigma_0 }%
-\ottpremise{  \ottnt{a} ^+ =  \ottnt{p}   \wedge   \neg  \ottsym{(}   \ottnt{a}   \leftrightarrow   \ottnt{p}   \ottsym{)}  }%
+\ottpremise{  \ottnt{a}  \sqsubseteq  \ottnt{p}   \wedge   \neg  \ottsym{(}   \ottnt{a}   \leftrightarrow   \ottnt{p}   \ottsym{)}  }%
 \ottpremise{ \Omega  \vDash  \ottnt{a}   \Rightarrow _{ \ottnt{R} }  \ottnt{a'} }%
 \ottpremise{ \mathsf{rename} \  \ottnt{p}  \rightarrow  \ottnt{b}  \ \mathsf{to} \  \ottnt{p'}  \rightarrow  \ottnt{b'}  \ \mathsf{excluding} \  \ottsym{(}    \widetilde { \Omega }  ,  \mathsf{fv}\! \, \ottnt{p}   \ottsym{)}  \ \mathsf{and} \  \Delta' }%
 \ottpremise{ \mathsf{match} \  \ottsym{(}  \ottnt{a'}  \ottsym{[}  \bullet  \ottsym{]}  \ottsym{)}  \ \mathsf{with} \  \ottnt{p'}  \rightarrow  \ottnt{b'}  =  \ottnt{a_{{\mathrm{2}}}} }%
@@ -2294,6 +2422,9 @@
 \ottdefnsJPatCtx
 \ottdefnsJRename
 \ottdefnsJMatchSubst
+\ottdefnsJPatData
+\ottdefnsJIsPattern
+\ottdefnsJSubPat
 \ottdefnsJTmPatternAgree
 \ottdefnsJTmSubPatternAgree
 \ottdefnsJSubTmPatternAgree
@@ -2322,7 +2453,7 @@
 \ottall
 
 \begin{verbatim}
-Definition rules:        159 good    0 bad
-Definition rule clauses: 446 good    0 bad
+Definition rules:        167 good    0 bad
+Definition rule clauses: 460 good    0 bad
 \end{verbatim}
 \end{document}

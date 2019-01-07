@@ -18,7 +18,8 @@ Require Export FcEtt.toplevel.
 Require Import FcEtt.ett_path.
 
 Lemma Value_lc : forall R a, Value R a -> lc_tm a.
-Proof. Admitted.
+Proof. intros. induction H; eauto. eapply CasePath_lc. eauto.
+Qed.
 
 Lemma Value_tm_subst_tm_tm : forall R v, Value R v ->
         forall b x,  lc_tm b -> Value R (tm_subst_tm_tm b x v).
@@ -39,6 +40,7 @@ Proof.
     econstructor; eauto.
     instantiate (1 := L \u singleton x) => x0 h0.
     rewrite tm_subst_tm_tm_open_tm_wrt_tm_var; auto.
+  - intros. econstructor. eapply CasePath_subst; eauto.
 Qed.
 
 (* ------------------------------------------------- *)
@@ -74,6 +76,7 @@ Proof.
     eapply Value_UAbsIrrel_exists with (x:=y).
     eapply fv_tm_tm_tm_co_subst_co_tm_notin; eauto.
     move: (H0 y ltac:(eauto) b x H1) => h0.
-    rewrite co_subst_co_tm_open_tm_wrt_tm in h0.
-    simpl in h0. auto. auto.
+    rewrite co_subst_co_tm_open_tm_wrt_tm in h0. auto.
+    simpl in h0. auto.
+  - intros. econstructor. eapply CasePath_subst_co; eauto.
 Qed.

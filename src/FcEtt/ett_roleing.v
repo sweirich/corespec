@@ -31,10 +31,10 @@ Lemma roleing_app_rctx : forall W1 W2 W3 a R, uniq (W1 ++ W2 ++ W3) ->
 Proof. intros W1 W2 W3 a R U H. generalize dependent W2.
        dependent induction H; intros; eauto.
         - eapply role_a_Abs with (L := union L (dom (W1 ++ W2 ++ W3))).
-          intros. rewrite <- app_assoc.
+          intros. rewrite app_assoc.
           eapply H0; eauto. simpl_env. auto.
         - eapply role_a_Pi with (L := union L (dom (W1 ++ W2 ++ W3))); eauto.
-          intros. rewrite <- app_assoc.
+          intros. rewrite app_assoc.
           eapply H1; eauto. simpl_env. auto.
         - econstructor; eauto.
 Qed.
@@ -114,13 +114,15 @@ Qed.
 Lemma Path_subst : forall F a b Rs x, Path a F Rs -> lc_tm b ->
                    Path (tm_subst_tm_tm b x a) F Rs.
 Proof. intros. induction H; simpl; eauto.
-       econstructor; eauto with lngen lc.
+       econstructor; eauto with lngen lc. econstructor.
+       eapply tm_subst_tm_tm_lc_tm; eauto. auto.
 Qed.
 
 Lemma Path_subst_co : forall F a b Rs c, Path a F Rs -> lc_co b ->
                    Path (co_subst_co_tm b c a) F Rs.
 Proof. intros. induction H; simpl; eauto.
-       econstructor; eauto with lngen lc.
+       econstructor; eauto with lngen lc. econstructor.
+       eapply co_subst_co_tm_lc_tm; eauto. auto.
 Qed.
 
 Lemma subst_tm_roleing : forall W1 x R1 W2 a R b, 
@@ -132,26 +134,24 @@ Proof.
   - destruct (x0 == x); auto. 
      + subst. assert (P:R = R1).
        eapply binds_mid_eq; eauto. subst. replace W1 with (nil ++ W1); eauto.
-       rewrite app_assoc. eapply roleing_app_rctx; simpl_env; eauto.
+       rewrite <- app_assoc. eapply roleing_app_rctx; simpl_env; eauto.
        eapply roleing_sub; eauto.
      + econstructor. eapply uniq_remove_mid; eauto.
        eapply binds_remove_mid; eauto. eauto.
   - pick fresh y and apply role_a_Abs.
-     rewrite tm_subst_tm_tm_open_tm_wrt_tm_var; auto 1.
-     rewrite <- app_assoc. eapply H0; eauto. simpl_env. auto.
-     eapply roleing_lc; eauto.
+     rewrite tm_subst_tm_tm_open_tm_wrt_tm_var; auto 1. eapply roleing_lc; eauto.
+     rewrite app_assoc. eapply H0; eauto. simpl_env. auto.
   - econstructor. eauto. eapply Path_subst. eauto. eapply roleing_lc.
     eauto. eauto.
   - pick fresh y and apply role_a_Pi; eauto.
-     rewrite tm_subst_tm_tm_open_tm_wrt_tm_var; auto 1.
-     rewrite <- app_assoc. eapply H0; eauto. simpl_env. auto.
-     eapply roleing_lc; eauto.
+     rewrite tm_subst_tm_tm_open_tm_wrt_tm_var; auto 1. eapply roleing_lc; eauto.
+     rewrite app_assoc. eapply H0; eauto. simpl_env. auto.
   - pick fresh c and apply role_a_CPi; eauto.
-     rewrite tm_subst_tm_tm_open_tm_wrt_co_var; auto 1.
-     eapply H0; eauto. eapply roleing_lc; eauto.
+    rewrite tm_subst_tm_tm_open_tm_wrt_co_var; auto 1. eapply roleing_lc; eauto.
+    eapply H0; eauto.
   - pick fresh c and apply role_a_CAbs; eauto.
-     rewrite tm_subst_tm_tm_open_tm_wrt_co_var; auto 1.
-     eapply H0; eauto. eapply roleing_lc; eauto.
+    rewrite tm_subst_tm_tm_open_tm_wrt_co_var; auto 1. eapply roleing_lc; eauto.
+    eapply H0; eauto.
 Qed.
 
 
@@ -184,7 +184,7 @@ Lemma roleing_Pi_some_any: forall W x rho A B R2,
 Proof. intros. apply (role_a_Pi (union (singleton x) (dom W)));
                  eauto using roleing_sub.
        intros. rewrite (tm_subst_tm_tm_intro x B (a_Var_f x0)); auto.
-       replace ([(x0,Nom)] ++ W) with (nil ++ [(x0,Nom)] ++ W); auto.
+       replace (x0 ~ Nom ++ W) with (nil ++ x0 ~ Nom ++ W); auto.
        assert (uniq ([(x,Nom)] ++ W)). {eapply rctx_uniq; eauto. }
        eapply subst_tm_roleing. simpl_env. apply roleing_app_rctx; eauto.
        econstructor. solve_uniq. auto. auto.
@@ -205,9 +205,8 @@ Proof.
   all : try solve [econstructor; eauto].
   all : try solve [eauto using roleing_sub].
   all : try solve [econstructor; eauto using ctx_to_rctx_uniq, ctx_to_rctx_binds_tm].
-  - destruct phi. move: (H0 a b A R0 eq_refl) => ?. split_hyp. clear H0.
+  - destruct phi. move: (H0 a b A R eq_refl) => ?. split_hyp. clear H0.
     eapply (@role_a_CPi L); eauto.
-  - inversion H2; subst. eapply roleing_sub. eauto. eauto.
 Qed.
 
 
