@@ -23,6 +23,17 @@ Ltac partial_fun_def_solve :=
     | repeat split; intros; discriminate
     | cbn; match goal with | [H : _ |- _] => by invs H end].
 
+Fixpoint fv_tm_args args :=
+  match args with
+    | [] => empty
+    | h :: tl => (
+      match h with
+        | pattern_arg_Rel t R => fv_tm_tm_tm t
+        | pattern_arg_Irr t => fv_tm_tm_tm t
+        | pattern_arg_Coe g => fv_tm_tm_co g
+      end) `union` fv_tm_args tl
+  end.
+
 (* TODO: unify with head_const in ett_match.v (should use this version) *)
 Fixpoint pat_head (p : tm) : option const :=
   match p with
@@ -159,6 +170,29 @@ Proof.
 Defined.
 
 Hint Resolve SubPat_Pattern_1 SubPat_Pattern_2 tm_pattern_agree_Pattern_1 tm_pattern_agree_Pattern_2.
+
+Lemma pat_args_default_fv : `{
+  Pattern a →
+  fv_tm_tm_tm a [=] fv_tm_args (pat_args_default a)}.
+Proof.
+  induction 1; cbn; ok.
+Qed.
+
+Lemma MatchSubst_Pattern_1 : `{
+  MatchSubst a p b1 b2 →
+  Pattern a}.
+Proof.
+  induction 1; eauto.
+Qed.
+
+Lemma MatchSubst_Pattern_2 : `{
+  MatchSubst a p b1 b2 →
+  Pattern p}.
+Proof.
+  induction 1; econstructor; eauto. (* eauto alone gets lost *)
+Qed.
+
+Hint Resolve MatchSubst_Pattern_1 MatchSubst_Pattern_2.
 
 Lemma Rename_pat_head : `{
   Rename p b p' b' s s' →

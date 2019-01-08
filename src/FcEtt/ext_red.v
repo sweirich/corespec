@@ -79,11 +79,11 @@ Hint Constructors chain_open_telescope_deq.
 Inductive chain_open_telescope_partial : context → tm → tm → pattern_args → Prop :=
   | cotp_base : `{chain_open_telescope_partial Γ A A []}
 
-  | cotp_rel  : `{chain_open_telescope_partial Γ (a_Pi rho A' A) B args →
+  | cotp_rel  : `{chain_open_telescope_partial Γ (a_Pi Rel A' A) B args →
                   Typing Γ a A' →
                   chain_open_telescope_partial Γ (open_tm_wrt_tm A a) B (pattern_arg_Rel a R :: args)}
 
-  | cotp_irr  : `{chain_open_telescope_partial Γ (a_Pi rho A' A) B args →
+  | cotp_irr  : `{chain_open_telescope_partial Γ (a_Pi Irrel A' A) B args →
                   Typing Γ a A' →
                   chain_open_telescope_partial Γ (open_tm_wrt_tm A a) B (pattern_arg_Irr a :: args)}
 
@@ -120,7 +120,7 @@ Inductive args_proper_type : context → pattern_args → context → Prop :=
   | apt_rel : `{
     args_proper_type Γ args Γ' →
     Typing Γ a (subst_args_in_term Γ' args A) →
-    args_proper_type Γ (ArgRel a :: args) (x ~ Tm A ++ Γ')}
+    args_proper_type Γ (pattern_arg_Rel a R :: args) (x ~ Tm A ++ Γ')}
   (* TODO: irr/coe *)
 .
 
@@ -156,6 +156,94 @@ Proof.
   - admit. (* eapply cpo_capp. *)
 Admitted.
 *)
+
+(* TODO: maybe change this lemma to a more general one, and update the name *)
+Lemma chain_open_telescope_deq_fv_1 : `{
+  x ∉ dom Γ →
+  x ∉ fv_tm_args args →
+  chain_open_telescope_deq Γ (a_Pi rho A' A0) B args →
+  x ∉ fv_tm_tm_tm A0
+}.
+Proof.
+  (* TODO: ugly proof, improve. Also, the Rel case hasn't been updated in a while,
+           it might not be the most direct way to prove it anymore (unsure). *)
+  intros until 0.
+  move=> fvΓ fvargs h.
+  dependent induction h.
+
+  - eapply Typing_context_fv in H.
+    cbn in H.
+    autofwd.
+    move: subset_notin.
+    move/(_ _ _ (dom Γ)).
+    apply; ok.
+  - move: (DefEq_context_fv H) => /=.
+    ok.
+  - cbn in *.
+    move: (f_equal fv_tm_tm_tm x) => /=.
+    move=> h'. move: (eq_sym h'). (* FIXME shouldn't need to do this by hand *)
+    Import AtomSetProperties.
+    move: (@subset_refl (fv_tm_tm_tm (open_tm_wrt_tm A a))) => s.
+    move=> eq.
+    rewrite <-eq in s at 1.
+    move: s.
+    move/(union_subset _ ). introfwd.
+    move: (fv_tm_tm_tm_open_tm_wrt_tm_upper A a) => ?.
+    clear H eq.
+    move: IHh.
+    move/(_ _ _ _ _ ltac:(eauto) ltac:(eauto) ltac:(reflexivity) ltac:(reflexivity)) => IH.
+    ok.
+
+  - admit. (* Irr *)
+  - admit. (* Coe *)
+Admitted.
+
+(* TODO: generalize this lemma (to all cases, not just Rel) and prove *)
+Lemma chain_open_telescope_partial_subst_general : `{
+  x `notin` dom Γ →
+  x `notin` fv_tm_args args →
+  Γ ⊨ a : A →
+  chain_open_telescope_partial Γ B PiB (coargs ++ one (pattern_arg_Rel (a_Var_f x) R) ++ args) →
+  chain_open_telescope_partial Γ (tm_subst_tm_tm a x B) PiB (coargs ++ (pattern_arg_Rel a R :: args))
+}.
+Proof.
+  intros until 0.
+  move => fv fv' tpga h; dependent induction h.
+
+  - destruct coargs; cbn in x; inversion x.
+
+  - move: IHh. ecbn.
+Admitted.
+
+Lemma chain_open_telescope_partial_subst_Rel : `{
+  x `notin` dom Γ →
+  x `notin` fv_tm_args args →
+  Γ ⊨ a : A →
+  chain_open_telescope_partial Γ B PiB ((pattern_arg_Rel (a_Var_f x) R :: args)) →
+  chain_open_telescope_partial Γ (tm_subst_tm_tm a x B) PiB ((pattern_arg_Rel a R :: args))
+}.
+Proof.
+  (* FIXME: old, broken proof. Should be obtained from previous lemma instead *)
+  (*
+  intros until 0.
+  move => fv fv' tpga h; dependent induction h.
+
+  - move: IHh.
+    move/(_ tpga _ _ _ fv _ ltac:(reflexivity)) => ih.
+    eapply (cpo_eq ih).
+    move: (DefEq_context_fv H); introfwd.
+    rewrite tm_subst_tm_tm_fresh_eq. { ok. }
+    rewrite tm_subst_tm_tm_fresh_eq. { ok. }
+    ok.
+
+  - rewrite <- tm_subst_tm_tm_intro; last first.
+    {
+      eapply chain_open_telescope_deq_fv_1; ok.
+    }
+    eapply cpo_rel.
+    ok.
+  *)
+Admitted.
 
 
 Lemma decompose_subpattern_refl : `{
@@ -317,7 +405,7 @@ Lemma TODO_name : `{
 Proof.
   induction 3; introfwd.
 
-  - invs H4.
+  - cbn in H4. invs H4.
     move: (decompose_subpattern_pat_head H5); introfwd. subst.
     ok.
     + ecbn.
@@ -330,7 +418,52 @@ Proof.
       by ecbn.
     + ecbn. admit. (* Weakening *)
 
-  (*__ CURRENTLY IMPORTING THE REST OF THE PROOF __*)
+  (* Rel *)
+  - invs H6. (* CHECK: no need for dependent induction, right? *)
+    (* eapply decompose_subpattern_PatternContexts_full in H6. *)
+    * eapply invert_a_App_Rel in H4; autofwd.
+      cbn in IHMatchSubst.
+      eapply dsp_sub_rel in H17.
+      move: H3 H0 IHMatchSubst => /= H3 H0.
+      move/(_ ltac:(ok)).
+      move /(_ _ _ _ _ _ _ H3 H4 _ H17 _).
+      ecbn.
+      invs H5.
+      invs H8.
+      move/(_ _ eq_refl eq_refl ltac:(eassumption)).
+      introfwd.
+      eexists.
+      eapply chain_open_telescope_partial_subst_Rel in H10; try eassumption.
+      ok.
+      (* Substituted typing *)
+      {
+        eapply Typing_tm_subst.
+        move: H11.
+        ecbn.
+        intros; eassumption.
+        by inversion H8.
+      }
+      (* x ∉ dom Γ *)
+      {
+        autoreg.
+        match goal with | H : Ctx _ |- _ => solve [by invs H] end.
+      }
+      (* x ∉ fv_tm_args args1 *)
+      {
+        SearchAbout a1.
+        have h : Pattern a1 by eapply MatchSubst_Pattern_1; eauto. (* FIXME: eauto doesn't use MatchSubst_Pattern_1 *)
+        eapply pat_args_default_fv in h.
+        by ok.
+      }
+
+      by ok.
+
+    * (* invs H4. *)
+      eapply invert_a_App_Rel in H4; autofwd.
+      move: H3 H0 IHMatchSubst => /= H3 H0.
+      move/(_ ltac:(ok)).
+
+  (*__ CURRENTLY IMPORTING THE PROOF __*)
 
 Admitted.
 
