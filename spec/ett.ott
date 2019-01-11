@@ -325,13 +325,13 @@ freevars
 
 grammar
 
-pattern_arg :: 'pat_arg_' ::= {{ com Pattern arguments }}
-  | \Rel a R       ::   :: ArgRel
-  | \Irr a         ::   :: ArgIrr
-  | \Coe g         ::   :: ArgCoe
+pattern_arg :: 'pattern_arg_' ::= {{ com Pattern arguments }}
+  | \Rel a R       ::   :: Rel
+  | \Irr a         ::   :: Irr
+  | \Coe g         ::   :: Coe
 
 
-pattern_args, PA :: 'pat_args_' ::= {{ coq list pattern_arg }}
+pattern_args, PA :: 'pattern_args_' ::= {{ coq list pattern_arg }}
   | none                  ::   :: None {{ coq nil }}
   | PA , pattern_arg      ::   :: Cons {{ coq (cons [[pattern_arg]] [[PA]]) }}
 
@@ -785,7 +785,15 @@ pattern p
 pattern (p R a)
 
 
-% TODO: other cases (left out for now for development purposes)
+pattern p
+--------------- :: Irr
+pattern (p - a)
+
+
+pattern p
+--------------- :: Coe
+pattern (p [g])
+
 
 
 defns

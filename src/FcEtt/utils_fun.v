@@ -9,3 +9,10 @@ Definition zip : `{list A → list B → list (A * B)} :=
       | _, nil => nil
       | x :: xs, y :: ys => (x, y) :: zip _ _ xs ys
     end.
+
+
+Fixpoint map_r {A B C} f (l : list (A * B)) : list (A * C):=
+  match l with
+    | [] => []
+    | (h1, h2) :: tl => (h1, f h2) :: map_r f tl
+  end.

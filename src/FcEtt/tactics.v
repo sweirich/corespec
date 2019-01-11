@@ -88,6 +88,10 @@ Ltac subst_forall :=
 
 Ltac check_num_goals_eq g := let n:= numgoals in guard n=g.
 
+
+(* Inversion and substitution *)
+Ltac invs H := inversion H; subst.
+
 (*****************)
 (**** Solvers ****)
 (*****************)
@@ -575,6 +579,8 @@ Ltac clearall := TacticsInternals.clearall.
 Tactic Notation "clear all" := TacticsInternals.clearall.
 
 Tactic Notation "exactly" integer(n) "goals" := TacticsInternals.check_num_goals_eq n.
+
+Ltac invs := TacticsInternals.invs.
 
 (* FIXME: rely on internals *)
 Tactic Notation "basic_nosolve_n" int_or_var(n) := intuition (subst; eauto n).

@@ -25,6 +25,8 @@ Notation "ζ ⊨ a : R" := (roleing ζ a R) (at level 80, a at level 35, R at le
 Notation "x ∈ S" := (x `in`    S) (at level 70).
 Notation "x ∉ S" := (x `notin` S) (at level 70).
 
+Notation "s1 ⊂ s2" := (s1 [<=] s2) (at level 70).
+
 Notation "( ρ = +)∨( x ∉ '𝕗𝕧' A )" := (RhoCheck ρ x A) (at level 70, only printing).
 Notation "ρ-check ρ x A" := (RhoCheck ρ x A) (at level 70, only printing).
 
@@ -36,6 +38,7 @@ Notation "'ℱν' φ" := (fv_co_co_co φ) (at level 50, only printing).
 Notation "'ℱν' φ" := (fv_co_co_tm φ) (at level 50, only printing).
 
 Notation "a ∪ b" := (a `union` b) (at level 50).
+Notation "a ∩ b" := (AtomSetImpl.inter a b) (at level 50).
 
 (* Elements *)
 Notation "∅" := nil.

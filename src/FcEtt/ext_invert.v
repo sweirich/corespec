@@ -1325,15 +1325,17 @@ Ltac reg H :=
       let pwfp2 := fresh "pwf" phi2 in
       move: (AnnIso_regularity H) => [pwfp1 pwfp2]
       *)
-    | _ ⊨ _ : a_Star =>
+    | Typing _ _ a_Star =>
       move: (Typing_Ctx H) => ?;
-      TacticsInternals.wrap_hyp H (* FIXME: hack (inconsisten (can't just fail here)) *)
-    | _ ⊨ _ : _ =>
+      TacticsInternals.wrap_hyp H (* FIXME: hack (inconsistent (can't just fail here)) *)
+
+    | Typing _ _ _ =>
       move: (Typing_regularity H) => ?;
       move: (Typing_Ctx H) => ?
+
     | DefEq _ _ _ _ _ _ => (* TODO: do we want to name arguments? (like above) *)
       move: (PropWff_regularity (DefEq_regularity H)) => [? ?]
-    
+
 
   end. 
 
