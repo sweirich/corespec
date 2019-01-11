@@ -912,6 +912,14 @@ Fixpoint pattern_length (a : tm) : nat := match a with
  | _ => 0
  end.
 
+Fixpoint vars_Pattern (p : tm) := match p with
+   | a_Fam F => nil
+   | a_App p1 (Role _) (a_Var_f x) => vars_Pattern p1 ++ [ x ]
+   | a_App p1 (Rho Irrel) a_Bullet => vars_Pattern p1
+   | a_CApp p1 g_Triv => vars_Pattern p1
+   | _ => nil
+   end.
+
 (* -------------- A specific signature with Fix ------------ *)
 Definition Fix : atom.
   pick fresh F.
@@ -973,10 +981,9 @@ Inductive Path : tm -> const -> roles -> Prop :=    (* defn Path *)
      lc_tm b' ->
      Path a F  ( R1 :: Rs )  ->
      Path  ( (a_App a (Role R1) b') )  F Rs
- | Path_IApp : forall (a b:tm) (F:const) (Rs:roles),
-     lc_tm b ->
+ | Path_IApp : forall (a:tm) (F:const) (Rs:roles),
      Path a F Rs ->
-     Path  ( (a_App a (Rho Irrel) b) )  F Rs
+     Path  ( (a_App a (Rho Irrel) a_Bullet) )  F Rs
  | Path_CApp : forall (a:tm) (F:const) (Rs:roles),
      Path a F Rs ->
      Path  ( (a_CApp a g_Triv) )  F Rs.

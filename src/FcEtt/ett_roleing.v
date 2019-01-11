@@ -114,15 +114,13 @@ Qed.
 Lemma Path_subst : forall F a b Rs x, Path a F Rs -> lc_tm b ->
                    Path (tm_subst_tm_tm b x a) F Rs.
 Proof. intros. induction H; simpl; eauto.
-       econstructor; eauto with lngen lc. econstructor.
-       eapply tm_subst_tm_tm_lc_tm; eauto. auto.
+       econstructor; eauto with lngen lc.
 Qed.
 
 Lemma Path_subst_co : forall F a b Rs c, Path a F Rs -> lc_co b ->
                    Path (co_subst_co_tm b c a) F Rs.
 Proof. intros. induction H; simpl; eauto.
-       econstructor; eauto with lngen lc. econstructor.
-       eapply co_subst_co_tm_lc_tm; eauto. auto.
+       econstructor; eauto with lngen lc.
 Qed.
 
 Lemma subst_tm_roleing : forall W1 x R1 W2 a R b, 
@@ -217,6 +215,8 @@ Proof.
 Qed.
 
 Hint Resolve Typing_roleing : roleing.
+
+
 (*
 Lemma toplevel_roleing1 : forall W F a A R, binds F (Ax a A R) toplevel -> 
                                            uniq W -> roleing W a R.

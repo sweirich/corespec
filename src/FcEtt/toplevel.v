@@ -49,6 +49,35 @@ Lemma pat_ctx_fv : forall W G F A p B, PatternContexts W G F A p B ->
 Proof. intros. induction H; simpl; fsetdec.
 Qed.
 
+Lemma pat_ctx_vars_Pattern : forall W G F A p B, PatternContexts W G F A p B ->
+            vars_Pattern p = rev (List.map fst W).
+Proof. intros. induction H; eauto. simpl. rewrite IHPatternContexts.
+       unfold one. auto.
+Qed.
+
+Lemma uniq_NoDup : forall (l : role_context), uniq l -> NoDup (List.map fst l).
+Proof. intros. induction H; simpl. apply NoDup_nil. apply NoDup_cons.
+       intro. apply H0. clear - H1. induction E; eauto. simpl in *.
+       inversion H1. destruct a. simpl in H. rewrite H. eauto.
+       destruct a. apply IHE in H. auto. auto. Unshelve. exact.
+Qed.
+
+Lemma NoDup_add : forall A (l1 l2 : list A) (a : A), ~(In a (l1 ++ l2)) ->
+      NoDup (l1 ++ l2) -> NoDup (l1 ++ a :: l2).
+Proof. intros. generalize dependent l2. generalize a.
+       induction l1; intros; simpl in *.
+       apply NoDup_cons; auto. inversion H0; subst. apply NoDup_cons.
+       intro. apply in_app_or in H1. inversion H1. apply H3.
+       apply in_or_app. left; auto. simpl in H2. inversion H2.
+       subst. apply H. left; auto. apply H3. apply in_or_app. right; auto. eauto.
+Qed.
+
+Lemma NoDup_reverse : forall A (l : list A), NoDup l -> NoDup (rev l).
+Proof. intros. induction H; simpl. apply NoDup_nil. apply NoDup_add.
+       rewrite app_nil_r. intro. apply H. apply in_rev in H1. auto.
+       rewrite app_nil_r. auto.
+Qed.
+
 (*
 
 Lemma toplevel_closed_const : forall F A, binds F (Cs A) toplevel ->

@@ -39,6 +39,12 @@ Qed.
 Hint Unfold AtomSetImpl.Subset.
 Hint Resolve binds_In AtomSetImpl.singleton_1 in_singleton_subset.
 
+Theorem rctx_uniq : forall W a R, roleing W a R -> uniq W.
+Proof. intros. induction H; eauto. pick fresh x.
+       simpl in *. eapply uniq_cons_1. eauto.
+       pick fresh c. simpl in *. eapply uniq_cons_1. eauto. Unshelve. exact.
+Qed.
+
 Theorem rctx_fv : forall W a R, roleing W a R -> fv_tm_tm_tm a [<=] dom W.
 Proof. intros. induction H; simpl in *; autounfold.
        all: try (intros x h; apply empty_iff in h; contradiction).

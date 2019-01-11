@@ -1,4 +1,4 @@
-
+ 
 Require Import Omega.
 
 Require Export FcEtt.imports.
@@ -214,6 +214,12 @@ Proof. intros. induction H; eauto.
                         simpl in H, H1; omega]).
 Qed.
 
+Lemma inter_empty : forall S1 S2, (forall x, x `in` S1 -> x `notin` S2) ->
+      AtomSetImpl.inter S1 S2 [<=] empty.
+Proof. intros. intro. intro. apply inter_iff in H0. apply empty_iff.
+       inversion H0. eapply H; eauto.
+Qed.
+
 Lemma confluence_size : forall n a, size_tm a <= n ->  forall W a1 R, Par W a a1 R -> forall a2, Par W a a2 R -> exists b, Par W a1 b R /\ Par W a2 b R.
 Proof.
   pose confluence_size_def n :=
@@ -289,32 +295,45 @@ Proof.
        econstructor. auto. eapply Par_lc2; eauto. eapply Par_lc2; eauto.
        eapply MatchSubst_lc3; eauto. auto.
      + inversion H10; subst.
-       assert (Par W b2 (matchsubst ac p1 b'0) R).
-        { eapply MatchSubst_par with (p1 := p). eauto.
-          intro. apply tm_pattern_agree_length_same in Q1.
-          apply tm_pattern_agree_length_same in H12. simpl in Q1. omega.
-          eapply tm_subpattern_agree_sub_app; eauto. eauto.
-          admit. eauto. eapply matchsubst_fun_ind.
-          eapply tm_pattern_agree_cong. eapply MatchSubst_match; eauto.
-          auto. eapply MatchSubst_lc3; eauto. auto.
-         } destruct R0; simpl.
-        * replace W with (nil ++ W); eauto.
-          eapply subst3. eapply par_app_rctx.
-          simpl_env. econstructor. eapply Par_rctx_uniq; eauto.
-          inversion H9; subst. fsetdec. auto. eauto.
-        * replace W with (nil ++ W); eauto.
-          eapply subst3. eapply par_app_rctx.
-          simpl_env. econstructor. eapply Par_rctx_uniq; eauto.
-          inversion H9; subst. fsetdec. auto. eauto.
-        * assert (Par W a2 (matchsubst ac p1 b'0) R).
-        { eapply MatchSubst_par with (p1 := p). eauto.
-          intro. apply tm_pattern_agree_length_same in Q1.
-          apply tm_pattern_agree_length_same in H12. simpl in Q1. omega.
-          eapply tm_subpattern_agree_sub_app; eauto. eauto.
-          admit. eauto. eapply matchsubst_fun_ind.
-          eapply tm_pattern_agree_cong. eapply MatchSubst_match; eauto.
-          auto. eapply MatchSubst_lc3; eauto. auto.
-         } simpl. auto.
+       assert (Par ([(x,R0)] ++ W) b2 (matchsubst ac p1 b'0) R).
+        { eapply MatchSubst_par with (p1 := p).
+           ** eauto.
+           ** intro. eapply tm_subpattern_agree_app_contr; eauto.
+           ** eapply tm_subpattern_agree_sub_app; eauto.
+           ** eauto.
+           ** admit.
+           ** eauto.
+           ** eapply matchsubst_fun_ind.
+              eapply tm_pattern_agree_cong. eapply MatchSubst_match; eauto.
+              auto. eapply MatchSubst_lc3; eauto. auto.
+           ** admit.
+         }
+        * simpl. replace W with (nil ++ W); eauto.
+          eapply subst3 with (R1 := R0). rewrite app_nil_l. auto.
+          simpl in Par4. auto.
+        * simpl. replace W with (nil ++ W); eauto.
+          eapply MatchSubst_par with (p1 := p).
+           ** eauto.
+           ** intro. eapply tm_subpattern_agree_app_contr; eauto.
+           ** eapply tm_subpattern_agree_sub_app; eauto.
+           ** eauto.
+           ** inversion H9; subst. apply toplevel_inversion in H5.
+              inversion H5 as [W' [G [B [Q2 [_ [Q3 Q4]]]]]].
+              inversion Q2; subst.
+           ** eauto.
+           ** eapply matchsubst_fun_ind.
+              eapply tm_pattern_agree_cong. eapply MatchSubst_match; eauto.
+              auto. eapply MatchSubst_lc3; eauto. auto.
+           ** simpl_env. apply uniq_app_4.
+              move: (uniq_atoms_Rename H9) => h9. apply uniq_vars_combine.
+              unfold uniq_atoms_pattern in *. simpl in h9. auto.
+              eapply Par_rctx_uniq; eauto.
+              move: (Rename_fv_new_pattern H9) => h9. unfold disjoint.
+              apply inter_empty. intros. apply combine_dom in H12.
+              apply vars_fv in H12. simpl in h9.
+              assert (x `in` D') by fsetdec. intro.
+              move: (Rename_inter_empty H9) => h. apply (h x).
+              apply AtomSetImpl.union_2. auto. auto.
   - (* two cbetas *)
     use_size_induction a0 ac Par1 Par2. inversion Par1; subst.
     + exists (open_tm_wrt_co a' g_Triv); split.
@@ -502,18 +521,30 @@ Proof.
           eapply tm_pattern_agree_cong. eapply MatchSubst_match; eauto.
           auto. eapply MatchSubst_lc3; eauto. auto.
          } simpl. auto.
-    + inversion H4; subst. inversion H15; subst.
-      assert (matchsubst ac p1 b' = matchsubst ac p2 b'0).
-         { inversion H3; subst. inversion H14; subst.
-           move: (axiom_body_fv_in_pattern H) => h. simpl in h.
-           move: (rctx_fv (Par_roleing_tm_snd Par1)) => h'.
-           eapply MatchSubst_Rename_preserve with (a := ac)(p := p3).
-           eapply tm_pattern_agree_cong.
-           eapply (tm_pattern_agree_rename_inv_2 (MatchSubst_match H28) H33).
-           auto. eapply H33. eapply H36. simpl. clear - h h'. fsetdec.
-           simpl. clear - h h'. fsetdec. all: admit. } all: admit.
-     (** Working here **)
-     (* assert (Par W b2 (matchsubst ac p1 b'0) R).
+    + assert (Q : matchsubst (a_App ac nu bc) p' b' =
+                          matchsubst (a_App ac nu bc) p'0 b'0).
+      { move: (axiom_body_fv_in_pattern H) => h. simpl in h.
+        move: (rctx_fv (Par_roleing_tm_snd Par1)) => h'.
+        move: (rctx_fv (Par_roleing_tm_snd Par3)) => h''.
+        move: (Par_lc1 Par3) => l1. move: (Par_lc2 Par3) => l2.
+        eapply MatchSubst_Rename_preserve with (a := a_App ac nu bc)(p := p0).
+        eapply tm_pattern_agree_cong with (a1 := a_App a' nu a1').
+        eapply (tm_pattern_agree_rename_inv_2 (MatchSubst_match H4) H3).
+        clear - Q3 l1 l2. eauto. eapply H3. eapply H14. simpl.
+        clear - h h' h''. fsetdec. simpl. clear - h h' h''. fsetdec.
+        clear - H. apply uniq_atoms_toplevel in H. auto.
+        eapply matchsubst_fun_ind.
+        eapply tm_pattern_agree_cong with (a1 := a_App a' nu a1').
+        eapply MatchSubst_match; eauto. clear - Q3 l1 l2. eauto.
+        eapply Rename_lc_4; eauto. auto.
+        eapply matchsubst_fun_ind.
+        eapply tm_pattern_agree_cong with (a1 := a_App a'0 nu a1'0).
+        eapply MatchSubst_match; eauto. econstructor. auto.
+        eapply Par_lc1; eauto. eapply Par_lc2; eauto.
+        eapply Rename_lc_4; eauto. auto. } rewrite Q.
+
+      inversion H15; subst.
+      assert (Par W b2 (matchsubst ac p1 b'0) R).
         { eapply MatchSubst_par with (p1 := p0); eauto. admit.
           eapply matchsubst_fun_ind; eauto.
           eapply tm_pattern_agree_cong. eapply MatchSubst_match; eauto.
@@ -522,17 +553,17 @@ Proof.
         * replace W with (nil ++ W); eauto.
           eapply subst3. eapply par_app_rctx.
           simpl_env. econstructor. eapply Par_rctx_uniq; eauto.
-          inversion H3; subst. fsetdec. auto. eauto.
+          inversion H14; subst. fsetdec. auto. eauto.
         * replace W with (nil ++ W); eauto.
           eapply subst3. eapply par_app_rctx.
           simpl_env. econstructor. eapply Par_rctx_uniq; eauto.
-          inversion H3; subst. fsetdec. auto. eauto.
-        * assert (Par W a1 (matchsubst ac p1 b') R).
+          inversion H14; subst. fsetdec. auto. eauto.
+        * assert (Par W a2 (matchsubst ac p1 b'0) R).
         { eapply MatchSubst_par with (p1 := p0); eauto. admit.
           eapply matchsubst_fun_ind.
           eapply tm_pattern_agree_cong. eapply MatchSubst_match; eauto.
           auto. eapply MatchSubst_lc3; eauto. auto.
-         } simpl. auto. *)
+         } simpl. auto.
   - inversion H0. assert False.
     eapply pattern_like_tm_par; try apply H9; eauto.
     contradiction.
