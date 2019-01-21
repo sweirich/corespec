@@ -45,31 +45,53 @@ Proof. intros. induction H; eauto. pick fresh x.
        pick fresh c. simpl in *. eapply uniq_cons_1. eauto. Unshelve. exact.
 Qed.
 
-Theorem rctx_fv : forall W a R, roleing W a R -> fv_tm_tm_tm a [<=] dom W.
-Proof. intros. induction H; simpl in *; autounfold.
-       all: try (intros x h; apply empty_iff in h; contradiction).
-       all: try (intros x h; apply union_iff in h; inversion h as [h1 | h2];
-            eauto).
-       all: try (apply union_iff in h1; inversion h1 as [h11 | h2]; auto).
-       all: try (apply union_iff in h2; inversion h2 as [h21 | h22]; auto).
-       all: intros.
-       all: try (
-       pick fresh y;
-      match goal with
-        [ P : _ `in` fv_tm_tm_tm _,
-          Q : forall _, _ -> fv_tm_tm_tm (open_tm_wrt_tm _ _) [<=] _
-          |- _ ] =>
-       eapply (fv_tm_tm_tm_open_tm_wrt_tm_lower _ (a_Var_f y)) in P;
-       eapply add_3; [ eauto | eapply AtomSetProperties.in_subset; eauto ]
-      | [ P : _ `in` fv_tm_tm_tm _,
-          Q : forall _, _ -> fv_tm_tm_tm (open_tm_wrt_co _ _) [<=] _
-          |- _ ] =>
-       eapply (fv_tm_tm_tm_open_tm_wrt_co_lower _ (g_Var_f y)) in P;
-       eapply AtomSetProperties.in_subset; eauto
-       end; fail).
-       - apply singleton_iff in H2; subst. eapply binds_In; eauto.
-       - apply empty_iff in h2; contradiction.
+Theorem rctx_fv_tm_co : forall W a R, roleing W a R ->
+        fv_tm_tm_tm a [<=] dom W /\ fv_co_co_tm a [<=] empty.
+Proof. intros. induction H; simpl in *; split; split_hyp; autounfold.
+       all: try (intros y h; apply empty_iff in h; contradiction).
+       all: try (intros y h; apply union_iff in h; inversion h as [h1 | h2];
+            eauto; fail).
+       all: try (intros; eapply AtomSetProperties.in_subset;
+                   [ eauto | rewrite union_empty_r; auto ]).
+       all: try (intros; eapply AtomSetProperties.in_subset;
+                   [ eauto | apply AtomSetProperties.union_subset_3;
+                      [ auto | apply AtomSetProperties.union_subset_3; auto ]]).
+       all: try (intros y h; pick fresh z;
+            match goal with
+             [ Q : forall _, _ -> _ /\ _  |- _ ] =>
+             move: (Q z ltac:(auto)) => h'; split_hyp
+            end).
+       all: try (apply union_iff in h; inversion h).
+       all: try (eapply AtomSetProperties.in_subset; eauto; fail).
+       all: try (eapply add_3; [ eauto |
+            eapply AtomSetProperties.in_subset; [ eauto |
+            erewrite fv_tm_tm_tm_open_tm_wrt_tm_lower; eauto]]; fail).
+       all: try (eapply add_3; [ eauto |
+            eapply AtomSetProperties.in_subset; [ eauto |
+            erewrite fv_co_co_tm_open_tm_wrt_tm_lower; eauto]]; fail).
+       all: try (eapply AtomSetProperties.in_subset;
+            [ eauto | erewrite fv_tm_tm_tm_open_tm_wrt_co_lower; eauto]; fail).
+       all: try (eapply AtomSetProperties.in_subset;
+            [ eauto | erewrite fv_co_co_tm_open_tm_wrt_co_lower; eauto]; fail).
+       - intros. apply singleton_iff in H2; subst. eapply binds_In; eauto.
+       - apply union_iff in H12. inversion H12.
+         eapply AtomSetProperties.in_subset; eauto.
+         apply union_iff in H13. inversion H13;
+         eapply AtomSetProperties.in_subset; eauto.
+       - apply union_iff in H12. inversion H12.
+         eapply AtomSetProperties.in_subset; eauto.
+         apply union_iff in H13. inversion H13;
+         eapply AtomSetProperties.in_subset; eauto.
 Qed.
+
+Lemma rctx_fv : forall W a R, roleing W a R -> fv_tm_tm_tm a [<=] dom W.
+Proof. intros. eapply rctx_fv_tm_co; eauto.
+Qed.
+
+Lemma rctx_fv_co : forall W a R, roleing W a R -> fv_co_co_tm a [<=] empty.
+Proof. intros. eapply rctx_fv_tm_co; eauto.
+Qed.
+
 
 Lemma axiom_body_fv_in_pattern : forall F p b A R Rs,
       binds F (Ax p b A R Rs) toplevel -> fv_tm_tm_tm b [<=] fv_tm_tm_tm p.
@@ -77,6 +99,14 @@ Proof. intros. apply toplevel_inversion in H.
        inversion H as [W [G [B [H1 [_ [H2 H3]]]]]].
        apply rctx_fv in H2. apply pat_ctx_fv in H1. eapply Subset_trans; eauto.
 Qed.
+
+Lemma axiom_body_fv_co : forall F p b A R Rs,
+      binds F (Ax p b A R Rs) toplevel -> fv_co_co_tm b [<=] empty.
+Proof. intros. apply toplevel_inversion in H.
+       inversion H as [W [G [B [_ [_ [H1 _]]]]]].
+       eapply rctx_fv_co; eauto.
+Qed.
+
 
 Theorem context_fv_mutual :
   (forall G (a : tm) A (H: Typing G a A),

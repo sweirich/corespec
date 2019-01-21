@@ -26,11 +26,69 @@ Require Export FcEtt.toplevel.
 
 Require Export FcEtt.ett_value.
 
+
+Lemma roleing_match : forall W1 a R1 W2 p b R2 b', roleing W1 a R1 ->
+      roleing (W2 ++ rev (combine (vars_Pattern p) (pat_app_roles p))) b R2 ->
+      MatchSubst a p b b' ->
+      uniq (W2 ++ rev (combine (vars_Pattern p) (pat_app_roles p)) ++ W1) ->
+      roleing (W2 ++ W1) b' R2.
+Proof. intros. generalize dependent W1. generalize dependent W2.
+       induction H1; intros.
+        - simpl in H0.
+          replace (W2 ++ W1) with (W2 ++ W1 ++ nil).
+          apply roleing_app_rctx. simpl_env. auto. auto. rewrite app_nil_r. auto.
+        - simpl in *.
+          inversion H2; subst. eapply subst_tm_roleing. rewrite app_assoc.
+          eapply IHMatchSubst.
+          rewrite combine_app in H0. rewrite rev_app_distr in H0.
+          simpl in H0. rewrite <- app_assoc. eauto.
+          auto.
+          rewrite combine_app in H3. rewrite rev_app_distr in H3.
+          simpl in H3. rewrite <- app_assoc. auto. auto.
+        - simpl in H0. inversion H2; subst. eauto.
+        - simpl in H0. inversion H; subst. eauto.
+Qed.
+
+
+Lemma roleing_apply : forall W a R0 b c R, roleing W a R0 -> roleing W b R ->
+                      ApplyArgs a b c -> roleing W c R.
+Proof. intros. induction H1; intros; auto.
+        - inversion H; subst; eauto. econstructor; eauto. admit.
+        - inversion H; subst. econstructor; eauto.
+Admitted.
+
+
 Lemma Par_roleing_tm_fst : forall W a a' R, Par W a a' R -> 
                                                roleing W a R.
 Proof. intros W a a' R H. induction H; eauto. destruct nu; eauto.
        simpl in *. econstructor. inversion IHPar2; subst; eauto.
 Admitted.
+
+Lemma Par_roleing_tm_snd : forall W a a' R, Par W a a' R -> roleing W a' R.
+Proof. intros W a a' R H. induction H; eauto.
+        - inversion IHPar1; subst. pick fresh x.
+          erewrite tm_subst_tm_tm_intro; eauto.
+          replace W with (nil ++ W); auto. eapply subst_tm_roleing; eauto.
+        - admit.
+        - inversion IHPar; subst. pick fresh c.
+          erewrite co_subst_co_tm_intro; eauto.
+          replace W with (nil ++ W); auto. eapply subst_co_roleing; eauto.
+        - apply toplevel_inversion in H.
+          inversion H as [W1 [G1 [B1 [P1 [P2 [P3 P4]]]]]]. inversion P1; subst.
+          replace W with (nil ++ W ++ nil); auto.
+          apply roleing_app_rctx; simpl_env. auto.
+          eapply roleing_sub; eauto. simpl. apply app_nil_r.
+        - admit.
+        - admit.
+        - econstructor. admit. (* eapply roleing_apply. eapply IHPar1.
+          eapply IHPar2. eauto. *)
+Admitted.
+
+Lemma Rename_exists: forall p b D, Pattern p -> lc_tm b ->
+             exists p' b' D', Rename p b p' b' D D'.
+Proof. intros. exists (rename p b D).1.1, (rename p b D).1.2, (rename p b D).2.
+       eapply rename_Rename; eauto.
+Qed.
 
 Lemma par_app_rctx : forall W1 W2 W3 a a' R, uniq (W1 ++ W2 ++ W3) ->
                      Par (W1 ++ W3) a a' R ->
@@ -44,9 +102,62 @@ Proof. intros W1 W2 W3 a a' R U H. generalize dependent W2.
         - eapply Par_Pi with (L := union L (dom (W1 ++ W2 ++ W3))); eauto.
           intros. rewrite app_assoc.
           eapply H1; eauto. simpl_env. auto.
-        - eapply Par_AxiomApp. eauto. eauto. eauto. eauto.  all: admit.
-        - eapply Par_AxiomCApp; eauto. admit.
-Admitted.
+        - move: (Rename_exists (union (dom (W1 ++ W2 ++ W3)) (fv_tm_tm_tm p))
+              (axiom_pattern H) (Rename_lc_2 H3)) => h.
+          inversion h as [p0 [b0 [D0 h']]].
+          assert (tm_pattern_agree (a_App a' nu a1') p0).
+           { eapply tm_pattern_agree_rename_inv_1.
+           eapply tm_pattern_agree_rename_inv_2. eapply MatchSubst_match; eauto.
+           eauto. eauto.
+           }
+          eapply Par_AxiomApp; eauto.
+          replace a2 with (matchsubst (a_App a' nu a1') p0 b0).
+          apply matchsubst_fun_ind.
+          auto. eapply Rename_lc_4; eauto. auto.
+          move: (axiom_body_fv_in_pattern H) => h1.
+          apply Par_roleing_tm_snd in H1. apply rctx_fv in H1.
+          apply Par_roleing_tm_snd in H2. apply rctx_fv in H2.
+          eapply MatchSubst_Rename_preserve.
+          eapply tm_pattern_agree_rename_inv_2.
+          eapply MatchSubst_match; eauto. eauto. eauto. eapply H3.
+          simpl. clear - H1 H2 h1. apply union_s_m.
+          eapply Subset_trans. eapply AtomSetProperties.union_subset_3; eauto.
+          rewrite dom_app. rewrite dom_app. apply union_s_m. eauto.
+          rewrite dom_app. eauto. eapply AtomSetProperties.union_subset_3; eauto.
+          simpl. clear - H1 H2 h1. apply union_s_m.
+          eapply AtomSetProperties.union_subset_3; eauto.
+          eapply AtomSetProperties.union_subset_3; eauto.
+          eapply uniq_atoms_toplevel; eauto.
+          apply matchsubst_fun_ind. auto. eapply Rename_lc_4; eauto.
+          auto. auto.
+        - move: (Rename_exists (union (dom (W1 ++ W2 ++ W3)) (fv_tm_tm_tm p))
+              (axiom_pattern H) (Rename_lc_2 H2)) => h.
+          inversion h as [p0 [b0 [D0 h']]].
+          assert (tm_pattern_agree (a_CApp a' g_Triv) p0).
+           { eapply tm_pattern_agree_rename_inv_1.
+           eapply tm_pattern_agree_rename_inv_2. eapply MatchSubst_match; eauto.
+           eauto. eauto.
+           }
+          eapply Par_AxiomCApp; eauto.
+          replace a2 with (matchsubst (a_CApp a' g_Triv) p0 b0).
+          apply matchsubst_fun_ind.
+          auto. eapply Rename_lc_4; eauto. auto.
+          move: (axiom_body_fv_in_pattern H) => h1.
+          apply Par_roleing_tm_snd in H1. apply rctx_fv in H1.
+          eapply MatchSubst_Rename_preserve.
+          eapply tm_pattern_agree_rename_inv_2.
+          eapply MatchSubst_match; eauto. eauto. eauto. eapply H2.
+          simpl. clear - H1 h1. apply union_s_m.
+          eapply Subset_trans. rewrite union_empty_r. eauto.
+          rewrite dom_app. rewrite dom_app. apply union_s_m. eauto.
+          rewrite dom_app. eauto. eapply AtomSetProperties.union_subset_3; eauto.
+          simpl. clear - H1 h1. apply union_s_m.
+          rewrite union_empty_r. auto.
+          eapply AtomSetProperties.union_subset_3; auto.
+          eapply uniq_atoms_toplevel; eauto.
+          apply matchsubst_fun_ind. auto. eapply Rename_lc_4; eauto.
+          auto. auto.
+Qed.
 
 (* ------------------------------------------ *)
 
@@ -84,52 +195,10 @@ Fixpoint var_pat (p : tm) := match p with
    | _ => nil
    end.
 
-Lemma roleing_match : forall W1 a R1 W2 p b R2 b', roleing W1 a R1 ->
-                      roleing (W2 ++ (var_pat p)) b R2 -> MatchSubst a p b b' ->
-                      uniq (W2 ++ (var_pat p) ++ W1) ->
-                      roleing (W2 ++ W1) b' R2.
-Proof. intros. generalize dependent W1. generalize dependent W2.
-       induction H1; intros.
-        - simpl in H0.
-          replace (W2 ++ W1) with (W2 ++ W1 ++ nil).
-          apply roleing_app_rctx. simpl_env. auto. auto. rewrite app_nil_r. auto.
-        - inversion H2; subst. eapply subst_tm_roleing. rewrite app_assoc.
-          eapply IHMatchSubst. simpl in H0. rewrite <- app_assoc. eauto.
-          auto. clear - H3. simpl in H3. solve_uniq. auto.
-        - simpl in H0. inversion H2; subst. eauto.
-        - simpl in H0. inversion H; subst. eauto.
-Qed.
-
-(*
-Lemma roleing_apply : forall W a R0 b c R, roleing W a R0 -> roleing W b R ->
-                      ApplyArgs a b c -> roleing W c R.
-Proof. intros. generalize dependent W. induction H1; intros; auto.
-        - inversion H0; subst; eauto. econstructor. eauto.
-        - inversion H; subst. econstructor; eauto.
-Qed.*)
-
 Lemma multipar_roleing_tm_fst: forall W a a' R, multipar W a a' R ->
                                                roleing W a R.
 Proof. intros. induction H. auto. eapply Par_roleing_tm_fst; eauto.
 Qed.
-
-Lemma Par_roleing_tm_snd : forall W a a' R, Par W a a' R ->
-                                               roleing W a' R.
-Proof. intros W a a' R H. induction H; eauto.
-        - inversion IHPar1; subst. pick fresh x.
-          erewrite tm_subst_tm_tm_intro; eauto.
-          replace W with (nil ++ W); auto. eapply subst_tm_roleing; eauto.
-        - admit.
-        - inversion IHPar; subst. pick fresh c.
-          erewrite co_subst_co_tm_intro; eauto.
-          replace W with (nil ++ W); auto. eapply subst_co_roleing; eauto.
-        (* - apply toplevel_inversion in H.
-          inversion H as [W1 [G1 [B1 [P1 [P2 [P3 P4]]]]]].
-          replace W with (nil ++ W); auto. eapply roleing_match; eauto 1.
-          simpl_env. apply var_pat_ctx in P1. subst. admit. admit.
-        - econstructor. eapply roleing_apply. eapply IHPar1.
-          eapply IHPar2. eauto. *)
-Admitted.
 
 Lemma multipar_roleing_tm_snd : forall W a a' R, multipar W a a' R ->
                                                roleing W a' R.
@@ -189,7 +258,7 @@ Proof.
      rewrite tm_subst_tm_tm_open_tm_wrt_tm_var; auto 1. eapply Par_lc2; eauto.
      rewrite app_assoc. eapply H0; eauto.
    - econstructor; eauto.
-   - admit.
+   - eauto.
    - eapply Par_Pi with (L := union (singleton x) L); eauto.
      intros x0 h1.
      rewrite tm_subst_tm_tm_open_tm_wrt_tm_var; auto 1. eapply Par_lc1; eauto.
@@ -209,7 +278,7 @@ Proof.
    - econstructor; eauto.
    - econstructor; eauto.
    - eapply Par_Pattern; eauto.
-Admitted.
+Qed.
 
 Lemma open1 : forall b W L a a' R, Par W a a' R
   -> (forall x, x `notin` L -> roleing W (open_tm_wrt_tm b (a_Var_f x)) R)
@@ -258,20 +327,56 @@ Proof.
     rewrite tm_subst_tm_tm_open_tm_wrt_co_var; auto 1. eapply roleing_lc; eauto.
     rewrite tm_subst_tm_tm_open_tm_wrt_co_var; auto 1. eapply roleing_lc; eauto.
     eapply H0. auto. eauto. auto.
-  - admit. (* eapply Par_Axiom; eauto.
-    rewrite tm_subst_tm_tm_fresh_eq. eauto.
-    apply toplevel_closed in H.
-    apply Typing_context_fv in H.
-    split_hyp. simpl in *.
-    fsetdec. *)
-  - admit.
-  - admit.
-  - eapply Par_PatternTrue; eauto. admit. (* eapply Path_subst; eauto.
-    eapply roleing_lc; eauto. *) admit.
-  - eapply Par_PatternFalse; eauto.
-    eapply Value_tm_subst_tm_tm; eauto. eapply roleing_lc; eauto.
-    intro. admit. (* eapply subst_Path in H1; eauto. eapply roleing_lc; eauto. *)
-Admitted.
+  - move: (toplevel_inversion H) => h.
+    inversion h as [W1 [G [B [Q1 [_ [Q2 _]]]]]].
+    apply pat_ctx_rctx in Q1. simpl in Q1. subst. apply rctx_fv in Q2.
+    simpl in Q2. rewrite tm_subst_tm_tm_fresh_eq. fsetdec. eauto.
+  - inversion H0.
+    assert (Q: lc_tm b). {eapply roleing_lc; eauto. }
+    eapply Par_AxiomApp; eauto.
+    split. eapply tm_subpattern_agree_subst_tm; eauto.
+    intro. apply H5. eapply tm_pattern_agree_unsubst_tm.
+    eapply tm_subpattern_agree_tm. eauto. eauto.
+    eapply Rename_narrow. eauto.
+    clear. apply AtomSetProperties.union_subset_4. rewrite dom_app.
+    rewrite dom_app. apply AtomSetProperties.union_subset_5. simpl. eauto.
+    replace (a_App (tm_subst_tm_tm b x a') nu (tm_subst_tm_tm b x a1'))
+      with (tm_subst_tm_tm b x (a_App a' nu a1')) by auto.
+    apply MatchSubst_subst_tm; auto.
+    eapply MatchSubst_match; eauto.
+    move: (axiom_body_fv_in_pattern H) => h.
+    eapply Rename_inter_sub_empty. eauto.
+    apply Subset_union_left. rewrite dom_app. apply Subset_union_right.
+    rewrite dom_app. apply union_s_m. simpl. eauto. eapply rctx_fv; eauto.
+    apply AtomSetProperties.union_subset_3.
+    eapply Rename_fv_new_pattern; eauto. eapply Rename_new_body_fv; eauto.
+  - inversion H0.
+    assert (Q: lc_tm b). {eapply roleing_lc; eauto. }
+    eapply Par_AxiomCApp; eauto.
+    split. eapply tm_subpattern_agree_subst_tm; eauto.
+    intro. apply H5. eapply tm_pattern_agree_unsubst_tm.
+    eapply tm_subpattern_agree_tm. eauto. eauto.
+    eapply Rename_narrow. eauto.
+    clear. apply AtomSetProperties.union_subset_4. rewrite dom_app.
+    rewrite dom_app. apply AtomSetProperties.union_subset_5. simpl. eauto.
+    replace (a_CApp (tm_subst_tm_tm b x a') g_Triv)
+      with (tm_subst_tm_tm b x (a_CApp a' g_Triv)) by auto.
+    apply MatchSubst_subst_tm; auto.
+    eapply MatchSubst_match; eauto.
+    move: (axiom_body_fv_in_pattern H) => h.
+    eapply Rename_inter_sub_empty. eauto.
+    apply Subset_union_left. rewrite dom_app. apply Subset_union_right.
+    rewrite dom_app. apply union_s_m. simpl. eauto. eapply rctx_fv; eauto.
+    apply AtomSetProperties.union_subset_3.
+    eapply Rename_fv_new_pattern; eauto. eapply Rename_new_body_fv; eauto.
+  - assert (lc_tm b). {eapply roleing_lc; eauto. }
+    eapply Par_PatternTrue; eauto. apply CasePath_subst_tm; auto.
+    apply ApplyArgs_subst_tm; auto.
+  - assert (lc_tm b). {eapply roleing_lc; eauto. }
+    eapply Par_PatternFalse; eauto.
+    eapply Value_tm_subst_tm_tm; eauto.
+    intro. apply H0. eapply CasePath_Value_unsubst_tm; eauto.
+Qed.
 
 Lemma subst3 : forall b b' W W' a a' R R1 x,
           Par (W ++ [(x,R1)] ++ W') a a' R ->
@@ -295,44 +400,161 @@ Proof.
     rewrite tm_subst_tm_tm_open_tm_wrt_tm_var; auto 1. eapply Par_lc1; eauto.
     rewrite tm_subst_tm_tm_open_tm_wrt_tm_var; auto 1. eapply Par_lc2; eauto.
     rewrite app_assoc. eapply H1; eauto. simpl_env; auto.
-  - eapply Par_AxiomBase; eauto.
-    rewrite tm_subst_tm_tm_fresh_eq. eauto. admit. admit.
-    (* apply toplevel_closed in H.
-    apply Typing_context_fv in H.
-    split_hyp. simpl in *.
-    fsetdec. *)
-  - admit.
-  - admit.
+  - move: (axiom_body_fv_in_pattern H) => h. simpl in h.
+    rewrite tm_subst_tm_tm_fresh_eq. fsetdec. eauto.
+  - inversion H0.
+    assert (Q: lc_tm b). {eapply Par_lc1; eauto. }
+    assert (Q': lc_tm b'). {eapply Par_lc2; eauto. }
+    eapply Par_AxiomApp; eauto.
+    split. eapply tm_subpattern_agree_subst_tm; eauto.
+    intro. apply H8. eapply tm_pattern_agree_unsubst_tm.
+    eapply tm_subpattern_agree_tm. eauto. eauto.
+    eapply Rename_narrow. eauto.
+    clear. apply AtomSetProperties.union_subset_4. rewrite dom_app.
+    rewrite dom_app. apply AtomSetProperties.union_subset_5. simpl. eauto.
+    replace (a_App (tm_subst_tm_tm b' x a') nu (tm_subst_tm_tm b' x a1'))
+      with (tm_subst_tm_tm b' x (a_App a' nu a1')) by auto.
+    apply MatchSubst_subst_tm; auto.
+    eapply MatchSubst_match; eauto.
+    move: (axiom_body_fv_in_pattern H) => h.
+    eapply Rename_inter_sub_empty. eauto.
+    apply Subset_union_left. rewrite dom_app. apply Subset_union_right.
+    rewrite dom_app. apply union_s_m. simpl. eauto. eapply rctx_fv; eauto.
+    eapply Par_roleing_tm_snd; eauto.
+    apply AtomSetProperties.union_subset_3.
+    eapply Rename_fv_new_pattern; eauto. eapply Rename_new_body_fv; eauto.
+  - inversion H0.
+    assert (Q: lc_tm b). {eapply Par_lc1; eauto. }
+    assert (Q': lc_tm b'). {eapply Par_lc2; eauto. }
+    eapply Par_AxiomCApp; eauto.
+    split. eapply tm_subpattern_agree_subst_tm; eauto.
+    intro. apply H7. eapply tm_pattern_agree_unsubst_tm.
+    eapply tm_subpattern_agree_tm. eauto. eauto.
+    eapply Rename_narrow. eauto.
+    clear. apply AtomSetProperties.union_subset_4. rewrite dom_app.
+    rewrite dom_app. apply AtomSetProperties.union_subset_5. simpl. eauto.
+    replace (a_CApp (tm_subst_tm_tm b' x a') g_Triv)
+      with (tm_subst_tm_tm b' x (a_CApp a' g_Triv)) by auto.
+    apply MatchSubst_subst_tm; auto.
+    eapply MatchSubst_match; eauto.
+    move: (axiom_body_fv_in_pattern H) => h.
+    eapply Rename_inter_sub_empty. eauto.
+    apply Subset_union_left. rewrite dom_app. apply Subset_union_right.
+    rewrite dom_app. apply union_s_m. simpl. eauto. eapply rctx_fv; eauto.
+    eapply Par_roleing_tm_snd; eauto.
+    apply AtomSetProperties.union_subset_3.
+    eapply Rename_fv_new_pattern; eauto. eapply Rename_new_body_fv; eauto.
   - eapply Par_Pattern; eauto.
-  - eapply Par_PatternTrue; eauto. eapply CasePath_subst; eauto.
-    eapply Par_lc2; eauto. admit.
-  - eapply Par_PatternFalse; eauto.
-    eapply Value_tm_subst_tm_tm; eauto. eapply Par_lc2; eauto.
-    intro. admit. (* eapply subst_Path in H6; eauto. eapply Par_lc2; eauto. *)
-Admitted.
+  - assert (lc_tm b'). {eapply Par_lc2; eauto. }
+    eapply Par_PatternTrue; eauto. eapply CasePath_subst_tm; eauto.
+    apply ApplyArgs_subst_tm; auto.
+  - assert (lc_tm b'). {eapply Par_lc2; eauto. }
+    eapply Par_PatternFalse; eauto.
+    eapply Value_tm_subst_tm_tm; eauto.
+    intro. eapply H3. eapply CasePath_Value_unsubst_tm; eauto.
+    Unshelve. all:exact.
+Qed.
 
-Lemma subst4 : forall b x, lc_co b ->
-    forall W a a' R, Par W a a' R ->
-    Par W (co_subst_co_tm b x a) (co_subst_co_tm b x a') R.
+Lemma subst4 : forall g c W a a' R, lc_co g -> Par W a a' R ->
+    Par W (co_subst_co_tm g c a) (co_subst_co_tm g c a') R.
 Proof.
-  intros b x EB W a a' R PAR.
-  induction PAR; simpl; auto.
+  intros g c W a a' R LC Par.
+  induction Par; simpl; auto.
   all: try solve [ Par_pick_fresh y;
               autorewrite with subst_open_var; eauto 3 with lc ].
   all: try solve [ autorewrite with subst_open; eauto 4 with lc ].
   - apply Par_Refl. eapply subst_co_roleing; eauto.
-  - rewrite co_subst_co_tm_fresh_eq. eauto. admit. admit.
-    (* apply toplevel_closed in H.
-    apply Typing_context_fv in H.
-    split_hyp. simpl in *.
-    fsetdec. *)
-  - admit.
-  - admit.
-  - eapply Par_PatternTrue; eauto. admit. (* eapply Path_subst_co; eauto. *)
-    admit.
+  - move: (axiom_body_fv_co H) => h.
+    rewrite co_subst_co_tm_fresh_eq. fsetdec. eauto.
+  - inversion H0.
+    move: (Rename_exists 
+     ((dom W) \u (singleton c \u fv_tm_tm_co g) \u fv_tm_tm_tm p)
+     (axiom_pattern H) (Rename_lc_2 H1)) => h.
+    inversion h as [p1 [b1 [D1 h1]]].
+    assert (tm_pattern_agree (a_App a' nu a1') p1).
+      { eapply tm_pattern_agree_rename_inv_1.
+        eapply tm_pattern_agree_rename_inv_2. eapply MatchSubst_match; eauto.
+        eauto. eauto.
+      }
+    eapply Par_AxiomApp. eauto.
+    split. eapply tm_subpattern_agree_subst_co; eauto.
+    intro. apply H5. eapply tm_pattern_agree_unsubst_co.
+    eapply tm_subpattern_agree_tm. eauto. eauto. eauto. eauto.
+    eapply Rename_narrow. eapply h1. apply union_s_m. auto.
+    eauto.
+    replace (a_App (co_subst_co_tm g c a') nu (co_subst_co_tm g c a1'))
+      with (co_subst_co_tm g c (a_App a' nu a1')) by auto.
+    apply MatchSubst_subst_co; auto.
+    eapply Rename_inter_sub_empty. eapply h1. eauto.
+    eapply AtomSetProperties.union_subset_3.
+    eapply Rename_fv_new_pattern; eauto.
+    apply toplevel_inversion in H. inversion H as [W1 [G [B [_ [_ [Q _]]]]]].
+    apply rctx_fv_co in Q. move: (Rename_new_body_fv_co h1 Q) => h2.
+    eapply Subset_trans; eauto. eapply Subset_empty_any.
+    replace a2 with (matchsubst (a_App a' nu a1') p1 b1).
+    apply matchsubst_fun_ind.
+    auto. eapply Rename_lc_4; eauto. auto.
+    move: (axiom_body_fv_in_pattern H) => h3.
+    apply Par_roleing_tm_snd in Par1. apply rctx_fv in Par1.
+    apply Par_roleing_tm_snd in Par2. apply rctx_fv in Par2.
+    eapply MatchSubst_Rename_preserve.
+    eapply tm_pattern_agree_rename_inv_2.
+    eapply MatchSubst_match; eauto. eauto. eauto. eapply H1.
+    simpl. clear - Par1 Par2 h3. apply union_s_m.
+    eapply AtomSetProperties.union_subset_3; eauto.
+    eapply Subset_union_right. eapply AtomSetProperties.union_subset_3; eauto.
+    simpl. clear - Par1 Par2 h3. apply union_s_m.
+    eapply AtomSetProperties.union_subset_3; eauto.
+    eapply AtomSetProperties.union_subset_3; eauto.
+    eapply uniq_atoms_toplevel; eauto.
+    apply matchsubst_fun_ind. auto. eapply Rename_lc_4; eauto.
+    auto. auto. auto.
+  - inversion H0.
+    move: (Rename_exists 
+     ((dom W) \u (singleton c \u fv_tm_tm_co g) \u fv_tm_tm_tm p)
+     (axiom_pattern H) (Rename_lc_2 H1)) => h.
+    inversion h as [p1 [b1 [D1 h1]]].
+    assert (tm_pattern_agree (a_CApp a' g_Triv) p1).
+      { eapply tm_pattern_agree_rename_inv_1.
+        eapply tm_pattern_agree_rename_inv_2. eapply MatchSubst_match; eauto.
+        eauto. eauto.
+      }
+    eapply Par_AxiomCApp. eauto.
+    split. eapply tm_subpattern_agree_subst_co; eauto.
+    intro. apply H5. eapply tm_pattern_agree_unsubst_co.
+    eapply tm_subpattern_agree_tm. eauto. eauto. eauto.
+    eapply Rename_narrow. eauto. apply union_s_m; eauto.
+    replace (a_CApp (co_subst_co_tm g c a') g_Triv)
+      with (co_subst_co_tm g c (a_CApp a' g_Triv)) by auto.
+    apply MatchSubst_subst_co; auto.
+    eapply Rename_inter_sub_empty. eauto. eauto.
+    apply toplevel_inversion in H. inversion H as [W1 [G [B [_ [_ [Q _]]]]]].
+    apply rctx_fv_co in Q. move: (Rename_new_body_fv_co h1 Q) => h2.
+    eapply AtomSetProperties.union_subset_3.
+    eapply Rename_fv_new_pattern; eauto. eapply Subset_trans; eauto.
+    apply Subset_empty_any.
+    replace a2 with (matchsubst (a_CApp a' g_Triv) p1 b1).
+    apply matchsubst_fun_ind.
+    auto. eapply Rename_lc_4; eauto. auto.
+    move: (axiom_body_fv_in_pattern H) => h3.
+    apply Par_roleing_tm_snd in Par. apply rctx_fv in Par.
+    eapply MatchSubst_Rename_preserve.
+    eapply tm_pattern_agree_rename_inv_2.
+    eapply MatchSubst_match; eauto. eauto. eauto. eapply H1.
+    simpl. clear - Par h3. apply union_s_m.
+    rewrite union_empty_r. auto.
+    eapply Subset_union_right. eapply AtomSetProperties.union_subset_3; eauto.
+    simpl. clear - Par h3. apply union_s_m.
+    rewrite union_empty_r. auto.
+    eapply AtomSetProperties.union_subset_3; eauto.
+    eapply uniq_atoms_toplevel; eauto.
+    apply matchsubst_fun_ind. auto. eapply Rename_lc_4; eauto.
+    auto. auto. auto.
+  - eapply Par_PatternTrue; eauto. apply CasePath_subst_co; auto.
+    apply ApplyArgs_subst_co; auto.
   - eapply Par_PatternFalse; eauto. eapply Value_co_subst_co_tm; eauto.
-    intro.  admit. (* apply H1. eapply subst_co_Path; eauto. *)
-Admitted.
+    intro. apply H0. eapply CasePath_Value_unsubst_co; eauto.
+Qed.
 
 Lemma multipar_subst3 : forall b b' W W' a a' R R1 x,
      multipar (W ++ [(x,R1)] ++ W') a a' R ->
@@ -698,9 +920,9 @@ Proof. intros. generalize dependent a2. generalize dependent b''.
           rewrite app_nil_r in H3. replace (W' ++ W) with (W' ++ W ++ nil).
           eapply par_app_rctx. simpl_env. auto. simpl_env; eauto.
           simpl_env. auto.
-        - inversion H7; subst. simpl in H3. erewrite combine_vars_roles in H3.
+        - inversion H7; subst. simpl in H3. erewrite combine_app in H3.
           rewrite rev_app_distr in H3. simpl in H3. simpl in H6.
-          erewrite combine_vars_roles in H6. simpl in H6.
+          erewrite combine_app in H6. simpl in H6.
           inversion H5; subst.
           + inversion H13; subst.
             eapply subst2 with (R1 := R0); auto. rewrite app_assoc.

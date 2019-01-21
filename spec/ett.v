@@ -78,9 +78,9 @@ Inductive sort : Set :=  (*r binding classifier *)
  | Co (phi:constraint).
 
 Inductive pattern_arg : Set :=  (*r Pattern arguments *)
- | pat_arg_ArgRel (a:tm) (R:role)
- | pat_arg_ArgIrr (a:tm)
- | pat_arg_ArgCoe (g:co).
+ | pattern_arg_Rel (a:tm) (R:role)
+ | pattern_arg_Irr (a:tm)
+ | pattern_arg_Coe (g:co).
 
 Inductive sig_sort : Set :=  (*r signature classifier *)
  | Cs (A:tm) (Rs:roles)
@@ -232,9 +232,9 @@ end.
 
 Definition open_pattern_arg_wrt_tm_rec (k:nat) (a5:tm) (pattern_arg5:pattern_arg) : pattern_arg :=
   match pattern_arg5 with
-  | (pat_arg_ArgRel a R) => pat_arg_ArgRel (open_tm_wrt_tm_rec k a5 a) R
-  | (pat_arg_ArgIrr a) => pat_arg_ArgIrr (open_tm_wrt_tm_rec k a5 a)
-  | (pat_arg_ArgCoe g) => pat_arg_ArgCoe (open_co_wrt_tm_rec k a5 g)
+  | (pattern_arg_Rel a R) => pattern_arg_Rel (open_tm_wrt_tm_rec k a5 a) R
+  | (pattern_arg_Irr a) => pattern_arg_Irr (open_tm_wrt_tm_rec k a5 a)
+  | (pattern_arg_Coe g) => pattern_arg_Coe (open_co_wrt_tm_rec k a5 g)
 end.
 
 Definition open_sig_sort_wrt_co_rec (k:nat) (g5:co) (sig_sort5:sig_sort) : sig_sort :=
@@ -251,9 +251,9 @@ end.
 
 Definition open_pattern_arg_wrt_co_rec (k:nat) (g5:co) (pattern_arg5:pattern_arg) : pattern_arg :=
   match pattern_arg5 with
-  | (pat_arg_ArgRel a R) => pat_arg_ArgRel (open_tm_wrt_co_rec k g5 a) R
-  | (pat_arg_ArgIrr a) => pat_arg_ArgIrr (open_tm_wrt_co_rec k g5 a)
-  | (pat_arg_ArgCoe g) => pat_arg_ArgCoe (open_co_wrt_co_rec k g5 g)
+  | (pattern_arg_Rel a R) => pattern_arg_Rel (open_tm_wrt_co_rec k g5 a) R
+  | (pattern_arg_Irr a) => pattern_arg_Irr (open_tm_wrt_co_rec k g5 a)
+  | (pattern_arg_Coe g) => pattern_arg_Coe (open_co_wrt_co_rec k g5 g)
 end.
 
 Definition open_sort_wrt_tm_rec (k:nat) (a5:tm) (sort5:sort) : sort :=
@@ -472,15 +472,15 @@ Inductive lc_sort : sort -> Prop :=    (* defn lc_sort *)
 
 (* defns LC_pattern_arg *)
 Inductive lc_pattern_arg : pattern_arg -> Prop :=    (* defn lc_pattern_arg *)
- | lc_pat_arg_ArgRel : forall (a:tm) (R:role),
+ | lc_pattern_arg_Rel : forall (a:tm) (R:role),
      (lc_tm a) ->
-     (lc_pattern_arg (pat_arg_ArgRel a R))
- | lc_pat_arg_ArgIrr : forall (a:tm),
+     (lc_pattern_arg (pattern_arg_Rel a R))
+ | lc_pattern_arg_Irr : forall (a:tm),
      (lc_tm a) ->
-     (lc_pattern_arg (pat_arg_ArgIrr a))
- | lc_pat_arg_ArgCoe : forall (g:co),
+     (lc_pattern_arg (pattern_arg_Irr a))
+ | lc_pattern_arg_Coe : forall (g:co),
      (lc_co g) ->
-     (lc_pattern_arg (pat_arg_ArgCoe g)).
+     (lc_pattern_arg (pattern_arg_Coe g)).
 
 (* defns LC_sig_sort *)
 Inductive lc_sig_sort : sig_sort -> Prop :=    (* defn lc_sig_sort *)
@@ -621,9 +621,9 @@ end.
 
 Definition fv_co_co_pattern_arg (pattern_arg5:pattern_arg) : vars :=
   match pattern_arg5 with
-  | (pat_arg_ArgRel a R) => (fv_co_co_tm a)
-  | (pat_arg_ArgIrr a) => (fv_co_co_tm a)
-  | (pat_arg_ArgCoe g) => (fv_co_co_co g)
+  | (pattern_arg_Rel a R) => (fv_co_co_tm a)
+  | (pattern_arg_Irr a) => (fv_co_co_tm a)
+  | (pattern_arg_Coe g) => (fv_co_co_co g)
 end.
 
 Definition fv_co_co_sig_sort (sig_sort5:sig_sort) : vars :=
@@ -640,9 +640,9 @@ end.
 
 Definition fv_tm_tm_pattern_arg (pattern_arg5:pattern_arg) : vars :=
   match pattern_arg5 with
-  | (pat_arg_ArgRel a R) => (fv_tm_tm_tm a)
-  | (pat_arg_ArgIrr a) => (fv_tm_tm_tm a)
-  | (pat_arg_ArgCoe g) => (fv_tm_tm_co g)
+  | (pattern_arg_Rel a R) => (fv_tm_tm_tm a)
+  | (pattern_arg_Irr a) => (fv_tm_tm_tm a)
+  | (pattern_arg_Coe g) => (fv_tm_tm_co g)
 end.
 
 Definition fv_tm_tm_sig_sort (sig_sort5:sig_sort) : vars :=
@@ -780,9 +780,9 @@ end.
 
 Definition tm_subst_tm_pattern_arg (a5:tm) (x5:tmvar) (pattern_arg5:pattern_arg) : pattern_arg :=
   match pattern_arg5 with
-  | (pat_arg_ArgRel a R) => pat_arg_ArgRel (tm_subst_tm_tm a5 x5 a) R
-  | (pat_arg_ArgIrr a) => pat_arg_ArgIrr (tm_subst_tm_tm a5 x5 a)
-  | (pat_arg_ArgCoe g) => pat_arg_ArgCoe (tm_subst_tm_co a5 x5 g)
+  | (pattern_arg_Rel a R) => pattern_arg_Rel (tm_subst_tm_tm a5 x5 a) R
+  | (pattern_arg_Irr a) => pattern_arg_Irr (tm_subst_tm_tm a5 x5 a)
+  | (pattern_arg_Coe g) => pattern_arg_Coe (tm_subst_tm_co a5 x5 g)
 end.
 
 Definition tm_subst_tm_sig_sort (a5:tm) (x5:tmvar) (sig_sort5:sig_sort) : sig_sort :=
@@ -799,9 +799,9 @@ end.
 
 Definition co_subst_co_pattern_arg (g5:co) (c5:covar) (pattern_arg5:pattern_arg) : pattern_arg :=
   match pattern_arg5 with
-  | (pat_arg_ArgRel a R) => pat_arg_ArgRel (co_subst_co_tm g5 c5 a) R
-  | (pat_arg_ArgIrr a) => pat_arg_ArgIrr (co_subst_co_tm g5 c5 a)
-  | (pat_arg_ArgCoe g) => pat_arg_ArgCoe (co_subst_co_co g5 c5 g)
+  | (pattern_arg_Rel a R) => pattern_arg_Rel (co_subst_co_tm g5 c5 a) R
+  | (pattern_arg_Irr a) => pattern_arg_Irr (co_subst_co_tm g5 c5 a)
+  | (pattern_arg_Coe g) => pattern_arg_Coe (co_subst_co_co g5 c5 g)
 end.
 
 Definition co_subst_co_sig_sort (g5:co) (c5:covar) (sig_sort5:sig_sort) : sig_sort :=
@@ -1043,7 +1043,7 @@ Inductive PatData : tm -> const -> pattern_args -> Prop :=    (* defn PatData *)
  | PatData_Rel : forall (p:tm) (R:role) (a:tm) (F:const) (PA:pattern_args),
      lc_tm a ->
      PatData p F PA ->
-     PatData  ( (a_App p (Role R) a) )  F  (cons  (pat_arg_ArgRel a R)   PA ) .
+     PatData  ( (a_App p (Role R) a) )  F  (cons  (pattern_arg_Rel a R)   PA ) .
 
 (* defns JIsPattern *)
 Inductive Pattern : tm -> Prop :=    (* defn Pattern *)
@@ -1052,7 +1052,15 @@ Inductive Pattern : tm -> Prop :=    (* defn Pattern *)
  | Pattern_Rel : forall (p:tm) (R:role) (a:tm),
      lc_tm a ->
      Pattern p ->
-     Pattern  ( (a_App p (Role R) a) ) .
+     Pattern  ( (a_App p (Role R) a) ) 
+ | Pattern_Irr : forall (p a:tm),
+     lc_tm a ->
+     Pattern p ->
+     Pattern  ( (a_App p (Rho Irrel) a) ) 
+ | Pattern_Coe : forall (p:tm) (g:co),
+     lc_co g ->
+     Pattern p ->
+     Pattern  ( (a_CApp p g) ) .
 
 (* defns JSubPat *)
 Inductive SubPat : tm -> tm -> Prop :=    (* defn SubPat *)

@@ -48,7 +48,7 @@ Proof. intros. induction H; simpl; eauto.
        econstructor; eauto with lngen lc.
 Qed.
 
-Lemma tm_pattern_agree_subst : forall a p b x, lc_tm b -> tm_pattern_agree a p ->
+Lemma tm_pattern_agree_subst_tm : forall a p b x, lc_tm b -> tm_pattern_agree a p ->
                          tm_pattern_agree (tm_subst_tm_tm b x a) p.
 Proof. intros.
        induction H0; simpl; eauto. econstructor.
@@ -56,45 +56,41 @@ Proof. intros.
        eapply tm_subst_tm_tm_lc_tm; eauto. auto.
 Qed.
 
-Lemma tm_subpattern_agree_subst : forall a p b x, lc_tm b ->
-      tm_subpattern_agree a p -> tm_subpattern_agree (tm_subst_tm_tm b x a) p.
-Proof. intros. induction H0; eauto. econstructor.
-       eapply tm_pattern_agree_subst; eauto.
+Lemma tm_pattern_agree_subst_co : forall a p g c, lc_co g -> tm_pattern_agree a p ->
+                         tm_pattern_agree (co_subst_co_tm g c a) p.
+Proof. intros.
+       induction H0; simpl; eauto. econstructor.
+       eapply co_subst_co_tm_lc_tm; eauto. auto. econstructor.
+       eapply co_subst_co_tm_lc_tm; eauto. auto.
 Qed.
 
-Lemma tm_pattern_agree_unsubst : forall a b x R F p, CasePath R a F ->
-           tm_pattern_agree (tm_subst_tm_tm b x a) p -> tm_pattern_agree a p.
-Proof. intros. generalize dependent x. generalize dependent p.
-       induction a; intros p x0 H0; try (simpl in H0; inversion H0; fail).
-       apply CasePath_ValuePath in H. inversion H. simpl in H0.
-       pose (P := CasePath_lc H). inversion P; subst.
-       inversion H0; subst. econstructor. auto. eapply IHa1; eauto.
-       eapply CasePath_app; eauto.
-Admitted.
+Lemma tm_subpattern_agree_subst_tm : forall a p b x, lc_tm b ->
+      tm_subpattern_agree a p -> tm_subpattern_agree (tm_subst_tm_tm b x a) p.
+Proof. intros. induction H0; eauto. econstructor.
+       eapply tm_pattern_agree_subst_tm; eauto.
+Qed.
 
-Lemma subtm_pattern_agree_unsubst : forall a b x R F p, CasePath R a F ->
-      subtm_pattern_agree (tm_subst_tm_tm b x a) p -> subtm_pattern_agree a p.
-Proof. intros. dependent induction H0; eauto.
-       econstructor. eapply tm_pattern_agree_unsubst; eauto.
-       destruct a; try (simpl in x; inversion x; fail).
-       apply CasePath_ValuePath in H; inversion H. simpl in x.
-       inversion x; subst. eapply IHsubtm_pattern_agree.
-Admitted.
+Lemma tm_subpattern_agree_subst_co : forall a p g c, lc_co g ->
+      tm_subpattern_agree a p -> tm_subpattern_agree (co_subst_co_tm g c a) p.
+Proof. intros. induction H0; eauto. econstructor.
+       eapply tm_pattern_agree_subst_co; eauto.
+Qed.
 
-Lemma CasePath_subst : forall F a b R x, CasePath R a F -> lc_tm b ->
-                   CasePath R (tm_subst_tm_tm b x a) F.
-Proof. intros. inversion H; subst. eapply CasePath_AbsConst; eauto.
-       apply ValuePath_subst; auto. eapply CasePath_Const; eauto.
-       apply ValuePath_subst; auto. eapply CasePath_UnMatch; eauto.
-       apply ValuePath_subst; auto. intro. eapply H3. (* eapply tm_subpattern_agree_unsubst; eauto. simpl; eauto.
-       econstructor; eauto with lngen lc. *)
-Admitted.
+Lemma subtm_pattern_agree_subst_tm : forall a p b x, lc_tm b ->
+      subtm_pattern_agree a p -> subtm_pattern_agree (tm_subst_tm_tm b x a) p.
+Proof. intros. induction H0; simpl. econstructor.
+       eapply tm_pattern_agree_subst_tm; eauto.
+       eauto with lngen lc. eauto with lngen lc.
+Qed.
 
-Lemma CasePath_subst_co : forall F a b R c, CasePath R a F -> lc_co b ->
-                   CasePath R (co_subst_co_tm b c a) F.
-Proof. intros. induction H; simpl; eauto.
-       econstructor; eauto with lngen lc.
-Admitted.
+Lemma subtm_pattern_agree_subst_co : forall a p g c, lc_co g ->
+      subtm_pattern_agree a p -> subtm_pattern_agree (co_subst_co_tm g c a) p.
+Proof. intros. induction H0; simpl. econstructor.
+       eapply tm_pattern_agree_subst_co; eauto.
+       eauto with lngen lc. eauto with lngen lc.
+Qed.
+
+
 
 Lemma role_dec : forall (R1 : role) R2, R1 = R2 \/ ~(R1 = R2).
 Proof. intros. destruct R1, R2; auto. right. intro. inversion H.

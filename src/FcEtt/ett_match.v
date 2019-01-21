@@ -16,6 +16,20 @@ Require Import Omega.
 
 (** Patterns, agreement and substitution function **)
 
+Lemma dom_rev : forall A (l : list (atom * A)) x, x `in` dom l ->
+                                                  x `in` dom (rev l).
+Proof. intros. induction l; eauto.
+       destruct a. simpl in H. simpl. rewrite dom_app. simpl.
+       fsetdec.
+Qed.
+
+Lemma uniq_rev : forall A (l : list (atom * A)), uniq l -> uniq (rev l).
+Proof. intros. induction H; simpl; eauto. apply uniq_reorder_1.
+       simpl. econstructor. auto. intro. apply H0. apply dom_rev in H1.
+       rewrite rev_involutive in H1. auto.
+Qed.
+
+
 Inductive Pattern : tm -> Prop :=
   | Pattern_Fam : forall F, Pattern (a_Fam F)
   | Pattern_AppR : forall a1 R x, Pattern a1 -> Pattern (a_App a1 (Role R) (a_Var_f x))
@@ -70,7 +84,7 @@ Fixpoint pat_app_roles (a : tm) : list role := match a with
   | _ => []
   end.
 
-Lemma combine_vars_roles : forall p l1 l2,
+Lemma combine_app : forall p l1 l2,
       combine (vars_Pattern p ++ l1) (pat_app_roles p ++ l2) =
       combine (vars_Pattern p) (pat_app_roles p) ++ combine l1 l2.
 Proof. intros. generalize dependent l1. generalize dependent l2.
@@ -83,21 +97,22 @@ Proof. intros. generalize dependent l1. generalize dependent l2.
        - destruct g; auto.
 Qed.
 
-Lemma uniq_atoms_toplevel : forall F p b A R Rs,
-      binds F (Ax p b A R Rs) toplevel -> uniq_atoms_pattern p.
-Proof. intros. apply toplevel_inversion in H.
-       inversion H as [W [G [B [H1 [_ [H3 _]]]]]].
-       apply pat_ctx_vars_Pattern in H1.
-       apply rctx_uniq in H3. apply uniq_NoDup in H3.
-       apply NoDup_reverse in H3. rewrite <- H1 in H3. auto.
+Lemma pat_ctx_rctx : forall W G F A p B, PatternContexts W G F A p B ->
+                     W = rev (combine (vars_Pattern p) (pat_app_roles p)).
+Proof. intros. induction H; simpl; eauto.
+       rewrite combine_app. rewrite rev_app_distr. simpl. f_equal. auto.
 Qed.
+
+
+(** free variables **)
 
 Lemma Rename_fv_new_pattern : forall p b p' b' D D', Rename p b p' b' D D' ->
       AtomSetImpl.Subset (fv_tm_tm_tm p') D'.
 Proof. intros. induction H; simpl in *; fsetdec.
 Qed.
 
-Lemma vars_fv : forall x p, In x (vars_Pattern p) -> x `in` fv_tm_tm_tm p.
+Lemma vars_pattern_fv : forall x p, In x (vars_Pattern p) ->
+                                       x `in` fv_tm_tm_tm p.
 Proof. intros. induction p; simpl in *; try contradiction.
        destruct nu. destruct p2; simpl in *; try contradiction.
        apply in_app_or in H. inversion H. apply AtomSetImpl.union_2. eauto.
@@ -110,26 +125,18 @@ Proof. intros. induction p; simpl in *; try contradiction.
        apply AtomSetImpl.union_2. eauto.
 Qed.
 
-Lemma uniq_atoms_Rename : forall p p' b b' D D', Rename p b p' b' D D' ->
-      uniq_atoms_pattern p'.
-Proof. intros. induction H; unfold uniq_atoms_pattern in *; simpl; eauto.
-       apply NoDup_nil. apply NoDup_add. rewrite app_nil_r. intro.
-       apply H0. apply vars_fv in H1. move: (Rename_fv_new_pattern H) => h.
-       apply AtomSetImpl.union_3. fsetdec. rewrite app_nil_r. auto.
-Qed.
-
-Lemma combine_dom : forall p x,
+Lemma dom_combine_vars : forall p x,
       x `in` dom (combine (vars_Pattern p) (pat_app_roles p)) <->
       In x (vars_Pattern p).
 Proof. intros. induction p; split; intros; simpl in *; try fsetdec.
         - destruct nu. destruct p2; simpl in *; try fsetdec.
-          rewrite combine_vars_roles in H. apply dom_app in H. simpl in H.
+          rewrite combine_app in H. apply dom_app in H. simpl in H.
           apply union_iff in H. apply in_or_app. inversion H. left.
           eapply IHp1; auto. right. econstructor. clear - H0. fsetdec.
           destruct rho. simpl in *; fsetdec.
           destruct p2; simpl in *; try fsetdec. eapply IHp1; auto.
         - destruct nu. destruct p2; simpl in *; try fsetdec.
-          rewrite combine_vars_roles. apply dom_app. simpl.
+          rewrite combine_app. apply dom_app. simpl.
           apply union_iff. apply in_app_or in H. inversion H. left.
           eapply IHp1; auto. right. clear - H0. inversion H0. subst. fsetdec.
           inversion H.
@@ -139,21 +146,61 @@ Proof. intros. induction p; split; intros; simpl in *; try fsetdec.
         - destruct g; simpl in *; try fsetdec. eapply IHp; auto.
 Qed.
 
-Lemma uniq_vars_combine : forall p, uniq_atoms_pattern p <->
+
+Lemma dom_combine_fv : forall p x,
+      x `in` dom (combine (vars_Pattern p) (pat_app_roles p)) ->
+      x `in` fv_tm_tm_tm p.
+Proof. intros. apply vars_pattern_fv. apply dom_combine_vars; auto.
+Qed.
+
+Lemma new_pattern_fv : forall p b p' b' D D' x,
+      Rename p b p' b' D D' ->
+      x `in` dom (combine (vars_Pattern p') (pat_app_roles p')) ->
+      x `in` D'.
+Proof. intros. apply dom_combine_fv in H0.
+       eapply AtomSetProperties.in_subset. eauto. eapply Rename_fv_new_pattern.
+       eauto.
+Qed.
+
+(** -------------------------------------------------------------- **)
+
+(** Uniqueness **)
+
+Lemma uniq_atoms_toplevel : forall F p b A R Rs,
+      binds F (Ax p b A R Rs) toplevel -> uniq_atoms_pattern p.
+Proof. intros. apply toplevel_inversion in H.
+       inversion H as [W [G [B [H1 [_ [H3 _]]]]]].
+       apply pat_ctx_vars_Pattern in H1.
+       apply rctx_uniq in H3. apply uniq_NoDup in H3.
+       apply NoDup_reverse in H3. rewrite <- H1 in H3. auto.
+Qed.
+
+
+Lemma uniq_atoms_new_pattern : forall p p' b b' D D', Rename p b p' b' D D' ->
+      uniq_atoms_pattern p'.
+Proof. intros. induction H; unfold uniq_atoms_pattern in *; simpl; eauto.
+       apply NoDup_nil. apply NoDup_add. rewrite app_nil_r. intro.
+       apply H0. apply vars_pattern_fv in H1.
+       move: (Rename_fv_new_pattern H) => h.
+       apply AtomSetImpl.union_3. fsetdec. rewrite app_nil_r. auto.
+Qed.
+
+
+Lemma uniq_atoms_pattern_combine : forall p, uniq_atoms_pattern p <->
       uniq (combine (vars_Pattern p) (pat_app_roles p)).
 Proof. intros.
        induction p; split; intros; unfold uniq_atoms_pattern in *; simpl in *;
        eauto; try apply NoDup_nil.
         - destruct nu. destruct p2; simpl; eauto.
-          rewrite combine_vars_roles. apply NoDup_remove in H.
+          rewrite combine_app. apply NoDup_remove in H.
           rewrite app_nil_r in H. inversion H. apply uniq_reorder_1. simpl.
-          econstructor. eapply IHp1. auto. intro. apply H1. apply combine_dom.
-          auto. destruct rho. simpl; eauto. destruct p2; simpl in *; eauto.
-          simpl in *. eapply IHp1. auto.
+          econstructor. eapply IHp1. auto. intro. apply H1.
+          apply dom_combine_vars. auto. destruct rho. simpl; eauto.
+          destruct p2; simpl in *; eauto. simpl in *. eapply IHp1. auto.
         - destruct nu. destruct p2; try apply NoDup_nil.
-          rewrite combine_vars_roles in H. apply uniq_reorder_1 in H.
+          rewrite combine_app in H. apply uniq_reorder_1 in H.
           simpl in H. inversion H; subst. apply NoDup_add. rewrite app_nil_r.
-          intro. apply H4. apply combine_dom. auto. rewrite app_nil_r.
+          intro. apply H4. apply dom_combine_vars. auto. rewrite app_nil_r.
           apply IHp1. auto.
           destruct rho. apply NoDup_nil.
           destruct p2; try apply NoDup_nil. eapply IHp1. auto.
@@ -161,45 +208,35 @@ Proof. intros.
         - destruct g; simpl; try apply NoDup_nil. apply IHp. auto.
 Qed.
 
-Lemma pat_ctx_rctx : forall W G F A p B, PatternContexts W G F A p B ->
-                     W = rev (combine (vars_Pattern p) (pat_app_roles p)).
-Proof. intros. induction H; simpl; eauto.
-       rewrite combine_vars_roles. rewrite rev_app_distr. simpl. f_equal. auto.
+Lemma uniq_new_pattern_ctx : forall p b p' b' D D',
+      Rename p b p' b' D D' ->
+      uniq (combine (vars_Pattern p') (pat_app_roles p')).
+Proof. intros. apply uniq_atoms_pattern_combine. eapply uniq_atoms_new_pattern;
+       eauto.
 Qed.
 
-Lemma dom_rev : forall A (l : list (atom * A)) x, x `in` dom l ->
-                                                  x `in` dom (rev l).
-Proof. intros. induction l; eauto.
-       destruct a. simpl in H. simpl. rewrite dom_app. simpl.
-       fsetdec.
-Qed.
 
-Lemma uniq_rev : forall A (l : list (atom * A)), uniq l -> uniq (rev l).
-Proof. intros. induction H; simpl; eauto. apply uniq_reorder_1.
-       simpl. econstructor. auto. intro. apply H0. apply dom_rev in H1.
-       rewrite rev_involutive in H1. auto.
-Qed.
+(** -------------------------------------------------------------- **)
 
-Lemma roleing_Rename : forall b R p p' b' D D' W, Rename p b p' b' D D' ->
+Theorem roleing_Rename : forall b R p p' b' D D' W, Rename p b p' b' D D' ->
       AtomSetImpl.inter (fv_tm_tm_tm p \u dom W) (fv_tm_tm_tm p') [<=] empty ->
       roleing (W ++ rev (combine (vars_Pattern p) (pat_app_roles p))) b R ->
       roleing (W ++ rev (combine (vars_Pattern p') (pat_app_roles p'))) b' R.
 Proof. intros. generalize dependent W.
        induction H; intros; simpl in *; eauto.
-       - rewrite combine_vars_roles. rewrite rev_app_distr. simpl.
-         rewrite combine_vars_roles in H2. rewrite rev_app_distr in H2.
+       - rewrite combine_app. rewrite rev_app_distr. simpl.
+         rewrite combine_app in H2. rewrite rev_app_distr in H2.
          rewrite app_assoc in H2. simpl in H2.
          eapply subst_tm_roleing with (R1 := R0).
          + rewrite app_assoc.
            rewrite (cons_app_one _ (y,R0)).
            apply roleing_app_rctx.
-           * move: (uniq_atoms_Rename H) => h.
-             apply uniq_vars_combine in h. apply uniq_rev in h.
+           * move: (uniq_new_pattern_ctx H) => h. apply uniq_rev in h.
              move: (rctx_uniq H2) => h2. apply uniq_app_1 in h2.
              assert (dom (rev (combine (vars_Pattern p2) (pat_app_roles p2)))
                       [<=] fv_tm_tm_tm p2).
              { intro. intro. apply dom_rev in H3. rewrite rev_involutive in H3.
-               apply combine_dom in H3. apply vars_fv in H3. auto. }
+               apply dom_combine_fv in H3. auto. }
              apply uniq_app_4. auto. simpl. econstructor. auto.
              apply subset_notin with (S2 := fv_tm_tm_tm p2).
              apply subset_notin with (S2 := D'). clear - H0. fsetdec.
@@ -222,11 +259,12 @@ Proof. intros. generalize dependent W.
          + remember (rev (combine (vars_Pattern p2) (pat_app_roles p2))) as W'.
            replace ((y,R0) :: W') with ([(y,R0)] ++ W' ++ nil); eauto.
            apply roleing_app_rctx.
-           simpl_env. econstructor. apply uniq_atoms_Rename in H.
-           apply uniq_vars_combine in H. rewrite HeqW'. apply uniq_rev. auto.
+           simpl_env. econstructor. apply uniq_atoms_new_pattern in H.
+           apply uniq_atoms_pattern_combine in H. rewrite HeqW'.
+           apply uniq_rev. auto.
            intro. apply H0. apply AtomSetImpl.union_3.
            subst. apply dom_rev in H3. rewrite rev_involutive in H3.
-           apply combine_dom in H3. apply vars_fv in H3.
+           apply dom_combine_fv in H3.
            eapply AtomSetProperties.in_subset. eauto.
            eapply Rename_fv_new_pattern; eauto.
            simpl_env. eauto. rewrite app_nil_r. auto.
@@ -323,6 +361,10 @@ Qed.
 
 Lemma subtm_pattern_agree_tm : forall a p, subtm_pattern_agree a p -> Pattern_like_tm a.
 Proof. intros. induction H; eauto. eapply tm_pattern_agree_tm; eauto.
+Qed.
+
+Lemma tm_subpattern_agree_pattern : forall a p, tm_subpattern_agree a p -> Pattern p.
+Proof. intros. induction H; eauto. eapply tm_pattern_agree_pattern; eauto.
 Qed.
 
 Lemma tm_subpattern_agree_tm : forall a p, tm_subpattern_agree a p -> Pattern_like_tm a.
@@ -1520,6 +1562,45 @@ Proof. intros. generalize dependent x. generalize dependent y.
          - simpl in H2. simpl in H1. inversion H3; subst. eauto.
 Qed.
 
+Lemma MatchSubst_subst_tm : forall a p b b' e x,
+     tm_pattern_agree a p -> lc_tm e ->
+     AtomSetImpl.inter (singleton x \u fv_tm_tm_tm e)
+          (fv_tm_tm_tm p \u fv_tm_tm_tm b) [<=] empty ->
+     MatchSubst a p b b' ->
+     MatchSubst (tm_subst_tm_tm e x a) p b (tm_subst_tm_tm e x b').
+Proof. intros. generalize dependent b'.
+       induction H; intros; simpl in *.
+        - inversion H2; subst. rewrite tm_subst_tm_tm_fresh_eq.
+          fsetdec. eauto.
+        - inversion H3; subst. rewrite tm_subst_tm_tm_tm_subst_tm_tm.
+          fsetdec. fsetdec. econstructor. apply tm_subst_tm_tm_lc_tm; auto.
+          eapply IHtm_pattern_agree. fsetdec. auto.
+        - inversion H3; subst. econstructor. apply tm_subst_tm_tm_lc_tm; auto.
+          eapply IHtm_pattern_agree. fsetdec. auto.
+        - inversion H2; subst. econstructor.
+          eapply IHtm_pattern_agree. fsetdec. auto.
+Qed.
+
+
+Lemma MatchSubst_subst_co : forall a p b b' g c,
+     tm_pattern_agree a p -> lc_co g ->
+     AtomSetImpl.inter (singleton c \u fv_tm_tm_co g)
+          (fv_tm_tm_tm p \u fv_co_co_tm b) [<=] empty ->
+     MatchSubst a p b b' ->
+     MatchSubst (co_subst_co_tm g c a) p b (co_subst_co_tm g c b').
+Proof. intros. generalize dependent b'.
+       induction H; intros; simpl in *.
+        - inversion H2; subst. rewrite co_subst_co_tm_fresh_eq.
+          fsetdec. eauto.
+        - inversion H3; subst. rewrite co_subst_co_tm_tm_subst_tm_tm.
+          fsetdec. econstructor. apply co_subst_co_tm_lc_tm; auto.
+          eapply IHtm_pattern_agree. fsetdec. auto.
+        - inversion H3; subst. econstructor. apply co_subst_co_tm_lc_tm; auto.
+          eapply IHtm_pattern_agree. fsetdec. auto.
+        - inversion H2; subst. econstructor.
+          eapply IHtm_pattern_agree. fsetdec. auto.
+Qed.
+
 Lemma Subset_trans : forall D1 D2 D3, AtomSetImpl.Subset D1 D2 ->
       AtomSetImpl.Subset D2 D3 -> AtomSetImpl.Subset D1 D3.
 Proof. intros. fsetdec.
@@ -1534,6 +1615,9 @@ Lemma Superset_cont_sub : forall x S1 S2, S1 [<=] S2 -> x `in` S1 -> x `in` S2.
 Proof. intros. fsetdec.
 Qed.
 
+Lemma Rename_lc_2 : forall p b p' b' D D', Rename p b p' b' D D' -> lc_tm b.
+Proof. intros. induction H; eauto.
+Qed.
 
 Lemma Rename_lc_4 : forall p b p' b' D D', Rename p b p' b' D D' -> lc_tm b'.
 Proof. intros. induction H; eauto. eapply tm_subst_tm_tm_lc_tm; eauto.
@@ -1550,6 +1634,23 @@ Proof. intros. induction H; intros; simpl in *; auto.
            eapply Subset_trans. eauto. fsetdec.
          - fsetdec.
          - fsetdec.
+Qed.
+
+Lemma Rename_new_body_fv : forall p b p' b' D D',
+      Rename p b p' b' D D' -> fv_tm_tm_tm b [<=] fv_tm_tm_tm p ->
+      fv_tm_tm_tm b' [<=] D'.
+Proof. intros. move: (Rename_fv_body H) => h. eapply Subset_trans. eauto.
+       rewrite AtomSetProperties.diff_subset_equal.
+       apply AtomSetProperties.union_subset_3. apply Subset_empty_any.
+       eapply Rename_fv_new_pattern; eauto. auto.
+Qed.
+
+Lemma Rename_new_body_fv_co : forall p b p' b' D D',
+      Rename p b p' b' D D' -> fv_co_co_tm b [<=] empty ->
+      fv_co_co_tm b' [<=] empty.
+Proof. intros. induction H; eauto.
+       rewrite fv_co_co_tm_tm_subst_tm_tm_upper. simpl.
+       apply AtomSetProperties.union_subset_3; eauto.
 Qed.
 
 Lemma Rename_inter_empty : forall p b p' b' D D', Rename p b p' b' D D' ->
@@ -1694,4 +1795,124 @@ Proof. intros. eapply decide_CasePath in H. inversion H.
        rewrite H2 in H1. inversion H1. contradiction. right. eauto.
 Qed.
 
+
+Lemma tm_pattern_agree_unsubst_tm : forall a b x p, Pattern_like_tm a ->
+           tm_pattern_agree (tm_subst_tm_tm b x a) p -> tm_pattern_agree a p.
+Proof. intros. generalize dependent p.
+       induction H; intros; simpl in *; eauto.
+       inversion H1; subst. eauto. eauto.
+       inversion H0; subst. eauto.
+Qed.
+
+Lemma tm_pattern_agree_unsubst_co : forall a g c p, Pattern_like_tm a ->
+           tm_pattern_agree (co_subst_co_tm g c a) p -> tm_pattern_agree a p.
+Proof. intros. generalize dependent p.
+       induction H; intros; simpl in *; eauto.
+       inversion H1; subst. eauto. eauto.
+       inversion H0; subst. eauto.
+Qed.
+
+Lemma subtm_pattern_agree_unsubst_tm : forall a b x p,  Pattern_like_tm a ->
+      subtm_pattern_agree (tm_subst_tm_tm b x a) p -> subtm_pattern_agree a p.
+Proof. intros. generalize dependent p. induction H; intros; simpl in *; eauto.
+       inversion H1; subst. econstructor.
+       eapply tm_pattern_agree_unsubst_tm; eauto.
+       eapply subtm_pattern_agree_App; eauto.
+       inversion H0; subst. econstructor.
+       eapply tm_pattern_agree_unsubst_tm; eauto.
+       eapply subtm_pattern_agree_CAppp; eauto.
+Qed.
+
+Lemma subtm_pattern_agree_unsubst_co : forall a g c p,  Pattern_like_tm a ->
+      subtm_pattern_agree (co_subst_co_tm g c a) p -> subtm_pattern_agree a p.
+Proof. intros. generalize dependent p. induction H; intros; simpl in *; eauto.
+       inversion H1; subst. econstructor.
+       eapply tm_pattern_agree_unsubst_co; eauto.
+       eapply subtm_pattern_agree_App; eauto.
+       inversion H0; subst. econstructor.
+       eapply tm_pattern_agree_unsubst_co; eauto.
+       eapply subtm_pattern_agree_CAppp; eauto.
+Qed.
+
+Lemma CasePath_subst_tm : forall F a b R x, CasePath R a F -> lc_tm b ->
+                   CasePath R (tm_subst_tm_tm b x a) F.
+Proof. intros. inversion H; subst. econstructor; eauto.
+       apply ValuePath_subst; auto. eapply CasePath_Const; eauto.
+       apply ValuePath_subst; auto. eapply CasePath_UnMatch; eauto.
+       apply ValuePath_subst; auto. intro. eapply H3.
+       eapply subtm_pattern_agree_unsubst_tm; eauto.
+       eapply ValuePath_Pattern_like_tm. eauto.
+Qed.
+
+Lemma CasePath_subst_co : forall F a g R c, CasePath R a F -> lc_co g ->
+                   CasePath R (co_subst_co_tm g c a) F.
+Proof. intros. inversion H; subst. econstructor; eauto.
+       apply ValuePath_subst_co; auto. eapply CasePath_Const; eauto.
+       apply ValuePath_subst_co; auto. eapply CasePath_UnMatch; eauto.
+       apply ValuePath_subst_co; auto. intro. eapply H3.
+       eapply subtm_pattern_agree_unsubst_co; eauto.
+       eapply ValuePath_Pattern_like_tm. eauto.
+Qed.
+
+Lemma ValuePath_unsubst_tm : forall F a b x, Pattern_like_tm a ->
+      ValuePath (tm_subst_tm_tm b x a) F -> ValuePath a F.
+Proof. intros. induction H; simpl in *; eauto.
+       inversion H0; subst. eauto with lngen lc.
+       inversion H0; subst. eauto with lngen lc.
+Qed.
+
+Lemma CasePath_unsubst_tm : forall F a b R x, Pattern_like_tm a -> lc_tm b ->
+      CasePath R (tm_subst_tm_tm b x a) F -> CasePath R a F.
+Proof. intros. inversion H1; subst. econstructor; eauto.
+       eapply ValuePath_unsubst_tm; eauto. eapply CasePath_Const; eauto.
+       eapply ValuePath_unsubst_tm; eauto. eapply CasePath_UnMatch; eauto.
+       eapply ValuePath_unsubst_tm; eauto. intro. eapply H4.
+       eapply subtm_pattern_agree_subst_tm; eauto.
+Qed.
+
+Lemma CasePath_Value_unsubst_tm : forall F a b x R, Value R a -> lc_tm b ->
+      CasePath R (tm_subst_tm_tm b x a) F -> CasePath R a F.
+Proof. intros. induction H; simpl in *;
+         try (apply CasePath_ValuePath in H1; inversion H1; fail).
+       eapply CasePath_unsubst_tm; eauto.
+       apply CasePath_ValuePath in H. eapply ValuePath_Pattern_like_tm; eauto.
+Qed.
+
+Lemma ValuePath_unsubst_co : forall F a g c, Pattern_like_tm a ->
+      ValuePath (co_subst_co_tm g c a) F -> ValuePath a F.
+Proof. intros. induction H; simpl in *; eauto.
+       inversion H0; subst. eauto with lngen lc.
+       inversion H0; subst. eauto with lngen lc.
+Qed.
+
+Lemma CasePath_unsubst_co : forall F a g R c, Pattern_like_tm a -> lc_co g ->
+      CasePath R (co_subst_co_tm g c a) F -> CasePath R a F.
+Proof. intros. inversion H1; subst. econstructor; eauto.
+       eapply ValuePath_unsubst_co; eauto. eapply CasePath_Const; eauto.
+       eapply ValuePath_unsubst_co; eauto. eapply CasePath_UnMatch; eauto.
+       eapply ValuePath_unsubst_co; eauto. intro. eapply H4.
+       eapply subtm_pattern_agree_subst_co; eauto.
+Qed.
+
+Lemma CasePath_Value_unsubst_co : forall F a g c R, Value R a -> lc_co g ->
+      CasePath R (co_subst_co_tm g c a) F -> CasePath R a F.
+Proof. intros. induction H; simpl in *;
+         try (apply CasePath_ValuePath in H1; inversion H1; fail).
+       eapply CasePath_unsubst_co; eauto.
+       apply CasePath_ValuePath in H. eapply ValuePath_Pattern_like_tm; eauto.
+Qed.
+
+Lemma ApplyArgs_subst_tm : forall a b c e x, lc_tm e -> ApplyArgs a b c ->
+  ApplyArgs (tm_subst_tm_tm e x a)(tm_subst_tm_tm e x b)(tm_subst_tm_tm e x c).
+Proof. intros. induction H0; simpl; eauto.
+       econstructor. apply tm_subst_tm_tm_lc_tm; auto.
+       econstructor. apply tm_subst_tm_tm_lc_tm; auto. auto.
+Qed.
+
+Lemma ApplyArgs_subst_co : forall a b c g y, lc_co g -> ApplyArgs a b c ->
+  ApplyArgs (co_subst_co_tm g y a)(co_subst_co_tm g y b)(co_subst_co_tm g y c).
+Proof. intros. induction H0; simpl; eauto.
+       econstructor. apply co_subst_co_tm_lc_tm; auto.
+       econstructor. apply co_subst_co_tm_lc_tm; auto. auto.
+Qed.
 

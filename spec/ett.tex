@@ -796,9 +796,27 @@
 {\ottdrulename{Pattern\_Rel}}{}%
 }}
 
+
+\newcommand{\ottdrulePatternXXIrr}[1]{\ottdrule[#1]{%
+\ottpremise{\ottkw{pattern} \, \ottnt{p}}%
+}{
+\ottkw{pattern} \, \ottsym{(}   \ottnt{p} \  \ottnt{a} ^{ \ottsym{-} }   \ottsym{)}}{%
+{\ottdrulename{Pattern\_Irr}}{}%
+}}
+
+
+\newcommand{\ottdrulePatternXXCoe}[1]{\ottdrule[#1]{%
+\ottpremise{\ottkw{pattern} \, \ottnt{p}}%
+}{
+\ottkw{pattern} \, \ottsym{(}  \ottnt{p}  \ottsym{[}  \gamma  \ottsym{]}  \ottsym{)}}{%
+{\ottdrulename{Pattern\_Coe}}{}%
+}}
+
 \newcommand{\ottdefnPattern}[1]{\begin{ottdefnblock}[#1]{$\ottkw{pattern} \, \ottnt{p}$}{}
 \ottusedrule{\ottdrulePatternXXHead{}}
 \ottusedrule{\ottdrulePatternXXRel{}}
+\ottusedrule{\ottdrulePatternXXIrr{}}
+\ottusedrule{\ottdrulePatternXXCoe{}}
 \end{ottdefnblock}}
 
 
@@ -2453,7 +2471,7 @@
 \ottall
 
 \begin{verbatim}
-Definition rules:        167 good    0 bad
-Definition rule clauses: 460 good    0 bad
+Definition rules:        169 good    0 bad
+Definition rule clauses: 464 good    0 bad
 \end{verbatim}
 \end{document}

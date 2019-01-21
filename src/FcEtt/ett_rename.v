@@ -36,6 +36,26 @@ Proof. intros. induction H; simpl in *; eauto.
           Unshelve. all: clear. all:fsetdec.
 Qed.
 
+Lemma Rename_narrow : forall p b p' b' D D' S, Rename p b p' b' D D' ->
+      S [<=] D -> Rename p b p' b' S D'.
+Proof. intros. induction H; eauto.
+       econstructor. eauto. fsetdec.
+Qed.
+
+Lemma inter_empty : forall S1 S2, (forall x, x `in` S1 -> x `notin` S2) ->
+      AtomSetImpl.inter S1 S2 [<=] empty.
+Proof. intros. intro. intro. apply inter_iff in H0. apply empty_iff.
+       inversion H0. eapply H; eauto.
+Qed.
+
+Lemma Rename_inter_sub_empty : forall p b p' b' D D' S1 S2,
+      Rename p b p' b' D D' -> S1 [<=] D -> S2 [<=] D' ->
+      AtomSetImpl.inter S1 S2 [<=] empty.
+Proof. intros. apply inter_empty. intros. eapply subset_notin.
+       eapply Rename_inter_empty. eauto. eauto. auto.
+Qed.
+
+
 Fixpoint tm_var_pairs (a p : tm) : list (tm * var) :=
    match (a,p) with
  | (a_Fam F, a_Fam F') => []
