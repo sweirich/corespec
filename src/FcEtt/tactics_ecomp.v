@@ -45,7 +45,7 @@ Tactic Notation "ecbn" "in" ident(H) := (move: H; ecbn; move=> H).
 
 (* Lists *)
 
-Hint Rewrite rev_app_distr app_nil_r : extended_comp.
+Hint Rewrite rev_app_distr app_nil_r dom_app : extended_comp.
 
 Lemma zip_nil_r : `(@zip a b l nil = nil).
 Proof. move => ?? l; by case l. Qed.

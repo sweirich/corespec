@@ -215,6 +215,18 @@ Proof.
   - move: IHh. ecbn.
 Admitted.
 
+
+Lemma chain_open_telescope_partial_subst_general_rel : `{
+  x `notin` dom Γ →
+  x `notin` fv_tm_args args →
+  Γ ⊨ a : A →
+  chain_open_telescope_partial Γ B PiB (coargs ++ one (pattern_arg_Rel (a_Var_f x) R) ++ args) →
+  chain_open_telescope_partial Γ (tm_subst_tm_tm a x B) PiB (coargs ++ (pattern_arg_Rel a R :: args))
+}.
+Proof.
+  (* TODO: by specialization of previous lemma (after it gets generalized) *)
+Admitted.
+
 Lemma chain_open_telescope_partial_subst_Rel : `{
   x `notin` dom Γ →
   x `notin` fv_tm_args args →
@@ -270,6 +282,7 @@ Proof.
   dependent induction h; ok.
 Qed.
 
+(* FIXME: naming conventions *)
 Lemma dsp_patctx_cotp : `{
   decompose_subpattern (a_Fam F) p p'args cop'args ∅ coΓp' →
   PatternContexts Ω' coΓp' F PiB p B →
@@ -277,6 +290,36 @@ Lemma dsp_patctx_cotp : `{
 Proof.
   (* TODO *)
 Admitted.
+
+Lemma dsp_invert_rel : `{
+  decompose_subpattern (a_App a (Role R) (a_Var_f x)) p args coargs Γ coΓ →
+  exists args' A Γ',
+  args = pattern_arg_Rel (a_Var_f x) R :: args' /\
+  Γ = x ~ Tm A ++ Γ' /\
+  decompose_subpattern a p args' (coargs ++ [pattern_arg_Rel (a_Var_f x) R]) Γ' (coΓ ++ x ~ Tm A)
+}.
+Proof.
+  (* TODO *)
+Admitted.
+
+Lemma decompose_subpattern_fv : `{
+  decompose_subpattern p' p args coargs Γ coΓ →
+  fv_tm_tm_tm p' [=] dom Γ /\ fv_tm_tm_tm p [=] dom Γ ∪ dom coΓ
+}.
+Proof.
+  induction 1; cbn; ok.
+Qed.
+
+Lemma decompose_subpattern_fv_rel : `{
+  decompose_subpattern p' (a_App p f (a_Var_f x0)) args coargs Γ (x0 ~ Tm A ++ coΓ) →
+  fv_tm_tm_tm p [=] dom Γ ∪ dom coΓ
+}.
+Proof.
+  intros until 0.
+  move=> h; dependent induction h.
+  eapply dsp_fv in h.
+  ok.
+Qed.
 
 
 Definition Pattern := ett_ott.Pattern. (* FIXME: a file (ett_match maybe?) is masking Pattern *)
@@ -450,7 +493,6 @@ Proof.
       }
       (* x ∉ fv_tm_args args1 *)
       {
-        SearchAbout a1.
         have h : Pattern a1 by eapply MatchSubst_Pattern_1; eauto. (* FIXME: eauto doesn't use MatchSubst_Pattern_1 *)
         eapply pat_args_default_fv in h.
         by ok.
@@ -462,8 +504,52 @@ Proof.
       eapply invert_a_App_Rel in H4; autofwd.
       move: H3 H0 IHMatchSubst => /= H3 H0.
       move/(_ ltac:(ok)).
+      eapply dsp_invert_rel in H9; autofwd. eapply dsp_sub_rel in H12.
+      subst.
+      move /(_ _ _ _ _ _ _ H3 H4 eq_refl H12 _ ltac:(inversion H8; eassumption)).
+      ecbn.
+      simpl_env.
+      move/(_ eq_refl).
+      introfwd.
+      simpl_env in H9.
+      rewrite app_assoc in H9.
+      eapply (@chain_open_telescope_partial_subst_general_rel _ _ _ _ _ _ _ nil) in H9; first last.
+      (* Typing of A *)
+      { ok. }
 
-  (*__ CURRENTLY IMPORTING THE PROOF __*)
+      (* x ∉ fv_tm_args args0 *)
+      {
+        fold (@app pattern_arg). (* FIXME *)
+        (*__ CURRENTLY IMPORTING THE PROOF __*)
+        admit.
+      }
+
+
+      (* x0 ∉ dom Γ *)
+      {
+        autoreg.
+        (* FIXME: fragile *)
+        eapply Ctx_uniq in _Typing_Ctx_.
+        inversion _Typing_Ctx_.
+        move: H17.
+        simpl_env.
+        ok.
+      }
+
+      (* Big existential *)
+      {
+        admit.
+      }
+
+      (* PatCtxTrim ... *)
+      {
+        invs H8.
+        simpl_env.
+        ok.
+      }
+
+   -
+     (*__ CURRENTLY IMPORTING THE PROOF __*)
 
 Admitted.
 
