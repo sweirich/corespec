@@ -1091,10 +1091,12 @@ Qed.
 
 Lemma Par_lc2 : forall W a a' R, Par W a a' R → lc_tm a'.
 Proof. intros. induction H; eauto. eapply roleing_lc; eauto.
-       lc_solve. lc_solve. admit. eapply MatchSubst_lc_3; eauto.
+       lc_solve. lc_solve. apply toplevel_inversion in H.
+       inversion H as [W1 [G [B [_ [_ [Q _]]]]]].
+       eapply roleing_lc; eauto. eapply MatchSubst_lc_3; eauto.
        eapply MatchSubst_lc_3; eauto.
        econstructor. eapply ApplyArgs_lc_3; eauto. eauto.
-Admitted.
+Qed.
 
 Hint Resolve MatchSubst_lc_1 MatchSubst_lc_3 ApplyArgs_lc_3 Par_lc1 Par_lc2 : lc.
 

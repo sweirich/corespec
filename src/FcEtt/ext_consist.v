@@ -1432,23 +1432,97 @@ Proof.
              auto. inversion H7; subst. eapply Par_AxiomBase.
              eauto. auto. eapply rctx_uniq. eapply Typing_roleing; eauto.
            + apply Typing_roleing in t; inversion t; subst.
+             move: (Rename_exists (union (dom (ctx_nom G)) (fv_tm_tm_tm p))
+              (axiom_pattern H2) (Rename_lc_2 H3)) => h.
+             inversion h as [p2 [b2 [D2 h1]]].
+             assert (tm_pattern_agree (a_App a0 (Role R0) a) p2).
+             { eapply tm_pattern_agree_rename_inv_1.
+               eapply tm_pattern_agree_rename_inv_2.
+               eapply MatchSubst_match; eauto. eauto. eauto.
+             }
              eapply Par_AxiomApp. eauto.
              pose (Q := tm_pattern_agree_rename_inv_2 (MatchSubst_match H4) H3).
              split. eapply tm_subpattern_agree_sub_app; eauto.
              intro. eapply tm_pattern_agree_app_contr; try apply Q; eauto.
-             eapply Par_sub; eauto. simpl. eauto. admit. eauto. auto.
-           + apply Typing_roleing in t; inversion t; subst.
+             eapply Par_sub; eauto. simpl. eauto.
+             eauto.
+             replace (tm_subst_tm_tm a x b3) with
+                     (matchsubst (a_App a0 (Role R0) a) p2 b2).
+             apply matchsubst_fun_ind.
+             auto. eapply Rename_lc_4; eauto. auto.
+             move: (axiom_body_fv_in_pattern H2) => h2.
+             apply rctx_fv in H12. apply rctx_fv in H15.
+             eapply MatchSubst_Rename_preserve.
+             eapply tm_pattern_agree_rename_inv_2.
+             eapply MatchSubst_match. eapply H4. eauto. eauto. eapply H3.
+             simpl. clear - H12 H15 h2. apply union_s_m.
+             eapply AtomSetProperties.union_subset_3; eauto.
+             eapply AtomSetProperties.union_subset_3; eauto.
+             simpl. clear - h2. apply union_s_m. eauto.
+             eapply AtomSetProperties.union_subset_3; eauto.
+             eapply uniq_atoms_toplevel; eauto.
+             apply matchsubst_fun_ind. auto. eapply Rename_lc_4; eauto.
+             auto. auto. auto.
+           + move: (Rename_exists (union (dom (ctx_nom G)) (fv_tm_tm_tm p))
+              (axiom_pattern H2) (Rename_lc_2 H3)) => h.
+             inversion h as [p2 [b2 [D2 h1]]].
+             assert (tm_pattern_agree (a_App a0 (Rho Irrel) a) p2).
+             { eapply tm_pattern_agree_rename_inv_1.
+               eapply tm_pattern_agree_rename_inv_2.
+               eapply MatchSubst_match; eauto. eauto. eauto.
+             }
+             apply Typing_roleing in t; inversion t; subst.
              eapply Par_AxiomApp. eauto.
              pose (Q := tm_pattern_agree_rename_inv_2 (MatchSubst_match H4) H3).
              split. eapply tm_subpattern_agree_sub_app; eauto.
              intro. eapply tm_pattern_agree_app_contr; try apply Q; eauto.
-             eapply Par_sub; eauto. simpl. eauto. admit. eauto. auto.
-           + apply Typing_roleing in t; inversion t; subst.
+             eapply Par_sub; eauto. simpl. eauto. eauto.
+             replace a2 with (matchsubst (a_App a0 (Rho Irrel) a) p2 b2).
+             apply matchsubst_fun_ind.
+             auto. eapply Rename_lc_4; eauto. auto.
+             move: (axiom_body_fv_in_pattern H2) => h2.
+             apply rctx_fv in H14. apply rctx_fv in H15.
+             eapply MatchSubst_Rename_preserve.
+             eapply tm_pattern_agree_rename_inv_2.
+             eapply MatchSubst_match. eapply H4. eauto. eauto. eapply H3.
+             simpl. clear - H14 H15 h2. apply union_s_m.
+             eapply AtomSetProperties.union_subset_3; eauto.
+             eapply AtomSetProperties.union_subset_3; eauto.
+             simpl. clear - h2. apply union_s_m. eauto.
+             eapply AtomSetProperties.union_subset_3; eauto.
+             eapply uniq_atoms_toplevel; eauto.
+             apply matchsubst_fun_ind. auto. eapply Rename_lc_4; eauto.
+             auto. auto. auto.
+           + move: (Rename_exists (union (dom (ctx_nom G)) (fv_tm_tm_tm p))
+              (axiom_pattern H2) (Rename_lc_2 H3)) => h.
+             inversion h as [p2 [b2 [D2 h1]]].
+             assert (tm_pattern_agree (a_CApp a0 g_Triv) p2).
+             { eapply tm_pattern_agree_rename_inv_1.
+               eapply tm_pattern_agree_rename_inv_2.
+               eapply MatchSubst_match; eauto. eauto. eauto.
+             }
+             apply Typing_roleing in t; inversion t; subst.
              eapply Par_AxiomCApp. eauto.
              pose (Q := tm_pattern_agree_rename_inv_2 (MatchSubst_match H4) H3).
              split. eapply tm_subpattern_agree_sub_capp; eauto.
              intro. eapply tm_pattern_agree_capp_contr; try apply Q; eauto.
-             eapply Par_sub; eauto. admit. eauto. auto.
+             eapply Par_sub; eauto. eauto.
+             replace a2 with (matchsubst (a_CApp a0 g_Triv) p2 b2).
+             apply matchsubst_fun_ind.
+             auto. eapply Rename_lc_4; eauto. auto.
+             move: (axiom_body_fv_in_pattern H2) => h2.
+             apply rctx_fv in H10.
+             eapply MatchSubst_Rename_preserve.
+             eapply tm_pattern_agree_rename_inv_2.
+             eapply MatchSubst_match. eapply H4. eauto. eauto. eapply H3.
+             simpl. clear - H10 h2. apply union_s_m.
+             rewrite union_empty_r. auto.
+             eapply AtomSetProperties.union_subset_3; eauto.
+             simpl. clear - h2. apply union_s_m. eauto.
+             eapply AtomSetProperties.union_subset_3; eauto.
+             eapply uniq_atoms_toplevel; eauto.
+             apply matchsubst_fun_ind. auto. eapply Rename_lc_4; eauto.
+             auto. auto. auto.
        - apply Typing_roleing in t; inversion t; subst.
          eapply Par_PatternTrue; eauto.
          econstructor; eapply roleing_sub; eauto.
@@ -1720,6 +1794,29 @@ Lemma notin_sub : forall x a b, x `notin` a -> b [<=] a -> x `notin` b.
   intros. fsetdec.
 Qed.
 
+Lemma axiom_body_lc : forall F p b A R Rs, binds F (Ax p b A R Rs) toplevel ->
+      lc_tm b.
+Proof. intros. apply toplevel_inversion in H.
+       inversion H as [W [G [B [_ [_ [Q _]]]]]]. eapply roleing_lc; eauto.
+Qed.
+
+Lemma subtm_pattern_agree_steps : forall F p b A R1 Rs R a,
+      binds F (Ax p b A R1 Rs) toplevel -> subtm_pattern_agree a p ->
+      SubRole R1 R -> exists a', reduction_in_one a a' R.
+Proof. intros. induction H0.
+       - move: (Rename_exists (fv_tm_tm_tm a \u fv_tm_tm_tm p)
+             (axiom_pattern H) (axiom_body_lc H)) => h.
+         inversion h as [p' [b' [D' h']]].
+         exists (matchsubst a p' b'). econstructor. econstructor.
+         eauto. eauto. eapply matchsubst_fun_ind.
+         eapply tm_pattern_agree_rename_inv_1; eauto. eapply Rename_lc_4; eauto.
+         auto. auto.
+       - apply IHsubtm_pattern_agree in H. inversion H as [a' h].
+         exists (a_App a' nu a2); eauto.
+       - apply IHsubtm_pattern_agree in H. inversion H as [a' h].
+         exists (a_CApp a' g_Triv); eauto.
+Qed.
+
 (*
    The progress lemma is stated in terms of the reduction_in_one relation,
    which is a subrelation of the Par relation.
@@ -1767,84 +1864,74 @@ Proof. intros. generalize dependent R.
         * left; eauto.
         * pose (P1 := sub_dec R1 R). inversion P1 as [P11 | P11].
            ** pose (P2 := subtm_pattern_agree_dec p H1).
-              inversion P2 as [P21 | P21]. inversion P21; subst.
-              right. exists (matchsubst (a_App b (Rho Rel) a) p b0).
-              eapply E_Prim. eapply Beta_Axiom; eauto. admit.
-              eapply matchsubst_fun_ind. eauto.
-              pose (P3 := toplevel_inversion H5).
-              inversion P3 as [W [G1 [B1 [P31 [P32 P33]]]]].
-              apply Typing_lc in P32. eapply P32. auto.
-              contradiction. left; eauto.
+              inversion P2 as [P21 | P21].
+              move: (subtm_pattern_agree_steps H5 P21 P11) => h.
+              inversion h as [a' h']. right. exists a'; auto.
+              left; eauto.
            ** left; eauto.
          * auto.
     + right. exists (a_App b' (Rho Rel) a); eauto.
-  - pose (P0 := Path_ValuePath H3). pose (P1 := Path_inversion H3).
+  - unfold irrelevant in H0. inversion H0.
     inversion H1; subst.
-    inversion P1 as [[A1 Q] | [p [b1 [A1 [R1 Q]]]]].
-    left; eauto. pose (P2 := sub_dec R1 R0).
-    inversion P2. pose (P3 := tm_pattern_agree_dec p H1).
-    inversion P3. right. exists (matchsubst (a_App b (Role R) a) p b1).
-    eapply E_Prim. eapply Beta_Axiom; eauto. admit.
-    pose (P4 := toplevel_inversion Q).
-    inversion P4 as [W [G1 [B1 [P41 [P42 P43]]]]].
-    apply Typing_lc in P42. destruct P42. eapply matchsubst_fun_ind; eauto.
-    assert (~subtm_pattern_agree (a_App b (Role R) a) p). {
-    intro. inversion H7; subst. contradiction.
-    pose (Q1 := Path_subtm_pattern_agree_contr H3 Q). contradiction. }
-    left; eauto. left; eauto.
-  - inversion H1; subst. unfold irrelevant in H0. inversion H0.
-    ecase IHTyping1; auto.
-    + split; auto. intros. pose (Q := H3 x A0 H6). simpl in Q. eauto.
-    + move => h1. apply canonical_forms_Pi with (R' := R) in H; auto.
-      destruct H as [[a1 e1] | [F Q]]; subst. 
-      right.
-      exists (open_tm_wrt_tm a1 a_Bullet); eauto.
-      inversion Q; subst.
-        * left; eauto.
-        * left; eauto.
-        * pose (P1 := sub_dec R1 R). inversion P1 as [P11 | P11].
-           ** pose (P2 := subtm_pattern_agree_dec p H1).
-              inversion P2 as [P21 | P21]. inversion P21; subst.
-              right. exists (matchsubst (a_App b (Rho Irrel) a_Bullet) p b0).
-              eapply E_Prim. eapply Beta_Axiom; eauto. admit.
-              eapply matchsubst_fun_ind. eauto.
-              pose (P3 := toplevel_inversion H6).
-              inversion P3 as [W [G1 [B1 [P31 [P32 P33]]]]].
-              apply Typing_lc in P32. eapply P32. auto.
-              contradiction. left; eauto.
-           ** left; eauto.
-        * auto.
-    + move => h1. destruct h1 as [b' h0]. right.
-      exists (a_App b' (Rho Irrel) a_Bullet); eauto.
-  - left. constructor; eauto. inversion H1; auto.
-  - inversion H1; subst. unfold irrelevant in H0. inversion H0.
-    ecase IHTyping; auto.
-    + split; auto. intros. pose (Q := H3 x A0 H7). simpl in Q. eauto.
-    + move => h1.  apply canonical_forms_CPi with (R := R0) in H; auto.
-      destruct H as [[a2 e1] | [F Q]]; subst. right.
-      exists (open_tm_wrt_co a2 g_Triv); eauto.
+    edestruct IHTyping1 with (R := R0) as [V | [b' h0]]; auto 1.
+    + unfold irrelevant in H0. inversion H0. split; auto.
+      intros. pose (Q := H4 x A0 H9). simpl in Q. eauto.
+    + apply canonical_forms_Pi with (R' := R0) in H; auto.
+      destruct H as [[a1 e1] | [F0 Q]]; subst. inversion H3.
       inversion Q; subst.
         * left; eauto.
         * left; eauto.
         * pose (P1 := sub_dec R2 R0). inversion P1 as [P11 | P11].
            ** pose (P2 := subtm_pattern_agree_dec p H1).
-              inversion P2 as [P21 | P21]. inversion P21; subst.
-              right. exists (matchsubst (a_CApp a1 g_Triv) p b0).
-              eapply E_Prim. eapply Beta_Axiom; eauto. admit.
-              eapply matchsubst_fun_ind. eauto.
-              pose (P3 := toplevel_inversion H7).
-              inversion P3 as [W [G1 [B2 [P31 [P32 P33]]]]].
-              apply Typing_lc in P32. eapply P32. auto.
-              contradiction. left; eauto.
+              inversion P2 as [P21 | P21].
+              move: (subtm_pattern_agree_steps H6 P21 P11) => h.
+              inversion h as [a' h']. right. exists a'; auto.
+              left; eauto.
            ** left; eauto.
-         * eauto.
-    + intros H8. destruct H8 as [a' h0]. right.
-      exists (a_CApp a' g_Triv); eauto.
+    + right. exists (a_App b' (Role R) a); eauto.
+  - unfold irrelevant in H0. inversion H0.
+    inversion H1; subst.
+    edestruct IHTyping1 with (R := R) as [V | [b' h0]]; auto 1.
+    + unfold irrelevant in H0. inversion H0. split; auto.
+      intros. pose (Q := H5 x A0 H8). simpl in Q. eauto.
+    + apply canonical_forms_Pi with (R' := R) in H; auto.
+      destruct H as [[a1 e1] | [F Q]]; subst. right.
+      exists (open_tm_wrt_tm a1 a_Bullet); eauto. inversion Q; subst.
+        * left; eauto.
+        * left; eauto.
+        * pose (P1 := sub_dec R1 R). inversion P1 as [P11 | P11].
+           ** pose (P2 := subtm_pattern_agree_dec p H1).
+              inversion P2 as [P21 | P21].
+              move: (subtm_pattern_agree_steps H5 P21 P11) => h.
+              inversion h as [a' h']. right. exists a'; auto.
+              left; eauto.
+           ** left; eauto.
+    + right. exists (a_App b' (Rho Irrel) a_Bullet); eauto.
+  - left. constructor; eauto. inversion H1; auto.
+  - unfold irrelevant in H0. inversion H0.
+    inversion H1; subst.
+    edestruct IHTyping with (R := R0) as [V | [b' h0]]; auto 1.
+    + unfold irrelevant in H0. inversion H0. split; auto.
+      intros. pose (Q := H5 x A0 H9). simpl in Q. eauto.
+    + apply canonical_forms_CPi with (R := R0) in H; auto.
+      destruct H as [[a2 e2] | [F Q]]; subst. right.
+      exists (open_tm_wrt_co a2 g_Triv); eauto. inversion Q; subst.
+        * left; eauto.
+        * left; eauto.
+        * pose (P1 := sub_dec R2 R0). inversion P1 as [P11 | P11].
+           ** pose (P2 := subtm_pattern_agree_dec p H1).
+              inversion P2 as [P21 | P21].
+              move: (subtm_pattern_agree_steps H5 P21 P11) => h.
+              inversion h as [a' h']. right. exists a'; auto.
+              left; eauto.
+           ** left; eauto.
+    + right. exists (a_CApp b' g_Triv); eauto.
   - destruct (sub_dec R1 R) as [S1 | S2].
-    pose (P := subtm_pattern_agree_dec p H1). inversion P as [P1 | P1].
-    inversion P1; subst. inversion H4; subst. right. exists a.
-    eapply E_Prim. eapply Beta_Axiom; eauto. admit. admit.
-    left; eauto. left; eauto.
+    + pose (P := subtm_pattern_agree_dec p H1). inversion P as [P1 | P1].
+      * move: (subtm_pattern_agree_steps H2 P1 S1) => h.
+        inversion h as [a' h']. right. exists a'; auto.
+      * left; eauto.
+    + left; eauto.
   - inversion H1; subst. unfold irrelevant in H0. inversion H0.
     assert (irrelevant G (dom G) a). split; auto 1. intros.
     pose (Q := H6 x A0 H8). simpl in Q. eauto.
@@ -1859,4 +1946,4 @@ Proof. intros. generalize dependent R.
     inversion Q1 as [a' Q2].
     right. exists (a_Pattern R a' F b1 b2); eauto.
     Unshelve. all:auto.
-Admitted.
+Qed.
