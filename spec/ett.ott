@@ -1100,7 +1100,6 @@ W |= b : Nom
 W |= (a rho b) : R
 
 W |= a : R
-Path a = F @ R1, Rs
 W |= b : R1
 ----------------------------- :: TApp
 W |= a R1 b : R

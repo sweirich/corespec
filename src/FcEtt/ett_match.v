@@ -1684,9 +1684,9 @@ Proof. intros. induction H.
         - inversion IHroleing1. inversion H1 as [F h1].
           left; exists F. econstructor. eapply roleing_lc. eauto. auto.
           right. intros F h1. inversion h1; subst. apply (H1 F); auto.
-        - inversion IHroleing1. inversion H2 as [F' h1].
+        - inversion IHroleing1. inversion H1 as [F' h1].
           left; exists F'. econstructor. eapply roleing_lc. eauto. auto.
-          right. intros F' h1. inversion h1; subst. apply (H2 F'); auto.
+          right. intros F' h1. inversion h1; subst. apply (H1 F'); auto.
         - inversion IHroleing. inversion H0 as [F h1].
           left; exists F. eauto.
           right. intros F h1. inversion h1; subst. apply (H0 F); auto.
@@ -1733,7 +1733,7 @@ Proof. intros. induction H.
     eapply H1; eapply CasePath_UnMatch; eauto. inversion H2; subst. eauto.
     intro. apply H4. eapply subtm_pattern_agree_App. eapply roleing_lc; eauto.
     auto.
-  - inversion IHroleing1. inversion H2 as [F' h1].
+  - inversion IHroleing1. inversion H1 as [F' h1].
     move: (CasePath_ValuePath h1) => h2.
     move: (ValuePath_const_form h2) => h3.
     destruct h3 as [[A [Rs' h4]] | [p [a' [A [R2 [Rs' h4]]]]]].
@@ -1752,10 +1752,10 @@ Proof. intros. induction H.
     eapply roleing_lc; eauto. auto. contradiction. contradiction.
     left. exists F'. eapply CasePath_Const; eauto. econstructor.
     eapply roleing_lc; eauto. auto. right. intros F' h1. 
-    inversion h1; subst. inversion H3; subst. eapply H2; eauto.
-    eapply H2; eapply CasePath_Const; eauto. inversion H3; subst. eauto.
-    eapply H2; eapply CasePath_UnMatch; eauto. inversion H3; subst. eauto.
-    intro. apply H5. eapply subtm_pattern_agree_App. eapply roleing_lc; eauto.
+    inversion h1; subst. inversion H2; subst. eapply H1; eauto.
+    eapply H1; eapply CasePath_Const; eauto. inversion H2; subst. eauto.
+    eapply H1; eapply CasePath_UnMatch; eauto. inversion H2; subst. eauto.
+    intro. apply H4. eapply subtm_pattern_agree_App. eapply roleing_lc; eauto.
     auto.
   - inversion IHroleing. inversion H0 as [F h1].
     move: (CasePath_ValuePath h1) => h2.

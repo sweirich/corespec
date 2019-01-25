@@ -1451,11 +1451,11 @@ Proof.
              apply matchsubst_fun_ind.
              auto. eapply Rename_lc_4; eauto. auto.
              move: (axiom_body_fv_in_pattern H2) => h2.
-             apply rctx_fv in H12. apply rctx_fv in H15.
+             apply rctx_fv in H13. apply rctx_fv in H14.
              eapply MatchSubst_Rename_preserve.
              eapply tm_pattern_agree_rename_inv_2.
              eapply MatchSubst_match. eapply H4. eauto. eauto. eapply H3.
-             simpl. clear - H12 H15 h2. apply union_s_m.
+             simpl. clear - H13 H14 h2. apply union_s_m.
              eapply AtomSetProperties.union_subset_3; eauto.
              eapply AtomSetProperties.union_subset_3; eauto.
              simpl. clear - h2. apply union_s_m. eauto.

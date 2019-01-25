@@ -139,8 +139,6 @@ Proof.
   - pick fresh y and apply role_a_Abs.
      rewrite tm_subst_tm_tm_open_tm_wrt_tm_var; auto 1. eapply roleing_lc; eauto.
      rewrite app_assoc. eapply H0; eauto. simpl_env. auto.
-  - econstructor. eauto. eapply Path_subst. eauto. eapply roleing_lc.
-    eauto. eauto.
   - pick fresh y and apply role_a_Pi; eauto.
      rewrite tm_subst_tm_tm_open_tm_wrt_tm_var; auto 1. eapply roleing_lc; eauto.
      rewrite app_assoc. eapply H0; eauto. simpl_env. auto.
@@ -160,7 +158,6 @@ Proof.
   - eapply role_a_Abs with (L := L).
      intros x0 h1.
      rewrite co_subst_co_tm_open_tm_wrt_tm_var; auto 2.
-   - econstructor. eauto. eapply Path_subst_co; eauto. eauto.
    - eapply role_a_Pi with (L := L); eauto.
      intros x0 h2.
      rewrite co_subst_co_tm_open_tm_wrt_tm_var; auto 2.

@@ -16,6 +16,7 @@ Import ext_wf.
 Require Import FcEtt.utils.
 Require Export FcEtt.toplevel.
 Require Import FcEtt.ett_path.
+Require Import FcEtt.ett_match.
 
 Lemma Value_lc : forall R a, Value R a -> lc_tm a.
 Proof. intros. induction H; eauto. eapply CasePath_lc. eauto.
@@ -40,7 +41,7 @@ Proof.
     econstructor; eauto.
     instantiate (1 := L \u singleton x) => x0 h0.
     rewrite tm_subst_tm_tm_open_tm_wrt_tm_var; auto.
-  - intros. econstructor. eapply CasePath_subst; eauto.
+  - intros. econstructor. eapply CasePath_subst_tm; eauto.
 Qed.
 
 (* ------------------------------------------------- *)

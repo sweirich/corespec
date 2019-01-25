@@ -491,7 +491,6 @@ Inductive lc_pattern_arg : pattern_arg -> Prop :=    (* defn lc_pattern_arg *)
      (lc_co g) ->
      (lc_pattern_arg (pattern_arg_Coe g)).
 
-
 (* defns LC_sig_sort *)
 Inductive lc_sig_sort : sig_sort -> Prop :=    (* defn lc_sig_sort *)
  | lc_Cs : forall (A:tm) (Rs:roles),
@@ -1275,9 +1274,8 @@ Inductive roleing : role_context -> tm -> role -> Prop :=    (* defn roleing *)
      roleing W a R ->
      roleing W b Nom ->
      roleing W  ( (a_App a (Rho rho) b) )  R
- | role_a_TApp : forall (W:role_context) (a:tm) (R1:role) (b:tm) (R:role) (F:const) (Rs:roles),
+ | role_a_TApp : forall (W:role_context) (a:tm) (R1:role) (b:tm) (R:role),
      roleing W a R ->
-     Path a F  ( R1 :: Rs )  ->
      roleing W b R1 ->
      roleing W (a_App a (Role R1) b) R
  | role_a_Pi : forall (L:vars) (W:role_context) (rho:relflag) (A B:tm) (R:role),

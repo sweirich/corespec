@@ -53,23 +53,23 @@ Qed.
 Lemma roleing_apply : forall W a R0 b c R, roleing W a R0 -> roleing W b R ->
                       ApplyArgs a b c -> roleing W c R.
 Proof. intros. induction H1; intros; auto.
-        - inversion H; subst; eauto. econstructor; eauto. admit.
+        - inversion H; subst; eauto.
         - inversion H; subst. econstructor; eauto.
-Admitted.
+Qed.
 
 
 Lemma Par_roleing_tm_fst : forall W a a' R, Par W a a' R -> 
                                                roleing W a R.
 Proof. intros W a a' R H. induction H; eauto. destruct nu; eauto.
-       simpl in *. econstructor. inversion IHPar2; subst; eauto.
-Admitted.
+       destruct nu; eauto.
+Qed.
 
 Lemma Par_roleing_tm_snd : forall W a a' R, Par W a a' R -> roleing W a' R.
 Proof. intros W a a' R H. induction H; eauto.
         - inversion IHPar1; subst. pick fresh x.
           erewrite tm_subst_tm_tm_intro; eauto.
           replace W with (nil ++ W); auto. eapply subst_tm_roleing; eauto.
-        - admit.
+        - destruct nu; eauto.
         - inversion IHPar; subst. pick fresh c.
           erewrite co_subst_co_tm_intro; eauto.
           replace W with (nil ++ W); auto. eapply subst_co_roleing; eauto.
@@ -78,11 +78,51 @@ Proof. intros W a a' R H. induction H; eauto.
           replace W with (nil ++ W ++ nil); auto.
           apply roleing_app_rctx; simpl_env. auto.
           eapply roleing_sub; eauto. simpl. apply app_nil_r.
-        - admit.
-        - admit.
-        - econstructor. admit. (* eapply roleing_apply. eapply IHPar1.
-          eapply IHPar2. eauto. *)
-Admitted.
+        - apply toplevel_inversion in H.
+          inversion H as [W1 [G [B [h1 [_ [h2 _]]]]]].
+          apply pat_ctx_rctx in h1. subst.
+          replace W with (nil ++ W); eauto.
+          destruct nu.
+          + eapply roleing_match.
+            eapply role_a_TApp. eapply IHPar1. eapply IHPar2.
+            eapply roleing_Rename. eauto.
+            simpl. eapply Rename_inter_sub_empty. eauto.
+            rewrite union_empty_r. eauto. eapply Rename_fv_new_pattern. eauto.
+            simpl_env. eapply roleing_sub; eauto. auto. simpl_env.
+            apply uniq_app. apply uniq_rev. eapply uniq_new_pattern_ctx. eauto.
+            eapply rctx_uniq; eauto. unfold disjoint.
+            rewrite AtomSetProperties.inter_sym. eapply Rename_inter_sub_empty.
+            eauto. eauto. intro. intro. eapply new_pattern_fv. eauto.
+            apply dom_rev in H6. rewrite rev_involutive in H6. auto.
+          + destruct rho. inversion H4. eapply roleing_match.
+            eapply role_a_App. eapply IHPar1. eapply IHPar2.
+            eapply roleing_Rename. eauto.
+            simpl. eapply Rename_inter_sub_empty. eauto.
+            rewrite union_empty_r. eauto. eapply Rename_fv_new_pattern. eauto.
+            simpl_env. eapply roleing_sub; eauto. eauto. simpl_env.
+            apply uniq_app. apply uniq_rev. eapply uniq_new_pattern_ctx. eauto.
+            eapply rctx_uniq; eauto. unfold disjoint.
+            rewrite AtomSetProperties.inter_sym. eapply Rename_inter_sub_empty.
+            eauto. eauto. intro. intro. eapply new_pattern_fv. eauto.
+            apply dom_rev in H6. rewrite rev_involutive in H6. auto.
+        - apply toplevel_inversion in H.
+          inversion H as [W1 [G [B [h1 [_ [h2 _]]]]]].
+          apply pat_ctx_rctx in h1. subst.
+          replace W with (nil ++ W); eauto.
+          eapply roleing_match.
+          eapply role_a_CApp. eapply IHPar.
+          eapply roleing_Rename. eauto.
+          simpl. eapply Rename_inter_sub_empty. eauto.
+          rewrite union_empty_r. eauto. eapply Rename_fv_new_pattern. eauto.
+          simpl_env. eapply roleing_sub; eauto. auto. simpl_env.
+          apply uniq_app. apply uniq_rev. eapply uniq_new_pattern_ctx. eauto.
+          eapply rctx_uniq; eauto. unfold disjoint.
+          rewrite AtomSetProperties.inter_sym. eapply Rename_inter_sub_empty.
+          eauto. eauto. intro. intro. eapply new_pattern_fv. eauto.
+          apply dom_rev in H5. rewrite rev_involutive in H5. auto.
+        - econstructor. eapply roleing_apply. eapply IHPar1.
+          eapply IHPar2. eauto.
+Qed.
 
 Lemma Rename_exists: forall p b D, Pattern p -> lc_tm b ->
              exists p' b' D', Rename p b p' b' D D'.
