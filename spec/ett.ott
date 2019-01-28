@@ -245,7 +245,7 @@ role_context, W {{ tex \Omega }} :: 'rctx_' ::= {{ com role_contexts }}
    | ( W )           :: M  :: Paren   {{ coq ([[W]]) }}
    | (# W #)         :: M  :: SecretParen {{ coq [[W]] }} {{ tex [[W]] }}
 
-roles, Rs :: '' ::= {{ coq list role }}
+roles, Rs :: '' ::= {{ coq list role }} 
    | nilR       ::  :: nilR {{ coq nil }}
    | R , Rs     ::  :: consR {{ coq ([[R]]::[[Rs]]) }}
    | range W   :: S :: rangeR {{ coq (range([[W]])) }}
@@ -386,6 +386,7 @@ terminals :: 'terminals_' ::=
   | ++                ::   :: concat        {{ tex \mathop{++} }}
   | {                 ::   :: lbrace        {{ tex \lbrace }}
   | }                 ::   :: rbrace        {{ tex \rbrace }}
+  | +>                ::   :: partialmap    {{ tex \mathrel{+\!\!\!\!\!\!\rightarrow} }}
 
 formula, Fm {{tex \psi}} :: 'formula_' ::=
   | judgement                ::   :: judgement
@@ -723,25 +724,25 @@ defns
 JMatchSubst :: '' ::=
 
 defn
-match a1 with p -> b1 = b2 :: :: MatchSubst :: 'MatchSubst_'
+match a1 with p -> b1 +> b2 :: :: MatchSubst :: 'MatchSubst_'
 {{ com match and substitute }}
-{{ tex \mathsf{match} \ [[a1]] \ \mathsf{with} \ [[p]] \rightarrow [[b1]] = [[b2]] }}
+{{ tex \mathsf{match} \ [[a1]] \ \mathsf{with} \ [[p]] \rightarrow [[b1]] [[+>]] [[b2]] }}
 by
 
 ----------------------------------------- :: Const
-match F with F -> b = b
+match F with F -> b +> b
 
-match a1 with p1 -> b1 = b2
+match a1 with p1 -> b1 +> b2
 ------------------------------------------------------- :: AppRelR
-match (a1 R a) with (p1 R x) -> b1 = (b2 {`a/x`})
+match (a1 R a) with (p1 R x) -> b1 +> (b2 {`a/x`})
 
-match a1 with p1 -> b1 = b2
+match a1 with p1 -> b1 +> b2
 -------------------------------------------------------- :: AppIrrel
-match (a1 - a) with (p1 - []) -> b1 = b2
+match (a1 - a) with (p1 - []) -> b1 +> b2
 
-match a1 with a2 -> b1 = b2
+match a1 with a2 -> b1 +> b2
 ------------------------------------------------------ :: CApp
-match (a1 [o]) with (a2 [o]) -> b1 = b2
+match (a1 [o]) with (a2 [o]) -> b1 +> b2
 
 
 defns
@@ -901,73 +902,73 @@ defns
    JValuePath :: '' ::=
 
 defn
-ValuePath a = F  ::  :: ValuePath :: 'ValuePath_'
+ValuePath a +> F  ::  :: ValuePath :: 'ValuePath_'
 {{ com Type headed by constant (role-sensitive partial function used in value) }}
-{{ tex \mathsf{ValuePath} \ [[a]] = [[F]] }}
+{{ tex \mathsf{ValuePath} \ [[a]] [[+>]] [[F]] }}
 by
 
 F : A @ Rs in toplevel
 --------------------- :: AbsConst
-ValuePath F = F
+ValuePath F +> F
 
 F : p ~ a : A/R1 @ Rs in toplevel
 ---------------------------------- :: Const
-ValuePath F = F
+ValuePath F +> F
 
-ValuePath a = F
+ValuePath a +> F
 ---------------------------- :: App
-ValuePath (a nu b') = F
+ValuePath (a nu b') +> F
 
-ValuePath a = F
+ValuePath a +> F
 ---------------------- :: CApp
-ValuePath (a [o]) = F
+ValuePath (a [o]) +> F
 
 
 defns
    JCasePath :: '' ::=
 
 defn
-CasePath R a = F  ::  :: CasePath :: 'CasePath_'
+CasePath R a +> F  ::  :: CasePath :: 'CasePath_'
 {{ com Type headed by constant (role-sensitive partial function used in case) }}
-{{ tex \mathsf{CasePath}_{[[R]]}\ [[a]] = [[F]] }}
+{{ tex \mathsf{CasePath}_{[[R]]}\ [[a]] [[+>]] [[F]] }}
 by
 
-ValuePath a = F
+ValuePath a +> F
 F : A @ Rs in toplevel
 ----------------------- :: AbsConst
-CasePath R a = F
+CasePath R a +> F
 
-ValuePath a = F
+ValuePath a +> F
 F : p ~ b : A/R1 @ Rs in toplevel
 not (R1 <= R)
 ----------------------------------- :: Const
-CasePath R a = F
+CasePath R a +> F
 
-ValuePath a = F
+ValuePath a +> F
 F : p ~ b : A/R1 @ Rs in toplevel
 not (a  =  p +)
 ------------------------------------- :: UnMatch
-CasePath R a = F
+CasePath R a +> F
 
 defns
 JApplyArgs :: '' ::=
 
 defn
-apply args a to b -> b' :: :: ApplyArgs :: 'ApplyArgs_'
+apply args a to b +> b' :: :: ApplyArgs :: 'ApplyArgs_'
 {{ com apply arguments of a (headed by a constant) to b }}
-{{ tex \mathsf{apply~args} \ [[a]] \ \mathsf{to} \ [[b]] \mapsto [[b']] }}
+{{ tex \mathsf{apply~args} \ [[a]] \ \mathsf{to} \ [[b]] [[+>]] [[b']] }}
 by
 
 ----------------------------------- :: Const
-apply args F to b -> b
+apply args F to b +> b
 
-apply args a to b -> b'
+apply args a to b +> b'
 ------------------------------------------------------- :: App
-apply args a nu a' to b -> b' nu a'
+apply args a nu a' to b +> b' nu a'
 
-apply args a to b -> b'
+apply args a to b +> b'
 ------------------------------------------------------- :: CApp
-apply args a [o] to b -> b' [o]
+apply args a [o] to b +> b' [o]
 
 
 defns
@@ -1004,7 +1005,7 @@ Value R /\c:phi.a
 --------------------- :: UCAbs
 Value R /\c .a
 
-CasePath R a = F
+CasePath R a +> F
 ----------------- :: Path
 Value R a
 
@@ -1027,7 +1028,7 @@ ValueType R all rho x : A  -> B
 -------------------- :: CPi
 ValueType R all c : phi. B
 
-CasePath R a = F
+CasePath R a +> F
 ------------------------ :: ValuePath
 ValueType R a
 
@@ -1054,8 +1055,8 @@ consistent (all rho x1:A1 -> B1) (all rho x2:A2 -> B2) R'
 ------------------------ :: CPi
 consistent (all c1:phi1. A1) (all c2 :phi2. A2) R
 
-CasePath R a1 = F
-CasePath R a2 = F
+CasePath R a1 +> F
+CasePath R a2 +> F
 ------------------------ :: CasePath
 consistent a1 a2 R
 
@@ -1225,7 +1226,7 @@ a + = p /\ not (a <-> p)
 W |= a => a' / R
 W |= a1 => a1' / (app_role nu)
 rename p -> b to p' -> b' excluding (dom W, fv p) and D'
-match (a' nu a1') with p' -> b' = a2
+match (a' nu a1') with p' -> b' +> a2
 R1 <= R
 ------------------------------------------------------------------- :: AxiomApp
 W |= a nu a1 => a2 / R
@@ -1234,7 +1235,7 @@ F : p ~ b : A/R1 @ Rs in toplevel
 a + = p /\ not (a <-> p)
 W |= a => a' / R
 rename p -> b to p' -> b' excluding (dom W, fv p) and D'
-match (a' [o]) with p' -> b' = a2
+match (a' [o]) with p' -> b' +> a2
 R1 <= R
 ------------------------------------------------------------------- :: AxiomCApp
 W |= a [o] => a2 / R
@@ -1248,8 +1249,8 @@ W |= (case R a of F => b1 | _ => b2) => (case R a' of F => b1' | _ => b2') / R0
 W |= a => a' / R
 W |= b1 => b1' / R0
 W |= b2 => b2' / R0
-CasePath R a' = F
-apply args a' to b1' -> b
+CasePath R a' +> F
+apply args a' to b1' +> b
 --------------------------------------------- :: PatternTrue
 W |= (case R a of F => b1 | _ => b2) => b [o] / R0
 
@@ -1257,7 +1258,7 @@ W |= a => a' / R
 W |= b1 => b1' / R0
 W |= b2 => b2' / R0
 Value R a'
-not (CasePath R a' = F)
+not (CasePath R a' +> F)
 ------------------------------------------------ :: PatternFalse
 W |= (case R a of F => b1 | _ => b2) => b2' / R0
 
@@ -1308,18 +1309,18 @@ Value R1 (\rho x. v)
 
 F : p ~ b : A/R1 @ Rs in toplevel
 rename p -> b to p1 -> b1 excluding (fv a, fv p) and D'
-match a with p1 -> b1 = b'
+match a with p1 -> b1 +> b'
 R1 <= R
 -------------------------------------------------------- :: Axiom
 |= a > b' / R
 
-CasePath R a = F
-apply args a to b1 -> b1'
+CasePath R a +> F
+apply args a to b1 +> b1'
 ------------------------------------------ :: PatternTrue
 |= case R a of F => b1 | _ => b2 > b1' [o] / R0
 
 Value R a
-not (CasePath R a = F)
+not (CasePath R a +> F)
 ------------------------------------------ :: PatternFalse
 |= case R a of F => b1 | _ => b2 > b2 / R0
 
@@ -1660,8 +1661,8 @@ G ; D |= b2 == b2' : B / R0
 ------------------------------------------------------------------------------- :: PatCong
 G ; D |= case R a of F => b1 | _ => b2 == case R a' of F => b1' | _ => b2' : B / R0
 
-ValuePath a  = F
-ValuePath a' = F
+ValuePath a  +> F
+ValuePath a' +> F
 G |= a : all +x:A  -> B
 G |= b : A
 G |= a' : all +x:A  -> B
@@ -1671,8 +1672,8 @@ G ; dom G |= B {b/x} == B {b'/x} : TYPE / R'
 -------------------------------------------------- :: LeftRel
 G ; D |= a == a' : all + x: A -> B / R'
 
-ValuePath a  = F
-ValuePath a' = F
+ValuePath a  +> F
+ValuePath a' +> F
 G |= a : all -x:A -> B
 G |= b : A
 G |= a' : all -x:A -> B
@@ -1683,8 +1684,8 @@ G ; dom G |= B {b/x} == B {b'/x} : TYPE/R0
 G ; D |= a == a' : all -x: A -> B/R'
 
 
-ValuePath a  = F
-ValuePath a' = F
+ValuePath a  +> F
+ValuePath a' +> F
 G |= a : all +x:A -> B
 G |= b : A
 G |= a' : all +x:A -> B
@@ -1695,8 +1696,8 @@ G ; dom G |= B {b/x} == B {b'/x} : TYPE/R0
 G ; D |= b == b' : A/param R1 R'
 
 
-ValuePath a  = F
-ValuePath a' = F
+ValuePath a  +> F
+ValuePath a' +> F
 G |= a  : all c:(a1 ~ a2:A/R1). B
 G |= a' : all c:(a1 ~ a2:A/R1). B
 G ; dom G |= a1 == a2 : A/R'
@@ -2148,7 +2149,19 @@ by
 % %
 
 
+defns
+ JbetaAlt :: '' ::=
 
+defn
+|== a > b / R  ::     :: ABeta :: 'ABeta_'
+{{ com fake rules for the paper }}
+by
+
+F : p ~ b : A/R1 @ Rs in toplevel
+match a with p -> b +> b'
+R1 <= R
+-------------------------------------------------------- :: Axiom
+|== a > b' / R
 
 
 
@@ -2164,6 +2177,9 @@ by
 homs ''
   :: Min      {{ tex [[R1]] \cap [[R2]]              }}
 
+%%__ Role lists __%%
+homs ''
+  :: nilR     {{ tex \cdot }}
 
 %%__ Constraints __%%
 homs ''

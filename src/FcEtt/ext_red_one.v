@@ -10,17 +10,14 @@ Require Export FcEtt.ett_par.
 Require Import FcEtt.ext_wf.
 Require Export FcEtt.ett_value.
 Require Import FcEtt.ett_path.
+Require Import FcEtt.beta.
 
 Set Implicit Arguments.
 Set Bullet Behavior "Strict Subproofs".
 
-Lemma beta_lc : forall a b R, Beta a b R -> lc_tm a -> lc_tm b.
-Proof. induction 1; intros; lc_solve.
-Qed.
-
 Lemma reduction_in_one_lc : forall a a' R, reduction_in_one a a' R -> lc_tm a -> lc_tm a'.
 Proof.
-   induction 1; intros; try (eapply beta_lc; eauto 1; fail); lc_solve.
+   induction 1; intros; try (eapply Beta_lc2; eauto 1; fail); lc_solve.
 Qed.
 
 (* ------------------------------------------------------------ *)
@@ -59,6 +56,7 @@ Ltac lc_subst_case x0 b0  :=
 
 (* ------------------------------------------------- *)
 
+(*
 Lemma subst_beta : forall a a' R,
   Beta a a' R -> forall b x, lc_tm b ->
   Beta (tm_subst_tm_tm b x a)
@@ -75,7 +73,7 @@ Proof. intros a a' R H. induction H; intros b0 x0 LC; simpl.
         - eapply Beta_PatternFalse; eauto with lngen lc.
           apply Value_tm_subst_tm_tm; auto. intro. apply H3.
           eapply subst_Path; eauto.
-Qed.
+Qed. *)
 
 Lemma subst_reduction_in_one : forall a a' R,
   reduction_in_one a a' R -> forall b x, lc_tm b ->
@@ -88,7 +86,7 @@ Proof.
   - eapply (E_AbsTerm (L \u {{x0}})); eauto. intros x Fr.
 
     subst_helper x x0 b0.
-  - eapply E_Prim. eapply subst_beta; eauto.
+  - eapply E_Prim. eapply Beta_tm_subst; eauto.
 Qed.
 
 
@@ -106,18 +104,62 @@ Proof.
   eapply subst_reduction_in_one; auto.
 Qed.
 
+(*
+Lemma no_Value_MatchSubst : 
+  forall R a, Value R a -> 
+         forall p1 b1 b', binds F (Ax p b A R1 Rs) toplevel -> 
+         not (MatchSubst a p1 b1 b').
+Proof.
+  intros R a H. 
+  intros.
+  intros NH; inversion NH; try inversion H; subst.
+  all: try discriminate.
+  - inversion H5. subst.
+    inversion H1. subst.
+ *)   
+Lemma no_Value_Beta : forall R a, Value R a -> 
+                             forall b, not (Beta a b R).
+Proof. 
+  intros R a H. 
+  induction H; simpl; intros; eauto.
+(* This looks a bit tricky to prove. *)
+Admitted.
+
+Lemma no_ValuePath_reduction : forall a F, 
+    ValuePath a F -> forall R b, not (reduction_in_one a b R).
+Proof.
+  induction 1.
+Admitted.
+
+Lemma no_CasePath_reduction : forall R a F, 
+    CasePath R a F -> forall b, not (reduction_in_one a b R).
+Proof.
+  induction 1.
+Admitted.
+
 Lemma no_Value_reduction : forall R a, Value R a ->
           forall b, not (reduction_in_one a b R).
-Proof. intros R a H. induction H; simpl; intros; eauto 2.
+Proof. 
+  intros R a H.
+  move: (no_Value_Beta H) => nb.     
+  induction H; simpl; intros; eauto 2.
   all: intro NH; inversion NH; subst.
   all: try (inversion H1; fail).
   all: try (inversion H0; fail).
-  all: try solve [eapply no_Path_reduction; eauto 1].
-  - inversion H.
+  all: try solve [eapply nb; eauto 1].
   - pick fresh x.
+    move: (H x ltac:(auto)) => h.
+    move: (no_Value_Beta h) => nb1.
     move: (H0 x ltac:(auto)) => h0.
-    move: (H5 x ltac:(auto)) => h5.
+    move: (H2 x ltac:(auto)) => h5.
     eapply h0; eauto.
+  - inversion H; inversion H1.
+  - 
+
+admit.
+  - admit.
+  - 
+SearchAbout CasePath reduction_in_one.
 Qed.
 
 Lemma sub_Value :
