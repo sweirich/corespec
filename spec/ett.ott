@@ -18,7 +18,7 @@ metavar covar, c ::=
 metavar datacon, K ::=
   {{ coq atom }}
 
-metavar const, T, F ::=
+metavar const, T, F, Age ::=
   {{ coq atom }}
   {{ lex Alphanum }}
 
@@ -124,7 +124,6 @@ tm, a, b, p, v, w, A, B, C :: 'a_' ::= {{ com types and kinds }}
   | Succ                 :: S :: Succ
   | True                 :: S :: True
   | Fix                  :: S :: Fix
-  | Age                  :: S :: Age
   | a -> b               :: S :: Arrow
   | phi => A             :: S :: CArrow
   | a b                  :: S :: RelApp
@@ -1757,6 +1756,52 @@ W |= a : R
 |= S, F : p ~ a : A/R @ range W
 
 
+defns 
+Jhiding :: '' ::=
+
+defn
+Rs1 <= Rs2 ::  :: RoleWeaken :: 'R_' 
+by
+
+-------------------- :: Nil
+nilR <= nilR
+
+R2 <= R1
+Rs1 <= Rs2
+-------------------- :: Cons
+R1, Rs1 <= R2, Rs2
+
+
+
+defn 
+S1 <= S2 ::  :: SigWeaken :: 'S_' 
+by
+
+S1 <= S2
+-------------------------- :: Forget
+S1 <= S2, F : sig_sort
+
+S1 <= S2
+Rs1 <= Rs2
+-----------------------------------------------------  :: Hide
+S1 , F : A @ Rs1 <= S2 , F : p ~ a : A / R @ Rs2 
+
+S1 <= S2
+Rs1 <= Rs2
+-----------------------------------------------------  :: WeakenConst
+S1 , F : A @ Rs1 <= S2 , F : A @ Rs2
+
+S1 <= S2
+Rs1 <= Rs2
+---------------------------------------------------------------  :: WeakenAxiom
+S1 , F : p' ~ a : A / R @ Rs1 <= S2 , F : p ~ a : A / R @ Rs2 
+
+------------------ :: Empty
+emptyS <= emptyS
+
+S1 <= S2
+-----------------------------------------  :: Same
+S1 , F : sig_sort <= S2 , F : sig_sort
 
 
 
@@ -2150,7 +2195,18 @@ by
 
 
 defns
- JbetaAlt :: '' ::=
+ JAlt :: '' ::=
+
+defn  
+G |== a : A  ::    :: ATyping :: 'ATyping_'
+by
+G |= a : A
+G ; dom G |= A == B : TYPE / Nom
+[ G |= B : TYPE ]
+----------------------------- :: Conv
+G |== a : B
+
+
 
 defn
 |== a > b / R  ::     :: ABeta :: 'ABeta_'
@@ -2242,7 +2298,6 @@ homs 'a_'
   :: Succ    {{ tex \mathsf{S} }}
   :: True
   :: Fix
-  :: Age
   :: Arrow
   :: CArrow
   :: RelApp  {{ tex [[a]]\ [[b]]                  }}
@@ -2312,7 +2367,6 @@ homs 'a_'
   :: Succ          {{ coq 0                                        }}
   :: True          {{ coq 0                                        }}
   :: Fix           {{ coq 0                                        }}
-  :: Age           {{ coq 0                                        }}
   :: Arrow         {{ coq (a_Pi [[a]] [[b]])                       }}
   :: CArrow        {{ coq (a_CPi [[phi]] [[A]])                    }}
   :: RelApp        {{ coq (a_App [[a]] Rel [[b]])                  }}
