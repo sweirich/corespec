@@ -111,14 +111,14 @@ Lemma roleing_sub : forall W a R1 R2, roleing W a R1 -> SubRole R1 R2 ->
 Proof. intros W a R1 R2 H S. generalize dependent R2. induction H; intros; eauto.
 Qed.
 
-Lemma Path_subst : forall F a b Rs x, Path a F Rs -> lc_tm b ->
-                   Path (tm_subst_tm_tm b x a) F Rs.
+Lemma RolePath_subst : forall F a b Rs x, RolePath a F Rs -> lc_tm b ->
+                   RolePath (tm_subst_tm_tm b x a) F Rs.
 Proof. intros. induction H; simpl; eauto.
        econstructor; eauto with lngen lc.
 Qed.
 
-Lemma Path_subst_co : forall F a b Rs c, Path a F Rs -> lc_co b ->
-                   Path (co_subst_co_tm b c a) F Rs.
+Lemma RolePath_subst_co : forall F a b Rs c, RolePath a F Rs -> lc_co b ->
+                   RolePath (co_subst_co_tm b c a) F Rs.
 Proof. intros. induction H; simpl; eauto.
        econstructor; eauto with lngen lc.
 Qed.

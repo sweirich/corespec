@@ -60,8 +60,8 @@ Qed.
 
 Lemma Par_roleing_tm_fst : forall W a a' R, Par W a a' R -> 
                                                roleing W a R.
-Proof. intros W a a' R H. induction H; eauto. destruct nu; eauto.
-       destruct nu; eauto.
+Proof. intros W a a' R H. induction H; eauto. 
+       all: try solve [destruct nu; eauto].
 Qed.
 
 Lemma Par_roleing_tm_snd : forall W a a' R, Par W a a' R -> roleing W a' R.
@@ -863,7 +863,6 @@ Proof.
     apply mp_step with (b := a'0); auto.
     apply mp_step with (b := b'); auto.
     apply mp_step with (b := A'0); auto.
-    eapply Par_sub; eauto.
 Qed.
 
 
@@ -938,8 +937,8 @@ Proof.
   eauto.
 Qed.
 
-Lemma Path_roles_agree : forall F p b A R Rs a Rs',
-      binds F (Ax p b A R Rs) toplevel-> Path a F Rs' ->
+Lemma RolePath_roles_agree : forall F p b A R Rs a Rs',
+      binds F (Ax p b A R Rs) toplevel-> RolePath a F Rs' ->
       Rs = tm_app_roles a ++ Rs'.
 Proof. intros. induction H0; simpl; eauto. axioms_head_same.
        axioms_head_same. auto. rewrite <- app_assoc. simpl.

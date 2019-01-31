@@ -29,7 +29,7 @@ Proof.
   all: try solve [inversion 1 | econstructor; eauto]; eauto.
   all: try solve [intros;
                   eauto using tm_subst_tm_tm_lc_tm,
-                  Path_subst,
+                  RolePath_subst,
                   tm_subst_tm_constraint_lc_constraint,
                   tm_subst_tm_co_lc_co].
   all: try solve [intros;
@@ -66,7 +66,7 @@ Proof.
   all: try solve [intros;
                   eauto using co_subst_co_tm_lc_tm,
                   co_subst_co_constraint_lc_constraint,
-                  co_subst_co_co_lc_co, Path_subst_co].
+                  co_subst_co_co_lc_co, RolePath_subst_co].
   all: try solve [intros;
     constructor; eauto using co_subst_co_tm_lc_tm,
                               co_subst_co_constraint_lc_constraint;

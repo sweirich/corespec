@@ -783,7 +783,7 @@ Qed.
 
 (* --------------------------------------------------- *)
 
-(* Paths and consistency *)
+(* RolePaths and consistency *)
 
 Inductive Path_head_form : tm -> Prop :=
    | head_Fam : forall F, Path_head_form (a_Fam F)
@@ -1363,6 +1363,14 @@ Proof. intros. generalize dependent c. induction H; auto.
        intros. eauto.
 Qed.
 
+Lemma joins_SubRole : forall D a b R R', joins D a b R -> SubRole R R' -> joins D a b R'.
+Proof.
+  intros.
+  move: H => [x [y z]].
+  econstructor;
+  eauto using multipar_sub.
+Qed.
+
 Lemma consistent_mutual:
   (forall S a A,   Typing S a A -> True) /\
   (forall S phi,   PropWff S phi -> True) /\
@@ -1547,7 +1555,8 @@ Proof.
     apply multipar_Abs_exists; eauto.
   - intros.
     apply join_app; auto.
-  - intros. eapply join_app; eauto.
+  - intros. 
+    eapply join_app; eauto using joins_SubRole, param_sub1.
   - intros. destruct (H H1) as [T [P1 P2]]. apply join_app. apply H; auto.
     apply multipar_rctx_uniq in P1.
     unfold joins; exists a_Bullet; split; econstructor; econstructor; eauto.

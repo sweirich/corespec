@@ -978,24 +978,24 @@ Inductive SubRole : role -> role -> Prop :=    (* defn SubRole *)
      SubRole R2 R3 ->
      SubRole R1 R3.
 
-(* defns JPath *)
-Inductive Path : tm -> const -> roles -> Prop :=    (* defn Path *)
- | Path_AbsConst : forall (F:const) (Rs:roles) (A:tm),
+(* defns JRolePath *)
+Inductive RolePath : tm -> const -> roles -> Prop :=    (* defn RolePath *)
+ | RolePath_AbsConst : forall (F:const) (Rs:roles) (A:tm),
       binds  F  ( (Cs A Rs) )   toplevel   ->
-     Path (a_Fam F) F Rs
- | Path_Const : forall (F:const) (Rs:roles) (p a A:tm) (R1:role),
+     RolePath (a_Fam F) F Rs
+ | RolePath_Const : forall (F:const) (Rs:roles) (p a A:tm) (R1:role),
       binds  F  ( (Ax p a A R1 Rs) )   toplevel   ->
-     Path (a_Fam F) F Rs
- | Path_App : forall (a:tm) (R1:role) (b':tm) (F:const) (Rs:roles),
+     RolePath (a_Fam F) F Rs
+ | RolePath_App : forall (a:tm) (R1:role) (b':tm) (F:const) (Rs:roles),
      lc_tm b' ->
-     Path a F  ( R1 :: Rs )  ->
-     Path  ( (a_App a (Role R1) b') )  F Rs
- | Path_IApp : forall (a:tm) (F:const) (Rs:roles),
-     Path a F Rs ->
-     Path  ( (a_App a (Rho Irrel) a_Bullet) )  F Rs
- | Path_CApp : forall (a:tm) (F:const) (Rs:roles),
-     Path a F Rs ->
-     Path  ( (a_CApp a g_Triv) )  F Rs.
+     RolePath a F  ( R1 :: Rs )  ->
+     RolePath  ( (a_App a (Role R1) b') )  F Rs
+ | RolePath_IApp : forall (a:tm) (F:const) (Rs:roles),
+     RolePath a F Rs ->
+     RolePath  ( (a_App a (Rho Irrel) a_Bullet) )  F Rs
+ | RolePath_CApp : forall (a:tm) (F:const) (Rs:roles),
+     RolePath a F Rs ->
+     RolePath  ( (a_CApp a g_Triv) )  F Rs.
 
 (* defns JPatCtx *)
 Inductive PatternContexts : role_context -> context -> const -> tm -> tm -> tm -> Prop :=    (* defn PatternContexts *)
@@ -1282,10 +1282,10 @@ Inductive roleing : role_context -> tm -> role -> Prop :=    (* defn roleing *)
      roleing W A R ->
       ( forall x , x \notin  L  -> roleing  (( x  ~  Nom ) ++  W )   ( open_tm_wrt_tm B (a_Var_f x) )  R )  ->
      roleing W  ( (a_Pi rho A B) )  R
- | role_a_CPi : forall (L:vars) (W:role_context) (a b A:tm) (R1:role) (B:tm) (R R0:role),
+ | role_a_CPi : forall (L:vars) (W:role_context) (a b A:tm) (R1:role) (B:tm) (R:role),
      roleing W a R1 ->
      roleing W b R1 ->
-     roleing W A R0 ->
+     roleing W A Rep ->
       ( forall c , c \notin  L  -> roleing W  ( open_tm_wrt_co B (g_Var_f c) )  R )  ->
      roleing W  ( (a_CPi (Eq a b A R1) B) )  R
  | role_a_CAbs : forall (L:vars) (W:role_context) (b:tm) (R:role),
@@ -1346,8 +1346,8 @@ Inductive Par : role_context -> tm -> tm -> role -> Prop :=    (* defn Par *)
  | Par_CAbs : forall (L:vars) (W:role_context) (a a':tm) (R:role),
       ( forall c , c \notin  L  -> Par W  ( open_tm_wrt_co a (g_Var_f c) )   ( open_tm_wrt_co a' (g_Var_f c) )  R )  ->
      Par W (a_UCAbs a) (a_UCAbs a') R
- | Par_CPi : forall (L:vars) (W:role_context) (a b A:tm) (R1:role) (B a' b' A' B':tm) (R R0:role),
-     Par W A A' R0 ->
+ | Par_CPi : forall (L:vars) (W:role_context) (a b A:tm) (R1:role) (B a' b' A' B':tm) (R:role),
+     Par W A A' Rep ->
      Par W a a' R1 ->
      Par W b b' R1 ->
       ( forall c , c \notin  L  -> Par W  ( open_tm_wrt_co B (g_Var_f c) )   ( open_tm_wrt_co B' (g_Var_f c) )  R )  ->
@@ -1512,7 +1512,7 @@ with Typing : context -> tm -> tm -> Prop :=    (* defn Typing *)
  | E_TApp : forall (G:context) (b:tm) (R:role) (a B A:tm) (F:const) (Rs:roles),
      Typing G b (a_Pi Rel A B) ->
      Typing G a A ->
-     Path b F  ( R :: Rs )  ->
+     RolePath b F  ( R :: Rs )  ->
      Typing G (a_App b (Role R) a)  (open_tm_wrt_tm  B   a ) 
  | E_IApp : forall (G:context) (b B a A:tm),
      Typing G b (a_Pi Irrel A B) ->
@@ -1609,9 +1609,9 @@ with DefEq : context -> available_props -> tm -> tm -> tm -> role -> Prop :=    
      DefEq G D (a_App a1 (Rho Rel) a2) (a_App b1 (Rho Rel) b2)  (  (open_tm_wrt_tm  B   a2 )  )  R'
  | E_TAppCong : forall (G:context) (D:available_props) (a1:tm) (R:role) (a2 b1 b2 B:tm) (R':role) (A:tm) (F:const) (Rs:roles) (F':const) (Rs':roles),
      DefEq G D a1 b1  ( (a_Pi Rel A B) )  R' ->
-     DefEq G D a2 b2 A R ->
-     Path a1 F  ( R :: Rs )  ->
-     Path b1 F'  ( R :: Rs' )  ->
+     DefEq G D a2 b2 A  (param R   R' )  ->
+     RolePath a1 F  ( R :: Rs )  ->
+     RolePath b1 F'  ( R :: Rs' )  ->
      DefEq G D (a_App a1 (Role R) a2) (a_App b1 (Role R) b2)  (  (open_tm_wrt_tm  B   a2 )  )  R'
  | E_IAppCong : forall (G:context) (D:available_props) (a1 b1 B a:tm) (R':role) (A:tm),
      DefEq G D a1 b1  ( (a_Pi Irrel A B) )  R' ->
@@ -1781,8 +1781,14 @@ with AnnCtx : context -> Prop :=    (* defn AnnCtx *).
 (* defns Jred *)
 Inductive head_reduction : context -> tm -> tm -> role -> Prop :=    (* defn head_reduction *).
 
-(* defns JbetaAlt *)
-Inductive ABeta : tm -> tm -> role -> Prop :=    (* defn ABeta *)
+(* defns JAlt *)
+Inductive ATyping : context -> tm -> tm -> Prop :=    (* defn ATyping *)
+ | ATyping_Conv : forall (G:context) (a B A:tm),
+     Typing G a A ->
+     DefEq G  (dom  G )  A B a_Star Nom ->
+      ( Typing G B a_Star )  ->
+     ATyping G a B
+with ABeta : tm -> tm -> role -> Prop :=    (* defn ABeta *)
  | ABeta_Axiom : forall (a b':tm) (R:role) (F:const) (p b A:tm) (R1:role) (Rs:roles),
       binds  F  ( (Ax p b A R1 Rs) )   toplevel   ->
      MatchSubst a p b b' ->
@@ -1791,6 +1797,6 @@ Inductive ABeta : tm -> tm -> role -> Prop :=    (* defn ABeta *)
 
 
 (** infrastructure *)
-Hint Constructors SubRole Path PatternContexts Rename MatchSubst PatData Pattern SubPat tm_pattern_agree tm_subpattern_agree subtm_pattern_agree ValuePath CasePath ApplyArgs Value value_type consistent roleing RhoCheck Par MultiPar joins Beta reduction_in_one reduction BranchTyping PropWff Typing Iso DefEq Ctx Sig RoleWeaken SigWeaken AnnPropWff AnnTyping AnnIso AnnDefEq AnnCtx head_reduction ABeta lc_co lc_brs lc_tm lc_constraint lc_sort lc_sig_sort lc_pattern_arg.
+Hint Constructors SubRole RolePath PatternContexts Rename MatchSubst PatData Pattern SubPat tm_pattern_agree tm_subpattern_agree subtm_pattern_agree ValuePath CasePath ApplyArgs Value value_type consistent roleing RhoCheck Par MultiPar joins Beta reduction_in_one reduction BranchTyping PropWff Typing Iso DefEq Ctx Sig RoleWeaken SigWeaken AnnPropWff AnnTyping AnnIso AnnDefEq AnnCtx head_reduction ATyping ABeta lc_co lc_brs lc_tm lc_constraint lc_sort lc_sig_sort lc_pattern_arg.
 
 
