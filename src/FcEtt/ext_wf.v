@@ -20,6 +20,11 @@ Lemma RolePath_lc : forall F a R, RolePath a F R -> lc_tm a.
 Proof. intros. induction H; eauto.
 Qed.
 
+Lemma PatCtx_lcp : forall W G F p A B, PatternContexts W G F A p B -> lc_tm p.
+Proof. intros. induction H; eauto.
+Qed.
+
+
 (* Lemma uniq_Path : forall F F' a R, RolePath a F R -> RolePath a F' R -> F = F'.
 Proof. intros. generalize dependent F'. induction H; intros; auto.
        inversion H0; auto.

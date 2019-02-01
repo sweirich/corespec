@@ -16,20 +16,6 @@ Require Import Omega.
 
 (** Patterns, agreement and substitution function **)
 
-Lemma dom_rev : forall A (l : list (atom * A)) x, x `in` dom l ->
-                                                  x `in` dom (rev l).
-Proof. intros. induction l; eauto.
-       destruct a. simpl in H. simpl. rewrite dom_app. simpl.
-       fsetdec.
-Qed.
-
-Lemma uniq_rev : forall A (l : list (atom * A)), uniq l -> uniq (rev l).
-Proof. intros. induction H; simpl; eauto. apply uniq_reorder_1.
-       simpl. econstructor. auto. intro. apply H0. apply dom_rev in H1.
-       rewrite rev_involutive in H1. auto.
-Qed.
-
-
 Inductive Pattern : tm -> Prop :=
   | Pattern_Fam : forall F, Pattern (a_Fam F)
   | Pattern_AppR : forall a1 R x, Pattern a1 -> Pattern (a_App a1 (Role R) (a_Var_f x))
@@ -165,6 +151,12 @@ Qed.
 (** -------------------------------------------------------------- **)
 
 (** Uniqueness **)
+
+Lemma pat_ctx_vars_Pattern : forall W G F A p B, PatternContexts W G F A p B ->
+            vars_Pattern p = rev (List.map fst W).
+Proof. intros. induction H; eauto. simpl. rewrite IHPatternContexts.
+       unfold one. auto.
+Qed.
 
 Lemma uniq_atoms_toplevel : forall F p b A R Rs,
       binds F (Ax p b A R Rs) toplevel -> uniq_atoms_pattern p.

@@ -92,6 +92,11 @@ Lemma rctx_fv_co : forall W a R, roleing W a R -> fv_co_co_tm a [<=] empty.
 Proof. intros. eapply rctx_fv_tm_co; eauto.
 Qed.
 
+Lemma pat_ctx_fv : forall W G F A p B, PatternContexts W G F A p B ->
+                                       dom W [<=] fv_tm_tm_tm p.
+Proof. intros. induction H; simpl; fsetdec.
+Qed.
+
 
 Lemma axiom_body_fv_in_pattern : forall F p b A R Rs,
       binds F (Ax p b A R Rs) toplevel -> fv_tm_tm_tm b [<=] fv_tm_tm_tm p.

@@ -192,9 +192,12 @@ Ltac rewrite_subst_context :=
   match goal with
   | [ |- context [( (?y ~ ?C (_ _ _ ?T)) ++ map ?sub ?F ++ ?G0)] ] =>
     rewrite_env (map sub ((y ~ (C T)) ++ F) ++ G0)
-(*   | [ |- context [([(?y, ?C (_ _ _ ?T) ?R)] ++ map ?sub ?F ++ ?G0)] ] =>
-    rewrite_env (map sub ((y ~ (C T R)) ++ F) ++ G0)  *)
+  | [ |- context [([(?y, ?C (_ _ _ ?T) ?R)] ++ map ?sub ?F ++ ?G0)] ] =>
+    rewrite_env (map sub ((y ~ (C T R)) ++ F) ++ G0)  
   | [ |- context [( (?y ~ ?C (?D (_ _ _ ?a) (_ _ _ ?b) (_ _ _ ?T) ?R)) 
+                    ++ map ?sub ?F ++ ?G0)] ] =>
+    rewrite_env (map sub ((y ~ (C (D a b T R))) ++ F) ++ G0) 
+  | [ |- context [([(?y, ?C (?D (_ _ _ ?a) (_ _ _ ?b) (_ _ _ ?T) ?R))]
                     ++ map ?sub ?F ++ ?G0)] ] =>
     rewrite_env (map sub ((y ~ (C (D a b T R))) ++ F) ++ G0) 
   end.
