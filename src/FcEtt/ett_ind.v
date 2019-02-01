@@ -314,6 +314,7 @@ Combined Scheme typing_wff_iso_defeq_mutual
        defeq_ind',
        ctx_ind'.
 
+(*
 Scheme ann_typing_ind' := Induction for AnnTyping Sort Prop
    with ann_wff_ind'   := Induction for AnnPropWff Sort Prop
    with ann_iso_ind'   := Induction for AnnIso Sort Prop
@@ -329,6 +330,7 @@ Combined Scheme ann_typing_wff_iso_defeq_mutual
        ann_ctx_ind'.
 *)
 Definition ann_typing_wff_iso_defeq_mutual := I. (* FIXME *)
+*)
 
 (* --------------------------------------------------- *)
 
@@ -649,10 +651,17 @@ Qed.
 Ltac auto_rew_env :=
   multimatch goal with
     | [ |- context [([(?x, ?T)] ++ ?G1 ++ ?G2 ++ ?G3)] ] => rewrite_env (((x ~ (T)) ++ G1) ++ G2 ++ G3)
+    | [ |- context [((?x ~ ?T) ++ ?G1 ++ ?G2 ++ ?G3)] ]  => rewrite_env (((x ~ (T)) ++ G1) ++ G2 ++ G3)
   end.
 
 
 (* -------------- Pick fresh and apply for judgements with binding ----- *)
+
+(* TODO: this tactic is not so "automated" (e.g. has to link a_Pi to E_Pi),
+         but it is hard to make it more "searchy" without trying extensively
+         all the lemmas. We could probably work something out, though.
+         Could it be generated maybe?
+*)
 
 Ltac E_pick_fresh x :=
   match goal with
@@ -677,6 +686,13 @@ Ltac E_pick_fresh x :=
                | a_UCAbs _  => E_CAbsCong
                end
       in pick fresh x and apply v
+    | [ |- BranchTyping _ _ _ _ _ ?shape _ _ ] => 
+      let v := match shape with 
+               | a_Pi Rel _ _ => BranchTyping_PiRel
+               | a_Pi Irrel _ _ => BranchTyping_PiIrrel
+               | a_CPi _ _ => BranchTyping_CPi
+               end
+      in pick fresh x and apply v 
   end.
 
 Ltac Par_pick_fresh x :=

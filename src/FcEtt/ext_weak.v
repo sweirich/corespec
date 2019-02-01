@@ -1,53 +1,14 @@
-
 Require Import FcEtt.tactics.
 Require Import FcEtt.utils.
 Require Export FcEtt.imports.
 Require Export FcEtt.ett_inf.
-(* Require Export FcEtt.ett_par. *)
 Require Export FcEtt.ett_ind.
 Require Import FcEtt.ext_wf.
 
 Set Bullet Behavior "Strict Subproofs".
 Set Implicit Arguments.
 Definition remove := AtomSetImpl.remove.
-(* TODO: this tactic is not so "automated" (e.g. has to link a_Pi to E_Pi),
-         but it is hard to make it more "searchy" without trying extensively
-         all the lemmas. We could probably work something out, though.
-         Could it be generated maybe?
-*)
 
-(*
-Ltac E_pick_fresh x :=
-  match goal with
-    | [ |- Typing _ ?shape _ ] =>
-      let v := match shape with
-            | a_Pi _ _ _ => E_Pi
-            | a_UAbs _ _ => E_Abs
-            | a_CPi _ _  => E_CPi
-            | a_CAbs _ _ => E_CAbs
-            | a_UCAbs _  => E_CAbs
-           end
-      in pick fresh x and apply v
-    | [ |- DefEq _ _ ?shape _ _ ] =>
-      let v := match shape with
-            | a_Pi _ _ _ => E_PiCong
-            | a_UAbs _ _ => E_AbsCong
-            | a_CPi _ _  => E_CPiCong
-            | a_CAbs _ _ => E_CAbsCong
-            | a_UCAbs _  => E_CAbsCong
-               end
-      in pick fresh x and apply v
-    | [ |- Par _ _ ?shape _ ] =>
-      let v := match shape with
-            | a_Pi _ _ _ => Par_Pi
-            | a_UAbs _ _ => Par_Abs
-            | a_CPi _ _  => Par_CPi
-            | a_CAbs _ _ => Par_CAbs
-            | a_UCAbs _  => Par_CAbs
-           end
-      in pick fresh x and apply v
-  end.
-*)
 
 (* ------------------------------------------------------------------- *)
 (* Weakening Lemmas for the available set *)
@@ -69,7 +30,8 @@ Qed.
 
 Definition Iso_respects_atoms_eq   := third  respects_atoms_eq_mutual.
 Definition DefEq_respects_atoms_eq := fourth respects_atoms_eq_mutual.
-(*
+
+(* These two let us rewrite the atom sets in the Iso and DefEq judgements. *)
 Instance Iso_atoms_eq_mor : Morphisms.Proper
                                  (eq ==> AtomSetImpl.Equal ==> eq ==> eq ==> iff)
                                  Iso.
@@ -79,14 +41,14 @@ Proof.
 Qed.
 
 Instance DefEq_atoms_eq_mor : Morphisms.Proper
-                                   (eq ==> AtomSetImpl.Equal ==> eq ==> eq ==> eq ==> iff)
+                                   (eq ==> AtomSetImpl.Equal ==> eq ==> eq ==> eq ==> eq ==> iff)
                                    DefEq.
 Proof.
   simpl_relation; split=> ?;
   eauto using DefEq_respects_atoms_eq, AtomSetProperties.equal_sym.
 Qed.
 
-*)
+
 (* ----- *)
 
 Ltac binds_cons :=
@@ -94,7 +56,7 @@ Ltac binds_cons :=
   match goal with
     [
       H4 : (∃ phi : constraint, binds ?x (Co phi) ?G) → False
-      |- ((exists phi, binds ?x (Co phi) ([(?y, ?s)] ++ ?G)) -> False) ] =>
+      |- ((exists phi, binds ?x (Co phi) ((?y ~ ?s) ++ ?G)) -> False) ] =>
     intro H5; destruct H5; apply H4; simpl in H5;
     destruct (binds_cons_1 _ x y _ s G H5); split_hyp; subst;
     try done; eauto
@@ -112,19 +74,19 @@ Proof.
   eapply typing_wff_iso_defeq_mutual; eauto 3; try done.
   all: intros; unfold not in *; try (E_pick_fresh y; eauto 3).
   all: try solve [destruct (x == c); [ subst; assert False; eauto | eauto]].
-  all: try (eapply H0; auto; binds_cons).
-  all: try (eapply H; auto; binds_cons).
+  all: try solve [eapply H0; auto; binds_cons].
+  all: try solve [eapply H; auto; binds_cons].
   all: try (move: H5 => /binds_cons_iff [[? [?]] | /= H5]; subst;
                        assert (y <> y); [fsetdec|done|fsetdec|done]).
   all: eauto 4.
-  - admit.
-  - admit.
-  - admit.
-  - admit.
+  - destruct (x == y). subst. have: y `notin` singleton y. fsetdec.
+    move=>h. clear Fr. fsetdec.
+    eapply H0; auto; binds_cons.
+  - destruct (x == y). subst. have: y `notin` singleton y. fsetdec.
+    move=>h. clear Fr. fsetdec.
+    eapply H; auto; binds_cons.
   -  eapply E_PatCong; eauto.
-(*   - move: H2 => /binds_cons_iff [[? [?]] | /= H2]; subst;
-                       assert (y <> y); [fsetdec|done|fsetdec|done]. *)
-Admitted.  (* strengthen_available_nocovar *)
+Qed.
 
 Lemma DefEq_strengthen_available_tmvar :
   forall G D g A B R, DefEq G D g A B R ->  forall x A', binds x (Tm A') G ->
@@ -179,7 +141,7 @@ Proof.
     auto; simpl; fsetdec].
 Qed.
 
-(*
+
 Instance Iso_atoms_sub_mor : Morphisms.Proper
                                     (eq ==> AtomSetImpl.Subset ==> eq ==> eq ==> impl)
                                     Iso.
@@ -188,12 +150,12 @@ Proof.
 Qed.
 
 Instance DefEq_atoms_sub_mor : Morphisms.Proper
-                                    (eq ==> AtomSetImpl.Subset ==> eq ==> eq ==> eq ==> impl)
+                                    (eq ==> AtomSetImpl.Subset ==> eq ==> eq ==> eq ==> eq ==> impl)
                                     DefEq.
 Proof.
   simpl_relation; eapply (fourth weaken_available_mutual); eassumption.
 Qed.
-*)
+
 
 Lemma DefEq_weaken_available :
   forall G D A B T R, DefEq G D A B T R -> DefEq G (dom G) A B T R.
@@ -217,6 +179,17 @@ Qed.
 
 Hint Resolve DefEq_weaken_available Iso_weaken_available.
 
+
+Lemma BranchTyping_weakening : 
+  forall G0 R a A FF A1 B C, BranchTyping G0 R a A FF A1 B C ->
+     forall E F G, (G0 = F ++ G) -> uniq (F ++ E ++ G)
+              -> BranchTyping (F ++ E ++ G) R a A FF A1 B C.
+Proof. 
+  induction 1.
+    all: intros; subst. 
+    all: try E_pick_fresh y;  try auto_rew_env; try apply_first_hyp; try simpl_env; eauto 3.
+Qed.
+
 Lemma typing_weakening_mutual:
   (forall G0 a A,   Typing G0 a A ->
      forall E F G, (G0 = F ++ G) -> Ctx (F ++ E ++ G) -> Typing (F ++ E ++ G) a A) /\
@@ -232,22 +205,30 @@ Proof.
   ext_induction CON.
   all: intros; subst; try done.
 
-  (* TODO: move E_LeftRel etc. first using ensure_case *)
+  (* Left/Right must be first because they are not syntax directed. *)
+  all: try (ensure_case E_LeftRel;
+            eapply E_LeftRel with (b:=b)(b':=b'); eauto 2;
+            try eapply DefEq_weaken_available; eauto 2).
 
+  all: try (ensure_case E_LeftIrrel; 
+       eapply E_LeftIrrel with (b:=b)(b':=b'); eauto 2;
+       try eapply DefEq_weaken_available; eauto 2).
+
+  all: try (ensure_case E_Right;
+            eapply E_Right with (a:=a)(a':=a'); eauto 2;
+            try eapply DefEq_weaken_available; eauto 2).
+
+  all: try (ensure_case E_CLeft;
+            eapply E_CLeft with (a:=a)(a':=a'); eauto 2;
+            try eapply DefEq_weaken_available; eauto 2).
   all: try solve [eapply CON; eauto 2].
   all: try solve [eapply CON; eauto 2; eapply DefEq_weaken_available; eauto 2].
-Admitted.
-(* 
+  
   all: try E_pick_fresh y; try auto_rew_env; try apply_first_hyp; 
                   try simpl_env; eauto 3.
-  (*all: econstructor; eauto 3 using E_SubRole. *)
-  eapply E_LeftRel with (b:=b)(b':=b'); eauto 2;
-    try eapply DefEq_weaken_available; eauto 2.
-  eapply E_LeftIrrel with (b:=b)(b':=b'); eauto 2;
-    try eapply DefEq_weaken_available; eauto 2.
-  eapply E_Right with (a:=a)(a':=a'); eauto 2;
-    try eapply DefEq_weaken_available; eauto 2.
-Qed. *)
+
+  eapply CON; eauto 3 using BranchTyping_weakening.
+Qed.
 
 
 Definition Typing_weakening  := first  typing_weakening_mutual.
