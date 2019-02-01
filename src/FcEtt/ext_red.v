@@ -591,6 +591,7 @@ Admitted.
 
 
 
+
 Lemma typing_args_proper_type : `{
   (* TODO: some hypotheses might not be necessary *)
   chain_open_telescope_deq Γ A PiB args_a →
@@ -622,7 +623,7 @@ Proof.
       move: (invert_a_App_Role H2) => [A2 [B2 [TA1 [TA2 TA3]]]]; subst.
       invs H0;
         match goal with
-          [ H : tm_pattern_agree _ _ |- _] => inversion H
+          H : tm_pattern_agree _ _ |- _ => inversion H
         end.
       all: exactly 1 goal.
 
@@ -635,7 +636,7 @@ Proof.
       eapply IHa1 in H; try done.
       2: { clear H0; eassumption. }
       all: try eassumption.
-      2: { match goal with [H : Pattern _ |- _] => solve [inversion H; done] end. }
+      2: { match goal with H : Pattern _ |- _ => solve [inversion H; done] end. }
       all: exactly 1 goal. (* Done applying induction *)
 
       clear IHa1 IHa2.
@@ -666,11 +667,11 @@ Proof.
 
   - (* Head *)
     cbn in *.
-    match goal with | [ H : Some _ = Some _ |- _] => invs H end.
+    match goal with H : Some _ = Some _ |- _ => invs H end.
     cbn in *.
-    match goal with | [ H : 0 = length _ |- _ ] => symmetry in H; eapply length_zero_iff_nil in H end; subst.
-    match goal with | [ H : chain_open_telescope_deq _ _ _ _ |- _ ] => dependent induction H end;
-    match goal with | [ H : PatternContexts _ _ _ _ _ _ |- _ ] => invs H end.
+    match goal with H : 0 = length _ |- _ => symmetry in H; eapply length_zero_iff_nil in H end; subst.
+    match goal with H : chain_open_telescope_deq _ _ _ _ |- _ => dependent induction H end;
+    match goal with H : PatternContexts _ _ _ _ _ _ |- _ => invs H end.
     all: cbn; split; try solve [econstructor | by eapply E_Refl].
     eapply E_Trans;
       (* This is essentially an eassumption *)
