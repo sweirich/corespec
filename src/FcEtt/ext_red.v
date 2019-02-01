@@ -43,6 +43,12 @@ Notation PatCtxTrim Γ p :=
   (exists Ω F PiB B, PatternContexts Ω Γ F PiB p B).
 
 
+(* Readability notations *)
+Notation "'ArgRel' a" := (pattern_arg_Rel a _) (at level 50). (* FIXME: level *)
+Notation "'ArgIrr' a" := (pattern_arg_Irr a _) (at level 50). (* FIXME: level *)
+Notation "'ArgCoe' a" := (pattern_arg_Coe a _) (at level 50). (* FIXME: level *)
+
+
 (******** Internal relations used only for proving ********)
 
 (* Represents that G |- A = "PiB opened with args" *)
@@ -70,6 +76,8 @@ Inductive chain_open_telescope_deq : context → tm → tm → pattern_args → 
                   chain_open_telescope_deq Γ (open_tm_wrt_co A g) B (pattern_arg_Coe g :: args)}
 .
 
+Notation "#copd: G |= A == B ^ args" := (chain_open_telescope_deq G A B args) (at level 50). (* TODO: figure out the level(s) *)
+
 Hint Constructors chain_open_telescope_deq.
 
 (* Same than previous relation, except we don't allow the use of internal equality.
@@ -91,6 +99,8 @@ Inductive chain_open_telescope_partial : context → tm → tm → pattern_args 
                   chain_open_telescope_partial Γ (open_tm_wrt_co A g) B (pattern_arg_Coe g :: args)}
 .
 
+Notation "#cotp: G |= A = B ^ args" := (chain_open_telescope_partial G A B args) (at level 50). (* TODO: figure out the level(s) *)
+
 Hint Constructors chain_open_telescope_partial.
 
 Inductive decompose_subpattern :
@@ -109,6 +119,9 @@ Inductive decompose_subpattern :
                                              args (pattern_arg_Rel (a_Var_f x) R :: coargs)
                                              Γ (x ~ Tm A' ++ coΓ)}
 .
+
+(* Simple notation to improve readability *)
+Notation "#Subpat:  p'  [ctx:  G - args: a ]   '#of'  p  '#by'  ctx: coG - args: coa" := (decompose_subpattern p' p a coa G coG) (at level 50). (* TODO: figure out the level(s) *)
 
 Hint Constructors decompose_subpattern.
 
@@ -255,6 +268,16 @@ Proof.
     eapply cpo_rel.
     ok.
   *)
+Admitted.
+
+
+Lemma invert_cotd_ArgRel : `{
+  chain_open_telescope_deq Γ A PiB (pattern_arg_Rel a2 R :: args) -> 
+  Γ ⊨ a1 : a_Pi Rel A2 B2 →
+  Γ ⊨ a2 : A2 →
+  DefEq Γ (dom Γ) A (open_tm_wrt_tm B2 a2) a_Star Rep →
+  chain_open_telescope_deq Γ (a_Pi rho A' B2) PiB args}.
+Proof.
 Admitted.
 
 
@@ -462,9 +485,10 @@ Proof.
     + ecbn. admit. (* Weakening *)
 
   (* Rel *)
-  - invs H6. (* CHECK: no need for dependent induction, right? *)
+  - invs H6; (* CHECK: no need for dependent induction, right? *)
+    softclear H6.
     (* eapply decompose_subpattern_PatternContexts_full in H6. *)
-    * eapply invert_a_App_Rel in H4; autofwd.
+    * eapply invert_a_App_Role in H4; autofwd.
       cbn in IHMatchSubst.
       eapply dsp_sub_rel in H17.
       move: H3 H0 IHMatchSubst => /= H3 H0.
@@ -501,7 +525,7 @@ Proof.
       by ok.
 
     * (* invs H4. *)
-      eapply invert_a_App_Rel in H4; autofwd.
+      eapply invert_a_App_Role in H4; autofwd.
       move: H3 H0 IHMatchSubst => /= H3 H0.
       move/(_ ltac:(ok)).
       eapply dsp_invert_rel in H9; autofwd. eapply dsp_sub_rel in H12.
@@ -538,38 +562,124 @@ Proof.
 
       (* Big existential *)
       {
+        simpl_env in H11.
+        ok.
+        fold (@app pattern_arg) in H9. (* FIXME *)
+        ecbn in H9.
+        move eq: (coargs ++ pattern_arg_Rel (a_Var_f x) R :: pat_args_default a1) => old.
+        (*__ CURRENTLY IMPORTING THE PROOF __*)
         admit.
       }
 
       (* PatCtxTrim ... *)
       {
-        invs H8.
+        match goal with [ H : args_proper_type _ _ _ |- _ ] => invs H end.
         simpl_env.
         ok.
       }
 
-   -
-     (*__ CURRENTLY IMPORTING THE PROOF __*)
 
+  - (* Irrel *)
+    admit.
+
+
+  - (* Coe *)
+    admit.
 Admitted.
 
+
+
+
+
 Lemma typing_args_proper_type : `{
-  (* FIXME: try to weaken the hypotheses *)
+  (* TODO: some hypotheses might not be necessary *)
   chain_open_telescope_deq Γ A PiB args_a →
   PatternContexts Ωp1 Γp1 F PiB p1 B1 →
   length args_a = length Γp1 →
   forall a,
   Γ ⊨ a : A →
-  (* forall args_a, (* p1' Γp1, *)
-  tm_pattern_agree a p1 → *)
   pat_args_default a = args_a → 
+  pat_head a = Some F →
+  Pattern a →
   (* subpattern p1' p1 → *)
+  tm_pattern_agree a p1 →
   args_proper_type Γ args_a Γp1 /\
-  subst_args_in_term Γp1 args_a B1 = A
+  DefEq Γ (dom Γ) (subst_args_in_term Γp1 args_a B1) A a_Star Rep
 }.
 Proof.
-  (*__ CURRENTLY IMPORTING THE PROOF __*)
+  intros until 3.
+  move=> a.
+  revert all except a.
+  induction a; intros;
+    try match goal with [H : Pattern _ |- _] => solve [inversion H] end.
+
+  - (* Rel/Irrel *)
+    intros.
+    destruct nu;
+    cbn in H3;
+    subst.
+    + destruct Γp1; simpl in H1; inversion H1.
+      move: (invert_a_App_Role H2) => [A2 [B2 [TA1 [TA2 TA3]]]]; subst.
+      invs H0;
+        match goal with
+          [ H : tm_pattern_agree _ _ |- _] => inversion H
+        end.
+      all: exactly 1 goal.
+
+      eapply invert_cotd_ArgRel in H; first last;
+        try eassumption.
+
+      all: exactly 1 goal.
+      autofwd.
+
+      eapply IHa1 in H; try done.
+      2: { clear H0; eassumption. }
+      all: try eassumption.
+      2: { match goal with [H : Pattern _ |- _] => solve [inversion H; done] end. }
+      all: exactly 1 goal. (* Done applying induction *)
+
+      clear IHa1 IHa2.
+      autofwd.
+      ecbn in H1.
+      move: E_PiFst; move/(_ _ _ _ _ _ _ _ _ H1) => deq1.
+      move: E_PiSnd; move/(_ _ _ _ _ _ _ _ _ _ _ H1) => deq2.
+      split.
+
+      { eapply E_Sym in deq1; autoreg; econstructor; try done; eapply E_Conv; eassumption. }
+      { eapply invert_a_App_Role in H2; autofwd.
+        eapply E_Conv in TA2; first last; [| by eapply E_Sym; eassumption |]; [by autoreg |].
+        move: (E_Refl _ (dom Γ) _ _ Nom TA2) => TA2refl.
+        eapply deq2 in TA2refl.
+        move: (E_Trans _ _ _ _ _ _ _ TA2refl (E_Sym _ _ _ _ _ _ TA3)).
+        admit. (* QUESTION *)
+      }
+
+    + (* Irrel *)
+      (* Getting rid of rho = Rel, which is impossible in a pattern (has to be a role instead) *)
+      destruct rho.
+      all: match goal with [ H : tm_pattern_agree _ _ |- _ ] => try solve [inversion H] end.
+
+      admit.
+
+  - (* CApp *)
+    admit.
+
+  - (* Head *)
+    cbn in *.
+    match goal with | [ H : Some _ = Some _ |- _] => invs H end.
+    cbn in *.
+    match goal with | [ H : 0 = length _ |- _ ] => symmetry in H; eapply length_zero_iff_nil in H end; subst.
+    match goal with | [ H : chain_open_telescope_deq _ _ _ _ |- _ ] => dependent induction H end;
+    match goal with | [ H : PatternContexts _ _ _ _ _ _ |- _ ] => invs H end.
+    all: cbn; split; try solve [econstructor | by eapply E_Refl].
+    eapply E_Trans;
+      (* This is essentially an eassumption *)
+      try solve [eapply E_Sub; [eassumption | destruct R; econstructor]].
+    all: exactly 1 goal.
+    eapply IHchain_open_telescope_deq; try done.
+    autoreg; destruct R; eapply E_Conv; ok.
 Admitted.
+
 
 Lemma chain_open_telescope_deq_partial_internal_functionality : `{
   Γ ⊨ A1 : a_Star →

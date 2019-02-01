@@ -167,6 +167,12 @@ Ltac revert_all_with t :=
       | [ H : _ |- _ ] => try t H; revert dependent H
     end.
 
+(* Revert all except H (and other hyps it might depend on) *)
+Ltac revert_except H :=
+  repeat match goal with
+    | [ H' : _ |- _ ] => tryif constr_eq H H' then fail else revert H'
+  end.
+
 (* TODO: use match instead to respect names *)
 Ltac intro_all_with t :=
   repeat
@@ -186,6 +192,14 @@ Ltac invert_and_clear H := inversion H; clear H.
 
 (* This one does *)
 Ltac safe_invert_and_clear H := invert_and_clear H; only_one_goal.
+
+
+(* Refactoring tactic: mark H as cleared without actually clearing it. This is 
+   useful for temporarily fragile scripts that rely on generated names. *)
+Inductive _cleared : Prop :=
+  | _erase : forall P : Prop, P -> _cleared.
+Ltac softclear H :=
+  apply _erase in H.
 
 
 (* Technical, tactic-internal: wrap an hypothesis in a dummy pair, so that it doesn't get picked-up by, say, a match goal
@@ -577,10 +591,13 @@ Ltac depind x   := dependent induction x.
 (* Misc *)
 Ltac clearall := TacticsInternals.clearall.
 Tactic Notation "clear all" := TacticsInternals.clearall.
+Tactic Notation (at level 0) "revert" "all" "except" ident(H) := TacticsInternals.revert_except H.
 
+Tactic Notation "exactly" integer(n) "goal" := TacticsInternals.check_num_goals_eq n.
 Tactic Notation "exactly" integer(n) "goals" := TacticsInternals.check_num_goals_eq n.
 
 Ltac invs := TacticsInternals.invs.
+Ltac softclear := TacticsInternals.softclear.
 
 (* FIXME: rely on internals *)
 Tactic Notation "basic_nosolve_n" int_or_var(n) := intuition (subst; eauto n).

@@ -315,6 +315,16 @@ Qed.
 
 Hint Rewrite @subst_args_in_ctx_app : extended_comp.
 
+Fact subst_args_in_term_a_Pi : `{
+  subst_args_in_term Γ args (a_Pi ρ A B) = a_Pi ρ (subst_args_in_term Γ args A) (subst_args_in_term Γ args B)
+}.
+Proof.
+  induction Γ, args; intros; cbn; try done.
+  exactly 1 goal.
+  rewrite IHΓ. cbn.
+  by destruct a, s, p.
+Qed.
+
 Fact subst_args_in_sort_Tm : `{
   subst_args_in_sort Γ0 args1 (Tm A') = Tm (subst_args_in_term Γ0 args1 A')   (* FIXME vars *)
 }.
@@ -330,7 +340,7 @@ Proof.
   destruct a; reflexivity.
 Qed.
 
-Hint Rewrite @subst_args_in_sort_Tm @subst_args_in_ctx_nil : extended_comp.
+Hint Rewrite @subst_args_in_term_a_Pi @subst_args_in_sort_Tm @subst_args_in_ctx_nil : extended_comp.
 
 
 Hint Constructors PatData. (* TODO: remove, right? *)
