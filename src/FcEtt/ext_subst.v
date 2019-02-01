@@ -264,7 +264,7 @@ Proof.
   all: try eapply_E_subst.
   all: try solve [eapply subst_rho; eauto 2].
   all: try solve [eapply_first_hyp; eauto 2].
-  all: try solve [eapply Path_subst; eauto 2 with lc].
+  all: try solve [eapply RolePath_subst; eauto 2 with lc].
   all: try solve [eapply DefEq_weaken_available; eauto 2].
   (* 16 *)
   - destruct (x == x0).
@@ -458,7 +458,7 @@ Proof.
   all: try eapply_E_subst; eauto 2.
   all: try solve [eapply co_subst_rho; eauto 2].
   all: try solve [eapply_first_hyp; eauto 2; auto].
-  all: try solve [eapply Path_subst_co; eauto 2 with lc].
+  all: try solve [eapply RolePath_subst_co; eauto 2 with lc].
   all: try solve [eapply DefEq_weaken_available; eauto 2].
   (* - eapply E_SubRole with R1. assumption. eapply H. auto. apply H1. *)
   - apply binds_app_1 in b.

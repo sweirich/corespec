@@ -10,7 +10,7 @@ Require Import FcEtt.toplevel.
 Require Import FcEtt.ett_roleing.
 Require Import FcEtt.ext_wf.
 
-Lemma Path_ValuePath : forall a F Rs, Path a F Rs -> ValuePath a F.
+Lemma RolePath_ValuePath : forall a F Rs, RolePath a F Rs -> ValuePath a F.
 Proof. intros. induction H; eauto.
 Qed.
 
@@ -184,7 +184,7 @@ Proof. intros. induction a; simpl in H1; auto; try (inversion H1; fail).
 Qed.
 
 Lemma subst_co_Path : forall F a b R c, lc_co b -> Value R a ->
-                      Path F (co_subst_co_tm b c a) R -> Path F a R.
+                      RolePath F (co_subst_co_tm b c a) R -> RolePath F a R.
 Proof. intros. induction a; simpl in H1; auto; try (inversion H1; fail).
         - inversion H0; subst. inversion H1; subst. inversion H2; subst.
           eauto.
@@ -192,7 +192,7 @@ Proof. intros. induction a; simpl in H1; auto; try (inversion H1; fail).
           inversion H1; subst. eauto.
 Qed.
 
-Lemma no_Path_reduction : forall R a F, Path F a R -> forall b, not (reduction_in_one a b R).
+Lemma no_Path_reduction : forall R a F, RolePath F a R -> forall b, not (reduction_in_one a b R).
 Proof.
   intros R a F H. induction H; simpl; intros.
   all : intros NH; inversion NH; subst.
@@ -207,8 +207,8 @@ Proof.
   - inversion H0; subst. inversion H.
 Qed.
 
-Lemma sub_Path : forall F a R1 R2, Path F a R1 -> SubRole R1 R2 ->
-                        Path F a R2 \/ (exists a', reduction_in_one a a' R2).
+Lemma sub_Path : forall F a R1 R2, RolePath F a R1 -> SubRole R1 R2 ->
+                        RolePath F a R2 \/ (exists a', reduction_in_one a a' R2).
 Proof. intros. induction H.
         - left. eauto.
         - destruct (sub_dec R1 R2) as [P1 | P2].
@@ -221,8 +221,8 @@ Proof. intros. induction H.
           exists (a_CApp a' g_Triv); eauto.
 Qed.
 
-Lemma nsub_Path : forall F a R1 R2, Path F a R1 -> SubRole R2 R1 ->
-                        Path F a R2.
+Lemma nsub_Path : forall F a R1 R2, RolePath F a R1 -> SubRole R2 R1 ->
+                        RolePath F a R2.
 Proof. intros. induction H.
         - eauto.
         - destruct (sub_dec R1 R2) as [P1 | P2]. eauto. eauto.

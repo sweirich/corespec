@@ -154,13 +154,7 @@ Proof.
     move: (H2 x ltac:(auto)) => h5.
     eapply h0; eauto.
   - inversion H; inversion H1.
-  - 
-
-admit.
-  - admit.
-  - 
-SearchAbout CasePath reduction_in_one.
-Qed.
+Admitted.
 
 Lemma sub_Value :
   forall R v, Value R v -> forall R', SubRole R R' ->
@@ -175,21 +169,20 @@ Proof. intros R v H. induction H; simpl; auto. all: intros.
     rewrite tm_subst_tm_tm_fresh_eq in H3; auto.
     assert (tm_subst_tm_tm (a_Var_f y) x (a_Var_f x) = a_Var_f y).
     unfold tm_subst_tm_tm; default_simp. rewrite H2 in H3.
-    exists (a_UAbs Irrel R1 (close_tm_wrt_tm y (tm_subst_tm_tm (a_Var_f y) x a0))).
+    exists (a_UAbs Irrel (close_tm_wrt_tm y (tm_subst_tm_tm (a_Var_f y) x a0))).
     apply E_AbsTerm_exists with (x := y); auto.
     apply notin_union_3; auto. rewrite fv_tm_tm_tm_close_tm_wrt_tm. auto.
     rewrite open_tm_wrt_tm_close_tm_wrt_tm; auto.
-  - edestruct sub_Path; eauto 3.
+  - admit.
     Unshelve. all: auto.
-Qed.
+Admitted.
 
 
 Lemma nsub_Value :
   forall R v, Value R v -> forall R', SubRole R' R -> Value R' v.
 Proof. intros R v H. induction H; simpl; auto. all: intros.
   - pick fresh x. eapply Value_UAbsIrrel with (L := L). intros. eauto.
-  - eapply nsub_Path in H0; eauto.
-Qed.
+Admitted.
 
 
 
@@ -220,7 +213,7 @@ Lemma sub_red_one :
 Proof. intros. induction H; eauto.
        - (* AbsTerm *)
          pick fresh x. move: (H1 x ltac:(auto) H0) => [a'' r].
-         eexists (a_UAbs Irrel R (close_tm_wrt_tm x a'')). 
+         eexists (a_UAbs Irrel (close_tm_wrt_tm x a'')). 
          eapply E_AbsTerm_exists with(x:=x);
          autorewrite with lngen; auto.
        - destruct (IHreduction_in_one H0) as [a'' r].
@@ -247,6 +240,13 @@ Ltac Value_no_red :=
         contradiction; fail
      end.
 
+Ltac invert_MatchSubst := 
+  match goal with 
+  | [ H : MatchSubst ?a ?a0 ?b1 ?b2 |- _ ] => 
+    inversion H; subst; clear H
+  end.
+
+
 (* The reduction relation is deterministic *)
 Lemma Beta_deterministic :
   forall a a1 R, Beta a a1 R -> forall a2, Beta a a2 R -> a1 = a2.
@@ -255,10 +255,16 @@ Proof.
   induction H; intros a2 h0.
   all: inversion h0; subst.
   all: auto.
-  have: (Ax a A R = Ax a2 A0 R2). eapply binds_unique; eauto using uniq_toplevel.
-    move => h; inversion h; done.
-  contradiction. contradiction.
-Qed.
+  all: try solve [invert_MatchSubst; invert_MatchSubst].
+  all: try solve [contradiction].
+  - (* two axioms *)
+  have: (Ax p b A R1 Rs = Ax p0 b0 A0 R2 Rs0). 
+     { admit.  } 
+    move => h; inversion h. subst.
+    admit.
+  - (* two pattern matching *)
+    admit.
+Admitted.
 
 (* The reduction relation is deterministic *)
 Lemma reduction_in_one_deterministic :
@@ -279,15 +285,21 @@ Proof.
   all: try solve [(have: False by eapply no_Value_reduction; eauto 1); done].
   all: try solve [(have: False; try done; inversion H; inversion H1)].
   all: try solve [(have: False; try done; inversion H0; inversion H1)].
-
+  all: try solve [invert_MatchSubst].
   (* AbsTerm *)
   - pick fresh x.
-    move: (H5 x ltac:(auto)) => h7.
+    move: (H2 x ltac:(auto)) => h7.
     move: (H0 x ltac:(auto)) => h1.
     apply h1 in h7.
     apply open_tm_wrt_tm_inj in h7; eauto. rewrite h7. auto.
-  - apply Value_Path in H12. apply no_Value_reduction in H1; eauto.
-    inversion H1.
-  - apply Value_Path in H12. apply no_Value_reduction in H2; eauto.
-    inversion H2.
-Qed.
+  - admit.
+  - inversion H. inversion H1. invert_MatchSubst.
+  - inversion H0. 
+    + subst. invert_MatchSubst. invert_MatchSubst.
+    + admit.
+  - admit.
+  - admit.
+  - inversion H0. inversion H1. invert_MatchSubst.
+  - admit.
+  - admit.
+Admitted.

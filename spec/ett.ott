@@ -251,8 +251,9 @@ roles, Rs :: '' ::= {{ coq list role }}
 
 sig_sort :: '' ::= {{ com signature classifier }}
    | A @ Rs            ::    :: Cs
+     {{ tex _[[Rs]] \, [[A]] }}
    | p ~ a : A / R @ Rs    ::    :: Ax
-     {{ tex \, [[p]] \sim [[a]] : [[A]] / [[R]] @ [[Rs]] }}
+     {{ tex _[[Rs]] \, [[p]] \sim_[[R]] [[a]] : [[A]]  }}
 
 sort :: '' ::= {{ com binding classifier }}
    | Tm A             ::   :: Tm
@@ -640,33 +641,33 @@ R2 <= R3
 R1 <= R3
 
 defns
-   JPath :: '' ::=
+   JRolePath :: '' ::=
 
 defn
-Path a = F @ Rs  ::  :: Path :: 'Path_'
+RolePath a = F @ Rs  ::  :: RolePath :: 'RolePath_'
 {{ com Type headed by constant (partial function) }}
-{{ tex \mathsf{Path} \ [[a]] = [[F]] @ [[Rs]] }}
+{{ tex \mathsf{RolePath} \ [[a]] = [[F]] @ [[Rs]] }}
 by
 
 F : A @ Rs in toplevel
 --------------------- :: AbsConst
-Path F = F @ Rs
+RolePath F = F @ Rs
 
 F : p ~ a : A/R1 @ Rs in toplevel
 --------------------------------- :: Const
-Path F = F @ Rs
+RolePath F = F @ Rs
 
-Path a = F @ R1,Rs
+RolePath a = F @ R1,Rs
 ---------------------------- :: App
-Path (a R1 b') = F @ Rs
+RolePath (a R1 b') = F @ Rs
 
-Path a = F @ Rs
+RolePath a = F @ Rs
 ---------------------- :: IApp
-Path (a - []) = F @ Rs
+RolePath (a - []) = F @ Rs
 
-Path a = F @ Rs
+RolePath a = F @ Rs
 ---------------------- :: CApp
-Path (a [o]) = F @ Rs
+RolePath (a [o]) = F @ Rs
 
 
 defns
@@ -1111,7 +1112,7 @@ W |= (all rho x:A -> B) : R
 
 W |= a : R1
 W |= b : R1
-W |= A : R0
+W |= A : Rep
 W |= B : R
 ----------------------------------------------- :: CPi
 W |= (all c:a ~ b : A / R1. B) : R
@@ -1207,7 +1208,7 @@ W |= a => a' / R
 ------------------------------------------ :: CAbs
 W |= /\c . a => /\c . a' / R
 
-W |= A => A' / R0
+W |= A => A' / Rep
 W |= a => a' / R1
 W |= b => b' / R1
 W |= B => B' / R
@@ -1295,6 +1296,7 @@ defns
 defn
 |= a > b / R  ::     :: Beta :: 'Beta_'
 {{ com primitive reductions on erased terms }}
+{{ tex [[|=]] [[a]] [[>]]_{[[R]]} [[b]] }}
 by
 
 Value R1 (\rho x. v)
@@ -1326,6 +1328,7 @@ not (CasePath R a +> F)
 defn
  |= a ~> b / R ::   :: reduction_in_one :: 'E_'
 {{ com single-step head reduction for implicit language }}
+{{ tex [[|=]] [[a]] [[~>]]_{[[R]]} [[b]] }}
 by
 
 |= a ~> a' / R1
@@ -1451,7 +1454,7 @@ G |= b + a : B { a / x }
 
 G |= b : all+ x : A -> B
 G |= a : A
-Path b = F @ R, Rs
+RolePath b = F @ R, Rs
 ------------------------------------- :: TApp
 G |= b R a : B { a / x }
 
@@ -1590,9 +1593,9 @@ G ; D |= a2 == b2 : A/ Nom
 G ; D |= a1 + a2 == b1 + b2 : (B { a2 / x })/R'
 
 G ; D |= a1 == b1 : (all + x:A -> B)/R'
-G ; D |= a2 == b2 : A/ R
-Path a1 = F @ R, Rs
-Path b1 = F' @ R, Rs'
+G ; D |= a2 == b2 : A/ param R R'
+RolePath a1 = F @ R, Rs
+RolePath b1 = F' @ R, Rs'
 ------------------------------------------------ :: TAppCong
 G ; D |= a1 R a2 == b1 R b2 : (B { a2 / x })/R'
 
@@ -2239,7 +2242,7 @@ homs ''
 
 %%__ Constraints __%%
 homs ''
-  :: Eq       {{ tex [[a]] [[~]]_{[[A]]/[[R]]} [[b]] }}
+  :: Eq       {{ tex [[a]] [[~]]_{[[R]]} [[b]] : [[A]] }}
   :: EqNT     {{ tex [[a]] [[~]]_{[[R]]} [[b]]       }}
 
 

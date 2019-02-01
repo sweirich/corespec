@@ -64,7 +64,7 @@ Fixpoint head_const (a : tm) : tm := match a with
   | _ => a_Bullet
   end.
 
-Lemma Path_head : forall F a Rs, Path a F Rs -> head_const a = a_Fam F.
+Lemma RolePath_head : forall F a Rs, RolePath a F Rs -> head_const a = a_Fam F.
 Proof. intros. induction H; eauto.
 Qed.
 
@@ -596,8 +596,8 @@ Lemma chain_sub_capp : forall l a, chain_substitution l (a_CApp a g_Triv) =
 Proof. intros. induction l. simpl; auto. destruct a0; simpl. rewrite IHl; auto.
 Qed.
 
-Lemma Path_pat_rename_consist : forall a p l, Path_pat_consist a p ->
-              Path_pat_consist a (chain_substitution (map a_Var_f l) p).
+Lemma RolePath_pat_rename_consist : forall a p l, RolePath_pat_consist a p ->
+              RolePath_pat_consist a (chain_substitution (map a_Var_f l) p).
 Proof. intros. induction H.
         - rewrite chain_sub_fam. eauto.
         - rewrite chain_sub_app. pose (P := chain_sub_var l x).
@@ -809,7 +809,7 @@ Proof. intros. generalize dependent p; generalize dependent b.
        (L' := map a_Var_f l ++ ([(a0, a_Var_f t)]))).
        rewrite chain_sub_append. simpl. rewrite IHl.
 
-Definition Nice a p := Path_pat_consist a p /\
+Definition Nice a p := RolePath_pat_consist a p /\
               (forall x, x `in` fv_tm_tm_tm p -> x `notin` fv_tm_tm_tm a) /\
                uniq (permutation a p).
 
@@ -870,7 +870,7 @@ Lemma match_subst_roleing : forall W a R p b b', Roleing W a R ->
 Proof. Admitted.
 
 Lemma match_path : forall F p a A R Rs a0 b, binds F (Ax p a A R Rs) toplevel ->
-                          MatchSubst a0 p a b -> Path a0 F nil.
+                          MatchSubst a0 p a b -> RolePath a0 F nil.
 Proof. intros. induction H0. pose (H' := H).
        eapply ax_const_rs_nil in H'. inversion H'; subst.
        eauto. apply Sig_toplevel. econstructor. auto.
@@ -1480,12 +1480,12 @@ Fixpoint tm_to_roles (a : tm) : roles := match a with
     | _ => nil
     end.
 
-Lemma Path_inversion : forall a F Rs, Path a F Rs->
+Lemma RolePath_inversion : forall a F Rs, RolePath a F Rs->
          (exists A, binds F (Cs A (tm_to_roles a ++ Rs)) toplevel) \/
          (exists p b A R, binds F (Ax p b A R (tm_to_roles a ++ Rs)) toplevel).
 Proof. intros. induction H; simpl; eauto.
         - right. exists p, a, A, R1; eauto.
-        - inversion IHPath as [[A H1] | [p [a1 [A [R2 H1]]]]].
+        - inversion IHRolePath as [[A H1] | [p [a1 [A [R2 H1]]]]].
           left. exists A. rewrite <- app_assoc. eauto.
           right. exists p, a1, A, R2. rewrite <- app_assoc. eauto.
 Qed.
@@ -1508,10 +1508,10 @@ Proof. intros. induction H; simpl; eauto.
        exists (Rs' ++ [R]). rewrite H1. rewrite app_assoc; auto.
 Qed.
 
-Lemma Path_subtm_pattern_agree_contr : forall a F p b A R Rs R0 Rs',
-      Path a F (R0 :: Rs') -> binds F (Ax p b A R Rs) toplevel ->
+Lemma RolePath_subtm_pattern_agree_contr : forall a F p b A R Rs R0 Rs',
+      RolePath a F (R0 :: Rs') -> binds F (Ax p b A R Rs) toplevel ->
       ~(subtm_pattern_agree a p).
-Proof. intros. apply Path_inversion in H.
+Proof. intros. apply RolePath_inversion in H.
        inversion H as [[A1 H1] | [p1 [b1 [A1 [R1 H1]]]]].
         - axioms_head_same.
         - axioms_head_same. intro. apply toplevel_inversion in H0.

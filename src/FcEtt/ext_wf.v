@@ -16,11 +16,11 @@ Require Import FcEtt.toplevel.
    -- all components are locally closed in any judgement
   *)
 
-Lemma Path_lc : forall F a R, Path a F R -> lc_tm a.
+Lemma RolePath_lc : forall F a R, RolePath a F R -> lc_tm a.
 Proof. intros. induction H; eauto.
 Qed.
 
-(* Lemma uniq_Path : forall F F' a R, Path a F R -> Path a F' R -> F = F'.
+(* Lemma uniq_Path : forall F F' a R, RolePath a F R -> RolePath a F' R -> F = F'.
 Proof. intros. generalize dependent F'. induction H; intros; auto.
        inversion H0; auto.
        inversion H1; subst. assert (Ax p a A R1 Rs = Cs A0).
@@ -30,11 +30,11 @@ Proof. intros. generalize dependent F'. induction H; intros; auto.
 Qed.
 
 Lemma Value_lc : forall R A, Value R A -> lc_tm A.
-Proof. intros; induction H; eauto using Path_lc.
+Proof. intros; induction H; eauto using RolePath_lc.
 Qed.
 
 
-Hint Resolve Value_lc Path_lc : lc. *)
+Hint Resolve Value_lc RolePath_lc : lc. *)
 
 
 (* -------------------------------- *)

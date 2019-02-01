@@ -1,9 +1,6 @@
-This repository must be built with Coq 8.6.
+This repository must be built with Coq 8.8.
 
-It requires MathComp (v1.6), and the 8.6 branch of
-[metalib](https://github.com/plclub/metalib) to
-install.  The former comes from opam, the latter from Github.  For full
-installation instructions, see LIBRARIES.md.
+For full installation instructions, see LIBRARIES.md.
 
 To build the Coq, run `make coq`.
 
@@ -26,6 +23,7 @@ Syntactic definitions
 * ett_inf_cs.v   - ett_inf plus canonical structures
 * ett_ind.v      - induction scheme, gather_atoms
                    more syntactic infrastructure results
+				   
 Example concrete signature
 
 * fix_typing.v   - defines toplevel signature to include fixed point operator
@@ -52,28 +50,10 @@ Metatheory of Implicit Language
 * ext_consist.v  - consistency via confluence & reduction
 * congruence. v  - congruence lemma for equality relation
 
-Metatheory of Explicit Language
-* fc_wf.v           - well-formedness of judgements, i.e. local closure, ctx wff
-* fc_weak.v         - weakening lemma
-* fc_subst.v        - substitution lemma & smart constructors
-* fc_head_reduction - weakening/substitution properties of head_reduction relation
-* fc_unique.v       - uniqueness of typing
-* fc_preservation.v - preservation theorem
-* fc_invert.v       - regularity lemmas
+New files for reasoning about roles and pattern matching
 
-Decidability of type checking
-* fc_get.v          - function to get the type of a well typed term
-* fc_dec_aux.v      - decidability of various relations
-                      (tm equality, binds, RhoCheck, beta)
-* fc_dec_fuel.v     - recursive structure of typechecking function
-* fc_dec_fun.v      - type checking function(s) (including correctness)
-* fc_dec.v          - decidability of typing
-
-
-Connection between languages
-* erase.v           - connection between implicit and explicit languages
-                      uses canonical structures
-
-Results that depend on annotation/erasure
-* fc_consist.v      - progress lemma for fc
-* fc_congruence.v   - substitutivity
+* ett_path.v     - terms headed by a constructor (F)
+* ett_rename.v   - nominal treatment of axioms
+* ett_roleling.v - metatheory of roleling judgement
+* param.v        - reasoning about "param" Role operator
+* pattern.v      - definitions and facts about patterns
