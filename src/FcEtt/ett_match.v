@@ -12,6 +12,7 @@ Require Export FcEtt.toplevel.
 Require Export FcEtt.fix_typing.
 Require Import FcEtt.ett_roleing.
 Require Import FcEtt.ett_path.
+Require Import FcEtt.ext_wf.
 Require Import Omega.
 
 (** Patterns, agreement and substitution function **)
@@ -1055,43 +1056,7 @@ Proof. intros. generalize dependent a'.
        induction H; intros a' H1; inversion H1; subst; eauto.
 Qed.
 
-Lemma MatchSubst_lc_1 : forall a p b b', MatchSubst a p b b' →  lc_tm a.
-Proof.
-  induction 1; auto.
-Qed.
-
-Lemma MatchSubst_lc_2 : forall a p b b', MatchSubst a p b b' →  lc_tm b.
-Proof.
-  induction 1; auto.
-Qed.
-
-Lemma MatchSubst_lc_3 : forall a p b b', MatchSubst a p b b' →  lc_tm b'.
-Proof.
-  induction 1;
-    eauto using tm_subst_tm_tm_lc_tm, co_subst_co_tm_lc_tm.
-Qed.
-
-Lemma ApplyArgs_lc_3 : forall a b c, ApplyArgs a b c → lc_tm c.
-Proof.
-  induction 1; eauto.
-Qed.
-
-Lemma Par_lc1 : forall W a a' R, Par W a a' R → lc_tm a.
-Proof. induction 1; eauto using roleing_lc, MatchSubst_lc_1.
-Qed.
-
-
-Lemma Par_lc2 : forall W a a' R, Par W a a' R → lc_tm a'.
-Proof. intros. induction H; eauto. eapply roleing_lc; eauto.
-       lc_solve. lc_solve. apply toplevel_inversion in H.
-       inversion H as [W1 [G [B [_ [_ [Q _]]]]]].
-       eapply roleing_lc; eauto. eapply MatchSubst_lc_3; eauto.
-       eapply MatchSubst_lc_3; eauto.
-       econstructor. eapply ApplyArgs_lc_3; eauto. eauto.
-Qed.
-
-Hint Resolve MatchSubst_lc_1 MatchSubst_lc_3 ApplyArgs_lc_3 Par_lc1 Par_lc2 : lc.
-
+(* TODO: why do we have both MultiPar (ett.ott) and multipar *)
 Inductive multipar W ( a : tm) : tm -> role -> Prop :=
 | mp_refl : forall R, roleing W a R -> multipar W a a R
 | mp_step : forall R b c, Par W a b R -> multipar W b c R ->
@@ -1412,10 +1377,6 @@ Proof. intros. pattern_head.
            apply H7; eauto.
 Qed.
 
-Lemma MatchSubst_lc3 : forall a p b1 b2, MatchSubst a p b1 b2 -> lc_tm b1.
-Proof. intros. induction H; eauto.
-Qed.
-
 Lemma apply_args_par : forall a b c a' b' c' W R1 R2 F, ApplyArgs a b c ->
                        CasePath R1 a F -> Par W a a' R1 -> Par W b b' R2 ->
                        ApplyArgs a' b' c' -> Par W c c' R2.
@@ -1609,13 +1570,6 @@ Lemma Superset_cont_sub : forall x S1 S2, S1 [<=] S2 -> x `in` S1 -> x `in` S2.
 Proof. intros. fsetdec.
 Qed.
 
-Lemma Rename_lc_2 : forall p b p' b' D D', Rename p b p' b' D D' -> lc_tm b.
-Proof. intros. induction H; eauto.
-Qed.
-
-Lemma Rename_lc_4 : forall p b p' b' D D', Rename p b p' b' D D' -> lc_tm b'.
-Proof. intros. induction H; eauto. eapply tm_subst_tm_tm_lc_tm; eauto.
-Qed.
 
 
 Lemma Rename_fv_body : forall p b p' b' D D',

@@ -100,11 +100,6 @@ Proof. intros. induction H; auto.
        auto. apply dom_roleing_ctx_rctx_le_ctx in H. fsetdec.
 Qed.
 
-Lemma roleing_lc : forall W a R, roleing W a R -> lc_tm a.
-intros; induction H; auto.
-Qed.
-
-Hint Resolve roleing_lc : lc.
 
 Lemma roleing_sub : forall W a R1 R2, roleing W a R1 -> SubRole R1 R2 ->
                                      roleing W a R2.

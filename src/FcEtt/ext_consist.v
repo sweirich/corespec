@@ -568,12 +568,12 @@ Proof.
         eapply matchsubst_fun_ind.
         eapply tm_pattern_agree_cong with (a1 := a_App a' nu a1').
         eapply MatchSubst_match; eauto. clear - Q3 l1 l2. eauto.
-        eapply Rename_lc_4; eauto. auto.
+        eapply Rename_lc4; eauto. auto.
         eapply matchsubst_fun_ind.
         eapply tm_pattern_agree_cong with (a1 := a_App a'0 nu a1'0).
         eapply MatchSubst_match; eauto. econstructor. auto.
         eapply Par_lc1; eauto. eapply Par_lc2; eauto.
-        eapply Rename_lc_4; eauto. auto. } rewrite Q.
+        eapply Rename_lc4; eauto. auto. } rewrite Q.
 
         eapply axiom_app_confluence. eauto. eapply H0. eapply H12.
         eapply H13. all: eauto.
@@ -636,10 +636,10 @@ Proof.
          * clear - h h'. simpl. fsetdec.
          * clear - H. apply uniq_atoms_toplevel in H. auto.
          * eapply matchsubst_fun_ind. eapply tm_pattern_agree_cong.
-           eapply MatchSubst_match; eauto. eauto. eapply Rename_lc_4; eauto.
+           eapply MatchSubst_match; eauto. eauto. eapply Rename_lc4; eauto.
            auto.
          * eapply matchsubst_fun_ind. eapply tm_pattern_agree_cong.
-           eapply MatchSubst_match; eauto. eauto. eapply Rename_lc_4; eauto.
+           eapply MatchSubst_match; eauto. eauto. eapply Rename_lc4; eauto.
            auto. 
          } rewrite Q.
 
@@ -1441,7 +1441,7 @@ Proof.
              eauto. auto. eapply rctx_uniq. eapply Typing_roleing; eauto.
            + apply Typing_roleing in t; inversion t; subst.
              move: (Rename_exists (union (dom (ctx_nom G)) (fv_tm_tm_tm p))
-              (axiom_pattern H2) (Rename_lc_2 H3)) => h.
+              (axiom_pattern H2) (Rename_lc2 H3)) => h.
              inversion h as [p2 [b2 [D2 h1]]].
              assert (tm_pattern_agree (a_App a0 (Role R0) a) p2).
              { eapply tm_pattern_agree_rename_inv_1.
@@ -1457,7 +1457,7 @@ Proof.
              replace (tm_subst_tm_tm a x b3) with
                      (matchsubst (a_App a0 (Role R0) a) p2 b2).
              apply matchsubst_fun_ind.
-             auto. eapply Rename_lc_4; eauto. auto.
+             auto. eapply Rename_lc4; eauto. auto.
              move: (axiom_body_fv_in_pattern H2) => h2.
              apply rctx_fv in H13. apply rctx_fv in H14.
              eapply MatchSubst_Rename_preserve.
@@ -1469,10 +1469,10 @@ Proof.
              simpl. clear - h2. apply union_s_m. eauto.
              eapply AtomSetProperties.union_subset_3; eauto.
              eapply uniq_atoms_toplevel; eauto.
-             apply matchsubst_fun_ind. auto. eapply Rename_lc_4; eauto.
+             apply matchsubst_fun_ind. auto. eapply Rename_lc4; eauto.
              auto. auto. auto.
            + move: (Rename_exists (union (dom (ctx_nom G)) (fv_tm_tm_tm p))
-              (axiom_pattern H2) (Rename_lc_2 H3)) => h.
+              (axiom_pattern H2) (Rename_lc2 H3)) => h.
              inversion h as [p2 [b2 [D2 h1]]].
              assert (tm_pattern_agree (a_App a0 (Rho Irrel) a) p2).
              { eapply tm_pattern_agree_rename_inv_1.
@@ -1487,7 +1487,7 @@ Proof.
              eapply Par_sub; eauto. simpl. eauto. eauto.
              replace a2 with (matchsubst (a_App a0 (Rho Irrel) a) p2 b2).
              apply matchsubst_fun_ind.
-             auto. eapply Rename_lc_4; eauto. auto.
+             auto. eapply Rename_lc4; eauto. auto.
              move: (axiom_body_fv_in_pattern H2) => h2.
              apply rctx_fv in H14. apply rctx_fv in H15.
              eapply MatchSubst_Rename_preserve.
@@ -1499,10 +1499,10 @@ Proof.
              simpl. clear - h2. apply union_s_m. eauto.
              eapply AtomSetProperties.union_subset_3; eauto.
              eapply uniq_atoms_toplevel; eauto.
-             apply matchsubst_fun_ind. auto. eapply Rename_lc_4; eauto.
+             apply matchsubst_fun_ind. auto. eapply Rename_lc4; eauto.
              auto. auto. auto.
            + move: (Rename_exists (union (dom (ctx_nom G)) (fv_tm_tm_tm p))
-              (axiom_pattern H2) (Rename_lc_2 H3)) => h.
+              (axiom_pattern H2) (Rename_lc2 H3)) => h.
              inversion h as [p2 [b2 [D2 h1]]].
              assert (tm_pattern_agree (a_CApp a0 g_Triv) p2).
              { eapply tm_pattern_agree_rename_inv_1.
@@ -1517,7 +1517,7 @@ Proof.
              eapply Par_sub; eauto. eauto.
              replace a2 with (matchsubst (a_CApp a0 g_Triv) p2 b2).
              apply matchsubst_fun_ind.
-             auto. eapply Rename_lc_4; eauto. auto.
+             auto. eapply Rename_lc4; eauto. auto.
              move: (axiom_body_fv_in_pattern H2) => h2.
              apply rctx_fv in H10.
              eapply MatchSubst_Rename_preserve.
@@ -1529,7 +1529,7 @@ Proof.
              simpl. clear - h2. apply union_s_m. eauto.
              eapply AtomSetProperties.union_subset_3; eauto.
              eapply uniq_atoms_toplevel; eauto.
-             apply matchsubst_fun_ind. auto. eapply Rename_lc_4; eauto.
+             apply matchsubst_fun_ind. auto. eapply Rename_lc4; eauto.
              auto. auto. auto.
        - apply Typing_roleing in t; inversion t; subst.
          eapply Par_PatternTrue; eauto.
@@ -1803,11 +1803,6 @@ Lemma notin_sub : forall x a b, x `notin` a -> b [<=] a -> x `notin` b.
   intros. fsetdec.
 Qed.
 
-Lemma axiom_body_lc : forall F p b A R Rs, binds F (Ax p b A R Rs) toplevel ->
-      lc_tm b.
-Proof. intros. apply toplevel_inversion in H.
-       inversion H as [W [G [B [_ [_ [Q _]]]]]]. eapply roleing_lc; eauto.
-Qed.
 
 Lemma subtm_pattern_agree_steps : forall F p b A R1 Rs R a,
       binds F (Ax p b A R1 Rs) toplevel -> subtm_pattern_agree a p ->
@@ -1818,7 +1813,7 @@ Proof. intros. induction H0.
          inversion h as [p' [b' [D' h']]].
          exists (matchsubst a p' b'). econstructor. econstructor.
          eauto. eauto. eapply matchsubst_fun_ind.
-         eapply tm_pattern_agree_rename_inv_1; eauto. eapply Rename_lc_4; eauto.
+         eapply tm_pattern_agree_rename_inv_1; eauto. eapply Rename_lc4; eauto.
          auto. auto.
        - apply IHsubtm_pattern_agree in H. inversion H as [a' h].
          exists (a_App a' nu a2); eauto.

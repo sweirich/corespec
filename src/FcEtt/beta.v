@@ -28,39 +28,6 @@ Proof.
 Qed.
 
 
-Lemma ApplyArgs_lc1 : forall a b1 b1',  ApplyArgs a b1 b1' -> lc_tm a.
-Proof.
-  intros. induction H; auto.
-Qed.
-Lemma ApplyArgs_lc2 : forall a b1 b1',  ApplyArgs a b1 b1' -> lc_tm b1.
-Proof.
-  intros. induction H; auto.
-Qed.
-Lemma ApplyArgs_lc3 : forall a b1 b1',  ApplyArgs a b1 b1' -> lc_tm b1'.
-Proof.
-  intros. induction H; auto.
-Qed.
-
-
-Lemma Beta_lc1 : forall a a' R, Beta a a' R -> lc_tm a.
-  intros.  induction H; auto.
-  - eapply Value_lc in H0. eauto. 
-  - eauto using MatchSubst_lc_1. 
-  - econstructor; eauto using ApplyArgs_lc1, ApplyArgs_lc2, ApplyArgs_lc3.
-  - constructor; eauto using Value_lc.
-Unshelve. all: exact F.
-Qed.
-
-Lemma Beta_lc2 : forall a a' R, Beta a a' R -> lc_tm a'.
-intros.  induction H; auto.
-- apply Value_lc in H0. inversion H0.
-  apply lc_body_tm_wrt_tm; auto.
-- inversion H. apply lc_body_tm_wrt_co; auto.
-- apply Toplevel_lc in H. inversion H. subst. 
-  eauto using MatchSubst_lc_3.
-- eauto using ApplyArgs_lc1, ApplyArgs_lc2, ApplyArgs_lc3.
-Qed.
-
 
 Lemma MatchAgree : forall a p1 b1 b',  MatchSubst a p1 b1 b' -> tm_pattern_agree a p1. 
 Proof. 

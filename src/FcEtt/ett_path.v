@@ -10,32 +10,16 @@ Require Import FcEtt.toplevel.
 Require Import FcEtt.ett_roleing.
 Require Import FcEtt.ext_wf.
 
-Lemma RolePath_ValuePath : forall a F Rs, RolePath a F Rs -> ValuePath a F.
-Proof. intros. induction H; eauto.
-Qed.
+(* Lemmas about the various Path judgements and MatchSubst. 
+
+   - substitution lemmas   
+
+   - How they relate to one another
+
+ *)
 
 
-Lemma CasePath_ValuePath : forall R a F, CasePath R a F -> ValuePath a F.
-Proof. intros. induction H; eauto.
-Qed.
-
-Lemma CasePath_app : forall R a nu a' F, CasePath R (a_App a nu a') F ->
-                            CasePath R a F.
-Proof. intros. dependent induction H; inversion H; subst; eauto.
-Qed.
-
-Lemma CasePath_capp : forall R a F, CasePath R (a_CApp a g_Triv) F ->
-                            CasePath R a F.
-Proof. intros. dependent induction H; inversion H; subst; eauto.
-Qed.
-
-Lemma ValuePath_lc : forall F a, ValuePath a F -> lc_tm a.
-Proof. intros. induction H; eauto.
-Qed.
-
-Lemma CasePath_lc : forall F a R, CasePath R a F -> lc_tm a.
-Proof. intros. apply CasePath_ValuePath in H. eapply ValuePath_lc; eauto.
-Qed.
+(* ------ substitution lemmas ------- *)
 
 Lemma ValuePath_subst : forall F a b x, ValuePath a F -> lc_tm b ->
                    ValuePath (tm_subst_tm_tm b x a) F.
@@ -90,6 +74,26 @@ Proof. intros. induction H0; simpl. econstructor.
        eauto with lngen lc. eauto with lngen lc.
 Qed.
 
+
+
+
+Lemma RolePath_ValuePath : forall a F Rs, RolePath a F Rs -> ValuePath a F.
+Proof. intros. induction H; eauto.
+Qed.
+
+Lemma CasePath_ValuePath : forall R a F, CasePath R a F -> ValuePath a F.
+Proof. intros. induction H; eauto.
+Qed.
+
+Lemma CasePath_app : forall R a nu a' F, CasePath R (a_App a nu a') F ->
+                            CasePath R a F.
+Proof. intros. dependent induction H; inversion H; subst; eauto.
+Qed.
+
+Lemma CasePath_capp : forall R a F, CasePath R (a_CApp a g_Triv) F ->
+                            CasePath R a F.
+Proof. intros. dependent induction H; inversion H; subst; eauto.
+Qed.
 
 
 Lemma role_dec : forall (R1 : role) R2, R1 = R2 \/ ~(R1 = R2).
@@ -183,7 +187,7 @@ Proof. intros. induction a; simpl in H1; auto; try (inversion H1; fail).
           econstructor. eapply IHa; eauto.
 Qed.
 
-Lemma subst_co_Path : forall F a b R c, lc_co b -> Value R a ->
+Lemma subst_co_RolePath : forall F a b R c, lc_co b -> Value R a ->
                       RolePath F (co_subst_co_tm b c a) R -> RolePath F a R.
 Proof. intros. induction a; simpl in H1; auto; try (inversion H1; fail).
         - inversion H0; subst. inversion H1; subst. inversion H2; subst.

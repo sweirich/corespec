@@ -18,9 +18,6 @@ Require Export FcEtt.toplevel.
 Require Import FcEtt.ett_path.
 Require Import FcEtt.ett_match.
 
-Lemma Value_lc : forall R a, Value R a -> lc_tm a.
-Proof. intros. induction H; eauto. eapply CasePath_lc. eauto.
-Qed.
 
 Lemma Value_tm_subst_tm_tm : forall R v, Value R v ->
         forall b x,  lc_tm b -> Value R (tm_subst_tm_tm b x v).

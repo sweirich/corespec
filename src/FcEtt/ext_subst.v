@@ -297,11 +297,12 @@ Proof.
       rewrite EQ.
       eauto.
   - (* conversion *)
-    eapply E_Conv; try eapply DefEq_weaken_available; eauto 3. 
-  - admit. (* have h0: Typing nil A a_Star by eauto using toplevel_closed.
+    eapply E_Conv; try eapply DefEq_weaken_available; eauto 2. 
+  - (* constants *)
+    have h0: Typing nil A a_Star by eauto using toplevel_closed_const.
     eapply E_Const. eauto 2.
     erewrite (tm_subst_fresh_2 _ h0); auto. eauto 2.
-    erewrite (tm_subst_fresh_2 _ h0); eauto 2. *)
+    erewrite (tm_subst_fresh_2 _ h0); eauto 2.
   - move: (toplevel_inversion b) => [X [G [B [h1 [h0 [h3 h4]]]]]]. 
     eapply E_Fam with (a:= tm_subst_tm_tm a0 x a); eauto 2.
     admit.

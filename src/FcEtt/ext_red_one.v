@@ -15,10 +15,6 @@ Require Import FcEtt.beta.
 Set Implicit Arguments.
 Set Bullet Behavior "Strict Subproofs".
 
-Lemma reduction_in_one_lc : forall a a' R, reduction_in_one a a' R -> lc_tm a -> lc_tm a'.
-Proof.
-   induction 1; intros; try (eapply Beta_lc2; eauto 1; fail); lc_solve.
-Qed.
 
 (* ------------------------------------------------------------ *)
 

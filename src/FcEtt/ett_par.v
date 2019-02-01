@@ -143,7 +143,7 @@ Proof. intros W1 W2 W3 a a' R U H. generalize dependent W2.
           intros. rewrite app_assoc.
           eapply H1; eauto. simpl_env. auto.
         - move: (Rename_exists (union (dom (W1 ++ W2 ++ W3)) (fv_tm_tm_tm p))
-              (axiom_pattern H) (Rename_lc_2 H3)) => h.
+              (axiom_pattern H) (Rename_lc2 H3)) => h.
           inversion h as [p0 [b0 [D0 h']]].
           assert (tm_pattern_agree (a_App a' nu a1') p0).
            { eapply tm_pattern_agree_rename_inv_1.
@@ -153,7 +153,7 @@ Proof. intros W1 W2 W3 a a' R U H. generalize dependent W2.
           eapply Par_AxiomApp; eauto.
           replace a2 with (matchsubst (a_App a' nu a1') p0 b0).
           apply matchsubst_fun_ind.
-          auto. eapply Rename_lc_4; eauto. auto.
+          auto. eapply Rename_lc4; eauto. auto.
           move: (axiom_body_fv_in_pattern H) => h1.
           apply Par_roleing_tm_snd in H1. apply rctx_fv in H1.
           apply Par_roleing_tm_snd in H2. apply rctx_fv in H2.
@@ -168,10 +168,10 @@ Proof. intros W1 W2 W3 a a' R U H. generalize dependent W2.
           eapply AtomSetProperties.union_subset_3; eauto.
           eapply AtomSetProperties.union_subset_3; eauto.
           eapply uniq_atoms_toplevel; eauto.
-          apply matchsubst_fun_ind. auto. eapply Rename_lc_4; eauto.
+          apply matchsubst_fun_ind. auto. eapply Rename_lc4; eauto.
           auto. auto.
         - move: (Rename_exists (union (dom (W1 ++ W2 ++ W3)) (fv_tm_tm_tm p))
-              (axiom_pattern H) (Rename_lc_2 H2)) => h.
+              (axiom_pattern H) (Rename_lc2 H2)) => h.
           inversion h as [p0 [b0 [D0 h']]].
           assert (tm_pattern_agree (a_CApp a' g_Triv) p0).
            { eapply tm_pattern_agree_rename_inv_1.
@@ -181,7 +181,7 @@ Proof. intros W1 W2 W3 a a' R U H. generalize dependent W2.
           eapply Par_AxiomCApp; eauto.
           replace a2 with (matchsubst (a_CApp a' g_Triv) p0 b0).
           apply matchsubst_fun_ind.
-          auto. eapply Rename_lc_4; eauto. auto.
+          auto. eapply Rename_lc4; eauto. auto.
           move: (axiom_body_fv_in_pattern H) => h1.
           apply Par_roleing_tm_snd in H1. apply rctx_fv in H1.
           eapply MatchSubst_Rename_preserve.
@@ -195,7 +195,7 @@ Proof. intros W1 W2 W3 a a' R U H. generalize dependent W2.
           rewrite union_empty_r. auto.
           eapply AtomSetProperties.union_subset_3; auto.
           eapply uniq_atoms_toplevel; eauto.
-          apply matchsubst_fun_ind. auto. eapply Rename_lc_4; eauto.
+          apply matchsubst_fun_ind. auto. eapply Rename_lc4; eauto.
           auto. auto.
 Qed.
 
@@ -217,6 +217,7 @@ Proof. intros W1 W2 W3 a a' R U H. generalize dependent W2.
         - econstructor; eauto. apply par_app_rctx; auto.
 Qed.
 
+(* TODO: why do we have joins here and in the ett.ott file??? *)
 Definition joins W a b R := exists c, multipar W a c R /\ multipar W b c R.
 
 (* FIXME: find a good place for this tactic. *)
@@ -509,7 +510,7 @@ Proof.
   - inversion H0.
     move: (Rename_exists 
      ((dom W) \u (singleton c \u fv_tm_tm_co g) \u fv_tm_tm_tm p)
-     (axiom_pattern H) (Rename_lc_2 H1)) => h.
+     (axiom_pattern H) (Rename_lc2 H1)) => h.
     inversion h as [p1 [b1 [D1 h1]]].
     assert (tm_pattern_agree (a_App a' nu a1') p1).
       { eapply tm_pattern_agree_rename_inv_1.
@@ -533,7 +534,7 @@ Proof.
     eapply Subset_trans; eauto. eapply Subset_empty_any.
     replace a2 with (matchsubst (a_App a' nu a1') p1 b1).
     apply matchsubst_fun_ind.
-    auto. eapply Rename_lc_4; eauto. auto.
+    auto. eapply Rename_lc4; eauto. auto.
     move: (axiom_body_fv_in_pattern H) => h3.
     apply Par_roleing_tm_snd in Par1. apply rctx_fv in Par1.
     apply Par_roleing_tm_snd in Par2. apply rctx_fv in Par2.
@@ -547,12 +548,12 @@ Proof.
     eapply AtomSetProperties.union_subset_3; eauto.
     eapply AtomSetProperties.union_subset_3; eauto.
     eapply uniq_atoms_toplevel; eauto.
-    apply matchsubst_fun_ind. auto. eapply Rename_lc_4; eauto.
+    apply matchsubst_fun_ind. auto. eapply Rename_lc4; eauto.
     auto. auto. auto.
   - inversion H0.
     move: (Rename_exists 
      ((dom W) \u (singleton c \u fv_tm_tm_co g) \u fv_tm_tm_tm p)
-     (axiom_pattern H) (Rename_lc_2 H1)) => h.
+     (axiom_pattern H) (Rename_lc2 H1)) => h.
     inversion h as [p1 [b1 [D1 h1]]].
     assert (tm_pattern_agree (a_CApp a' g_Triv) p1).
       { eapply tm_pattern_agree_rename_inv_1.
@@ -575,7 +576,7 @@ Proof.
     apply Subset_empty_any.
     replace a2 with (matchsubst (a_CApp a' g_Triv) p1 b1).
     apply matchsubst_fun_ind.
-    auto. eapply Rename_lc_4; eauto. auto.
+    auto. eapply Rename_lc4; eauto. auto.
     move: (axiom_body_fv_in_pattern H) => h3.
     apply Par_roleing_tm_snd in Par. apply rctx_fv in Par.
     eapply MatchSubst_Rename_preserve.
@@ -588,7 +589,7 @@ Proof.
     rewrite union_empty_r. auto.
     eapply AtomSetProperties.union_subset_3; eauto.
     eapply uniq_atoms_toplevel; eauto.
-    apply matchsubst_fun_ind. auto. eapply Rename_lc_4; eauto.
+    apply matchsubst_fun_ind. auto. eapply Rename_lc4; eauto.
     auto. auto. auto.
   - eapply Par_PatternTrue; eauto. apply CasePath_subst_co; auto.
     apply ApplyArgs_subst_co; auto.
