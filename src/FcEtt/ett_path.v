@@ -149,6 +149,7 @@ Fixpoint var_patt (p : tm) : atoms :=
     | _  => {}
    end.
 
+(*
 Lemma MatchSubst_subst : forall a p b1 x y b2,
      MatchSubst a p (tm_subst_tm_tm (a_Var_f y) x b1) b2 ->
      y `notin` fv_tm_tm_tm a -> y `notin` var_patt(p) -> x `notin` var_patt(p) ->
@@ -164,6 +165,7 @@ Proof. intros. dependent induction H.
         - simpl in *. eauto.
         - simpl in *. eauto.
 Admitted.
+*)
 
 Lemma MatchSubst_Rename : forall p1 p2 a1 a2 W W' a b, Rename p1 a1 p2 a2 W W' ->
                                  MatchSubst a p1 a1 b ->

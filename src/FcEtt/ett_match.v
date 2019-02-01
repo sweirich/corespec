@@ -1404,8 +1404,8 @@ Proof. intros. generalize dependent a'. generalize dependent b'.
                eapply tm_pattern_agree_cong. eapply P.
                econstructor. eapply tm_tm_agree_sym; eauto.
                eapply Par_lc2; eauto. eapply Par_lc1; eauto.
-               destruct (MatchSubst_exists H12 (MatchSubst_lc3 H16)) as [a0 Q].
-               assert False. eapply CasePath_ax_par_contr; eauto.
+               destruct (MatchSubst_exists H12 (MatchSubst_lc3 H16)) as [a0 Q]. 
+               assert False. eapply CasePath_ax_par_contr; eauto. 
                contradiction.
          - inversion H1; subst.
              + inversion H3; subst. econstructor.
