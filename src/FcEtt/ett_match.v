@@ -850,27 +850,6 @@ Proof. intros. generalize dependent p. generalize dependent b.
 
 *)
 
-(*
-Lemma ax_const_rs_nil : forall F F0 a A R Rs S, Sig S ->
-                 binds F (Ax (a_Fam F0) a A R Rs) S -> F = F0 /\ Rs = nil.
-Proof. intros. induction H. inversion H0. inversion H0.
-       inversion H3. eauto. inversion H0. inversion H5; subst.
-       inversion H2; subst. inversion H2; auto. eauto.
-Qed.
-
-Lemma match_subst_roleing : forall W a R p b b', Roleing W a R ->
-                   MatchSubst a p b b' -> Roleing W b' R.
-Proof. Admitted.
-
-Lemma match_path : forall F p a A R Rs a0 b, binds F (Ax p a A R Rs) toplevel ->
-                          MatchSubst a0 p a b -> RolePath a0 F nil.
-Proof. intros. induction H0. pose (H' := H).
-       eapply ax_const_rs_nil in H'. inversion H'; subst.
-       eauto. apply Sig_toplevel. econstructor. auto.
-       Admitted.
-*)
-
-
 
 Lemma tm_subpattern_agree_const_same : forall a p, tm_subpattern_agree a p ->
  head_const a = head_const p.

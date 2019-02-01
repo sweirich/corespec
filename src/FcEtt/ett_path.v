@@ -12,9 +12,7 @@ Require Import FcEtt.ext_wf.
 
 (* Lemmas about the various Path judgements and MatchSubst. 
 
-   - substitution lemmas   
-
-   - How they relate to one another
+TODO: it's not clear to me what belongs here and what belongs in ett_match 
 
  *)
 
@@ -149,35 +147,7 @@ Fixpoint var_patt (p : tm) : atoms :=
     | _  => {}
    end.
 
-(*
-Lemma MatchSubst_subst : forall a p b1 x y b2,
-     MatchSubst a p (tm_subst_tm_tm (a_Var_f y) x b1) b2 ->
-     y `notin` fv_tm_tm_tm a -> y `notin` var_patt(p) -> x `notin` var_patt(p) ->
-     MatchSubst a p b1 (tm_subst_tm_tm (a_Var_f x) y b2).
-Proof. intros. dependent induction H.
-        - admit.
-        - simpl in *. eapply MatchSubst_AppRelR in IHMatchSubst; eauto 2.
-          erewrite tm_subst_tm_tm_tm_subst_tm_tm in IHMatchSubst; eauto 2.
-          assert (a_Var_f x = tm_subst_tm_tm a x0 (a_Var_f x)).
-          simpl. destruct (x == x0); eauto. apply notin_union_1 in H3.
-          apply notin_singleton_1 in H3. symmetry in e. contradiction.
-          rewrite H4. eauto.
-        - simpl in *. eauto.
-        - simpl in *. eauto.
-Admitted.
-*)
 
-Lemma MatchSubst_Rename : forall p1 p2 a1 a2 W W' a b, Rename p1 a1 p2 a2 W W' ->
-                                 MatchSubst a p1 a1 b ->
-                                 MatchSubst a p2 a2 b.
-Proof. intros. generalize dependent p2. generalize dependent a2.
-       generalize dependent W. generalize dependent W'. induction H0; intros.
-        - inversion H0; subst. eauto.
-        - inversion H1; subst. apply IHMatchSubst in H10.
-          eapply MatchSubst_AppRelR in H10; auto. admit.
-        - inversion H1; subst. eauto.
-        - inversion H; subst. eauto.
-Admitted.
 (*
 Lemma subst_CasePath : forall F a b R x, lc_tm b -> Value R a ->
                    CasePath R (tm_subst_tm_tm b x a) F -> CasePath R a F.
