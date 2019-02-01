@@ -39,23 +39,6 @@ Proof.
   auto.
 Qed.
 
-Lemma binds_to_Typing: `(Ctx G -> binds T (Tm A) G -> Typing G A a_Star).
-Proof.
-  induction G; try done.
-  intros T AH H0.
-  rewrite_env ([a] ++ G).
-  destruct a.
-  induction s; subst.
-  - inversion H0; eauto.
-    + subst. intros H1. inversion H1; subst; clear H1.
-      inversion H; subst; eauto.
-      all: eapply Typing_weakening_nil; eauto.
-  - inversion H0; try done.
-    subst. 
-    intros H1. inversion H1; subst; clear H1.
-    inversion H; subst; eauto.
-    eapply Typing_weakening_nil; eauto 2.
-Qed.
 
 
 Lemma invert_a_Pi: `(
