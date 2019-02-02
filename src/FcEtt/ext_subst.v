@@ -399,8 +399,19 @@ Proof.
          all: show_fresh.
   - eapply E_Beta; eauto.
     eapply Beta_tm_subst; eauto 2 with lc.
+  - autorewrite with open_subst.
+    eauto. eauto using Typing_lc1.
   - eapply E_EqConv; eauto 2.
     eapply DefEq_weaken_available; eauto.
+  - eapply E_PatCong; eauto 3.
+    replace (a_Fam F) with 
+        (tm_subst_tm_tm a0 x (a_Fam F)).
+    eapply BranchTyping_tm_subst; eauto 2.
+    auto.
+    replace (a_Fam F) with 
+        (tm_subst_tm_tm a0 x (a_Fam F)).
+    eapply BranchTyping_tm_subst; eauto 2.
+    auto.
   - eapply E_LeftRel with (b := tm_subst_tm_tm a0 x b)
                           (b':= tm_subst_tm_tm a0 x b'); eauto 2.
     eapply ValuePath_subst; eauto 2 with lc.
@@ -646,12 +657,24 @@ Proof.
       eauto.
   - eapply E_Beta; eauto 2.
     eapply Beta_co_subst; eauto.
+  - autorewrite with open_subst.
+    eauto 2.
+    auto.
   - eapply E_PiFst; simpl in *; eauto 3.
   - eapply E_EqConv; eauto 2.
     eapply DefEq_weaken_available; eauto 1.
     eauto 2.
   - eapply E_IsoSnd; eauto 1.
     eapply H; eauto.
+  - eapply E_PatCong; eauto 3.
+    replace (a_Fam F) with 
+        (co_subst_co_tm g_Triv c (a_Fam F)).
+    eapply BranchTyping_co_subst; eauto 2.
+    auto.
+    replace (a_Fam F) with 
+        (co_subst_co_tm g_Triv c (a_Fam F)).
+    eapply BranchTyping_co_subst; eauto 2.
+    auto.
   - eapply E_LeftRel with (b := co_subst_co_tm g_Triv c b) (b':= co_subst_co_tm g_Triv c b'); eauto 2.
     eapply ValuePath_subst_co; eauto 2 with lc.
     eapply ValuePath_subst_co; eauto 2 with lc.

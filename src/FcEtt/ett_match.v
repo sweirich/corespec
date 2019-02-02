@@ -1447,7 +1447,7 @@ Proof. intros. apply RolePath_inversion in H.
        inversion H as [[A1 H1] | [p1 [b1 [A1 [R1 H1]]]]].
         - axioms_head_same.
         - axioms_head_same. intro. apply toplevel_inversion in H0.
-          inversion H0 as [W [G [B [H3 [H4 [H5 H6]]]]]].
+          inversion H0 as [W [G [B [H3 [H4 [H5 [H6 _]]]]]]].
           apply PatternContexts_roles in H3. rewrite <- H6 in H3.
           apply subtm_pattern_agree_roles in H2.
           inversion H2 as [Rs'' H7]. rewrite H7 in H3.

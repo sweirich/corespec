@@ -1607,8 +1607,10 @@ Proof.
     apply join_transitive with (b := b); eauto.
   - intros. destruct (H H0 a b A a' b' A' R1 R1 eq_refl eq_refl) as (_ & P1 & P2 & P3).
     auto.
-  - intros. destruct (H H2) as [ac [Q1 Q2]]. destruct (H0 H2) as [b1c [Q3 Q4]].
-    destruct (H1 H2) as [b2c [Q5 Q6]].
+  - intros. 
+    destruct (H H3) as [ac [Q1 Q2]]. 
+    destruct (H1 H3) as [b1c [Q3 Q4]].
+    destruct (H2 H3) as [b2c [Q5 Q6]].
     exists (a_Pattern R ac F b1c b2c); split;
     eapply multipar_Pattern; eauto.
   - intros. apply H3 in H5. unfold joins in H5.

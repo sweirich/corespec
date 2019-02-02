@@ -1592,10 +1592,14 @@ G ; D |= a2 == b2 : A/ Nom
 -------------------------------------- :: AppCong
 G ; D |= a1 + a2 == b1 + b2 : (B { a2 / x })/R'
 
+%% Does the annotation on the term have to exactly match the signature?
+%% Could we also mark the term with R1 and R2 and just require that
+%% R <= R1 and R <= R2 ??
 G ; D |= a1 == b1 : (all + x:A -> B)/R'
 G ; D |= a2 == b2 : A/ param R R'
 RolePath a1 = F @ R, Rs
 RolePath b1 = F' @ R, Rs'
+G |= b1 R b2 : B { a2 / x }
 ------------------------------------------------ :: TAppCong
 G ; D |= a1 R a2 == b1 R b2 : (B { a2 / x })/R'
 
@@ -1658,10 +1662,13 @@ G ; D |= a ~ b : A/R1 == a' ~ b' : A'/R1
 G ; D |= A == A' : TYPE/Rep
 
 G ; D |= a == a' : A / R
+G |= F : A1
 G ; D |= b1 == b1' : B / R0
-G ; D |= b2 == b2' : B / R0
+G ; D |= b2 == b2' : C / R0
+G |= case R a  : A of F : A1 -> B | C
+G |= case R a' : A of F : A1 -> B | C
 ------------------------------------------------------------------------------- :: PatCong
-G ; D |= case R a of F => b1 | _ => b2 == case R a' of F => b1' | _ => b2' : B / R0
+G ; D |= case R a of F => b1 | _ => b2 == case R a' of F => b1' | _ => b2' : C / R0
 
 ValuePath a  +> F
 ValuePath a' +> F

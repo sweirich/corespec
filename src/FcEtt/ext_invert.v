@@ -3,8 +3,6 @@ Require Import FcEtt.ett_ott.
 Require Import FcEtt.ett_inf.
 Require Import FcEtt.ett_ind.
 
-(*
-Require Import FcEtt.ett_par.*)
 Require Import FcEtt.ext_wf.
 Require Import FcEtt.ext_weak.
 Require Import FcEtt.ext_subst.
@@ -72,39 +70,26 @@ Proof.
     apply E_Star. apply PropWff_Ctx in H1. assumption.
 Qed.
 
-
-(* FIXME: fix roles in the statement *)
 Lemma invert_a_Fam : `(
     Typing G (a_Fam F) A ->
-    (exists B, DefEq G (dom G) A B a_Star Rep /\
-           binds F (Cs B R) toplevel /\ Typing nil B a_Star) \/
-    (exists a B R', DefEq G (dom G) A B a_Star Rep /\
-           binds F (Ax a B R' R'' R''') toplevel /\ Typing nil B a_Star)).
+    (exists B Rs, DefEq G (dom G) A B a_Star Rep /\
+           binds F (Cs B Rs) toplevel /\ Typing nil B a_Star) \/
+    (exists p a B R1 Rs, DefEq G (dom G) A B a_Star Rep /\
+           binds F (Ax p a B R1 Rs) toplevel /\ Typing nil B a_Star)).
 Proof.
-Admitted.
-(*
-  intros G F A R H. dependent induction H.
-  - destruct (IHTyping F) as [(B & h1 & h2 & h3) | (a & B1 & R' & h0 & h1 & h3)]; try done.
-    left. exists B. repeat split; eauto.
-    right. exists a, B1, R' . repeat split; eauto.
-  - destruct (IHTyping1 F) as [(B1 & h1 & h2 & h3) |(a & B1 & R' & h0 & h1 & h3)]; try done.
-    left. exists B1. repeat split; eauto 2.
-    eapply E_Trans with (a1 := A).
-    eapply E_Sym. auto. auto.
-    right. exists a, B1, R' . repeat split; eauto 2.
-    eapply E_Trans with (a1 := A).
-    eapply E_Sym. auto. auto.
-  - left. exists A. repeat split; eauto 2. eapply E_Refl; eauto 1.
+  intros G F A H. dependent induction H.
+  - destruct (IHTyping1 F) as [(B0 & h1 & h2 & h3) | (p & a & B1 & R' & Rs & h0 & h1 & h3)]; try done.
+    left. exists B0. repeat split; eauto.
+    right. exists p,  a, B1, R',Rs . repeat split; eauto.
+  - left. exists A, Rs. repeat split; eauto 2. eapply E_Refl; eauto 1.
     eapply Typing_weakening with (F:=nil)(E:=G)(G:=nil) in H1.
     simpl_env in H1. eauto. auto. simpl_env. auto.
-  - right. exists a, A, R.
+  - right. exists p, a, A, R1, Rs.
     repeat split; eauto 2.
-    eapply E_SubRole with (R2 := Rep) in H1.
     eapply E_Refl.
     eapply Typing_weakening with (F:=nil)(E:=G)(G:=nil) in H1.
     simpl_env in H1. auto. auto. simpl_env. auto.
-    eauto.
-Qed. *)
+Qed. 
 
 
 Lemma invert_a_Star: `(Typing G a_Star A →
@@ -446,22 +431,21 @@ Proof.
     eauto using param_sub1.
 Qed.
 
-(*
-
 Lemma invert_a_Pattern : `(
       Typing G (a_Pattern R a F b1 b2) B ->
-      exists A s B0, binds F s toplevel /\ Typing G a A /\
-         Typing G b1 B0 /\ Typing G b2 B0 /\ DefEq G (dom G) B B0 a_Star Rep).
+      exists A A1 B0 C, Typing G a A /\ Typing G (a_Fam F) A1 /\ Typing G b1 B0 /\ Typing G b2 C 
+                /\ BranchTyping G R a A (a_Fam F) A1 B0 C
+                /\ DefEq G (dom G) C B a_Star Rep).
 Proof. intros. dependent induction H.
-        - destruct (IHTyping1 R F a b1 b2 ltac:(auto)) as
-          [A0 [s [B0 [P1 [P2 [P3 [P4 P5]]]]]]].
-          exists A0, s, B0. repeat split; eauto.
-        - exists A, sig_sort5, B. repeat split. auto. auto.
-          auto. auto. eapply E_Refl. eapply Typing_regularity.
-          eapply E_SubRole with (R1 := R0); eauto 1.
+        - destruct (IHTyping1 R a F b1 b2 ltac:(auto)) as
+          [A0 [A1 [B0 [C [P1 [P2 [P3 [P4 [P5 P6]]]]]]]]].
+          exists A0, A1, B0, C. repeat split; eauto 2.
+        - exists A, A1, B, C. repeat split. auto. auto.
+          auto. auto. auto. 
+          eapply E_Refl.
+          eapply Typing_regularity. 
+          eauto.
 Qed.
-
-*)
 
 (* --------------------------------------------------- *)
 
@@ -599,7 +583,20 @@ Proof.
   erewrite <- (@same_dom _ G1 G2). auto. eauto.
 Qed.
 
-
+Lemma context_Defeq_BranchTyping : 
+  forall G1 R a A b A1 B C,   BranchTyping G1 R a A b A1 B C 
+                       -> forall G2, uniq G2 -> BranchTyping G2 R a A b A1 B C.
+Proof.  
+  induction 1; intros.
+  - eauto.
+  - E_pick_fresh x.
+    eapply H0; auto.
+  - E_pick_fresh x.
+    eapply H0; auto.
+  - E_pick_fresh x.
+    eapply H0; auto.
+Qed.
+    
 Lemma context_DefEq_mutual:
   (forall G1  a A,   Typing G1 a A -> forall D G2,
         Ctx G2 -> context_DefEq D G1 G2 -> Typing G2 a A) /\
@@ -634,7 +631,7 @@ Proof.
     eapply Factor_Eqcontext_tm; eauto 3.
   - intros. eauto 4.
   - intros. eauto 4.
-  - admit.
+  - intros. eauto 4.
   - intros G a B A t H d H0 d0 t0 D G2 H1 H2.
     eapply (E_Conv _ _ _ A); auto. eapply H; eauto.
     rewrite <- (same_dom H2).
@@ -662,11 +659,8 @@ Proof.
     rewrite <- (same_dom H2).
     eapply H0. auto.
     eapply context_DefEq_weaken_available. eauto.
-  - intros. eapply con; eauto 2.
-    admit.
-(*    eapply DefEq_weaken_available.
-    apply H0; eauto.
-    eapply context_DefEq_weaken_available; eauto. *)
+  - intros. eapply con; eauto 3.
+    eapply context_Defeq_BranchTyping; eauto.
   - intros G a b A R t H t0 H0 t1 H1 D G2 H2 H3.
     eapply E_Wff; eauto.
   - intros. eauto 4.
@@ -688,9 +682,10 @@ Proof.
     pick fresh x and apply E_AbsCong; eauto 2.
     eapply H; eauto 3. econstructor; eauto.
   - intros. eauto 4.
+  - intros. eauto 3.
+    eapply E_TAppCong; eauto 3.
   - intros. eauto 4.
   - intros. eauto 4.
-  - admit.
   - intros.
     pick fresh x and apply E_CPiCong; eauto 2.
     eapply H0; eauto. inversion p; subst.
@@ -720,6 +715,8 @@ Proof.
     apply_first_hyp; auto.
     eapply context_DefEq_weaken_available; eauto.
   - intros. eapply con; eauto.
+    eapply  context_Defeq_BranchTyping; eauto.
+    eapply  context_Defeq_BranchTyping; eauto.
   - intros.
     eapply E_LeftRel with (b:=b)(b':=b'); eauto 2.
     erewrite <- same_dom; eauto 2.
@@ -756,7 +753,7 @@ Proof.
     + eapply (H _ D x); eauto.
     + move => h0.
       eapply Typing_weakening_nil; eauto.
-Admitted.
+Qed. 
 
 Lemma context_DefEq_typing:
   forall G1  a A,
@@ -777,6 +774,25 @@ Proof.
     + apply Factor_Eqcontext_co; eauto 2.
       eapply refl_iso; done.
       eapply refl_iso; done.
+Qed.
+
+
+
+Lemma instantiate_Pi : forall G rho A1 B1 a1,
+  Typing G (a_Pi rho A1 B1) a_Star -> 
+  Typing G a1 A1 -> 
+  Typing G (open_tm_wrt_tm B1 a1) a_Star.
+Proof. 
+  intros G rho A1 B1 a1 H1 H0.
+  apply invert_a_Pi in H1; eauto;
+  destruct H1 as [_ [[L h0] _]]; split_hyp;
+  pick_fresh x;
+  move: (Typing_tm_subst (h0 x ltac:(auto)) H0) => K;
+  repeat rewrite tm_subst_tm_tm_open_tm_wrt_tm in K.
+  eauto using Typing_lc1. 
+  simpl in K.
+  destruct eq_dec; try congruence.
+  rewrite tm_subst_tm_tm_fresh_eq in K; auto.
 Qed.
 
 
@@ -843,7 +859,7 @@ Proof.
     split; eauto 2.
     eapply (E_Conv _ _ _ (open_tm_wrt_tm B b2)); auto 2.
     eapply (E_App); eauto.
-    apply (E_PiSnd _ _ _ _ _ _ _ Rel A A); auto.
+    eapply (E_PiSnd _ _ _ _ _ _ _ Rel A A); auto.
     apply E_Refl; auto.
     eapply Typing_regularity; eauto.
     apply E_Sym.
@@ -860,7 +876,14 @@ Proof.
     simpl in K.
     destruct eq_dec; try congruence.
     rewrite tm_subst_tm_tm_fresh_eq in K; auto.
-  - admit. 
+  - intros.
+    clear con.
+    split_hyp.
+    have TP: Typing G (a_Pi Rel A B) a_Star. eapply Typing_regularity; eauto.
+    move: (invert_a_Pi TP) => ih. split_hyp.
+    split.
+    + eapply E_TApp; eauto 2.
+    + eauto. 
   - intros G D A1 A2 B1 B2 R' d R H h0 h1.
     split_hyp.
     (have: Ctx G by eauto) => CTX.
@@ -876,29 +899,14 @@ Proof.
     split_hyp.
     (have: Ctx G by eauto) => CTX.
     repeat split.
-    + apply invert_a_Pi in H; eauto.
-      destruct H as [_ [[L h0] _]].
-      pick_fresh x.
-      have: x `notin` L; auto => h1.
-      pose K := Typing_tm_subst (h0 x h1) H0.
-      clearbody K.
-      repeat rewrite tm_subst_tm_tm_open_tm_wrt_tm in K; try solve [apply (Typing_lc H0); eauto].
-      simpl in K.
-      destruct eq_dec; try congruence.
-      rewrite tm_subst_tm_tm_fresh_eq in K; auto. 
-    + apply invert_a_Pi in H2; eauto.
-      destruct H2 as [_ [[L h0] hi]].
-      pick_fresh x.
-      have: x `notin` L; auto => h1.
-      eapply (E_Conv _ _ A2) in H1; eauto 2.
-      pose K := Typing_tm_subst (h0 x h1) H1.
-      clearbody K.
-      repeat rewrite tm_subst_tm_tm_open_tm_wrt_tm in K; try solve [apply (Typing_lc H1); eauto].
-      simpl in K.
-      destruct eq_dec; try congruence.
-      rewrite tm_subst_tm_tm_fresh_eq in K; auto.
-      apply E_PiFst in d; auto.
-      eapply DefEq_weaken_available; eauto.
+    + 
+      eapply instantiate_Pi; eauto.
+
+    + have h0: Typing G a2 A2.
+      apply invert_a_Pi in H2; eauto 2. split_hyp.
+      eapply E_Conv; eauto 2 using Typing_regularity.
+      eapply E_PiFst; eauto.
+      eapply instantiate_Pi; eauto. 
   - intros L G D a b phi1 B R d H p H0.
     split_hyp.
     have CTX: Ctx G by eauto.
@@ -928,11 +936,11 @@ Proof.
         intros c H3.
         destruct (H c); auto.
         eapply Typing_regularity; eauto.
-  - intros L G D phi1 a R' phi2 b B R i H d H0.
+  - intros.
     split_hyp.
     split.
-    eapply E_CApp; eauto 3. admit.
-    eapply E_CApp; eauto 3. admit.
+    eapply E_CApp; eauto 3. eapply E_Sub. eauto. eapply param_sub1.
+    eapply E_CApp; eauto 3. eapply E_Sub. eauto. eapply param_sub1.
   - intros G D B1 B2 R0 a1 a2 A R a1' a2' A' R' d H d0 H0 d1 H1.
     split_hyp.
     (have: Ctx G by eauto 2) => CTX.
@@ -972,9 +980,11 @@ Proof.
     inversion H; subst.
     split; auto. 
   - intros.
-    admit.
-(*    split; eapply E_Pat; eauto.*)  Unshelve. all: exact Rep.
-Admitted.
+    split_hyp.
+    clear con.
+    split; eapply E_Case; eauto 3.
+Unshelve. all: exact Rep.
+Qed.
 
 Lemma DefEq_regularity :
   forall G D A B T R, DefEq G D A B T R -> PropWff G (Eq A B T R).
@@ -1255,10 +1265,10 @@ Lemma E_Fam2 : ∀ (G : context) F (p A a : tm) R Rs,
 Proof.
   intros.
   eapply E_Fam; eauto 2.
-(*   move: (toplevel_closed H0) => h0.
-  eapply Typing_regularity. eauto. *)
-  admit.
-Admitted.
+  move: (toplevel_inversion H0) => [W [K [M h0]]].
+  split_hyp.
+  eauto.
+Qed.
 
 
 Lemma E_Wff2 : ∀ (G : context) (a b A : tm) R, Typing G a A → Typing G b A → PropWff G (Eq a b A R).

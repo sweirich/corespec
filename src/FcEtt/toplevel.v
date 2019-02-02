@@ -23,7 +23,7 @@ Qed.
 (* ------------------------------------------ *)
 Lemma toplevel_inversion : forall F p a A R Rs, binds F (Ax p a A R Rs) toplevel ->
                                  (exists W G B, PatternContexts W G F A p B /\
-                                Typing G a B /\ roleing W a R /\ Rs = range W).
+                                Typing G a B /\ roleing W a R /\ Rs = range W /\ Typing nil A a_Star).
 Proof.
   have st: Sig toplevel by apply Sig_toplevel.
   induction st.
