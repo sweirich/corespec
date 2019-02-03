@@ -51,12 +51,13 @@ Proof.
       eapply E_Refl; eauto 1.
       eapply E_Var; eauto 1.
       autorewrite with lngen. reflexivity.
-    + inversion H0. subst.
+    + inversion H0. inversion H3. subst.
       rewrite tm_subst_tm_tm_var.
       rewrite tm_subst_tm_tm_var.
       eapply DefEq_weakening with (F:=nil)(G := G1); simpl; eauto 2.
       have CTX: Ctx (x0 ~ Tm A1 ++ G1) by eapply Ctx_strengthen; eauto.
-      rewrite (tm_subst_fresh_1 _ H2 CTX); auto.
+      rewrite (tm_subst_fresh_1 _ H1 CTX); auto.
+      eapply E_Sub. eauto 1. eauto.
       eapply (fifth tm_substitution_mutual); eauto 1.
     + replace (tm_subst_tm_tm a2 x0 (a_Var_f x)) with
       (tm_subst_tm_tm a1 x0 (a_Var_f x)).
@@ -64,11 +65,11 @@ Proof.
       eapply E_Refl; eauto 1.
       eapply E_Var; eauto 1.
       autorewrite with lngen. reflexivity.
-  - (* pi *) intros L G rho A R B R' K1 K2 K3 K4 G1 G2 x A1 R0 a1 a2 D H2 H3 H4.
+  - (* pi *) intros L G rho A B K1 K2 K3 K4 G1 G2 x A1 R0 a1 a2 D H2 H3 H4.
     simpl. subst.
     eapply (@E_PiCong2 (L \u singleton x)); eauto 2.
     + intros x0 Fr. assert (FrL: x0 `notin` L). auto.
-    move: (K2 x0 FrL _ ([(x0, Tm A R)] ++ G2) x _ _ _ _ _ eq_refl H3 H4) => h0.
+    specialize (K2 x0 FrL G1 ([(x0, Tm A)] ++ G2) x _ _ _ _ _ eq_refl H3 H4). => h0.
     rewrite tm_subst_tm_tm_open_tm_wrt_tm in h0.
     rewrite tm_subst_tm_tm_open_tm_wrt_tm in h0.
     rewrite map_app in h0.

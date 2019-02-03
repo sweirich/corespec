@@ -946,7 +946,7 @@ CasePath R a +> F
 
 ValuePath a +> F
 F : p ~ b : A/R1 @ Rs in toplevel
-not (a  =  p +)
+not (a  = p +)
 ------------------------------------- :: UnMatch
 CasePath R a +> F
 

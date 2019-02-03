@@ -25,6 +25,9 @@ Inductive Pattern : tm -> Prop :=
 
 Hint Constructors Pattern.
 
+(* SCW:  Maybe this should be the one that we call 'Path'??? It is like 
+   ValuePath except that it doesn't say the head, nor check that the head 
+   is bound in the signature. *)
 Inductive Pattern_like_tm : tm -> Prop :=
   | Pat_tm_Fam : forall F, Pattern_like_tm (a_Fam F)
   | Pat_tm_AppR : forall a1 nu a2, Pattern_like_tm a1 -> lc_tm a2 ->
@@ -54,6 +57,9 @@ Fixpoint head_const (a : tm) : tm := match a with
 Lemma RolePath_head : forall F a Rs, RolePath a F Rs -> head_const a = a_Fam F.
 Proof. intros. induction H; eauto.
 Qed.
+
+(* SCW: Why do we have tm_app_roles? This seems to be unused and 
+   identical to pat_app_roles. *)
 
 Fixpoint tm_app_roles (a : tm) : list role := match a with
   | a_Fam F => []
