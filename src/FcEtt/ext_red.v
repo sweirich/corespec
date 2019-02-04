@@ -568,7 +568,7 @@ Proof.
         ecbn in H9.
         move eq: (coargs ++ pattern_arg_Rel (a_Var_f x) R :: pat_args_default a1) => old.
         (*__ CURRENTLY IMPORTING THE PROOF __*)
-        admit.
+        all: admit.
       }
 
       (* PatCtxTrim ... *)
@@ -717,8 +717,6 @@ Proof.
   - move=> a2 cpo2; dependent induction cpo2.
     + move: (chain_open_telescope_deq_Reg h) IHh => reg.
       move/(_ ltac:(by eassumption) _ cpo2) => eq.
-      move: (where_is_this eq) => eqrho.
-      rewrite eqrho in eq.
       eapply E_PiSnd in eq; try eassumption.
       by eapply E_Refl in H0; eassumption.
   - move=> a2 cpo2; dependent induction cpo2.
