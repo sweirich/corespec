@@ -41,6 +41,19 @@ Ltac unwrap_dyn d :=
     | dyn ?v => v
   end.
 
+Ltac has_head t hd :=
+  match t with
+    | hd => idtac
+    | ?hd' _ => has_head hd' hd
+  end.
+
+(* Find an hypothesis which type is headed by constructor cs, and
+   apply tac to it *)
+Ltac find_hyp_and_perform cs tac :=
+    match goal with
+      H : ?t |- _ => has_head t cs; tac H end.
+
+
 
 (* TODO: This is subsumed by pcess_hyps down there. Make sure we never need to use *specifically* this tactic, then remove it *)
 Ltac split_hyp :=
@@ -562,9 +575,13 @@ End TacticsInternals.
 
 (* Add pointers to canonical examples *)
 
-(* General purpose solver. Does a bunch of domain-specific reasoning *)
+
+(** Solvers **)
+
 Ltac basic_solve := TacticsInternals.basic_solve.
 Ltac split_hyp := TacticsInternals.split_hyp.
+
+(* General purpose solver. Does a bunch of domain-specific reasoning *)
 Ltac autotype   := TacticsInternals.autotype.
 Ltac ok         := autotype.
 
@@ -588,7 +605,19 @@ Tactic Notation "autofresh+" := TacticsInternals.autofresh_param TacticsInternal
 Ltac depind x   := dependent induction x.
 
 
-(* Misc *)
+(** Nameless style - finding hypotheses and processing them **)
+
+(* Find an hypothesis which type is headed by constructor cs, and
+   apply tac to it *)
+(* TODO: turn hd into a uconstr if those can be used as patterns. Or better
+         yet, turn it into a pattern, if that's ever possible. See:
+         https://github.com/coq/coq/issues/9321 *)
+Tactic Notation "with" constr(hd) "do" tactic(tac)       := TacticsInternals.find_hyp_and_perform hd tac.
+Tactic Notation "with" constr(hd) "do" tactic(tac) "end" := TacticsInternals.find_hyp_and_perform hd tac.
+
+
+(** Misc **)
+
 Ltac clearall := TacticsInternals.clearall.
 Tactic Notation "clear all" := TacticsInternals.clearall.
 Tactic Notation (at level 0) "revert" "all" "except" ident(H) := TacticsInternals.revert_except H.
