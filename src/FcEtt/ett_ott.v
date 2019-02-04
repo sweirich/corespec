@@ -1612,6 +1612,7 @@ with DefEq : context -> available_props -> tm -> tm -> tm -> role -> Prop :=    
      DefEq G D a2 b2 A  (param R   R' )  ->
      RolePath a1 F  ( R :: Rs )  ->
      RolePath b1 F'  ( R :: Rs' )  ->
+     Typing G (a_App b1 (Role R) b2)  (open_tm_wrt_tm  B   a2 )  ->
      DefEq G D (a_App a1 (Role R) a2) (a_App b1 (Role R) b2)  (  (open_tm_wrt_tm  B   a2 )  )  R'
  | E_IAppCong : forall (G:context) (D:available_props) (a1 b1 B a:tm) (R':role) (A:tm),
      DefEq G D a1 b1  ( (a_Pi Irrel A B) )  R' ->
@@ -1656,11 +1657,14 @@ with DefEq : context -> available_props -> tm -> tm -> tm -> role -> Prop :=    
  | E_IsoSnd : forall (G:context) (D:available_props) (A A' a b:tm) (R1:role) (a' b':tm),
      Iso G D (Eq a b A R1) (Eq a' b' A' R1) ->
      DefEq G D A A' a_Star Rep
- | E_PatCong : forall (G:context) (D:available_props) (R:role) (a:tm) (F:const) (b1 b2 a' b1' b2' B:tm) (R0:role) (A:tm),
+ | E_PatCong : forall (G:context) (D:available_props) (R:role) (a:tm) (F:const) (b1 b2 a' b1' b2' C:tm) (R0:role) (A A1 B:tm),
      DefEq G D a a' A R ->
+     Typing G (a_Fam F) A1 ->
      DefEq G D b1 b1' B R0 ->
-     DefEq G D b2 b2' B R0 ->
-     DefEq G D (a_Pattern R a F b1 b2) (a_Pattern R a' F b1' b2') B R0
+     DefEq G D b2 b2' C R0 ->
+     BranchTyping G R a A (a_Fam F) A1 B C ->
+     BranchTyping G R a' A (a_Fam F) A1 B C ->
+     DefEq G D (a_Pattern R a F b1 b2) (a_Pattern R a' F b1' b2') C R0
  | E_LeftRel : forall (G:context) (D:available_props) (a a' A B:tm) (R':role) (F:const) (b b':tm) (R1:role),
      ValuePath a F ->
      ValuePath a' F ->

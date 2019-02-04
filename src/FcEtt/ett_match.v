@@ -25,6 +25,9 @@ Inductive Pattern : tm -> Prop :=
 
 Hint Constructors Pattern.
 
+(* SCW:  Maybe this should be the one that we call 'Path'??? It is like 
+   ValuePath except that it doesn't say the head, nor check that the head 
+   is bound in the signature. *)
 Inductive Pattern_like_tm : tm -> Prop :=
   | Pat_tm_Fam : forall F, Pattern_like_tm (a_Fam F)
   | Pat_tm_AppR : forall a1 nu a2, Pattern_like_tm a1 -> lc_tm a2 ->
@@ -54,6 +57,9 @@ Fixpoint head_const (a : tm) : tm := match a with
 Lemma RolePath_head : forall F a Rs, RolePath a F Rs -> head_const a = a_Fam F.
 Proof. intros. induction H; eauto.
 Qed.
+
+(* SCW: Why do we have tm_app_roles? This seems to be unused and 
+   identical to pat_app_roles. *)
 
 Fixpoint tm_app_roles (a : tm) : list role := match a with
   | a_Fam F => []
@@ -850,27 +856,6 @@ Proof. intros. generalize dependent p. generalize dependent b.
 
 *)
 
-(*
-Lemma ax_const_rs_nil : forall F F0 a A R Rs S, Sig S ->
-                 binds F (Ax (a_Fam F0) a A R Rs) S -> F = F0 /\ Rs = nil.
-Proof. intros. induction H. inversion H0. inversion H0.
-       inversion H3. eauto. inversion H0. inversion H5; subst.
-       inversion H2; subst. inversion H2; auto. eauto.
-Qed.
-
-Lemma match_subst_roleing : forall W a R p b b', Roleing W a R ->
-                   MatchSubst a p b b' -> Roleing W b' R.
-Proof. Admitted.
-
-Lemma match_path : forall F p a A R Rs a0 b, binds F (Ax p a A R Rs) toplevel ->
-                          MatchSubst a0 p a b -> RolePath a0 F nil.
-Proof. intros. induction H0. pose (H' := H).
-       eapply ax_const_rs_nil in H'. inversion H'; subst.
-       eauto. apply Sig_toplevel. econstructor. auto.
-       Admitted.
-*)
-
-
 
 Lemma tm_subpattern_agree_const_same : forall a p, tm_subpattern_agree a p ->
  head_const a = head_const p.
@@ -1468,7 +1453,7 @@ Proof. intros. apply RolePath_inversion in H.
        inversion H as [[A1 H1] | [p1 [b1 [A1 [R1 H1]]]]].
         - axioms_head_same.
         - axioms_head_same. intro. apply toplevel_inversion in H0.
-          inversion H0 as [W [G [B [H3 [H4 [H5 H6]]]]]].
+          inversion H0 as [W [G [B [H3 [H4 [H5 [H6 _]]]]]]].
           apply PatternContexts_roles in H3. rewrite <- H6 in H3.
           apply subtm_pattern_agree_roles in H2.
           inversion H2 as [Rs'' H7]. rewrite H7 in H3.

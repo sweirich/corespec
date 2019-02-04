@@ -10,7 +10,10 @@ Require Export FcEtt.ett_par.
 Require Import FcEtt.ext_wf.
 Require Export FcEtt.ett_value.
 Require Import FcEtt.ett_path.
+Require Import FcEtt.ett_match.
 Require Import FcEtt.beta.
+Require Import FcEtt.ett_rename.
+
 
 Set Implicit Arguments.
 Set Bullet Behavior "Strict Subproofs".
@@ -52,25 +55,6 @@ Ltac lc_subst_case x0 b0  :=
 
 (* ------------------------------------------------- *)
 
-(*
-Lemma subst_beta : forall a a' R,
-  Beta a a' R -> forall b x, lc_tm b ->
-  Beta (tm_subst_tm_tm b x a)
-                   (tm_subst_tm_tm b x a') R.
-Proof. intros a a' R H. induction H; intros b0 x0 LC; simpl.
-        - autorewrite with subst_open; eauto.
-          econstructor; eauto using tm_subst_tm_tm_lc_tm.
-          eapply Value_tm_subst_tm_tm with (x := x0) in H0; eauto.
-        - lc_subst_case x0 b0.
-        - rewrite tm_subst_tm_tm_fresh_eq.
-          econstructor; eauto.
-          pose (P := toplevel_closed H). show_fresh. fsetdec.
-        - econstructor; eauto with lngen lc. apply Path_subst; auto.
-        - eapply Beta_PatternFalse; eauto with lngen lc.
-          apply Value_tm_subst_tm_tm; auto. intro. apply H3.
-          eapply subst_Path; eauto.
-Qed. *)
-
 Lemma subst_reduction_in_one : forall a a' R,
   reduction_in_one a a' R -> forall b x, lc_tm b ->
   reduction_in_one (tm_subst_tm_tm b x a)
@@ -100,57 +84,144 @@ Proof.
   eapply subst_reduction_in_one; auto.
 Qed.
 
-(*
-Lemma no_Value_MatchSubst : 
-  forall R a, Value R a -> 
-         forall p1 b1 b', binds F (Ax p b A R1 Rs) toplevel -> 
-         not (MatchSubst a p1 b1 b').
-Proof.
-  intros R a H. 
-  intros.
-  intros NH; inversion NH; try inversion H; subst.
-  all: try discriminate.
-  - inversion H5. subst.
-    inversion H1. subst.
- *)   
-Lemma no_Value_Beta : forall R a, Value R a -> 
-                             forall b, not (Beta a b R).
+
+
+Lemma not_ValuePath_a_Star : forall F, ValuePath a_Star F -> False.
+Proof. intros. dependent induction H. Qed.
+Lemma not_ValuePath_a_Pi : forall F rho A B, ValuePath (a_Pi rho A B) F -> False.
+Proof. intros. dependent induction H. Qed.
+Lemma not_ValuePath_a_CPi : forall F phi B, ValuePath (a_CPi phi B) F -> False.
+Proof. intros. dependent induction H. Qed.
+Lemma not_ValuePath_a_UAbs : forall rho a F, ValuePath (a_UAbs rho a) F -> False.
+Proof. intros. dependent induction H. Qed.
+Lemma not_ValuePath_a_UCAbs : forall a F, ValuePath (a_UCAbs a) F -> False.
+Proof. intros. dependent induction H. Qed.
+
+
+Lemma not_CasePath_a_Star : forall F R, CasePath R a_Star F -> False.
+Proof. intros. inversion H; eauto using not_ValuePath_a_Star. Qed.
+Lemma not_CasePath_a_Pi : forall F R rho A B, CasePath R (a_Pi rho A B) F -> False.
+Proof. intros. inversion H; eauto using not_ValuePath_a_Pi. Qed.
+Lemma not_CasePath_a_CPi : forall F R phi B, CasePath R (a_CPi phi B) F -> False.
+Proof. intros. inversion H; eauto using not_ValuePath_a_CPi. Qed.
+Lemma not_CasePath_a_UAbs : forall R rho a F, CasePath R (a_UAbs rho a) F -> False.
+Proof. intros. inversion H; eauto using not_ValuePath_a_UAbs. Qed. 
+Lemma not_CasePath_a_UCAbs : forall R a F, CasePath R (a_UCAbs a) F -> False.
+Proof. intros. inversion H; eauto using not_ValuePath_a_UCAbs. Qed. 
+
+Ltac invert_Path := 
+  match goal with 
+    [ H1 : CasePath ?R ?a ?F |- _ ] =>
+    inversion H1 end;
+  match goal with 
+    [ H2 : ValuePath ?a ?F |- _ ] => 
+    inversion H2 end.
+
+(* Values do not Beta reduce *)
+Lemma no_Value_Beta : forall R a, Value R a ->  forall b, not (Beta a b R).
 Proof. 
-  intros R a H. 
-  induction H; simpl; intros; eauto.
-(* This looks a bit tricky to prove. *)
-Admitted.
-
-Lemma no_ValuePath_reduction : forall a F, 
-    ValuePath a F -> forall R b, not (reduction_in_one a b R).
-Proof.
-  induction 1.
-Admitted.
-
-Lemma no_CasePath_reduction : forall R a F, 
-    CasePath R a F -> forall b, not (reduction_in_one a b R).
-Proof.
-  induction 1.
-Admitted.
+  intros R a H b Hb. 
+  induction Hb; simpl; intros; eauto.
+  - inversion H.
+    invert_Path; eapply not_ValuePath_a_UAbs; eauto.
+  - inversion H.
+    invert_Path; eapply not_ValuePath_a_UCAbs; eauto.
+  - inversion H; subst;
+      try solve [match goal with [ H2 : MatchSubst ?a _ _ _ |- _ ] => inversion H2 end].
+    eapply CasePath_ax_par_contr; eauto 1.
+  - inversion H.
+    invert_Path.
+  - inversion H.
+    invert_Path.
+Qed.
 
 Lemma no_Value_reduction : forall R a, Value R a ->
           forall b, not (reduction_in_one a b R).
 Proof. 
   intros R a H.
-  move: (no_Value_Beta H) => nb.     
-  induction H; simpl; intros; eauto 2.
-  all: intro NH; inversion NH; subst.
-  all: try (inversion H1; fail).
-  all: try (inversion H0; fail).
-  all: try solve [eapply nb; eauto 1].
-  - pick fresh x.
-    move: (H x ltac:(auto)) => h.
-    move: (no_Value_Beta h) => nb1.
-    move: (H0 x ltac:(auto)) => h0.
-    move: (H2 x ltac:(auto)) => h5.
-    eapply h0; eauto.
-  - inversion H; inversion H1.
-Admitted.
+  move=> b RR.
+  induction RR.
+  - inversion H. autofresh. auto.
+    eapply not_CasePath_a_UAbs; eauto. 
+  - eapply IHRR. 
+    match goal with 
+      [ H : Value ?R ?a |- _ ] =>
+      inversion H; eapply Value_Path with (F:=F); subst end.
+    invert_Path; eauto.
+  - eapply IHRR. 
+    match goal with 
+      [ H : Value ?R ?a |- _ ] =>
+      inversion H; eapply Value_Path with (F:=F); subst end.
+    invert_Path; eauto.
+  - inversion H.
+    invert_Path; eauto.
+  - eapply no_Value_Beta; eauto.
+Qed.
+
+(* ---- changing the role could cause a value to step -------------*)
+
+Lemma tm_subst_tm_tm_id : forall x b1, 
+   tm_subst_tm_tm (a_Var_f x) x b1 = b1.
+Proof. 
+  intros.
+  rewrite tm_subst_tm_tm_spec.
+  rewrite open_tm_wrt_tm_close_tm_wrt_tm.
+  auto.
+Qed.
+
+Lemma tm_pattern_agree_lc2 : 
+  forall a p, tm_pattern_agree a p -> lc_tm p.
+Proof. induction 1; eauto. Qed.
+
+Lemma subtm_pattern_agree_step : forall p b A R1 Rs R a F, 
+  subtm_pattern_agree a p
+  -> ValuePath a F
+  -> binds F (Ax p b A R1 Rs) toplevel
+  -> SubRole R1 R
+  -> exists a', reduction_in_one a a' R.
+Proof. 
+  induction 1;
+  move=> SPA M SR.
+  + move: (toplevel_inversion M) => [W [G [B h]]].
+    split_hyp. subst.
+    have LCb: lc_tm b by eauto using Typing_lc1.
+    have Pp: Pattern p by eapply axiom_pattern; eauto.
+    set (D := fv_tm_tm_tm a `union` fv_tm_tm_tm p).
+    move: (rename_Rename D Pp LCb) => RN.
+    set b' := (rename p b D).1.2 in RN.
+    move: (tm_pattern_agree_rename_inv_1 H RN) => AG.
+    have LCb' : lc_tm b'. eapply Rename_lc4; eauto. 
+    move: (MatchSubst_exists AG LCb') => [b'' MS].
+    eexists.
+    eapply E_Prim.
+    eapply Beta_Axiom; eauto 1.
+  + inversion SPA. subst.
+    destruct IHsubtm_pattern_agree; auto.
+    exists (a_App x nu a2).
+    eapply E_AppLeft; auto.
+  + inversion SPA. subst.
+    destruct IHsubtm_pattern_agree; auto.
+    exists (a_CApp x g_Triv); auto.
+Qed.
+
+Lemma sub_CasePath : forall R a F, CasePath R a F ->
+  forall R' : role, 
+  SubRole R R' ->
+  CasePath R' a F \/ (∃ a0 : tm, reduction_in_one a a0 R').
+Proof.
+  intros R a F H. inversion H; eauto. subst. 
+  intros R' SR.
+  destruct (sub_dec R1 R').
+  - (* have R <: R1 <: R', so could step if the pattern matches *)
+    destruct (subtm_pattern_agree_dec p (ValuePath_lc H0)).
+    + right. 
+      eapply subtm_pattern_agree_step; eauto.
+    + left.
+      eauto.
+  - (* have R <: R' <: R1 *)
+    left.
+    eapply CasePath_Const; eauto.
+Qed.
 
 Lemma sub_Value :
   forall R v, Value R v -> forall R', SubRole R R' ->
@@ -169,22 +240,37 @@ Proof. intros R v H. induction H; simpl; auto. all: intros.
     apply E_AbsTerm_exists with (x := y); auto.
     apply notin_union_3; auto. rewrite fv_tm_tm_tm_close_tm_wrt_tm. auto.
     rewrite open_tm_wrt_tm_close_tm_wrt_tm; auto.
-  - admit.
-    Unshelve. all: auto.
-Admitted.
+  - destruct (sub_CasePath H H0).
+    left. eauto.
+    right. eauto. 
+Unshelve. all: auto.
+Qed.
 
+(* ----------------------------------- *)
+
+Lemma nsub_CasePath :
+  forall R v F, CasePath R v F -> forall R', SubRole R' R -> CasePath R' v F.
+Proof.
+  move=> R v F H. 
+  inversion H; subst; intros R' SR.
+  - eauto.
+  - eauto.
+  - eauto.
+Qed.
 
 Lemma nsub_Value :
   forall R v, Value R v -> forall R', SubRole R' R -> Value R' v.
-Proof. intros R v H. induction H; simpl; auto. all: intros.
+Proof.
+  intros R v H. induction H; simpl; auto. 
+  all: intros.
   - pick fresh x. eapply Value_UAbsIrrel with (L := L). intros. eauto.
-Admitted.
+  - econstructor. eapply nsub_CasePath; eauto.
+Qed.
 
 
 
-
-(* This lemma is not true because of AbsTerm.  A \-x.e may or 
-   may not be a value depending on the role. *)
+(* This lemma is not true because of Paths. Raising the Role could cause 
+   an axiom to trigger. *)
 Lemma sub_beta_same :
       forall R R' a a', Beta a a' R -> SubRole R R' -> Beta a a' R'.
 Proof. 
@@ -228,6 +314,7 @@ Lemma nsub_red_one :
 Proof.
 Abort.
 
+
 Ltac Value_no_red :=
      match goal with
       | [ H : Value ?R ?a,
@@ -235,6 +322,8 @@ Ltac Value_no_red :=
         eapply no_Value_reduction with (b := a') in H;
         contradiction; fail
      end.
+
+
 
 Ltac invert_MatchSubst := 
   match goal with 
@@ -254,13 +343,56 @@ Proof.
   all: try solve [invert_MatchSubst; invert_MatchSubst].
   all: try solve [contradiction].
   - (* two axioms *)
-  have: (Ax p b A R1 Rs = Ax p0 b0 A0 R2 Rs0). 
-     { admit.  } 
-    move => h; inversion h. subst.
+    (* In each case we could pick completely different variables 
+       to rename the pattern. We have to show that these names don't 
+       matter *)
+  have: (F = F0). admit. move=>EQ. subst F0. 
+  have: (Ax p b A R1 Rs = Ax p0 b0 A0 R2 Rs0). admit.
+    move => h; inversion h. subst p0 b0 A0 R2 Rs0. clear h.
+  have Ag: tm_pattern_agree a p. admit.
+  eapply MatchSubst_Rename_preserve; eauto 1.
+    admit.
+    admit.
+    admit.
     admit.
   - (* two pattern matching *)
-    admit.
+    move: (ApplyArgs_applyArgs H1) => h1.
+    move: (ApplyArgs_applyArgs H11) => h2.
+    rewrite h1 in h2. subst.
+    auto.
 Admitted.
+
+
+Lemma BetaAxiom_a_App_only : forall F p b0 A R0 Rs p1 b1 D' a2 a nu b R1
+  (H2 : binds F (Ax p b0 A R0 Rs) toplevel)
+  (H3 : Rename p b0 p1 b1 (union (fv_tm_tm_tm (a_App a nu b)) (fv_tm_tm_tm p)) D')
+  (H4 : MatchSubst (a_App a nu b) p1 b1 a2)
+  (H5 : SubRole R0 R1),
+  Value R1 a.
+Proof.
+  intros. 
+  move: (MatchSubst_match H4) => h4.
+  eapply Value_Path with (F:=F).
+  eapply CasePath_UnMatch; eauto.
+  + admit.
+  + move=> SA.
+    inversion H4. subst. clear H4.
+    - (* Rel case *)
+      inversion h4. subst. clear h4.
+      inversion H3. subst. clear H3. clear H15.      
+Admitted.
+
+Lemma BetaAxiom_a_CApp_only : forall F p b0 A R0 Rs p1 b1 D' a2 a  R1
+  (H2 : binds F (Ax p b0 A R0 Rs) toplevel)
+  (H3 : Rename p b0 p1 b1 (union (fv_tm_tm_tm (a_CApp a g_Triv)) (fv_tm_tm_tm p)) D')
+  (H4 : MatchSubst (a_CApp a g_Triv) p1 b1 a2)
+  (H5 : SubRole R0 R1),
+  Value R1 a.
+Proof.
+  intros. 
+Admitted.
+
+
 
 (* The reduction relation is deterministic *)
 Lemma reduction_in_one_deterministic :
@@ -279,23 +411,40 @@ Proof.
 
   (* impossible case, reduction of value *)
   all: try solve [(have: False by eapply no_Value_reduction; eauto 1); done].
-  all: try solve [(have: False; try done; inversion H; inversion H1)].
-  all: try solve [(have: False; try done; inversion H0; inversion H1)].
+(*  all: try solve [(have: False; try done; inversion H; inversion H1)]. *)
+(*  all: try solve [(have: False; try done; inversion H0; inversion H1)]. *)
   all: try solve [invert_MatchSubst].
   (* AbsTerm *)
-  - pick fresh x.
-    move: (H2 x ltac:(auto)) => h7.
-    move: (H0 x ltac:(auto)) => h1.
-    apply h1 in h7.
+  - autofresh. 
+    match goal with 
+      [ H0 : forall a2 : tm, (reduction_in_one ?a a2 ?R) -> _ , 
+        H2 : reduction_in_one ?a _ _ |- _ ] => 
+      move: (H0 _ H2) => h7 end.
     apply open_tm_wrt_tm_inj in h7; eauto. rewrite h7. auto.
-  - admit.
-  - inversion H. inversion H1. invert_MatchSubst.
-  - inversion H0. 
-    + subst. invert_MatchSubst. invert_MatchSubst.
-    + admit.
-  - admit.
-  - admit.
-  - inversion H0. inversion H1. invert_MatchSubst.
-  - admit.
-  - admit.
-Admitted.
+  - (* left side is AppLeft, right side is Beta_Axiom *)
+    (* Need to show that if Beta_Axiom triggers, then the 
+       term is a Value. *)
+    have VF: Value R1 a. eapply BetaAxiom_a_App_only; eauto.
+    Value_no_red.
+  - inversion H; inversion H1; invert_MatchSubst.
+  - (* left side is Beta_Axiom, right side is CApp. *)
+    have VF: Value R a. eapply BetaAxiom_a_CApp_only; eauto.
+    Value_no_red.
+  - (* left side is scrutinee evaluation, right is Beta *)
+    inversion H2. invert_MatchSubst.
+    have VF: Value R a. eauto.
+    Value_no_red.
+    Value_no_red.
+  - (* left size is Beta_Axiom, right side is AppLeft. *)
+    have VF: Value R a0. eapply BetaAxiom_a_App_only; eauto.
+    Value_no_red.
+  - inversion H0; inversion H1; invert_MatchSubst.
+  - (* left side is CApp. right side is Beta_Axiom *)
+    have VF: Value R a0. eapply BetaAxiom_a_CApp_only; eauto.
+    Value_no_red.
+  - (* left side is Beta, right side is scrutinee eval *)
+    inversion H. invert_MatchSubst.
+    have VF: Value R0 a0. eauto.
+    Value_no_red.
+    Value_no_red.
+Qed.

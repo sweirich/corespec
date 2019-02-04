@@ -227,7 +227,7 @@ Proof.
   all: try E_pick_fresh y; try auto_rew_env; try apply_first_hyp; 
                   try simpl_env; eauto 3.
 
-  eapply CON; eauto 3 using BranchTyping_weakening.
+  all: eapply CON; eauto 3 using BranchTyping_weakening.
 Qed.
 
 

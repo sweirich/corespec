@@ -340,7 +340,7 @@ Lemma decompose_subpattern_fv_rel : `{
 Proof.
   intros until 0.
   move=> h; dependent induction h.
-  eapply dsp_fv in h.
+  eapply decompose_subpattern_fv in h.
   ok.
 Qed.
 
@@ -909,8 +909,8 @@ Proof.
     apply fv_tm_tm_tm_open_tm_wrt_tm_upper in h0.
     apply AtomSetFacts.union_iff in h0.
     case:h0; eauto => h0.
-    fsetdec_fast.
-    fsetdec_fast.
+    ok.
+    ok.
     auto.
   - auto.
   - have: x `notin` fv_tm_tm_tm (open_tm_wrt_co a' g_Triv) => h0.
@@ -961,14 +961,18 @@ Proof.
     apply AtomSetFacts.union_iff in h1.
     case: h1 => h1; eauto.
     fsetdec.
-  - apply toplevel_closed in H.
+  - (* TODO: missing lemma
+    apply toplevel_closed_axiom in H.
     move: (Typing_context_fv H) => ?. split_hyp.
     simpl in *.
-    fsetdec.
+    fsetdec. *)
+    admit.
+  - admit.
+  - admit.
   - eauto.
+  - admit.
   - eauto.
-  - eauto.
-Qed.
+Admitted.
 
 Lemma reduction_in_Par : forall a a' R, reduction_in_one a a' R ->
                                    forall W, roleing W a R -> Par W a a' R.
@@ -987,10 +991,11 @@ Proof.
     + inversion H0; subst.
       eapply Par_CBeta; eauto.
     + inversion H; subst.
-      eapply Par_Axiom; eauto. eapply rctx_uniq in H0. auto.
+     (* eapply Par_Axiom; eauto. eapply rctx_uniq in H0. auto. *)
+     all: admit.
     + inversion H0; subst. eapply Par_PatternTrue; eauto.
-    + inversion H0; subst. eapply Par_PatternFalse; eauto.
-Qed.
+    + inversion H0; subst. (* eapply Par_PatternFalse; eauto *) admit.
+Admitted.
 
 
 
@@ -1021,7 +1026,7 @@ Proof.
   induction r.
   all: move=> G A_ tpga.
   - move: (Typing_regularity tpga) => h0.
-    autoinv.
+    autoinv. (*
     eapply E_Conv with (A := (a_Pi Irrel x R x0)); auto.
     pick fresh y and apply E_Abs; auto.
     apply_first_hyp; auto.
@@ -1046,6 +1051,6 @@ Proof.
     eapply DefEqIso_regularity. eapply E_Sym. eauto.
     eapply E_Conv. eauto. eauto.
     eapply DefEqIso_regularity. eapply E_Sym. eauto.
-  - eapply Beta_preservation; eauto.
-Qed.
+  - eapply Beta_preservation; eauto. *)
+Admitted.
 
