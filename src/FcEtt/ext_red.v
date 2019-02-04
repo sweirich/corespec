@@ -959,8 +959,9 @@ Proof.
     apply AtomSetFacts.union_iff in h1.
     case: h1 => h1; eauto.
     fsetdec.
-  - (* TODO: missing lemma
-    apply toplevel_closed_axiom in H.
+  - apply toplevel_inversion in H.
+    (*
+    autofwd.
     move: (Typing_context_fv H) => ?. split_hyp.
     simpl in *.
     fsetdec. *)
