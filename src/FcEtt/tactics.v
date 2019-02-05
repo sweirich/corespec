@@ -641,6 +641,11 @@ Tactic Notation "with" constr(hd) "do" tactic(tac) "end"   := TacticsInternals.f
 Tactic Notation "withp" uconstr(hd) "do" tactic(tac)       := TacticsInternals.find_hyp_and_perform TacticsInternals.has_head_uconstr hd tac.
 Tactic Notation "withp" uconstr(hd) "do" tactic(tac) "end" := TacticsInternals.find_hyp_and_perform TacticsInternals.has_head_uconstr hd tac.
 
+(* Specialized version to find and rename hypothesis *)
+Tactic Notation "get" uconstr(hd) "as" ident(name) := TacticsInternals.find_hyp_and_perform TacticsInternals.has_head_uconstr hd ltac:(fun h => rename h into name).
+(* Fast version (no pattern allowed) *)
+Tactic Notation "getf" constr(hd) "as" ident(name) := TacticsInternals.find_hyp_and_perform TacticsInternals.has_head hd ltac:(fun h => rename h into name).
+
 
 (** Misc **)
 

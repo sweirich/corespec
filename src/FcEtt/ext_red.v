@@ -526,19 +526,22 @@ Proof.
 
     * (* invs H4. *)
       withp (Typing _ (a_App _ _ _)) do ltac:(fun h => eapply invert_a_App_Role in h; autofwd).
-      move: H3 H0 IHMatchSubst => /= H3 H0.
+      get (Typing ((_, _) :: _)) as h3.
+      get (_ [=] empty) as h0.
+      move: h3 h0 IHMatchSubst => /= h3 h0.
       move/(_ ltac:(ok)).
       with decompose_subpattern do ltac:(fun h => eapply dsp_invert_rel in h; autofwd; rename h into h1).
       with decompose_subpattern do ltac:(fun h => eapply dsp_sub_rel in h; rename h into h2).
       subst.
-      move /(_ _ _ _ _ _ _ H3 H4 eq_refl h2 _ ltac:(inversion H8; eassumption)).
+      get (Typing _ _ (a_Pi _ _ _)) as h4.
+      getf args_proper_type as h8.
+      move /(_ _ _ _ _ _ _ h3 h4 eq_refl h2 _ ltac:(inversion h8; eassumption)).
       ecbn.
       simpl_env.
       move/(_ eq_refl).
       introfwd.
-      simpl_env in H9.
-      rewrite app_assoc in H9.
-      eapply (@chain_open_telescope_partial_subst_general_rel _ _ _ _ _ _ _ nil) in H9; first last.
+      getf chain_open_telescope_partial as h5.
+      eapply (@chain_open_telescope_partial_subst_general_rel _ _ _ _ _ _ _ nil) in h5; first last.
       (* Typing of A *)
       { ok. }
 
@@ -553,9 +556,9 @@ Proof.
       (* x0 ∉ dom Γ *)
       {
         autoreg.
-        (* FIXME: fragile *)
-        eapply Ctx_uniq in _Typing_Ctx_.
-        inversion _Typing_Ctx_.
+        get (Ctx (_ ++ _)) as h6.
+        eapply Ctx_uniq in h6.
+        inversion h6.
         match goal with
           H : ?x ∉ _ |- ?x ∉ _ => move: H; simpl_env; by ok
         end.
@@ -563,10 +566,10 @@ Proof.
 
       (* Big existential *)
       {
-        simpl_env in H11.
+        simpl_env in H3.
         ok.
-        fold (@app pattern_arg) in H9. (* FIXME *)
-        ecbn in H9.
+        fold (@app pattern_arg) in h5. (* FIXME *)
+        ecbn in h5.
         move eq: (coargs ++ pattern_arg_Rel (a_Var_f x) R :: pat_args_default a1) => old.
         (*__ CURRENTLY IMPORTING THE PROOF __*)
         all: admit.
