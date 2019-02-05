@@ -148,10 +148,26 @@ Lemma chain_open_telescope_deq_Reg : `{
   Typing Γ A a_Star
 }.
 Proof.
-  induction 1; ok; autoreg; ok.
-  - eapply invert_a_Pi in IHchain_open_telescope_deq.
-    autofwd.
-    (* TODO: subst *) admit.
+  induction 1; autoreg; ok;
+    let ih := fresh in
+    (* FIXME: switch to solve *)
+    first [
+      get (Typing _ (a_Pi _ _ _)) as ih;
+      eapply invert_a_Pi in ih;
+      autofwd; autofresh;
+      move: Typing_tm_subst;
+      move/(_ _ _ _ _ _ ltac:(eassumption) _ ltac:(eassumption));
+      rewrite -tm_subst_tm_tm_intro; cbn; last by done; by fsetdec
+    |
+      (* Coe case *)
+      get (Typing _ (a_CPi _ _) _) as ih;
+      eapply invert_a_CPi in ih;
+      autofwd; autofresh;
+      move: Typing_co_subst;
+      move/(_ _ _ _ _ _ _ _ _ _ ltac:(eassumption) ltac:(eassumption));
+      rewrite -co_subst_co_tm_intro; cbn; try done; first by fsetdec (* FIXME: -> last by done *)
+      (* TODO *)
+    ].
 Admitted.
 
 (*
