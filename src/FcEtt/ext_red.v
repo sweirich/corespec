@@ -490,17 +490,17 @@ Proof.
     (* eapply decompose_subpattern_PatternContexts_full in H6. *)
     * eapply invert_a_App_Role in H4; autofwd.
       cbn in IHMatchSubst.
-      eapply dsp_sub_rel in H17.
+      with decompose_subpattern do ltac:(fun h => eapply dsp_sub_rel in h).
       move: H3 H0 IHMatchSubst => /= H3 H0.
       move/(_ ltac:(ok)).
       move /(_ _ _ _ _ _ _ H3 H4 _ H17 _).
       ecbn.
       invs H5.
-      invs H8.
+      with args_proper_type do invs.
       move/(_ _ eq_refl eq_refl ltac:(eassumption)).
       introfwd.
       eexists.
-      eapply chain_open_telescope_partial_subst_Rel in H10; try eassumption.
+      with chain_open_telescope_partial do ltac:(fun h => eapply chain_open_telescope_partial_subst_Rel in h; try eassumption).
       ok.
       (* Substituted typing *)
       {
@@ -513,7 +513,7 @@ Proof.
       (* x ∉ dom Γ *)
       {
         autoreg.
-        match goal with | H : Ctx _ |- _ => solve [by invs H] end.
+        with Ctx do ltac:(fun h => solve [by invs h]).
       }
       (* x ∉ fv_tm_args args1 *)
       {
@@ -525,12 +525,13 @@ Proof.
       by ok.
 
     * (* invs H4. *)
-      eapply invert_a_App_Role in H4; autofwd.
+      withp (Typing _ (a_App _ _ _)) do ltac:(fun h => eapply invert_a_App_Role in h; autofwd).
       move: H3 H0 IHMatchSubst => /= H3 H0.
       move/(_ ltac:(ok)).
-      eapply dsp_invert_rel in H9; autofwd. eapply dsp_sub_rel in H12.
+      with decompose_subpattern do ltac:(fun h => eapply dsp_invert_rel in h; autofwd; rename h into h1).
+      with decompose_subpattern do ltac:(fun h => eapply dsp_sub_rel in h; rename h into h2).
       subst.
-      move /(_ _ _ _ _ _ _ H3 H4 eq_refl H12 _ ltac:(inversion H8; eassumption)).
+      move /(_ _ _ _ _ _ _ H3 H4 eq_refl h2 _ ltac:(inversion H8; eassumption)).
       ecbn.
       simpl_env.
       move/(_ eq_refl).
@@ -555,9 +556,9 @@ Proof.
         (* FIXME: fragile *)
         eapply Ctx_uniq in _Typing_Ctx_.
         inversion _Typing_Ctx_.
-        move: H17.
-        simpl_env.
-        ok.
+        match goal with
+          H : ?x ∉ _ |- ?x ∉ _ => move: H; simpl_env; by ok
+        end.
       }
 
       (* Big existential *)
@@ -573,7 +574,7 @@ Proof.
 
       (* PatCtxTrim ... *)
       {
-        match goal with [ H : args_proper_type _ _ _ |- _ ] => invs H end.
+        with args_proper_type do invs.
         simpl_env.
         ok.
       }
