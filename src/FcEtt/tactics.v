@@ -36,22 +36,45 @@ Ltac inst2 H x xL := let h := fresh H x in move: (H x xL) => h.
 (* Dynamic type, useful for some tactics *)
 Polymorphic (* Cumulative *) Inductive Dyn : Type := dyn : forall {T : Type}, T -> Dyn.
 
+Inductive Display {T : Type} : T → Prop := display : ∀ (t : T), Display t.
+
 Ltac unwrap_dyn d :=
   match d with
     | dyn ?v => v
   end.
 
+(* Checks that `t` is a multi-application headed by `hd`; `hd` doesn't have to be a mere constructor,
+   it can also be applied to some arguments *)
 Ltac has_head t hd :=
   match t with
     | hd => idtac
     | ?hd' _ => has_head hd' hd
   end.
 
-(* Find an hypothesis which type is headed by constructor cs, and
-   apply tac to it *)
-Ltac find_hyp_and_perform cs tac :=
+(* More general version: this time, `hd` is a uconstr, not a constr (hence the hacky workaround with refine).
+   This allows to specify `hd` as a pattern, even a partial one.
+   For instance, these (simplified) examples should succeed:
+     has_head_uconstr (Vector 3 nat) (Vector _ nat)
+     has_head_uconstr (Vector 3 nat) (Vector _)
+*)
+Ltac has_head_uconstr t hd :=
+  first [
+    let T := fresh in
+    (* There might be a way to use a simpler type for unification but it didn't seem to work just as well (e.g. with Display above) *)
+    have _: exists T, T = t by refine (@ex_intro _ _ hd (eq_refl _))
+  |
+    match t with
+      | ?t' _ => has_head_uconstr t' hd
+    end
+  ].
+
+
+(* Find an hypothesis which type is headed by constructor `cs`, and
+   apply `tac` to it. Parametrized by `head_check` for efficiency vs
+   generality trade-off *)
+Ltac find_hyp_and_perform head_check cs tac :=
     match goal with
-      H : ?t |- _ => has_head t cs; tac H end.
+      H : ?t |- _ => head_check t cs; idtac "Matching hyp:" H; tac H end.
 
 
 
@@ -612,8 +635,16 @@ Ltac depind x   := dependent induction x.
 (* TODO: turn hd into a uconstr if those can be used as patterns. Or better
          yet, turn it into a pattern, if that's ever possible. See:
          https://github.com/coq/coq/issues/9321 *)
-Tactic Notation "with" constr(hd) "do" tactic(tac)       := TacticsInternals.find_hyp_and_perform hd tac.
-Tactic Notation "with" constr(hd) "do" tactic(tac) "end" := TacticsInternals.find_hyp_and_perform hd tac.
+Tactic Notation "with" constr(hd) "do" tactic(tac)         := TacticsInternals.find_hyp_and_perform TacticsInternals.has_head hd tac.
+Tactic Notation "with" constr(hd) "do" tactic(tac) "end"   := TacticsInternals.find_hyp_and_perform TacticsInternals.has_head hd tac.
+(* More general version, that accepts a pattern (uconstr) - hence "p" stands for pattern *)
+Tactic Notation "withp" uconstr(hd) "do" tactic(tac)       := TacticsInternals.find_hyp_and_perform TacticsInternals.has_head_uconstr hd tac.
+Tactic Notation "withp" uconstr(hd) "do" tactic(tac) "end" := TacticsInternals.find_hyp_and_perform TacticsInternals.has_head_uconstr hd tac.
+
+(* Specialized version to find and rename hypothesis *)
+Tactic Notation "get" uconstr(hd) "as" ident(name) := TacticsInternals.find_hyp_and_perform TacticsInternals.has_head_uconstr hd ltac:(fun h => rename h into name).
+(* Fast version (no pattern allowed) *)
+Tactic Notation "getf" constr(hd) "as" ident(name) := TacticsInternals.find_hyp_and_perform TacticsInternals.has_head hd ltac:(fun h => rename h into name).
 
 
 (** Misc **)

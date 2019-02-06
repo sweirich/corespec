@@ -148,10 +148,26 @@ Lemma chain_open_telescope_deq_Reg : `{
   Typing Γ A a_Star
 }.
 Proof.
-  induction 1; ok; autoreg; ok.
-  - eapply invert_a_Pi in IHchain_open_telescope_deq.
-    autofwd.
-    (* TODO: subst *) admit.
+  induction 1; autoreg; ok;
+    let ih := fresh in
+    (* FIXME: switch to solve *)
+    first [
+      get (Typing _ (a_Pi _ _ _)) as ih;
+      eapply invert_a_Pi in ih;
+      autofwd; autofresh;
+      move: Typing_tm_subst;
+      move/(_ _ _ _ _ _ ltac:(eassumption) _ ltac:(eassumption));
+      rewrite -tm_subst_tm_tm_intro; cbn; last by done; by fsetdec
+    |
+      (* Coe case *)
+      get (Typing _ (a_CPi _ _) _) as ih;
+      eapply invert_a_CPi in ih;
+      autofwd; autofresh;
+      move: Typing_co_subst;
+      move/(_ _ _ _ _ _ _ _ _ _ ltac:(eassumption) ltac:(eassumption));
+      rewrite -co_subst_co_tm_intro; cbn; try done; first by fsetdec (* FIXME: -> last by done *)
+      (* TODO *)
+    ].
 Admitted.
 
 (*
@@ -490,17 +506,17 @@ Proof.
     (* eapply decompose_subpattern_PatternContexts_full in H6. *)
     * eapply invert_a_App_Role in H4; autofwd.
       cbn in IHMatchSubst.
-      eapply dsp_sub_rel in H17.
+      with decompose_subpattern do ltac:(fun h => eapply dsp_sub_rel in h).
       move: H3 H0 IHMatchSubst => /= H3 H0.
       move/(_ ltac:(ok)).
       move /(_ _ _ _ _ _ _ H3 H4 _ H17 _).
       ecbn.
       invs H5.
-      invs H8.
+      with args_proper_type do invs.
       move/(_ _ eq_refl eq_refl ltac:(eassumption)).
       introfwd.
       eexists.
-      eapply chain_open_telescope_partial_subst_Rel in H10; try eassumption.
+      with chain_open_telescope_partial do ltac:(fun h => eapply chain_open_telescope_partial_subst_Rel in h; try eassumption).
       ok.
       (* Substituted typing *)
       {
@@ -513,7 +529,7 @@ Proof.
       (* x ∉ dom Γ *)
       {
         autoreg.
-        match goal with | H : Ctx _ |- _ => solve [by invs H] end.
+        with Ctx do ltac:(fun h => solve [by invs h]).
       }
       (* x ∉ fv_tm_args args1 *)
       {
@@ -525,19 +541,23 @@ Proof.
       by ok.
 
     * (* invs H4. *)
-      eapply invert_a_App_Role in H4; autofwd.
-      move: H3 H0 IHMatchSubst => /= H3 H0.
+      withp (Typing _ (a_App _ _ _)) do ltac:(fun h => eapply invert_a_App_Role in h; autofwd).
+      get (Typing ((_, _) :: _)) as h3.
+      get (_ [=] empty) as h0.
+      move: h3 h0 IHMatchSubst => /= h3 h0.
       move/(_ ltac:(ok)).
-      eapply dsp_invert_rel in H9; autofwd. eapply dsp_sub_rel in H12.
+      with decompose_subpattern do ltac:(fun h => eapply dsp_invert_rel in h; autofwd; rename h into h1).
+      with decompose_subpattern do ltac:(fun h => eapply dsp_sub_rel in h; rename h into h2).
       subst.
-      move /(_ _ _ _ _ _ _ H3 H4 eq_refl H12 _ ltac:(inversion H8; eassumption)).
+      get (Typing _ _ (a_Pi _ _ _)) as h4.
+      getf args_proper_type as h8.
+      move /(_ _ _ _ _ _ _ h3 h4 eq_refl h2 _ ltac:(inversion h8; eassumption)).
       ecbn.
       simpl_env.
       move/(_ eq_refl).
       introfwd.
-      simpl_env in H9.
-      rewrite app_assoc in H9.
-      eapply (@chain_open_telescope_partial_subst_general_rel _ _ _ _ _ _ _ nil) in H9; first last.
+      getf chain_open_telescope_partial as h5.
+      eapply (@chain_open_telescope_partial_subst_general_rel _ _ _ _ _ _ _ nil) in h5; first last.
       (* Typing of A *)
       { ok. }
 
@@ -552,20 +572,20 @@ Proof.
       (* x0 ∉ dom Γ *)
       {
         autoreg.
-        (* FIXME: fragile *)
-        eapply Ctx_uniq in _Typing_Ctx_.
-        inversion _Typing_Ctx_.
-        move: H17.
-        simpl_env.
-        ok.
+        get (Ctx (_ ++ _)) as h6.
+        eapply Ctx_uniq in h6.
+        inversion h6.
+        match goal with
+          H : ?x ∉ _ |- ?x ∉ _ => move: H; simpl_env; by ok
+        end.
       }
 
       (* Big existential *)
       {
-        simpl_env in H11.
+        simpl_env in H3.
         ok.
-        fold (@app pattern_arg) in H9. (* FIXME *)
-        ecbn in H9.
+        fold (@app pattern_arg) in h5. (* FIXME *)
+        ecbn in h5.
         move eq: (coargs ++ pattern_arg_Rel (a_Var_f x) R :: pat_args_default a1) => old.
         (*__ CURRENTLY IMPORTING THE PROOF __*)
         all: admit.
@@ -573,7 +593,7 @@ Proof.
 
       (* PatCtxTrim ... *)
       {
-        match goal with [ H : args_proper_type _ _ _ |- _ ] => invs H end.
+        with args_proper_type do invs.
         simpl_env.
         ok.
       }
@@ -959,8 +979,9 @@ Proof.
     apply AtomSetFacts.union_iff in h1.
     case: h1 => h1; eauto.
     fsetdec.
-  - (* TODO: missing lemma
-    apply toplevel_closed_axiom in H.
+  - apply toplevel_inversion in H.
+    (*
+    autofwd.
     move: (Typing_context_fv H) => ?. split_hyp.
     simpl in *.
     fsetdec. *)
