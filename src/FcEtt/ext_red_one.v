@@ -13,6 +13,7 @@ Require Import FcEtt.ett_path.
 Require Import FcEtt.ett_match.
 Require Import FcEtt.beta.
 Require Import FcEtt.ett_rename.
+Import Omega.
 
 
 Set Implicit Arguments.
@@ -342,26 +343,22 @@ Proof.
   all: auto.
   all: try solve [invert_MatchSubst; invert_MatchSubst].
   all: try solve [contradiction].
-  - (* two axioms *)
-    (* In each case we could pick completely different variables 
-       to rename the pattern. We have to show that these names don't 
-       matter *)
-  have: (F = F0). admit. move=>EQ. subst F0. 
-  have: (Ax p b A R1 Rs = Ax p0 b0 A0 R2 Rs0). admit.
-    move => h; inversion h. subst p0 b0 A0 R2 Rs0. clear h.
-  have Ag: tm_pattern_agree a p. admit.
-  eapply MatchSubst_Rename_preserve; eauto 1.
-    admit.
-    admit.
-    admit.
-    admit.
+  - pattern_head.
+    pose (P := tm_pattern_agree_rename_inv_2 (MatchSubst_match H1) H0).
+    pattern_head_tm_agree. rewrite U in U1. inversion U1; subst.
+    axioms_head_same.
+    pose (P1 := axiom_body_fv_in_pattern H).
+     eapply MatchSubst_Rename_preserve. eauto. eapply H0. eauto.
+     eapply union_s_m. eauto. eapply AtomSetProperties.union_subset_3.
+     eauto. auto. eapply union_s_m. eauto.
+     eapply AtomSetProperties.union_subset_3.
+     eauto. auto. eapply uniq_atoms_toplevel. eauto. auto. auto.
   - (* two pattern matching *)
     move: (ApplyArgs_applyArgs H1) => h1.
     move: (ApplyArgs_applyArgs H11) => h2.
     rewrite h1 in h2. subst.
     auto.
-Admitted.
-
+Qed.
 
 Lemma BetaAxiom_a_App_only : forall F p b0 A R0 Rs p1 b1 D' a2 a nu b R1
   (H2 : binds F (Ax p b0 A R0 Rs) toplevel)
@@ -374,13 +371,15 @@ Proof.
   move: (MatchSubst_match H4) => h4.
   eapply Value_Path with (F:=F).
   eapply CasePath_UnMatch; eauto.
-  + admit.
-  + move=> SA.
-    inversion H4. subst. clear H4.
-    - (* Rel case *)
-      inversion h4. subst. clear h4.
-      inversion H3. subst. clear H3. clear H15.      
-Admitted.
+  + inversion h4; subst. eapply tm_pattern_agree_ValuePath; eauto.
+    eapply tm_subpattern_agree_sub_app. econstructor.
+    eapply Rename_tm_pattern_agree; eauto. 
+    eapply tm_pattern_agree_ValuePath; eauto.
+    eapply tm_subpattern_agree_sub_app. econstructor.
+    eapply Rename_tm_pattern_agree; eauto.
+  + move: (tm_pattern_agree_rename_inv_2 h4 H3) => h5. 
+    intro. eapply subtm_pattern_agree_app_contr; eauto.
+Qed.
 
 Lemma BetaAxiom_a_CApp_only : forall F p b0 A R0 Rs p1 b1 D' a2 a  R1
   (H2 : binds F (Ax p b0 A R0 Rs) toplevel)
@@ -389,8 +388,16 @@ Lemma BetaAxiom_a_CApp_only : forall F p b0 A R0 Rs p1 b1 D' a2 a  R1
   (H5 : SubRole R0 R1),
   Value R1 a.
 Proof.
-  intros. 
-Admitted.
+  intros.
+  move: (MatchSubst_match H4) => h4.
+  eapply Value_Path with (F:=F).
+  eapply CasePath_UnMatch; eauto.
+  + inversion h4; subst. eapply tm_pattern_agree_ValuePath; eauto.
+    eapply tm_subpattern_agree_sub_capp. econstructor.
+    eapply Rename_tm_pattern_agree; eauto.
+  + move: (tm_pattern_agree_rename_inv_2 h4 H3) => h5. 
+    intro. eapply subtm_pattern_agree_capp_contr; eauto.
+Qed.
 
 
 

@@ -65,25 +65,34 @@ Proof.
     have LC: lc_tm b0. eapply Typing_lc1; eauto.
 
     move: (Rename_exists (union (union (fv_tm_tm_tm a) (fv_tm_tm_tm p))
-                                (fv_tm_tm_tm b)) PP LC) => 
+                                (singleton x \u fv_tm_tm_tm b)) PP LC) => 
         [p2 [b2 [D2 h]]].
 
     eapply Beta_Axiom; eauto.
-    clear H1.
     eapply Rename_narrow; eauto.
     rewrite fv_tm_tm_tm_tm_subst_tm_tm_upper.
     fsetdec.
+    have AG : tm_pattern_agree a p2. eapply tm_pattern_agree_rename_inv_1.
+    eapply tm_pattern_agree_rename_inv_2. eapply MatchSubst_match. eauto.
+    eauto. eauto.
+    have LC' : lc_tm b2. eapply Rename_lc4. eauto.
+    move: (axiom_body_fv_in_pattern H) => h3.
 
     eapply MatchSubst_tm_subst; eauto.
-    admit.
-(*  replace b' with (matchsubst a p2 b2).
-    eapply matchsubst_fun_ind. 
-    eapply tm_pattern_agree_rename_inv_1.
-    eapply tm_pattern_agree_rename_inv_2. eapply MatchSubst_match. eauto.
-    eauto. eauto. eapply Rename_lc4. eauto. auto. 
-    eapply MatchSubst_Rename_preserve; eauto. *)
+    replace b' with (matchsubst a p2 b2).
+    eapply matchsubst_fun_ind; auto.
+ 
     
-    admit.
+    symmetry.
+    eapply MatchSubst_Rename_preserve. eapply tm_pattern_agree_rename_inv_2.
+     eapply MatchSubst_match. eauto. eapply H1. eapply H1. eauto.
+     fsetdec. fsetdec. eapply uniq_atoms_toplevel. eauto. auto.
+     eapply matchsubst_fun_ind; auto.
+     
+    eapply Rename_inter_sub_empty. eauto. fsetdec.
+    eapply AtomSetProperties.union_subset_3.
+    eapply Rename_fv_new_pattern. eauto. eapply Rename_new_body_fv. 
+    eauto. auto.
   - simpl. eapply Beta_PatternTrue; eauto with lngen lc. 
     eapply CasePath_subst_tm; eauto with lngen lc.
     eapply ApplyArgs_subst_tm; eauto with lngen lc.
@@ -92,7 +101,7 @@ Proof.
     apply Value_tm_subst_tm_tm; auto. 
     move => h0. eapply H3.
     eapply CasePath_Value_unsubst_tm; eauto with lngen lc.
-Admitted.
+Qed.
 
 Lemma Beta_co_subst : forall a a' R b x, Beta a a' R -> lc_co b -> Beta (co_subst_co_tm b x a) (co_subst_co_tm b x a') R.
 Proof.
@@ -108,10 +117,40 @@ Proof.
     simpl.
     econstructor.
     apply co_subst_co_tm_lc_tm with (g1 := b) (c1:=x) in H; auto.
-  - move: (toplevel_inversion H) => [X [G [B [h1 [h2 [h3 h4]]]]]]. 
-    eapply Beta_Axiom; eauto. 
-    admit.
-    admit.
+  - move: (toplevel_inversion H) => [X [G [B [h1 [h2 [_ _]]]]]].
+    have PP: (Pattern p). eapply axiom_pattern; eauto.
+    have LC: lc_tm b0. eapply Typing_lc1; eauto.
+
+    move: (Rename_exists (union (union (fv_tm_tm_tm a) (fv_tm_tm_tm p))
+                                (singleton x \u fv_tm_tm_co b)) PP LC) => 
+        [p2 [b2 [D2 h]]].
+
+    eapply Beta_Axiom; eauto.
+    eapply Rename_narrow; eauto.
+    rewrite fv_tm_tm_tm_co_subst_co_tm_upper.
+    fsetdec.
+    have AG : tm_pattern_agree a p2. eapply tm_pattern_agree_rename_inv_1.
+    eapply tm_pattern_agree_rename_inv_2. eapply MatchSubst_match. eauto.
+    eauto. eauto.
+    have LC' : lc_tm b2. eapply Rename_lc4. eauto.
+    move: (axiom_body_fv_in_pattern H) => h3.
+
+    eapply MatchSubst_co_subst; eauto.
+    replace b' with (matchsubst a p2 b2).
+    eapply matchsubst_fun_ind; auto.
+ 
+    
+    symmetry.
+    eapply MatchSubst_Rename_preserve. eapply tm_pattern_agree_rename_inv_2.
+     eapply MatchSubst_match. eauto. eapply H1. eapply H1. eauto.
+     fsetdec. fsetdec. eapply uniq_atoms_toplevel. eauto. auto.
+     eapply matchsubst_fun_ind; auto.
+     
+    eapply Rename_inter_sub_empty. eauto. fsetdec.
+    eapply AtomSetProperties.union_subset_3.
+    eapply Rename_fv_new_pattern. eauto. eapply Subset_trans.
+    eapply Rename_new_body_fv_co. eauto. eapply axiom_body_fv_co. eauto.
+    eapply Subset_empty_any.
   - simpl.
     eapply Beta_PatternTrue; eauto with lngen lc.
     eapply CasePath_subst_co; eauto with lngen lc.
@@ -121,4 +160,4 @@ Proof.
     apply Value_co_subst_co_tm; auto. 
     move => h0. eapply H3.
     eapply CasePath_Value_unsubst_co; eauto with lngen lc.
-Admitted.
+Qed.
