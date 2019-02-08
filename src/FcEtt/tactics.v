@@ -632,14 +632,12 @@ Ltac depind x   := dependent induction x.
 
 (* Find an hypothesis which type is headed by constructor cs, and
    apply tac to it *)
-(* TODO: turn hd into a uconstr if those can be used as patterns. Or better
-         yet, turn it into a pattern, if that's ever possible. See:
-         https://github.com/coq/coq/issues/9321 *)
-Tactic Notation "with" constr(hd) "do" tactic(tac)         := TacticsInternals.find_hyp_and_perform TacticsInternals.has_head hd tac.
-Tactic Notation "with" constr(hd) "do" tactic(tac) "end"   := TacticsInternals.find_hyp_and_perform TacticsInternals.has_head hd tac.
-(* More general version, that accepts a pattern (uconstr) - hence "p" stands for pattern *)
-Tactic Notation "withp" uconstr(hd) "do" tactic(tac)       := TacticsInternals.find_hyp_and_perform TacticsInternals.has_head_uconstr hd tac.
-Tactic Notation "withp" uconstr(hd) "do" tactic(tac) "end" := TacticsInternals.find_hyp_and_perform TacticsInternals.has_head_uconstr hd tac.
+(* Fast version - `hd` must be a well-typed coq term (e.g. `Typing Γ`, but not say `Typing _ a`) *)
+Tactic Notation "withf" constr(hd) "do" tactic(tac)        := TacticsInternals.find_hyp_and_perform TacticsInternals.has_head hd tac.
+Tactic Notation "withf" constr(hd) "do" tactic(tac) "end"  := TacticsInternals.find_hyp_and_perform TacticsInternals.has_head hd tac.
+(* More general version, that accepts a pattern (uconstr) (hence also accepts `Typing _ a`). Expectedly slower. *)
+Tactic Notation "with" uconstr(hd) "do" tactic(tac)       := TacticsInternals.find_hyp_and_perform TacticsInternals.has_head_uconstr hd tac.
+Tactic Notation "with" uconstr(hd) "do" tactic(tac) "end" := TacticsInternals.find_hyp_and_perform TacticsInternals.has_head_uconstr hd tac.
 
 (* Specialized version to find and rename hypothesis *)
 Tactic Notation "get" uconstr(hd) "as" ident(name) := TacticsInternals.find_hyp_and_perform TacticsInternals.has_head_uconstr hd ltac:(fun h => rename h into name).
