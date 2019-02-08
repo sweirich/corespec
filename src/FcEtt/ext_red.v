@@ -31,6 +31,9 @@ Set Implicit Arguments.
 (* FIXME: temporary *)
 Generalizable All Variables.
 
+(* SCW: WE should be able to prove preservation without this fact. It was not in our original development.
+ (and may not be true if the context is inconsistent...) *)
+
 (******** FIXME: stuff that should be removed/improved/proved somewhere else/etc ********)
 Lemma where_is_this : `{
   DefEq Γ D (a_Pi rho1 A1 B1) (a_Pi rho2 A2 B2) K R →
@@ -792,7 +795,6 @@ Admitted.
 
 Lemma Beta_preservation : `(Beta a b R →  forall G A, Typing G a A -> Typing G b A).
 Proof.
-(*
   induction 1; intros G A0 TH.
   - have CT: Ctx G by eauto.
     have RA: Typing G A0 a_Star by eauto using Typing_regularity.
@@ -845,8 +847,8 @@ Proof.
      eapply E_CPiSnd; eauto 2.
      apply E_CPiFst in h5. apply E_Cast in h5; auto 1.
      all: rewrite param_rep_r; eauto 2.
-   -
-     autofwd.
+   - (* Axiom *)
+(*     autofwd.
      autoinv.
      move: H.
      move/toplevel_inversion. introfwd.
@@ -855,7 +857,7 @@ Proof.
      eauto 1.
      eapply H.
      eauto 1.
-     eauto 1.
+     eauto 1. *)
    
 (*      destruct (invert_a_Fam TH) as [(b & h1 & h2 & h3) | (b & B & R2 & h1 & h2 & h3)].
      assert (Cs b = Ax a A R). eapply binds_unique; eauto using uniq_toplevel.
@@ -870,8 +872,44 @@ Proof.
      eapply E_Sym. eauto.
      eapply Typing_regularity. 
      eauto. *)
+     admit.
+   - (* Pattern True *)
+     move: (invert_a_Pattern TH) => [A [A1 [B0 [C h]]]].
+     split_hyp.
+     set (p:= a_Fam F) in H3, H6.
 
-   - dependent induction TH.
+Inductive ArgTy := 
+  | ArgTy_Pi  : appflag -> tm -> ArgTy
+  | ArgTy_CPi : constraint -> ArgTy.
+
+Inductive Arg :=
+  | Arg_PiRel   : tm -> Arg
+  | Arg_PiIrrel : Arg
+  | Arg_CPi     : Arg.
+
+
+Inductive ArgTyping : context -> list Arg :=
+  ArgTyping_nil   : Typing nil nil
+  ArgTyping_PiRel : forall G a A, 
+     Typing G a A -> 
+     ArgTyping G args -> 
+     Typing (G ++ (x ~ Tm A)) (Arg_PiRel a : args) 
+
+
+
+     (* BranchTyping is defined by induction on the type of B (i.e. the pattern) *)
+     Lemma BranchTyping_preservation : forall G R a A p B0 B1 C,
+       BranchTyping G R a A p B0 B1 C ->
+       Typing G a A ->
+       Typing G p B0 ->
+       forall b1, Typing G b1 B1 ->
+       forall b1', ApplyArgs a b1 b1' ->
+              Typing G b1' C.
+     Proof.
+       induction 1; intros.
+       - 
+
+     dependent induction TH.
      + eapply E_Conv.
        eapply IHTH1; try eauto.
          eauto.

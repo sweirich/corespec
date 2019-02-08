@@ -65,38 +65,39 @@ Proof.
       eapply E_Refl; eauto 1.
       eapply E_Var; eauto 1.
       autorewrite with lngen. reflexivity.
-  - (* pi *) intros L G rho A B K1 K2 K3 K4 G1 G2 x A1 R0 a1 a2 D H2 H3 H4.
+  - (* pi *) intros L G rho A B K1 h0 K3 K4 G1 G2 x A1 R0 a1 a2 D H2 H3 H4.
     simpl. subst.
     eapply (@E_PiCong2 (L \u singleton x)); eauto 2.
-    + intros x0 Fr. assert (FrL: x0 `notin` L). auto.
-    specialize (K2 x0 FrL G1 ([(x0, Tm A)] ++ G2) x _ _ _ _ _ eq_refl H3 H4). => h0.
-    rewrite tm_subst_tm_tm_open_tm_wrt_tm in h0.
-    rewrite tm_subst_tm_tm_open_tm_wrt_tm in h0.
+    intros x0 Fr. assert (FrL: x0 `notin` L). auto.
+    clear K4.
+    specialize (h0 x0 FrL G1 ([(x0, Tm A)] ++ G2) x A1 R0 a1 a2 D eq_refl H3 H4). 
+    rewrite tm_subst_tm_tm_open_tm_wrt_tm in h0. eauto using Typing_lc1.
+    rewrite tm_subst_tm_tm_open_tm_wrt_tm in h0. eauto using DefEq_lc2.
+    unfold map in h0. unfold EnvImpl.map in h0.
     rewrite map_app in h0.
     replace (tm_subst_tm_tm a1 x (a_Var_f x0)) with (a_Var_f x0) in h0.
     replace (tm_subst_tm_tm a2 x (a_Var_f x0)) with (a_Var_f x0) in h0.
     eapply h0.
     rewrite tm_subst_tm_tm_var_neq. auto. auto.
     rewrite tm_subst_tm_tm_var_neq. auto. auto.
-    eapply (DefEq_lc H4).
-    eapply (DefEq_lc H4).
+
   - (* abs *)
-    intros L G rho R a A B R' R'' H H0 H1 H2 RC G1 G2 x A1 R0 a1 a2 D H3 H4 H5.
+    intros L G rho a A B H H0 H1 H2 RC G1 G2 x A1 R a1 a2 D H3 H4 H5. 
     subst. simpl.
     eapply (E_AbsCong (L \u singleton x \u fv_tm_tm_tm a1 \u fv_tm_tm_tm a2)); eauto 2.
     + intros x0 Fr. assert (FrL: x0 `notin` L). auto.
-      move: (H0 x0 FrL _ ([(x0, Tm A R)] ++ G2) x _ _ _ _ _ eq_refl H4 H5) => h0.
+      move: (H0 x0 FrL _ ([(x0, Tm A)] ++ G2) x A1 R a1 a2 D eq_refl H4 H5) => h0.
       rewrite tm_subst_tm_tm_open_tm_wrt_tm in h0.
+      eapply DefEq_lc1; eauto.
       rewrite tm_subst_tm_tm_open_tm_wrt_tm in h0.
+      eapply DefEq_lc2; eauto.
       rewrite tm_subst_tm_tm_open_tm_wrt_tm in h0.
+      eapply DefEq_lc1; eauto.
       replace (tm_subst_tm_tm a1 x (a_Var_f x0)) with (a_Var_f x0) in h0.
       replace (tm_subst_tm_tm a2 x (a_Var_f x0)) with (a_Var_f x0) in h0.
       eapply h0.
       rewrite tm_subst_tm_tm_var_neq. auto. auto.
       rewrite tm_subst_tm_tm_var_neq. auto. auto.
-      eapply (DefEq_lc H5).
-      eapply (DefEq_lc H5).
-      eapply (DefEq_lc H5).
     + eapply (first tm_substitution_mutual _ _ _ _ H1); eauto 2.
     + intros x0 FrLx.
       have h0 := RC x0 ltac:(auto).

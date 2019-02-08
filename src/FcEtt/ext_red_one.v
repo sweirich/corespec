@@ -363,6 +363,7 @@ Proof.
 Admitted.
 
 
+(* If we match subst against an application, it must headed by a value. *)
 Lemma BetaAxiom_a_App_only : forall F p b0 A R0 Rs p1 b1 D' a2 a nu b R1
   (H2 : binds F (Ax p b0 A R0 Rs) toplevel)
   (H3 : Rename p b0 p1 b1 (union (fv_tm_tm_tm (a_App a nu b)) (fv_tm_tm_tm p)) D')

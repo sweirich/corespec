@@ -251,9 +251,9 @@ roles, Rs :: '' ::= {{ coq list role }}
 
 sig_sort :: '' ::= {{ com signature classifier }}
    | A @ Rs            ::    :: Cs
-     {{ tex _[[Rs]] \, [[A]] }}
+     {{ tex _[[Rs]] \ [[A]] }}
    | p ~ a : A / R @ Rs    ::    :: Ax
-     {{ tex _[[Rs]] \, [[p]] \sim_[[R]] [[a]] : [[A]]  }}
+     {{ tex _[[Rs]] \ [[p]] \sim_{[[R]]} [[a]] : [[A]]  }}
 
 sort :: '' ::= {{ com binding classifier }}
    | Tm A             ::   :: Tm
