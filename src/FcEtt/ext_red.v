@@ -44,9 +44,9 @@ Notation PatCtxTrim Γ p :=
 
 
 (* Readability notations *)
-Notation "'ArgRel' a" := (pattern_arg_Rel a _) (at level 50). (* FIXME: level *)
-Notation "'ArgIrr' a" := (pattern_arg_Irr a _) (at level 50). (* FIXME: level *)
-Notation "'ArgCoe' a" := (pattern_arg_Coe a _) (at level 50). (* FIXME: level *)
+Notation "'ArgRel' a" := (pattern_arg_Rel a _) (at level 50). (* FIXME: level? *)
+Notation "'ArgIrr' a" := (pattern_arg_Irr a _) (at level 50). (* FIXME: level? *)
+Notation "'ArgCoe' a" := (pattern_arg_Coe a _) (at level 50). (* FIXME: level? *)
 
 
 (******** Internal relations used only for proving ********)
