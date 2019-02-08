@@ -354,6 +354,16 @@ Lemma tm_pattern_agree_pattern : forall a p, tm_pattern_agree a p -> Pattern p.
 Proof. intros. induction H; eauto.
 Qed.
 
+Lemma tm_pattern_agree_refl : forall p, Pattern p -> tm_pattern_agree p p.
+Proof. intros. induction H; eauto.
+Qed.
+
+Lemma tm_pattern_agree_sym : forall a p, Pattern a -> tm_pattern_agree a p ->
+      tm_pattern_agree p a.
+Proof. intros. generalize dependent p. induction H; intros.
+       all: (inversion H0; subst; eauto).
+Qed.
+
 Lemma subtm_pattern_agree_pattern : forall a p, subtm_pattern_agree a p -> Pattern p.
 Proof. intros. induction H; eauto. eapply tm_pattern_agree_pattern; eauto.
 Qed.
@@ -509,6 +519,10 @@ Proof. intros. generalize dependent b. generalize dependent b'.
           simpl in H2. rewrite <- H2. eauto.
 Qed.
 
+Lemma Rename_tm_pattern_agree : forall p b p' b' D D', Rename p b p' b' D D' ->
+      tm_pattern_agree p' p.
+Proof. intros. induction H; eauto.
+Qed.
 
 Fixpoint rename p b D := match p with
    | a_Fam F => (p,b,empty)
@@ -914,6 +928,18 @@ Proof. intros. apply tm_pattern_agree_length_same in H.
        apply tm_subpattern_agree_length_leq in H0. simpl in H0. omega.
 Qed.
 
+Lemma subtm_pattern_agree_app_contr : forall nu a b p,
+      tm_pattern_agree (a_App a nu b) p -> subtm_pattern_agree a p -> False.
+Proof. intros. apply tm_pattern_agree_length_same in H.
+       apply subtm_pattern_agree_length_geq in H0. simpl in H. omega.
+Qed.
+
+Lemma subtm_pattern_agree_capp_contr : forall a p,
+    tm_pattern_agree (a_CApp a g_Triv) p -> subtm_pattern_agree a p -> False.
+Proof. intros. apply tm_pattern_agree_length_same in H.
+       apply subtm_pattern_agree_length_geq in H0. simpl in H. omega.
+Qed.
+
 Lemma tm_subpattern_agree_sub_app : forall a nu b p,
               tm_subpattern_agree (a_App a nu b) p ->
               tm_subpattern_agree a p.
@@ -1039,6 +1065,29 @@ Lemma tm_tm_agree_resp_ValuePath : forall a a' F,
       ValuePath a F -> tm_tm_agree a a' -> ValuePath a' F.
 Proof. intros. generalize dependent a'.
        induction H; intros a' H1; inversion H1; subst; eauto.
+Qed.
+
+Lemma tm_pattern_agree_ValuePath : forall a p, tm_pattern_agree a p ->
+      forall F b p' A R Rs, binds F (Ax p' b A R Rs) toplevel ->
+      tm_subpattern_agree p p' -> ValuePath a F.
+Proof. intros a p H. induction H; intros.
+       - apply tm_subpattern_agree_const_same in H0.
+         move: (axiom_pattern_head H) => h. rewrite <- H0 in h.
+         simpl in H. inversion h; subst. eauto.
+       - econstructor. auto. eapply IHtm_pattern_agree. eauto.
+         eapply tm_subpattern_agree_sub_app. eauto.
+       - econstructor. auto. eapply IHtm_pattern_agree. eauto.
+         eapply tm_subpattern_agree_sub_app. eauto.
+       - econstructor. eapply IHtm_pattern_agree. eauto.
+         eapply tm_subpattern_agree_sub_capp. eauto.
+Qed.
+
+Lemma axiom_ValuePath : forall F p b A R Rs,
+      binds F (Ax p b A R Rs) toplevel -> ValuePath p F.
+Proof. intros. move: (axiom_pattern H) => h.
+       eapply tm_pattern_agree_ValuePath; eauto.
+       eapply tm_pattern_agree_refl. auto. econstructor.
+       eapply tm_pattern_agree_refl. auto.
 Qed.
 
 (* TODO: why do we have both MultiPar (ett.ott) and multipar *)
