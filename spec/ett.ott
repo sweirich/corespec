@@ -87,6 +87,9 @@ tm, a, b, p, v, w, A, B, C :: 'a_' ::= {{ com types and kinds }}
 
   | case R a of F => b1 | _ => b2 ::   :: Pattern
 
+  | apply a pattern_args :: M :: ApplyPA
+    {{ coq (apply_pattern_args [[a]] [[pattern_args]]) }}
+
   %% currently unused but ready for extension
   | K                    ::   :: DataCon
   | match a with brs     ::   :: Case
@@ -305,8 +308,19 @@ available_props, D {{ tex \Delta }} :: 'D_' ::= {{ coq atoms }} {{ coq-universe 
 
 
 Nat, N {{ tex \mathbb{N} }} :: 'N_' ::= {{ coq nat }}
+   | 0               :: M  :: Zero {{ coq 0 }}
+   | S N             :: M  :: Succ {{ coq (1+[[N]]) }}
+   | ( N )           :: M  :: Paren {{ coq ([[N]]) }}
    | length a :: S :: Pattern_length {{ coq (pattern_length [[a]]) }} {{ tex | [[a]] | }}
 
+App :: 'A_' ::= 
+   | Tm rho          ::    :: Tm 
+   | Co              ::    :: Co
+
+Apps :: 'A_' ::= {{ coq (list App) }}
+   | emptyA          ::    :: nilA  {{ coq nil }}
+   | App , Apps      ::    :: consA {{ coq ([[App]]::[[Apps]]) }}
+   | ( Apps )        :: M  :: Paren {{ coq ([[Apps]]) }}
 
 substitutions
   single G x :: ctx_subst_tm
@@ -325,15 +339,14 @@ freevars
 
 grammar
 
-pattern_arg :: 'pattern_arg_' ::= {{ com Pattern arguments }}
-  | \Rel a R       ::   :: Rel
-  | \Irr a         ::   :: Irr
-  | \Coe g         ::   :: Coe
+pattern_arg :: 'p_' ::= {{ com Pattern arguments }}
+  | Tm nu a       ::   :: Tm
+  | Co g          ::   :: Co
 
 
 pattern_args, PA :: 'pattern_args_' ::= {{ coq list pattern_arg }}
   | none                  ::   :: None {{ coq nil }}
-  | PA , pattern_arg      ::   :: Cons {{ coq (cons [[pattern_arg]] [[PA]]) }}
+  | pattern_arg , PA ::   :: Cons {{ coq (cons [[pattern_arg]] [[PA]]) }}
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -577,6 +590,17 @@ Fixpoint vars_Pattern (p : tm) := match p with
    | _ => nil
    end.
 
+
+Fixpoint apply_pattern_args (a : tm) (args : pattern_args) : tm :=
+  match args with 
+  | nil => a
+  | (p_Tm nu b :: rest) => 
+    apply_pattern_args (a_App a nu b) rest
+  | (p_Co g :: rest) => 
+    apply_pattern_args (a_CApp a g) rest
+  end.
+
+
 (* -------------- A specific signature with Fix ------------ *)
 Definition Fix : atom.
   pick fresh F.
@@ -759,8 +783,8 @@ uncurry F = F @ none
 
 
 uncurry p = F @ PA
----------------------------------- :: Rel
-uncurry (p R a) = F @ PA, \Rel a R
+----------------------------------------- :: Rel
+uncurry (p R a) = F @ Tm R a , PA
 
 % TODO: other cases (left out for now for development purposes)
 
@@ -787,12 +811,12 @@ pattern (p R a)
 
 
 pattern p
---------------- :: Irr
+--------------- :: Irrel
 pattern (p - a)
 
 
 pattern p
---------------- :: Coe
+--------------- :: Co
 pattern (p [g])
 
 
@@ -816,12 +840,12 @@ subpattern p' p
 subpattern p' (p R x)
 
 subpattern p' p
----------------------- :: Irr
+---------------------- :: Irrel
 subpattern p' (p - [])
 
 
 subpattern p' p
---------------------- :: Coe
+--------------------- :: Co
 subpattern p' (p [o])
 
 
@@ -1378,7 +1402,7 @@ defns
 JBranchTyping :: '' ::=
 
 defn
-G |= case R a : A of b : B -> C | C' ::    :: BranchTyping :: 'BranchTyping_'
+G |= Apps case R a : A of b @ pattern_args : B -> C | C' ::    :: BranchTyping :: 'BranchTyping_'
 {{ com Branch Typing (aligning the types of case) }}
 {{ tex [[G]] \vDash \mathsf{case}_{[[R]]} \hspace{2pt} [[a]] : [[A]] \hspace{2pt} \mathsf{of} \hspace{2pt} [[b]] : [[B]] \Rightarrow [[C]] \ | \, [[C']] }}
 by
@@ -1387,19 +1411,20 @@ ctx_uniq G
 {{ lc_tm [[C]] }}
 % ^ better way to do this? (hopefully making ott aware that C is lc)
 ------------------------------------------------------------- :: Base
-G |= case R a : A of b : A -> all c : (a ~ b : A / R) . C | C
+G |= emptyA case R a : A of b @ pattern_args : A -> all c : (a ~ apply b pattern_args : A / R) . C | C
 
-G, x : A |= case R a : A1 of b + x : B -> C | C'
+G, x : A |= Apps case R a : A1 of b @ Tm + x , pattern_args : B -> C | C'
 ------------------------------------------------------------------- :: PiRel
-G |= case R a : A1 of b : all + x : A -> B -> all + x : A -> C | C'
+G |= (Tm +, Apps) case R a : A1 of b @ pattern_args : all + x : A -> B -> all + x : A -> C | C'
 
-G, x : A |= case R a : A1 of b - [] : B -> C | C'
+G, x : A |= Apps case R a : A1 of b @ Tm - [] , pattern_args : B -> C | C'
 ------------------------------------------------------------------- :: PiIrrel
-G |= case R a : A1 of b : all - x : A -> B -> all - x : A -> C | C'
+G |= (Tm -, Apps) case R a : A1 of b @ pattern_args : all - x : A -> B -> all - x : A -> C | C'
 
-G, c : phi |= case R a : A of b [o] : B -> C | C'
+G, c : phi |= Apps case R a : A of b @ Co o , pattern_args : B -> C | C'
 ----------------------------------------------------------------- :: CPi
-G |= case R a : A of b : all c : phi. B -> all c : phi. C | C'
+G |= (Co, Apps) case R a : A of b @ pattern_args : all c : phi. B -> all c : phi. C | C'
+
 
 
 %%__ Typing/equality/wellformedness __%%
@@ -1499,10 +1524,10 @@ F : p ~ a : A / R1 @ Rs in toplevel
 G |= F : A
 
 G |= a : A
-G |= F : A1
+F : p ~ a0 : A1 / R1 @ Rs in toplevel
 G |= b1 : B
 G |= b2 : C
-G |= case R a : A of F : A1 -> B | C
+G |= Apps case R a : A of F @ none : A1 -> B | C
 ------------------------------------------ :: Case
 G |= case R a of F => b1 | _ => b2 : C
 
@@ -1662,11 +1687,11 @@ G ; D |= a ~ b : A/R1 == a' ~ b' : A'/R1
 G ; D |= A == A' : TYPE/Rep
 
 G ; D |= a == a' : A / R
-G |= F : A1
+F : p ~ a0 : A1 / R1 @ Rs in toplevel
 G ; D |= b1 == b1' : B / R0
 G ; D |= b2 == b2' : C / R0
-G |= case R a  : A of F : A1 -> B | C
-G |= case R a' : A of F : A1 -> B | C
+G |= Apps case R a  : A of F @ none : A1 -> B | C
+G |= Apps case R a' : A of F @ none : A1 -> B | C
 ------------------------------------------------------------------------------- :: PatCong
 G ; D |= case R a of F => b1 | _ => b2 == case R a' of F => b1' | _ => b2' : C / R0
 

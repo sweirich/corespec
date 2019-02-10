@@ -6,13 +6,13 @@ Definition datacon := atom.
 Definition const := atom.
 Definition index := nat. (*r indices *)
 
-Inductive relflag : Set :=  (*r relevance flag *)
- | Rel : relflag
- | Irrel : relflag.
-
 Inductive role : Set :=  (*r Role *)
  | Nom : role
  | Rep : role.
+
+Inductive relflag : Set :=  (*r relevance flag *)
+ | Rel : relflag
+ | Irrel : relflag.
 
 Inductive appflag : Set :=  (*r applicative flag *)
  | Role (R:role)
@@ -72,28 +72,33 @@ with co : Set :=  (*r explicit coercions *)
 
 Definition roles : Set := list role.
 
+Inductive pattern_arg : Set :=  (*r Pattern arguments *)
+ | p_Tm (nu:appflag) (a:tm)
+ | p_Co (g:co).
+
 Inductive sort : Set :=  (*r binding classifier *)
  | Tm (A:tm)
  | Co (phi:constraint).
+
+Inductive App : Set := 
+ | A_Tm (rho:relflag)
+ | A_Co : App.
 
 Inductive sig_sort : Set :=  (*r signature classifier *)
  | Cs (A:tm) (Rs:roles)
  | Ax (p:tm) (a:tm) (A:tm) (R:role) (Rs:roles).
 
-Inductive pattern_arg : Set :=  (*r Pattern arguments *)
- | pattern_arg_Rel (a:tm) (R:role)
- | pattern_arg_Irr (a:tm)
- | pattern_arg_Coe (g:co).
+Definition pattern_args : Set := list pattern_arg.
 
 Definition context : Set := list ( atom * sort ).
 
-Definition role_context : Set := list ( atom * role ).
+Definition Apps : Set := (list App).
 
-Definition sig : Set := list (atom * sig_sort).
+Definition role_context : Set := list ( atom * role ).
 
 Definition available_props : Type := atoms.
 
-Definition pattern_args : Set := list pattern_arg.
+Definition sig : Set := list (atom * sig_sort).
 
 Definition Nat : Set := nat.
 
@@ -241,9 +246,8 @@ end.
 
 Definition open_pattern_arg_wrt_tm_rec (k:nat) (a5:tm) (pattern_arg5:pattern_arg) : pattern_arg :=
   match pattern_arg5 with
-  | (pattern_arg_Rel a R) => pattern_arg_Rel (open_tm_wrt_tm_rec k a5 a) R
-  | (pattern_arg_Irr a) => pattern_arg_Irr (open_tm_wrt_tm_rec k a5 a)
-  | (pattern_arg_Coe g) => pattern_arg_Coe (open_co_wrt_tm_rec k a5 g)
+  | (p_Tm nu a) => p_Tm nu (open_tm_wrt_tm_rec k a5 a)
+  | (p_Co g) => p_Co (open_co_wrt_tm_rec k a5 g)
 end.
 
 Definition open_sig_sort_wrt_co_rec (k:nat) (g5:co) (sig_sort5:sig_sort) : sig_sort :=
@@ -260,9 +264,8 @@ end.
 
 Definition open_pattern_arg_wrt_co_rec (k:nat) (g5:co) (pattern_arg5:pattern_arg) : pattern_arg :=
   match pattern_arg5 with
-  | (pattern_arg_Rel a R) => pattern_arg_Rel (open_tm_wrt_co_rec k g5 a) R
-  | (pattern_arg_Irr a) => pattern_arg_Irr (open_tm_wrt_co_rec k g5 a)
-  | (pattern_arg_Coe g) => pattern_arg_Coe (open_co_wrt_co_rec k g5 g)
+  | (p_Tm nu a) => p_Tm nu (open_tm_wrt_co_rec k g5 a)
+  | (p_Co g) => p_Co (open_co_wrt_co_rec k g5 g)
 end.
 
 Definition open_sort_wrt_tm_rec (k:nat) (a5:tm) (sort5:sort) : sort :=
@@ -470,6 +473,15 @@ with lc_constraint : constraint -> Prop :=    (* defn lc_constraint *)
      (lc_tm A) ->
      (lc_constraint (Eq a b A R)).
 
+(* defns LC_pattern_arg *)
+Inductive lc_pattern_arg : pattern_arg -> Prop :=    (* defn lc_pattern_arg *)
+ | lc_p_Tm : forall (nu:appflag) (a:tm),
+     (lc_tm a) ->
+     (lc_pattern_arg (p_Tm nu a))
+ | lc_p_Co : forall (g:co),
+     (lc_co g) ->
+     (lc_pattern_arg (p_Co g)).
+
 (* defns LC_sort *)
 Inductive lc_sort : sort -> Prop :=    (* defn lc_sort *)
  | lc_Tm : forall (A:tm),
@@ -489,18 +501,6 @@ Inductive lc_sig_sort : sig_sort -> Prop :=    (* defn lc_sig_sort *)
      (lc_tm a) ->
      (lc_tm A) ->
      (lc_sig_sort (Ax p a A R Rs)).
-
-(* defns LC_pattern_arg *)
-Inductive lc_pattern_arg : pattern_arg -> Prop :=    (* defn lc_pattern_arg *)
- | lc_pattern_arg_Rel : forall (a:tm) (R:role),
-     (lc_tm a) ->
-     (lc_pattern_arg (pattern_arg_Rel a R))
- | lc_pattern_arg_Irr : forall (a:tm),
-     (lc_tm a) ->
-     (lc_pattern_arg (pattern_arg_Irr a))
- | lc_pattern_arg_Coe : forall (g:co),
-     (lc_co g) ->
-     (lc_pattern_arg (pattern_arg_Coe g)).
 (** free variables *)
 Fixpoint fv_tm_tm_co (g_5:co) : vars :=
   match g_5 with
@@ -630,15 +630,8 @@ end.
 
 Definition fv_co_co_pattern_arg (pattern_arg5:pattern_arg) : vars :=
   match pattern_arg5 with
-  | (pattern_arg_Rel a R) => (fv_co_co_tm a)
-  | (pattern_arg_Irr a) => (fv_co_co_tm a)
-  | (pattern_arg_Coe g) => (fv_co_co_co g)
-end.
-
-Definition fv_tm_tm_sig_sort (sig_sort5:sig_sort) : vars :=
-  match sig_sort5 with
-  | (Cs A Rs) => (fv_tm_tm_tm A)
-  | (Ax p a A R Rs) => (fv_tm_tm_tm p) \u (fv_tm_tm_tm a) \u (fv_tm_tm_tm A)
+  | (p_Tm nu a) => (fv_co_co_tm a)
+  | (p_Co g) => (fv_co_co_co g)
 end.
 
 Definition fv_co_co_sig_sort (sig_sort5:sig_sort) : vars :=
@@ -647,17 +640,22 @@ Definition fv_co_co_sig_sort (sig_sort5:sig_sort) : vars :=
   | (Ax p a A R Rs) => (fv_co_co_tm p) \u (fv_co_co_tm a) \u (fv_co_co_tm A)
 end.
 
-Definition fv_tm_tm_pattern_arg (pattern_arg5:pattern_arg) : vars :=
-  match pattern_arg5 with
-  | (pattern_arg_Rel a R) => (fv_tm_tm_tm a)
-  | (pattern_arg_Irr a) => (fv_tm_tm_tm a)
-  | (pattern_arg_Coe g) => (fv_tm_tm_co g)
-end.
-
 Definition fv_co_co_sort (sort5:sort) : vars :=
   match sort5 with
   | (Tm A) => (fv_co_co_tm A)
   | (Co phi) => (fv_co_co_constraint phi)
+end.
+
+Definition fv_tm_tm_pattern_arg (pattern_arg5:pattern_arg) : vars :=
+  match pattern_arg5 with
+  | (p_Tm nu a) => (fv_tm_tm_tm a)
+  | (p_Co g) => (fv_tm_tm_co g)
+end.
+
+Definition fv_tm_tm_sig_sort (sig_sort5:sig_sort) : vars :=
+  match sig_sort5 with
+  | (Cs A Rs) => (fv_tm_tm_tm A)
+  | (Ax p a A R Rs) => (fv_tm_tm_tm p) \u (fv_tm_tm_tm a) \u (fv_tm_tm_tm A)
 end.
 
 (** substitutions *)
@@ -789,9 +787,8 @@ end.
 
 Definition co_subst_co_pattern_arg (g5:co) (c5:covar) (pattern_arg5:pattern_arg) : pattern_arg :=
   match pattern_arg5 with
-  | (pattern_arg_Rel a R) => pattern_arg_Rel (co_subst_co_tm g5 c5 a) R
-  | (pattern_arg_Irr a) => pattern_arg_Irr (co_subst_co_tm g5 c5 a)
-  | (pattern_arg_Coe g) => pattern_arg_Coe (co_subst_co_co g5 c5 g)
+  | (p_Tm nu a) => p_Tm nu (co_subst_co_tm g5 c5 a)
+  | (p_Co g) => p_Co (co_subst_co_co g5 c5 g)
 end.
 
 Definition co_subst_co_sig_sort (g5:co) (c5:covar) (sig_sort5:sig_sort) : sig_sort :=
@@ -808,9 +805,8 @@ end.
 
 Definition tm_subst_tm_pattern_arg (a5:tm) (x5:tmvar) (pattern_arg5:pattern_arg) : pattern_arg :=
   match pattern_arg5 with
-  | (pattern_arg_Rel a R) => pattern_arg_Rel (tm_subst_tm_tm a5 x5 a) R
-  | (pattern_arg_Irr a) => pattern_arg_Irr (tm_subst_tm_tm a5 x5 a)
-  | (pattern_arg_Coe g) => pattern_arg_Coe (tm_subst_tm_co a5 x5 g)
+  | (p_Tm nu a) => p_Tm nu (tm_subst_tm_tm a5 x5 a)
+  | (p_Co g) => p_Co (tm_subst_tm_co a5 x5 g)
 end.
 
 Definition tm_subst_tm_sig_sort (a5:tm) (x5:tmvar) (sig_sort5:sig_sort) : sig_sort :=
@@ -928,6 +924,17 @@ Fixpoint vars_Pattern (p : tm) := match p with
    | a_CApp p1 g_Triv => vars_Pattern p1
    | _ => nil
    end.
+
+
+Fixpoint apply_pattern_args (a : tm) (args : pattern_args) : tm :=
+  match args with 
+  | nil => a
+  | (p_Tm nu b :: rest) => 
+    apply_pattern_args (a_App a nu b) rest
+  | (p_Co g :: rest) => 
+    apply_pattern_args (a_CApp a g) rest
+  end.
+
 
 (* -------------- A specific signature with Fix ------------ *)
 Definition Fix : atom.
@@ -1052,7 +1059,7 @@ Inductive PatData : tm -> const -> pattern_args -> Prop :=    (* defn PatData *)
  | PatData_Rel : forall (p:tm) (R:role) (a:tm) (F:const) (PA:pattern_args),
      lc_tm a ->
      PatData p F PA ->
-     PatData  ( (a_App p (Role R) a) )  F  (cons  (pattern_arg_Rel a R)   PA ) .
+     PatData  ( (a_App p (Role R) a) )  F  (cons  (p_Tm (Role R) a)   PA ) .
 
 (* defns JIsPattern *)
 Inductive Pattern : tm -> Prop :=    (* defn Pattern *)
@@ -1062,11 +1069,11 @@ Inductive Pattern : tm -> Prop :=    (* defn Pattern *)
      lc_tm a ->
      Pattern p ->
      Pattern  ( (a_App p (Role R) a) ) 
- | Pattern_Irr : forall (p a:tm),
+ | Pattern_Irrel : forall (p a:tm),
      lc_tm a ->
      Pattern p ->
      Pattern  ( (a_App p (Rho Irrel) a) ) 
- | Pattern_Coe : forall (p:tm) (g:co),
+ | Pattern_Co : forall (p:tm) (g:co),
      lc_co g ->
      Pattern p ->
      Pattern  ( (a_CApp p g) ) .
@@ -1079,10 +1086,10 @@ Inductive SubPat : tm -> tm -> Prop :=    (* defn SubPat *)
  | SubPat_Rel : forall (p' p:tm) (R:role) (x:tmvar),
      SubPat p' p ->
      SubPat p'  ( (a_App p (Role R) (a_Var_f x)) ) 
- | SubPat_Irr : forall (p' p:tm),
+ | SubPat_Irrel : forall (p' p:tm),
      SubPat p' p ->
      SubPat p'  ( (a_App p (Rho Irrel) a_Bullet) ) 
- | SubPat_Coe : forall (p' p:tm),
+ | SubPat_Co : forall (p' p:tm),
      SubPat p' p ->
      SubPat p'  ( (a_CApp p g_Triv) ) .
 
@@ -1462,24 +1469,24 @@ with reduction : tm -> tm -> role -> Prop :=    (* defn reduction *)
      reduction a a' R.
 
 (* defns JBranchTyping *)
-Inductive BranchTyping : context -> role -> tm -> tm -> tm -> tm -> tm -> tm -> Prop :=    (* defn BranchTyping *)
- | BranchTyping_Base : forall (L:vars) (G:context) (R:role) (a A b C:tm),
+Inductive BranchTyping : context -> Apps -> role -> tm -> tm -> tm -> pattern_args -> tm -> tm -> tm -> Prop :=    (* defn BranchTyping *)
+ | BranchTyping_Base : forall (L:vars) (G:context) (R:role) (a A b:tm) (pattern_args5:pattern_args) (C:tm),
      lc_tm C  ->
      lc_tm a ->
      lc_tm b ->
      lc_tm A ->
-     lc_tm (a_CPi  ( (Eq a b A R) )  C) ->
+     lc_tm (a_CPi  ( (Eq a  (apply_pattern_args  b   pattern_args5 )  A R) )  C) ->
       uniq  G  ->
-      ( forall c , c \notin  L  -> BranchTyping G R a A b A (a_CPi  ( (Eq a b A R) )  C)  ( open_tm_wrt_co C (g_Var_f c) )  ) 
- | BranchTyping_PiRel : forall (L:vars) (G:context) (R:role) (a A1 b A B C C':tm),
-      ( forall x , x \notin  L  -> BranchTyping  (( x ~ Tm  A ) ++  G )  R a A1 (a_App b (Rho Rel) (a_Var_f x))  ( open_tm_wrt_tm B (a_Var_f x) )   ( open_tm_wrt_tm C (a_Var_f x) )  C' )  ->
-     BranchTyping G R a A1 b (a_Pi Rel A B) (a_Pi Rel A C) C'
- | BranchTyping_PiIrrel : forall (L:vars) (G:context) (R:role) (a A1 b A B C C':tm),
-      ( forall x , x \notin  L  -> BranchTyping  (( x ~ Tm  A ) ++  G )  R a A1 (a_App b (Rho Irrel) a_Bullet)  ( open_tm_wrt_tm B (a_Var_f x) )   ( open_tm_wrt_tm C (a_Var_f x) )  C' )  ->
-     BranchTyping G R a A1 b (a_Pi Irrel A B) (a_Pi Irrel A C) C'
- | BranchTyping_CPi : forall (L:vars) (G:context) (R:role) (a A b:tm) (phi:constraint) (B C C':tm),
-      ( forall c , c \notin  L  -> BranchTyping  (( c ~ Co  phi ) ++  G )  R a A (a_CApp b g_Triv)  ( open_tm_wrt_co B (g_Var_f c) )   ( open_tm_wrt_co C (g_Var_f c) )  C' )  ->
-     BranchTyping G R a A b (a_CPi phi B) (a_CPi phi C) C'.
+      ( forall c , c \notin  L  -> BranchTyping G  nil  R a A b pattern_args5 A (a_CPi  ( (Eq a  (apply_pattern_args  b   pattern_args5 )  A R) )  C)  ( open_tm_wrt_co C (g_Var_f c) )  ) 
+ | BranchTyping_PiRel : forall (L:vars) (G:context) (Apps5:Apps) (R:role) (a A1 b:tm) (pattern_args5:pattern_args) (A B C C':tm),
+      ( forall x , x \notin  L  -> BranchTyping  (( x ~ Tm  A ) ++  G )  Apps5 R a A1 b  (cons  (p_Tm (Rho Rel) (a_Var_f x))   pattern_args5 )   ( open_tm_wrt_tm B (a_Var_f x) )   ( open_tm_wrt_tm C (a_Var_f x) )  C' )  ->
+     BranchTyping G  (  ( (A_Tm Rel) :: Apps5 )  )  R a A1 b pattern_args5 (a_Pi Rel A B) (a_Pi Rel A C) C'
+ | BranchTyping_PiIrrel : forall (L:vars) (G:context) (Apps5:Apps) (R:role) (a A1 b:tm) (pattern_args5:pattern_args) (A B C C':tm),
+      ( forall x , x \notin  L  -> BranchTyping  (( x ~ Tm  A ) ++  G )  Apps5 R a A1 b  (cons  (p_Tm (Rho Irrel) a_Bullet)   pattern_args5 )   ( open_tm_wrt_tm B (a_Var_f x) )   ( open_tm_wrt_tm C (a_Var_f x) )  C' )  ->
+     BranchTyping G  (  ( (A_Tm Irrel) :: Apps5 )  )  R a A1 b pattern_args5 (a_Pi Irrel A B) (a_Pi Irrel A C) C'
+ | BranchTyping_CPi : forall (L:vars) (G:context) (Apps5:Apps) (R:role) (a A b:tm) (pattern_args5:pattern_args) (phi:constraint) (B C C':tm),
+      ( forall c , c \notin  L  -> BranchTyping  (( c ~ Co  phi ) ++  G )  Apps5 R a A b  (cons  (p_Co g_Triv)   pattern_args5 )   ( open_tm_wrt_co B (g_Var_f c) )   ( open_tm_wrt_co C (g_Var_f c) )  C' )  ->
+     BranchTyping G  (  ( A_Co :: Apps5 )  )  R a A b pattern_args5 (a_CPi phi B) (a_CPi phi C) C'.
 
 (* defns Jett *)
 Inductive PropWff : context -> constraint -> Prop :=    (* defn PropWff *)
@@ -1545,12 +1552,12 @@ with Typing : context -> tm -> tm -> Prop :=    (* defn Typing *)
       binds  F  ( (Ax p a A R1 Rs) )   toplevel   ->
       ( Typing  nil  A a_Star )  ->
      Typing G (a_Fam F) A
- | E_Case : forall (G:context) (R:role) (a:tm) (F:const) (b1 b2 C A A1 B:tm),
+ | E_Case : forall (G:context) (R:role) (a:tm) (F:const) (b1 b2 C A p a0 A1:tm) (R1:role) (Rs:roles) (B:tm) (Apps5:Apps),
      Typing G a A ->
-     Typing G (a_Fam F) A1 ->
+      binds  F  ( (Ax p a0 A1 R1 Rs) )   toplevel   ->
      Typing G b1 B ->
      Typing G b2 C ->
-     BranchTyping G R a A (a_Fam F) A1 B C ->
+     BranchTyping G Apps5 R a A (a_Fam F)  nil  A1 B C ->
      Typing G (a_Pattern R a F b1 b2) C
 with Iso : context -> available_props -> constraint -> constraint -> Prop :=    (* defn Iso *)
  | E_PropCong : forall (G:context) (D:available_props) (A1 B1 A:tm) (R:role) (A2 B2:tm),
@@ -1657,13 +1664,13 @@ with DefEq : context -> available_props -> tm -> tm -> tm -> role -> Prop :=    
  | E_IsoSnd : forall (G:context) (D:available_props) (A A' a b:tm) (R1:role) (a' b':tm),
      Iso G D (Eq a b A R1) (Eq a' b' A' R1) ->
      DefEq G D A A' a_Star Rep
- | E_PatCong : forall (G:context) (D:available_props) (R:role) (a:tm) (F:const) (b1 b2 a' b1' b2' C:tm) (R0:role) (A A1 B:tm),
+ | E_PatCong : forall (G:context) (D:available_props) (R:role) (a:tm) (F:const) (b1 b2 a' b1' b2' C:tm) (R0:role) (A p a0 A1:tm) (R1:role) (Rs:roles) (B:tm) (Apps5:Apps),
      DefEq G D a a' A R ->
-     Typing G (a_Fam F) A1 ->
+      binds  F  ( (Ax p a0 A1 R1 Rs) )   toplevel   ->
      DefEq G D b1 b1' B R0 ->
      DefEq G D b2 b2' C R0 ->
-     BranchTyping G R a A (a_Fam F) A1 B C ->
-     BranchTyping G R a' A (a_Fam F) A1 B C ->
+     BranchTyping G Apps5 R a A (a_Fam F)  nil  A1 B C ->
+     BranchTyping G Apps5 R a' A (a_Fam F)  nil  A1 B C ->
      DefEq G D (a_Pattern R a F b1 b2) (a_Pattern R a' F b1' b2') C R0
  | E_LeftRel : forall (G:context) (D:available_props) (a a' A B:tm) (R':role) (F:const) (b b':tm) (R1:role),
      ValuePath a F ->
@@ -1801,6 +1808,6 @@ with ABeta : tm -> tm -> role -> Prop :=    (* defn ABeta *)
 
 
 (** infrastructure *)
-Hint Constructors SubRole RolePath PatternContexts Rename MatchSubst PatData Pattern SubPat tm_pattern_agree tm_subpattern_agree subtm_pattern_agree ValuePath CasePath ApplyArgs Value value_type consistent roleing RhoCheck Par MultiPar joins Beta reduction_in_one reduction BranchTyping PropWff Typing Iso DefEq Ctx Sig RoleWeaken SigWeaken AnnPropWff AnnTyping AnnIso AnnDefEq AnnCtx head_reduction ATyping ABeta lc_co lc_brs lc_tm lc_constraint lc_sort lc_sig_sort lc_pattern_arg.
+Hint Constructors SubRole RolePath PatternContexts Rename MatchSubst PatData Pattern SubPat tm_pattern_agree tm_subpattern_agree subtm_pattern_agree ValuePath CasePath ApplyArgs Value value_type consistent roleing RhoCheck Par MultiPar joins Beta reduction_in_one reduction BranchTyping PropWff Typing Iso DefEq Ctx Sig RoleWeaken SigWeaken AnnPropWff AnnTyping AnnIso AnnDefEq AnnCtx head_reduction ATyping ABeta lc_co lc_brs lc_tm lc_constraint lc_pattern_arg lc_sort lc_sig_sort.
 
 

@@ -433,19 +433,22 @@ Qed.
 
 Lemma invert_a_Pattern : `(
       Typing G (a_Pattern R a F b1 b2) B ->
-      exists A A1 B0 C, Typing G a A /\ Typing G (a_Fam F) A1 /\ Typing G b1 B0 /\ Typing G b2 C 
-                /\ BranchTyping G R a A (a_Fam F) A1 B0 C
+      exists A A1 B0 C n, Typing G a A /\ Typing G (a_Fam F) A1 /\ Typing G b1 B0 /\ Typing G b2 C 
+                /\ BranchTyping G n R a A (a_Fam F) nil A1 B0 C
                 /\ DefEq G (dom G) C B a_Star Rep).
 Proof. intros. dependent induction H.
         - destruct (IHTyping1 R a F b1 b2 ltac:(auto)) as
-          [A0 [A1 [B0 [C [P1 [P2 [P3 [P4 [P5 P6]]]]]]]]].
-          exists A0, A1, B0, C. repeat split; eauto 2.
-        - exists A, A1, B, C. repeat split. auto. auto.
-          auto. auto. auto. 
+          [A0 [A1 [B0 [C [P1 [P2 [P3 [P4 [P5 [P6 P7]]]]]]]]]].
+          exists A0, A1, B0, C. exists P1. repeat split; eauto 2.
+        - exists A, A1, B, C. 
+          admit. 
+(*          move: (toplevel_inversion H0) => [W [G0 [B0 h]]]. split_hyp.
+          repeat split; auto. 
+          eapply E_Fam; eauto using Typing_Ctx.
           eapply E_Refl.
           eapply Typing_regularity. 
-          eauto.
-Qed.
+          eauto. *)
+Admitted.
 
 (* --------------------------------------------------- *)
 
@@ -584,9 +587,11 @@ Proof.
 Qed.
 
 Lemma context_Defeq_BranchTyping : 
-  forall G1 R a A b A1 B C,   BranchTyping G1 R a A b A1 B C 
-                       -> forall G2, uniq G2 -> BranchTyping G2 R a A b A1 B C.
+  forall G1 n R a A b aa A1 B C,  BranchTyping G1 n R a A b aa A1 B C 
+                       -> forall G2, uniq G2 -> BranchTyping G2 n R a A b aa A1 B C.
 Proof.  
+Admitted.
+(*
   induction 1; intros.
   - eauto.
   - E_pick_fresh x.
@@ -595,7 +600,7 @@ Proof.
     eapply H0; auto.
   - E_pick_fresh x.
     eapply H0; auto.
-Qed.
+Qed. *)
     
 Lemma context_DefEq_mutual:
   (forall G1  a A,   Typing G1 a A -> forall D G2,
@@ -983,7 +988,8 @@ Proof.
     split_hyp.
     clear con.
     split; eapply E_Case; eauto 3.
-Unshelve. all: exact Rep.
+Unshelve. eauto. all: try exact Rep.
+all: eauto.
 Qed.
 
 Lemma DefEq_regularity :
@@ -1281,7 +1287,6 @@ Qed.
 (****************************)
 (**** Regularity Tactics ****)
 (****************************)
-Print Implicit Typing_Ctx.
 
 Ltac reg H :=
   match type of H with
@@ -1359,6 +1364,8 @@ Ltac autoinv :=
     | [H : _ ⊨ a_UAbs _ _ _      : _ |- _] => eapply invert_a_UAbs in H; autofwd
     | [H : _ ⊨ a_UCAbs _         : _ |- _] => eapply invert_a_UCAbs in H; autofwd
     | [H : _ ⊨ a_Fam _           : _ |- _] => eapply invert_a_Fam in H; destruct H; autofwd
+    | [H : _ ⊨ a_Pattern _ _ _ _ _ : _ |- _ ] => eapply invert_a_Pattern in H; 
+         autofwd
 (*    | [H : _ ⊨ a_Conv _ _ _      : _ / _ |- _] => eapply invert_a_Conv in H; pcess_hyps *)
   (* TODO *)
   end.
