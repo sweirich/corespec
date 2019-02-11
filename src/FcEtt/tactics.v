@@ -38,6 +38,16 @@ Polymorphic (* Cumulative *) Inductive Dyn : Type := dyn : forall {T : Type}, T 
 
 Inductive Display {T : Type} : T → Prop := display : ∀ (t : T), Display t.
 
+(* Hiding/unhiding the type of a hyp *)
+Polymorphic Definition _hide {T : Type} (t : T) : T := t.
+Polymorphic Definition _eq_hide {T : Type} (t : T) : t = _hide t := eq_refl.
+
+Notation "'_hidden_'" := (_hide _) (at level 50, only printing).
+
+Ltac hide H := match type of H with ?T => rewrite -> (_eq_hide T) in H end.
+Ltac unhide H := unfold _hide in H.
+
+
 Ltac unwrap_dyn d :=
   match d with
     | dyn ?v => v
@@ -654,8 +664,12 @@ Tactic Notation (at level 0) "revert" "all" "except" ident(H) := TacticsInternal
 Tactic Notation "exactly" integer(n) "goal" := TacticsInternals.check_num_goals_eq n.
 Tactic Notation "exactly" integer(n) "goals" := TacticsInternals.check_num_goals_eq n.
 
-Ltac invs := TacticsInternals.invs.
-Ltac softclear := TacticsInternals.softclear.
+Ltac invs := TacticsInternals.invs. (* Inversion (of a hyp) and substitution *)
+
+(* Hiding/unhiding the type of a hyp *)
+Ltac hide      := TacticsInternals.hide.
+Ltac unhide    := TacticsInternals.unhide.
+Ltac softclear := TacticsInternals.softclear. (* This tactic goes further, and prevents the hyp from being used again *)
 
 (* FIXME: rely on internals *)
 Tactic Notation "basic_nosolve_n" int_or_var(n) := intuition (subst; eauto n).
