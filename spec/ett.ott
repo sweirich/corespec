@@ -85,7 +85,7 @@ tm, a, b, p, v, w, A, B, C :: 'a_' ::= {{ com types and kinds }}
 
   | []                   ::   :: Bullet
 
-  | case R a of F => b1 | _ => b2 ::   :: Pattern
+  | case R a of F @ Apps => b1 | _ => b2 ::   :: Pattern
 
   | apply a pattern_args :: M :: ApplyPA
     {{ coq (apply_pattern_args [[a]] [[pattern_args]]) }}
@@ -135,6 +135,14 @@ tm, a, b, p, v, w, A, B, C :: 'a_' ::= {{ com types and kinds }}
   | all x : A -> B       :: S :: RelPi
   | if phi then a else b :: S :: If
 
+App :: 'A_' ::= 
+   | Tm nu           ::    :: Tm 
+   | Co              ::    :: Co
+
+Apps :: 'A_' ::= {{ coq (list App) }}
+   | emptyA          ::    :: nilA  {{ coq nil }}
+   | App , Apps      ::    :: consA {{ coq ([[App]]::[[Apps]]) }}
+   | ( Apps )        :: M  :: Paren {{ coq ([[Apps]]) }}
 
 
 %% Currently unused
@@ -248,15 +256,16 @@ role_context, W {{ tex \Omega }} :: 'rctx_' ::= {{ com role_contexts }}
    | (# W #)         :: M  :: SecretParen {{ coq [[W]] }} {{ tex [[W]] }}
 
 roles, Rs :: '' ::= {{ coq list role }} 
-   | nilR       ::  :: nilR {{ coq nil }}
-   | R , Rs     ::  :: consR {{ coq ([[R]]::[[Rs]]) }}
-   | range W   :: S :: rangeR {{ coq (range([[W]])) }}
+   | nilR       ::   :: nilR {{ coq nil }}
+   | R , Rs     ::   :: consR {{ coq ([[R]]::[[Rs]]) }}
+   | range W    :: S :: rangeR {{ coq (range([[W]])) }}
+   | range Apps :: S :: rangeA {{ coq (rangeA([[Apps]])) }}
 
 sig_sort :: '' ::= {{ com signature classifier }}
    | A @ Rs            ::    :: Cs
      {{ tex _[[Rs]] \ [[A]] }}
-   | p ~ a : A / R @ Rs    ::    :: Ax
-     {{ tex _[[Rs]] \ [[p]] \sim_{[[R]]} [[a]] : [[A]]  }}
+   | Apps ~ a : A / R @ Rs    ::    :: Ax
+     {{ tex _[[Rs]] \ [[Apps]] \sim_{[[R]]} [[a]] : [[A]]  }}
 
 sort :: '' ::= {{ com binding classifier }}
    | Tm A             ::   :: Tm
@@ -313,14 +322,6 @@ Nat, N {{ tex \mathbb{N} }} :: 'N_' ::= {{ coq nat }}
    | ( N )           :: M  :: Paren {{ coq ([[N]]) }}
    | length a :: S :: Pattern_length {{ coq (pattern_length [[a]]) }} {{ tex | [[a]] | }}
 
-App :: 'A_' ::= 
-   | Tm rho          ::    :: Tm 
-   | Co              ::    :: Co
-
-Apps :: 'A_' ::= {{ coq (list App) }}
-   | emptyA          ::    :: nilA  {{ coq nil }}
-   | App , Apps      ::    :: consA {{ coq ([[App]]::[[Apps]]) }}
-   | ( Apps )        :: M  :: Paren {{ coq ([[Apps]]) }}
 
 substitutions
   single G x :: ctx_subst_tm
@@ -546,7 +547,7 @@ Fixpoint erase_tm (a : tm) (r : role) : tm :=
    | a_DataCon K => a_Star  (* a_DataCon K *)
    | a_Case a brs => a_Star (* a_Case (erase_tm a) (erase_brs brs) *)
    | a_Bullet => a_Bullet
-   | a_Pattern R a1 F b1 b2 => a_Pattern R (erase_tm a1 r) F (erase_tm b1 r) (erase_tm b2 r)
+   | a_Pattern R a1 F args b1 b2 => a_Pattern R (erase_tm a1 r) F args (erase_tm b1 r) (erase_tm b2 r)
    | a_Sub _ a => erase_tm a r
    end
 with erase_brs (x : brs) (r:role): brs :=
@@ -569,7 +570,7 @@ end.
 Definition erase_csort s r :=
  match s with
  | Cs a Rs => Cs (erase_tm a r) Rs
- | Ax p a A R Rs => Ax (erase_tm p r) (erase_tm a r) (erase_tm A r) R Rs
+ | Ax p a A R Rs => Ax p (erase_tm a r) (erase_tm A r) R Rs
 end.
 
 Definition erase_context G r := map (fun s => erase_sort s r) G.
@@ -623,7 +624,7 @@ Definition FixDef : tm := a_App (a_Var_f FixVar2) (Rho Rel) (a_App (a_App (a_Fam
 
 Definition FixTy : tm := a_Var_f FixVar1.
 
-Definition an_toplevel : sig := Fix ~ Ax FixPat FixDef FixTy Rep (Nom :: [Nom]).
+Definition an_toplevel : sig := Fix ~ Ax (A_Tm (Rho Irrel) :: A_Tm (Rho Rel) :: nil) FixDef FixTy Rep (Nom :: [Nom]).
 
 Definition toplevel : sig := erase_sig an_toplevel Nom.
 
@@ -631,6 +632,14 @@ Fixpoint range (L : role_context) : roles :=
   match L with
   | nil => nil
   | (x,R) :: L' => range(L') ++ [ R ]
+  end.
+
+Fixpoint rangeA (p : list App) : roles :=
+  match p with 
+  | nil => nil
+  | A_Tm (Role R) :: p' => R :: rangeA p'
+  | A_Tm (Rho _)  :: p' => rangeA p'
+  | A_Co          :: p' => rangeA p'
   end.
 
 }}
@@ -677,7 +686,7 @@ F : A @ Rs in toplevel
 --------------------- :: AbsConst
 RolePath F = F @ Rs
 
-F : p ~ a : A/R1 @ Rs in toplevel
+F : Apps ~ a : A/R1 @ Rs in toplevel
 --------------------------------- :: Const
 RolePath F = F @ Rs
 
@@ -935,7 +944,7 @@ F : A @ Rs in toplevel
 --------------------- :: AbsConst
 ValuePath F +> F
 
-F : p ~ a : A/R1 @ Rs in toplevel
+F : Apps ~ a : A/R1 @ Rs in toplevel
 ---------------------------------- :: Const
 ValuePath F +> F
 
@@ -963,16 +972,35 @@ F : A @ Rs in toplevel
 CasePath R a +> F
 
 ValuePath a +> F
-F : p ~ b : A/R1 @ Rs in toplevel
+F : Apps ~ b : A/R1 @ Rs in toplevel
 not (R1 <= R)
 ----------------------------------- :: Const
 CasePath R a +> F
 
 ValuePath a +> F
-F : p ~ b : A/R1 @ Rs in toplevel
+F : Apps ~ b : A/R1 @ Rs in toplevel
 not (a  = p +)
 ------------------------------------- :: UnMatch
 CasePath R a +> F
+
+defns 
+JPatArgs :: '' ::=
+
+defn 
+subst args a in b +> b' ::  :: SubstArgs :: 'SubstArgs_'
+by
+
+----------------------------------- :: Const
+subst args F in b +> b
+
+subst args a in b +> b'
+------------------------------------------------------- :: App
+subst args a nu a' in (\rho x. b) +> b' { a' / x }
+
+subst args a in b +> b'
+------------------------------------------------------- :: CApp
+subst args a [o] in (/\c. b) +> b' { o / c }
+
 
 defns
 JApplyArgs :: '' ::=
@@ -1155,15 +1183,41 @@ F : A @ Rs in toplevel
 W |= F : R
 
 rctx_uniq W
-F : p ~ a : A / R @ Rs in toplevel
+F : Apps ~ a : A / R @ Rs in toplevel
 ---------------------------------- :: Fam
 W |= F : R1
 
 W |= a : R
-W |= b1 : R1
+W ; Apps |= b1 : R1
 W |= b2 : R1
 --------------------------------------- :: Pattern
-W |= case R a of F => b1 | _ => b2 : R1
+W |= case R a of F @ Apps => b1 | _ => b2 : R1
+
+defn 
+  W ; Apps |= a : R  ::   :: app_roleling :: 'role_a_'
+by
+
+W |= a : R
+-------------------- :: Nil
+W ; emptyA |= a : R
+
+
+W , x : R ; Apps |= a : R
+--------------------------- :: ConsRole
+W ; Tm R , Apps |= \rho x. a : R
+
+
+W , x : Nom ; Apps |= a : R
+----------------------------- :: ConsRho
+W ; Tm rho , Apps |= \rho x . a : R
+
+
+W ; Apps |= b : R
+----------------------------- :: ConsCo
+W ; Co , Apps |= /\c.b : R
+
+
+
 
 defns
 JChk :: '' ::=
@@ -1239,27 +1293,25 @@ W |= B => B' / R
 ------------------------------------------------------------------ :: CPi
 W |= all c:a~b:A/R1. B => all c:a'~b':A'/R1. B' / R
 
-F : F ~ b : A/R1 @ Rs in toplevel
+F : Apps ~ b : A/R1 @ Rs in toplevel
 R1 <= R
 rctx_uniq W
 ------------------------------------------------------------------- :: AxiomBase
 W |= F => b / R
 
-F : p ~ b : A/R1 @ Rs in toplevel
-a + = p /\ not (a <-> p)
+F : Apps ~ b : A/R1 @ Rs in toplevel
+%% a + = p /\ not (a <-> p)
 W |= a => a' / R
 W |= a1 => a1' / (app_role nu)
-rename p -> b to p' -> b' excluding (dom W, fv p) and D'
-match (a' nu a1') with p' -> b' +> a2
+subst args (a nu a1) in b +> a2
 R1 <= R
 ------------------------------------------------------------------- :: AxiomApp
 W |= a nu a1 => a2 / R
 
-F : p ~ b : A/R1 @ Rs in toplevel
-a + = p /\ not (a <-> p)
+F : Apps ~ b : A/R1 @ Rs in toplevel
+%% a + = p /\ not (a <-> p)
 W |= a => a' / R
-rename p -> b to p' -> b' excluding (dom W, fv p) and D'
-match (a' [o]) with p' -> b' +> a2
+subst args (a' [o]) in b +> a2
 R1 <= R
 ------------------------------------------------------------------- :: AxiomCApp
 W |= a [o] => a2 / R
@@ -1268,15 +1320,15 @@ W |= a => a' / R
 W |= b1 => b1' / R0
 W |= b2 => b2' / R0
 ------------------------------------------------------------------------------- :: Pattern
-W |= (case R a of F => b1 | _ => b2) => (case R a' of F => b1' | _ => b2') / R0
+W |= (case R a of F @ Apps => b1 | _ => b2) => (case R a' of F @ Apps => b1' | _ => b2') / R0
 
 W |= a => a' / R
 W |= b1 => b1' / R0
 W |= b2 => b2' / R0
 CasePath R a' +> F
-apply args a' to b1' +> b
+subst args a' in b1' +> b
 --------------------------------------------- :: PatternTrue
-W |= (case R a of F => b1 | _ => b2) => b [o] / R0
+W |= (case R a of F @ Apps  => b1 | _ => b2) => b [o] / R0
 
 W |= a => a' / R
 W |= b1 => b1' / R0
@@ -1284,7 +1336,7 @@ W |= b2 => b2' / R0
 Value R a'
 not (CasePath R a' +> F)
 ------------------------------------------------ :: PatternFalse
-W |= (case R a of F => b1 | _ => b2) => b2' / R0
+W |= (case R a of F @ Apps => b1 | _ => b2) => b2' / R0
 
 
 defn
@@ -1332,22 +1384,22 @@ Value R1 (\rho x. v)
 |= (/\c .a') [o] > a' { o / c } / R
 
 
-F : p ~ b : A/R1 @ Rs in toplevel
-rename p -> b to p1 -> b1 excluding (fv a, fv p) and D'
-match a with p1 -> b1 +> b'
+CasePath R a +> F
+F : Apps ~ b : A/R1 @ Rs in toplevel
+subst args a in b +> b' 
 R1 <= R
 -------------------------------------------------------- :: Axiom
 |= a > b' / R
 
 CasePath R a +> F
-apply args a to b1 +> b1'
+subst args a in b1 +> b1'
 ------------------------------------------ :: PatternTrue
-|= case R a of F => b1 | _ => b2 > b1' [o] / R0
+|= case R a of F @ Apps => b1 | _ => b2 > b1' [o] / R0
 
 Value R a
 not (CasePath R a +> F)
 ------------------------------------------ :: PatternFalse
-|= case R a of F => b1 | _ => b2 > b2 / R0
+|= case R a of F @ Apps => b1 | _ => b2 > b2 / R0
 
 defn
  |= a ~> b / R ::   :: reduction_in_one :: 'E_'
@@ -1369,7 +1421,7 @@ by
 
 |= a ~> a' / R
 ----------------------------------------------------------------------- :: Pattern
-|= case R a of F => b1 | _ => b2 ~> case R a' of F => b1 | _ => b2 / R0
+|= case R a of F @ Apps  => b1 | _ => b2 ~> case R a' of F @ Apps => b1 | _ => b2 / R0
 
 |= a > b / R
 ----------------------------- :: Prim
@@ -1402,7 +1454,7 @@ defns
 JBranchTyping :: '' ::=
 
 defn
-G |= Apps case R a : A of b @ pattern_args : B -> C | C' ::    :: BranchTyping :: 'BranchTyping_'
+G |= Apps case R a : A of b @ pattern_args : B -> b1 : C | C' ::    :: BranchTyping :: 'BranchTyping_'
 {{ com Branch Typing (aligning the types of case) }}
 {{ tex [[G]] \vDash \mathsf{case}_{[[R]]} \hspace{2pt} [[a]] : [[A]] \hspace{2pt} \mathsf{of} \hspace{2pt} [[b]] : [[B]] \Rightarrow [[C]] \ | \, [[C']] }}
 by
@@ -1411,19 +1463,19 @@ ctx_uniq G
 {{ lc_tm [[C]] }}
 % ^ better way to do this? (hopefully making ott aware that C is lc)
 ------------------------------------------------------------- :: Base
-G |= emptyA case R a : A of b @ pattern_args : A -> all c : (a ~ apply b pattern_args : A / R) . C | C
+G |= emptyA case R a : A of b @ pattern_args : A -> all c : (a ~ apply b pattern_args : A / R) . b1 : C | C
 
-G, x : A |= Apps case R a : A1 of b @ Tm + x , pattern_args : B -> C | C'
+G, x : A |= Apps case R a : A1 of b @ Tm + x , pattern_args : B -> b1 : C | C'
 ------------------------------------------------------------------- :: PiRel
-G |= (Tm +, Apps) case R a : A1 of b @ pattern_args : all + x : A -> B -> all + x : A -> C | C'
+G |= (Tm +, Apps) case R a : A1 of b @ pattern_args : all + x : A -> B -> \+ x. b1 : all + x : A -> C | C'
 
-G, x : A |= Apps case R a : A1 of b @ Tm - [] , pattern_args : B -> C | C'
+G, x : A |= Apps case R a : A1 of b @ Tm - [] , pattern_args : B -> b1 : C | C'
 ------------------------------------------------------------------- :: PiIrrel
-G |= (Tm -, Apps) case R a : A1 of b @ pattern_args : all - x : A -> B -> all - x : A -> C | C'
+G |= (Tm -, Apps) case R a : A1 of b @ pattern_args : all - x : A -> B -> \-x. b1: all - x : A -> C | C'
 
-G, c : phi |= Apps case R a : A of b @ Co o , pattern_args : B -> C | C'
+G, c : phi |= Apps case R a : A of b @ Co o , pattern_args : B -> b1 : C | C'
 ----------------------------------------------------------------- :: CPi
-G |= (Co, Apps) case R a : A of b @ pattern_args : all c : phi. B -> all c : phi. C | C'
+G |= (Co, Apps) case R a : A of b @ pattern_args : all c : phi. B -> /\c. b1 : all c : phi. C | C'
 
 
 
@@ -1518,18 +1570,18 @@ F : A @ Rs in toplevel
 G |= F : A
 
 |= G
-F : p ~ a : A / R1 @ Rs in toplevel
+F : Apps ~ a : A / R1 @ Rs in toplevel
 [ empty |= A : TYPE ]
 ---------------------------- :: Fam
 G |= F : A
 
 G |= a : A
-F : p ~ a0 : A1 / R1 @ Rs in toplevel
+F : Apps ~ a0 : A1 / R1 @ Rs in toplevel
 G |= b1 : B
 G |= b2 : C
-G |= Apps case R a : A of F @ none : A1 -> B | C
+G |= Apps case R a : A of F @ none : A1 -> b1 : B | C
 ------------------------------------------ :: Case
-G |= case R a of F => b1 | _ => b2 : C
+G |= case R a of F @ Apps => b1 | _ => b2 : C
 
 
 
@@ -1687,13 +1739,13 @@ G ; D |= a ~ b : A/R1 == a' ~ b' : A'/R1
 G ; D |= A == A' : TYPE/Rep
 
 G ; D |= a == a' : A / R
-F : p ~ a0 : A1 / R1 @ Rs in toplevel
+F : Apps ~ a0 : A1 / R1 @ Rs in toplevel
 G ; D |= b1 == b1' : B / R0
 G ; D |= b2 == b2' : C / R0
-G |= Apps case R a  : A of F @ none : A1 -> B | C
-G |= Apps case R a' : A of F @ none : A1 -> B | C
+G |= Apps case R a  : A of F @ none : A1 -> b1  : B | C
+G |= Apps case R a' : A of F @ none : A1 -> b1' : B | C
 ------------------------------------------------------------------------------- :: PatCong
-G ; D |= case R a of F => b1 | _ => b2 == case R a' of F => b1' | _ => b2' : C / R0
+G ; D |= case R a of F @ Apps => b1 | _ => b2 == case R a' of F @ Apps => b1' | _ => b2' : C / R0
 
 ValuePath a  +> F
 ValuePath a' +> F
@@ -1783,12 +1835,10 @@ F notin dom S
 
 |= S
 F notin dom S
-empty |= A : TYPE
-W ; G |= F, A; p : B
-G |= a : B
-W |= a : R
+empty |= a : A
+empty ; Apps |= a : R 
 -------------------------------- :: ConsAx
-|= S, F : p ~ a : A/R @ range W
+|= S, F : Apps ~ a : A/R @ range Apps
 
 
 defns 
@@ -1819,7 +1869,7 @@ S1 <= S2, F : sig_sort
 S1 <= S2
 Rs1 <= Rs2
 -----------------------------------------------------  :: Hide
-S1 , F : A @ Rs1 <= S2 , F : p ~ a : A / R @ Rs2 
+S1 , F : A @ Rs1 <= S2 , F : Apps ~ a : A / R @ Rs2 
 
 S1 <= S2
 Rs1 <= Rs2
@@ -1829,7 +1879,7 @@ S1 , F : A @ Rs1 <= S2 , F : A @ Rs2
 S1 <= S2
 Rs1 <= Rs2
 ---------------------------------------------------------------  :: WeakenAxiom
-S1 , F : p' ~ a : A / R @ Rs1 <= S2 , F : p ~ a : A / R @ Rs2 
+S1 , F : Apps ~ a : A / R @ Rs1 <= S2 , F : Apps ~ a : A / R @ Rs2 
 
 ------------------ :: Empty
 emptyS <= emptyS
@@ -2248,7 +2298,7 @@ defn
 {{ com fake rules for the paper }}
 by
 
-F : p ~ b : A/R1 @ Rs in toplevel
+F : Apps ~ b : A/R1 @ Rs in toplevel
 match a with p -> b +> b'
 R1 <= R
 -------------------------------------------------------- :: Axiom
