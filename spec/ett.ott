@@ -62,6 +62,7 @@ constraint, phi {{ tex \phi }} :: '' ::= {{ com props }}
   | phi { b / x }    :: S :: Subst
   | | phi |          :: S :: Erase
   | a ~ b / R        :: S :: EqNT
+  | a ~ b            :: S :: EqNRT
 
 
 
@@ -135,12 +136,13 @@ tm, a, b, p, v, w, A, B, C :: 'a_' ::= {{ com types and kinds }}
   | all x : A -> B       :: S :: RelPi
   | if phi then a else b :: S :: If
 
-App :: 'A_' ::= 
+App {{ tex \Lambda }} :: 'A_' ::= 
    | Tm nu           ::    :: Tm 
    | Co              ::    :: Co
 
-Apps :: 'A_' ::= {{ coq (list App) }}
+Apps {{ tex \overline{\Lambda} }} :: 'A_' ::= {{ coq (list App) }}
    | emptyA          ::    :: nilA  {{ coq nil }}
+      {{ tex }}
    | App , Apps      ::    :: consA {{ coq ([[App]]::[[Apps]]) }}
    | ( Apps )        :: M  :: Paren {{ coq ([[Apps]]) }}
 
@@ -255,7 +257,7 @@ role_context, W {{ tex \Omega }} :: 'rctx_' ::= {{ com role_contexts }}
    | ( W )           :: M  :: Paren   {{ coq ([[W]]) }}
    | (# W #)         :: M  :: SecretParen {{ coq [[W]] }} {{ tex [[W]] }}
 
-roles, Rs :: '' ::= {{ coq list role }} 
+roles , Rs {{ tex \overline{R} }} :: '' ::= {{ coq list role }} 
    | nilR       ::   :: nilR {{ coq nil }}
    | R , Rs     ::   :: consR {{ coq ([[R]]::[[Rs]]) }}
    | range W    :: S :: rangeR {{ coq (range([[W]])) }}
@@ -263,9 +265,9 @@ roles, Rs :: '' ::= {{ coq list role }}
 
 sig_sort :: '' ::= {{ com signature classifier }}
    | A @ Rs            ::    :: Cs
-     {{ tex _[[Rs]] \ [[A]] }}
+     {{ tex _{[[Rs]]} \ [[A]] }}
    | Apps ~ a : A / R @ Rs    ::    :: Ax
-     {{ tex _[[Rs]] \ [[Apps]] \sim_{[[R]]} [[a]] : [[A]]  }}
+     {{ tex _{[[Rs]]} \ [[Apps]] \sim_{[[R]]} [[a]] : [[A]]  }}
 
 sort :: '' ::= {{ com binding classifier }}
    | Tm A             ::   :: Tm
@@ -340,12 +342,13 @@ freevars
 
 grammar
 
-pattern_arg :: 'p_' ::= {{ com Pattern arguments }}
+
+pattern_arg {{tex \eta}} :: 'p_' ::= {{ com Pattern arguments, Applicator }}
   | Tm nu a       ::   :: Tm
   | Co g          ::   :: Co
 
 
-pattern_args, PA :: 'pattern_args_' ::= {{ coq list pattern_arg }}
+pattern_args {{tex \overline{\eta} }}, PA :: 'pattern_args_' ::= {{ coq list pattern_arg }}
   | none                  ::   :: None {{ coq nil }}
   | pattern_arg , PA ::   :: Cons {{ coq (cons [[pattern_arg]] [[PA]]) }}
 
@@ -369,7 +372,7 @@ terminals :: 'terminals_' ::=
   | =>                ::   :: infer         {{ tex \Rightarrow }}
   | =>*               ::   :: minfer        {{ tex \Rightarrow^{\ast} }}
   | ->                ::   :: arrow         {{ tex \to }}
-  | /\                ::   :: ilam          {{ tex \mathrm{\Lambda} }}   % Swag
+  | /\                ::   :: ilam          {{ tex \mathrm{\lambda} }}   % Swag
   | <-|               ::   :: mapsfrom      {{ tex \mapsfrom }}
   | []                ::   :: box           {{ tex \Box }}
   | |-                ::   :: entails       {{ tex \vdash }}
@@ -1612,6 +1615,7 @@ defn
 
 G ; D |= a == b : A / R ::     :: DefEq :: 'E_'
 {{ com definitional equality }}
+{{ tex [[G]]; [[D]] \vdash [[a]] [[==]]_[[R]] [[b]] : [[A]] }}
 by
 
 |= G
@@ -2278,6 +2282,119 @@ by
 % % G |- (v |>R' g) [g1] ~>h ((v [g1']) |>R' g') / R
 % %
 
+defns 
+JSrc :: '' ::=
+
+defn
+G |=src a ~> a' : A ::   :: SrcTyping :: 'S_'
+{{ com typing }}
+by
+
+|= G
+---------------------  :: Star
+G |=src TYPE ~> TYPE : TYPE
+
+|= G  
+x:A in G
+------------------- :: Var
+G |=src x ~> x : A
+
+G |=src A ~> A': TYPE
+G, x:A' |=src B ~> B' : TYPE
+---------------------------------------------------------- :: Pi
+G |=src (all rho x:A -> B) ~> (all rho x:A' -> B') : TYPE
+
+G, x:A  |=src a ~> a' : B
+---------------------------------- :: Abs
+G |=src \ x . a ~> \+x. a' : ( all + x:A -> B )
+
+G, x:A  |=src a ~> a' : B
+x notin fv a
+---------------------------------- :: IAbs
+G |=src a ~> \-x. a : ( all - x:A -> B )
+
+
+G |=src b ~> b' : all+ x : A -> B
+G |=src a ~> a' : A
+------------------------------------- :: App
+G |=src b a ~> b' + a' : B { a / x }
+
+G |=src b ~> b' : all+ x : A -> B
+G |=src a ~> a' : A
+RolePath b = F @ R, Rs
+------------------------------------- :: TApp
+G |=src b a ~> b' R a' : B { a / x }
+
+
+G |=src b ~> b' : all - x : A -> B
+G |= a : A
+------------------------------------- :: IApp
+G |=src b ~> b' - [] : B { a / x }
+
+G |=src a ~> a' : A
+G ; dom G |= A == B : TYPE / Nom
+----------------------------- :: Conv
+G |=src a ~> a' : B
+
+% G |=src a ~> a' : A
+% G ; dom G |= A == B : TYPE / Rep
+% --------------------------------- :: Coerce
+% G |=src coerce a ~> a' : B
+
+G |=src phi ~> phi' ok
+G, c : phi' |=src B ~> B' : TYPE
+----------------------------------------------- :: CPi
+G |=src all c:phi. B ~> all c:phi. B' : TYPE
+
+G, c:phi |=src a ~> a' : B
+------------------------------------------------- :: CAbs
+G |=src a ~> /\ c . a' : all c:phi. B
+
+G |=src a1 ~> a1' : all c : (a ~ b : A / R) . B1
+G ; dom G |= a == b : A / R
+------------------------------------------- :: CApp
+G |=src a1 ~> a1' [ o ] : B1 { o / c }
+
+|= G
+F : A @ Rs in toplevel
+------------------------- :: Const
+G |=src F ~> F: A
+
+|= G
+F : Apps ~ a : A / R1 @ Rs in toplevel
+---------------------------- :: Fam
+G |=src F ~> F : A
+
+G |=src a ~> a' : A
+F : Apps ~ a0 : A1 / R1 @ Rs in toplevel
+G |=src b1 ~> b1' : B
+G |=src b2 ~> b2' : C
+G |= Apps case R a' : A of F @ none : A1 -> b1' : B | C
+------------------------------------------------------------------------------------------- :: Case
+G |=src case Nom a of F @ Apps => b1 | _ => b2 ~> case Nom a' of F @ Apps => b1' | _ => b2' : C
+
+
+defn
+G |=src phi ~> phi' ok ::    :: SrcPropWff :: 'S_'
+{{ com Prop wellformedness }}
+by
+
+% G |=src a ~> a' : A
+% G |=src b ~> b' : A
+% ---------------------------  :: Wff
+% G |=src a ~ b ~> (a ~ b : A / Nom) ok
+
+defn 
+( p => a ) ~> ( Apps => b )  ::   :: SrcPat :: 'S_'
+{{ com pattern matching translation }}		  
+by
+
+----------------------- :: PatConst
+(F => b) ~> (emptyA => b)
+
+%% TODO finish??
+
+
 
 defns
  JAlt :: '' ::=
@@ -2320,7 +2437,7 @@ homs ''
 
 %%__ Role lists __%%
 homs ''
-  :: nilR     {{ tex \cdot }}
+  :: nilR     {{ tex }}
 
 %%__ Constraints __%%
 homs ''
@@ -2350,7 +2467,7 @@ homs 'a_'
 
   :: Bullet
 
-  :: Pattern {{ tex \mathsf{case}_[[R]] \hspace{3pt} [[a]] \hspace{3pt} \mathsf{of} \hspace{3pt} [[F]] \rightarrow [[b1]] \| \_ \rightarrow [[b2]] }}
+  :: Pattern {{ tex \mathsf{case}_[[R]] \hspace{3pt} [[a]] \hspace{3pt} \mathsf{of} \hspace{3pt} [[F]][[Apps]] \rightarrow [[b1]] \| \_ \rightarrow [[b2]] }}
 
   :: DataCon
   :: Case
@@ -2423,6 +2540,7 @@ homs ''
   :: Subst         {{ coq (open_constraint_wrt_tm [[x b]] [[phi]]) }}
   :: Erase         {{ coq (erase_constraint [[phi]])               }}
   :: EqNT          {{ coq 0                                        }}
+  :: EqNRT         {{ coq 0                                        }}
 
 %%__ Terms __%%
 homs 'a_'
@@ -2454,12 +2572,11 @@ homs 'a_'
   :: Fix           {{ coq 0                                        }}
   :: Arrow         {{ coq (a_Pi [[a]] [[b]])                       }}
   :: CArrow        {{ coq (a_CPi [[phi]] [[A]])                    }}
-  :: RelApp        {{ coq (a_App [[a]] Rel [[b]])                  }}
-  :: RelUAbs       {{ coq (a_UAbs Rel Nom [[a]])                   }}
+  :: RelApp        {{ coq (a_App [[a]] (Rho Rel) [[b]])            }}
+  :: RelUAbs       {{ coq (a_UAbs Rel [[a]])                       }}
   :: RelAbs        {{ coq (a_Abs Rel [[A]] [[a]])                  }}
   :: RelPi         {{ coq (a_Pi  Rel [[A]] [[B]])                  }}
   :: If            {{ coq 0                                        }}
-
 
 %%__ Coercions __%%
 homs 'g_'
