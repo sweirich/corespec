@@ -596,11 +596,11 @@ Fixpoint vars_Pattern (p : tm) := match p with
 
 
 Fixpoint apply_pattern_args (a : tm) (args : pattern_args) : tm :=
-  match args with 
+  match args with
   | nil => a
-  | (p_Tm nu b :: rest) => 
+  | (p_Tm nu b :: rest) =>
     apply_pattern_args (a_App a nu b) rest
-  | (p_Co g :: rest) => 
+  | (p_Co g :: rest) =>
     apply_pattern_args (a_CApp a g) rest
   end.
 
@@ -638,7 +638,7 @@ Fixpoint range (L : role_context) : roles :=
   end.
 
 Fixpoint rangeA (p : list App) : roles :=
-  match p with 
+  match p with
   | nil => nil
   | A_Tm (Role R) :: p' => R :: rangeA p'
   | A_Tm (Rho _)  :: p' => rangeA p'
@@ -986,10 +986,10 @@ not (a  = p +)
 ------------------------------------- :: UnMatch
 CasePath R a +> F
 
-defns 
+defns
 JPatArgs :: '' ::=
 
-defn 
+defn
 subst args a in b +> b' ::  :: SubstArgs :: 'SubstArgs_'
 by
 
@@ -1196,8 +1196,8 @@ W |= b2 : R1
 --------------------------------------- :: Pattern
 W |= case R a of F @ Apps => b1 | _ => b2 : R1
 
-defn 
-  W ; Apps |= a : R  ::   :: app_roleling :: 'role_a_'
+defn
+  W ; Apps |= a : R  ::   :: app_roleing :: 'role_a_'
 by
 
 W |= a : R
@@ -1389,7 +1389,7 @@ Value R1 (\rho x. v)
 
 CasePath R a +> F
 F : Apps ~ b : A/R1 @ Rs in toplevel
-subst args a in b +> b' 
+subst args a in b +> b'
 R1 <= R
 -------------------------------------------------------- :: Axiom
 |= a > b' / R
@@ -1840,16 +1840,16 @@ F notin dom S
 |= S
 F notin dom S
 empty |= a : A
-empty ; Apps |= a : R 
+empty ; Apps |= a : R
 -------------------------------- :: ConsAx
 |= S, F : Apps ~ a : A/R @ range Apps
 
 
-defns 
+defns
 Jhiding :: '' ::=
 
 defn
-Rs1 <= Rs2 ::  :: RoleWeaken :: 'R_' 
+Rs1 <= Rs2 ::  :: RoleWeaken :: 'R_'
 by
 
 -------------------- :: Nil
@@ -1862,8 +1862,8 @@ R1, Rs1 <= R2, Rs2
 
 
 
-defn 
-S1 <= S2 ::  :: SigWeaken :: 'S_' 
+defn
+S1 <= S2 ::  :: SigWeaken :: 'S_'
 by
 
 S1 <= S2
@@ -1873,7 +1873,7 @@ S1 <= S2, F : sig_sort
 S1 <= S2
 Rs1 <= Rs2
 -----------------------------------------------------  :: Hide
-S1 , F : A @ Rs1 <= S2 , F : Apps ~ a : A / R @ Rs2 
+S1 , F : A @ Rs1 <= S2 , F : Apps ~ a : A / R @ Rs2
 
 S1 <= S2
 Rs1 <= Rs2
@@ -1883,7 +1883,7 @@ S1 , F : A @ Rs1 <= S2 , F : A @ Rs2
 S1 <= S2
 Rs1 <= Rs2
 ---------------------------------------------------------------  :: WeakenAxiom
-S1 , F : Apps ~ a : A / R @ Rs1 <= S2 , F : Apps ~ a : A / R @ Rs2 
+S1 , F : Apps ~ a : A / R @ Rs1 <= S2 , F : Apps ~ a : A / R @ Rs2
 
 ------------------ :: Empty
 emptyS <= emptyS
@@ -2399,7 +2399,7 @@ by
 defns
  JAlt :: '' ::=
 
-defn  
+defn
 G |== a : A  ::    :: ATyping :: 'ATyping_'
 by
 G |= a : A

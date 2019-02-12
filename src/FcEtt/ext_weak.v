@@ -9,6 +9,8 @@ Set Bullet Behavior "Strict Subproofs".
 Set Implicit Arguments.
 Definition remove := AtomSetImpl.remove.
 
+Generalizable All Variables.
+
 
 (* ------------------------------------------------------------------- *)
 (* Weakening Lemmas for the available set *)
@@ -180,10 +182,12 @@ Qed.
 Hint Resolve DefEq_weaken_available Iso_weaken_available.
 
 
-Lemma BranchTyping_weakening : 
-  forall G0 n R a A FF AA A1 B C, BranchTyping G0 n R a A AA FF A1 B C ->
-     forall E F G, (G0 = F ++ G) -> uniq (F ++ E ++ G)
-              -> BranchTyping (F ++ E ++ G) n R a A AA FF A1 B C.
+Lemma BranchTyping_weakening : `{
+  BranchTyping G0 n R a A b args B b1 C C' →
+   ∀ E F G,
+    G0 = F ++ G →
+    uniq (F ++ E ++ G) →
+    BranchTyping (F ++ E ++ G) n R a A b args B b1 C C'}.
 Proof. 
   induction 1.
     all: intros; subst. 

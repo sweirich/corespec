@@ -314,6 +314,14 @@ Combined Scheme typing_wff_iso_defeq_mutual
        defeq_ind',
        ctx_ind'.
 
+
+Scheme roleing_ind'     := Induction for roleing Sort Prop
+  with app_roleing_ind' := Induction for app_roleing Sort Prop.
+
+Combined Scheme roleing_app_roleing_mutual
+  from roleing_ind',
+       app_roleing_ind'.
+
 (*
 Scheme ann_typing_ind' := Induction for AnnTyping Sort Prop
    with ann_wff_ind'   := Induction for AnnPropWff Sort Prop

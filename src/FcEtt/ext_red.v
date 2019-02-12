@@ -134,6 +134,7 @@ Hint Constructors decompose_subpattern.
   Typing context, list of arguments, context with the types they need to have *)
 Inductive args_proper_type : context → pattern_args → context → Prop :=
   | apt_base : `{args_proper_type Γ [] []}
+
   | apt_rel : `{
     args_proper_type Γ args Γ' →
     Typing Γ a (subst_args_in_term Γ' args A) →
@@ -916,11 +917,11 @@ Proof.
     ++ simpl in H.
        destruct (IHargs _ G A H) as [PiB [targs h0]]. split_hyp.
        destruct nu; try destruct rho; autoinv.
-       - admit. (* eexists; eexists; split; eauto 1.
+       - admit. (* do 2 eexists; split; last by eauto 1.
          eapply open_Role; eauto 1. *)
-       - eexists; eexists; split; eauto 1.
+       - do 2 eexists; split; last by eauto 1.
          eapply open_Rel; eauto 1.
-       - eexists; eexists; split; eauto 1.
+       - do 2 eexists; split; last by eauto 1.
          subst.
          eapply open_Irrel; eauto 1.
     ++ simpl in H.
