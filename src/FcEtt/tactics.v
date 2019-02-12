@@ -196,8 +196,10 @@ Ltac spec_all t :=
 (* Automatically instantiating induction hypotheses when their premises are available in the context *)
 Ltac autoprem :=
   repeat match goal with
-    | [H : ?P → ?Q, p : ?P |- _] =>
+    | H : forall x : ?P, _, p : ?P |- _ =>
       move: H; move /(_ p) => H
+    | H : forall x : ?P, _ |- _ =>
+      move: H; move/(_ ltac:(eassumption || auto 5)) => H
     end.
 
 
@@ -619,6 +621,7 @@ Ltac autofv_fwd :=
   end).
 
 Ltac autofv :=
+  autofwd;
   autofv_fwd;
   autofv_solve.
 
@@ -645,6 +648,7 @@ Ltac ok           := autotype.
 (* Does as much forward reasoning as possible (includes deriving contradictions) *)
 Ltac autofwd      := TacticsInternals.autofwd.
 Ltac introfwd     := intros; autofwd.
+Ltac autoprem     := TacticsInternals.autoprem.
 
 (* TODO Tries to solve free variable obligations *)
 Ltac autofv       := TacticsInternals.autofv.
