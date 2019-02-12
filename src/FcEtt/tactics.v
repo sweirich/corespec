@@ -135,8 +135,8 @@ Ltac subst_forall :=
 Ltac check_num_goals_eq g := let n:= numgoals in guard n=g.
 
 
-(* Inversion and substitution *)
-Ltac invs H := inversion H; subst.
+Ltac inv  H := inversion H. (* Alias - supports partial application *)
+Ltac invs H := inversion H; subst. (* Inversion and substitution (think "InvS") *)
 
 (*****************)
 (**** Solvers ****)
@@ -664,6 +664,7 @@ Tactic Notation (at level 0) "revert" "all" "except" ident(H) := TacticsInternal
 Tactic Notation "exactly" integer(n) "goal" := TacticsInternals.check_num_goals_eq n.
 Tactic Notation "exactly" integer(n) "goals" := TacticsInternals.check_num_goals_eq n.
 
+Ltac inv  := TacticsInternals.inv. (* Alias for inversion (-> can be partially applied) *)
 Ltac invs := TacticsInternals.invs. (* Inversion (of a hyp) and substitution *)
 
 (* Hiding/unhiding the type of a hyp *)
