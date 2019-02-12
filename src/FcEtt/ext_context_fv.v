@@ -154,7 +154,8 @@ Proof.
 
   (* Do the cases about the context at the end. *)
   all: try (intros x0 A0 BI).
-  all: try solve [inversion BI].
+  all: try solve [intros; autofv]. (* TODO: finish implementing the "positive" case of autofv so it solves more cases here *)
+  (* TODO: + a good instantiation tactic would help as well *)
   all: try (match goal with |- _ ∧ _ => split end).
 
   all: try (intros y h1; inversion BI; [
@@ -174,14 +175,14 @@ Proof.
     [ H7 : ?y `in` union ?A ?B |- _ ] =>
     apply F.union_iff in H7; destruct H7; eauto end.
 
-  all: try solve [ apply notin_empty_1 in IN; contradiction].
-  all: try solve [ assert (x = y) by auto; subst; eapply binds_In; eauto ].
   all: try solve [ destruct (H _ _ b); eauto ].
+
 
   all: try solve [apply H1; eauto; simpl; auto].
   all: try solve [apply H2; eauto; simpl; auto].
   all: try solve [apply H3; eauto; simpl; auto].
   all: try solve [apply H0; eauto; simpl; auto].
+
 
 
   all: try match goal with
