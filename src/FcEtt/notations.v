@@ -18,7 +18,8 @@ Notation "⊨ a ↝ b / R"  := (reduction_in_one a b R) (at level 80, b at level
 
 (* Predicates *)
 (* Notation "ζ ⊨ 👻 a / R" := (roleing_tm ζ a R) (at level 80, a at level 35). *)
-Notation "ζ ⊨ a : R" := (roleing ζ a R) (at level 80, a at level 35, R at level 35).
+Notation "ζ ⊨ a : R"        := (roleing ζ a R) (at level 80, a at level 35, R at level 35).
+Notation "ζ ; apps ⊨ a : R" := (app_roleing ζ apps a R) (at level 80, a at level 35, R at level 35).
 
 
 (* Other relations *)

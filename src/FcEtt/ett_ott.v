@@ -926,11 +926,11 @@ Fixpoint vars_Pattern (p : tm) := match p with
 
 
 Fixpoint apply_pattern_args (a : tm) (args : pattern_args) : tm :=
-  match args with 
+  match args with
   | nil => a
-  | (p_Tm nu b :: rest) => 
+  | (p_Tm nu b :: rest) =>
     apply_pattern_args (a_App a nu b) rest
-  | (p_Co g :: rest) => 
+  | (p_Co g :: rest) =>
     apply_pattern_args (a_CApp a g) rest
   end.
 
@@ -968,7 +968,7 @@ Fixpoint range (L : role_context) : roles :=
   end.
 
 Fixpoint rangeA (p : list App) : roles :=
-  match p with 
+  match p with
   | nil => nil
   | A_Tm (Role R) :: p' => R :: rangeA p'
   | A_Tm (Rho _)  :: p' => rangeA p'
@@ -1331,22 +1331,22 @@ Inductive roleing : role_context -> tm -> role -> Prop :=    (* defn roleing *)
      roleing W (a_Fam F) R1
  | role_a_Pattern : forall (W:role_context) (R:role) (a:tm) (F:const) (Apps5:Apps) (b1 b2:tm) (R1:role),
      roleing W a R ->
-     app_roleling W Apps5 b1 R1 ->
+     app_roleing W Apps5 b1 R1 ->
      roleing W b2 R1 ->
      roleing W (a_Pattern R a F Apps5 b1 b2) R1
-with app_roleling : role_context -> Apps -> tm -> role -> Prop :=    (* defn app_roleling *)
+with app_roleing : role_context -> Apps -> tm -> role -> Prop :=    (* defn app_roleing *)
  | role_a_Nil : forall (W:role_context) (a:tm) (R:role),
      roleing W a R ->
-     app_roleling W  nil  a R
+     app_roleing W  nil  a R
  | role_a_ConsRole : forall (L:vars) (W:role_context) (R:role) (Apps5:Apps) (rho:relflag) (a:tm),
-      ( forall x , x \notin  L  -> app_roleling  (( x  ~  R ) ++  W )  Apps5  ( open_tm_wrt_tm a (a_Var_f x) )  R )  ->
-     app_roleling W  ( (A_Tm (Role R)) :: Apps5 )  (a_UAbs rho a) R
+      ( forall x , x \notin  L  -> app_roleing  (( x  ~  R ) ++  W )  Apps5  ( open_tm_wrt_tm a (a_Var_f x) )  R )  ->
+     app_roleing W  ( (A_Tm (Role R)) :: Apps5 )  (a_UAbs rho a) R
  | role_a_ConsRho : forall (L:vars) (W:role_context) (rho:relflag) (Apps5:Apps) (a:tm) (R:role),
-      ( forall x , x \notin  L  -> app_roleling  (( x  ~  Nom ) ++  W )  Apps5  ( open_tm_wrt_tm a (a_Var_f x) )  R )  ->
-     app_roleling W  ( (A_Tm (Rho rho)) :: Apps5 )  (a_UAbs rho a) R
+      ( forall x , x \notin  L  -> app_roleing  (( x  ~  Nom ) ++  W )  Apps5  ( open_tm_wrt_tm a (a_Var_f x) )  R )  ->
+     app_roleing W  ( (A_Tm (Rho rho)) :: Apps5 )  (a_UAbs rho a) R
  | role_a_ConsCo : forall (L:vars) (W:role_context) (Apps5:Apps) (b:tm) (R:role),
-      ( forall c , c \notin  L  -> app_roleling W Apps5  ( open_tm_wrt_co b (g_Var_f c) )  R )  ->
-     app_roleling W  ( A_Co :: Apps5 )  (a_UCAbs b) R.
+      ( forall c , c \notin  L  -> app_roleing W Apps5  ( open_tm_wrt_co b (g_Var_f c) )  R )  ->
+     app_roleing W  ( A_Co :: Apps5 )  (a_UCAbs b) R.
 
 (* defns JChk *)
 Inductive RhoCheck : relflag -> tmvar -> tm -> Prop :=    (* defn RhoCheck *)
@@ -1767,7 +1767,7 @@ Inductive Sig : sig -> Prop :=    (* defn Sig *)
      Sig S ->
       ~ AtomSetImpl.In  F  (dom  S )  ->
      Typing  nil  a A ->
-     app_roleling  nil  Apps5 a R ->
+     app_roleing  nil  Apps5 a R ->
      Sig  (( F ~ (Ax Apps5 a A R  (rangeA( Apps5 )) ) )++ S ) .
 
 (* defns Jhiding *)
@@ -1833,6 +1833,6 @@ with ABeta : tm -> tm -> role -> Prop :=    (* defn ABeta *)
 
 
 (** infrastructure *)
-Hint Constructors SubRole RolePath PatternContexts Rename MatchSubst PatData Pattern SubPat tm_pattern_agree tm_subpattern_agree subtm_pattern_agree ValuePath CasePath SubstArgs ApplyArgs Value value_type consistent roleing app_roleling RhoCheck Par MultiPar joins Beta reduction_in_one reduction BranchTyping PropWff Typing Iso DefEq Ctx Sig RoleWeaken SigWeaken AnnPropWff AnnTyping AnnIso AnnDefEq AnnCtx head_reduction ATyping ABeta lc_co lc_brs lc_tm lc_constraint lc_pattern_arg lc_sort lc_sig_sort.
+Hint Constructors SubRole RolePath PatternContexts Rename MatchSubst PatData Pattern SubPat tm_pattern_agree tm_subpattern_agree subtm_pattern_agree ValuePath CasePath SubstArgs ApplyArgs Value value_type consistent roleing app_roleing RhoCheck Par MultiPar joins Beta reduction_in_one reduction BranchTyping PropWff Typing Iso DefEq Ctx Sig RoleWeaken SigWeaken AnnPropWff AnnTyping AnnIso AnnDefEq AnnCtx head_reduction ATyping ABeta lc_co lc_brs lc_tm lc_constraint lc_pattern_arg lc_sort lc_sig_sort.
 
 
