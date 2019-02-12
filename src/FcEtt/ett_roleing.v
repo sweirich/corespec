@@ -221,6 +221,7 @@ Lemma subst_tm_roleing : forall W1 x R1 W2 a R b,
                roleing W2 b R1 -> 
                roleing (W1 ++ W2) (tm_subst_tm_tm b x a) R.
 Proof.
+Admitted.
 
 Lemma subst_co_roleing : forall W c g a R, lc_co g -> roleing W a R -> roleing W (co_subst_co_tm g c a) R.
 Proof.
@@ -238,7 +239,7 @@ Proof.
    - eapply role_a_CAbs with (L := union L (singleton c)); eauto.
      intros c0 h4.
      rewrite co_subst_co_tm_open_tm_wrt_co_var; auto 2.
-Qed.
+Admitted.
 
 Hint Resolve subst_tm_roleing subst_co_roleing : roleing.
 
