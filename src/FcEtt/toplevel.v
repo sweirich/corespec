@@ -3,6 +3,7 @@ Set Implicit Arguments.
 
 Require Export FcEtt.tactics.
 Require Export FcEtt.imports.
+Require Export FcEtt.notations.
 Require Export FcEtt.ett_inf.
 Require Export FcEtt.ett_ott.
 Require Export FcEtt.ett_ind.
@@ -21,19 +22,20 @@ Proof.
 Qed.
 
 (* ------------------------------------------ *)
-Lemma toplevel_inversion : forall F p a A R Rs, binds F (Ax p a A R Rs) toplevel ->
-                                 (exists W G B, PatternContexts W G F A p B /\
-                                Typing G a B /\ roleing W a R /\ Rs = range W /\ Typing nil A a_Star).
+Lemma toplevel_inversion : forall F flags a A R Rs, binds F (Ax flags a A R Rs) toplevel ->
+                                 (∅ ⊨ a : A /\ ∅; flags ⊨ a : R).
 Proof.
   have st: Sig toplevel by apply Sig_toplevel.
   induction st.
-  - intros. inversion H.
-  - intros. eapply IHst. inversion H1; subst.
-    inversion H2. eauto.
+  - intros. by withf binds do inv.
+  - intros. eapply IHst. with binds do invs.
+    by with eq do inv.
+    by eauto.
   - intros.
-    match goal with [ H : binds ?F _ _ |- _ ] => inversion H end.
-    match goal with [ H : (_,_) = (_,_) |- _ ] => inversion H end.
-    subst. exists W, G, B. eauto. eauto.
+    withf binds do invs.
+    with eq do invs.
+    by ok.
+    by eauto.
 Qed.
 
 Lemma toplevel_closed_const : forall F A Rs, binds F (Cs A Rs) toplevel ->
@@ -43,12 +45,13 @@ Proof.
   induction st.
   - intros. inversion H.
   - intros.
-    match goal with [ H : binds ?F _ _ |- _ ] => inversion H end.
-    match goal with [ H : (_,_) = (_,_) |- _ ] => inversion H end.
-    subst. eauto. eauto.
+    withf binds do inv.
+    with eq do inv.
+    by subst; eauto.
+    by eauto.
   - intros. eapply IHst.
-    match goal with [ H : binds ?F _ _ |- _ ] => inversion H end.
-    match goal with [ H : (_,_) = (_,_) |- _ ] => inversion H end.
-    eauto.
+    withf binds do inv.
+    with eq do inv.
+    by eauto.
 Qed.
 
