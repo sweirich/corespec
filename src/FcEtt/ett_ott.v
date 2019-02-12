@@ -1184,10 +1184,10 @@ Inductive SubstArgs : tm -> tm -> tm -> Prop :=    (* defn SubstArgs *)
      SubstArgs (a_Fam F) b b
  | SubstArgs_App : forall (L:vars) (a:tm) (nu:appflag) (a':tm) (rho:relflag) (b b':tm),
      lc_tm a' ->
-      ( forall x , x \notin  L  -> SubstArgs a  ( open_tm_wrt_tm b (a_Var_f x) )  b' )  ->
+      ( forall x , x \notin  L  -> SubstArgs a  ( open_tm_wrt_tm b (a_Var_f x) )   (open_tm_wrt_tm  b'   (a_Var_f x) )  )  ->
      SubstArgs (a_App a nu a')  ( (a_UAbs rho b) )   (open_tm_wrt_tm  b'   a' ) 
  | SubstArgs_CApp : forall (L:vars) (a b b':tm),
-      ( forall c , c \notin  L  -> SubstArgs a  ( open_tm_wrt_co b (g_Var_f c) )  b' )  ->
+      ( forall c , c \notin  L  -> SubstArgs a  ( open_tm_wrt_co b (g_Var_f c) )   (open_tm_wrt_co  b'   (g_Var_f c) )  )  ->
      SubstArgs (a_CApp a g_Triv)  ( (a_UCAbs b) )   (open_tm_wrt_co  b'   g_Triv ) .
 
 (* defns JApplyArgs *)
@@ -1338,9 +1338,9 @@ with app_roleing : role_context -> Apps -> tm -> role -> Prop :=    (* defn app_
  | role_a_Nil : forall (W:role_context) (a:tm) (R:role),
      roleing W a R ->
      app_roleing W  nil  a R
- | role_a_ConsRole : forall (L:vars) (W:role_context) (R:role) (Apps5:Apps) (rho:relflag) (a:tm),
-      ( forall x , x \notin  L  -> app_roleing  (( x  ~  R ) ++  W )  Apps5  ( open_tm_wrt_tm a (a_Var_f x) )  R )  ->
-     app_roleing W  ( (A_Tm (Role R)) :: Apps5 )  (a_UAbs rho a) R
+ | role_a_ConsRole : forall (L:vars) (W:role_context) (R:role) (Apps5:Apps) (rho:relflag) (a:tm) (R1:role),
+      ( forall x , x \notin  L  -> app_roleing  (( x  ~  R ) ++  W )  Apps5  ( open_tm_wrt_tm a (a_Var_f x) )  R1 )  ->
+     app_roleing W  ( (A_Tm (Role R)) :: Apps5 )  (a_UAbs rho a) R1
  | role_a_ConsRho : forall (L:vars) (W:role_context) (rho:relflag) (Apps5:Apps) (a:tm) (R:role),
       ( forall x , x \notin  L  -> app_roleing  (( x  ~  Nom ) ++  W )  Apps5  ( open_tm_wrt_tm a (a_Var_f x) )  R )  ->
      app_roleing W  ( (A_Tm (Rho rho)) :: Apps5 )  (a_UAbs rho a) R

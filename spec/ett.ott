@@ -996,11 +996,11 @@ by
 ----------------------------------- :: Const
 subst args F in b +> b
 
-subst args a in b +> b'
+subst args a in b +> b' { x / x }
 ------------------------------------------------------- :: App
 subst args a nu a' in (\rho x. b) +> b' { a' / x }
 
-subst args a in b +> b'
+subst args a in b +> b' { c / c }
 ------------------------------------------------------- :: CApp
 subst args a [o] in (/\c. b) +> b' { o / c }
 
@@ -1205,9 +1205,9 @@ W |= a : R
 W ; emptyA |= a : R
 
 
-W , x : R ; Apps |= a : R
+W , x : R ; Apps |= a : R1
 --------------------------- :: ConsRole
-W ; Tm R , Apps |= \rho x. a : R
+W ; Tm R , Apps |= \rho x. a : R1
 
 
 W , x : Nom ; Apps |= a : R

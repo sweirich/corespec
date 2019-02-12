@@ -122,9 +122,16 @@ Lemma Rename_lc4 : forall p b p' b' D D', Rename p b p' b' D D' -> lc_tm b'.
 Proof. intros. induction H; eauto. eapply tm_subst_tm_tm_lc_tm; eauto.
 Qed.
 
-Lemma roleing_lc : forall W a R, roleing W a R -> lc_tm a.
-intros; induction H; auto.
+Lemma roleing_lc_mutual : (forall W a R, roleing W a R -> lc_tm a) /\
+  (forall W aps a R, app_roleing W aps a R -> lc_tm a).
+apply roleing_app_roleing_mutual; intros; eauto. 
 Qed.
+
+Lemma roleing_lc : (forall W a R, roleing W a R -> lc_tm a).
+Proof. apply roleing_lc_mutual. Qed.
+Lemma app_roleing_lc : (forall W aps a R, app_roleing W aps a R -> lc_tm a).
+Proof. apply roleing_lc_mutual. Qed.
+
 
 Lemma Value_lc : forall R a, Value R a -> lc_tm a.
 Proof. intros. induction H; eauto using CasePath_lc. 
@@ -169,18 +176,39 @@ Proof.
   intros. induction H; auto.
 Qed.
 
+Lemma SubstArgs_lc1 : forall a b1 b1',  SubstArgs a b1 b1' -> lc_tm a.
+Proof.
+  intros. induction H; auto.
+  autofresh. auto.
+  autofresh. auto.
+Qed.
+Lemma SubstArgs_lc2 : forall a b1 b1',  SubstArgs a b1 b1' -> lc_tm b1.
+Proof.
+  intros. induction H; auto.
+Qed.
+Lemma SubstArgs_lc3 : forall a b1 b1',  SubstArgs a b1 b1' -> lc_tm b1'.
+Proof.
+  intros. induction H; auto.
+  autofresh. rewrite (tm_subst_tm_tm_intro x); eauto using tm_subst_tm_tm_lc_tm.
+  autofresh. rewrite (co_subst_co_tm_intro x); eauto using co_subst_co_tm_lc_tm.
+Qed.
+
+
 Lemma Par_lc1 : forall W a a' R, Par W a a' R → lc_tm a.
 Proof. induction 1; eauto using roleing_lc, MatchSubst_lc1.
 Qed.
 
 
 Lemma Par_lc2 : forall W a a' R, Par W a a' R → lc_tm a'.
-Proof. intros. induction H; eauto. eapply roleing_lc; eauto.
-       lc_solve. lc_solve. apply toplevel_inversion in H.
-       inversion H as [W1 [G [B [_ [_ [Q _]]]]]].
-       eapply roleing_lc; eauto. eapply MatchSubst_lc4; eauto.
-       eapply MatchSubst_lc4; eauto.
-       econstructor. eapply ApplyArgs_lc3; eauto. eauto.
+Proof. intros. induction H; eauto. 
+       eapply roleing_lc; eauto.
+       lc_solve. lc_solve.
+       with binds do ltac:(fun h=>
+          apply toplevel_inversion in h; inversion h; split_hyp).
+       eapply app_roleing_lc; eauto. 
+       eauto using SubstArgs_lc3.
+       eauto using SubstArgs_lc3.
+       eauto using SubstArgs_lc3.
 Qed.
 
 Hint Resolve MatchSubst_lc1 MatchSubst_lc4 ApplyArgs_lc3 Par_lc1 Par_lc2 : lc.
@@ -247,9 +275,11 @@ Proof. induction Sig_toplevel.
          simpl in H0. eauto. eauto with lc.
          eauto.
        - intros.
-         destruct (binds_cons_1 _ _ _ _ _ _ H4); basic_solve. inversion H5.
-         subst. econstructor. eapply PatCtx_lcp; eauto. eapply Typing_lc1; eauto.
-         eapply Typing_lc1; eauto.
+         destruct (binds_cons_1 _ _ _ _ _ _ H2); basic_solve. 
+         split_hyp.
+         subst. econstructor. 
+         eauto using app_roleing_lc.
+         eauto using Typing_lc2.
 Qed.
 
 
@@ -257,8 +287,8 @@ Qed.
 Lemma Beta_lc1 : forall a a' R, Beta a a' R -> lc_tm a.
   intros.  induction H; auto.
   - eapply Value_lc in H0. eauto. 
-  - eauto using MatchSubst_lc1. 
-  - econstructor; eauto using ApplyArgs_lc1, ApplyArgs_lc2, ApplyArgs_lc3.
+  - eauto using SubstArgs_lc1. 
+  - econstructor; eauto using SubstArgs_lc1, SubstArgs_lc2, SubstArgs_lc3.
   - constructor; eauto using Value_lc.
 Unshelve. all: exact F.
 Qed.
@@ -268,18 +298,23 @@ intros.  induction H; auto.
 - apply Value_lc in H0. inversion H0.
   apply lc_body_tm_wrt_tm; auto.
 - inversion H. apply lc_body_tm_wrt_co; auto.
-- apply Toplevel_lc in H. inversion H. subst. 
-  eauto using MatchSubst_lc4.
-- eauto using ApplyArgs_lc1, ApplyArgs_lc2, ApplyArgs_lc3.
+- with binds do ltac:(fun h => apply Toplevel_lc in h; inversion h). subst. 
+  eauto using SubstArgs_lc3.
+- eauto using SubstArgs_lc1, SubstArgs_lc2, SubstArgs_lc3.
 Qed.
 
 Lemma reduction_in_one_lc : forall a a' R, reduction_in_one a a' R -> lc_tm a -> lc_tm a'.
 Proof.
-   induction 1; intros; try (eapply Beta_lc2; eauto 1; fail); lc_solve.
+   induction 1; intros; try (eapply Beta_lc2; eauto 1; fail).
+   lc_solve.
+   lc_solve.
+   lc_solve.
+   inversion H2. econstructor; eauto 2.
 Qed.
 
 Lemma axiom_body_lc : forall F p b A R Rs, binds F (Ax p b A R Rs) toplevel ->
       lc_tm b.
 Proof. intros. apply toplevel_inversion in H.
-       inversion H as [W [G [B [_ [_ [Q _]]]]]]. eapply roleing_lc; eauto.
+       split_hyp.
+       eapply app_roleing_lc; eauto.
 Qed.

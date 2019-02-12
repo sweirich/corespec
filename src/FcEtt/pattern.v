@@ -246,7 +246,9 @@ Proof.
   induction 1; ok.
 Qed.
 
-Lemma binds_toplevel_pat_head : `{binds F (Ax p b PiB R Rs) toplevel → pat_head p = Some F}.
+(*
+Lemma binds_toplevel_pat_head : 
+  `{binds F (Ax p b PiB R Rs) toplevel → pat_head p = Some F}.
 Proof.
   introfwd.
   (* TODO: sig toplevel + use PatternContexts_pat_head *)
@@ -267,7 +269,7 @@ Lemma Rename_subset : `{
 Proof.
   induction 1; intros; ok.
 Admitted.
-
+*)
 
 
 (******** Substitution of a list of arguments ********)
