@@ -18,34 +18,11 @@ Require Import FcEtt.param.
 
 Require Export FcEtt.toplevel.
 
-
-Lemma rctx_uniq : forall W a R, roleing W a R -> uniq W.
-Proof. intros W a R H. induction H; eauto.
-        - pick fresh x. eapply uniq_app_2; eauto.
-        - pick fresh c; eauto.
-Qed.
-
-Lemma roleing_app_rctx : forall W1 W2 W3 a R, uniq (W1 ++ W2 ++ W3) -> 
-                               roleing (W1 ++ W3) a R ->
-                               roleing (W1 ++ W2 ++ W3) a R.
-Proof. intros W1 W2 W3 a R U H. generalize dependent W2.
-       dependent induction H; intros; eauto.
-        - eapply role_a_Abs with (L := union L (dom (W1 ++ W2 ++ W3))).
-          intros. rewrite app_assoc.
-          eapply H0; eauto. simpl_env. auto.
-        - eapply role_a_Pi with (L := union L (dom (W1 ++ W2 ++ W3))); eauto.
-          intros. rewrite app_assoc.
-          eapply H1; eauto. simpl_env. auto.
-        - econstructor; eauto.
-Qed.
-
-(* NOTE: we have a database 'roleing' for proving that terms are roleing. *)
-
 (* Tactics concerning roleing terms. *)
 
 Ltac roleing_pick_fresh x :=
   match goal with
-    [ |- roleing ?W ?s ?R ] =>
+    | [ |- roleing ?W ?s ?R ] =>
     let v := match s with
              | a_UAbs _ _ => role_a_Abs
              | a_Pi _ _ _ => role_a_Pi
@@ -53,7 +30,69 @@ Ltac roleing_pick_fresh x :=
              | a_UCAbs _   => role_a_CAbs
              end
     in pick fresh x and apply v
+    | [ |- app_roleing ?W ?aps ?s ?R ] =>
+    let v := match aps with 
+        | A_Tm (Rho ?r) :: ?rest => role_a_ConsRho
+        | A_Tm (Role ?r) :: ?rest => role_a_ConsRole
+        | A_Co :: ?rest => role_a_ConsCo
+             end
+    in pick fresh x and apply v
   end.
+
+
+Lemma rctx_uniq : forall W a R, roleing W a R -> uniq W.
+Proof. intros W a R H. induction H; eauto.
+        - pick fresh x. eapply uniq_app_2; eauto.
+        - pick fresh c; eauto.
+Qed.
+Lemma app_rctx_uniq : forall W aps a R, app_roleing W aps a R -> uniq W.
+Proof. intros W aps a R H. induction H; eauto.
+        - pick fresh x. eauto using rctx_uniq.
+        - autofresh. with uniq do ltac:(fun h => inversion h). auto.
+        - autofresh. with uniq do ltac:(fun h => inversion h). auto.
+        - autofresh. auto.
+Qed.
+
+Lemma roleing_app_rctx_mutual : 
+  (forall W a R, roleing W a R -> 
+     forall W1 W2 W3, W = W1 ++ W3 
+                     -> uniq (W1 ++ W2 ++ W3) -> 
+                     roleing (W1 ++ W2 ++ W3) a R) /\
+  (forall W aps a R, app_roleing W aps a R -> 
+     forall W1 W2 W3, W = W1 ++ W3 
+                     -> uniq (W1 ++ W2 ++ W3) -> 
+                     app_roleing (W1 ++ W2 ++ W3) aps a R).
+Proof.
+  apply roleing_app_roleing_mutual; intros; subst; eauto. 
+  all: try solve[ roleing_pick_fresh x;
+    rewrite app_assoc;
+    apply_first_hyp; eauto;
+    simpl_env; auto].
+  - eapply role_a_Pi with (L := union L (dom (W1 ++ W2 ++ W3))); eauto.
+    intros. rewrite app_assoc.
+    eapply H0; eauto. simpl_env. auto.
+  - econstructor; eauto.
+Qed.
+
+Lemma roleing_app_rctx : forall W1 W2 W3 a R, uniq (W1 ++ W2 ++ W3) -> 
+                               roleing (W1 ++ W3) a R ->
+                               roleing (W1 ++ W2 ++ W3) a R.
+Proof.
+destruct roleing_app_rctx_mutual.
+intros. eauto.
+Qed.
+
+Lemma app_roleing_app_rctx : forall W1 W2 W3 aps a R, uniq (W1 ++ W2 ++ W3) -> 
+                               app_roleing (W1 ++ W3) aps a R ->
+                               app_roleing (W1 ++ W2 ++ W3) aps a R.
+Proof.
+destruct roleing_app_rctx_mutual.
+intros. eauto.
+Qed.
+
+
+(* NOTE: we have a database 'roleing' for proving that terms are roleing. *)
+
 
 Ltac roleing_inversion :=
   repeat match goal with
@@ -100,10 +139,22 @@ Proof. intros. induction H; auto.
        auto. apply dom_roleing_ctx_rctx_le_ctx in H. fsetdec.
 Qed.
 
+Lemma roleing_sub_mutual : (forall W a R1, roleing W a R1 -> forall R2, SubRole R1 R2 ->
+                                     roleing W a R2) /\
+  (forall W aps a R1, app_roleing W aps a R1 -> forall R2, SubRole R1 R2 ->
+                                     app_roleing W aps a R2).
+Proof. 
+apply roleing_app_roleing_mutual; intros; eauto. 
+Qed.
 
 Lemma roleing_sub : forall W a R1 R2, roleing W a R1 -> SubRole R1 R2 ->
                                      roleing W a R2.
-Proof. intros W a R1 R2 H S. generalize dependent R2. induction H; intros; eauto.
+Proof. destruct roleing_sub_mutual. intros; eauto.
+Qed.
+
+Lemma app_roleing_sub : forall W a aps R1 R2, app_roleing W aps a R1 -> SubRole R1 R2 ->
+                                     app_roleing W aps a R2.
+Proof. destruct roleing_sub_mutual. intros; eauto.
 Qed.
 
 Lemma RolePath_subst : forall F a b Rs x, RolePath a F Rs -> lc_tm b ->
@@ -118,33 +169,58 @@ Proof. intros. induction H; simpl; eauto.
        econstructor; eauto with lngen lc.
 Qed.
 
-Lemma subst_tm_roleing : forall W1 x R1 W2 a R b, 
-               roleing (W1 ++ [(x,R1)] ++ W2) a R ->
-               roleing W2 b R1 -> 
-               roleing (W1 ++ W2) (tm_subst_tm_tm b x a) R.
+Lemma subst_tm_roleing_mutual : (forall W a R,
+                             roleing W a R ->
+                             forall W1 x R1 W2 b,
+                               W = (W1 ++ [(x,R1)] ++ W2) ->
+                               roleing W2 b R1 -> 
+                               roleing (W1 ++ W2) (tm_subst_tm_tm b x a) R) /\
+                         (forall W aps a R,
+                             app_roleing W aps a R ->
+                             forall W1 x R1 W2 b,
+                               W = (W1 ++ [(x,R1)] ++ W2) ->
+                               roleing W2 b R1 -> 
+                               app_roleing (W1 ++ W2) aps (tm_subst_tm_tm b x a) R).
 Proof.
-  intros W1 x R1 W2 a R b H1 H2. dependent induction H1; simpl; eauto.
-  - destruct (x0 == x); auto. 
-     + subst. assert (P:R = R1).
-       eapply binds_mid_eq; eauto. subst. replace W1 with (nil ++ W1); eauto.
-       rewrite <- app_assoc. eapply roleing_app_rctx; simpl_env; eauto.
+  apply roleing_app_roleing_mutual; intros; subst; simpl; eauto. 
+  - destruct (x == x0); auto. 
+    + subst. 
+      assert (P:R = R0).
+       { eapply binds_mid_eq; eauto. } 
+       subst. replace W1 with (nil ++ W1); eauto.
+       rewrite <- app_assoc. 
+       eapply roleing_app_rctx; simpl_env; eauto.
        eapply roleing_sub; eauto.
      + econstructor. eapply uniq_remove_mid; eauto.
        eapply binds_remove_mid; eauto. eauto.
   - pick fresh y and apply role_a_Abs.
      rewrite tm_subst_tm_tm_open_tm_wrt_tm_var; auto 1. eapply roleing_lc; eauto.
-     rewrite app_assoc. eapply H0; eauto. simpl_env. auto.
+     rewrite app_assoc. eapply H; eauto. simpl_env. auto.
   - pick fresh y and apply role_a_Pi; eauto.
      rewrite tm_subst_tm_tm_open_tm_wrt_tm_var; auto 1. eapply roleing_lc; eauto.
      rewrite app_assoc. eapply H0; eauto. simpl_env. auto.
   - pick fresh c and apply role_a_CPi; eauto.
     rewrite tm_subst_tm_tm_open_tm_wrt_co_var; auto 1. eapply roleing_lc; eauto.
-    eapply H0; eauto.
+    eapply H2; eauto.
   - pick fresh c and apply role_a_CAbs; eauto.
     rewrite tm_subst_tm_tm_open_tm_wrt_co_var; auto 1. eapply roleing_lc; eauto.
-    eapply H0; eauto.
+    eapply H; eauto.
+  - roleing_pick_fresh y.
+     rewrite tm_subst_tm_tm_open_tm_wrt_tm_var; auto 1. eapply roleing_lc; eauto.
+     rewrite app_assoc. eapply H; eauto. simpl_env. auto.
+  - roleing_pick_fresh y.
+     rewrite tm_subst_tm_tm_open_tm_wrt_tm_var; auto 1. eapply roleing_lc; eauto.
+     rewrite app_assoc. eapply H; eauto. simpl_env. auto.    
+  - roleing_pick_fresh y.
+    rewrite tm_subst_tm_tm_open_tm_wrt_co_var; auto 1. eapply roleing_lc; eauto.
+    eapply H; eauto.
 Qed.
 
+Lemma subst_tm_roleing : forall W1 x R1 W2 a R b, 
+               roleing (W1 ++ [(x,R1)] ++ W2) a R ->
+               roleing W2 b R1 -> 
+               roleing (W1 ++ W2) (tm_subst_tm_tm b x a) R.
+Proof.
 
 Lemma subst_co_roleing : forall W c g a R, lc_co g -> roleing W a R -> roleing W (co_subst_co_tm g c a) R.
 Proof.
