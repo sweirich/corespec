@@ -1170,7 +1170,8 @@ Qed.
 
 Fixpoint applyArgs (a : tm) (b : tm) : tm := match a with
    | a_Fam F => b
-   | a_App a' nu b' => a_App (applyArgs a' b) nu b'
+   | a_App a' (Role _) b' => a_App (applyArgs a' b) (Rho Rel) b'
+   | a_App a' (Rho rho) b' => a_App (applyArgs a' b) (Rho rho) b'
    | a_CApp a' g_Triv => a_CApp (applyArgs a' b) g_Triv
    | _ => a_Bullet
    end.
@@ -1185,6 +1186,7 @@ Lemma applyArgs_ApplyArgs : forall R a F b b', CasePath R a F -> lc_tm b ->
                           applyArgs a b = b' -> ApplyArgs a b b'.
 Proof. intros. generalize dependent b'. apply CasePath_ValuePath in H.
        induction H; intros; simpl in *; subst; eauto.
+       destruct nu; eauto.
 Qed.
 
 Ltac pattern_head_same := match goal with
@@ -1411,8 +1413,8 @@ Proof. intros. pattern_head.
            apply H7; eauto.
 Qed.
 
-Lemma apply_args_par : forall a b c a' b' c' W R1 R2 F, ApplyArgs a b c ->
-                       CasePath R1 a F -> Par W a a' R1 -> Par W b b' R2 ->
+Lemma apply_args_par : forall a b c a' b' c' W R2 F, ApplyArgs a b c ->
+                       CasePath Nom a F -> Par W a a' Nom -> Par W b b' R2 ->
                        ApplyArgs a' b' c' -> Par W c c' R2.
 Proof. intros. generalize dependent a'. generalize dependent b'.
        generalize dependent c'. induction H; intros.
@@ -1421,14 +1423,18 @@ Proof. intros. generalize dependent a'. generalize dependent b'.
            inversion H0; auto. } subst.
            inversion H0; subst; axioms_head_same. contradiction. assert False.
            apply H9. eauto. contradiction.
-         - inversion H3; subst.
+         - (* inversion H3; subst.
              + inversion H4; subst. econstructor.
                eapply IHApplyArgs; eauto. eapply CasePath_app; eauto.
                inversion H5; eauto. econstructor.
-               destruct nu. inversion H5; eauto.
-               destruct rho; inversion H5; eauto.
-             + eapply CasePath_app in H0. pose (P := Par_CasePath H0 H11).
-               apply CasePath_ValuePath in P. inversion P.
+               simpl.
+               inversion H5; eauto. subst.
+               have e: param R Nom = Nom. admit.
+               rewrite <- e. auto.
+             + eapply CasePath_app in H0. 
+               pose (P := Par_CasePath H0 H11).
+               apply CasePath_ValuePath in P. 
+               inversion P.
              + inversion H4; subst. econstructor. eapply IHApplyArgs; eauto.
                eapply CasePath_app; eauto. auto.
              + inversion H9. assert (tm_tm_agree a a'1).
@@ -1440,7 +1446,9 @@ Proof. intros. generalize dependent a'. generalize dependent b'.
                eapply Par_lc2; eauto. eapply Par_lc1; eauto.
                destruct (MatchSubst_exists H12 (MatchSubst_lc3 H16)) as [a0 Q]. 
                assert False. eapply CasePath_ax_par_contr; eauto. 
-               contradiction.
+               contradiction. *)
+           admit.
+         - admit.
          - inversion H1; subst.
              + inversion H3; subst. econstructor.
                eapply IHApplyArgs; eauto. eapply CasePath_capp; eauto.
@@ -1456,8 +1464,8 @@ Proof. intros. generalize dependent a'. generalize dependent b'.
                eapply tm_pattern_agree_cong. eapply P.
                econstructor. eapply tm_tm_agree_sym; eauto.
                destruct (MatchSubst_exists H13 (MatchSubst_lc3 H9)) as [a0 Q].
-               assert False. eapply CasePath_ax_par_contr; eauto. contradiction.
-Qed.
+               assert False. eapply CasePath_ax_par_contr; eauto. contradiction. 
+Admitted.
 
 Fixpoint tm_to_roles (a : tm) : roles := match a with
     | a_Fam F => nil
@@ -1887,14 +1895,12 @@ Qed.
 Lemma ApplyArgs_subst_tm : forall a b c e x, lc_tm e -> ApplyArgs a b c ->
   ApplyArgs (tm_subst_tm_tm e x a)(tm_subst_tm_tm e x b)(tm_subst_tm_tm e x c).
 Proof. intros. induction H0; simpl; eauto.
-       econstructor. apply tm_subst_tm_tm_lc_tm; auto.
-       econstructor. apply tm_subst_tm_tm_lc_tm; auto. auto.
+       all: econstructor; auto; apply tm_subst_tm_tm_lc_tm; auto.
 Qed.
 
 Lemma ApplyArgs_subst_co : forall a b c g y, lc_co g -> ApplyArgs a b c ->
   ApplyArgs (co_subst_co_tm g y a)(co_subst_co_tm g y b)(co_subst_co_tm g y c).
 Proof. intros. induction H0; simpl; eauto.
-       econstructor. apply co_subst_co_tm_lc_tm; auto.
-       econstructor. apply co_subst_co_tm_lc_tm; auto. auto.
+       all: econstructor; auto; apply co_subst_co_tm_lc_tm; auto.
 Qed.
 

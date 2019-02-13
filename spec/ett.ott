@@ -52,7 +52,7 @@ role, R :: '' ::= {{ com Role }}
   | Rep         ::   :: Rep
   | min R1 R2   :: S :: Min
   | param R1 R2 :: S :: Param
-  | app_role nu :: S :: App {{ coq app_role [[nu]] }}
+  | app_role nu R :: S :: App {{ coq app_role [[nu]] [[R]] }}
   | ( R )       :: S :: RParen
 
 
@@ -481,10 +481,21 @@ formula, Fm {{tex \psi}} :: 'formula_' ::=
 
 embed {{ coq
 
-Definition app_role (rr : appflag) : role :=
+Definition min (r1 : role) (r2 : role) : role :=
+  match r1 , r2 with
+  | Nom, _   => Nom
+  | _  , Nom => Nom
+  | Rep, Rep => Rep
+  end.
+
+Parameter str : bool.
+Definition param (r1 : role) (r2 : role) :=
+  if str then r1 else min r1 r2.
+
+Definition app_role (rr : appflag) (r1 : role) : role :=
   match rr with
   | Rho _ => Nom
-  | Role r => r
+  | Role r => param r r1
   end.
 
 Definition app_rho (rr : appflag) : relflag :=
@@ -499,12 +510,6 @@ Definition nu_rho (nu : appflag) : Prop :=
  | Role _ => False
  end.
 
-Definition min (r1 : role) (r2 : role) : role :=
-  match r1 , r2 with
-  | Nom, _   => Nom
-  | _  , Nom => Nom
-  | Rep, Rep => Rep
-  end.
 
 Definition max (r1 : role) (r2 : role) : role :=
   match r1 , r2 with
@@ -520,9 +525,6 @@ Definition lte_role (r1 : role) (r2 : role) : bool :=
   | Rep, Rep => true
   end.
 
-Parameter str : bool.
-Definition param (r1 : role) (r2 : role) :=
-  if str then r1 else min r1 r2.
 
 Fixpoint erase_tm (a : tm) (r : role) : tm :=
    match a with
@@ -987,8 +989,12 @@ by
 apply args F to b +> b
 
 apply args a to b +> b'
-------------------------------------------------------- :: App
-apply args a nu a' to b +> b' nu a'
+------------------------------------------------------- :: AppRole
+apply args (a R a') to b +> (b' + a')
+
+apply args a to b +> b'
+------------------------------------------------------- :: AppRho
+apply args (a rho a') to b +> (b' rho a')
 
 apply args a to b +> b'
 ------------------------------------------------------- :: CApp
@@ -1125,7 +1131,7 @@ W |= b : Nom
 W |= (a rho b) : R
 
 W |= a : R
-W |= b : R1
+W |= b : param R1 R
 ----------------------------- :: TApp
 W |= a R1 b : R
 
@@ -1159,11 +1165,11 @@ F : p ~ a : A / R @ Rs in toplevel
 ---------------------------------- :: Fam
 W |= F : R1
 
-W |= a : R
+W |= a : Nom
 W |= b1 : R1
 W |= b2 : R1
 --------------------------------------- :: Pattern
-W |= case R a of F => b1 | _ => b2 : R1
+W |= case Nom a of F => b1 | _ => b2 : R1
 
 defns
 JChk :: '' ::=
@@ -1207,7 +1213,7 @@ W |= b => b' / Nom
 W |= a rho b => a' { b' / x } / R
 
 W |= a => a' / R
-W |= b => b' / (app_role nu)
+W |= b => b' / (app_role nu R)
 ---------------------------------------------- :: App
 W |= a nu b => a' nu b' / R
 
@@ -1248,7 +1254,7 @@ W |= F => b / R
 F : p ~ b : A/R1 @ Rs in toplevel
 a + = p /\ not (a <-> p)
 W |= a => a' / R
-W |= a1 => a1' / (app_role nu)
+W |= a1 => a1' / (app_role nu R)
 rename p -> b to p' -> b' excluding (dom W, fv p) and D'
 match (a' nu a1') with p' -> b' +> a2
 R1 <= R
@@ -1264,27 +1270,27 @@ R1 <= R
 ------------------------------------------------------------------- :: AxiomCApp
 W |= a [o] => a2 / R
 
-W |= a => a' / R
+W |= a => a' / Nom
 W |= b1 => b1' / R0
 W |= b2 => b2' / R0
 ------------------------------------------------------------------------------- :: Pattern
-W |= (case R a of F => b1 | _ => b2) => (case R a' of F => b1' | _ => b2') / R0
+W |= (case Nom a of F => b1 | _ => b2) => (case Nom a' of F => b1' | _ => b2') / R0
 
-W |= a => a' / R
+W |= a => a' / Nom
 W |= b1 => b1' / R0
 W |= b2 => b2' / R0
 CasePath R a' +> F
 apply args a' to b1' +> b
 --------------------------------------------- :: PatternTrue
-W |= (case R a of F => b1 | _ => b2) => b [o] / R0
+W |= (case Nom a of F => b1 | _ => b2) => b [o] / R0
 
-W |= a => a' / R
+W |= a => a' / Nom
 W |= b1 => b1' / R0
 W |= b2 => b2' / R0
 Value R a'
 not (CasePath R a' +> F)
 ------------------------------------------------ :: PatternFalse
-W |= (case R a of F => b1 | _ => b2) => b2' / R0
+W |= (case Nom a of F => b1 | _ => b2) => b2' / R0
 
 
 defn
@@ -1339,15 +1345,15 @@ R1 <= R
 -------------------------------------------------------- :: Axiom
 |= a > b' / R
 
-CasePath R a +> F
+CasePath Nom a +> F
 apply args a to b1 +> b1'
 ------------------------------------------ :: PatternTrue
-|= case R a of F => b1 | _ => b2 > b1' [o] / R0
+|= case Nom a of F => b1 | _ => b2 > b1' [o] / R0
 
-Value R a
-not (CasePath R a +> F)
+Value Nom a
+not (CasePath Nom a +> F)
 ------------------------------------------ :: PatternFalse
-|= case R a of F => b1 | _ => b2 > b2 / R0
+|= case Nom a of F => b1 | _ => b2 > b2 / R0
 
 defn
  |= a ~> b / R ::   :: reduction_in_one :: 'E_'
@@ -1369,7 +1375,7 @@ by
 
 |= a ~> a' / R
 ----------------------------------------------------------------------- :: Pattern
-|= case R a of F => b1 | _ => b2 ~> case R a' of F => b1 | _ => b2 / R0
+|= case Nom a of F => b1 | _ => b2 ~> case Nom a' of F => b1 | _ => b2 / R0
 
 |= a > b / R
 ----------------------------- :: Prim
@@ -1404,26 +1410,26 @@ JBranchTyping :: '' ::=
 defn
 G |= Apps case R a : A of b @ pattern_args : B -> C | C' ::    :: BranchTyping :: 'BranchTyping_'
 {{ com Branch Typing (aligning the types of case) }}
-{{ tex [[G]] \vDash \mathsf{case}_{[[R]]} \hspace{2pt} [[a]] : [[A]] \hspace{2pt} \mathsf{of} \hspace{2pt} [[b]] : [[B]] \Rightarrow [[C]] \ | \, [[C']] }}
+{{ tex [[G]] \vDash \mathsf{case} \hspace{2pt} [[a]] : [[A]] \hspace{2pt} \mathsf{of} \hspace{2pt} [[b]] : [[B]] \Rightarrow [[C]] \ | \, [[C']] }}
 by
 
 ctx_uniq G
 {{ lc_tm [[C]] }}
 % ^ better way to do this? (hopefully making ott aware that C is lc)
 ------------------------------------------------------------- :: Base
-G |= emptyA case R a : A of b @ pattern_args : A -> all c : (a ~ apply b pattern_args : A / R) . C | C
+G |= emptyA case Nom a : A of b @ pattern_args : A -> all c : (a ~ apply b pattern_args : A / Nom) . C | C
 
-G, x : A |= Apps case R a : A1 of b @ Tm + x , pattern_args : B -> C | C'
+G, x : A |= Apps case Nom a : A1 of b @ Tm + x , pattern_args : B -> C | C'
 ------------------------------------------------------------------- :: PiRel
-G |= (Tm +, Apps) case R a : A1 of b @ pattern_args : all + x : A -> B -> all + x : A -> C | C'
+G |= (Tm +, Apps) case Nom a : A1 of b @ pattern_args : all + x : A -> B -> all + x : A -> C | C'
 
-G, x : A |= Apps case R a : A1 of b @ Tm - [] , pattern_args : B -> C | C'
+G, x : A |= Apps case Nom a : A1 of b @ Tm - [] , pattern_args : B -> C | C'
 ------------------------------------------------------------------- :: PiIrrel
-G |= (Tm -, Apps) case R a : A1 of b @ pattern_args : all - x : A -> B -> all - x : A -> C | C'
+G |= (Tm -, Apps) case Nom a : A1 of b @ pattern_args : all - x : A -> B -> all - x : A -> C | C'
 
-G, c : phi |= Apps case R a : A of b @ Co o , pattern_args : B -> C | C'
+G, c : phi |= Apps case Nom a : A of b @ Co o , pattern_args : B -> C | C'
 ----------------------------------------------------------------- :: CPi
-G |= (Co, Apps) case R a : A of b @ pattern_args : all c : phi. B -> all c : phi. C | C'
+G |= (Co, Apps) case Nom a : A of b @ pattern_args : all c : phi. B -> all c : phi. C | C'
 
 
 
@@ -1527,9 +1533,9 @@ G |= a : A
 F : p ~ a0 : A1 / R1 @ Rs in toplevel
 G |= b1 : B
 G |= b2 : C
-G |= Apps case R a : A of F @ none : A1 -> B | C
+G |= Apps case Nom a : A of F @ none : A1 -> B | C
 ------------------------------------------ :: Case
-G |= case R a of F => b1 | _ => b2 : C
+G |= case Nom a of F => b1 | _ => b2 : C
 
 
 
@@ -1686,14 +1692,14 @@ G ; D |= a ~ b : A/R1 == a' ~ b' : A'/R1
 --------------------------------------------- :: IsoSnd
 G ; D |= A == A' : TYPE/Rep
 
-G ; D |= a == a' : A / R
+G ; D |= a == a' : A / Nom
 F : p ~ a0 : A1 / R1 @ Rs in toplevel
 G ; D |= b1 == b1' : B / R0
 G ; D |= b2 == b2' : C / R0
-G |= Apps case R a  : A of F @ none : A1 -> B | C
-G |= Apps case R a' : A of F @ none : A1 -> B | C
+G |= Apps case Nom a  : A of F @ none : A1 -> B | C
+G |= Apps case Nom a' : A of F @ none : A1 -> B | C
 ------------------------------------------------------------------------------- :: PatCong
-G ; D |= case R a of F => b1 | _ => b2 == case R a' of F => b1' | _ => b2' : C / R0
+G ; D |= case Nom a of F => b1 | _ => b2 == case Nom a' of F => b1' | _ => b2' : C / R0
 
 ValuePath a  +> F
 ValuePath a' +> F
@@ -2363,7 +2369,7 @@ homs 'g_'
 homs ''
   :: Min           {{ coq (min [[R1]][[R2]])                       }}
   :: Param         {{ coq (param[[R1]] [[R2]])                     }}
-  :: App           {{ coq (app_role [[nu]])                        }}
+  :: App           {{ coq (app_role [[nu]][[R]])                   }}
   :: RParen        {{ coq ([[R]])                                  }}
 
 

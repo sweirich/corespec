@@ -816,10 +816,21 @@ Definition tm_subst_tm_sig_sort (a5:tm) (x5:tmvar) (sig_sort5:sig_sort) : sig_so
 end.
 
 
-Definition app_role (rr : appflag) : role :=
+Definition min (r1 : role) (r2 : role) : role :=
+  match r1 , r2 with
+  | Nom, _   => Nom
+  | _  , Nom => Nom
+  | Rep, Rep => Rep
+  end.
+
+Parameter str : bool.
+Definition param (r1 : role) (r2 : role) :=
+  if str then r1 else min r1 r2.
+
+Definition app_role (rr : appflag) (r1 : role) : role :=
   match rr with
   | Rho _ => Nom
-  | Role r => r
+  | Role r => param r r1
   end.
 
 Definition app_rho (rr : appflag) : relflag :=
@@ -834,12 +845,6 @@ Definition nu_rho (nu : appflag) : Prop :=
  | Role _ => False
  end.
 
-Definition min (r1 : role) (r2 : role) : role :=
-  match r1 , r2 with
-  | Nom, _   => Nom
-  | _  , Nom => Nom
-  | Rep, Rep => Rep
-  end.
 
 Definition max (r1 : role) (r2 : role) : role :=
   match r1 , r2 with
@@ -855,9 +860,6 @@ Definition lte_role (r1 : role) (r2 : role) : bool :=
   | Rep, Rep => true
   end.
 
-Parameter str : bool.
-Definition param (r1 : role) (r2 : role) :=
-  if str then r1 else min r1 r2.
 
 Fixpoint erase_tm (a : tm) (r : role) : tm :=
    match a with
@@ -1175,10 +1177,14 @@ Inductive ApplyArgs : tm -> tm -> tm -> Prop :=    (* defn ApplyArgs *)
  | ApplyArgs_Const : forall (F:const) (b:tm),
      lc_tm b ->
      ApplyArgs (a_Fam F) b b
- | ApplyArgs_App : forall (a:tm) (nu:appflag) (a' b b':tm),
+ | ApplyArgs_AppRole : forall (a:tm) (R:role) (a' b b':tm),
      lc_tm a' ->
      ApplyArgs a b b' ->
-     ApplyArgs (a_App a nu a') b (a_App b' nu a')
+     ApplyArgs  ( (a_App a (Role R) a') )  b  ( (a_App b' (Rho Rel) a') ) 
+ | ApplyArgs_AppRho : forall (a:tm) (rho:relflag) (a' b b':tm),
+     lc_tm a' ->
+     ApplyArgs a b b' ->
+     ApplyArgs  ( (a_App a (Rho rho) a') )  b  ( (a_App b' (Rho rho) a') ) 
  | ApplyArgs_CApp : forall (a b b':tm),
      ApplyArgs a b b' ->
      ApplyArgs (a_CApp a g_Triv) b (a_CApp b' g_Triv).
@@ -1283,7 +1289,7 @@ Inductive roleing : role_context -> tm -> role -> Prop :=    (* defn roleing *)
      roleing W  ( (a_App a (Rho rho) b) )  R
  | role_a_TApp : forall (W:role_context) (a:tm) (R1:role) (b:tm) (R:role),
      roleing W a R ->
-     roleing W b R1 ->
+     roleing W b  (param R1   R )  ->
      roleing W (a_App a (Role R1) b) R
  | role_a_Pi : forall (L:vars) (W:role_context) (rho:relflag) (A B:tm) (R:role),
      roleing W A R ->
@@ -1309,11 +1315,11 @@ Inductive roleing : role_context -> tm -> role -> Prop :=    (* defn roleing *)
       uniq  W  ->
       binds  F  ( (Ax p a A R Rs) )   toplevel   ->
      roleing W (a_Fam F) R1
- | role_a_Pattern : forall (W:role_context) (R:role) (a:tm) (F:const) (b1 b2:tm) (R1:role),
-     roleing W a R ->
+ | role_a_Pattern : forall (W:role_context) (a:tm) (F:const) (b1 b2:tm) (R1:role),
+     roleing W a Nom ->
      roleing W b1 R1 ->
      roleing W b2 R1 ->
-     roleing W (a_Pattern R a F b1 b2) R1.
+     roleing W (a_Pattern Nom a F b1 b2) R1.
 
 (* defns JChk *)
 Inductive RhoCheck : relflag -> tmvar -> tm -> Prop :=    (* defn RhoCheck *)
@@ -1335,7 +1341,7 @@ Inductive Par : role_context -> tm -> tm -> role -> Prop :=    (* defn Par *)
      Par W (a_App a (Rho rho) b)  (open_tm_wrt_tm  a'   b' )  R
  | Par_App : forall (W:role_context) (a:tm) (nu:appflag) (b a' b':tm) (R:role),
      Par W a a' R ->
-     Par W b b'  (  app_role  nu  )  ->
+     Par W b b'  (  app_role  nu   R  )  ->
      Par W (a_App a nu b) (a_App a' nu b') R
  | Par_CBeta : forall (W:role_context) (a a':tm) (R:role),
      Par W a  ( (a_UCAbs a') )  R ->
@@ -1368,7 +1374,7 @@ Inductive Par : role_context -> tm -> tm -> role -> Prop :=    (* defn Par *)
       binds  F  ( (Ax p b A R1 Rs) )   toplevel   ->
       tm_subpattern_agree a p  /\   not (  ( tm_pattern_agree a p )  )   ->
      Par W a a' R ->
-     Par W a1 a1'  (  app_role  nu  )  ->
+     Par W a1 a1'  (  app_role  nu   R  )  ->
      Rename p b p' b'  (  (  (dom  W )   `union`   (fv_tm_tm_tm  p )  )  )  D' ->
      MatchSubst  ( (a_App a' nu a1') )  p' b' a2 ->
      SubRole R1 R ->
@@ -1381,25 +1387,25 @@ Inductive Par : role_context -> tm -> tm -> role -> Prop :=    (* defn Par *)
      MatchSubst  ( (a_CApp a' g_Triv) )  p' b' a2 ->
      SubRole R1 R ->
      Par W (a_CApp a g_Triv) a2 R
- | Par_Pattern : forall (W:role_context) (R:role) (a:tm) (F:const) (b1 b2 a' b1' b2':tm) (R0:role),
-     Par W a a' R ->
+ | Par_Pattern : forall (W:role_context) (a:tm) (F:const) (b1 b2 a' b1' b2':tm) (R0:role),
+     Par W a a' Nom ->
      Par W b1 b1' R0 ->
      Par W b2 b2' R0 ->
-     Par W  ( (a_Pattern R a F b1 b2) )   ( (a_Pattern R a' F b1' b2') )  R0
- | Par_PatternTrue : forall (W:role_context) (R:role) (a:tm) (F:const) (b1 b2 b:tm) (R0:role) (a' b1' b2':tm),
-     Par W a a' R ->
+     Par W  ( (a_Pattern Nom a F b1 b2) )   ( (a_Pattern Nom a' F b1' b2') )  R0
+ | Par_PatternTrue : forall (W:role_context) (a:tm) (F:const) (b1 b2 b:tm) (R0:role) (a' b1' b2':tm) (R:role),
+     Par W a a' Nom ->
      Par W b1 b1' R0 ->
      Par W b2 b2' R0 ->
      CasePath R a' F ->
      ApplyArgs a' b1' b ->
-     Par W  ( (a_Pattern R a F b1 b2) )  (a_CApp b g_Triv) R0
- | Par_PatternFalse : forall (W:role_context) (R:role) (a:tm) (F:const) (b1 b2 b2':tm) (R0:role) (a' b1':tm),
-     Par W a a' R ->
+     Par W  ( (a_Pattern Nom a F b1 b2) )  (a_CApp b g_Triv) R0
+ | Par_PatternFalse : forall (W:role_context) (a:tm) (F:const) (b1 b2 b2':tm) (R0:role) (a' b1':tm) (R:role),
+     Par W a a' Nom ->
      Par W b1 b1' R0 ->
      Par W b2 b2' R0 ->
      Value R a' ->
       not (  ( CasePath R a' F )  )  ->
-     Par W  ( (a_Pattern R a F b1 b2) )  b2' R0
+     Par W  ( (a_Pattern Nom a F b1 b2) )  b2' R0
 with MultiPar : role_context -> tm -> tm -> role -> Prop :=    (* defn MultiPar *)
  | MP_Refl : forall (W:role_context) (a:tm) (R:role),
      lc_tm a ->
@@ -1429,17 +1435,17 @@ Inductive Beta : tm -> tm -> role -> Prop :=    (* defn Beta *)
      MatchSubst a p1 b1 b' ->
      SubRole R1 R ->
      Beta a b' R
- | Beta_PatternTrue : forall (R:role) (a:tm) (F:const) (b1 b2 b1':tm) (R0:role),
+ | Beta_PatternTrue : forall (a:tm) (F:const) (b1 b2 b1':tm) (R0:role),
      lc_tm b2 ->
-     CasePath R a F ->
+     CasePath Nom a F ->
      ApplyArgs a b1 b1' ->
-     Beta (a_Pattern R a F b1 b2) (a_CApp b1' g_Triv) R0
- | Beta_PatternFalse : forall (R:role) (a:tm) (F:const) (b1 b2:tm) (R0:role),
+     Beta (a_Pattern Nom a F b1 b2) (a_CApp b1' g_Triv) R0
+ | Beta_PatternFalse : forall (a:tm) (F:const) (b1 b2:tm) (R0:role),
      lc_tm b1 ->
      lc_tm b2 ->
-     Value R a ->
-      not (  ( CasePath R a F )  )  ->
-     Beta (a_Pattern R a F b1 b2) b2 R0
+     Value Nom a ->
+      not (  ( CasePath Nom a F )  )  ->
+     Beta (a_Pattern Nom a F b1 b2) b2 R0
 with reduction_in_one : tm -> tm -> role -> Prop :=    (* defn reduction_in_one *)
  | E_AbsTerm : forall (L:vars) (a a':tm) (R1:role),
       ( forall x , x \notin  L  -> reduction_in_one  ( open_tm_wrt_tm a (a_Var_f x) )   ( open_tm_wrt_tm a' (a_Var_f x) )  R1 )  ->
@@ -1451,11 +1457,11 @@ with reduction_in_one : tm -> tm -> role -> Prop :=    (* defn reduction_in_one 
  | E_CAppLeft : forall (a a':tm) (R:role),
      reduction_in_one a a' R ->
      reduction_in_one (a_CApp a g_Triv) (a_CApp a' g_Triv) R
- | E_Pattern : forall (R:role) (a:tm) (F:const) (b1 b2 a':tm) (R0:role),
+ | E_Pattern : forall (a:tm) (F:const) (b1 b2 a':tm) (R0 R:role),
      lc_tm b1 ->
      lc_tm b2 ->
      reduction_in_one a a' R ->
-     reduction_in_one (a_Pattern R a F b1 b2) (a_Pattern R a' F b1 b2) R0
+     reduction_in_one (a_Pattern Nom a F b1 b2) (a_Pattern Nom a' F b1 b2) R0
  | E_Prim : forall (a b:tm) (R:role),
      Beta a b R ->
      reduction_in_one a b R
@@ -1470,23 +1476,23 @@ with reduction : tm -> tm -> role -> Prop :=    (* defn reduction *)
 
 (* defns JBranchTyping *)
 Inductive BranchTyping : context -> Apps -> role -> tm -> tm -> tm -> pattern_args -> tm -> tm -> tm -> Prop :=    (* defn BranchTyping *)
- | BranchTyping_Base : forall (L:vars) (G:context) (R:role) (a A b:tm) (pattern_args5:pattern_args) (C:tm),
+ | BranchTyping_Base : forall (L:vars) (G:context) (a A b:tm) (pattern_args5:pattern_args) (C:tm),
      lc_tm C  ->
      lc_tm a ->
      lc_tm b ->
      lc_tm A ->
-     lc_tm (a_CPi  ( (Eq a  (apply_pattern_args  b   pattern_args5 )  A R) )  C) ->
+     lc_tm (a_CPi  ( (Eq a  (apply_pattern_args  b   pattern_args5 )  A Nom) )  C) ->
       uniq  G  ->
-      ( forall c , c \notin  L  -> BranchTyping G  nil  R a A b pattern_args5 A (a_CPi  ( (Eq a  (apply_pattern_args  b   pattern_args5 )  A R) )  C)  ( open_tm_wrt_co C (g_Var_f c) )  ) 
- | BranchTyping_PiRel : forall (L:vars) (G:context) (Apps5:Apps) (R:role) (a A1 b:tm) (pattern_args5:pattern_args) (A B C C':tm),
-      ( forall x , x \notin  L  -> BranchTyping  (( x ~ Tm  A ) ++  G )  Apps5 R a A1 b  (cons  (p_Tm (Rho Rel) (a_Var_f x))   pattern_args5 )   ( open_tm_wrt_tm B (a_Var_f x) )   ( open_tm_wrt_tm C (a_Var_f x) )  C' )  ->
-     BranchTyping G  (  ( (A_Tm Rel) :: Apps5 )  )  R a A1 b pattern_args5 (a_Pi Rel A B) (a_Pi Rel A C) C'
- | BranchTyping_PiIrrel : forall (L:vars) (G:context) (Apps5:Apps) (R:role) (a A1 b:tm) (pattern_args5:pattern_args) (A B C C':tm),
-      ( forall x , x \notin  L  -> BranchTyping  (( x ~ Tm  A ) ++  G )  Apps5 R a A1 b  (cons  (p_Tm (Rho Irrel) a_Bullet)   pattern_args5 )   ( open_tm_wrt_tm B (a_Var_f x) )   ( open_tm_wrt_tm C (a_Var_f x) )  C' )  ->
-     BranchTyping G  (  ( (A_Tm Irrel) :: Apps5 )  )  R a A1 b pattern_args5 (a_Pi Irrel A B) (a_Pi Irrel A C) C'
- | BranchTyping_CPi : forall (L:vars) (G:context) (Apps5:Apps) (R:role) (a A b:tm) (pattern_args5:pattern_args) (phi:constraint) (B C C':tm),
-      ( forall c , c \notin  L  -> BranchTyping  (( c ~ Co  phi ) ++  G )  Apps5 R a A b  (cons  (p_Co g_Triv)   pattern_args5 )   ( open_tm_wrt_co B (g_Var_f c) )   ( open_tm_wrt_co C (g_Var_f c) )  C' )  ->
-     BranchTyping G  (  ( A_Co :: Apps5 )  )  R a A b pattern_args5 (a_CPi phi B) (a_CPi phi C) C'.
+      ( forall c , c \notin  L  -> BranchTyping G  nil  Nom a A b pattern_args5 A (a_CPi  ( (Eq a  (apply_pattern_args  b   pattern_args5 )  A Nom) )  C)  ( open_tm_wrt_co C (g_Var_f c) )  ) 
+ | BranchTyping_PiRel : forall (L:vars) (G:context) (Apps5:Apps) (a A1 b:tm) (pattern_args5:pattern_args) (A B C C':tm),
+      ( forall x , x \notin  L  -> BranchTyping  (( x ~ Tm  A ) ++  G )  Apps5 Nom a A1 b  (cons  (p_Tm (Rho Rel) (a_Var_f x))   pattern_args5 )   ( open_tm_wrt_tm B (a_Var_f x) )   ( open_tm_wrt_tm C (a_Var_f x) )  C' )  ->
+     BranchTyping G  (  ( (A_Tm Rel) :: Apps5 )  )  Nom a A1 b pattern_args5 (a_Pi Rel A B) (a_Pi Rel A C) C'
+ | BranchTyping_PiIrrel : forall (L:vars) (G:context) (Apps5:Apps) (a A1 b:tm) (pattern_args5:pattern_args) (A B C C':tm),
+      ( forall x , x \notin  L  -> BranchTyping  (( x ~ Tm  A ) ++  G )  Apps5 Nom a A1 b  (cons  (p_Tm (Rho Irrel) a_Bullet)   pattern_args5 )   ( open_tm_wrt_tm B (a_Var_f x) )   ( open_tm_wrt_tm C (a_Var_f x) )  C' )  ->
+     BranchTyping G  (  ( (A_Tm Irrel) :: Apps5 )  )  Nom a A1 b pattern_args5 (a_Pi Irrel A B) (a_Pi Irrel A C) C'
+ | BranchTyping_CPi : forall (L:vars) (G:context) (Apps5:Apps) (a A b:tm) (pattern_args5:pattern_args) (phi:constraint) (B C C':tm),
+      ( forall c , c \notin  L  -> BranchTyping  (( c ~ Co  phi ) ++  G )  Apps5 Nom a A b  (cons  (p_Co g_Triv)   pattern_args5 )   ( open_tm_wrt_co B (g_Var_f c) )   ( open_tm_wrt_co C (g_Var_f c) )  C' )  ->
+     BranchTyping G  (  ( A_Co :: Apps5 )  )  Nom a A b pattern_args5 (a_CPi phi B) (a_CPi phi C) C'.
 
 (* defns Jett *)
 Inductive PropWff : context -> constraint -> Prop :=    (* defn PropWff *)
@@ -1552,13 +1558,13 @@ with Typing : context -> tm -> tm -> Prop :=    (* defn Typing *)
       binds  F  ( (Ax p a A R1 Rs) )   toplevel   ->
       ( Typing  nil  A a_Star )  ->
      Typing G (a_Fam F) A
- | E_Case : forall (G:context) (R:role) (a:tm) (F:const) (b1 b2 C A p a0 A1:tm) (R1:role) (Rs:roles) (B:tm) (Apps5:Apps),
+ | E_Case : forall (G:context) (a:tm) (F:const) (b1 b2 C A p a0 A1:tm) (R1:role) (Rs:roles) (B:tm) (Apps5:Apps),
      Typing G a A ->
       binds  F  ( (Ax p a0 A1 R1 Rs) )   toplevel   ->
      Typing G b1 B ->
      Typing G b2 C ->
-     BranchTyping G Apps5 R a A (a_Fam F)  nil  A1 B C ->
-     Typing G (a_Pattern R a F b1 b2) C
+     BranchTyping G Apps5 Nom a A (a_Fam F)  nil  A1 B C ->
+     Typing G (a_Pattern Nom a F b1 b2) C
 with Iso : context -> available_props -> constraint -> constraint -> Prop :=    (* defn Iso *)
  | E_PropCong : forall (G:context) (D:available_props) (A1 B1 A:tm) (R:role) (A2 B2:tm),
      DefEq G D A1 A2 A R ->
@@ -1664,14 +1670,14 @@ with DefEq : context -> available_props -> tm -> tm -> tm -> role -> Prop :=    
  | E_IsoSnd : forall (G:context) (D:available_props) (A A' a b:tm) (R1:role) (a' b':tm),
      Iso G D (Eq a b A R1) (Eq a' b' A' R1) ->
      DefEq G D A A' a_Star Rep
- | E_PatCong : forall (G:context) (D:available_props) (R:role) (a:tm) (F:const) (b1 b2 a' b1' b2' C:tm) (R0:role) (A p a0 A1:tm) (R1:role) (Rs:roles) (B:tm) (Apps5:Apps),
-     DefEq G D a a' A R ->
+ | E_PatCong : forall (G:context) (D:available_props) (a:tm) (F:const) (b1 b2 a' b1' b2' C:tm) (R0:role) (A p a0 A1:tm) (R1:role) (Rs:roles) (B:tm) (Apps5:Apps),
+     DefEq G D a a' A Nom ->
       binds  F  ( (Ax p a0 A1 R1 Rs) )   toplevel   ->
      DefEq G D b1 b1' B R0 ->
      DefEq G D b2 b2' C R0 ->
-     BranchTyping G Apps5 R a A (a_Fam F)  nil  A1 B C ->
-     BranchTyping G Apps5 R a' A (a_Fam F)  nil  A1 B C ->
-     DefEq G D (a_Pattern R a F b1 b2) (a_Pattern R a' F b1' b2') C R0
+     BranchTyping G Apps5 Nom a A (a_Fam F)  nil  A1 B C ->
+     BranchTyping G Apps5 Nom a' A (a_Fam F)  nil  A1 B C ->
+     DefEq G D (a_Pattern Nom a F b1 b2) (a_Pattern Nom a' F b1' b2') C R0
  | E_LeftRel : forall (G:context) (D:available_props) (a a' A B:tm) (R':role) (F:const) (b b':tm) (R1:role),
      ValuePath a F ->
      ValuePath a' F ->

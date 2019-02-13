@@ -103,7 +103,12 @@ Qed.
 
 Lemma roleing_sub : forall W a R1 R2, roleing W a R1 -> SubRole R1 R2 ->
                                      roleing W a R2.
-Proof. intros W a R1 R2 H S. generalize dependent R2. induction H; intros; eauto.
+Proof. intros W a R1 R2 H S. generalize dependent R2. 
+       induction H; intros; eauto.
+       econstructor.
+       eapply IHroleing1; auto. 
+       eapply IHroleing2; eauto 1.
+       eapply param_covariant. auto.
 Qed.
 
 Lemma RolePath_subst : forall F a b Rs x, RolePath a F Rs -> lc_tm b ->
