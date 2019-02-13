@@ -3,6 +3,7 @@ Require Export FcEtt.ett_inf.
 
 Require Import FcEtt.utils.
 Require Import FcEtt.imports.
+Require Import FcEtt.notations.
 
 Require Import FcEtt.ett_ind.
 Require Import FcEtt.toplevel.
@@ -10,6 +11,7 @@ Require Import FcEtt.toplevel.
 Set Bullet Behavior "Strict Subproofs".
 Set Implicit Arguments.
 
+Generalizable All Variables.
 
 (* --------------------------------------------------------------------------- *)
 (* --------------------------------------------------------------------------- *)
@@ -73,15 +75,12 @@ Proof. intros. induction H; simpl in *; split; split_hyp; autounfold.
             [ eauto | erewrite fv_tm_tm_tm_open_tm_wrt_co_lower; eauto]; fail).
        all: try (eapply AtomSetProperties.in_subset;
             [ eauto | erewrite fv_co_co_tm_open_tm_wrt_co_lower; eauto]; fail).
-       - intros. apply singleton_iff in H2; subst. eapply binds_In; eauto.
-       - apply union_iff in H12. inversion H12.
-         eapply AtomSetProperties.in_subset; eauto.
-         apply union_iff in H13. inversion H13;
-         eapply AtomSetProperties.in_subset; eauto.
-       - apply union_iff in H12. inversion H12.
-         eapply AtomSetProperties.in_subset; eauto.
-         apply union_iff in H13. inversion H13;
-         eapply AtomSetProperties.in_subset; eauto.
+       all: repeat (with (In _ (_ ∪ _)) do ltac:(fun h => apply union_iff in h; inv h)).
+       all: try by eapply AtomSetProperties.in_subset; eauto.
+       all: try by intros; fsetdec.
+       - intros.
+         with In do ltac:(fun h => apply singleton_iff in h; subst).
+         eapply binds_In; eauto.
 Qed.
 
 Lemma rctx_fv : forall W a R, roleing W a R -> fv_tm_tm_tm a [<=] dom W.
@@ -100,16 +99,22 @@ Qed.
 
 Lemma axiom_body_fv_in_pattern : forall F p b A R Rs,
       binds F (Ax p b A R Rs) toplevel -> fv_tm_tm_tm b [<=] fv_tm_tm_tm p.
-Proof. intros. apply toplevel_inversion in H.
-       inversion H as [W [G [B [H1 [_ [H2 H3]]]]]].
-       apply rctx_fv in H2. apply pat_ctx_fv in H1. eapply Subset_trans; eauto.
+Proof.
+  intros.
+  withf binds do applyin toplevel_inversion.
+  autofwd.
+  withf roleing do applyin rctx_fv.
+  withf PatternContexts do applyin pat_ctx_fv.
+  by fsetdec.
 Qed.
 
 Lemma axiom_body_fv_co : forall F p b A R Rs,
       binds F (Ax p b A R Rs) toplevel -> fv_co_co_tm b [<=] empty.
-Proof. intros. apply toplevel_inversion in H.
-       inversion H as [W [G [B [_ [_ [H1 _]]]]]].
-       eapply rctx_fv_co; eauto.
+Proof.
+  intros.
+  withf binds do applyin toplevel_inversion.
+  autofwd.
+  by with roleing do applyin rctx_fv_co.
 Qed.
 
 
@@ -140,6 +145,7 @@ Theorem context_fv_mutual :
           fv_tm_tm_constraint phi [<=] dom G /\ fv_co_co_constraint phi [<=] dom G)).
 
 Proof.
+  (* TODO: this needs maintenance *)
   eapply typing_wff_iso_defeq_mutual.
   all: autounfold.
 
@@ -150,7 +156,8 @@ Proof.
 
   (* Do the cases about the context at the end. *)
   all: try (intros x0 A0 BI).
-  all: try solve [inversion BI].
+  all: try solve [intros; autofv]. (* TODO: finish implementing the "positive" case of autofv so it solves more cases here *)
+  (* TODO: + a good instantiation tactic would help as well *)
   all: try (match goal with |- _ ∧ _ => split end).
 
   all: try (intros y h1; inversion BI; [
@@ -170,14 +177,14 @@ Proof.
     [ H7 : ?y `in` union ?A ?B |- _ ] =>
     apply F.union_iff in H7; destruct H7; eauto end.
 
-  all: try solve [ apply notin_empty_1 in IN; contradiction].
-  all: try solve [ assert (x = y) by auto; subst; eapply binds_In; eauto ].
   all: try solve [ destruct (H _ _ b); eauto ].
+
 
   all: try solve [apply H1; eauto; simpl; auto].
   all: try solve [apply H2; eauto; simpl; auto].
   all: try solve [apply H3; eauto; simpl; auto].
   all: try solve [apply H0; eauto; simpl; auto].
+
 
 
   all: try match goal with
