@@ -1417,20 +1417,52 @@ Lemma apply_args_par : forall a b c a' b' c' W R2 F, ApplyArgs a b c ->
                        CasePath Nom a F -> Par W a a' Nom -> Par W b b' R2 ->
                        ApplyArgs a' b' c' -> Par W c c' R2.
 Proof. intros. generalize dependent a'. generalize dependent b'.
-       generalize dependent c'. induction H; intros.
+       generalize dependent c'.
+       (* By induction on ApplyArgs *)
+       induction H; intros.
          - inversion H1; subst. inversion H3; subst. auto.
            assert (F0 = F). { eapply CasePath_head in H0; simpl in H0; 
            inversion H0; auto. } subst.
            inversion H0; subst; axioms_head_same. contradiction. assert False.
            apply H9. eauto. contradiction.
-         - (* inversion H3; subst.
-             + inversion H4; subst. econstructor.
+         - (* First App case, nu is (Rho R) *)
+           (* Have a path:  a R a'  that reduces to some a'0. *)
+           inversion H3; subst.  (* case on how a R a' reduces.  *)
+             + (* Headed by a constant, but not enough arguments. *)
+               inversion H4; subst. econstructor.
                eapply IHApplyArgs; eauto. eapply CasePath_app; eauto.
                inversion H5; eauto. econstructor.
                simpl.
                inversion H5; eauto. subst.
                have e: param R Nom = Nom. admit.
                rewrite <- e. auto.
+             + inversion H4; subst. econstructor.
+               eapply IHApplyArgs; eauto. eapply CasePath_app; eauto.
+               simpl in *.
+               have e: param R Nom = Nom. admit.
+               rewrite <- e. auto.
+             + (* Axiom pattern match *)
+               (* a R a' reduces by unfolding an Axiom 
+                *)
+               split_hyp. 
+               assert (tm_tm_agree a a'1).
+               { eapply pattern_like_tm_par; eauto. }
+
+               move: (MatchSubst_match H16) => P.
+               assert (tm_pattern_agree (a_App a (Role R) a') p').
+               { eapply tm_pattern_agree_cong. eapply P.               
+               econstructor. eapply tm_tm_agree_sym; eauto.
+               eapply Par_lc2; eauto. eapply Par_lc1; eauto. }
+               destruct (MatchSubst_exists H9 (MatchSubst_lc3 H16)) as [a0 Q]. 
+               assert False. eapply CasePath_ax_par_contr; eauto. 
+               contradiction. 
+         - (* Second App case, nu is (Rho rho) *)
+            inversion H3; subst.
+             + inversion H4; subst. econstructor.
+               eapply IHApplyArgs; eauto. eapply CasePath_app; eauto.
+               inversion H5; eauto. econstructor.
+               simpl.
+               inversion H5; eauto. 
              + eapply CasePath_app in H0. 
                pose (P := Par_CasePath H0 H11).
                apply CasePath_ValuePath in P. 
@@ -1440,15 +1472,13 @@ Proof. intros. generalize dependent a'. generalize dependent b'.
              + inversion H9. assert (tm_tm_agree a a'1).
                eapply pattern_like_tm_par; eauto.
                pose (P := MatchSubst_match H16).
-               assert (tm_pattern_agree (a_App a nu a') p').
+               assert (tm_pattern_agree (a_App a (Rho rho) a') p').
                eapply tm_pattern_agree_cong. eapply P.
                econstructor. eapply tm_tm_agree_sym; eauto.
                eapply Par_lc2; eauto. eapply Par_lc1; eauto.
                destruct (MatchSubst_exists H12 (MatchSubst_lc3 H16)) as [a0 Q]. 
                assert False. eapply CasePath_ax_par_contr; eauto. 
-               contradiction. *)
-           admit.
-         - admit.
+               contradiction.
          - inversion H1; subst.
              + inversion H3; subst. econstructor.
                eapply IHApplyArgs; eauto. eapply CasePath_capp; eauto.
