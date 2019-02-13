@@ -42,7 +42,10 @@ Inductive Display {T : Type} : T → Prop := display : ∀ (t : T), Display t.
 Polymorphic Definition _hide {T : Type} (t : T) : T := t.
 Polymorphic Definition _eq_hide {T : Type} (t : T) : t = _hide t := eq_refl.
 
-Notation "'_hidden_'" := (_hide _) (at level 50, only printing).
+(* FIXME: defining the notation here doesn't work. Could we somehow export it?
+          Otherwise just put the types & notations in another (exported) module
+          or at the toplevel. *)
+Global Notation "'_hidden_'" := (_hide _) (at level 50, only printing).
 
 Ltac hide H := match type of H with ?T => rewrite -> (_eq_hide T) in H end.
 Ltac unhide H := unfold _hide in H.
@@ -710,6 +713,9 @@ Ltac applyin := TacticsInternals.applyin.
 Ltac hide      := TacticsInternals.hide.
 Ltac unhide    := TacticsInternals.unhide.
 Ltac softclear := TacticsInternals.softclear. (* This tactic goes further, and prevents the hyp from being used again *)
+
+(* FIXME: see similar declaration above *)
+Notation "'_hidden_'" := (TacticsInternals._hide _) (at level 50, only printing).
 
 (* FIXME: rely on internals *)
 Tactic Notation "basic_nosolve_n" int_or_var(n) := intuition (subst; eauto n).
