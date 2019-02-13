@@ -53,6 +53,12 @@ Ltac unwrap_dyn d :=
     | dyn ?v => v
   end.
 
+Ltac get_head t :=
+  match t with
+    | ?hd _ => get_head hd
+    | ?hd   => hd
+  end.
+
 (* Checks that `t` is a multi-application headed by `hd`; `hd` doesn't have to be a mere constructor,
    it can also be applied to some arguments *)
 Ltac has_head t hd :=
@@ -77,7 +83,6 @@ Ltac has_head_uconstr t hd :=
       | ?t' _ => has_head_uconstr t' hd
     end
   ].
-
 
 (* Find an hypothesis which type is headed by constructor `cs`, and
    apply `tac` to it. Parametrized by `head_check` for efficiency vs
