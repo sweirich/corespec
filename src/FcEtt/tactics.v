@@ -38,6 +38,16 @@ Polymorphic (* Cumulative *) Inductive Dyn : Type := dyn : forall {T : Type}, T 
 
 Inductive Display {T : Type} : T → Prop := display : ∀ (t : T), Display t.
 
+(* Hiding/unhiding the type of a hyp *)
+Polymorphic Definition _hide {T : Type} (t : T) : T := t.
+Polymorphic Definition _eq_hide {T : Type} (t : T) : t = _hide t := eq_refl.
+
+Notation "'_hidden_'" := (_hide _) (at level 50, only printing).
+
+Ltac hide H := match type of H with ?T => rewrite -> (_eq_hide T) in H end.
+Ltac unhide H := unfold _hide in H.
+
+
 Ltac unwrap_dyn d :=
   match d with
     | dyn ?v => v
@@ -125,8 +135,8 @@ Ltac subst_forall :=
 Ltac check_num_goals_eq g := let n:= numgoals in guard n=g.
 
 
-(* Inversion and substitution *)
-Ltac invs H := inversion H; subst.
+Ltac inv  H := inversion H. (* Alias - supports partial application *)
+Ltac invs H := inversion H; subst. (* Inversion and substitution (think "InvS") *)
 
 (*****************)
 (**** Solvers ****)
@@ -186,8 +196,10 @@ Ltac spec_all t :=
 (* Automatically instantiating induction hypotheses when their premises are available in the context *)
 Ltac autoprem :=
   repeat match goal with
-    | [H : ?P → ?Q, p : ?P |- _] =>
+    | H : forall x : ?P, _, p : ?P |- _ =>
       move: H; move /(_ p) => H
+    | H : forall x : ?P, _ |- _ =>
+      move: H; move/(_ ltac:(eassumption || auto 5)) => H
     end.
 
 
@@ -395,7 +407,7 @@ Tactic Notation "pick" "fresh" := let x := fresh "x" in pick fresh x.
 Ltac break_union :=
   repeat match goal with
   (* TODO: see if there are other common cases we could solve here *)
-    | [ H : ~ ?x `in` union _ _ |- _ ] =>
+    | [ H : ¬ ?x `in` union _ _ |- _ ] =>
         move: (notin_union_1 _ _ _ H) (notin_union_2 _ _ _ H) => ??; clear H
   end.
 
@@ -431,11 +443,21 @@ Ltac autofresh_fixed_param tac x :=
 
 
 
- (* General version that picks up a fresh variable instead *)
- Ltac autofresh_param tac :=
-   let x := fresh "x" in
-   pick fresh x;
-   autofresh_fixed_param tac x.
+(* General version that picks up a fresh variable instead *)
+Ltac autofresh_param tac :=
+  let x := fresh "x" in
+  pick fresh x;
+  autofresh_fixed_param tac x.
+
+(* Yet another version, that tries to find a suitable variable in the context *)
+(* TODO: could be more robust:
+         - reject cases with 2 fresh variables
+         - what else?
+*)
+Ltac autofresh_find_param tac :=
+  match goal with
+    x : atom, _ : ?x `notin` _ |- _ => autofresh_fixed_param tac x
+  end.
 
 
 
@@ -530,6 +552,7 @@ Ltac autotype :=
 (* Guard predicate: Does T 'talk about' variables? *)
 Ltac guard_about_vars T :=
   match T with
+    | _ ∈ _ => idtac
     | _ ∉ _ => idtac
   end.
 
@@ -570,6 +593,8 @@ Ltac autofv_solve :=
 
     | [ |- _ ∉ (_ ∪ _) ] => eapply not_in_union
 
+(*    | x : atom, H : ∀ ?y : atom, *)
+
   end;
   solve [fsetdec_fast | fsetdec | eauto].
 
@@ -577,14 +602,26 @@ Ltac autofv_solve :=
 Ltac autofv_fwd :=
   fresh_fireworks;
   repeat (match goal with
-    | [ H : ?T₁ → ?T₂ |- _ ] =>
+    | H : ?T₁ → ?T₂ |- _ =>
       guard_about_vars T₁;
       let t₁ := fresh in
       (have t₁ : T₁ by autofv_solve);
-      move: {H} (H t₁) => H
-  end; fresh_fireworks).
+      move: {H} (H t₁) => H;
+      fresh_fireworks
+    | H : _ ∈ empty |- _ =>
+      apply notin_empty_1 in H;
+      contradiction
+    | H : ?y ∈ singleton ?x |- _ =>
+      assert (x = y) by auto;
+      subst;
+      clear H
+    | H : binds _ _ _ |- _ =>
+      (* FIXME: as a new hyp maybe? *)
+      apply binds_In in H
+  end).
 
 Ltac autofv :=
+  autofwd;
   autofv_fwd;
   autofv_solve.
 
@@ -601,19 +638,21 @@ End TacticsInternals.
 
 (** Solvers **)
 
-Ltac basic_solve := TacticsInternals.basic_solve.
-Ltac split_hyp := TacticsInternals.split_hyp.
+Ltac basic_solve  := TacticsInternals.basic_solve.
+Ltac split_hyp    := TacticsInternals.split_hyp.
 
 (* General purpose solver. Does a bunch of domain-specific reasoning *)
-Ltac autotype   := TacticsInternals.autotype.
-Ltac ok         := autotype.
+Ltac autotype     := TacticsInternals.autotype.
+Ltac ok           := autotype.
 
 (* Does as much forward reasoning as possible (includes deriving contradictions) *)
-Ltac autofwd    := TacticsInternals.autofwd.
-Ltac introfwd   := intros; autofwd.
+Ltac autofwd      := TacticsInternals.autofwd.
+Ltac introfwd     := intros; autofwd.
+Ltac autoprem     := TacticsInternals.autoprem.
 
 (* TODO Tries to solve free variable obligations *)
-Ltac autofv     := TacticsInternals.autofv.
+Ltac autofv       := TacticsInternals.autofv.
+Ltac fsetdec_fast := TacticsInternals.fsetdec_fast.
 
 (* Tries to find some kind of contradiction (for the most common cases of contradiction we encounter here) *)
 Ltac autocontra := TacticsInternals.autocontra.
@@ -621,6 +660,8 @@ Ltac autocontra := TacticsInternals.autocontra.
 (* Automatically pick fresh variables and solve freshness conditions *)
 Tactic Notation "autofresh"  "with" hyp(x) := TacticsInternals.autofresh_fixed_param TacticsInternals.spec2 x.
 Tactic Notation "autofresh+" "with" hyp(x) := TacticsInternals.autofresh_fixed_param TacticsInternals.inst2 x.
+Tactic Notation "autofresh"  "with" "existing" := TacticsInternals.autofresh_find_param TacticsInternals.spec2.
+Tactic Notation "autofresh+" "with" "existing" := TacticsInternals.autofresh_find_param TacticsInternals.inst2.
 Tactic Notation "autofresh" "for" "all" := fail "TODO". (* /!\ issues with unwrap_all *)
 Tactic Notation "autofresh"  := TacticsInternals.autofresh_param TacticsInternals.spec2.
 Tactic Notation "autofresh+" := TacticsInternals.autofresh_param TacticsInternals.inst2.
@@ -654,8 +695,13 @@ Tactic Notation (at level 0) "revert" "all" "except" ident(H) := TacticsInternal
 Tactic Notation "exactly" integer(n) "goal" := TacticsInternals.check_num_goals_eq n.
 Tactic Notation "exactly" integer(n) "goals" := TacticsInternals.check_num_goals_eq n.
 
-Ltac invs := TacticsInternals.invs.
-Ltac softclear := TacticsInternals.softclear.
+Ltac inv  := TacticsInternals.inv. (* Alias for inversion (-> can be partially applied) *)
+Ltac invs := TacticsInternals.invs. (* Inversion (of a hyp) and substitution *)
+
+(* Hiding/unhiding the type of a hyp *)
+Ltac hide      := TacticsInternals.hide.
+Ltac unhide    := TacticsInternals.unhide.
+Ltac softclear := TacticsInternals.softclear. (* This tactic goes further, and prevents the hyp from being used again *)
 
 (* FIXME: rely on internals *)
 Tactic Notation "basic_nosolve_n" int_or_var(n) := intuition (subst; eauto n).
