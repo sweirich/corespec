@@ -5,21 +5,20 @@ Require Export Metalib.Metatheory.
 
 (* TODO: Modularize, so we can import on demand *)
 (* Typing *)
-Notation "Γ ⊨ a : A"                := (Typing Γ a A)      (at level 80, a at level 35, A at level 35)  : type_scope.
-(* FIXME: the semicolon in the following notations breaks the corresponding ltac operator *)
-Notation "Γ / Δ ⊨ a₁ == a₂ : A / R" := (DefEq Γ Δ a₁ a₂ A R) (at level 80, a₁ at level 35, A at level 35) : type_scope.
-Notation "Γ / Δ ⊨ φ₁ == φ₂"         := (Iso Γ Δ φ₁ φ₂)       (at level 80, φ₁ at level 35, φ₂ at level 35): type_scope. 
+Notation "Γ ⊨ a : A"                := (Typing Γ a A)      (at level 72, a at level 35, A at level 35)  : type_scope.
+Notation "Γ ∥ Δ ⊨ a₁ ∼ a₂ : A / R" := (DefEq Γ Δ a₁ a₂ A R) (at level 72, Δ at level 35, a₁ at level 35, a₂ at level 35, A at level 35, R at level 35) : type_scope. Print Grammar constr.
+Notation "Γ ∥ Δ ⊨ φ₁ ∼ φ₂"         := (Iso Γ Δ φ₁ φ₂)       (at level 72, Δ at level 35, φ₁ at level 35, φ₂ at level 35): type_scope. Print Grammar constr.
 Notation "Γ ⊨ φ 'Ok'"               := (PropWff Γ φ)         (at level 80, φ at level 35)                 : type_scope.
 
 
 (* Reductions *)
-Notation "Γ / D / ζ ⊨ a ⇒ b / R" := (Par Γ D ζ a b R) (at level 80, b at level 35).
+Notation "Γ ∥ D ∥ ζ ⊨ a ⇒ b / R" := (Par Γ D ζ a b R) (at level 80, b at level 35).
 Notation "⊨ a ↝ b / R"  := (reduction_in_one a b R) (at level 80, b at level 35).
 
 (* Predicates *)
 (* Notation "ζ ⊨ 👻 a / R" := (roleing_tm ζ a R) (at level 80, a at level 35). *)
-Notation "ζ ⊨ a : R"        := (roleing ζ a R) (at level 80, a at level 35, R at level 35).
-Notation "ζ ; apps ⊨ a : R" := (app_roleing ζ apps a R) (at level 80, apps at level 35, a at level 35, R at level 35).
+Notation "ζ ⊨r a : R"        := (roleing ζ a R) (at level 80, a at level 35, R at level 35).
+Notation "ζ ; apps ⊨r a : R" := (app_roleing ζ apps a R) (at level 80, apps at level 35, a at level 35, R at level 35).
 
 
 (* Other relations *)
