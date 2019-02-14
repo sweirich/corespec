@@ -47,7 +47,7 @@ Polymorphic Definition _eq_hide {T : Type} (t : T) : t = _hide t := eq_refl.
           or at the toplevel. *)
 Global Notation "'_hidden_'" := (_hide _) (at level 50, only printing).
 
-Ltac hide H := match type of H with ?T => rewrite -> (_eq_hide T) in H end.
+Ltac hide H := match type of H with | _hide ?T => rewrite <- (_eq_hide T) in H | ?T => rewrite -> (_eq_hide T) in H end.
 Ltac unhide H := unfold _hide in H.
 
 
