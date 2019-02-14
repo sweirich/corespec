@@ -207,7 +207,6 @@ Qed.
 Lemma refl_iso: `(PropWff G phi  -> Iso G D phi phi).
 Proof.
   intros G phi D H.
-  destruct phi.
   inversion H.
   assert (Ctx G). eauto.
 (*   assert (Typing G A a_Star R). { eapply Typing_regularity; eauto. } *)
@@ -304,17 +303,17 @@ Proof.
     split.
     + apply (E_Trans _ _ _ _ _ _ A); auto.
     + exists L; auto.
-  - induction phi.
+  - with PropWff do ltac:(fun h => inversion h). subst.
     exists a0, b, A, R, B.
     split; auto.
     split.
     + apply (E_Refl _ _ _ a_Star); auto.
       apply (E_CPi (L \u (dom G))); auto.
-      intros c H2.
+      intros c h2.
       eapply (@Typing_regularity _ (open_tm_wrt_co a (g_Var_f c))); eauto.
     + exists (L \u (dom G)).
       inversion e; subst; clear e.
-      intros c H2.
+      intros c h2.
       split; auto.
       eapply H; eauto.
       eapply (@Typing_regularity _ (open_tm_wrt_co a (g_Var_f c))); eauto.
@@ -674,7 +673,7 @@ Proof.
   - intros G D a b A R c c0 H b0 i G2 H0 H1.
     case (@context_co_binding_defeq D G G2 (Eq a b A R) c); auto.
     intros phi' [h0 h1].
-    destruct phi' as [A' B'].
+    move: (binds_to_PropWff  _ _ H0 h0) => h2. inversion h2. subst.
     eapply (E_Assn _ D) in h0; auto.
     eapply sym_iso in h1.
     eapply E_Cast; eauto 1.
@@ -698,7 +697,8 @@ Proof.
     econstructor; auto.
   - intros.
     pick fresh c and apply E_CAbsCong; eauto 2.
-    destruct phi1.
+    with PropWff do ltac:(fun h => inversion h).
+    subst.
     eapply H; eauto 3.
     econstructor; eauto using refl_iso.
   - intros G D a1 b1 B R' a b A R d H d0 H0 G2 H1 H2.
@@ -923,22 +923,22 @@ Proof.
       * apply (E_CAbs (L \u (dom G))); eauto.
         intros c H3.
         apply H; eauto.
-      * destruct phi1. apply (E_CPiCong (L \u (dom G))); auto.
-        -- apply refl_iso; auto.
-        -- intros c H3.
+      * with PropWff do ltac:(fun h => inversion h). subst. 
+        apply (E_CPiCong (L \u (dom G))); auto.
+        -- intros c h3.
            apply E_Refl; eauto 2. 
            eapply Typing_regularity; eauto 2.
            eapply H; eauto 4.
         -- apply (E_CPi (L \u dom G)); eauto 2.
-           intros c H3.
+           intros c h3.
            eapply Typing_regularity; eauto 2.
            apply H; eauto.
         -- apply (E_CPi (L \u dom G)); eauto 3.
-           intros c H3.
+           intros c h3.
            eapply Typing_regularity; eauto 2.
            apply H; auto.
       * apply (E_CPi (L \u (dom G))); eauto 3.
-        intros c H3.
+        intros c h3.
         destruct (H c); auto.
         eapply Typing_regularity; eauto.
   - intros.
@@ -1283,6 +1283,7 @@ Proof.
   eapply E_Wff; eauto 2.
   eapply Typing_regularity. eauto.
 Qed.
+
 
 (****************************)
 (**** Regularity Tactics ****)

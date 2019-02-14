@@ -200,7 +200,8 @@ Proof.
   all : try solve [econstructor; eauto].
   all : try solve [eauto using roleing_sub].
   all : try solve [econstructor; eauto using ctx_to_rctx_uniq, ctx_to_rctx_binds_tm].
-  - destruct phi. move: (H0 a b A R eq_refl) => ?. split_hyp. clear H0.
+  - inversion p. subst. 
+    move: (H0 a b A R eq_refl) => ?. split_hyp. clear H0.
     eapply (@role_a_CPi L); eauto.
 Qed.
 

@@ -250,10 +250,10 @@ Lemma axiom_app_confluence : forall F p b A R Rs p' b' D' a a1 av
                                               aw ax ay a2 nu W R1,
       binds F (Ax p b A R Rs) toplevel ->
       tm_subpattern_agree a p /\ ~(tm_pattern_agree a p) ->
-      Par W a av R1 -> Par W a1 aw (app_role nu) ->
+      Par W a av R1 -> Par W a1 aw (app_role nu R1) ->
       Rename p b p' b' ((dom W) \u fv_tm_tm_tm p) D' ->
       MatchSubst (a_App av nu aw) p' b' a2 ->
-      Par W av ax R1 -> Par W aw ay (app_role nu) ->
+      Par W av ax R1 -> Par W aw ay (app_role nu R1) ->
       SubRole R R1 -> Par W a2 (matchsubst (a_App ax nu ay) p' b') R1.
 Proof. intros. inversion H0 as [Q1 Q2].
        assert (tm_tm_agree a av). { eapply pattern_like_tm_par; eauto. }
@@ -287,7 +287,7 @@ Proof. intros. inversion H0 as [Q1 Q2].
           eapply Subset_trans'. eapply Rename_fv_new_pattern. eauto.
           simpl. apply AtomSetProperties.subset_add_3. eauto.
           intro. intro. apply AtomSetImpl.union_2. apply dom_combine_fv; auto.
-        + auto.
+        + eapply Par_sub; eauto using param_sub1.
       - replace W with (nil ++ W); eauto.
         eapply MatchSubst_par with (p1 := p); eauto.
         + rewrite pattern_app_irrel_rctx. eapply roleing_Rename.
@@ -423,8 +423,9 @@ Proof.
        eapply tm_pattern_agree_cong. eapply MatchSubst_match; eauto.
        econstructor. auto. eapply Par_lc2; eauto. eapply Par_lc2; eauto.
        eapply MatchSubst_lc3; eauto. auto.
-     + eapply axiom_app_confluence. eauto. eapply H6. eapply H7.
-       eapply H8. all: eauto.
+     + eapply axiom_app_confluence.
+       6: { eauto. }
+       all: eauto.
   - (* two cbetas *)
     use_size_induction a0 ac Par1 Par2. inversion Par1; subst.
     + exists (open_tm_wrt_co a' g_Triv); split.
@@ -649,12 +650,14 @@ Proof.
   - use_size_induction a0 ac Par1 Par2.
     use_size_induction b1 b1c Par3 Par4.
     use_size_induction b2 b2c Par5 Par6.
-    exists (a_Pattern R0 ac F b1c b2c).
+    exists (a_Pattern Nom ac F b1c b2c).
     split; eapply Par_Pattern; eauto.
   - use_size_induction a0 ac Par1 Par2.
     use_size_induction b1 b1c Par3 Par4.
     use_size_induction b2 b2c Par5 Par6.
-    pose (P := Par_CasePath H9 Par2).
+    have h0: CasePath Nom a'0 F.
+    { eapply nsub_CasePath; eauto. }
+    pose (P := Par_CasePath h0 Par2). 
     exists (a_CApp (applyArgs ac b1c) g_Triv).
     assert (ApplyArgs ac b1c (applyArgs ac b1c)).
     {eapply applyArgs_ApplyArgs; eauto. eapply Par_lc2; eauto. }
@@ -663,13 +666,18 @@ Proof.
   - use_size_induction a0 ac Par1 Par2.
     use_size_induction b1 b1c Par3 Par4.
     use_size_induction b2 b2c Par5 Par6.
-    assert (~ CasePath R0 ac F). intro. apply H10.
-    eapply CasePath_Par; eauto. exists b2c. split; eauto.
+    assert (~ CasePath R2 ac F). intro. apply H10.
+    eapply CasePath_Par; eauto. 
+    eapply Par_sub; eauto 1.
+    exists b2c. split; eauto.
     eapply Par_PatternFalse; eauto. eapply Value_par_Value; eauto.
+    eapply Par_sub; eauto. 
   - use_size_induction a0 ac Par1 Par2.
     use_size_induction b1 b1c Par3 Par4.
     use_size_induction b2 b2c Par5 Par6.
-    pose (P := Par_CasePath H2 Par1).
+    have h0: CasePath Nom a' F.
+    { eapply nsub_CasePath; eauto. }
+    pose (P := Par_CasePath h0 Par1).
     exists (a_CApp (applyArgs ac b1c) g_Triv).
     assert (ApplyArgs ac b1c (applyArgs ac b1c)).
     {eapply applyArgs_ApplyArgs; eauto. eapply Par_lc2; eauto. }
@@ -678,15 +686,19 @@ Proof.
   - use_size_induction a0 ac Par1 Par2.
     use_size_induction b1 b1c Par3 Par4.
     use_size_induction b2 b2c Par5 Par6.
-    pose (P := Par_CasePath H2 Par1).
-    pose (Q := Par_CasePath H11 Par2).
+    have h0: CasePath Nom a' F. eapply nsub_CasePath; eauto.
+    have h1: CasePath Nom a'0 F. eapply nsub_CasePath; eauto.
+    pose (P := Par_CasePath h0 Par1).
+    pose (Q := Par_CasePath h1 Par2).
     exists (a_CApp (applyArgs ac b1c) g_Triv).
     assert (ApplyArgs ac b1c (applyArgs ac b1c)).
     {eapply applyArgs_ApplyArgs; eauto. eapply Par_lc2; eauto. }
     split. econstructor. eapply apply_args_par; eauto.
     econstructor. eapply apply_args_par; eauto.
   - use_size_induction a0 ac Par1 Par2.
-    pose (P := H2). eapply Par_CasePath in P; eauto.
+    have P: CasePath Nom ac F.
+    { eapply Par_CasePath. eapply nsub_CasePath; eauto. eauto. }
+(*     pose (P := H2). eapply (Par_CasePath Par1) in P; eauto. *)
     assert (~ CasePath R0 ac F). intro. apply H12.
     eapply CasePath_Par; eauto. contradiction.
   - use_size_induction a0 ac Par1 Par2.

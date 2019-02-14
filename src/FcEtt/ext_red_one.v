@@ -355,7 +355,7 @@ Proof.
      eauto. auto. eapply uniq_atoms_toplevel. eauto. auto. auto.
   - (* two pattern matching *)
     move: (ApplyArgs_applyArgs H1) => h1.
-    move: (ApplyArgs_applyArgs H11) => h2.
+    move: (ApplyArgs_applyArgs H10) => h2.
     rewrite h1 in h2. subst.
     auto.
 Qed.
@@ -440,7 +440,7 @@ Proof.
     Value_no_red.
   - (* left side is scrutinee evaluation, right is Beta *)
     inversion H2. invert_MatchSubst.
-    have VF: Value R a. eauto.
+    have VF: Value Nom a. eauto.
     Value_no_red.
     Value_no_red.
   - (* left size is Beta_Axiom, right side is AppLeft. *)
@@ -452,7 +452,7 @@ Proof.
     Value_no_red.
   - (* left side is Beta, right side is scrutinee eval *)
     inversion H. invert_MatchSubst.
-    have VF: Value R0 a0. eauto.
+    have VF: Value Nom a0. eauto.
     Value_no_red.
     Value_no_red.
 Qed.

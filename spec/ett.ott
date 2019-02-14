@@ -62,7 +62,7 @@ constraint, phi {{ tex \phi }} :: '' ::= {{ com props }}
   | phi { b / x }    :: S :: Subst
   | | phi |          :: S :: Erase
   | a ~ b / R        :: S :: EqNT
-
+  | a ~ b            :: S :: EqSrc
 
 
 tm, a, b, p, v, w, A, B, C :: 'a_' ::= {{ com types and kinds }}
@@ -97,6 +97,10 @@ tm, a, b, p, v, w, A, B, C :: 'a_' ::= {{ com types and kinds }}
 	%% change the role in an annotated term
   | sub R a              ::    :: Sub
 
+  %% source language only
+  | coerce a             ::    :: Coerce
+  | a b                  ::    :: SrcApp
+
   %% standard substitution, using open
   | a { b / x }          :: S :: Subst
   | a { g / c }          :: S :: SubstC
@@ -127,9 +131,11 @@ tm, a, b, p, v, w, A, B, C :: 'a_' ::= {{ com types and kinds }}
   | Succ                 :: S :: Succ
   | True                 :: S :: True
   | Fix                  :: S :: Fix
+  | Maybe                :: S :: Maybe
+  | Just                 :: S :: Just
+  | Nothing              :: S :: Nothing
   | a -> b               :: S :: Arrow
   | phi => A             :: S :: CArrow
-  | a b                  :: S :: RelApp
   | \ x . a              :: S :: RelUAbs
   | \ x : A . a          :: S :: RelAbs
   | all x : A -> B       :: S :: RelPi
@@ -210,20 +216,20 @@ freevars
 parsing
   a_Abs right a_App
   a_UAbs right a_App
-  a_Abs <= a_RelApp
-  a_UAbs <= a_RelApp
+  a_Abs <= a_SrcApp
+  a_UAbs <= a_SrcApp
   a_App left a_App
-  a_RelApp left a_App
-  a_App left a_RelApp
-  a_RelApp left a_RelApp
+  a_SrcApp left a_App
+  a_App left a_SrcApp
+  a_SrcApp left a_SrcApp
   a_CApp left a_App
   a_App left a_CApp
-  a_CApp left a_RelApp
-  a_RelApp left a_CApp
+  a_CApp left a_SrcApp
+  a_SrcApp left a_CApp
 
   a_Arrow right a_Arrow
   a_App right a_Arrow
-  a_RelApp right a_Arrow
+  a_SrcApp right a_Arrow
   a_Pi right a_Arrow
   a_CPi right a_Arrow
 
@@ -375,6 +381,7 @@ terminals :: 'terminals_' ::=
   | -|                ::   :: produces      {{ tex \dashv }}
   | |=                ::   :: hs_entails    {{ tex \vDash }}
   | |==               ::   :: hs_entaill    {{ tex \vDash }}
+  | ||=src            ::   :: hsrc_entailss {{ tex \vDash_{\mathsf{src} } }}
   | /=                ::   :: neq           {{ tex \neq }}
   | |>                ::   :: cast          {{ tex \triangleright }}
   | ok                ::   :: ok            {{ tex \ \mathsf{ok} }}
@@ -549,7 +556,7 @@ Fixpoint erase_tm (a : tm) (r : role) : tm :=
    | a_Case a brs => a_Star (* a_Case (erase_tm a) (erase_brs brs) *)
    | a_Bullet => a_Bullet
    | a_Pattern R a1 F b1 b2 => a_Pattern R (erase_tm a1 r) F (erase_tm b1 r) (erase_tm b2 r)
-   | a_Sub _ a => erase_tm a r
+   | a => a
    end
 with erase_brs (x : brs) (r:role): brs :=
    match x with
@@ -1279,7 +1286,7 @@ W |= (case Nom a of F => b1 | _ => b2) => (case Nom a' of F => b1' | _ => b2') /
 W |= a => a' / Nom
 W |= b1 => b1' / R0
 W |= b2 => b2' / R0
-CasePath R a' +> F
+CasePath Nom a' +> F
 apply args a' to b1' +> b
 --------------------------------------------- :: PatternTrue
 W |= (case Nom a of F => b1 | _ => b2) => b [o] / R0
@@ -1287,8 +1294,8 @@ W |= (case Nom a of F => b1 | _ => b2) => b [o] / R0
 W |= a => a' / Nom
 W |= b1 => b1' / R0
 W |= b2 => b2' / R0
-Value R a'
-not (CasePath R a' +> F)
+Value Nom a'
+not (CasePath Nom a' +> F)
 ------------------------------------------------ :: PatternFalse
 W |= (case Nom a of F => b1 | _ => b2) => b2' / R0
 
@@ -1373,7 +1380,7 @@ by
 -----------------------------   :: CAppLeft
 |= a [o]  ~> a' [o] / R
 
-|= a ~> a' / R
+|= a ~> a' / Nom
 ----------------------------------------------------------------------- :: Pattern
 |= case Nom a of F => b1 | _ => b2 ~> case Nom a' of F => b1 | _ => b2 / R0
 
@@ -1845,6 +1852,200 @@ S1 <= S2
 S1 , F : sig_sort <= S2 , F : sig_sort
 
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%__ Source language semantics __%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+defns 
+JSrc :: '' ::=
+
+defn
+G ||=src a : A ::   :: SrcTyping :: 'S_'
+{{ com source typing }}
+by
+
+
+|= G
+---------------------  :: Star
+G ||=src TYPE : TYPE
+
+|= G  
+x:A in G
+------------------- :: Var
+G ||=src x : A
+
+G ||=src A : TYPE
+G ||=src A ~> A': TYPE
+G, x:A' ||=src B  : TYPE
+---------------------------------------------------------- :: Pi
+G ||=src (all rho x:A -> B) : TYPE
+
+G, x:A  ||=src a  : B
+---------------------------------- :: Abs
+G ||=src \ x . a : ( all + x:A -> B )
+
+G, x:A ||=src a : B
+%% x notin fv a
+---------------------------------- :: IAbs
+G ||=src a : ( all - x:A -> B )
+
+
+G ||=src a : A
+G ; dom G |= A == B : TYPE / Nom
+----------------------------------- :: Conv
+G ||=src a : B
+
+G ||=src a : A
+G ; dom G |= A == B : TYPE / Rep
+------------------------------------- :: Coerce
+G ||=src coerce a : B
+
+G ||=src b : all+ x : A -> B
+G ||=src a ~> a' : A
+------------------------------------- :: App
+G ||=src b a : B { a' / x }
+
+
+G ||=src b : all - x : A -> B
+G |= a' : A
+------------------------------------- :: IApp
+G ||=src b : B { a' / x }
+
+
+
+G ||=src phi ~> phi' ok
+G, c : phi' ||=src B : TYPE
+----------------------------------------------- :: CPi
+G ||=src all c:phi. B  : TYPE
+
+G, c:phi' ||=src a  : B
+------------------------------------------------- :: CAbs
+G ||=src a : all c:phi. B
+
+G ||=src a1 : all c : (a ~ b : A / R) . B1
+G ; dom G |= a == b : A / R
+------------------------------------------- :: CApp
+G ||=src a1 : B1 { o / c }
+
+|= G
+F : A @ Rs in toplevel
+------------------------- :: Const
+G ||=src F : A
+
+|= G
+%F : Apps ~ a : A / R1 @ Rs in toplevel
+---------------------------- :: Fam
+G ||=src F : A
+
+G ||=src a : A
+%F : Apps ~ a0 : A1 / R1 @ Rs in toplevel
+G ||=src b1' : B
+G ||=src b2' : C
+% G |= Apps case R a' : A of F @ none : A1 -> b1' : B | C
+------------------------------------------------------------------------------------------- :: Case
+G ||=src case Nom a of F => b1 | _ => b2 : C
+
+
+
+defn
+G ||=src a ~> a' : A ::   :: SrcTrans :: 'ST_'
+{{ com source translation }}
+by
+
+|= G
+---------------------  :: Star
+G ||=src TYPE ~> TYPE : TYPE
+
+|= G  
+x:A in G
+------------------- :: Var
+G ||=src x ~> x : A
+
+G ||=src A ~> A': TYPE
+G, x:A' ||=src B ~> B' : TYPE
+---------------------------------------------------------- :: Pi
+G ||=src (all rho x:A -> B) ~> (all rho x:A' -> B') : TYPE
+
+G, x:A  ||=src a ~> a' : B
+---------------------------------- :: Abs
+G ||=src \ x . a ~> \+x. a' : ( all + x:A -> B )
+
+G, x:A  ||=src a ~> a' : B
+x notin fv a
+---------------------------------- :: IAbs
+G ||=src a ~> \-x. a : ( all - x:A -> B )
+
+
+G ||=src b ~> b' : all+ x : A -> B
+G ||=src a ~> a' : A
+------------------------------------- :: App
+G ||=src b a ~> b' + a' : B { a' / x }
+
+G ||=src b ~> b' : all+ x : A -> B
+G ||=src a ~> a' : A
+RolePath b = F @ R, Rs
+------------------------------------- :: TApp
+G ||=src b a ~> b' R a' : B { a / x }
+
+G ||=src b ~> b' : all - x : A -> B
+G |= a : A
+------------------------------------- :: IApp
+G ||=src b ~> b' - [] : B { a / x }
+
+G ||=src a ~> a' : A
+G ; dom G |= A == B : TYPE / Nom
+----------------------------- :: Conv
+G ||=src a ~> a' : B
+
+G ||=src a ~> a' : A
+G ; dom G |= A == B : TYPE / Rep
+--------------------------------- :: Coerce
+G ||=src coerce a ~> a' : B
+
+G ||=src phi ~> phi' ok
+G, c : phi' ||=src B ~> B' : TYPE
+----------------------------------------------- :: CPi
+G ||=src all c:phi. B ~> all c:phi. B' : TYPE
+
+G, c:phi ||=src a ~> a' : B
+------------------------------------------------- :: CAbs
+G ||=src a ~> /\ c . a' : all c:phi. B
+
+G ||=src a1 ~> a1' : all c : (a ~ b : A / R) . B1
+G ; dom G |= a == b : A / R
+------------------------------------------- :: CApp
+G ||=src a1 ~> a1' [ o ] : B1 { o / c }
+
+|= G
+F : A @ Rs in toplevel
+------------------------- :: Const
+G ||=src F ~> F: A
+
+|= G
+%F : Apps ~ a : A / R1 @ Rs in toplevel
+---------------------------- :: Fam
+G ||=src F ~> F : A
+
+G ||=src a ~> a' : A
+%F : Apps ~ a0 : A1 / R1 @ Rs in toplevel
+G ||=src b1 ~> b1' : B
+G ||=src b2 ~> b2' : C
+% G |= Apps case R a' : A of F @ none : A1 -> b1' : B | C
+------------------------------------------------------------------------------------------- :: Case
+G ||=src case Nom a of F => b1 | _ => b2 ~> case Nom a' of F  => b1' | _ => b2' : C
+
+
+defn
+G ||=src phi ~> phi' ok ::    :: SrcPropWff :: 'S_'
+{{ com Prop wellformedness }}
+by
+
+G ||=src a ~> a' : A
+G ||=src b ~> b' : A
+---------------------------  :: Wff
+G ||=src (a ~ b : A / Nom) ~> (a' ~ b' : A / Nom) ok
+
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%__ Annotated language semantics __%%%%%%%%%%%
@@ -2235,30 +2436,6 @@ by
 % %
 
 
-defns
- JAlt :: '' ::=
-
-defn  
-G |== a : A  ::    :: ATyping :: 'ATyping_'
-by
-G |= a : A
-G ; dom G |= A == B : TYPE / Nom
-[ G |= B : TYPE ]
------------------------------ :: Conv
-G |== a : B
-
-
-
-defn
-|== a > b / R  ::     :: ABeta :: 'ABeta_'
-{{ com fake rules for the paper }}
-by
-
-F : p ~ b : A/R1 @ Rs in toplevel
-match a with p -> b +> b'
-R1 <= R
--------------------------------------------------------- :: Axiom
-|== a > b' / R
 
 
 
@@ -2281,7 +2458,8 @@ homs ''
 %%__ Constraints __%%
 homs ''
   :: Eq       {{ tex [[a]] [[~]]_{[[R]]} [[b]] : [[A]] }}
-  :: EqNT     {{ tex [[a]] [[~]]_{[[R]]} [[b]]       }}
+  :: EqNT     {{ tex [[a]] [[~]]_{[[R]]} [[b]]         }}
+
 
 
 %%__ Terms __%%
@@ -2341,7 +2519,7 @@ homs 'a_'
   :: Fix
   :: Arrow
   :: CArrow
-  :: RelApp  {{ tex [[a]]\ [[b]]                  }}
+  :: SrcApp  {{ tex [[a]]\ [[b]]                  }}
   :: RelUAbs {{ tex \lambda [[x]].[[a]]           }}
   :: RelAbs  {{ tex \lambda [[x]]\!:\![[A]].[[a]] }}
   :: RelPi
@@ -2379,6 +2557,7 @@ homs ''
   :: Subst         {{ coq (open_constraint_wrt_tm [[x b]] [[phi]]) }}
   :: Erase         {{ coq (erase_constraint [[phi]])               }}
   :: EqNT          {{ coq 0                                        }}
+  :: EqSrc         {{ coq 0                                        }}
 
 %%__ Terms __%%
 homs 'a_'
@@ -2410,11 +2589,14 @@ homs 'a_'
   :: Fix           {{ coq 0                                        }}
   :: Arrow         {{ coq (a_Pi [[a]] [[b]])                       }}
   :: CArrow        {{ coq (a_CPi [[phi]] [[A]])                    }}
-  :: RelApp        {{ coq (a_App [[a]] Rel [[b]])                  }}
-  :: RelUAbs       {{ coq (a_UAbs Rel Nom [[a]])                   }}
+  :: RelUAbs       {{ coq (a_UAbs Rel [[a]])                       }}
   :: RelAbs        {{ coq (a_Abs Rel [[A]] [[a]])                  }}
   :: RelPi         {{ coq (a_Pi  Rel [[A]] [[B]])                  }}
   :: If            {{ coq 0                                        }}
+  :: Maybe         {{ coq 0                                        }}
+  :: Just          {{ coq 0                                        }}
+  :: Nothing       {{ coq 0                                        }}
+
 
 
 %%__ Coercions __%%

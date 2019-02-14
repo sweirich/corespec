@@ -20,6 +20,36 @@ Lemma Ctx_strengthen : forall G1 G2, Ctx (G2 ++ G1) -> Ctx G1.
   induction G2; [ | inversion 1]; simpl; auto.
 Qed.
 
+
+Lemma binds_to_PropWff: forall G0 c phi,
+    Ctx G0 ->
+    binds c (Co phi) G0 -> PropWff G0 phi.
+Proof.
+  induction G0; auto; try done.
+  intros c phi H H0.
+  destruct a.
+  destruct s; auto; try done.
+  - case H0; try done.
+    move => h0.
+    inversion H; subst.
+    have:   PropWff ( G0) phi . 
+    apply (IHG0 c phi H4); eauto.
+    move => h1.
+    rewrite_env (nil ++ [(a, Tm A)] ++ G0).
+    eapply PropWff_weakening; eauto.
+  - destruct H0; subst.
+    inversion H0; subst.
+    inversion H; subst.
+    rewrite_env (nil ++ [(c, Co phi)] ++ G0).
+    eapply PropWff_weakening; eauto.
+    rewrite_env (nil ++ [(a, Co phi0)] ++ G0).
+    eapply PropWff_weakening; eauto.
+    simpl.
+    inversion H.
+    eapply IHG0; eauto 2.
+Qed.
+
+(*
 Lemma binds_to_PropWff: forall G0 A B T R c,
     Ctx G0 ->
     binds c (Co (Eq A B T R)) G0 -> PropWff G0 (Eq A B T R).
@@ -47,6 +77,7 @@ Proof.
     inversion H.
     eapply IHG0; eauto 2.
 Qed.
+*)
 
 Lemma binds_to_Typing : forall x A G, Ctx G -> binds x (Tm A) G -> Typing G A a_Star.
 Proof.
@@ -399,7 +430,7 @@ Proof.
            by apply (H _ _ A0).
          have: Ctx ([(x, Tm A0)] ++ G0) by apply (Ctx_strengthen _ F); auto.
          inversion 1; subst.
-         have: PropWff G0 (Eq a b A R) by apply (binds_to_PropWff _ _ _ _ c); auto.
+         have: PropWff G0 (Eq a b A R) by eapply binds_to_PropWff with (c:=c);  auto.
          inversion 1; subst.
          repeat rewrite tm_subst_tm_tm_fresh_eq; auto.
          all: show_fresh.

@@ -179,7 +179,7 @@ Proof.
   intros. induction H; eauto. 
   eapply roleing_lc; eauto.
   lc_solve. lc_solve.
-  with binds do ltac:(fun h=>
+  with binds do ltac:(fun h =>
        apply toplevel_inversion in h; inversion h; autofwd).
   all: eauto 2 using roleing_lc, MatchSubst_lc4.
   econstructor; eauto using ApplyArgs_lc3.

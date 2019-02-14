@@ -29,3 +29,10 @@ Proof.
   intros; unfold param; case str; auto.
   case R; reflexivity.
 Qed.
+
+
+Lemma app_role_covariant : forall nu R1 R2, SubRole R1 R2 -> SubRole (app_role nu R1)(app_role nu R2).
+Admitted.
+
+Lemma app_role_sub1 : forall nu R, SubRole (app_role nu R) R.
+Admitted.
