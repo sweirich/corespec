@@ -451,7 +451,10 @@ Ltac autofresh_fixed_param tac x :=
 Ltac autofresh_param tac :=
   let x := fresh "x" in
   pick fresh x;
-  autofresh_fixed_param tac x.
+  autofresh_fixed_param tac x;
+  repeat match goal with
+    H : x ∉ _ |- _ => hide H
+  end.
 
 (* Yet another version, that tries to find a suitable variable in the context *)
 (* TODO: could be more robust:
