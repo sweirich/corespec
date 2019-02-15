@@ -577,7 +577,6 @@ Proof.
       (* x ∉ fv_tm_args args0 *)
       {
         fold (@app pattern_arg). (* FIXME *)
-        (*__ CURRENTLY IMPORTING THE PROOF __*)
         admit.
       }
 
@@ -600,7 +599,6 @@ Proof.
         fold (@app pattern_arg) in h5. (* FIXME *)
         ecbn in h5.
         move eq: (coargs ++ p_Tm (Role R) (a_Var_f x) :: pat_args_default a1) => old.
-        (*__ CURRENTLY IMPORTING THE PROOF __*)
         all: admit.
       }
 
