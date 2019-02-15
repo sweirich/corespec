@@ -320,7 +320,7 @@ Nat, N {{ tex \mathbb{N} }} :: 'N_' ::= {{ coq nat }}
    | length a :: S :: Pattern_length {{ coq (pattern_length [[a]]) }} {{ tex | [[a]] | }}
 
 App :: 'A_' ::= 
-   | Tm rho          ::    :: Tm 
+   | Tm              ::    :: Tm 
    | Co              ::    :: Co
 
 Apps :: 'A_' ::= {{ coq (list App) }}
@@ -1425,6 +1425,11 @@ ctx_uniq G
 % ^ better way to do this? (hopefully making ott aware that C is lc)
 ------------------------------------------------------------- :: Base
 G |= emptyA case Nom a : A of b @ pattern_args : A -> all c : (a ~ apply b pattern_args : A / Nom) . C | C
+
+G, x : A |= Apps case Nom a : A1 of b @ Tm R x , pattern_args : B -> C | C'
+------------------------------------------------------------------- :: PiRole
+G |= (Tm R, Apps) case Nom a : A1 of b @ pattern_args : all + x : A -> B -> all + x : A -> C | C'
+
 
 G, x : A |= Apps case Nom a : A1 of b @ Tm + x , pattern_args : B -> C | C'
 ------------------------------------------------------------------- :: PiRel
