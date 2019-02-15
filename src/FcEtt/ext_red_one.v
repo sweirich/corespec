@@ -423,7 +423,7 @@ Proof.
 (*  all: try solve [(have: False; try done; inversion H0; inversion H1)]. *)
   all: try solve [invert_MatchSubst].
   (* AbsTerm *)
-  - autofresh. 
+  - autofresh. hide Fr.
     match goal with 
       [ H0 : forall a2 : tm, (reduction_in_one ?a a2 ?R) -> _ , 
         H2 : reduction_in_one ?a _ _ |- _ ] => 
