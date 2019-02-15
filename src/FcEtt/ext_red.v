@@ -747,36 +747,32 @@ Proof.
       exact H0. by destruct R.
       eapply IHh. by autoreg.
       eapply cotp_capp; eassumption.
+  - move=> a2 cpo2; dependent induction cpo2; exactly 1 goal.
+    move: IHh.
+    move/(_ ltac:(eauto using chain_open_telescope_deq_Reg) _ cpo2).
+    move/(E_PiSnd _).
+    apply.
+    eauto.
+  - move=> a2 cpo2; dependent induction cpo2; exactly 1 goal.
+    move: IHh.
+    move/(_ ltac:(eauto using chain_open_telescope_deq_Reg) _ cpo2).
+    move/(E_PiSnd _).
+    have eq_irr: open_tm_wrt_tm A0 a_Bullet = open_tm_wrt_tm A0 a. admit. (* Irr args can't appear *)
+    rewrite eq_irr.
+    apply.
+    by eauto.
+  - move=> a2 cpo2; dependent induction cpo2; exactly 1 goal.
+    move: (chain_open_telescope_deq_Reg h) IHh => reg.
+    move/(_ ltac:(by eassumption) _ cpo2) => eq.
+    move: (eq) => eq2.
+    eapply E_CPiSnd in eq; try eassumption.
+    * admit.
+      (* TODO (HELP): pretty sure there's a generalization lemma somewhere..?
+         Possibly in erase.v or erase_syntax.v. It should allow to conclude
+         from `eq`. *)
+    * destruct R; unfold param; destruct str; cbn; ok.
+    * destruct R0; unfold param; destruct str; cbn; ok.
 Admitted.
-(*
-  - move=> a2 cpo2; dependent induction cpo2.
-    admit.
-(*    + move: (chain_open_telescope_deq_Reg h) IHh => reg.
-      move/(_ ltac:(by eassumption) _ cpo2) => eq.
-      eapply E_PiSnd in eq; try eassumption.
-      by eapply E_Refl in H0; eassumption. *)
-  - move=> a2 cpo2; dependent induction cpo2.
-    + admit. (* FIXME: broken by the change in chain_open_telescope_deq about
-                irrel arguments. Need to figure it out *)
-      (*
-      move: (chain_open_telescope_deq_Reg h) IHh => reg.
-      move/(_ ltac:(by eassumption) _ cpo2) => eq.
-      move: (where_is_this eq) => eqrho.
-      rewrite eqrho in eq.
-      eapply E_PiSnd in eq; try eassumption.
-      by eapply E_Refl in H0; eassumption. *)
-  - move=> a2 cpo2; dependent induction cpo2.
-    + move: (chain_open_telescope_deq_Reg h) IHh => reg.
-      move/(_ ltac:(by eassumption) _ cpo2) => eq.
-      move: (eq) => eq2.
-      eapply E_CPiSnd in eq; try eassumption.
-      * admit.
-        (* TODO (HELP): pretty sure there's a generalization lemma somewhere..?
-           Possibly in erase.v or erase_syntax.v. It should allow to conclude
-           from `eq`. *)
-      * destruct R; unfold param; destruct str; cbn; ok.
-      * destruct R0; unfold param; destruct str; cbn; ok.
-Admitted. *)
 
 
 Theorem MatchSubst_preservation : `{
