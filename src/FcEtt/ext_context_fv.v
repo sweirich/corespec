@@ -101,10 +101,10 @@ Lemma axiom_body_fv_in_pattern : forall F p b A R Rs,
       binds F (Ax p b A R Rs) toplevel -> fv_tm_tm_tm b [<=] fv_tm_tm_tm p.
 Proof.
   intros.
-  withf binds do applyin toplevel_inversion.
+  with binds do applyin toplevel_inversion.
   autofwd.
-  withf roleing do applyin rctx_fv.
-  withf PatternContexts do applyin pat_ctx_fv.
+  with roleing do applyin rctx_fv.
+  with PatternContexts do applyin pat_ctx_fv.
   by fsetdec.
 Qed.
 
@@ -112,7 +112,7 @@ Lemma axiom_body_fv_co : forall F p b A R Rs,
       binds F (Ax p b A R Rs) toplevel -> fv_co_co_tm b [<=] empty.
 Proof.
   intros.
-  withf binds do applyin toplevel_inversion.
+  with binds do applyin toplevel_inversion.
   autofwd.
   by with roleing do applyin rctx_fv_co.
 Qed.

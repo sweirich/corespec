@@ -525,17 +525,17 @@ Proof.
     (* eapply decompose_subpattern_PatternContexts_full in H6. *)
     * eapply invert_a_App_Role in H4; autofwd.
       cbn in IHMatchSubst.
-      withf decompose_subpattern do ltac:(fun h => eapply dsp_sub_rel in h).
+      with decompose_subpattern do ltac:(fun h => eapply dsp_sub_rel in h).
       move: H3 H0 IHMatchSubst => /= H3 H0.
       move/(_ ltac:(ok)).
       move /(_ _ _ _ _ _ _ H3 H4 _ H17 _).
       ecbn.
       invs H5.
-      withf args_proper_type do invs.
+      with args_proper_type do invs.
       move/(_ _ eq_refl eq_refl ltac:(eassumption)).
       introfwd.
       eexists.
-      withf chain_open_telescope_partial do ltac:(fun h => eapply chain_open_telescope_partial_subst_Rel in h; try eassumption).
+      with chain_open_telescope_partial do ltac:(fun h => eapply chain_open_telescope_partial_subst_Rel in h; try eassumption).
       ok.
       (* Substituted typing *)
       {
@@ -548,7 +548,7 @@ Proof.
       (* x ∉ dom Γ *)
       {
         autoreg.
-        withf Ctx do ltac:(fun h => solve [by invs h]).
+        with Ctx do ltac:(fun h => solve [by invs h]).
       }
       (* x ∉ fv_tm_args args1 *)
       {
@@ -565,17 +565,17 @@ Proof.
       get (_ [=] empty) as h0.
       move: h3 h0 IHMatchSubst => /= h3 h0.
       move/(_ ltac:(ok)).
-      withf decompose_subpattern do ltac:(fun h => eapply dsp_invert_rel in h; autofwd; rename h into h1).
-      withf decompose_subpattern do ltac:(fun h => eapply dsp_sub_rel in h; rename h into h2).
+      with decompose_subpattern do ltac:(fun h => eapply dsp_invert_rel in h; autofwd; rename h into h1).
+      with decompose_subpattern do ltac:(fun h => eapply dsp_sub_rel in h; rename h into h2).
       subst.
       get (Typing _ _ (a_Pi _ _ _)) as h4.
-      getf args_proper_type as h8.
+      get args_proper_type as h8.
       move /(_ _ _ _ _ _ _ h3 h4 eq_refl h2 _ ltac:(inversion h8; eassumption)).
       ecbn.
       simpl_env.
       move/(_ eq_refl).
       introfwd.
-      getf chain_open_telescope_partial as h5.
+      get chain_open_telescope_partial as h5.
       eapply (@chain_open_telescope_partial_subst_general_rel _ _ _ _ _ _ _ nil) in h5; first last.
       (* Typing of A *)
       { ok. }
@@ -583,7 +583,6 @@ Proof.
       (* x ∉ fv_tm_args args0 *)
       {
         fold (@app pattern_arg). (* FIXME *)
-        (*__ CURRENTLY IMPORTING THE PROOF __*)
         admit.
       }
 
@@ -606,13 +605,12 @@ Proof.
         fold (@app pattern_arg) in h5. (* FIXME *)
         ecbn in h5.
         move eq: (coargs ++ p_Tm (Role R) (a_Var_f x) :: pat_args_default a1) => old.
-        (*__ CURRENTLY IMPORTING THE PROOF __*)
         all: admit.
       }
 
       (* PatCtxTrim ... *)
       {
-        withf args_proper_type do invs.
+        with args_proper_type do invs.
         simpl_env.
         ok.
       }
@@ -650,7 +648,7 @@ Proof.
   move=> a.
   revert all except a.
   induction a; intros;
-    try match goal with [H : Pattern _ |- _] => solve [inversion H] end.
+    try with Pattern do fun h => solve [inv h].
 
   - (* Rel/Irrel *)
     intros.
@@ -659,7 +657,7 @@ Proof.
     subst.
     + destruct Γp1; simpl in H1; inversion H1.
       move: (invert_a_App_Role H2) => [A2 [B2 [TA1 [TA2 TA3]]]]; subst.
-      invs H0; withf tm_pattern_agree do ltac:(fun h => inversion h).
+      invs H0; with tm_pattern_agree do ltac:(fun h => inversion h).
       all: exactly 1 goal.
 
       eapply invert_cotd_ArgRel in H; first last;
@@ -671,7 +669,7 @@ Proof.
       eapply IHa1 in H; try done.
       2: { clear H0; eassumption. }
       all: try eassumption.
-      2: { withf Pattern do ltac:(fun h => solve [inversion h; done]). }
+      2: { with Pattern do ltac:(fun h => solve [inversion h; done]). }
       all: exactly 1 goal. (* Done applying induction *)
 
       clear IHa1 IHa2.
@@ -693,7 +691,7 @@ Proof.
     + (* Irrel *)
       (* Getting rid of rho = Rel, which is impossible in a pattern (has to be a role instead) *)
       destruct rho.
-      all: withf tm_pattern_agree do ltac:(fun h => try solve [inversion h]).
+      all: with tm_pattern_agree do ltac:(fun h => try solve [inversion h]).
 
       admit.
 
@@ -705,8 +703,8 @@ Proof.
     match goal with H : Some _ = Some _ |- _ => invs H end.
     cbn in *.
     match goal with H : 0 = length _ |- _ => symmetry in H; eapply length_zero_iff_nil in H end; subst.
-    withf chain_open_telescope_deq do ltac:(fun h => dependent induction h) end;
-    withf PatternContexts do invs.
+    with chain_open_telescope_deq do ltac:(fun h => dependent induction h) end;
+    with PatternContexts do invs.
     all: cbn; split; try solve [econstructor | by eapply E_Refl].
     eapply E_Trans;
       (* This is essentially an eassumption *)
@@ -753,36 +751,32 @@ Proof.
       exact H0. by destruct R.
       eapply IHh. by autoreg.
       eapply cotp_capp; eassumption.
+  - move=> a2 cpo2; dependent induction cpo2; exactly 1 goal.
+    move: IHh.
+    move/(_ ltac:(eauto using chain_open_telescope_deq_Reg) _ cpo2).
+    move/(E_PiSnd _).
+    apply.
+    eauto.
+  - move=> a2 cpo2; dependent induction cpo2; exactly 1 goal.
+    move: IHh.
+    move/(_ ltac:(eauto using chain_open_telescope_deq_Reg) _ cpo2).
+    move/(E_PiSnd _).
+    have eq_irr: open_tm_wrt_tm A0 a_Bullet = open_tm_wrt_tm A0 a. admit. (* Irr args can't appear *)
+    rewrite eq_irr.
+    apply.
+    by eauto.
+  - move=> a2 cpo2; dependent induction cpo2; exactly 1 goal.
+    move: (chain_open_telescope_deq_Reg h) IHh => reg.
+    move/(_ ltac:(by eassumption) _ cpo2) => eq.
+    move: (eq) => eq2.
+    eapply E_CPiSnd in eq; try eassumption.
+    * admit.
+      (* TODO (HELP): pretty sure there's a generalization lemma somewhere..?
+         Possibly in erase.v or erase_syntax.v. It should allow to conclude
+         from `eq`. *)
+    * destruct R; unfold param; destruct str; cbn; ok.
+    * destruct R0; unfold param; destruct str; cbn; ok.
 Admitted.
-(*
-  - move=> a2 cpo2; dependent induction cpo2.
-    admit.
-(*    + move: (chain_open_telescope_deq_Reg h) IHh => reg.
-      move/(_ ltac:(by eassumption) _ cpo2) => eq.
-      eapply E_PiSnd in eq; try eassumption.
-      by eapply E_Refl in H0; eassumption. *)
-  - move=> a2 cpo2; dependent induction cpo2.
-    + admit. (* FIXME: broken by the change in chain_open_telescope_deq about
-                irrel arguments. Need to figure it out *)
-      (*
-      move: (chain_open_telescope_deq_Reg h) IHh => reg.
-      move/(_ ltac:(by eassumption) _ cpo2) => eq.
-      move: (where_is_this eq) => eqrho.
-      rewrite eqrho in eq.
-      eapply E_PiSnd in eq; try eassumption.
-      by eapply E_Refl in H0; eassumption. *)
-  - move=> a2 cpo2; dependent induction cpo2.
-    + move: (chain_open_telescope_deq_Reg h) IHh => reg.
-      move/(_ ltac:(by eassumption) _ cpo2) => eq.
-      move: (eq) => eq2.
-      eapply E_CPiSnd in eq; try eassumption.
-      * admit.
-        (* TODO (HELP): pretty sure there's a generalization lemma somewhere..?
-           Possibly in erase.v or erase_syntax.v. It should allow to conclude
-           from `eq`. *)
-      * destruct R; unfold param; destruct str; cbn; ok.
-      * destruct R0; unfold param; destruct str; cbn; ok.
-Admitted. *)
 
     
 Theorem MatchSubst_preservation : `{

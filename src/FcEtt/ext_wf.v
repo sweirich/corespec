@@ -249,7 +249,7 @@ Proof. induction Sig_toplevel.
          simpl in H0. eauto. eauto with lc.
          eauto.
        - intros.
-         withf binds do fun h => destruct (binds_cons_1  _ _ _ _ _ _ h); basic_solve.
+         with binds do fun h => destruct (binds_cons_1  _ _ _ _ _ _ h); basic_solve.
          autofwd.
          subst. econstructor. all: eauto 3 with lc.
          all: eauto using PatternContexts_lc2, roleing_lc, Typing_lc1.
