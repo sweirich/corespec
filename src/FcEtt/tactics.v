@@ -89,6 +89,15 @@ Ltac find_hyp_and_perform head_check cs tac :=
     match goal with
       H : ?t |- _ => head_check t cs; idtac "Matching hyp:" H; tac H end.
 
+(* Optimization (of the previous one): first tries to use the typed version if possible, otherwise falls back to the slow, general one *)
+Ltac find_hyp_and_perform_optim cs tac :=
+  first [
+    let cs' := type_term cs in
+    idtac "Switching to fast mode";
+    find_hyp_and_perform has_head cs' tac
+  |
+    find_hyp_and_perform has_head_uconstr cs tac
+  ].
 
 
 (* TODO: This is subsumed by pcess_hyps down there. Make sure we never need to use *specifically* this tactic, then remove it *)
@@ -681,16 +690,18 @@ Ltac depind x   := dependent induction x.
 (* Find an hypothesis which type is headed by constructor cs, and
    apply tac to it *)
 (* Fast version - `hd` must be a well-typed coq term (e.g. `Typing Γ`, but not say `Typing _ a`) *)
-Tactic Notation "withf" constr(hd) "do" tactic(tac)        := TacticsInternals.find_hyp_and_perform TacticsInternals.has_head hd tac.
-Tactic Notation "withf" constr(hd) "do" tactic(tac) "end"  := TacticsInternals.find_hyp_and_perform TacticsInternals.has_head hd tac.
-(* More general version, that accepts a pattern (uconstr) (hence also accepts `Typing _ a`). Expectedly slower. *)
-Tactic Notation "with" uconstr(hd) "do" tactic(tac)       := TacticsInternals.find_hyp_and_perform TacticsInternals.has_head_uconstr hd tac.
-Tactic Notation "with" uconstr(hd) "do" tactic(tac) "end" := TacticsInternals.find_hyp_and_perform TacticsInternals.has_head_uconstr hd tac.
+(* This is now deprecated, since "with do" now automatically tries to use the faster matching *)
+Tactic Notation "withf" constr(hd) "do" tactic(tac)       := (idtac "Deprecated. Please use with instead"; TacticsInternals.find_hyp_and_perform TacticsInternals.has_head hd tac).
+Tactic Notation "withf" constr(hd) "do" tactic(tac) "end" := (idtac "Deprecated. Please use with instead"; TacticsInternals.find_hyp_and_perform TacticsInternals.has_head hd tac).
+(* More general version, that accepts a pattern (uconstr) (hence also accepts `Typing _ a`). Will switch to a fast matching if possible *)
+Tactic Notation "with" uconstr(hd) "do" tactic(tac)       := TacticsInternals.find_hyp_and_perform_optim hd tac.
+Tactic Notation "with" uconstr(hd) "do" tactic(tac) "end" := TacticsInternals.find_hyp_and_perform_optim hd tac.
 
 (* Specialized version to find and rename hypothesis *)
-Tactic Notation "get" uconstr(hd) "as" ident(name) := TacticsInternals.find_hyp_and_perform TacticsInternals.has_head_uconstr hd ltac:(fun h => rename h into name).
+Tactic Notation "get" uconstr(hd) "as" ident(name) := TacticsInternals.find_hyp_and_perform_optim hd ltac:(fun h => rename h into name).
 (* Fast version (no pattern allowed) *)
-Tactic Notation "getf" constr(hd) "as" ident(name) := TacticsInternals.find_hyp_and_perform TacticsInternals.has_head hd ltac:(fun h => rename h into name).
+(* Deprecated for the same reason as above *)
+Tactic Notation "getf" constr(hd) "as" ident(name) := (idtac "Deprecated. Please use get instead"; TacticsInternals.find_hyp_and_perform TacticsInternals.has_head hd ltac:(fun h => rename h into name)).
 
 
 (** Misc **)
