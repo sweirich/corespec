@@ -37,6 +37,12 @@ Set Implicit Arguments.
 (* FIXME: temporary *)
 Generalizable All Variables.
 
+Lemma open_co : forall G A g1 B,
+  Typing G (open_tm_wrt_co A g1) B ->
+  forall g2 , lc_co g2 -> (open_tm_wrt_co A g1 = open_tm_wrt_co A g2).
+Admitted.
+
+
 Notation PatCtxTrim Γ p :=
   (exists Ω F PiB B, PatternContexts Ω Γ F PiB p B).
 
@@ -778,7 +784,7 @@ Admitted.
       * destruct R0; unfold param; destruct str; cbn; ok.
 Admitted. *)
 
-
+    
 Theorem MatchSubst_preservation : `{
   MatchSubst a p1 b1 b' →
   Rename p b p1 b1 ((fv_tm_tm_tm a) ∪ (fv_tm_tm_tm p)) D →
@@ -909,7 +915,7 @@ Definition arg_app (p : pattern_arg) : App :=
 (* This is a slightly different version of chain_open_telescope_deq that 
    works a little better in the proofs below.
 
-   open_telescope G n PiB args A 
+   open_telescope G apps PiB args targs A 
 
    holds when 
       - the args line up with n
@@ -1163,6 +1169,69 @@ Proof.
   auto.
 Qed.
 
+Lemma MatchSubst_args :
+  forall a p b b' (ms : MatchSubst a p b b'),
+    exists args, chain_pattern_substitution b args = b'.
+Proof.
+  induction 1.
+  exists nil. simpl. eauto.
+  all: move: IHms => [args h].
+  all: try solve [eauto].
+  exists ((x, p_Tm (Rho Rel) a)::args). simpl. rewrite h. auto.
+Qed.
+
+(*
+Lemma foo :  `{
+  forall (patctx_p : PatternContexts Ωp Γp F PiB p B), 
+  Typing nil (a_Fam F) PiB ->
+  forall a b b' (ms : MatchSubst a p b b'),
+  forall C (tpg_b : Γp ⊨ b : C),
+    ValuePath a F ->
+      Γ ⊨ a : A →
+      Γ ⊨ b' : D 
+}.
+Proof.
+  induction 1; intros.
+  - admit.
+  - specialize (IHpatctx_p H0).
+    inversion ms. subst. clear ms.
+    move: (invert_a_App_Role H2) => [ A2 [B2 h]]. split_hyp. clear H2.
+    have ms0: MatchSubst a1 p (tm_subst_tm_tm a0 x b) (tm_subst_tm_tm a0 x b2).
+    admit.
+    specialize (IHpatctx_p _ _ _ ms0). clear ms0.
+    have TT : Typing G (tm_subst_tm_tm a0 x b) (open_tm_wrt_tm A a0).
+    admit.
+    specialize (IHpatctx_p _ TT).
+    inversion H1. subst.
+    specialize (IHpatctx_p H12).
+   
+
+
+    have ms0': MatchSubst a1 p (open_tm_wrt_tm A a0) (tm_subst_tm_tm a0 x b0).
+    admit.
+
+    
+
+    have DE : (open_tm_wrt_tm A a0) = (a_Pi Rel A' A).
+    admit. (* XXXXX *)
+    rewrite DE in TT.
+
+    specialize (IHpatctx_p TT).
+    rewrite DE in ms0'. 
+    specialize (IHpatctx_p _ ms0').
+    eapply IHpatctx_p.
+    eapply E_Conv. 2 : { apply E_Sym. eauto 1. }
+    
+    clear ms'. clear H9.
+
+    have Tb: Typing G (tm_subst_tm_tm a0 x b) (open_tm_wrt_tm A0 a0).
+    admit. clear tpg_b.
+    
+
+    eapply IHpatctx_p.  *)
+
+
+
 (*
 Lemma BaseType_cps : forall A sub,
    BaseType A -> 
@@ -1358,8 +1427,10 @@ Proof.
   have VP:  ValuePath a F.   eapply ett_path.CasePath_ValuePath; eauto.
   edestruct ApplyArgs_pattern_args as [args [h0 h1]]; eauto 1.
   subst a.
+  move: (invert_Typing_pattern_args2 _ _  Ta) => [PiB [targs [h2 h4]]].
+
   have RP: RolePath (apply_pattern_args (a_Fam F) args) F nil. admit.
-  move: (invert_Typing_pattern_args3 _ _ RP Ta) => [PiB [targs [h2 [h3 h4]]]].
+
   rewrite app_nil_r in h4.
       
   have eq: map arg_app args = n. admit.
@@ -1370,6 +1441,30 @@ Proof.
   eapply Typing_a_Fam_unique; eauto 1.
 Admitted.     
 
+
+
+
+Lemma CasePath_RolePath : forall R F, CasePath R (a_Fam F) F ->
+ forall args G PiB targs A, open_telescope G (map arg_app args) PiB args targs A
+ -> exists Rs, RolePath (a_Fam F) F (Rs ++ args_roles args).
+Proof.
+  intros R F CP args. induction args.
+  + intros. simpl in *. inversion CP. subst. 
+    exists Rs. rewrite app_nil_r. eauto.
+    exists Rs. rewrite app_nil_r. eauto.
+    exists Rs. rewrite app_nil_r. eauto.
+  + intros.
+    destruct a; try destruct nu; simpl in *.
+    inversion H. subst. clear H.
+    move: (IHargs _ _ _ _ H9) => [Rs h].
+    exists Rs. 
+    
+
+  intros a hd args VP. induction VP; intros.
+  exists Rs. eauto.
+  exists Rs. eauto.
+  destruct nu.
+  + move: (IHVP G PiB targs A H0) => [Rs h].
 
 
 Lemma Beta_preservation : `(Beta a b R →  forall G A, Typing G a A -> Typing G b A).

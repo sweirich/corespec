@@ -710,6 +710,37 @@ RolePath a = F @ Rs
 RolePath (a [o]) = F @ Rs
 
 
+
+defns
+   JAppsPath :: '' ::=
+
+defn
+AppsPath F Apps a +> Rs  ::  :: AppsPath :: 'AppsPath_'
+{{ com Type headed by constant (partial function) }}
+by
+
+F : A @ Rs in toplevel
+--------------------- :: AbsConst
+AppsPath F emptyA F +> Rs
+
+F : p ~ a : A/R1 @ Rs in toplevel
+--------------------------------- :: Const
+AppsPath F emptyA F +> Rs
+
+AppsPath F Apps a +> R1,Rs
+---------------------------- :: App
+AppsPath F (Tm R1, Apps) (a R1 b') +> Rs
+
+AppsPath F Apps a +> Rs
+---------------------- :: IApp
+AppsPath F (Tm -, Apps) (a - []) +> Rs
+
+AppsPath F Apps a +> Rs
+------------------------------------- :: CApp
+AppsPath F (Co , Apps) (a [o]) +> Rs
+
+
+
 defns
 JPatCtx :: '' ::=
 
