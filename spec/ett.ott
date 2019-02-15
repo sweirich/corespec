@@ -257,6 +257,7 @@ roles, Rs :: '' ::= {{ coq list role }}
    | nilR       ::  :: nilR {{ coq nil }}
    | R , Rs     ::  :: consR {{ coq ([[R]]::[[Rs]]) }}
    | range W   :: S :: rangeR {{ coq (range([[W]])) }}
+   | ( Rs )     :: S :: RolesParen {{ coq ([[Rs]]) }}
 
 sig_sort :: '' ::= {{ com signature classifier }}
    | A @ Rs            ::    :: Cs
@@ -320,13 +321,33 @@ Nat, N {{ tex \mathbb{N} }} :: 'N_' ::= {{ coq nat }}
    | length a :: S :: Pattern_length {{ coq (pattern_length [[a]]) }} {{ tex | [[a]] | }}
 
 App :: 'A_' ::= 
-   | Tm              ::    :: Tm 
+   | Tm nu           ::    :: Tm 
    | Co              ::    :: Co
 
 Apps :: 'A_' ::= {{ coq (list App) }}
    | emptyA          ::    :: nilA  {{ coq nil }}
    | App , Apps      ::    :: consA {{ coq ([[App]]::[[Apps]]) }}
    | ( Apps )        :: M  :: Paren {{ coq ([[Apps]]) }}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%_ Pattern-specific stuff _%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+pattern_arg :: 'p_' ::= {{ com Pattern arguments }}
+  | Tm nu a       ::   :: Tm
+  | Co g          ::   :: Co
+
+
+pattern_args, PA :: 'pattern_args_' ::= {{ coq list pattern_arg }}
+  | none                  ::   :: None {{ coq nil }}
+  | pattern_arg , PA ::   :: Cons {{ coq (cons [[pattern_arg]] [[PA]]) }}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%_ Substs and fvs         _%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 
 substitutions
   single G x :: ctx_subst_tm
@@ -338,21 +359,7 @@ freevars
   W x :: fv_rctx_tm
 
 
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%_ Pattern-specific stuff _%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
 grammar
-
-pattern_arg :: 'p_' ::= {{ com Pattern arguments }}
-  | Tm nu a       ::   :: Tm
-  | Co g          ::   :: Co
-
-
-pattern_args, PA :: 'pattern_args_' ::= {{ coq list pattern_arg }}
-  | none                  ::   :: None {{ coq nil }}
-  | pattern_arg , PA ::   :: Cons {{ coq (cons [[pattern_arg]] [[PA]]) }}
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -2489,7 +2496,7 @@ homs 'a_'
 
   :: Bullet
 
-  :: Pattern {{ tex \mathsf{case}_[[R]] \hspace{3pt} [[a]] \hspace{3pt} \mathsf{of} \hspace{3pt} [[F]] \rightarrow [[b1]] \| \_ \rightarrow [[b2]] }}
+  :: Pattern {{ tex \mathsf{case} \hspace{3pt} [[a]] \hspace{3pt} \mathsf{of} \hspace{3pt} [[F]] \rightarrow [[b1]] \| \_ \rightarrow [[b2]] }}
 
   :: DataCon
   :: Case
