@@ -1,5 +1,6 @@
 Require Import FcEtt.imports.
 Require Import FcEtt.tactics.
+Require Import FcEtt.notations.
 
 Require Import FcEtt.ett_ott.
 
@@ -20,10 +21,8 @@ Require Import FcEtt.param.
 Require Import FcEtt.ett_path.
 Require Import FcEtt.ett_match.
 Require Import FcEtt.pattern.
+
 Require Export FcEtt.ext_red_one.
-Require Import FcEtt.notations.
-
-
 
 
 Set Bullet Behavior "Strict Subproofs".
@@ -39,10 +38,37 @@ Definition degrade : pattern_arg -> pattern_arg :=
   end.
 
 
-Lemma open_co : forall G A g1 B,
-  Typing G (open_tm_wrt_co A g1) B ->
-  forall g2 , lc_co g2 -> (open_tm_wrt_co A g1 = open_tm_wrt_co A g2).
+(* FIXME: move *)
+(* Specialize term H, using only hyps present in the context *)
+Ltac spec_hyp_ctx_only H name :=
+  tryif match goal with H' : _ |- _ => unify name H' end then fail 0 name "is already taken" else
+  lazymatch type of H with
+    | forall x : ?T, _ =>
+      match goal with H' : _ |- _ => spec_hyp_ctx_only (H H') name end
+    | _ => move: H; move => name
+  end.
+
+
+Lemma to_move : `{
+  Γ ⊨ open_tm_wrt_co a g₁ : A →
+  open_tm_wrt_co a g₁ = open_tm_wrt_co a g₂}.
+Proof.
+  intros until 0.
+  move=> h; dependent induction h.
+  all: try with @eq do fun h => destruct a; try solve [inv h]; cbn in h.
+  all: cbn; try reflexivity.
+
+  (* Solving one idiosyncratic goal *)
+  all: try (match goal with |- open_tm_wrt_co _ _ = open_tm_wrt_co _ _ => idtac end; by move:(IHh1 _ _ eq_refl) => ->).
+
+  all: try injection x; intros.
+  all: unfold open_tm_wrt_co in *.
+  all: try (spec_hyp_ctx_only IHh1 ih1; rewrite <- ih1 in * ).
+  all: try (spec_hyp_ctx_only IHh2 ih2; rewrite <- ih2 in * ).
+  all: try reflexivity.
+
 Admitted.
+Definition open_co := @to_move.
 
 
 Notation PatCtxTrim Γ p :=
@@ -763,16 +789,19 @@ Proof.
     move: IHh.
     move/(_ ltac:(eauto using chain_open_telescope_deq_Reg) _ cpo2).
     move/(E_PiSnd _).
-    have eq_irr: open_tm_wrt_tm A0 a_Bullet = open_tm_wrt_tm A0 a. admit. (* Irr args can't appear *)
-    rewrite eq_irr.
-    apply.
-    by eauto.
+    move/(_ a a (E_Refl _ _ _ _ _ ltac:(ea))) => p.
+    (* FIXME: irr arguments are broken atm *)
+    admit.
   - move=> a2 cpo2; dependent induction cpo2; exactly 1 goal.
     move: (chain_open_telescope_deq_Reg h) IHh => reg.
     move/(_ ltac:(by eassumption) _ cpo2) => eq.
     move: (eq) => eq2.
     eapply E_CPiSnd in eq; try eassumption.
-    * admit.
+    * autoreg.
+      (* FIXME fragile *)
+      erewrite (to_move _a1_) in eq.
+      erewrite (to_move _b1_) in eq.
+      by eassumption.
       (* TODO (HELP): pretty sure there's a generalization lemma somewhere..?
          Possibly in erase.v or erase_syntax.v. It should allow to conclude
          from `eq`. *)
@@ -1273,7 +1302,7 @@ Proof.
     with (open_telescope) do ltac:(fun h => inversion h; subst; clear h).
 
     have SA: chain_pattern_substitution (a_Var_f x) sub' = a.
-    admit. 
+    admit.
 
     with BranchTyping do ltac:(fun h =>
         specialize (IHn G1' G _ _ _ _ _ _ _ _ h); clear h).  
@@ -1313,7 +1342,7 @@ Proof.
           (apply_pattern_args (a_App hd (Role R) (a_Var_f x)) pargs1) sub'.
     admit. 
     specialize (IHn next). clear next.
-    
+
     lapply IHn. clear IHn. move=> IHn. 2: {
       eapply E_Conv; eauto 1. 2: { eapply E_Sym; eauto 1. }
       eapply E_TApp; eauto 1.
@@ -1321,7 +1350,7 @@ Proof.
     }
 
     eapply IHn. eauto.
-    
+
     rewrite cps_open_tm_wrt_tm.
     admit. (* lc *)
     rewrite SA.
