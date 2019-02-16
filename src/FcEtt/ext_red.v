@@ -18,6 +18,7 @@ Require Export FcEtt.ext_subst.
 Require Import FcEtt.ett_roleing.
 
 Require Import FcEtt.param.
+Require Import FcEtt.ett_path.
 Require Import FcEtt.ett_match.
 Require Import FcEtt.pattern.
 
@@ -67,8 +68,7 @@ Proof.
   all: try reflexivity.
 
 Admitted.
-
-
+Definition open_co := @to_move.
 
 
 Notation PatCtxTrim Γ p :=
@@ -809,7 +809,7 @@ Proof.
     * destruct R0; unfold param; destruct str; cbn; ok.
 Admitted.
 
-
+    
 Theorem MatchSubst_preservation : `{
   MatchSubst a p1 b1 b' →
   Rename p b p1 b1 ((fv_tm_tm_tm a) ∪ (fv_tm_tm_tm p)) D →
@@ -936,49 +936,55 @@ Definition arg_app (p : pattern_arg) : App :=
       | p_Co _    => A_Co
     end.
 
+Fixpoint map_arg_app (p : list pattern_arg) : Apps :=
+  match p with 
+  | nil => A_nil
+  | cons arg args => A_cons (arg_app arg) (map_arg_app args)
+  end.
+
 
 (* This is a slightly different version of chain_open_telescope_deq that 
    works a little better in the proofs below.
 
-   open_telescope G n PiB args A 
+   open_telescope G apps PiB args targs A 
 
    holds when 
       - the args line up with n
       - each arg matches the Pis in B and produces a final type A
  *)
 
-Inductive open_telescope : context -> list App -> tm -> pattern_args -> pattern_args -> tm -> Prop :=
+Inductive open_telescope : context -> Apps -> tm -> pattern_args -> pattern_args -> tm -> Prop :=
   | open_base : forall G A,
       Typing G A a_Star ->
-      open_telescope G nil A nil nil A
+      open_telescope G A_nil A nil nil A
   | open_Role : forall G apps a A R B B0 args targs C,
       Typing G a A ->
       open_telescope G apps B0 args targs C ->
       DefEq G (dom G) B0 (open_tm_wrt_tm B a) a_Star Rep ->
-      open_telescope G (A_Tm (Role R) :: apps) (a_Pi Rel A B) (p_Tm (Role R) a :: args) (p_Tm (Role R) a :: targs) C
+      open_telescope G (A_cons (A_Tm (Role R)) apps) (a_Pi Rel A B) (p_Tm (Role R) a :: args) (p_Tm (Role R) a :: targs) C
   | open_Rel : forall G apps a A B B0 args targs C,
       Typing G a A ->
       open_telescope G apps B0 args targs C ->
       DefEq G (dom G) B0 (open_tm_wrt_tm B a) a_Star Rep -> 
-      open_telescope G (A_Tm (Rho Rel) :: apps) (a_Pi Rel A B) (p_Tm (Rho Rel) a :: args) (p_Tm (Rho Rel) a :: args) C
+      open_telescope G (A_cons (A_Tm (Rho Rel)) apps) (a_Pi Rel A B) (p_Tm (Rho Rel) a :: args) (p_Tm (Rho Rel) a :: args) C
   | open_Irrel : forall G apps a A B B0 args targs C,
       Typing G a A ->
       open_telescope G apps B0 args targs C ->
       DefEq G (dom G) B0 (open_tm_wrt_tm B a) a_Star Rep ->
-      open_telescope G (A_Tm (Rho Irrel) :: apps) (a_Pi Irrel A B) (p_Tm (Rho Irrel) a_Bullet :: args)
+      open_telescope G (A_cons (A_Tm (Rho Irrel)) apps) (a_Pi Irrel A B) (p_Tm (Rho Irrel) a_Bullet :: args)
                                         (p_Tm (Rho Irrel) a :: targs)  C
   | open_Co : forall G apps a b A R B B0 args targs C,
       DefEq G (dom G)  a b A R ->
       open_telescope G apps B0 args targs C ->
       DefEq G (dom G) B0 (open_tm_wrt_co B g_Triv) a_Star Rep ->
-      open_telescope G (A_Co :: apps) (a_CPi (Eq a b A R) B) (p_Co g_Triv :: args)  (p_Co g_Triv :: targs) C
+      open_telescope G (A_cons A_Co apps) (a_CPi (Eq a b A R) B) (p_Co g_Triv :: args)  (p_Co g_Triv :: targs) C
 .
 
 Hint Constructors open_telescope.
 
 Lemma invert_Typing_pattern_args2 : forall args hd,
   forall G A, Typing G (apply_pattern_args hd args) A -> 
-  exists PiB targs, open_telescope G (map arg_app args) PiB args targs A
+  exists PiB targs, open_telescope G (map_arg_app args) PiB args targs A
    /\ G ⊨ hd : PiB.
 Proof.   
   induction args; intros hd G A H.
@@ -1005,7 +1011,7 @@ Lemma invert_Typing_pattern_args3 : forall args hd,
   forall G A F Rs, 
     RolePath (apply_pattern_args hd args) F Rs ->
     Typing G (apply_pattern_args hd args) A -> 
-  exists PiB targs, open_telescope G (map arg_app args) PiB args targs A
+  exists PiB targs, open_telescope G (map_arg_app args) PiB args targs A
    /\ G ⊨ hd : PiB /\ RolePath hd F (args_roles args ++ Rs).
 Proof.   
   induction args; intros hd G A F Rs RP H.
@@ -1194,6 +1200,69 @@ Proof.
   auto.
 Qed.
 
+Lemma MatchSubst_args :
+  forall a p b b' (ms : MatchSubst a p b b'),
+    exists args, chain_pattern_substitution b args = b'.
+Proof.
+  induction 1.
+  exists nil. simpl. eauto.
+  all: move: IHms => [args h].
+  all: try solve [eauto].
+  exists ((x, p_Tm (Rho Rel) a)::args). simpl. rewrite h. auto.
+Qed.
+
+(*
+Lemma foo :  `{
+  forall (patctx_p : PatternContexts Ωp Γp F PiB p B), 
+  Typing nil (a_Fam F) PiB ->
+  forall a b b' (ms : MatchSubst a p b b'),
+  forall C (tpg_b : Γp ⊨ b : C),
+    ValuePath a F ->
+      Γ ⊨ a : A →
+      Γ ⊨ b' : D 
+}.
+Proof.
+  induction 1; intros.
+  - admit.
+  - specialize (IHpatctx_p H0).
+    inversion ms. subst. clear ms.
+    move: (invert_a_App_Role H2) => [ A2 [B2 h]]. split_hyp. clear H2.
+    have ms0: MatchSubst a1 p (tm_subst_tm_tm a0 x b) (tm_subst_tm_tm a0 x b2).
+    admit.
+    specialize (IHpatctx_p _ _ _ ms0). clear ms0.
+    have TT : Typing G (tm_subst_tm_tm a0 x b) (open_tm_wrt_tm A a0).
+    admit.
+    specialize (IHpatctx_p _ TT).
+    inversion H1. subst.
+    specialize (IHpatctx_p H12).
+   
+
+
+    have ms0': MatchSubst a1 p (open_tm_wrt_tm A a0) (tm_subst_tm_tm a0 x b0).
+    admit.
+
+    
+
+    have DE : (open_tm_wrt_tm A a0) = (a_Pi Rel A' A).
+    admit. (* XXXXX *)
+    rewrite DE in TT.
+
+    specialize (IHpatctx_p TT).
+    rewrite DE in ms0'. 
+    specialize (IHpatctx_p _ ms0').
+    eapply IHpatctx_p.
+    eapply E_Conv. 2 : { apply E_Sym. eauto 1. }
+    
+    clear ms'. clear H9.
+
+    have Tb: Typing G (tm_subst_tm_tm a0 x b) (open_tm_wrt_tm A0 a0).
+    admit. clear tpg_b.
+    
+
+    eapply IHpatctx_p.  *)
+
+
+
 (*
 Lemma BaseType_cps : forall A sub,
    BaseType A -> 
@@ -1229,13 +1298,15 @@ Invariants about the IH:
     pargs2 = pargs 
 *)
 
-
+(* For roles, we need to know that the non-nominal prefix of args 
+   matches the Roles for F. 
+ *)
 
 Lemma BranchTyping_lemma : forall F n G1 G R A scrut hd pargs1 B0 B1 C,
     BranchTyping (G1 ++ G) n R scrut A hd pargs1 B0 B1 C ->
     forall args1 args2 , 
-    map arg_app args2 = n ->
-    RolePath (apply_pattern_args hd args1) F (args_roles args2) ->
+    map_arg_app args2 = n ->
+    forall Rs, RolePath (apply_pattern_args hd args1) F (args_roles args2 ++ Rs) ->
     scrut = apply_pattern_args (apply_pattern_args hd args1) args2  ->
     forall targs1 sub, 
     sub = zip (map fst G1) (rev targs1) ->
@@ -1297,7 +1368,7 @@ Proof.
     with BranchTyping do ltac:(fun h =>
         specialize (IHn G1' G _ _ _ _ _ _ _ _ h); clear h).  
 
-    specialize (IHn  args1' args2 eq_refl). 
+    specialize (IHn  args1' args2 eq_refl Rs). 
     rewrite apply_pattern_args_tail_Tm in IHn.
 
     lapply IHn. clear IHn. move=> IHn. 2 : {
@@ -1357,8 +1428,8 @@ Admitted.
 (* Specialized version of main lemma that is "easier" to use. *)
 Lemma BranchTyping_start : forall  G n R A scrut hd B0 B1 C F,
     BranchTyping G n R scrut A hd nil B0 B1 C ->
-    forall args, map arg_app args = n ->
-    RolePath hd F (args_roles args) ->
+    forall args, map_arg_app args = n ->
+    forall Rs, RolePath hd F (args_roles args ++ Rs) ->
     scrut = apply_pattern_args hd args  ->
     forall B0' targs,
     open_telescope G n B0' args targs A ->
@@ -1375,32 +1446,148 @@ Proof.
   unfold domFresh. eauto.
 Qed.
 
+(*
+Lemma AppsPath_RolePath : forall F n a Rs,
+  AppsPath F n a Rs -> RolePath a F Rs.
+Proof.
+  intros.
+  induction H; eauto.
+Qed.*)
+
+Lemma rev_injective : forall A (xs ys : list A), rev xs = rev ys -> xs = ys.
+Proof.
+  induction xs. intros. destruct ys; simpl in H; inversion H; auto.
+  move: (app_cons_not_nil (rev ys) nil a) => h0. contradiction.
+  intros. 
+  destruct ys; simpl in H; inversion H; auto.
+  move: (app_cons_not_nil (rev xs) nil a) => h0. rewrite H1 in h0. contradiction.
+  apply app_inj_tail in H.
+  destruct H.
+  f_equal; auto.
+Qed.
+
+
+Lemma shuffle : forall A (args : list A) a rargs,
+(a :: rargs = rev args) -> args = rev rargs ++ [a].
+Proof.
+  intros. 
+  rewrite <- (rev_involutive rargs) in H.
+  rewrite <- rev_unit in H.
+  apply rev_injective in H.
+  auto.
+Qed.
+
+Lemma map_arg_app_snoc : forall args App,
+    map_arg_app (args ++ [App]) = A_snoc (map_arg_app args) (arg_app App).
+Proof.
+  induction args.
+  simpl. eauto.
+  intros. simpl. rewrite IHargs. eauto.
+Qed.
+  
+Lemma AppsPath_arg_app' : forall rargs args, rargs = rev args -> forall n R F,
+  AppsPath R (apply_pattern_args (a_Fam F) args) F n -> 
+  map_arg_app args = n.
+Proof.
+  induction rargs.
+  - intros. destruct args; simpl in H; inversion  H. 
+    simpl in *. inversion H0; auto.
+    apply app_cons_not_nil in H. contradiction.
+  - intros args H n R F AP.
+    apply shuffle in H.
+    rewrite H in AP.
+    destruct a; try destruct nu.
+    all: try rewrite apply_pattern_args_tail_Tm in AP.    
+    all: try rewrite apply_pattern_args_tail_Co in AP.    
+    all: inversion AP; subst.
+    all: rewrite map_arg_app_snoc; f_equal;
+      eapply IHrargs; eauto. 
+    all: rewrite rev_involutive; auto.
+Qed.
+
+Lemma AppsPath_arg_app : forall args n R F,
+  AppsPath R (apply_pattern_args (a_Fam F) args) F n -> 
+  map_arg_app args = n.
+Proof.
+  intros args. intros.
+  eapply (@AppsPath_arg_app' (rev args) args eq_refl).
+  eauto.
+Qed.
+
+Lemma RolePath_args : forall F Rs, 
+    RolePath (a_Fam F) F Rs ->
+    forall args Rs', RolePath (apply_pattern_args (a_Fam F) (rev args)) F Rs' ->
+    Rs = (args_roles (rev args)) ++ Rs'.
+Proof.
+  intros F Rs RP.
+  induction args; intros Rs' RP'.
+  - simpl in *. 
+    inversion RP; inversion RP'; subst.
+    all: move: (binds_unique _ _ _ _ _ H0 H4 uniq_toplevel) => EQ; inversion EQ.
+    all: auto.
+  - simpl in *.
+    destruct a; try destruct nu; try destruct rho.
+    all: try rewrite apply_pattern_args_tail_Tm in RP'.
+    all: try rewrite apply_pattern_args_tail_Co in RP'.
+    all: inversion RP'; subst; simpl. clear RP'.
+    all: with RolePath do ltac:(fun h => move: (IHargs _ h) => eq).
+    all: subst; simpl.
+    all: rewrite args_roles_app; simpl.
+    all: rewrite <- app_assoc; simpl; auto.
+Qed.
+
+Lemma RolePath_AppRole : 
+    forall args Rs, AppRoles (map_arg_app args) Rs -> 
+    forall hd F,  RolePath hd F Rs ->
+    Rs = args_roles args.
+Proof.
+  intros args Rs H. dependent induction H; eauto.
+  + intros. destruct args; inversion x. simpl. auto. 
+  + intros. destruct args; inversion x. subst. 
+    destruct p; try destruct nu; inversion H2; subst.
+    simpl. erewrite IHAppRoles; eauto.
+  + intros. destruct args; inversion x. subst. 
+    destruct p; try destruct nu; inversion H2; subst.
+    simpl. erewrite IHAppRoles; eauto.
+  + intros. destruct args; inversion x. subst. 
+    destruct p; try destruct nu; inversion H2; subst.
+    simpl. erewrite IHAppRoles; eauto.
+Unshelve. all: eauto.
+Qed.
 
 Lemma BranchTyping_preservation : forall G n R a A F B0 B1 C,
     BranchTyping G n R a A (a_Fam F) nil B0 B1 C ->
     CasePath R a F ->
+    AppsPath R a F n ->
+    SatApp F n ->
     Typing G a A ->
     Typing G (a_Fam F) B0 ->
     forall b1, Typing G b1 B1 ->
     forall b1', ApplyArgs a b1 b1' ->
     Typing G  (a_CApp b1' g_Triv) C.
 Proof.
-  intros G n R a A F B0 B1 C BT CP Ta Tp b1 Tb1 b1' AA.
-  have VP:  ValuePath a F.   eapply ett_path.CasePath_ValuePath; eauto.
+  intros G n R a A F B0 B1 C BT CP AP SA Ta Tp b1 Tb1 b1' AA.
+  have VP:  ValuePath a F.   
+  eapply ett_path.CasePath_ValuePath; eauto.
   edestruct ApplyArgs_pattern_args as [args [h0 h1]]; eauto 1.
   subst a.
-  have RP: RolePath (apply_pattern_args (a_Fam F) args) F nil. admit.
-  move: (invert_Typing_pattern_args3 _ _ RP Ta) => [PiB [targs [h2 [h3 h4]]]].
-  rewrite app_nil_r in h4.
-      
-  have eq: map arg_app args = n. admit.
-
+  move: (invert_Typing_pattern_args2 _ _  Ta) => [PiB [targs [h2 h4]]].
+  
+  have eq: map_arg_app args = n.  eapply AppsPath_arg_app; eauto.
   rewrite eq in h2.
-  eapply BranchTyping_start; eauto 1.
 
+  have RP: RolePath (a_Fam F) F (args_roles args).
+  { inversion SA. subst.
+    ++ replace (args_roles args) with Rs. 
+       eauto. eapply RolePath_AppRole; eauto.
+    ++ replace (args_roles args) with Rs. 
+       eauto. eapply RolePath_AppRole; eauto.
+       rewrite eq. auto.
+  }     
+  eapply BranchTyping_start with (Rs := nil); eauto 1.
+  rewrite app_nil_r; eauto.
   eapply Typing_a_Fam_unique; eauto 1.
-Admitted.     
-
+Qed.
 
 
 Lemma Beta_preservation : `(Beta a b R →  forall G A, Typing G a A -> Typing G b A).
@@ -1460,13 +1647,14 @@ Proof.
    - (* Axiom *)
      eapply MatchSubst_preservation; eauto.
    - (* Pattern True *)
-     move: (invert_a_Pattern TH) => [A [A1 [B0 [C [n h]]]]].
+     move: (invert_a_Pattern TH) => [A [A1 [B0 [C h]]]].
      split_hyp.
-     reg H7.
      eapply E_Conv with (A := C); eauto 1.
      eapply BranchTyping_preservation; eauto 1.
+     eauto using AppsPath_CasePath.
+     autoreg. auto.
    - dependent induction TH; eauto.
-Qed.
+Admitted.
 
 
 Lemma E_Beta2 :  ∀ (G : context) (D : available_props) (a1 a2 B : tm) R,

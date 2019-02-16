@@ -50,6 +50,30 @@ Definition appflag_mutrec :=
   fun H1 H2 H3 =>
   appflag_rec' H1 H2 H3.
 
+Scheme App_ind' := Induction for App Sort Prop.
+
+Definition App_mutind :=
+  fun H1 H2 H3 =>
+  App_ind' H1 H2 H3.
+
+Scheme App_rec' := Induction for App Sort Set.
+
+Definition App_mutrec :=
+  fun H1 H2 H3 =>
+  App_rec' H1 H2 H3.
+
+Scheme Apps_ind' := Induction for Apps Sort Prop.
+
+Definition Apps_mutind :=
+  fun H1 H2 H3 =>
+  Apps_ind' H1 H2 H3.
+
+Scheme Apps_rec' := Induction for Apps Sort Set.
+
+Definition Apps_mutrec :=
+  fun H1 H2 H3 =>
+  Apps_rec' H1 H2 H3.
+
 Scheme tm_ind' := Induction for tm Sort Prop
   with brs_ind' := Induction for brs Sort Prop
   with co_ind' := Induction for co Sort Prop
@@ -94,7 +118,7 @@ Fixpoint close_tm_wrt_tm_rec (n1 : nat) (x1 : tmvar) (a1 : tm) {struct a1} : tm 
     | a_Conv a2 R1 g1 => a_Conv (close_tm_wrt_tm_rec n1 x1 a2) R1 (close_co_wrt_tm_rec n1 x1 g1)
     | a_Fam F1 => a_Fam F1
     | a_Bullet => a_Bullet
-    | a_Pattern R1 a2 F1 b1 b2 => a_Pattern R1 (close_tm_wrt_tm_rec n1 x1 a2) F1 (close_tm_wrt_tm_rec n1 x1 b1) (close_tm_wrt_tm_rec n1 x1 b2)
+    | a_Pattern R1 a2 F1 Apps1 b1 b2 => a_Pattern R1 (close_tm_wrt_tm_rec n1 x1 a2) F1 Apps1 (close_tm_wrt_tm_rec n1 x1 b1) (close_tm_wrt_tm_rec n1 x1 b2)
     | a_DataCon K1 => a_DataCon K1
     | a_Case a2 brs1 => a_Case (close_tm_wrt_tm_rec n1 x1 a2) (close_brs_wrt_tm_rec n1 x1 brs1)
     | a_Sub R1 a2 => a_Sub R1 (close_tm_wrt_tm_rec n1 x1 a2)
@@ -159,7 +183,7 @@ Fixpoint close_tm_wrt_co_rec (n1 : nat) (c1 : covar) (a1 : tm) {struct a1} : tm 
     | a_Conv a2 R1 g1 => a_Conv (close_tm_wrt_co_rec n1 c1 a2) R1 (close_co_wrt_co_rec n1 c1 g1)
     | a_Fam F1 => a_Fam F1
     | a_Bullet => a_Bullet
-    | a_Pattern R1 a2 F1 b1 b2 => a_Pattern R1 (close_tm_wrt_co_rec n1 c1 a2) F1 (close_tm_wrt_co_rec n1 c1 b1) (close_tm_wrt_co_rec n1 c1 b2)
+    | a_Pattern R1 a2 F1 Apps1 b1 b2 => a_Pattern R1 (close_tm_wrt_co_rec n1 c1 a2) F1 Apps1 (close_tm_wrt_co_rec n1 c1 b1) (close_tm_wrt_co_rec n1 c1 b2)
     | a_DataCon K1 => a_DataCon K1
     | a_Case a2 brs1 => a_Case (close_tm_wrt_co_rec n1 c1 a2) (close_brs_wrt_co_rec n1 c1 brs1)
     | a_Sub R1 a2 => a_Sub R1 (close_tm_wrt_co_rec n1 c1 a2)
@@ -246,6 +270,18 @@ Fixpoint size_appflag (nu1 : appflag) {struct nu1} : nat :=
     | Rho rho1 => 1 + (size_relflag rho1)
   end.
 
+Fixpoint size_App (App1 : App) {struct App1} : nat :=
+  match App1 with
+    | A_Tm nu1 => 1 + (size_appflag nu1)
+    | A_Co => 1
+  end.
+
+Fixpoint size_Apps (Apps1 : Apps) {struct Apps1} : nat :=
+  match Apps1 with
+    | A_nil => 1
+    | A_cons App1 Apps2 => 1 + (size_App App1) + (size_Apps Apps2)
+  end.
+
 Fixpoint size_tm (a1 : tm) {struct a1} : nat :=
   match a1 with
     | a_Star => 1
@@ -262,7 +298,7 @@ Fixpoint size_tm (a1 : tm) {struct a1} : nat :=
     | a_Conv a2 R1 g1 => 1 + (size_tm a2) + (size_role R1) + (size_co g1)
     | a_Fam F1 => 1
     | a_Bullet => 1
-    | a_Pattern R1 a2 F1 b1 b2 => 1 + (size_role R1) + (size_tm a2) + (size_tm b1) + (size_tm b2)
+    | a_Pattern R1 a2 F1 Apps1 b1 b2 => 1 + (size_role R1) + (size_tm a2) + (size_Apps Apps1) + (size_tm b1) + (size_tm b2)
     | a_DataCon K1 => 1
     | a_Case a2 brs1 => 1 + (size_tm a2) + (size_brs brs1)
     | a_Sub R1 a2 => 1 + (size_role R1) + (size_tm a2)
@@ -363,11 +399,11 @@ Inductive degree_tm_wrt_tm : nat -> tm -> Prop :=
     degree_tm_wrt_tm n1 (a_Fam F1)
   | degree_wrt_tm_a_Bullet : forall n1,
     degree_tm_wrt_tm n1 (a_Bullet)
-  | degree_wrt_tm_a_Pattern : forall n1 R1 a1 F1 b1 b2,
+  | degree_wrt_tm_a_Pattern : forall n1 R1 a1 F1 Apps1 b1 b2,
     degree_tm_wrt_tm n1 a1 ->
     degree_tm_wrt_tm n1 b1 ->
     degree_tm_wrt_tm n1 b2 ->
-    degree_tm_wrt_tm n1 (a_Pattern R1 a1 F1 b1 b2)
+    degree_tm_wrt_tm n1 (a_Pattern R1 a1 F1 Apps1 b1 b2)
   | degree_wrt_tm_a_DataCon : forall n1 K1,
     degree_tm_wrt_tm n1 (a_DataCon K1)
   | degree_wrt_tm_a_Case : forall n1 a1 brs1,
@@ -544,11 +580,11 @@ Inductive degree_tm_wrt_co : nat -> tm -> Prop :=
     degree_tm_wrt_co n1 (a_Fam F1)
   | degree_wrt_co_a_Bullet : forall n1,
     degree_tm_wrt_co n1 (a_Bullet)
-  | degree_wrt_co_a_Pattern : forall n1 R1 a1 F1 b1 b2,
+  | degree_wrt_co_a_Pattern : forall n1 R1 a1 F1 Apps1 b1 b2,
     degree_tm_wrt_co n1 a1 ->
     degree_tm_wrt_co n1 b1 ->
     degree_tm_wrt_co n1 b2 ->
-    degree_tm_wrt_co n1 (a_Pattern R1 a1 F1 b1 b2)
+    degree_tm_wrt_co n1 (a_Pattern R1 a1 F1 Apps1 b1 b2)
   | degree_wrt_co_a_DataCon : forall n1 K1,
     degree_tm_wrt_co n1 (a_DataCon K1)
   | degree_wrt_co_a_Case : forall n1 a1 brs1,
@@ -768,11 +804,11 @@ Inductive lc_set_tm : tm -> Set :=
     lc_set_tm (a_Fam F1)
   | lc_set_a_Bullet :
     lc_set_tm (a_Bullet)
-  | lc_set_a_Pattern : forall R1 a1 F1 b1 b2,
+  | lc_set_a_Pattern : forall R1 a1 F1 Apps1 b1 b2,
     lc_set_tm a1 ->
     lc_set_tm b1 ->
     lc_set_tm b2 ->
-    lc_set_tm (a_Pattern R1 a1 F1 b1 b2)
+    lc_set_tm (a_Pattern R1 a1 F1 Apps1 b1 b2)
   | lc_set_a_DataCon : forall K1,
     lc_set_tm (a_DataCon K1)
   | lc_set_a_Case : forall a1 brs1,
@@ -1055,6 +1091,34 @@ forall nu1, 1 <= size_appflag nu1.
 Proof. Admitted.
 
 Hint Resolve size_appflag_min : lngen.
+
+(* begin hide *)
+
+Lemma size_App_min_mutual :
+(forall App1, 1 <= size_App App1).
+Proof. Admitted.
+
+(* end hide *)
+
+Lemma size_App_min :
+forall App1, 1 <= size_App App1.
+Proof. Admitted.
+
+Hint Resolve size_App_min : lngen.
+
+(* begin hide *)
+
+Lemma size_Apps_min_mutual :
+(forall Apps1, 1 <= size_Apps Apps1).
+Proof. Admitted.
+
+(* end hide *)
+
+Lemma size_Apps_min :
+forall Apps1, 1 <= size_Apps Apps1.
+Proof. Admitted.
+
+Hint Resolve size_Apps_min : lngen.
 
 (* begin hide *)
 
@@ -4491,6 +4555,18 @@ Ltac role_lc_exists_tac :=
           end).
 
 Ltac appflag_lc_exists_tac :=
+  repeat (match goal with
+            | H : _ |- _ =>
+              fail 1
+          end).
+
+Ltac App_lc_exists_tac :=
+  repeat (match goal with
+            | H : _ |- _ =>
+              fail 1
+          end).
+
+Ltac Apps_lc_exists_tac :=
   repeat (match goal with
             | H : _ |- _ =>
               fail 1

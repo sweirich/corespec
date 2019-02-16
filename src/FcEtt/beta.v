@@ -94,14 +94,14 @@ Proof.
     eapply Rename_fv_new_pattern. eauto. eapply Rename_new_body_fv. 
     eauto. auto.
   - simpl. eapply Beta_PatternTrue; eauto with lngen lc. 
-    eapply CasePath_subst_tm; eauto with lngen lc.
+    eapply AppsPath_subst_tm; eauto with lngen lc.
     eapply ApplyArgs_subst_tm; eauto with lngen lc.
   - simpl. 
     eapply Beta_PatternFalse; eauto with lngen lc.
     apply Value_tm_subst_tm_tm; auto. 
     move => h0. eapply H3.
-    eapply CasePath_Value_unsubst_tm; eauto with lngen lc.
-Qed.
+    admit. (* eapply CasePath_Value_unsubst_tm; eauto with lngen lc. *)
+Admitted.
 
 Lemma Beta_co_subst : forall a a' R b x, Beta a a' R -> lc_co b -> Beta (co_subst_co_tm b x a) (co_subst_co_tm b x a') R.
 Proof.
@@ -153,11 +153,11 @@ Proof.
     eapply Subset_empty_any.
   - simpl.
     eapply Beta_PatternTrue; eauto with lngen lc.
-    eapply CasePath_subst_co; eauto with lngen lc.
+    eapply AppsPath_subst_co; eauto with lngen lc.
     eapply ApplyArgs_subst_co; eauto with lngen lc.
   - simpl. 
     eapply Beta_PatternFalse; eauto with lngen lc.
     apply Value_co_subst_co_tm; auto. 
     move => h0. eapply H3.
-    eapply CasePath_Value_unsubst_co; eauto with lngen lc.
-Qed.
+    admit. (* eapply CasePath_Value_unsubst_co; eauto with lngen lc. *)
+Admitted.

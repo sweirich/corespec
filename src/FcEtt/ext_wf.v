@@ -255,8 +255,15 @@ Proof. induction Sig_toplevel.
          all: eauto using PatternContexts_lc2, roleing_lc, Typing_lc1.
 Qed.
 
+Lemma AppsPath_lc : forall R a F Apps,  AppsPath R a F Apps -> lc_tm a.
+Proof.
+  intros; induction H; auto.
+Qed.
 
 
+Hint Resolve AppsPath_lc.
+
+  
 Lemma Beta_lc1 : forall a a' R, Beta a a' R -> lc_tm a.
 Proof.
   intros.  induction H; auto.

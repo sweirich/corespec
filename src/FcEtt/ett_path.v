@@ -159,15 +159,6 @@ Proof. intros. induction a; simpl in H1; auto; try (inversion H1; fail).
           econstructor. eapply IHa; eauto.
 Qed.
 
-Lemma subst_co_RolePath : forall F a b R c, lc_co b -> Value R a ->
-                      RolePath F (co_subst_co_tm b c a) R -> RolePath F a R.
-Proof. intros. induction a; simpl in H1; auto; try (inversion H1; fail).
-        - inversion H0; subst. inversion H1; subst. inversion H2; subst.
-          eauto.
-        - inversion H0; subst. inversion H2; subst.
-          inversion H1; subst. eauto.
-Qed.
-
 Lemma no_Path_reduction : forall R a F, RolePath F a R -> forall b, not (reduction_in_one a b R).
 Proof.
   intros R a F H. induction H; simpl; intros.
@@ -207,3 +198,47 @@ Proof. intros. induction H.
 Qed.
 *)
 
+Lemma AppsPath_subst_tm : forall R Apps F a b x, AppsPath R a F Apps -> lc_tm b ->
+                   AppsPath R (tm_subst_tm_tm b x a) F Apps.
+Proof. intros. induction H; simpl; eauto. econstructor; eauto with lngen lc.
+Qed.
+
+Lemma AppsPath_subst_co : forall R Apps F a b c, AppsPath R a F Apps -> lc_co b ->
+                   AppsPath R (co_subst_co_tm b c a) F Apps.
+Proof. intros. induction H; simpl; eauto.
+       econstructor; eauto with lngen lc.
+Qed.
+
+Lemma AppsPath_ValuePath : forall a F n,
+  AppsPath Nom a F n -> ValuePath a F /\ 
+                     ((exists A Rs,  binds F (Cs A Rs) toplevel) \/
+                      (exists p a A R1 Rs, binds F (Ax p a A R1 Rs) toplevel /\
+                                       ¬ SubRole R1 Nom)).
+Proof.
+  intros.
+  dependent induction H.
+  - split; eauto.
+  - split; eauto.
+    right.
+    repeat eexists. eauto. eauto.
+  - destruct IHAppsPath. auto.
+    split; eauto.
+  - destruct IHAppsPath. auto.
+    split; eauto.
+  - destruct IHAppsPath. auto.
+    split; eauto.
+Qed.
+
+
+Lemma AppsPath_CasePath : forall a F n,
+  AppsPath Nom a F n -> CasePath Nom a F.
+Proof.
+  intros.
+  edestruct AppsPath_ValuePath; eauto.
+  destruct H1.
+  move: H1 => [A [Rs h]].
+  econstructor; eauto.
+  move: H1 => [p [a0 [A [R1 [Rs h]]]]].
+  split_hyp.
+  eauto.
+Qed.

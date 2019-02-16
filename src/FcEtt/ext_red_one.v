@@ -355,7 +355,7 @@ Proof.
      eauto. auto. eapply uniq_atoms_toplevel. eauto. auto. auto.
   - (* two pattern matching *)
     move: (ApplyArgs_applyArgs H1) => h1.
-    move: (ApplyArgs_applyArgs H10) => h2.
+    move: (ApplyArgs_applyArgs H11) => h2.
     rewrite h1 in h2. subst.
     auto.
 Qed.
@@ -401,6 +401,12 @@ Proof.
 Qed.
 
 
+Lemma AppsPath_Value : forall F Apps a R, AppsPath R a F Apps -> Value R a.
+Proof.
+  intros.
+  eapply Value_Path.
+  eauto using AppsPath_CasePath.
+Admitted.
 
 (* The reduction relation is deterministic *)
 Lemma reduction_in_one_deterministic :
@@ -440,7 +446,7 @@ Proof.
     Value_no_red.
   - (* left side is scrutinee evaluation, right is Beta *)
     inversion H2. invert_MatchSubst.
-    have VF: Value Nom a. eauto.
+    have VF: Value Nom a. eauto using AppsPath_Value.
     Value_no_red.
     Value_no_red.
   - (* left size is Beta_Axiom, right side is AppLeft. *)
@@ -452,7 +458,7 @@ Proof.
     Value_no_red.
   - (* left side is Beta, right side is scrutinee eval *)
     inversion H. invert_MatchSubst.
-    have VF: Value Nom a0. eauto.
+    have VF: Value Nom a0. eauto using AppsPath_Value.
     Value_no_red.
     Value_no_red.
 Qed.

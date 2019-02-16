@@ -650,64 +650,68 @@ Proof.
   - use_size_induction a0 ac Par1 Par2.
     use_size_induction b1 b1c Par3 Par4.
     use_size_induction b2 b2c Par5 Par6.
-    exists (a_Pattern Nom ac F b1c b2c).
+    exists (a_Pattern Nom ac F Apps5 b1c b2c).
     split; eapply Par_Pattern; eauto.
   - use_size_induction a0 ac Par1 Par2.
     use_size_induction b1 b1c Par3 Par4.
     use_size_induction b2 b2c Par5 Par6.
-    have h0: CasePath Nom a'0 F.
-    { eapply nsub_CasePath; eauto. }
-    pose (P := Par_CasePath h0 Par2). 
+    have h0: AppsPath Nom a'0 F Apps5.
+    { auto. }
+    pose (P := Par_AppsPath h0 Par2). 
     exists (a_CApp (applyArgs ac b1c) g_Triv).
     assert (ApplyArgs ac b1c (applyArgs ac b1c)).
-    {eapply applyArgs_ApplyArgs; eauto. eapply Par_lc2; eauto. }
+    {eapply applyArgs_ApplyArgs; eauto using AppsPath_CasePath. 
+     eapply Par_lc2; eauto. }
     split. eapply Par_PatternTrue; eauto.
-    econstructor. eapply apply_args_par; eauto.
+    econstructor. eapply apply_args_par; eauto using AppsPath_CasePath.
   - use_size_induction a0 ac Par1 Par2.
     use_size_induction b1 b1c Par3 Par4.
     use_size_induction b2 b2c Par5 Par6.
-    assert (~ CasePath Nom ac F). intro. apply H10.
-    eapply CasePath_Par; eauto. 
+    assert (~ AppsPath Nom ac F Apps5). intro. apply H10.
+    eapply AppsPath_Par; eauto. 
     exists b2c. split; eauto.
     eapply Par_PatternFalse; eauto. eapply Value_par_Value; eauto.
   - use_size_induction a0 ac Par1 Par2.
     use_size_induction b1 b1c Par3 Par4.
     use_size_induction b2 b2c Par5 Par6.
-    have h0: CasePath Nom a' F.
-    { eapply nsub_CasePath; eauto. }
-    pose (P := Par_CasePath h0 Par1).
+    have h0: AppsPath Nom a' F Apps5.
+    { auto. } 
+    pose (P := Par_AppsPath h0 Par1).
     exists (a_CApp (applyArgs ac b1c) g_Triv).
     assert (ApplyArgs ac b1c (applyArgs ac b1c)).
-    {eapply applyArgs_ApplyArgs; eauto. eapply Par_lc2; eauto. }
-    split. econstructor. eapply apply_args_par; eauto.
+    {eapply applyArgs_ApplyArgs; eauto using AppsPath_CasePath.
+     eapply Par_lc2; eauto using AppsPath_CasePath. }
+    split. econstructor. eapply apply_args_par; eauto using AppsPath_CasePath.
     eapply Par_PatternTrue; eauto.
   - use_size_induction a0 ac Par1 Par2.
     use_size_induction b1 b1c Par3 Par4.
     use_size_induction b2 b2c Par5 Par6.
-    have h0: CasePath Nom a' F. eapply nsub_CasePath; eauto.
-    have h1: CasePath Nom a'0 F. eapply nsub_CasePath; eauto.
-    pose (P := Par_CasePath h0 Par1).
-    pose (Q := Par_CasePath h1 Par2).
+    have h0: AppsPath Nom a' F Apps5. auto.
+    have h1: AppsPath Nom a'0 F Apps5. auto.
+    pose (P := Par_AppsPath h0 Par1).
+    pose (Q := Par_AppsPath h1 Par2).
     exists (a_CApp (applyArgs ac b1c) g_Triv).
     assert (ApplyArgs ac b1c (applyArgs ac b1c)).
-    {eapply applyArgs_ApplyArgs; eauto. eapply Par_lc2; eauto. }
+    {eapply applyArgs_ApplyArgs; eauto using AppsPath_CasePath.
+     eapply Par_lc2; eauto. }
     split. econstructor. eapply apply_args_par; eauto.
-    econstructor. eapply apply_args_par; eauto.
+    eapply AppsPath_CasePath; eauto.
+    eapply apply_args_par; eauto using AppsPath_CasePath.
   - use_size_induction a0 ac Par1 Par2.
-    have P: CasePath Nom ac F.
-    { eapply Par_CasePath. eapply nsub_CasePath; eauto. eauto. }
-    assert (~ CasePath Nom ac F). intro. apply H12.
-    eapply CasePath_Par; eauto. contradiction.
+    have P: AppsPath Nom ac F Apps5.
+    { eapply Par_AppsPath. eauto. eauto. }
+    assert (~ AppsPath Nom ac F Apps5). intro. apply H12.
+    eapply AppsPath_Par; eauto. contradiction.
   - use_size_induction a0 ac Par1 Par2.
     use_size_induction b1 b1c Par3 Par4.
     use_size_induction b2 b2c Par5 Par6.
-    assert (~ CasePath Nom ac F). intro. apply H3.
-    eapply CasePath_Par; eauto. exists b2c. split; eauto.
+    assert (~ AppsPath Nom ac F Apps5). intro. apply H3.
+    eapply AppsPath_Par; eauto. exists b2c. split; eauto.
     eapply Par_PatternFalse; eauto. eapply Value_par_Value; eauto.
   - use_size_induction a0 ac Par1 Par2.
-    pose (P := H11). eapply Par_CasePath in P; eauto.
-    assert (~ CasePath Nom ac F). intro. apply H3.
-    eapply CasePath_Par; eauto. contradiction.
+    pose (P := H11). eapply Par_AppsPath in P; eauto.
+    assert (~ AppsPath Nom ac F Apps5). intro. apply H3.
+    eapply AppsPath_Par; eauto. contradiction.
   - use_size_induction a0 ac Par1 Par2.
     use_size_induction b1 b1c Par3 Par4.
     use_size_induction b2 b2c Par5 Par6. eauto.
@@ -1336,16 +1340,16 @@ Proof.
   apply multipar_app_rctx; auto.
 Qed.
 
-Lemma multipar_Pattern: forall W F a a' b1 b1' b2 b2' R0,
+Lemma multipar_Pattern: forall W F r a a' b1 b1' b2 b2' R0,
           multipar W a a' Nom -> multipar W b1 b1' R0 -> multipar W b2 b2' R0 ->
-          multipar W (a_Pattern Nom a F b1 b2) (a_Pattern Nom a' F b1' b2') R0.
+          multipar W (a_Pattern Nom a F r b1 b2) (a_Pattern Nom a' F r b1' b2') R0.
 Proof. intros. dependent induction H. induction H0. induction H1. eauto.
-  eapply mp_step with (b := (a_Pattern Nom a F a0 b)).
+  eapply mp_step with (b := (a_Pattern Nom a F r a0 b)).
   eapply Par_Pattern; eauto. auto.
-  eapply mp_step with (b := (a_Pattern Nom a F b b2)).
+  eapply mp_step with (b := (a_Pattern Nom a F r b b2)).
   eapply Par_Pattern; eauto. econstructor. eapply multipar_roleing_tm_fst; eauto.
   auto.
-  eapply mp_step with (b := (a_Pattern Nom b F b1 b2)).
+  eapply mp_step with (b := (a_Pattern Nom b F r b1 b2)).
   eapply Par_Pattern; eauto. econstructor. eapply multipar_roleing_tm_fst; eauto.
   econstructor. eapply multipar_roleing_tm_fst; eauto. auto.
 Qed.
@@ -1953,16 +1957,16 @@ Proof. intros. generalize dependent R.
     + left; eauto.
   - inversion H1; subst. unfold irrelevant in H0. inversion H0.
     assert (irrelevant G (dom G) a). split; auto 1. intros.
-    pose (Q := H6 x A0 H8). simpl in Q. eauto.
-    destruct (IHTyping1 H8 H9 Nom) as [Q1 | Q1].
-    assert (CasePath Nom a F \/ ~CasePath Nom a F).
-    eapply CasePath_dec. eapply roleing_sub. eapply Typing_roleing; eauto. auto.
-    inversion H10 as [Q2 | Q2].
+    pose (Q := H7 x A0 H9). simpl in Q. eauto.
+    destruct (IHTyping1 H9 H10 Nom) as [Q1 | Q1].
+    assert (AppsPath Nom a F Apps5  \/ ~AppsPath Nom a F Apps5).
+    eapply decide_AppsPath. eapply roleing_sub. eapply Typing_roleing; eauto. auto.
+    inversion H11 as [Q2 | Q2].
     right. exists (a_CApp (applyArgs a b1) g_Triv).
     eapply E_Prim; eapply Beta_PatternTrue; eauto.
-    eapply applyArgs_ApplyArgs; eauto.
+    eapply applyArgs_ApplyArgs; eauto using AppsPath_CasePath.
     right. exists b2. eapply E_Prim; eapply Beta_PatternFalse; eauto.
     inversion Q1 as [a' Q2].
-    right. exists (a_Pattern Nom a' F b1 b2); eauto.
+    right. exists (a_Pattern Nom a' F Apps5 b1 b2); eauto.
     Unshelve. all:auto.
 Qed.

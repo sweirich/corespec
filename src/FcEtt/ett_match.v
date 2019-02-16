@@ -911,8 +911,8 @@ Lemma tm_subpattern_agree_pi_cpi_contr : forall a p,
 Proof. intros. dependent induction H; eauto. inversion H0; subst; inversion H.
 Qed.
 
-Lemma tm_subpattern_agree_case_contr : forall R a F b1 b2 p,
-                tm_subpattern_agree (a_Pattern R a F b1 b2) p -> False.
+Lemma tm_subpattern_agree_case_contr : forall R a F apps b1 b2 p,
+                tm_subpattern_agree (a_Pattern R a F apps b1 b2) p -> False.
 Proof. intros. dependent induction H; eauto. inversion H.
 Qed.
 
@@ -1339,6 +1339,12 @@ Proof. intros. generalize dependent a'. induction H; intros.
          inversion P as [P1 [P2 P3]]. eauto.
 Qed.
 
+Lemma Par_AppsPath : forall F a R W a' n, AppsPath R a F n -> Par W a a' R ->
+                                        AppsPath R a' F n.
+Proof.
+Admitted.
+
+
 Ltac invert_par :=
      try match goal with
       | [ Hx : CasePath _ _ _,
@@ -1358,6 +1364,11 @@ Proof. intros. induction H; invert_par.
        pose (P := Par_CasePath H H1). apply CasePath_head in H0.
        apply CasePath_head in P. rewrite P in H0. inversion H0; subst; auto.
 Qed.
+
+Lemma AppsPath_Par : forall F a R W a' n, Value R a' -> AppsPath R a F n -> Par W a' a R -> AppsPath R a' F n.
+Admitted.
+
+
 
 Lemma Value_par_Value : forall R v W v', Value R v -> Par W v v' R -> Value R v'.
 Proof. intros. generalize dependent W. generalize dependent v'.
@@ -1505,8 +1516,9 @@ Fixpoint tm_to_roles (a : tm) : roles := match a with
     | _ => nil
     end.
 
-Lemma RolePath_inversion : forall a F Rs, RolePath a F Rs->
-         (exists A, binds F (Cs A (tm_to_roles a ++ Rs)) toplevel) \/
+
+Lemma RolePath_inversion : forall a F Rs, RolePath a F Rs ->
+         (exists A,  binds F (Cs A (tm_to_roles a ++ Rs)) toplevel) \/
          (exists p b A R, binds F (Ax p b A R (tm_to_roles a ++ Rs)) toplevel).
 Proof. intros. induction H; simpl; eauto.
         - right. exists p, a, A, R1; eauto.
@@ -1933,4 +1945,19 @@ Lemma ApplyArgs_subst_co : forall a b c g y, lc_co g -> ApplyArgs a b c ->
 Proof. intros. induction H0; simpl; eauto.
        all: econstructor; auto; apply co_subst_co_tm_lc_tm; auto.
 Qed.
+
+Lemma decide_AppsPath : forall W a R, roleing W a R -> 
+                                 (forall F Apps, (AppsPath R a F Apps) \/
+                                            (~(AppsPath R a F Apps))).
+Proof. 
+  induction 1.
+  all: try solve [intros; right; move=> h; inversion h].
+  all: intros.
+  all: destruct Apps; try solve [right; move=> h; inversion h].
+  all: try specialize (IHroleing1 F Apps).
+  all: try clear IHroleing2.
+  all: try destruct App5; try destruct nu; try solve [right; move=> h; inversion h].
+  try (destruct rho; destruct rho0; try solve [right; move=> h; inversion h]).
+  try (destruct b; try solve [right; move=> h; inversion h]).
+Admitted.
 
