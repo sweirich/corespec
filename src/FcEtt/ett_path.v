@@ -200,12 +200,15 @@ Qed.
 
 Lemma AppsPath_subst_tm : forall R Apps F a b x, AppsPath R a F Apps -> lc_tm b ->
                    AppsPath R (tm_subst_tm_tm b x a) F Apps.
-Proof. intros. induction H; simpl; eauto. econstructor; eauto with lngen lc.
+Proof. intros. induction H; simpl; eauto.
+       econstructor; eauto with lngen lc.
+       econstructor; eauto with lngen lc.
 Qed.
 
 Lemma AppsPath_subst_co : forall R Apps F a b c, AppsPath R a F Apps -> lc_co b ->
                    AppsPath R (co_subst_co_tm b c a) F Apps.
 Proof. intros. induction H; simpl; eauto.
+       econstructor; eauto with lngen lc.
        econstructor; eauto with lngen lc.
 Qed.
 

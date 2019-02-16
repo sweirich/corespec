@@ -1342,7 +1342,7 @@ Qed.
 Lemma Par_AppsPath : forall F a R W a' n, AppsPath R a F n -> Par W a a' R ->
                                         AppsPath R a' F n.
 Proof.
-Admitted.
+  intros.
 
 
 Ltac invert_par :=
@@ -1910,6 +1910,25 @@ Proof. intros. induction H; simpl in *;
        apply CasePath_ValuePath in H. eapply ValuePath_Pattern_like_tm; eauto.
 Qed.
 
+Lemma AppsPath_unsubst_tm : forall  a, Pattern_like_tm a -> 
+      forall F b x n R, lc_tm b ->
+      AppsPath R (tm_subst_tm_tm b x a) F n -> AppsPath R a F n.
+Proof. 
+  induction 1; intros; simpl in *; eauto.
+  inversion H2; subst; eauto.
+  inversion H1; subst; eauto.
+Qed.
+
+
+Lemma AppsPath_Value_unsubst_tm : forall F a b x n R, Value R a -> lc_tm b ->
+      AppsPath R (tm_subst_tm_tm b x a) F n -> AppsPath R a F n.
+Proof. 
+  intros.
+  inversion H; subst; simpl in *; try solve [inversion H1].
+  eapply AppsPath_unsubst_tm; 
+    eauto using ValuePath_Pattern_like_tm,  CasePath_ValuePath.
+Qed.
+
 Lemma ValuePath_unsubst_co : forall F a g c, Pattern_like_tm a ->
       ValuePath (co_subst_co_tm g c a) F -> ValuePath a F.
 Proof. intros. induction H; simpl in *; eauto.
@@ -1934,6 +1953,27 @@ Proof. intros. induction H; simpl in *;
        apply CasePath_ValuePath in H. eapply ValuePath_Pattern_like_tm; eauto.
 Qed.
 
+
+Lemma AppsPath_unsubst_co : forall  a, Pattern_like_tm a -> 
+      forall F g x n R, lc_co g ->
+      AppsPath R (co_subst_co_tm g x a) F n -> AppsPath R a F n.
+Proof. 
+  induction 1; intros; simpl in *; eauto.
+  inversion H2; subst; eauto.
+  inversion H1; subst; eauto.
+Qed.
+
+
+Lemma AppsPath_Value_unsubst_co : forall F a g c n R, Value R a -> lc_co g ->
+      AppsPath R (co_subst_co_tm g c a) F n -> AppsPath R a F n.
+Proof. 
+ intros.
+  inversion H; subst; simpl in *; try solve [inversion H1].
+  eapply AppsPath_unsubst_co; 
+    eauto using ValuePath_Pattern_like_tm,  CasePath_ValuePath.
+Qed.
+
+
 Lemma ApplyArgs_subst_tm : forall a b c e x, lc_tm e -> ApplyArgs a b c ->
   ApplyArgs (tm_subst_tm_tm e x a)(tm_subst_tm_tm e x b)(tm_subst_tm_tm e x c).
 Proof. intros. induction H0; simpl; eauto.
@@ -1946,6 +1986,23 @@ Proof. intros. induction H0; simpl; eauto.
        all: econstructor; auto; apply co_subst_co_tm_lc_tm; auto.
 Qed.
 
+Lemma snoc_destruct : forall n, n = A_nil \/ exists a1 n1, n = A_snoc n1 a1.
+Proof. induction n. left; auto.
+Admitted.
+
+Lemma not_snoc_nil : forall a n, (A_snoc a n = A_nil) -> False.
+Proof. induction a; simpl; intros; discriminate.
+Qed.
+
+Lemma snoc_injective2 : forall a1 n1 a2 n2, 
+    A_snoc a1 n1 = A_snoc a2 n2 -> n1 = n2.
+Admitted.                                       
+
+Lemma snoc_injective1 : forall a1 n1 a2 n2, 
+    A_snoc a1 n1 = A_snoc a2 n2 -> a1 = a2.
+Admitted.                                       
+
+
 Lemma decide_AppsPath : forall W a R, roleing W a R -> 
                                  (forall F Apps, (AppsPath R a F Apps) \/
                                             (~(AppsPath R a F Apps))).
@@ -1953,11 +2010,39 @@ Proof.
   induction 1.
   all: try solve [intros; right; move=> h; inversion h].
   all: intros.
-  all: destruct Apps; try solve [right; move=> h; inversion h].
-  all: try specialize (IHroleing1 F Apps).
   all: try clear IHroleing2.
-  all: try destruct App5; try destruct nu; try solve [right; move=> h; inversion h].
-  try (destruct rho; destruct rho0; try solve [right; move=> h; inversion h]).
-  try (destruct b; try solve [right; move=> h; inversion h]).
-Admitted.
+  all: try (destruct rho; try solve [right; move=> h; inversion h]).
+  all: destruct (snoc_destruct Apps) as [|[n1 [a1 eq]]]; subst.
+  all: try solve [right;  move=> h; inversion h; eauto using not_snoc_nil].
+  (* Destruct the app at the top *)
+  all: try destruct n1; try destruct nu; try destruct rho; 
+       try destruct (role_dec R1 R0); subst.
+  all: try solve [right;  move=> h; inversion h; subst;
+    with (A_snoc _ _ = A_snoc _ _ ) do 
+         ltac:(fun h => apply snoc_injective2 in h; inversion h; subst; auto)].
+
+  all: try edestruct (IHroleing1 F a1);
+    try solve [left; econstructor; eauto using roleing_lc].
+
+  all: try edestruct (IHroleing F a1);
+    try solve [left; econstructor; eauto using roleing_lc].
+
+  all: try solve [right; move=> h; inversion h; subst;
+    with (A_snoc _ _ = A_snoc _ _ ) do 
+         ltac:(fun h => apply snoc_injective1 in h; inversion h) end;
+    subst; auto].
+
+  destruct (eq_dec F F0). subst.
+  left. eauto.
+  right. move=> h; inversion h; subst; contradiction.
+
+  destruct (eq_dec F F0). subst.
+  destruct (sub_dec R R1).
+  right. move=> h; inversion h; subst. 
+  axioms_head_same.
+  axioms_head_same.
+  contradiction.
+  left. eauto.
+  right. move=> h; inversion h; subst; contradiction.
+Qed.
 

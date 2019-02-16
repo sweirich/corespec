@@ -428,8 +428,8 @@ Proof.
   - assert (lc_tm b). {eapply roleing_lc; eauto. }
     eapply Par_PatternFalse; eauto.
     eapply Value_tm_subst_tm_tm; eauto.
-    intro. apply H0. admit. (* eapply CasePath_Value_unsubst_tm; eauto. *)
-Admitted.
+    intro. apply H0. eapply AppsPath_Value_unsubst_tm; eauto. 
+Qed.
 
 Lemma subst3 : forall b b' W W' a a' R R1 x,
           Par (W ++ [(x,R1)] ++ W') a a' R ->
@@ -504,9 +504,9 @@ Proof.
   - assert (lc_tm b'). {eapply Par_lc2; eauto. }
     eapply Par_PatternFalse; eauto.
     eapply Value_tm_subst_tm_tm; eauto.
-    intro. eapply H3. admit. (* eapply CasePath_Value_unsubst_tm; eauto. *)
+    intro. eapply H3. eapply AppsPath_Value_unsubst_tm; eauto.
     Unshelve. all:exact.
-Admitted.
+Qed.
 
 Lemma subst4 : forall g c W a a' R, lc_co g -> Par W a a' R ->
     Par W (co_subst_co_tm g c a) (co_subst_co_tm g c a') R.
@@ -606,8 +606,8 @@ Proof.
   - eapply Par_PatternTrue; eauto. apply AppsPath_subst_co; eauto.
     apply ApplyArgs_subst_co; auto.
   - eapply Par_PatternFalse; eauto. eapply Value_co_subst_co_tm; eauto.
-    intro. apply H0. admit. (* eapply CasePath_Value_unsubst_co; eauto. *)
-Admitted.
+    intro. apply H0. eapply AppsPath_Value_unsubst_co; eauto.
+Qed.
 
 Lemma multipar_subst3 : forall b b' W W' a a' R R1 x,
      multipar (W ++ [(x,R1)] ++ W') a a' R ->

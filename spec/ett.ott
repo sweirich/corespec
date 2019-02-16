@@ -749,7 +749,7 @@ AppsPath R (a R1 b') +>  F (Apps, Tm R1)
 
 AppsPath R a +> F Apps
 ---------------------- :: IApp
-AppsPath R (a - []) +> F (Apps, Tm -) 
+AppsPath R (a - b) +> F (Apps, Tm -) 
 
 AppsPath R a +> F Apps
 ------------------------------------- :: CApp

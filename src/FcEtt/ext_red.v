@@ -1171,67 +1171,6 @@ Proof.
   auto.
 Qed.
 
-Lemma MatchSubst_args :
-  forall a p b b' (ms : MatchSubst a p b b'),
-    exists args, chain_pattern_substitution b args = b'.
-Proof.
-  induction 1.
-  exists nil. simpl. eauto.
-  all: move: IHms => [args h].
-  all: try solve [eauto].
-  exists ((x, p_Tm (Rho Rel) a)::args). simpl. rewrite h. auto.
-Qed.
-
-(*
-Lemma foo :  `{
-  forall (patctx_p : PatternContexts Ωp Γp F PiB p B), 
-  Typing nil (a_Fam F) PiB ->
-  forall a b b' (ms : MatchSubst a p b b'),
-  forall C (tpg_b : Γp ⊨ b : C),
-    ValuePath a F ->
-      Γ ⊨ a : A →
-      Γ ⊨ b' : D 
-}.
-Proof.
-  induction 1; intros.
-  - admit.
-  - specialize (IHpatctx_p H0).
-    inversion ms. subst. clear ms.
-    move: (invert_a_App_Role H2) => [ A2 [B2 h]]. split_hyp. clear H2.
-    have ms0: MatchSubst a1 p (tm_subst_tm_tm a0 x b) (tm_subst_tm_tm a0 x b2).
-    admit.
-    specialize (IHpatctx_p _ _ _ ms0). clear ms0.
-    have TT : Typing G (tm_subst_tm_tm a0 x b) (open_tm_wrt_tm A a0).
-    admit.
-    specialize (IHpatctx_p _ TT).
-    inversion H1. subst.
-    specialize (IHpatctx_p H12).
-   
-
-
-    have ms0': MatchSubst a1 p (open_tm_wrt_tm A a0) (tm_subst_tm_tm a0 x b0).
-    admit.
-
-    
-
-    have DE : (open_tm_wrt_tm A a0) = (a_Pi Rel A' A).
-    admit. (* XXXXX *)
-    rewrite DE in TT.
-
-    specialize (IHpatctx_p TT).
-    rewrite DE in ms0'. 
-    specialize (IHpatctx_p _ ms0').
-    eapply IHpatctx_p.
-    eapply E_Conv. 2 : { apply E_Sym. eauto 1. }
-    
-    clear ms'. clear H9.
-
-    have Tb: Typing G (tm_subst_tm_tm a0 x b) (open_tm_wrt_tm A0 a0).
-    admit. clear tpg_b.
-    
-
-    eapply IHpatctx_p.  *)
-
 
 
 (*
@@ -1417,13 +1356,6 @@ Proof.
   unfold domFresh. eauto.
 Qed.
 
-(*
-Lemma AppsPath_RolePath : forall F n a Rs,
-  AppsPath F n a Rs -> RolePath a F Rs.
-Proof.
-  intros.
-  induction H; eauto.
-Qed.*)
 
 Lemma rev_injective : forall A (xs ys : list A), rev xs = rev ys -> xs = ys.
 Proof.
@@ -1560,6 +1492,167 @@ Proof.
   eapply Typing_a_Fam_unique; eauto 1.
 Qed.
 
+(* --------------------------------------------------------- *)
+
+Lemma MatchSubst_args :
+  forall a p b b' (ms : MatchSubst a p b b'),
+    exists args, chain_pattern_substitution b args = b'.
+Proof.
+  induction 1.
+  exists nil. simpl. eauto.
+  all: move: IHms => [args h].
+  all: try solve [eauto].
+  exists ((x, p_Tm (Rho Rel) a)::args). simpl. rewrite h. auto.
+Qed.
+
+(*
+(* MatchTyping p B a A holds when  *)
+Inductive MatchTyping : context -> tm -> context -> tm -> tm -> context -> tm -> tm -> Prop := 
+  | MatchTyping_Const : forall C G F PiB B,
+    Typing G (a_Fam F) PiB ->
+    DefEq G (dom G) PiB B a_Star Rep ->
+    MatchTyping nil C nil (a_Fam F) PiB G (a_Fam F) B
+  | MatchTyping_AppRelR : 
+    forall GC C G Gp R p x A1 B1 a1 a2 A2 B2 A,
+    MatchTyping GC C Gp p (a_Pi Rel A1 B1) G a1 (a_Pi Rel A2 B2) ->
+    Typing G a2 A2 ->
+    DefEq G (dom G) A (open_tm_wrt_tm B2 a2) a_Star Rep ->
+    MatchTyping (tm_subst_tm_tm a2 x C)
+                (x ~ Tm A1 ++ Gp)
+                (a_App p  (Role R) (a_Var_f x)) (open_tm_wrt_tm B1 (a_Var_f x))
+                G  (a_App a1 (Role R) a2)          A
+  | MatchTyping_AppIrrel : 
+    forall C Gp G p x A1 B1 a1 a2 a2' A2 B2 A,
+    MatchTyping C Gp p (a_Pi Irrel A1 B1) G a1 (a_Pi Irrel A2 B2) ->
+    Typing G a2' A2 ->
+    DefEq G (dom G) A (open_tm_wrt_tm B2 a2') a_Star Rep ->
+    MatchTyping C (x ~ Tm A1 ++ Gp)
+                (a_App p  (Rho Irrel) a_Bullet) (open_tm_wrt_tm B1 (a_Var_f x))
+                G (a_App a1 (Rho Irrel) a2)       A
+
+  | MatchTyping_CApp : 
+    forall C Gp G c p phi1 B1 a1 phi2 B2 A,
+    MatchTyping C Gp p (a_CPi phi1 B1) G a1 (a_CPi phi2 B2) ->
+    DefEq G (dom G) A (open_tm_wrt_co B2 g_Triv) a_Star Rep ->
+    MatchTyping C (c ~ Co phi1 ++ Gp) (a_CApp p  g_Triv) 
+                (open_tm_wrt_co B1 (g_Var_f c))
+                G (a_CApp a1 g_Triv) A
+.
+
+(* Need to also say that vars P # C *)
+Lemma MatchSubst_refl : forall p, 
+    ett_match.Pattern p ->
+    forall C, lc_tm C -> MatchSubst p p C C.
+Proof. 
+  induction 1; eauto.
+Admitted.
+
+Lemma PaternPath_MatchTyping : forall a p, 
+   tm_pattern_agree a p ->
+   `{ PatternContexts Ωp Gp F PiB p B ->
+      Typing G (a_Fam F) PiB ->
+      ValuePath a F ->
+      G ⊨ a : A →
+      MatchSubst a p C C' ->
+      MatchTyping C' Gp p B G a A}.
+Proof.
+  induction 1; intros.
+  all: with PatternContexts do ltac:(fun h => inversion h).
+  all: subst.
+  - econstructor; eauto 2.
+    eapply Typing_a_Fam_unique; eauto 1.
+  - with ValuePath do ltac: (fun h => inversion h; subst). 
+    move: (invert_a_App_Role H4) => [A1 [B1 h]]. split_hyp.
+    with MatchSubst do ltac: (fun h => inversion h; subst).
+    econstructor; eauto 1.
+    eapply IHtm_pattern_agree; eauto 1.
+  - with ValuePath do ltac: (fun h => inversion h; subst). 
+    move: (invert_a_App_Irrel H4) => [A1 [B1 [b0 h]]]. split_hyp.
+    with MatchSubst do ltac: (fun h => inversion h; subst).
+    econstructor; eauto 1.
+    eapply IHtm_pattern_agree; eauto 1.
+  - with ValuePath do ltac: (fun h => inversion h; subst). 
+    move: (invert_a_CApp H3) => [a2 [b2 [A2 [A3 [R1 [B0 h]]]]]]. split_hyp.
+    with MatchSubst do ltac: (fun h => inversion h; subst).
+    econstructor; eauto 1.
+    eapply IHtm_pattern_agree; eauto 1.
+Qed.
+    
+    (* 
+
+   PatternContexts Wp Gp F PiB p B
+   is defined outside-in on the pattern/p in 
+       conjunction with its context (Wp, Gp)
+   at each step, p has type B
+   PiB is the type of F
+
+   MatchSubst a p b b'
+   is defined outside-in on the pattern p 
+       in conjunction with the path a
+   at each step, if p has type B then 
+       a has type (chain_substiution_args B targs)
+       where targs are the type arguments 
+       corresponding to the earlier arguments
+  
+*)
+Lemma MatchSubstTyping :  `{
+  forall a p b b' (ms : MatchSubst a p b b'),
+  forall C Gp G A B, MatchTyping C Gp p B G a A ->
+  forall (tpg_b : Gp ++ G ⊨ b : C),
+    G ⊨ b' : A 
+}.
+Proof.
+  induction 1; intros.
+  all: with MatchTyping do ltac:(fun h => inversion h; subst).
+  - autoreg. eapply E_Conv; eauto 1. admit.
+  - simpl_env in tpg_b. 
+    have: (Typing_tm_subst tpg_b H12) => tbb.
+
+ specialize (IHms _ _ _ _ _ H11).
+    eapply E_Conv. 2: {  eapply E_Sym; eauto 1. }
+    rewrite (tm_subst_tm_tm_intro x).  admit. 
+    eapply Typing_tm_subst.
+
+  - specialize (IHpatctx_p H0).
+    inversion ms. subst. clear ms.
+    move: (invert_a_App_Role H2) => [ A2 [B2 h]]. split_hyp. clear H2.
+    have ms0: MatchSubst a1 p (tm_subst_tm_tm a0 x b) (tm_subst_tm_tm a0 x b2).
+    admit.
+    specialize (IHpatctx_p _ _ _ ms0). clear ms0.
+    have TT : Typing G (tm_subst_tm_tm a0 x b) (open_tm_wrt_tm A a0).
+    admit.
+    specialize (IHpatctx_p _ TT).
+    inversion H1. subst.
+    specialize (IHpatctx_p H12).
+   
+
+
+    have ms0': MatchSubst a1 p (open_tm_wrt_tm A a0) (tm_subst_tm_tm a0 x b0).
+    admit.
+
+    
+
+    have DE : (open_tm_wrt_tm A a0) = (a_Pi Rel A' A).
+    admit. (* XXXXX *)
+    rewrite DE in TT.
+
+    specialize (IHpatctx_p TT).
+    rewrite DE in ms0'. 
+    specialize (IHpatctx_p _ ms0').
+    eapply IHpatctx_p.
+    eapply E_Conv. 2 : { apply E_Sym. eauto 1. }
+    
+    clear ms'. clear H9.
+
+    have Tb: Typing G (tm_subst_tm_tm a0 x b) (open_tm_wrt_tm A0 a0).
+    admit. clear tpg_b.
+    
+
+    eapply IHpatctx_p.  *)
+
+
+(* -------------------------------------------------------- *)
+
 
 Lemma Beta_preservation : `(Beta a b R →  forall G A, Typing G a A -> Typing G b A).
 Proof.
@@ -1625,7 +1718,7 @@ Proof.
      eauto using AppsPath_CasePath.
      autoreg. auto.
    - dependent induction TH; eauto.
-Admitted.
+Qed.
 
 
 Lemma E_Beta2 :  ∀ (G : context) (D : available_props) (a1 a2 B : tm) R,

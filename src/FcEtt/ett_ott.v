@@ -1047,9 +1047,10 @@ Inductive AppsPath : role -> tm -> const -> Apps -> Prop :=    (* defn AppsPath 
      lc_tm b' ->
      AppsPath R a F Apps5 ->
      AppsPath R  ( (a_App a (Role R1) b') )  F  (  (A_snoc  Apps5   (A_Tm (Role R1)) )  ) 
- | AppsPath_IApp : forall (R:role) (a:tm) (F:const) (Apps5:Apps),
+ | AppsPath_IApp : forall (R:role) (a b:tm) (F:const) (Apps5:Apps),
+     lc_tm b ->
      AppsPath R a F Apps5 ->
-     AppsPath R  ( (a_App a (Rho Irrel) a_Bullet) )  F  (  (A_snoc  Apps5   (A_Tm (Rho Irrel)) )  ) 
+     AppsPath R  ( (a_App a (Rho Irrel) b) )  F  (  (A_snoc  Apps5   (A_Tm (Rho Irrel)) )  ) 
  | AppsPath_CApp : forall (R:role) (a:tm) (F:const) (Apps5:Apps),
      AppsPath R a F Apps5 ->
      AppsPath R  ( (a_CApp a g_Triv) )  F  (  (A_snoc  Apps5   A_Co )  ) .

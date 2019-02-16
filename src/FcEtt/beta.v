@@ -100,8 +100,8 @@ Proof.
     eapply Beta_PatternFalse; eauto with lngen lc.
     apply Value_tm_subst_tm_tm; auto. 
     move => h0. eapply H3.
-    admit. (* eapply CasePath_Value_unsubst_tm; eauto with lngen lc. *)
-Admitted.
+    eapply AppsPath_Value_unsubst_tm; eauto with lngen lc. 
+Qed.
 
 Lemma Beta_co_subst : forall a a' R b x, Beta a a' R -> lc_co b -> Beta (co_subst_co_tm b x a) (co_subst_co_tm b x a') R.
 Proof.
@@ -159,5 +159,5 @@ Proof.
     eapply Beta_PatternFalse; eauto with lngen lc.
     apply Value_co_subst_co_tm; auto. 
     move => h0. eapply H3.
-    admit. (* eapply CasePath_Value_unsubst_co; eauto with lngen lc. *)
-Admitted.
+    eapply AppsPath_Value_unsubst_co; eauto with lngen lc. 
+Qed.
