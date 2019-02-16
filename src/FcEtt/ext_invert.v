@@ -431,23 +431,22 @@ Proof.
 Qed.
 
 Lemma invert_a_Pattern : `(
-      Typing G (a_Pattern R a F b1 b2) B ->
-      exists A A1 B0 C n, Typing G a A /\ Typing G (a_Fam F) A1 /\ Typing G b1 B0 /\ Typing G b2 C 
-                /\ BranchTyping G n R a A (a_Fam F) nil A1 B0 C
-                /\ DefEq G (dom G) C B a_Star Rep).
+      Typing G (a_Pattern R a F n b1 b2) C0 ->
+      exists A A1 B C, Typing G a A 
+                /\ Typing G b1 B /\ Typing G b2 C 
+                /\ BranchTyping G n R a A (a_Fam F) nil A1 B C
+                /\ Typing G (a_Fam F) A1
+                /\ SatApp F n
+                /\ DefEq G (dom G) C C0 a_Star Rep).
 Proof. intros. dependent induction H.
-        - destruct (IHTyping1 R a F b1 b2 ltac:(auto)) as
+        - destruct (IHTyping1 R a F n b1 b2 ltac:(auto)) as
           [A0 [A1 [B0 [C [P1 [P2 [P3 [P4 [P5 [P6 P7]]]]]]]]]].
-          exists A0, A1, B0, C. exists P1. repeat split; eauto 2.
-        - exists A, A1, B, C. 
-          admit. 
-(*          move: (toplevel_inversion H0) => [W [G0 [B0 h]]]. split_hyp.
-          repeat split; auto. 
-          eapply E_Fam; eauto using Typing_Ctx.
-          eapply E_Refl.
-          eapply Typing_regularity. 
-          eauto. *)
-Admitted.
+          split_hyp.
+          exists A0, A1, B0, C. repeat split; eauto 2.
+        - repeat eexists; eauto 1. 
+          eapply E_Refl; eauto using Typing_lc2.
+          eapply Typing_regularity; eauto.
+Qed.
 
 (* --------------------------------------------------- *)
 
@@ -1365,7 +1364,7 @@ Ltac autoinv :=
     | [H : _ ⊨ a_UAbs _ _ _      : _ |- _] => eapply invert_a_UAbs in H; autofwd
     | [H : _ ⊨ a_UCAbs _         : _ |- _] => eapply invert_a_UCAbs in H; autofwd
     | [H : _ ⊨ a_Fam _           : _ |- _] => eapply invert_a_Fam in H; destruct H; autofwd
-    | [H : _ ⊨ a_Pattern _ _ _ _ _ : _ |- _ ] => eapply invert_a_Pattern in H; 
+    | [H : _ ⊨ a_Pattern _ _ _ _ _ _ : _ |- _ ] => eapply invert_a_Pattern in H; 
          autofwd
 (*    | [H : _ ⊨ a_Conv _ _ _      : _ / _ |- _] => eapply invert_a_Conv in H; pcess_hyps *)
   (* TODO *)
