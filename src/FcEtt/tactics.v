@@ -13,6 +13,8 @@ Require Import FcEtt.notations.
 Require Export FcEtt.tactics_safe.
 Require Export FcEtt.tactics_ecomp.
 
+Require Import Coq.Strings.String.
+
 (**** Tactics for the project ****)
 
 
@@ -39,16 +41,20 @@ Polymorphic (* Cumulative *) Inductive Dyn : Type := dyn : forall {T : Type}, T 
 Inductive Display {T : Type} : T → Prop := display : ∀ (t : T), Display t.
 
 (* Hiding/unhiding the type of a hyp *)
-Polymorphic Definition _hide {T : Type} (t : T) : T := t.
-Polymorphic Definition _eq_hide {T : Type} (t : T) : t = _hide t := eq_refl.
+Polymorphic Definition _hide         {T : Type}              (t : T) : T                  := t.
+Polymorphic Definition _hide_with    {T : Type} (s : string) (t : T) : T                  := t.
+Polymorphic Definition _eq_hide      {T : Type}              (t : T) : t = _hide t        := eq_refl.
+Polymorphic Definition _eq_hide_with {T : Type} (s : string) (t : T) : t = _hide_with s t := eq_refl.
 
 (* FIXME: defining the notation here doesn't work. Could we somehow export it?
           Otherwise just put the types & notations in another (exported) module
           or at the toplevel. *)
-Global Notation "'_hidden_'" := (_hide _) (at level 50, only printing).
+Global Notation "'_hidden_'"       := (_hide _)        (at level 50, only printing).
+Global Notation "'_hidden_' ( s )" := (_hide_with s _) (at level 50, only printing).
 
-Ltac hide H := match type of H with | _hide ?T => rewrite <- (_eq_hide T) in H | ?T => rewrite -> (_eq_hide T) in H end.
-Ltac unhide H := unfold _hide in H.
+Ltac hide H       := match type of H with | _hide ?T => rewrite <- (_eq_hide T) in H | _hide_with ?s ?T => rewrite <- (_eq_hide_with s T) in H | ?T => rewrite -> (_eq_hide T) in H end.
+Ltac hidewith s H := match type of H with | _hide ?T => rewrite <- (_eq_hide T) in H | _hide_with ?s ?T => rewrite <- (_eq_hide_with s T) in H | ?T => rewrite -> (_eq_hide_with s T) in H end.
+Ltac unhide H     := match type of H with | _hide ?T => rewrite <- (_eq_hide T) in H | _hide_with ?s ?T => rewrite <- (_eq_hide_with s T) in H | _ => fail "Not hidden" end.
 
 
 Ltac unwrap_dyn d :=
@@ -206,8 +212,17 @@ Ltac spec_all t :=
   let T := type of t in
   spec_all_type t T.
 
-(* Automatically instantiating induction hypotheses when their premises are available in the context *)
-Ltac autoprem :=
+(* Specialize hypothesis H, solving obligations with solver *)
+Ltac spec_hyp H solver :=
+  lazymatch type of H with
+    | forall x : ?T, _ =>
+      move: H; move/(_ ltac:(solver)) => H; spec_hyp H solver
+    | _ => idtac
+  end.
+
+
+(* Automatically instantiating induction hypotheses when their premises are available in the context. *)
+Ltac autoprem solver :=
   repeat match goal with
     | H : forall x : ?P, _, p : ?P |- _ =>
       move: H; move /(_ p) => H
@@ -462,7 +477,7 @@ Ltac autofresh_param tac :=
   pick fresh x;
   autofresh_fixed_param tac x;
   repeat match goal with
-    H : x ∉ _ |- _ => hide H
+    H : x ∉ _ |- _ => hidewith "freshness" H
   end.
 
 (* Yet another version, that tries to find a suitable variable in the context *)
@@ -665,6 +680,8 @@ Ltac ok           := autotype.
 Ltac autofwd      := TacticsInternals.autofwd.
 Ltac introfwd     := intros; autofwd.
 Ltac autoprem     := TacticsInternals.autoprem.
+Ltac autospec H   := TacticsInternals.spec_hyp H ltac:(solve [eassumption | eauto 2]).
+Ltac autospec' H sol := TacticsInternals.spec_hyp H sol.
 
 (* TODO Tries to solve free variable obligations *)
 Ltac autofv       := TacticsInternals.autofv.
@@ -682,7 +699,6 @@ Tactic Notation "autofresh" "for" "all" := fail "TODO". (* /!\ issues with unwra
 Tactic Notation "autofresh"  := TacticsInternals.autofresh_param TacticsInternals.spec2.
 Tactic Notation "autofresh+" := TacticsInternals.autofresh_param TacticsInternals.inst2.
 
-Ltac depind x   := dependent induction x.
 
 
 (** Nameless style - finding hypotheses and processing them **)
@@ -713,18 +729,23 @@ Tactic Notation (at level 0) "revert" "all" "except" ident(H) := TacticsInternal
 Tactic Notation "exactly" integer(n) "goal" := TacticsInternals.check_num_goals_eq n.
 Tactic Notation "exactly" integer(n) "goals" := TacticsInternals.check_num_goals_eq n.
 
-(* Shorthands, that can be partially applied *)
-Ltac inv     := TacticsInternals.inv.
-Ltac invs    := TacticsInternals.invs. (* Inversion (of a hyp) and substitution *)
-Ltac applyin := TacticsInternals.applyin.
+(* Shorthands, that can be partially applied (for those which take arguments) *)
+Ltac inv      := TacticsInternals.inv.
+Ltac invs     := TacticsInternals.invs. (* Inversion (of a hyp) and substitution *)
+Ltac applyin  := TacticsInternals.applyin.
+Ltac depind x := dependent induction x.
+Ltac exa    x := exact x.
+Ltac ea       := eassumption.
 
 (* Hiding/unhiding the type of a hyp *)
 Ltac hide      := TacticsInternals.hide.
-Ltac unhide    := TacticsInternals.unhide.
+Ltac hidewith  := TacticsInternals.hidewith.
+Ltac unhide    := TacticsInternals.unhide. Print TacticsInternals.unhide.
 Ltac softclear := TacticsInternals.softclear. (* This tactic goes further, and prevents the hyp from being used again *)
 
 (* FIXME: see similar declaration above *)
-Notation "'_hidden_'" := (TacticsInternals._hide _) (at level 50, only printing).
+Global Notation "'_hidden_'"       := (TacticsInternals._hide _)        (at level 50, only printing).
+Global Notation "'_hidden_' ( s )" := (TacticsInternals._hide_with s _) (at level 50, only printing).
 
 (* FIXME: rely on internals *)
 Tactic Notation "basic_nosolve_n" int_or_var(n) := intuition (subst; eauto n).
