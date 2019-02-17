@@ -57,11 +57,12 @@ Lemma roleing_apply : forall W a b c R, roleing W a Nom -> roleing W b R ->
 Proof. intros. induction H1; intros; auto.
         - inversion H; subst; eauto.
           econstructor; eauto.
-          have e: param R0 Nom = Nom. admit.
+          have e: param R0 Nom = Nom. unfold param, min. destruct R0; auto.
           rewrite <- e.
           auto.
         - inversion H; subst. econstructor; eauto.
-Admitted.
+        - inversion H; subst. auto.
+Qed.
 
 
 Lemma Par_roleing_tm_fst : forall W a a' R, Par W a a' R -> 

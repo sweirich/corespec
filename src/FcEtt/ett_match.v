@@ -1343,7 +1343,7 @@ Lemma Par_AppsPath : forall F a R W a' n, AppsPath R a F n -> Par W a a' R ->
                                         AppsPath R a' F n.
 Proof.
   intros.
-
+Admitted.
 
 Ltac invert_par :=
      try match goal with
@@ -1445,12 +1445,12 @@ Proof. intros. generalize dependent a'. generalize dependent b'.
                inversion H5; eauto. econstructor.
                simpl.
                inversion H5; eauto. subst.
-               have e: param R Nom = Nom. admit.
+               have e: param R Nom = Nom. unfold param, min. destruct R; auto.
                rewrite <- e. auto.
              + inversion H4; subst. econstructor.
                eapply IHApplyArgs; eauto. eapply CasePath_app; eauto.
                simpl in *.
-               have e: param R Nom = Nom. admit.
+               have e: param R Nom = Nom. unfold param, min. destruct R; auto.
                rewrite <- e. auto.
              + (* Axiom pattern match *)
                (* a R a' reduces by unfolding an Axiom 
@@ -1506,7 +1506,7 @@ Proof. intros. generalize dependent a'. generalize dependent b'.
                econstructor. eapply tm_tm_agree_sym; eauto.
                destruct (MatchSubst_exists H13 (MatchSubst_lc3 H9)) as [a0 Q].
                assert False. eapply CasePath_ax_par_contr; eauto. contradiction. 
-Admitted.
+Qed.
 
 Fixpoint tm_to_roles (a : tm) : roles := match a with
     | a_Fam F => nil
@@ -1988,7 +1988,11 @@ Qed.
 
 Lemma snoc_destruct : forall n, n = A_nil \/ exists a1 n1, n = A_snoc n1 a1.
 Proof. induction n. left; auto.
-Admitted.
+       destruct IHn. subst; simpl.
+       right. exists App5. exists A_nil. auto.
+       right. move: H => [a1 [n1 eq]].
+       exists a1. exists (A_cons App5 n1). simpl. rewrite eq. auto.
+Qed.
 
 Lemma not_snoc_nil : forall a n, (A_snoc a n = A_nil) -> False.
 Proof. induction a; simpl; intros; discriminate.
@@ -1996,12 +2000,29 @@ Qed.
 
 Lemma snoc_injective2 : forall a1 n1 a2 n2, 
     A_snoc a1 n1 = A_snoc a2 n2 -> n1 = n2.
-Admitted.                                       
+Proof.
+intro a1. induction a1; intros; simpl in *.
+destruct a2. simpl in *. inversion H. auto.
+simpl in *. inversion H. symmetry in H2. eapply not_snoc_nil in H2. contradiction.
+destruct a2. simpl in *. inversion H.
+eapply not_snoc_nil in H2. contradiction.
+simpl in *.
+inversion H.
+eapply IHa1. eauto.
+Qed.
 
 Lemma snoc_injective1 : forall a1 n1 a2 n2, 
     A_snoc a1 n1 = A_snoc a2 n2 -> a1 = a2.
-Admitted.                                       
-
+Proof.
+intro a1. induction a1; intros; simpl in *.
+destruct a2. simpl in *. inversion H. auto.
+simpl in *. inversion H. symmetry in H2. eapply not_snoc_nil in H2. contradiction.
+destruct a2. simpl in *. inversion H.
+eapply not_snoc_nil in H2. contradiction.
+simpl in *.
+inversion H.
+f_equal. eauto.
+Qed.
 
 Lemma decide_AppsPath : forall W a R, roleing W a R -> 
                                  (forall F Apps, (AppsPath R a F Apps) \/

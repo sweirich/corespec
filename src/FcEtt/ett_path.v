@@ -148,56 +148,6 @@ Fixpoint var_patt (p : tm) : atoms :=
    end.
 
 
-(*
-Lemma subst_CasePath : forall F a b R x, lc_tm b -> Value R a ->
-                   CasePath R (tm_subst_tm_tm b x a) F -> CasePath R a F.
-Proof. intros. induction a; simpl in H1; auto; try (inversion H1; fail).
-        - inversion H0; subst; inversion H2.
-        - destruct nu. inversion H1. inversion H1; subst.
-          econstructor. admit. inversion H0; subst.
-        - inversion H0; subst. inversion H1; subst. inversion H2; subst.
-          econstructor. eapply IHa; eauto.
-Qed.
-
-Lemma no_Path_reduction : forall R a F, RolePath F a R -> forall b, not (reduction_in_one a b R).
-Proof.
-  intros R a F H. induction H; simpl; intros.
-  all : intros NH; inversion NH; subst.
-  - inversion H0; subst. assert (P : Ax b A0 R0 = Cs A).
-    eapply binds_unique; eauto using uniq_toplevel. inversion P.
-  - inversion H1. subst. assert (P : Ax a A R1 = Ax b A0 R2).
-    eapply binds_unique; eauto using uniq_toplevel. inversion P.
-    subst. contradiction.
-  - pose (Q := IHPath a'); contradiction.
-  - inversion H1; subst. inversion H0.
-  - pose (Q := IHPath a'); contradiction.
-  - inversion H0; subst. inversion H.
-Qed.
-
-Lemma sub_Path : forall F a R1 R2, RolePath F a R1 -> SubRole R1 R2 ->
-                        RolePath F a R2 \/ (exists a', reduction_in_one a a' R2).
-Proof. intros. induction H.
-        - left. eauto.
-        - destruct (sub_dec R1 R2) as [P1 | P2].
-          right. exists a. eauto. left. eauto.
-        - apply IHPath in H0. inversion H0 as [P1 | P2].
-          left. eauto. right. inversion P2 as [a' Q].
-          exists (a_App a' rho R1 b'); eauto.
-        - apply IHPath in H0. inversion H0 as [P1 | P2].
-          left. eauto. right. inversion P2 as [a' Q].
-          exists (a_CApp a' g_Triv); eauto.
-Qed.
-
-Lemma nsub_Path : forall F a R1 R2, RolePath F a R1 -> SubRole R2 R1 ->
-                        RolePath F a R2.
-Proof. intros. induction H.
-        - eauto.
-        - destruct (sub_dec R1 R2) as [P1 | P2]. eauto. eauto.
-        - apply IHPath in H0. eauto.
-        - apply IHPath in H0. eauto.
-Qed.
-*)
-
 Lemma AppsPath_subst_tm : forall R Apps F a b x, AppsPath R a F Apps -> lc_tm b ->
                    AppsPath R (tm_subst_tm_tm b x a) F Apps.
 Proof. intros. induction H; simpl; eauto.

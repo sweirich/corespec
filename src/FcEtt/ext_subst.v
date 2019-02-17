@@ -49,36 +49,6 @@ Proof.
     eapply IHG0; eauto 2.
 Qed.
 
-(*
-Lemma binds_to_PropWff: forall G0 A B T R c,
-    Ctx G0 ->
-    binds c (Co (Eq A B T R)) G0 -> PropWff G0 (Eq A B T R).
-Proof.
-  induction G0; auto; try done.
-  intros A B T R c H H0.
-  destruct a.
-  destruct s; auto; try done.
-  - case H0; try done.
-    move => h0.
-    inversion H; subst.
-    have:   PropWff ( G0) (Eq A B T R) . 
-    apply (IHG0 _ _ _ _ c H4); eauto.
-    move => h1.
-    rewrite_env (nil ++ [(a, Tm A0)] ++ G0).
-    eapply PropWff_weakening; eauto.
-  - destruct H0; subst.
-    inversion H0; subst.
-    inversion H; subst.
-    rewrite_env (nil ++ [(c, Co (Eq A B T R))] ++ G0).
-    eapply PropWff_weakening; eauto.
-    rewrite_env (nil ++ [(a, Co phi)] ++ G0).
-    eapply PropWff_weakening; eauto.
-    simpl.
-    inversion H.
-    eapply IHG0; eauto 2.
-Qed.
-*)
-
 Lemma binds_to_Typing : forall x A G, Ctx G -> binds x (Tm A) G -> Typing G A a_Star.
 Proof.
   induction G; auto; try done.
@@ -284,6 +254,19 @@ Lemma tm_subst_tm_tm_a_App : forall a0 x a nu b,
    tm_subst_tm_tm a0 x (a_App a nu b) = a_App (tm_subst_tm_tm a0 x a) nu (tm_subst_tm_tm a0 x b).
 Proof. intros. simpl. auto. Qed.
 
+Lemma tm_subst_tm_tm_apply_pattern_args : forall a0 x pattern_args5 b, 
+    (tm_subst_tm_tm a0 x (apply_pattern_args b pattern_args5)) = 
+    (apply_pattern_args (tm_subst_tm_tm a0 x b) 
+                        (List.map (tm_subst_tm_pattern_arg a0 x) pattern_args5)).
+Proof.
+  intros a0 x pa. induction pa; intros.
+  simpl; auto.
+  simpl.
+  destruct a. simpl.
+  rewrite IHpa. simpl. auto.
+  simpl. rewrite IHpa. simpl. auto.
+Qed.
+
 Lemma BranchTyping_tm_subst :  
       forall G0 n R b B b2 aa B2 B3 C (H : BranchTyping G0 n R b B b2 aa B2 B3 C),
       forall G a A, Typing G a A ->
@@ -297,37 +280,48 @@ Lemma BranchTyping_tm_subst :
                                    (tm_subst_tm_tm a x B3)
                                    (tm_subst_tm_tm a x C).
 Proof. 
-Admitted.
-(*
   induction 1; intros; subst; simpl.
   - autorewrite with subst_open; eauto 3 with lc.
     have LC: lc_tm a0. eauto 3 with lc.
     move: (tm_subst_tm_tm_lc_tm _ _ x H3 LC) => h0. simpl in h0.
+    rewrite tm_subst_tm_tm_apply_pattern_args.
+    rewrite tm_subst_tm_tm_apply_pattern_args in h0.
     eapply BranchTyping_Base; eauto 4 using tm_subst_tm_tm_lc_tm.
 
-  - E_pick_fresh y.
+  - pick fresh y and apply BranchTyping_PiRole.
+    autorewrite with subst_open_var; eauto 2 with lc.
+    rewrite_subst_context.
+    replace (a_App (tm_subst_tm_tm a0 x b) (Role R) (a_Var_f y)) with
+        (tm_subst_tm_tm a0 x (a_App b (Role R) (a_Var_f y))).
+    replace ((p_Tm (Role R) (a_Var_f y)
+     :: List.map (tm_subst_tm_pattern_arg a0 x) pattern_args5)) with
+        (List.map (tm_subst_tm_pattern_arg a0 x) (p_Tm (Role R) (a_Var_f y) 
+                                                       :: pattern_args5)).
+
+    eauto.
+    simpl. f_equal. destruct (y == x) eqn:eq. subst. 
+    have bad: (x `notin` singleton x). fsetdec. hide Fr. fsetdec.
+    rewrite eq. auto.
+    rewrite tm_subst_tm_tm_a_App.
+    rewrite tm_subst_tm_tm_var_neq; auto.
+
+  - pick fresh y and apply BranchTyping_PiRel.
     autorewrite with subst_open_var; eauto 2 with lc.
     rewrite_subst_context.
     replace (a_App (tm_subst_tm_tm a0 x b) (Rho Rel) (a_Var_f y)) with
         (tm_subst_tm_tm a0 x (a_App b (Rho Rel) (a_Var_f y))).
-    eauto.
+    admit.
     rewrite tm_subst_tm_tm_a_App.
     rewrite tm_subst_tm_tm_var_neq; auto.
-  - E_pick_fresh y.
+  - pick fresh y and apply BranchTyping_PiIrrel.
     autorewrite with subst_open_var; eauto 2 with lc.
     rewrite_subst_context.
-    replace (a_App (tm_subst_tm_tm a0 x b) (Rho Irrel) a_Bullet) with
-        (tm_subst_tm_tm a0 x (a_App b (Rho Irrel) a_Bullet)).
-    eauto.
-    simpl. auto.
-  - E_pick_fresh y.
+    admit. 
+  - pick fresh y and apply BranchTyping_CPi.
     autorewrite with subst_open_var; eauto 2 with lc.
     rewrite_subst_context.
-    replace (a_CApp (tm_subst_tm_tm a0 x b) g_Triv) with
-        (tm_subst_tm_tm a0 x (a_CApp b g_Triv)).
-    eauto.
-    simpl. auto.
-Qed. *)
+    admit.
+Admitted.
 
 Lemma tm_substitution_mutual :
    (forall G0 b B (H : Typing G0 b B),
