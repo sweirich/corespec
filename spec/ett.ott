@@ -1677,7 +1677,7 @@ G |= b : A
 G |= a' : all +x:A  -> B
 G |= b' : A
 G ; D |= a R1 b == a' R1 b' : B { b / x } / R'
-G ; dom G |= B {b/x} == B {b'/x} : TYPE / R'
+G ; dom G |= B {b/x} == B {b'/x} : TYPE / Rep
 -------------------------------------------------- :: LeftRel
 G ; D |= a == a' : all + x: A -> B / R'
 
@@ -1688,7 +1688,7 @@ G |= b : A
 G |= a' : all -x:A -> B
 G |= b' : A
 G ; D |= a - [] == a' - [] : B { b / x }/R'
-G ; dom G |= B {b/x} == B {b'/x} : TYPE/R0
+G ; dom G |= B {b/x} == B {b'/x} : TYPE/Rep
 ------------------------------------------------ :: LeftIrrel
 G ; D |= a == a' : all -x: A -> B/R'
 
@@ -1699,8 +1699,8 @@ G |= a : all +x:A -> B
 G |= b : A
 G |= a' : all +x:A -> B
 G |= b' : A
-G ; D |= a + b == a' + b' : B { b / x }/R'
-G ; dom G |= B {b/x} == B {b'/x} : TYPE/R0
+G ; D |= a R1 b == a' R1 b' : B { b / x }/R'
+G ; dom G |= B {b/x} == B {b'/x} : TYPE/Rep
 ----------------------------------------------- :: Right
 G ; D |= b == b' : A/param R1 R'
 
@@ -1709,7 +1709,7 @@ ValuePath a  +> F
 ValuePath a' +> F
 G |= a  : all c:(a1 ~ a2:A/R1). B
 G |= a' : all c:(a1 ~ a2:A/R1). B
-G ; dom G |= a1 == a2 : A/R'
+G ; dom G |= a1 == a2 : A/param R1 R'
 G ; D |= a [o] == a' [o] : B {o/c}/R'
 -------------------------------------------- :: CLeft
 G ; D |= a == a' : all c:(a1 ~ a2:A/R1). B/R'
