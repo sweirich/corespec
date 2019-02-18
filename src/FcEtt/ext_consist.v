@@ -875,43 +875,83 @@ Proof. intros. destruct H as (t & MSL & MSR).
 Qed.
 
 (* --------------------------------------------------- *)
-(*
-Lemma Path_par_app_inversion : forall W F nu a b c R, CasePath R a F ->
-          Par W (a_App a nu b) c R -> exists a' b', c = a_App a' nu b'.
+
+Lemma ValuePath_sub_app : forall a nu b F, ValuePath (a_App a nu b) F ->
+                                                        ValuePath a F.
+Proof. intros. dependent induction H; eauto.
+Qed.
+
+Lemma ValuePath_sub_capp : forall a F, ValuePath (a_CApp a g_Triv) F ->
+                                                        ValuePath a F.
+Proof. intros. dependent induction H; eauto.
+Qed.
+
+Lemma Path_par_app_inversion : forall W F nu a b c R,
+          CasePath R (a_App a nu b) F -> Par W (a_App a nu b) c R ->
+          exists a' b', c = a_App a' nu b'.
 Proof. intros. inversion H; subst; eauto.
-        - inversion H0; subst. eauto. pose (P := Par_CasePath H H9).
-          apply CasePath_ValuePath in P. inversion P. exists a',b'; auto.
-          pattern_head_same.
-        - inversion H0; subst. eauto. pose (P := Par_CasePath H H10).
-          apply CasePath_ValuePath in P. inversion P. exists a',b'; auto.
-          pattern_head_same. contradiction.
-        - inversion H0; subst. eauto.  pose (P := Par_CasePath H H10).
-          apply CasePath_ValuePath in P. inversion P. exists a',b'; auto.
-          pattern_head_same.
-          pose (P := tm_pattern_agree_rename_inv_2 (MatchSubst_match H7) H6).
-          assert False. eapply H3. eapply subtm_pattern_agree_App. inversion H1; subst. eauto. eapply Par_Path in H9; eauto.
-          inversion H9. eauto.
-        -  eauto. eapply Par_Path in H8; eauto.
-          inversion H8. eauto.
+        - inversion H0; subst. eauto.
+          pose (P := ValuePath_cs_par_ValuePath (ValuePath_sub_app H1) H2 H9).
+          inversion P. exists a',b'; auto. inversion H7.
+          pattern_head_tm_agree. apply ValuePath_head in H1.
+          simpl in H1. rewrite H1 in U1. inversion U1; subst.
+          axioms_head_same.
+        - inversion H0; subst. eauto.
+          pose (P := ValuePath_ax_par_ValuePath_1 (ValuePath_sub_app H1)
+          H2 H3 H10). inversion P. inversion H4. exists a',b'; auto.
+          inversion H8. pattern_head_tm_agree. apply ValuePath_head in H1.
+          simpl in H1. rewrite H1 in U1. inversion U1; subst.
+          axioms_head_same. contradiction.
+        - assert(~ subtm_pattern_agree a p). {intro. apply H3.
+          eapply subtm_pattern_agree_App. apply ValuePath_lc in H1.
+          inversion H1; subst. auto. auto. }
+          inversion H0; subst. eauto.
+          pose (P := ValuePath_ax_par_ValuePath_2 (ValuePath_sub_app H1)
+          H2 H4 H11). inversion P. inversion H5.
+          exists a',b'; auto.
+          inversion H9. pattern_head_tm_agree. pose (P0 := ValuePath_head H1).
+          simpl in P0. rewrite P0 in U1. inversion U1; subst.
+          axioms_head_same.
+          pose (P := tm_pattern_agree_rename_inv_2 (MatchSubst_match H16) H13).
+          assert False. eapply H3. econstructor. eapply tm_pattern_agree_cong.
+          eauto. econstructor. apply tm_tm_agree_sym.
+          eapply ValuePath_ax_par_ValuePath_2; eauto.
+          apply (ValuePath_sub_app H1). eapply Par_lc2; eauto.
+          eapply Par_lc1; eauto. contradiction.
 Qed.
 
-Lemma Path_par_capp_inversion : forall W F a c R, CasePath R a F ->
-          Par W (a_CApp a g_Triv) c R -> exists a', c = a_CApp a' g_Triv.
-Proof. intros. generalize dependent c. induction H; intros.
-        - inversion H0; subst. eauto. inversion H3; subst.
-          assert (Cs A = Ax (a_UCAbs a') A0 R1).
-          eapply binds_unique; eauto using uniq_toplevel.
-          inversion H1. eauto.
-        - inversion H1; subst. eauto. inversion H4; subst.
-          assert (Ax a A R1 = Ax (a_UCAbs a') A0 R2).
-          eapply binds_unique; eauto using uniq_toplevel.
-          inversion H2; subst. contradiction. eauto.
-        - inversion H1; subst. eauto. eapply Par_Path in H4; eauto.
-          inversion H4. eauto.
-        - inversion H0; subst. eauto. eapply Par_Path in H3; eauto.
-          inversion H3. eauto.
+Lemma Path_par_capp_inversion : forall W F a c R,
+          CasePath R (a_CApp a g_Triv) F -> Par W (a_CApp a g_Triv) c R ->
+          exists a', c = a_CApp a' g_Triv.
+Proof. intros. inversion H; subst; eauto.
+        - inversion H0; subst. eauto.
+          pose (P := ValuePath_cs_par_ValuePath (ValuePath_sub_capp H1) H2 H5).
+          inversion P. exists a'; auto. inversion H5.
+          pattern_head_tm_agree. apply ValuePath_head in H1.
+          simpl in H1. rewrite H1 in U1. inversion U1; subst.
+          axioms_head_same.
+        - inversion H0; subst. eauto.
+          pose (P := ValuePath_ax_par_ValuePath_1 (ValuePath_sub_capp H1)
+          H2 H3 H6). inversion P. inversion H4. exists a'; auto.
+          inversion H6. pattern_head_tm_agree. apply ValuePath_head in H1.
+          simpl in H1. rewrite H1 in U1. inversion U1; subst.
+          axioms_head_same. contradiction.
+        - assert(~ subtm_pattern_agree a p). {intro. apply H3.
+          eapply subtm_pattern_agree_CAppp. auto. }
+          inversion H0; subst. eauto.
+          pose (P := ValuePath_ax_par_ValuePath_2 (ValuePath_sub_capp H1)
+          H2 H4 H7). inversion P. inversion H5.
+          exists a'; auto.
+          inversion H7. pattern_head_tm_agree. pose (P0 := ValuePath_head H1).
+          simpl in P0. rewrite P0 in U1. inversion U1; subst.
+          axioms_head_same.
+          pose (P := tm_pattern_agree_rename_inv_2 (MatchSubst_match H10) H9).
+          assert False. eapply H3. econstructor. eapply tm_pattern_agree_cong.
+          eauto. econstructor. apply tm_tm_agree_sym.
+          eapply ValuePath_ax_par_ValuePath_2; eauto.
+          apply (ValuePath_sub_capp H1). contradiction.
 Qed.
-
+(*
 Lemma Path_par_app_fst : forall W F rho a b a' b' R R1, CasePath R a F ->
       Par W (a_App a nu b) (a_App a' nu b') R -> Par W a a' R.
 Proof. intros. generalize dependent a'. induction H; intros.
