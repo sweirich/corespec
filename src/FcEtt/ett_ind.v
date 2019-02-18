@@ -437,6 +437,19 @@ Ltac ensure_case C :=
 (* Tactic support for freshness *)
 (*  What does "fresh" mean for variables? *)
 
+Definition fv_tm_tm_pattern_args (xs:list (pattern_arg)) :=
+  fold_right (fun p s => fv_tm_tm_pattern_arg p \u s) empty xs.
+
+Definition fv_tm_tm_pattern_args_rng (xs:list (atom*pattern_arg)) :=
+  fv_tm_tm_pattern_args (map snd xs).
+
+Definition fv_co_co_pattern_args (xs:list (pattern_arg)) :=
+  fold_right (fun p s => fv_co_co_pattern_arg p \u s) empty xs.
+
+Definition fv_co_co_pattern_args_rng (xs:list (atom*pattern_arg)) :=
+  fv_co_co_pattern_args (map snd xs).
+
+
 Ltac gather_atoms ::=
   let A := gather_atoms_with (fun x : vars => x) in
   let B := gather_atoms_with (fun x : var => {{ x }}) in
@@ -452,7 +465,14 @@ Ltac gather_atoms ::=
   let D8 := gather_atoms_with (fun x => fv_co_co_constraint x) in
   let D9 := gather_atoms_with (fun x => fv_co_co_sort x) in
   let D10 := gather_atoms_with (fun x => fv_co_co_brs x) in
-  constr:(A \u B \u C1 \u C2 \u D1 \u D2 \u D3 \u D4 \u D5 \u D6 \u D7 \u D8 \u D9 \u D10).
+  let D11 := gather_atoms_with (fun x => fv_tm_tm_pattern_args_rng x) in 
+  let D12 := gather_atoms_with (fun x => fv_tm_tm_pattern_args x) in 
+  let D13 := gather_atoms_with (fun x => fv_co_co_pattern_args_rng x) in 
+  let D14 := gather_atoms_with (fun x => fv_co_co_pattern_args x) in 
+  let D15 := gather_atoms_with (fun x => fv_tm_tm_pattern_arg x) in 
+  let D16 := gather_atoms_with (fun x => fv_co_co_pattern_arg x) in 
+
+  constr:(A \u B \u C1 \u C2 \u D1 \u D2 \u D3 \u D4 \u D5 \u D6 \u D7 \u D8 \u D9 \u D10 \u D11 \u D12 \u D13 \u D14 \u D15 \u D16).
 
 
 (* ----------------------------------------------------- *)

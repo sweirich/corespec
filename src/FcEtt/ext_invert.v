@@ -1366,6 +1366,9 @@ Ltac autoinv :=
     | [H : _ ⊨ a_Fam _           : _ |- _] => eapply invert_a_Fam in H; destruct H; autofwd
     | [H : _ ⊨ a_Pattern _ _ _ _ _ _ : _ |- _ ] => eapply invert_a_Pattern in H; 
          autofwd
+    | [H : _ ⊨ a_Pi _ _ _        : _ |- _] => eapply invert_a_Pi in H; destruct H; autofwd
+    | [H : _ ⊨ a_CPi _ _        : _ |- _] => eapply invert_a_CPi in H; destruct H; autofwd
+
 (*    | [H : _ ⊨ a_Conv _ _ _      : _ / _ |- _] => eapply invert_a_Conv in H; pcess_hyps *)
   (* TODO *)
   end.
