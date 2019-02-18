@@ -20,28 +20,29 @@ Lemma Ctx_strengthen : forall G1 G2, Ctx (G2 ++ G1) -> Ctx G1.
   induction G2; [ | inversion 1]; simpl; auto.
 Qed.
 
-Lemma binds_to_PropWff: forall G0 A B T R c,
+
+Lemma binds_to_PropWff: forall G0 c phi,
     Ctx G0 ->
-    binds c (Co (Eq A B T R)) G0 -> PropWff G0 (Eq A B T R).
+    binds c (Co phi) G0 -> PropWff G0 phi.
 Proof.
   induction G0; auto; try done.
-  intros A B T R c H H0.
+  intros c phi H H0.
   destruct a.
   destruct s; auto; try done.
   - case H0; try done.
     move => h0.
     inversion H; subst.
-    have:   PropWff ( G0) (Eq A B T R) . 
-    apply (IHG0 _ _ _ _ c H4); eauto.
+    have:   PropWff ( G0) phi . 
+    apply (IHG0 c phi H4); eauto.
     move => h1.
-    rewrite_env (nil ++ [(a, Tm A0)] ++ G0).
+    rewrite_env (nil ++ [(a, Tm A)] ++ G0).
     eapply PropWff_weakening; eauto.
   - destruct H0; subst.
     inversion H0; subst.
     inversion H; subst.
-    rewrite_env (nil ++ [(c, Co (Eq A B T R))] ++ G0).
+    rewrite_env (nil ++ [(c, Co phi)] ++ G0).
     eapply PropWff_weakening; eauto.
-    rewrite_env (nil ++ [(a, Co phi)] ++ G0).
+    rewrite_env (nil ++ [(a, Co phi0)] ++ G0).
     eapply PropWff_weakening; eauto.
     simpl.
     inversion H.
@@ -253,14 +254,28 @@ Lemma tm_subst_tm_tm_a_App : forall a0 x a nu b,
    tm_subst_tm_tm a0 x (a_App a nu b) = a_App (tm_subst_tm_tm a0 x a) nu (tm_subst_tm_tm a0 x b).
 Proof. intros. simpl. auto. Qed.
 
+Lemma tm_subst_tm_tm_apply_pattern_args : forall a0 x pattern_args5 b, 
+    (tm_subst_tm_tm a0 x (apply_pattern_args b pattern_args5)) = 
+    (apply_pattern_args (tm_subst_tm_tm a0 x b) 
+                        (List.map (tm_subst_tm_pattern_arg a0 x) pattern_args5)).
+Proof.
+  intros a0 x pa. induction pa; intros.
+  simpl; auto.
+  simpl.
+  destruct a. simpl.
+  rewrite IHpa. simpl. auto.
+  simpl. rewrite IHpa. simpl. auto.
+Qed.
+
 Lemma BranchTyping_tm_subst :  
-      forall G0 R b B b2 B2 B3 C (H : BranchTyping G0 R b B b2 B2 B3 C),
+      forall G0 n R b B b2 aa B2 B3 C (H : BranchTyping G0 n R b B b2 aa B2 B3 C),
       forall G a A, Typing G a A ->
                forall F x, G0 = (F ++ (x ~ (Tm A)) ++ G) ->
-                      BranchTyping (map (tm_subst_tm_sort a x) F ++ G) R
+                      BranchTyping (map (tm_subst_tm_sort a x) F ++ G) n R
                                    (tm_subst_tm_tm a x b)
                                    (tm_subst_tm_tm a x B)
                                    (tm_subst_tm_tm a x b2)
+                                   (List.map (tm_subst_tm_pattern_arg a x) aa)
                                    (tm_subst_tm_tm a x B2)
                                    (tm_subst_tm_tm a x B3)
                                    (tm_subst_tm_tm a x C).
@@ -269,31 +284,44 @@ Proof.
   - autorewrite with subst_open; eauto 3 with lc.
     have LC: lc_tm a0. eauto 3 with lc.
     move: (tm_subst_tm_tm_lc_tm _ _ x H3 LC) => h0. simpl in h0.
+    rewrite tm_subst_tm_tm_apply_pattern_args.
+    rewrite tm_subst_tm_tm_apply_pattern_args in h0.
     eapply BranchTyping_Base; eauto 4 using tm_subst_tm_tm_lc_tm.
 
-  - E_pick_fresh y.
+  - pick fresh y and apply BranchTyping_PiRole.
+    autorewrite with subst_open_var; eauto 2 with lc.
+    rewrite_subst_context.
+    replace (a_App (tm_subst_tm_tm a0 x b) (Role R) (a_Var_f y)) with
+        (tm_subst_tm_tm a0 x (a_App b (Role R) (a_Var_f y))).
+    replace ((p_Tm (Role R) (a_Var_f y)
+     :: List.map (tm_subst_tm_pattern_arg a0 x) pattern_args5)) with
+        (List.map (tm_subst_tm_pattern_arg a0 x) (p_Tm (Role R) (a_Var_f y) 
+                                                       :: pattern_args5)).
+
+    eauto.
+    simpl. f_equal. destruct (y == x) eqn:eq. subst. 
+    have bad: (x `notin` singleton x). fsetdec. hide Fr. fsetdec.
+    rewrite eq. auto.
+    rewrite tm_subst_tm_tm_a_App.
+    rewrite tm_subst_tm_tm_var_neq; auto.
+
+  - pick fresh y and apply BranchTyping_PiRel.
     autorewrite with subst_open_var; eauto 2 with lc.
     rewrite_subst_context.
     replace (a_App (tm_subst_tm_tm a0 x b) (Rho Rel) (a_Var_f y)) with
         (tm_subst_tm_tm a0 x (a_App b (Rho Rel) (a_Var_f y))).
-    eauto.
+    admit.
     rewrite tm_subst_tm_tm_a_App.
     rewrite tm_subst_tm_tm_var_neq; auto.
-  - E_pick_fresh y.
+  - pick fresh y and apply BranchTyping_PiIrrel.
     autorewrite with subst_open_var; eauto 2 with lc.
     rewrite_subst_context.
-    replace (a_App (tm_subst_tm_tm a0 x b) (Rho Irrel) a_Bullet) with
-        (tm_subst_tm_tm a0 x (a_App b (Rho Irrel) a_Bullet)).
-    eauto.
-    simpl. auto.
-  - E_pick_fresh y.
+    admit. 
+  - pick fresh y and apply BranchTyping_CPi.
     autorewrite with subst_open_var; eauto 2 with lc.
     rewrite_subst_context.
-    replace (a_CApp (tm_subst_tm_tm a0 x b) g_Triv) with
-        (tm_subst_tm_tm a0 x (a_CApp b g_Triv)).
-    eauto.
-    simpl. auto.
-Qed.
+    admit.
+Admitted.
 
 Lemma tm_substitution_mutual :
    (forall G0 b B (H : Typing G0 b B),
@@ -375,10 +403,13 @@ Proof.
     erewrite (tm_subst_fresh_2 _ t); auto.
     eapply E_Fam; eauto 2.
   - (* E_Case *)
-    eapply E_Case; eauto 2.
+    admit.
+(*    eapply E_Case; eauto 2.
+    replace  (tm_subst_tm_tm a0 x a) with a. eauto. admit.
     replace (a_Fam F) with (tm_subst_tm_tm a0 x (a_Fam F)).
-    eapply BranchTyping_tm_subst; eauto 2.
-    reflexivity.
+    replace A1 with (tm_subst_tm_tm a0 x A1).
+    eapply BranchTyping_tm_subst; eauto 2. admit.
+    reflexivity. *)
   - (* E_Assn *)
     destruct (c == x).
     + subst.
@@ -393,7 +424,7 @@ Proof.
            by apply (H _ _ A0).
          have: Ctx ([(x, Tm A0)] ++ G0) by apply (Ctx_strengthen _ F); auto.
          inversion 1; subst.
-         have: PropWff G0 (Eq a b A R) by apply (binds_to_PropWff _ _ _ _ c); auto.
+         have: PropWff G0 (Eq a b A R) by eapply binds_to_PropWff with (c:=c);  auto.
          inversion 1; subst.
          repeat rewrite tm_subst_tm_tm_fresh_eq; auto.
          all: show_fresh.
@@ -403,15 +434,15 @@ Proof.
     eauto. eauto using Typing_lc1.
   - eapply E_EqConv; eauto 2.
     eapply DefEq_weaken_available; eauto.
-  - eapply E_PatCong; eauto 3.
+  - admit. (* eapply E_PatCong; eauto 3.
     replace (a_Fam F) with 
         (tm_subst_tm_tm a0 x (a_Fam F)).
-    eapply BranchTyping_tm_subst; eauto 2.
+    admit. (* eapply BranchTyping_tm_subst; eauto 2. *)
     auto.
     replace (a_Fam F) with 
         (tm_subst_tm_tm a0 x (a_Fam F)).
     eapply BranchTyping_tm_subst; eauto 2.
-    auto.
+    auto. *)
   - eapply E_LeftRel with (b := tm_subst_tm_tm a0 x b)
                           (b':= tm_subst_tm_tm a0 x b'); eauto 2.
     eapply ValuePath_subst; eauto 2 with lc.
@@ -476,8 +507,9 @@ Proof.
         apply (H0 _ _ A); auto.
       * inversion H4; subst; clear H4.
         auto. 
-   Unshelve. all: exact Rep.
-Qed.
+   Unshelve. all: try exact Rep.
+   all: eauto.
+Admitted.
 
 Lemma Typing_tm_subst : forall G x A b B (H : Typing ((x ~ Tm A) ++ G) b B),
   forall a, Typing G a A ->
@@ -501,18 +533,21 @@ Qed.
 
 
 Lemma BranchTyping_co_subst :  
-      forall G0 R b B b2 B2 B3 C (H : BranchTyping G0 R b B b2 B2 B3 C),
+      forall G0 n R b B b2 aa B2 B3 C (H : BranchTyping G0 n R b B b2 aa B2 B3 C),
       forall G D A1 A2 T R' F c ,
         G0 = (F ++ (c ~ Co (Eq A1 A2 T R') ) ++ G)
         -> DefEq G D A1 A2 T R'
-        -> BranchTyping (map (co_subst_co_sort g_Triv c) F ++ G) R
+        -> BranchTyping (map (co_subst_co_sort g_Triv c) F ++ G) n R
                                    (co_subst_co_tm g_Triv c b)
                                    (co_subst_co_tm g_Triv c B)
                                    (co_subst_co_tm g_Triv c b2)
+                                   (List.map (co_subst_co_pattern_arg g_Triv c) aa)
                                    (co_subst_co_tm g_Triv c B2)
                                    (co_subst_co_tm g_Triv c B3)
                                    (co_subst_co_tm g_Triv c C).
 Proof. 
+Admitted.
+(*
   induction 1; intros; subst.
   - rewrite open_tm_wrt_co_lc_tm; auto.
     rewrite <- (open_tm_wrt_co_lc_tm (co_subst_co_tm g_Triv c0 C) (g_Var_f c)); auto using co_subst_co_tm_lc_tm.
@@ -544,7 +579,7 @@ Proof.
     eapply H0; eauto.
     simpl. auto.
     auto.
-Qed.
+Qed. *)
 
 
 Lemma co_substitution_mutual :
@@ -619,9 +654,11 @@ Proof.
     erewrite (tm_subst_co_fresh_2 _ t); auto.
     eapply E_Fam; eauto 2.
   - (* E_Case *) 
-    eapply E_Case; eauto 2.
+    admit. 
+(*    eapply E_Case; eauto 2.
     replace (a_Fam F) with  (co_subst_co_tm g_Triv c (a_Fam F)); auto.
-    eapply BranchTyping_co_subst; eauto 2.
+    admit. 
+    admit. eapply BranchTyping_co_subst; eauto 2. *)
   - eapply E_CPiFst; eauto 3.
     eapply H; eauto.
   -  destruct (binds_cases G0 F c _ c1 _ (Ctx_uniq c0) b0) as [ (bf & NE & Fr) | [(E1 & E2) | (bg & NE & Fr)]].
@@ -666,15 +703,15 @@ Proof.
     eauto 2.
   - eapply E_IsoSnd; eauto 1.
     eapply H; eauto.
-  - eapply E_PatCong; eauto 3.
+  - admit. (* eapply E_PatCong; eauto 3.
     replace (a_Fam F) with 
         (co_subst_co_tm g_Triv c (a_Fam F)).
-    eapply BranchTyping_co_subst; eauto 2.
+    admit. (* eapply BranchTyping_co_subst; eauto 2. *)
     auto.
     replace (a_Fam F) with 
         (co_subst_co_tm g_Triv c (a_Fam F)).
     eapply BranchTyping_co_subst; eauto 2.
-    auto.
+    auto. *)
   - eapply E_LeftRel with (b := co_subst_co_tm g_Triv c b) (b':= co_subst_co_tm g_Triv c b'); eauto 2.
     eapply ValuePath_subst_co; eauto 2 with lc.
     eapply ValuePath_subst_co; eauto 2 with lc.
@@ -735,7 +772,7 @@ Proof.
       * inversion H4; subst; clear H4.
          apply (H0 G0 D A1 A2 T R' F c1); auto.
          Unshelve. all:auto.
-Qed.
+Admitted.
 
 Lemma Typing_co_subst:
    forall G D c a1 a2 A R' b B (H : Typing (c ~ (Co (Eq a1 a2 A R')) ++ G) b B),

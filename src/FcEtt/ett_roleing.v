@@ -103,7 +103,12 @@ Qed.
 
 Lemma roleing_sub : forall W a R1 R2, roleing W a R1 -> SubRole R1 R2 ->
                                      roleing W a R2.
-Proof. intros W a R1 R2 H S. generalize dependent R2. induction H; intros; eauto.
+Proof. intros W a R1 R2 H S. generalize dependent R2. 
+       induction H; intros; eauto.
+       econstructor.
+       eapply IHroleing1; auto. 
+       eapply IHroleing2; eauto 1.
+       eapply param_covariant. auto.
 Qed.
 
 Lemma RolePath_subst : forall F a b Rs x, RolePath a F Rs -> lc_tm b ->
@@ -195,7 +200,8 @@ Proof.
   all : try solve [econstructor; eauto].
   all : try solve [eauto using roleing_sub].
   all : try solve [econstructor; eauto using ctx_to_rctx_uniq, ctx_to_rctx_binds_tm].
-  - destruct phi. move: (H0 a b A R eq_refl) => ?. split_hyp. clear H0.
+  - inversion p. subst. 
+    move: (H0 a b A R eq_refl) => ?. split_hyp. clear H0.
     eapply (@role_a_CPi L); eauto.
 Qed.
 

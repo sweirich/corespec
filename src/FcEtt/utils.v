@@ -54,6 +54,15 @@ Proof.
   rewrite (IHG f); auto.
 Qed.
 
+
+Lemma utils_map_map : forall A B C (f : B -> C) (g: A -> B) (G:list(atom*A)),
+  map f (map g G) = map (fun x => f (g x)) G.
+Proof.
+  induction G. simpl. auto.
+  simpl. destruct a. f_equal. auto.
+Qed.
+
+
 (* -------------------------------------- *)
 
 Lemma binds_map_3 :

@@ -249,7 +249,7 @@ Ltac invert_syntactic_equality :=
     inversion H; subst; clear H
   | [ H : a_CPi _ _ = a_CPi _ _ |- _ ] =>
     inversion H; subst; clear H
-  | [ H : a_Pattern _ _ _ _ _ = a_Pattern _ _ _ _ _ |- _ ] =>
+  | [ H : a_Pattern _ _ _ _ _ _ = a_Pattern _ _ _ _ _ _ |- _ ] =>
     inversion H; subst; clear H
   | [ H : Eq _ _ _ _ = Eq _ _ _ _ |- _ ] =>
     inversion H; subst; clear H

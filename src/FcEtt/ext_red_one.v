@@ -360,6 +360,7 @@ Proof.
     auto.
 Qed.
 
+(* If we match subst against an application, it must headed by a value. *)
 Lemma BetaAxiom_a_App_only : forall F p b0 A R0 Rs p1 b1 D' a2 a nu b R1
   (H2 : binds F (Ax p b0 A R0 Rs) toplevel)
   (H3 : Rename p b0 p1 b1 (union (fv_tm_tm_tm (a_App a nu b)) (fv_tm_tm_tm p)) D')
@@ -400,6 +401,12 @@ Proof.
 Qed.
 
 
+Lemma AppsPath_Value : forall F Apps a R, AppsPath R a F Apps -> Value R a.
+Proof.
+  intros.
+  eapply Value_Path.
+  eauto using AppsPath_CasePath.
+Admitted.
 
 (* The reduction relation is deterministic *)
 Lemma reduction_in_one_deterministic :
@@ -422,7 +429,7 @@ Proof.
 (*  all: try solve [(have: False; try done; inversion H0; inversion H1)]. *)
   all: try solve [invert_MatchSubst].
   (* AbsTerm *)
-  - autofresh. 
+  - autofresh. hide Fr.
     match goal with 
       [ H0 : forall a2 : tm, (reduction_in_one ?a a2 ?R) -> _ , 
         H2 : reduction_in_one ?a _ _ |- _ ] => 
@@ -439,7 +446,7 @@ Proof.
     Value_no_red.
   - (* left side is scrutinee evaluation, right is Beta *)
     inversion H2. invert_MatchSubst.
-    have VF: Value R a. eauto.
+    have VF: Value Nom a. eauto using AppsPath_Value.
     Value_no_red.
     Value_no_red.
   - (* left size is Beta_Axiom, right side is AppLeft. *)
@@ -451,7 +458,7 @@ Proof.
     Value_no_red.
   - (* left side is Beta, right side is scrutinee eval *)
     inversion H. invert_MatchSubst.
-    have VF: Value R0 a0. eauto.
+    have VF: Value Nom a0. eauto using AppsPath_Value.
     Value_no_red.
     Value_no_red.
 Qed.

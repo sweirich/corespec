@@ -16,6 +16,7 @@ Require Import FcEtt.ett_roleing.
 Require Import FcEtt.ett_match.
 Require Import FcEtt.ett_path.
 Require Import FcEtt.ett_rename.
+Require Import FcEtt.param.
 
 Import ext_wf.
 
@@ -44,17 +45,23 @@ Proof. intros. generalize dependent W1. generalize dependent W2.
           simpl in H0. rewrite <- app_assoc. eauto.
           auto.
           rewrite combine_app in H3. rewrite rev_app_distr in H3.
-          simpl in H3. rewrite <- app_assoc. auto. auto.
+          simpl in H3. rewrite <- app_assoc. auto. 
+          eapply roleing_sub; eauto using param_sub1.
         - simpl in H0. inversion H2; subst. eauto.
         - simpl in H0. inversion H; subst. eauto.
 Qed.
 
 
-Lemma roleing_apply : forall W a R0 b c R, roleing W a R0 -> roleing W b R ->
+Lemma roleing_apply : forall W a b c R, roleing W a Nom -> roleing W b R ->
                       ApplyArgs a b c -> roleing W c R.
 Proof. intros. induction H1; intros; auto.
         - inversion H; subst; eauto.
+          econstructor; eauto.
+          have e: param R0 Nom = Nom. unfold param, min. destruct R0; auto.
+          rewrite <- e.
+          auto.
         - inversion H; subst. econstructor; eauto.
+        - inversion H; subst. auto.
 Qed.
 
 
@@ -267,8 +274,13 @@ Hint Resolve Par_roleing_tm_fst Par_roleing_tm_snd : roleing.
 Lemma Par_sub: forall W a a' R1 R2, Par W a a' R1 -> SubRole R1 R2 ->
                                       Par W a a' R2.
 Proof. intros W a a' R1 R2 H SR. generalize dependent R2.
-       induction H; intros; eauto. econstructor.
-       eapply roleing_sub; eauto.
+       induction H; intros; eauto using roleing_sub. 
+       + econstructor; eauto.
+         destruct nu; simpl; auto.
+         eapply IHPar2; simpl; eauto using param_covariant.
+       + econstructor; eauto.
+         destruct nu; simpl; auto.
+         eapply IHPar2; simpl; eauto using param_covariant.
 Qed.
 
 Lemma multipar_sub : forall W a a' R1 R2, multipar W a a' R1 ->
@@ -411,12 +423,13 @@ Proof.
     apply AtomSetProperties.union_subset_3.
     eapply Rename_fv_new_pattern; eauto. eapply Rename_new_body_fv; eauto.
   - assert (lc_tm b). {eapply roleing_lc; eauto. }
-    eapply Par_PatternTrue; eauto. apply CasePath_subst_tm; auto.
+    eapply Par_PatternTrue; eauto. 
+    apply AppsPath_subst_tm; eauto.
     apply ApplyArgs_subst_tm; auto.
   - assert (lc_tm b). {eapply roleing_lc; eauto. }
     eapply Par_PatternFalse; eauto.
     eapply Value_tm_subst_tm_tm; eauto.
-    intro. apply H0. eapply CasePath_Value_unsubst_tm; eauto.
+    intro. apply H0. eapply AppsPath_Value_unsubst_tm; eauto. 
 Qed.
 
 Lemma subst3 : forall b b' W W' a a' R R1 x,
@@ -487,12 +500,12 @@ Proof.
     eapply Rename_fv_new_pattern; eauto. eapply Rename_new_body_fv; eauto.
   - eapply Par_Pattern; eauto.
   - assert (lc_tm b'). {eapply Par_lc2; eauto. }
-    eapply Par_PatternTrue; eauto. eapply CasePath_subst_tm; eauto.
+    eapply Par_PatternTrue; eauto. eapply AppsPath_subst_tm; eauto.
     apply ApplyArgs_subst_tm; auto.
   - assert (lc_tm b'). {eapply Par_lc2; eauto. }
     eapply Par_PatternFalse; eauto.
     eapply Value_tm_subst_tm_tm; eauto.
-    intro. eapply H3. eapply CasePath_Value_unsubst_tm; eauto.
+    intro. eapply H3. eapply AppsPath_Value_unsubst_tm; eauto.
     Unshelve. all:exact.
 Qed.
 
@@ -591,10 +604,10 @@ Proof.
     eapply uniq_atoms_toplevel; eauto.
     apply matchsubst_fun_ind. auto. eapply Rename_lc4; eauto.
     auto. auto. auto.
-  - eapply Par_PatternTrue; eauto. apply CasePath_subst_co; auto.
+  - eapply Par_PatternTrue; eauto. apply AppsPath_subst_co; eauto.
     apply ApplyArgs_subst_co; auto.
   - eapply Par_PatternFalse; eauto. eapply Value_co_subst_co_tm; eauto.
-    intro. apply H0. eapply CasePath_Value_unsubst_co; eauto.
+    intro. apply H0. eapply AppsPath_Value_unsubst_co; eauto.
 Qed.
 
 Lemma multipar_subst3 : forall b b' W W' a a' R R1 x,
@@ -970,11 +983,14 @@ Proof. intros. generalize dependent a2. generalize dependent b''.
             clear - H6. solve_uniq.
             intro. eapply tm_subpattern_agree_app_contr; eauto.
             eapply tm_subpattern_agree_sub_app; eauto.
+            eapply roleing_sub; eauto using param_sub1.
           + eapply subst3 with (R1 := R0); auto.
             rewrite app_assoc. eapply IHMatchSubst; eauto.
             rewrite <- app_assoc. auto. clear - H6. solve_uniq.
             intro. eapply tm_subpattern_agree_app_contr; eauto.
             eapply tm_subpattern_agree_sub_app; eauto.
+            simpl in *.
+            eapply Par_sub; eauto using param_sub1.
           + pattern_head_tm_agree. simpl in U1. inversion H12.
             rename U1 into U2. pattern_head_tm_agree. rewrite U2 in U1.
             inversion U1; subst. axioms_head_same. assert False.

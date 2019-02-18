@@ -911,8 +911,8 @@ Lemma tm_subpattern_agree_pi_cpi_contr : forall a p,
 Proof. intros. dependent induction H; eauto. inversion H0; subst; inversion H.
 Qed.
 
-Lemma tm_subpattern_agree_case_contr : forall R a F b1 b2 p,
-                tm_subpattern_agree (a_Pattern R a F b1 b2) p -> False.
+Lemma tm_subpattern_agree_case_contr : forall R a F apps b1 b2 p,
+                tm_subpattern_agree (a_Pattern R a F apps b1 b2) p -> False.
 Proof. intros. dependent induction H; eauto. inversion H.
 Qed.
 
@@ -1170,7 +1170,8 @@ Qed.
 
 Fixpoint applyArgs (a : tm) (b : tm) : tm := match a with
    | a_Fam F => b
-   | a_App a' nu b' => a_App (applyArgs a' b) nu b'
+   | a_App a' (Role _) b' => a_App (applyArgs a' b) (Rho Rel) b'
+   | a_App a' (Rho rho) b' => a_App (applyArgs a' b) (Rho rho) b'
    | a_CApp a' g_Triv => a_CApp (applyArgs a' b) g_Triv
    | _ => a_Bullet
    end.
@@ -1185,6 +1186,7 @@ Lemma applyArgs_ApplyArgs : forall R a F b b', CasePath R a F -> lc_tm b ->
                           applyArgs a b = b' -> ApplyArgs a b b'.
 Proof. intros. generalize dependent b'. apply CasePath_ValuePath in H.
        induction H; intros; simpl in *; subst; eauto.
+       destruct nu; eauto.
 Qed.
 
 Ltac pattern_head_same := match goal with
@@ -1337,6 +1339,12 @@ Proof. intros. generalize dependent a'. induction H; intros.
          inversion P as [P1 [P2 P3]]. eauto.
 Qed.
 
+Lemma Par_AppsPath : forall F a R W a' n, AppsPath R a F n -> Par W a a' R ->
+                                        AppsPath R a' F n.
+Proof.
+  intros.
+Admitted.
+
 Ltac invert_par :=
      try match goal with
       | [ Hx : CasePath _ _ _,
@@ -1356,6 +1364,11 @@ Proof. intros. induction H; invert_par.
        pose (P := Par_CasePath H H1). apply CasePath_head in H0.
        apply CasePath_head in P. rewrite P in H0. inversion H0; subst; auto.
 Qed.
+
+Lemma AppsPath_Par : forall F a R W a' n, Value R a' -> AppsPath R a F n -> Par W a' a R -> AppsPath R a' F n.
+Admitted.
+
+
 
 Lemma Value_par_Value : forall R v W v', Value R v -> Par W v v' R -> Value R v'.
 Proof. intros. generalize dependent W. generalize dependent v'.
@@ -1411,30 +1424,66 @@ Proof. intros. pattern_head.
            apply H7; eauto.
 Qed.
 
-Lemma apply_args_par : forall a b c a' b' c' W R1 R2 F, ApplyArgs a b c ->
-                       CasePath R1 a F -> Par W a a' R1 -> Par W b b' R2 ->
+Lemma apply_args_par : forall a b c a' b' c' W R2 F, ApplyArgs a b c ->
+                       CasePath Nom a F -> Par W a a' Nom -> Par W b b' R2 ->
                        ApplyArgs a' b' c' -> Par W c c' R2.
 Proof. intros. generalize dependent a'. generalize dependent b'.
-       generalize dependent c'. induction H; intros.
+       generalize dependent c'.
+       (* By induction on ApplyArgs *)
+       induction H; intros.
          - inversion H1; subst. inversion H3; subst. auto.
            assert (F0 = F). { eapply CasePath_head in H0; simpl in H0; 
            inversion H0; auto. } subst.
            inversion H0; subst; axioms_head_same. contradiction. assert False.
            apply H9. eauto. contradiction.
-         - inversion H3; subst.
+         - (* First App case, nu is (Rho R) *)
+           (* Have a path:  a R a'  that reduces to some a'0. *)
+           inversion H3; subst.  (* case on how a R a' reduces.  *)
+             + (* Headed by a constant, but not enough arguments. *)
+               inversion H4; subst. econstructor.
+               eapply IHApplyArgs; eauto. eapply CasePath_app; eauto.
+               inversion H5; eauto. econstructor.
+               simpl.
+               inversion H5; eauto. subst.
+               have e: param R Nom = Nom. unfold param, min. destruct R; auto.
+               rewrite <- e. auto.
+             + inversion H4; subst. econstructor.
+               eapply IHApplyArgs; eauto. eapply CasePath_app; eauto.
+               simpl in *.
+               have e: param R Nom = Nom. unfold param, min. destruct R; auto.
+               rewrite <- e. auto.
+             + (* Axiom pattern match *)
+               (* a R a' reduces by unfolding an Axiom 
+                *)
+               split_hyp. 
+               assert (tm_tm_agree a a'1).
+               { eapply pattern_like_tm_par; eauto. }
+
+               move: (MatchSubst_match H16) => P.
+               assert (tm_pattern_agree (a_App a (Role R) a') p').
+               { eapply tm_pattern_agree_cong. eapply P.               
+               econstructor. eapply tm_tm_agree_sym; eauto.
+               eapply Par_lc2; eauto. eapply Par_lc1; eauto. }
+               destruct (MatchSubst_exists H9 (MatchSubst_lc3 H16)) as [a0 Q]. 
+               assert False. eapply CasePath_ax_par_contr; eauto. 
+               contradiction. 
+         - (* Second App case, nu is (Rho rho) *)
+            inversion H3; subst.
              + inversion H4; subst. econstructor.
                eapply IHApplyArgs; eauto. eapply CasePath_app; eauto.
                inversion H5; eauto. econstructor.
-               destruct nu. inversion H5; eauto.
-               destruct rho; inversion H5; eauto.
-             + eapply CasePath_app in H0. pose (P := Par_CasePath H0 H11).
-               apply CasePath_ValuePath in P. inversion P.
+               simpl.
+               inversion H5; eauto. 
+             + eapply CasePath_app in H0. 
+               pose (P := Par_CasePath H0 H11).
+               apply CasePath_ValuePath in P. 
+               inversion P.
              + inversion H4; subst. econstructor. eapply IHApplyArgs; eauto.
                eapply CasePath_app; eauto. auto.
              + inversion H9. assert (tm_tm_agree a a'1).
                eapply pattern_like_tm_par; eauto.
                pose (P := MatchSubst_match H16).
-               assert (tm_pattern_agree (a_App a nu a') p').
+               assert (tm_pattern_agree (a_App a (Rho rho) a') p').
                eapply tm_pattern_agree_cong. eapply P.
                econstructor. eapply tm_tm_agree_sym; eauto.
                eapply Par_lc2; eauto. eapply Par_lc1; eauto.
@@ -1456,7 +1505,7 @@ Proof. intros. generalize dependent a'. generalize dependent b'.
                eapply tm_pattern_agree_cong. eapply P.
                econstructor. eapply tm_tm_agree_sym; eauto.
                destruct (MatchSubst_exists H13 (MatchSubst_lc3 H9)) as [a0 Q].
-               assert False. eapply CasePath_ax_par_contr; eauto. contradiction.
+               assert False. eapply CasePath_ax_par_contr; eauto. contradiction. 
 Qed.
 
 Fixpoint tm_to_roles (a : tm) : roles := match a with
@@ -1467,8 +1516,9 @@ Fixpoint tm_to_roles (a : tm) : roles := match a with
     | _ => nil
     end.
 
-Lemma RolePath_inversion : forall a F Rs, RolePath a F Rs->
-         (exists A, binds F (Cs A (tm_to_roles a ++ Rs)) toplevel) \/
+
+Lemma RolePath_inversion : forall a F Rs, RolePath a F Rs ->
+         (exists A,  binds F (Cs A (tm_to_roles a ++ Rs)) toplevel) \/
          (exists p b A R, binds F (Ax p b A R (tm_to_roles a ++ Rs)) toplevel).
 Proof. intros. induction H; simpl; eauto.
         - right. exists p, a, A, R1; eauto.
@@ -1860,6 +1910,25 @@ Proof. intros. induction H; simpl in *;
        apply CasePath_ValuePath in H. eapply ValuePath_Pattern_like_tm; eauto.
 Qed.
 
+Lemma AppsPath_unsubst_tm : forall  a, Pattern_like_tm a -> 
+      forall F b x n R, lc_tm b ->
+      AppsPath R (tm_subst_tm_tm b x a) F n -> AppsPath R a F n.
+Proof. 
+  induction 1; intros; simpl in *; eauto.
+  inversion H2; subst; eauto.
+  inversion H1; subst; eauto.
+Qed.
+
+
+Lemma AppsPath_Value_unsubst_tm : forall F a b x n R, Value R a -> lc_tm b ->
+      AppsPath R (tm_subst_tm_tm b x a) F n -> AppsPath R a F n.
+Proof. 
+  intros.
+  inversion H; subst; simpl in *; try solve [inversion H1].
+  eapply AppsPath_unsubst_tm; 
+    eauto using ValuePath_Pattern_like_tm,  CasePath_ValuePath.
+Qed.
+
 Lemma ValuePath_unsubst_co : forall F a g c, Pattern_like_tm a ->
       ValuePath (co_subst_co_tm g c a) F -> ValuePath a F.
 Proof. intros. induction H; simpl in *; eauto.
@@ -1884,17 +1953,117 @@ Proof. intros. induction H; simpl in *;
        apply CasePath_ValuePath in H. eapply ValuePath_Pattern_like_tm; eauto.
 Qed.
 
+
+Lemma AppsPath_unsubst_co : forall  a, Pattern_like_tm a -> 
+      forall F g x n R, lc_co g ->
+      AppsPath R (co_subst_co_tm g x a) F n -> AppsPath R a F n.
+Proof. 
+  induction 1; intros; simpl in *; eauto.
+  inversion H2; subst; eauto.
+  inversion H1; subst; eauto.
+Qed.
+
+
+Lemma AppsPath_Value_unsubst_co : forall F a g c n R, Value R a -> lc_co g ->
+      AppsPath R (co_subst_co_tm g c a) F n -> AppsPath R a F n.
+Proof. 
+ intros.
+  inversion H; subst; simpl in *; try solve [inversion H1].
+  eapply AppsPath_unsubst_co; 
+    eauto using ValuePath_Pattern_like_tm,  CasePath_ValuePath.
+Qed.
+
+
 Lemma ApplyArgs_subst_tm : forall a b c e x, lc_tm e -> ApplyArgs a b c ->
   ApplyArgs (tm_subst_tm_tm e x a)(tm_subst_tm_tm e x b)(tm_subst_tm_tm e x c).
 Proof. intros. induction H0; simpl; eauto.
-       econstructor. apply tm_subst_tm_tm_lc_tm; auto.
-       econstructor. apply tm_subst_tm_tm_lc_tm; auto. auto.
+       all: econstructor; auto; apply tm_subst_tm_tm_lc_tm; auto.
 Qed.
 
 Lemma ApplyArgs_subst_co : forall a b c g y, lc_co g -> ApplyArgs a b c ->
   ApplyArgs (co_subst_co_tm g y a)(co_subst_co_tm g y b)(co_subst_co_tm g y c).
 Proof. intros. induction H0; simpl; eauto.
-       econstructor. apply co_subst_co_tm_lc_tm; auto.
-       econstructor. apply co_subst_co_tm_lc_tm; auto. auto.
+       all: econstructor; auto; apply co_subst_co_tm_lc_tm; auto.
+Qed.
+
+Lemma snoc_destruct : forall n, n = A_nil \/ exists a1 n1, n = A_snoc n1 a1.
+Proof. induction n. left; auto.
+       destruct IHn. subst; simpl.
+       right. exists App5. exists A_nil. auto.
+       right. move: H => [a1 [n1 eq]].
+       exists a1. exists (A_cons App5 n1). simpl. rewrite eq. auto.
+Qed.
+
+Lemma not_snoc_nil : forall a n, (A_snoc a n = A_nil) -> False.
+Proof. induction a; simpl; intros; discriminate.
+Qed.
+
+Lemma snoc_injective2 : forall a1 n1 a2 n2, 
+    A_snoc a1 n1 = A_snoc a2 n2 -> n1 = n2.
+Proof.
+intro a1. induction a1; intros; simpl in *.
+destruct a2. simpl in *. inversion H. auto.
+simpl in *. inversion H. symmetry in H2. eapply not_snoc_nil in H2. contradiction.
+destruct a2. simpl in *. inversion H.
+eapply not_snoc_nil in H2. contradiction.
+simpl in *.
+inversion H.
+eapply IHa1. eauto.
+Qed.
+
+Lemma snoc_injective1 : forall a1 n1 a2 n2, 
+    A_snoc a1 n1 = A_snoc a2 n2 -> a1 = a2.
+Proof.
+intro a1. induction a1; intros; simpl in *.
+destruct a2. simpl in *. inversion H. auto.
+simpl in *. inversion H. symmetry in H2. eapply not_snoc_nil in H2. contradiction.
+destruct a2. simpl in *. inversion H.
+eapply not_snoc_nil in H2. contradiction.
+simpl in *.
+inversion H.
+f_equal. eauto.
+Qed.
+
+Lemma decide_AppsPath : forall W a R, roleing W a R -> 
+                                 (forall F Apps, (AppsPath R a F Apps) \/
+                                            (~(AppsPath R a F Apps))).
+Proof. 
+  induction 1.
+  all: try solve [intros; right; move=> h; inversion h].
+  all: intros.
+  all: try clear IHroleing2.
+  all: try (destruct rho; try solve [right; move=> h; inversion h]).
+  all: destruct (snoc_destruct Apps) as [|[n1 [a1 eq]]]; subst.
+  all: try solve [right;  move=> h; inversion h; eauto using not_snoc_nil].
+  (* Destruct the app at the top *)
+  all: try destruct n1; try destruct nu; try destruct rho; 
+       try destruct (role_dec R1 R0); subst.
+  all: try solve [right;  move=> h; inversion h; subst;
+    with (A_snoc _ _ = A_snoc _ _ ) do 
+         ltac:(fun h => apply snoc_injective2 in h; inversion h; subst; auto)].
+
+  all: try edestruct (IHroleing1 F a1);
+    try solve [left; econstructor; eauto using roleing_lc].
+
+  all: try edestruct (IHroleing F a1);
+    try solve [left; econstructor; eauto using roleing_lc].
+
+  all: try solve [right; move=> h; inversion h; subst;
+    with (A_snoc _ _ = A_snoc _ _ ) do 
+         ltac:(fun h => apply snoc_injective1 in h; inversion h) end;
+    subst; auto].
+
+  destruct (eq_dec F F0). subst.
+  left. eauto.
+  right. move=> h; inversion h; subst; contradiction.
+
+  destruct (eq_dec F F0). subst.
+  destruct (sub_dec R R1).
+  right. move=> h; inversion h; subst. 
+  axioms_head_same.
+  axioms_head_same.
+  contradiction.
+  left. eauto.
+  right. move=> h; inversion h; subst; contradiction.
 Qed.
 
