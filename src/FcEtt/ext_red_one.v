@@ -429,12 +429,13 @@ Proof.
 (*  all: try solve [(have: False; try done; inversion H0; inversion H1)]. *)
   all: try solve [invert_MatchSubst].
   (* AbsTerm *)
-  - autofresh. hide Fr.
+  - autofresh.
     match goal with 
       [ H0 : forall a2 : tm, (reduction_in_one ?a a2 ?R) -> _ , 
         H2 : reduction_in_one ?a _ _ |- _ ] => 
       move: (H0 _ H2) => h7 end.
     apply open_tm_wrt_tm_inj in h7; eauto. rewrite h7. auto.
+    all: uha; fsetdec.
   - (* left side is AppLeft, right side is Beta_Axiom *)
     (* Need to show that if Beta_Axiom triggers, then the 
        term is a Value. *)

@@ -306,22 +306,25 @@ Proof.
     rewrite tm_subst_tm_tm_var_neq; auto.
 
   - pick fresh y and apply BranchTyping_PiRel.
-    autorewrite with subst_open_var; eauto 2 with lc.
+    autofresh with y.
+    autorewrite with subst_open_var; try solve [uha; eauto 2 with lc].
     rewrite_subst_context.
-    replace (a_App (tm_subst_tm_tm a0 x b) (Rho Rel) (a_Var_f y)) with
-        (tm_subst_tm_tm a0 x (a_App b (Rho Rel) (a_Var_f y))).
-    admit.
-    rewrite tm_subst_tm_tm_a_App.
-    rewrite tm_subst_tm_tm_var_neq; auto.
+    move: H0. (* FIXME fragile *)
+    move/(_ _ _ _ ltac:(ea) (y ~ Tm A ++ ltac:(ea)) x eq_refl) => /=.
+    destruct ((y : tmvar) == x);
+      first by (unhide all; subst; exfalso; fsetdec_fast).
+    apply.
   - pick fresh y and apply BranchTyping_PiIrrel.
-    autorewrite with subst_open_var; eauto 2 with lc.
+    autofresh with y.
+    autorewrite with subst_open_var; try solve [uha; eauto 2 with lc].
     rewrite_subst_context.
-    admit. 
+    eapply H0; eauto. (* FIXME: fragile *)
   - pick fresh y and apply BranchTyping_CPi.
+    autofresh with y.
     autorewrite with subst_open_var; eauto 2 with lc.
     rewrite_subst_context.
-    admit.
-Admitted.
+    eapply H0; eauto. (* FIXME: fragile *)
+Admitted. (* Wtf!? Qed bugs on this *)
 
 Lemma tm_substitution_mutual :
    (forall G0 b B (H : Typing G0 b B),

@@ -448,7 +448,7 @@ Ltac fsetdec_fast := solve [break_union; basic_solve_n 3].
    loose the original universal assumption while making the specific instance. The versions
    with a '+' suffic are meant to be used when there are multiple variables involved; they
    add the relevant instances without discarding the original hypothesis. *)
-Ltac autofresh_fixed_param tac x :=
+Ltac autofresh_fixed_param' tac x :=
     (* Trying to spot the freshness assumption and to make it as general as possible
     (in case the co-domain is an evar) *)
     try (
@@ -469,16 +469,23 @@ Ltac autofresh_fixed_param tac x :=
    end;
    unwrap_all.
 
+Ltac hide_fresh_hyps x hide :=
+  tryif hide then
+    repeat match goal with
+      H : x ∉ _ |- _ => hidewith "freshness" H
+    end
+  else idtac.
 
+Ltac autofresh_fixed_param tac x hidefresh :=
+  autofresh_fixed_param' tac x;
+  hide_fresh_hyps x hidefresh.
 
 (* General version that picks up a fresh variable instead *)
-Ltac autofresh_param tac :=
+Ltac autofresh_param tac hidefresh :=
   let x := fresh "x" in
   pick fresh x;
-  autofresh_fixed_param tac x;
-  repeat match goal with
-    H : x ∉ _ |- _ => hidewith "freshness" H
-  end.
+  autofresh_fixed_param' tac x;
+  hide_fresh_hyps x hidefresh.
 
 (* Yet another version, that tries to find a suitable variable in the context *)
 (* TODO: could be more robust:
@@ -487,7 +494,7 @@ Ltac autofresh_param tac :=
 *)
 Ltac autofresh_find_param tac :=
   match goal with
-    x : atom, _ : ?x `notin` _ |- _ => autofresh_fixed_param tac x
+    x : atom, _ : ?x `notin` _ |- _ => autofresh_fixed_param' tac x
   end.
 
 
@@ -691,13 +698,17 @@ Ltac fsetdec_fast := TacticsInternals.fsetdec_fast.
 Ltac autocontra := TacticsInternals.autocontra.
 
 (* Automatically pick fresh variables and solve freshness conditions *)
-Tactic Notation "autofresh"  "with" hyp(x) := TacticsInternals.autofresh_fixed_param TacticsInternals.spec2 x.
-Tactic Notation "autofresh+" "with" hyp(x) := TacticsInternals.autofresh_fixed_param TacticsInternals.inst2 x.
+Tactic Notation "autofresh"  "with" hyp(x) := TacticsInternals.autofresh_fixed_param TacticsInternals.spec2 x idtac.
+Tactic Notation "autofresh'"  "with" hyp(x) := TacticsInternals.autofresh_fixed_param TacticsInternals.spec2 x fail.
+Tactic Notation "autofresh+" "with" hyp(x) := TacticsInternals.autofresh_fixed_param TacticsInternals.inst2 x idtac.
+Tactic Notation "autofresh'+" "with" hyp(x) := TacticsInternals.autofresh_fixed_param TacticsInternals.inst2 x idtac.
 Tactic Notation "autofresh"  "with" "existing" := TacticsInternals.autofresh_find_param TacticsInternals.spec2.
 Tactic Notation "autofresh+" "with" "existing" := TacticsInternals.autofresh_find_param TacticsInternals.inst2.
 Tactic Notation "autofresh" "for" "all" := fail "TODO". (* /!\ issues with unwrap_all *)
-Tactic Notation "autofresh"  := TacticsInternals.autofresh_param TacticsInternals.spec2.
-Tactic Notation "autofresh+" := TacticsInternals.autofresh_param TacticsInternals.inst2.
+Tactic Notation "autofresh"  := TacticsInternals.autofresh_param TacticsInternals.spec2 idtac.
+Tactic Notation "autofresh'"  := TacticsInternals.autofresh_param TacticsInternals.spec2 fail.
+Tactic Notation "autofresh+" := TacticsInternals.autofresh_param TacticsInternals.inst2 idtac.
+Tactic Notation "autofresh'+" := TacticsInternals.autofresh_param TacticsInternals.inst2 fail.
 
 
 
@@ -740,7 +751,9 @@ Ltac ea       := eassumption.
 (* Hiding/unhiding the type of a hyp *)
 Ltac hide      := TacticsInternals.hide.
 Ltac hidewith  := TacticsInternals.hidewith.
-Ltac unhide    := TacticsInternals.unhide. Print TacticsInternals.unhide.
+Ltac unhide    := TacticsInternals.unhide.
+Ltac uha       := repeat with TacticsInternals._hide do unhide end; repeat with TacticsInternals._hide_with do unhide.
+Tactic Notation "unhide" "all" := uha.
 Ltac softclear := TacticsInternals.softclear. (* This tactic goes further, and prevents the hyp from being used again *)
 
 (* FIXME: see similar declaration above *)
