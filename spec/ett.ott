@@ -715,8 +715,12 @@ F : p ~ a : A/R1 @ Rs in toplevel
 RolePath F = F @ Rs
 
 RolePath a = F @ R1,Rs
----------------------------- :: App
+---------------------------- :: TApp
 RolePath (a R1 b') = F @ Rs
+
+RolePath a = F @ Rs
+---------------------------- :: App
+RolePath (a + b') = F @ Rs
 
 RolePath a = F @ Rs
 ---------------------- :: IApp
@@ -769,8 +773,13 @@ by
 emptyA ~ nilR
 
 Apps ~ Rs
------------------------ :: consApp
+----------------------- :: consTApp
 Tm R1 , Apps ~ R1 , Rs
+
+Apps ~ Rs
+----------------------- :: consApp
+Tm + , Apps ~ Rs
+
 
 Apps ~ Rs
 ----------------------- :: consIApp

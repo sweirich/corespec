@@ -70,794 +70,6 @@ Proof.
 Admitted.
 Definition open_co := @to_move.
 
-(*
-Notation PatCtxTrim Γ p :=
-  (exists Ω F PiB B, PatternContexts Ω Γ F PiB p B).
-
-(* Readability notations *)
-(*
-Notation "'ArgRel' a" := (p_Rel a _)   (at level 50). (* FIXME: level? *)
-Notation "'ArgIrr' a" := (p_Irrel a _) (at level 50). (* FIXME: level? *)
-Notation "'ArgCoe' a" := (p_Co a _)    (at level 50). (* FIXME: level? *)
-*)
-
-(******** Internal relations used only for proving ********)
-
-(*  chain_open_telescope_deq G A PiB args 
-    (Notated #copd: G |= A == PiB ^ args)
-    represents that G |= A = "PiB opened with args" : TYPE / R *)
-
-(* Note: technically, PiB is not just a telescope - it also stores the
-   return type. We nevertheless use "telescope" in the naming
- *)
-(* TODO: This relation needs to include a Role *)
-Inductive chain_open_telescope_deq : context → tm → tm → pattern_args → Prop :=
-  | cotd_base : 
-     `{Typing Γ A a_Star →
-       chain_open_telescope_deq Γ A A []}
-
-  | cotd_eq   : 
-      `{chain_open_telescope_deq Γ A B args →
-        DefEq Γ (dom Γ) A C a_Star R →
-        chain_open_telescope_deq Γ C B args}
-
-  | cotd_rel  : 
-      `{chain_open_telescope_deq Γ (a_Pi Rel A' A) B args →
-        Typing Γ a A' →
-        chain_open_telescope_deq Γ (open_tm_wrt_tm A a) B (p_Tm (Role R) a :: args)}
-
-  | cotd_irr  : 
-      `{chain_open_telescope_deq Γ (a_Pi Irrel A' A) B args →
-        Typing Γ a A' →
-        chain_open_telescope_deq Γ (open_tm_wrt_tm A a) B (p_Tm (Rho Irrel) a_Bullet :: args)}
-
-  | cotd_capp : 
-      `{chain_open_telescope_deq Γ (a_CPi (Eq C C' K R) A) B args →
-        DefEq Γ (dom Γ) C C' K R →
-        chain_open_telescope_deq Γ (open_tm_wrt_co A g) B (p_Co g :: args)}
-.
-
-Notation "#copd: G |= A == B ^ args" := (chain_open_telescope_deq G A B args) (at level 50). (* TODO: figure out the level(s) *)
-
-Hint Constructors chain_open_telescope_deq.
-
-(* Same than previous relation, except we don't allow the use of internal equality.
-   Namely, represents A = "PiB opened with args". The base requirements are also
-   weakened (no typing check).
-   See above for additional details *)
-Inductive chain_open_telescope_partial : context → tm → tm → pattern_args → Prop :=
-  | cotp_base : 
-      `{chain_open_telescope_partial Γ A A []}
-
-  | cotp_rel  : 
-      `{chain_open_telescope_partial Γ (a_Pi Rel A' A) B args →
-        Typing Γ a A' →
-        chain_open_telescope_partial Γ (open_tm_wrt_tm A a) B (p_Tm (Role R) a :: args)}
-
-  | cotp_irr  : 
-      `{chain_open_telescope_partial Γ (a_Pi Irrel A' A) B args →
-        Typing Γ a A' →
-        chain_open_telescope_partial Γ (open_tm_wrt_tm A a) B (p_Tm (Rho Irrel) a :: args)}
-
-  | cotp_capp : 
-      `{chain_open_telescope_partial Γ (a_CPi (Eq C C' K R) A) B args →
-        chain_open_telescope_partial Γ (open_tm_wrt_co A g) B (p_Co g :: args)}
-.
-
-Notation "#cotp: G |= A = B ^ args" := (chain_open_telescope_partial G A B args) (at level 50). (* TODO: figure out the level(s) *)
-
-Hint Constructors chain_open_telescope_partial.
-
-Inductive decompose_subpattern :
-  tm → tm → pattern_args → pattern_args → context → context → Prop :=
-  | dsp_base : `{decompose_subpattern (a_Fam F) (a_Fam F) nil nil nil nil}
-
-  | dsp_full_rel : `{decompose_subpattern p p args nil Γ nil →
-                     PatCtxTrim (x ~ Tm A' ++ Γ') (a_App p (Role R) (a_Var_f x)) →
-                     decompose_subpattern (a_App p (Role R) (a_Var_f x)) (a_App p (Role R) (a_Var_f x))
-                                          (p_Tm (Role R) (a_Var_f x) :: args) nil
-                                          (x ~ Tm A' ++ Γ) nil}
-
-  | dsp_sub_rel  : `{decompose_subpattern p' p args coargs Γ coΓ →
-                     PatCtxTrim (x ~ Tm A' ++ coΓ ++ Γ) (a_App p (Role R) (a_Var_f x)) →
-                     decompose_subpattern p' (a_App p (Role R) (a_Var_f x))
-                                             args (p_Tm (Role R) (a_Var_f x) :: coargs)
-                                             Γ (x ~ Tm A' ++ coΓ)}
-.
-
-(* Simple notation to improve readability *)
-Notation "#Subpat:  p'  [ctx:  G - args: a ]   '#of'  p  '#by'  ctx: coG - args: coa" := (decompose_subpattern p' p a coa G coG) (at level 50). (* TODO: figure out the level(s) *)
-
-Hint Constructors decompose_subpattern.
-
-
-(* Checking the types of a list of arguments
-  Typing context, list of arguments, context with the types they need to have *)
-Inductive args_proper_type : context → pattern_args → context → Prop :=
-  | apt_base : `{args_proper_type Γ [] []}
-
-  | apt_rel : `{
-    args_proper_type Γ args Γ' →
-    Typing Γ a (subst_args_in_term Γ' args A) →
-    args_proper_type Γ (p_Tm (Role R) a :: args) (x ~ Tm A ++ Γ')}
-  (* TODO: irr/coe *)
-.
-
-Hint Constructors args_proper_type.
-
-
-
-(******** Lemmas about these inductives ********)
-
-Lemma chain_open_telescope_deq_Reg : `{
-  chain_open_telescope_deq Γ A B args →
-  Typing Γ A a_Star
-}.
-Proof.
-(*
-  induction 1; autoreg; ok;
-    let ih := fresh in
-    (* FIXME: switch to solve *)
-    first [
-      get (Typing _ (a_Pi _ _ _)) as ih;
-      eapply invert_a_Pi in ih;
-      autofwd; autofresh;
-      move: Typing_tm_subst;
-      move/(_ _ _ _ _ _ ltac:(eassumption) _ ltac:(eassumption));
-      rewrite -tm_subst_tm_tm_intro; cbn; last by done; by fsetdec
-    |
-      (* Coe case *)
-      get (Typing _ (a_CPi _ _) _) as ih;
-      eapply invert_a_CPi in ih;
-      autofwd; autofresh;
-      move: Typing_co_subst;
-      move/(_ _ _ _ _ _ _ _ _ _ ltac:(eassumption) ltac:(eassumption));
-      rewrite -co_subst_co_tm_intro; cbn; try done; first by fsetdec (* FIXME: -> last by done *)
-      (* TODO *)
-    ]. *)
-Admitted. 
-
-(*
-Lemma PatternContexts_chain_open_telescope_partial : `{
-  PatternContexts Ω Γ' F PiB p B →
-  pat_args_default p = args →
-  chain_open_telescope_partial Γ B PiB args
-}.
-Proof.
-  intros until 1. move: args.
-  induction H; inversion 1; cbn; subst.
-  - eauto.
-  - eapply cotp_rel. by eapply IHPatternContexts; try done.
-  - admit. (* FIXME: pattern needs to have irr args *) (* eapply cpo_irr. eassumption. *)
-  - admit. (* eapply cpo_capp. *)
-Admitted.
-*)
-
-(* TODO: maybe change this lemma to a more general one, and update the name *)
-Lemma chain_open_telescope_deq_fv_1 : `{
-  x ∉ dom Γ →
-  x ∉ fv_tm_args args →
-  chain_open_telescope_deq Γ (a_Pi rho A' A0) B args →
-  x ∉ fv_tm_tm_tm A0
-}.
-Proof.
-  (* TODO: ugly proof, improve. Also, the Rel case hasn't been updated in a while,
-           it might not be the most direct way to prove it anymore (unsure). *)
-  intros until 0.
-  move=> fvΓ fvargs h.
-  dependent induction h.
-
-  - eapply Typing_context_fv in H.
-    cbn in H.
-    autofwd.
-    move: subset_notin.
-    move/(_ _ _ (dom Γ)).
-    apply; ok.
-  - move: (DefEq_context_fv H) => /=.
-    ok.
-  - cbn in *.
-    move: (f_equal fv_tm_tm_tm x) => /=.
-    move=> h'. move: (eq_sym h'). (* FIXME shouldn't need to do this by hand *)
-    Import AtomSetProperties.
-    move: (@subset_refl (fv_tm_tm_tm (open_tm_wrt_tm A a))) => s.
-    move=> eq.
-    rewrite <-eq in s at 1.
-    move: s.
-    move/(union_subset _ ). introfwd.
-    move: (fv_tm_tm_tm_open_tm_wrt_tm_upper A a) => ?.
-    clear H eq.
-    move: IHh.
-    move/(_ _ _ _ _ ltac:(eauto) ltac:(eauto) ltac:(reflexivity) ltac:(reflexivity)) => IH.
-    ok.
-
-  - admit. (* Irr *)
-  - admit. (* Coe *)
-Admitted.
-
-(* TODO: generalize this lemma (to all cases, not just Rel) and prove *)
-Lemma chain_open_telescope_partial_subst_general : `{
-  x `notin` dom Γ →
-  x `notin` fv_tm_args args →
-  Γ ⊨ a : A →
-  chain_open_telescope_partial Γ B PiB (coargs ++ one (p_Tm (Role R) (a_Var_f x)) ++ args) →
-  chain_open_telescope_partial Γ (tm_subst_tm_tm a x B) PiB (coargs ++ (p_Rel a R :: args))
-}.
-Proof.
-  intros until 0.
-  move => fv fv' tpga h; dependent induction h.
-
-  - destruct coargs; cbn in x; inversion x.
-
-  - move: IHh. ecbn.
-Admitted.
-
-
-Lemma chain_open_telescope_partial_subst_general_rel : `{
-  x `notin` dom Γ →
-  x `notin` fv_tm_args args →
-  Γ ⊨ a : A →
-  chain_open_telescope_partial Γ B PiB (coargs ++ one (p_Tm (Role R) (a_Var_f x)) ++ args) →
-  chain_open_telescope_partial Γ (tm_subst_tm_tm a x B) PiB (coargs ++ (p_Rel a R :: args))
-}.
-Proof.
-  (* TODO: by specialization of previous lemma (after it gets generalized) *)
-Admitted.
-
-Lemma chain_open_telescope_partial_subst_Rel : `{
-  x `notin` dom Γ →
-  x `notin` fv_tm_args args →
-  Γ ⊨ a : A →
-  chain_open_telescope_partial Γ B PiB ((p_Tm (Role R) (a_Var_f x) :: args)) →
-  chain_open_telescope_partial Γ (tm_subst_tm_tm a x B) PiB ((p_Tm (Role R) a :: args))
-}.
-Proof.
-  (* FIXME: old, broken proof. Should be obtained from previous lemma instead *)
-  (*
-  intros until 0.
-  move => fv fv' tpga h; dependent induction h.
-
-  - move: IHh.
-    move/(_ tpga _ _ _ fv _ ltac:(reflexivity)) => ih.
-    eapply (cpo_eq ih).
-    move: (DefEq_context_fv H); introfwd.
-    rewrite tm_subst_tm_tm_fresh_eq. { ok. }
-    rewrite tm_subst_tm_tm_fresh_eq. { ok. }
-    ok.
-
-  - rewrite <- tm_subst_tm_tm_intro; last first.
-    {
-      eapply chain_open_telescope_deq_fv_1; ok.
-    }
-    eapply cpo_rel.
-    ok.
-  *)
-Admitted.
-
-
-Lemma invert_cotd_ArgRel : `{
-  chain_open_telescope_deq Γ A PiB (p_Tm (Role R) a2 :: args) -> 
-  Γ ⊨ a1 : a_Pi Rel A2 B2 →
-  Γ ⊨ a2 : A2 →
-  DefEq Γ (dom Γ) A (open_tm_wrt_tm B2 a2) a_Star Rep →
-  chain_open_telescope_deq Γ (a_Pi rho A' B2) PiB args}.
-Proof.
-Admitted.
-
-
-Lemma decompose_subpattern_refl : `{
-  PatternContexts Ω Γ F PiB p B →
-   ∃ args, 
-  decompose_subpattern p p args nil Γ nil 
-}.
-Proof.
-  induction 1; ok.
-  - econstructor; ok.
-    econstructor.
-    eassumption.
-    eassumption.
-  - admit. (* TODO: Irrel *)
-  - admit. (* TODO: Coe *)
-Admitted.
-
-Lemma decompose_subpattern_pat_head : `{
-  decompose_subpattern (a_Fam F) p args coargs Γ coΓ →
-  pat_head p = Some F
-}.
-Proof.
-  move => ?????? h.
-  dependent induction h; ok.
-Qed.
-
-(* FIXME: naming conventions *)
-Lemma dsp_patctx_cotp : `{
-  decompose_subpattern (a_Fam F) p p'args cop'args ∅ coΓp' →
-  PatternContexts Ω' coΓp' F PiB p B →
-  chain_open_telescope_partial Γ B PiB cop'args}.
-Proof.
-  (* TODO *)
-Admitted.
-
-Lemma dsp_invert_rel : `{
-  decompose_subpattern (a_App a (Role R) (a_Var_f x)) p args coargs Γ coΓ →
-  exists args' A Γ',
-  args = p_Rel (a_Var_f x) R :: args' /\
-  Γ = x ~ Tm A ++ Γ' /\
-  decompose_subpattern a p args' (coargs ++ [p_Rel (a_Var_f x) R]) Γ' (coΓ ++ x ~ Tm A)
-}.
-Proof.
-  (* TODO *)
-Admitted.
-
-Lemma decompose_subpattern_fv : `{
-  decompose_subpattern p' p args coargs Γ coΓ →
-  fv_tm_tm_tm p' [=] dom Γ /\ fv_tm_tm_tm p [=] dom Γ ∪ dom coΓ
-}.
-Proof.
-  induction 1; cbn; ok.
-Qed.
-
-Lemma decompose_subpattern_fv_rel : `{
-  decompose_subpattern p' (a_App p f (a_Var_f x0)) args coargs Γ (x0 ~ Tm A ++ coΓ) →
-  fv_tm_tm_tm p [=] dom Γ ∪ dom coΓ
-}.
-Proof.
-  intros until 0.
-  move=> h; dependent induction h.
-  eapply decompose_subpattern_fv in h.
-  ok.
-Qed.
-
-
-Definition Pattern := ett_ott.Pattern. (* FIXME: a file (ett_match maybe?) is masking Pattern *)
-
-(******** Main lemmas ********)
-
-Lemma invert_cons_ln : `(
-  binds F (Ax p b PiB R1 Rs) toplevel →
-  PatternContexts Ω' Γ' F PiB p B → (* PiB just stands for B with some quantifiers in front of it *)
-  Rename p b p1 b1 ((fv_tm_tm_tm a) ∪ (fv_tm_tm_tm p)) D →
-  Γ ⊨ a : A →
-  ∀ p',
-  tm_pattern_agree a p' →
-  SubPat p' p1 →
-    chain_open_telescope_deq Γ A PiB (pat_args_default a)
-).
-Proof.
-  intros until 3.
-  move=> tpg; autoreg; move: tpg.
-  induction 1; last 2 first.
-
-  (* Removing all cases that don't apply - where `a` can't match any pattern *)
-  all: try solve [inversion 1].
-
-  all: exactly 6 goals.
-
-  (* Base case (axiom typing) *)
-  - inversion 1. subst.
-    introfwd.
-    cbn.
-    move: (SubPat_pat_head H5) => /= h1.
-    move: (Rename_pat_head H1) => h4.
-    move: (binds_toplevel_pat_head H) => h.
-    have eqf: F = F0 by congruence.
-    subst.
-    move: (binds_unique _ _ _ _ _ H H3 uniq_toplevel).
-    injection 1.
-    ok.
-
-  (* Relevant app *)
-  - inversion 1.
-    introfwd; subst.
-    autoreg.
-    eapply IHtpg1 in H9; first last; try done.
-    (* Subpattern *)
-    { move: H10.
-      clearall.
-      move=> h; dependent induction h; try inversion H; ok. }
-    (* Renaming hyp *)
-    { cbn in H1.
-      eapply Rename_subset.
-      by eassumption.
-      ok. }
-    econstructor 3; eassumption.
-
-  (* Irrelevant app *)
-  - inversion 1.
-    introfwd; subst.
-    autoreg.
-    eapply IHtpg1 in H7; first last; try done.
-    (* Subpattern *)
-    { move: H8.
-      clearall.
-      move=> h; dependent induction h; try inversion H; ok. }
-    (* Renaming hyp *)
-    { cbn in H1.
-      (* rewrite union_empty_r in H1. *) (* FIXME: somehow, this loops..? *)
-      eapply Rename_subset.
-      by eassumption.
-      ok. }
-    econstructor 4; eassumption.
-
-  (* Conversion *)
-  - introfwd.
-    autoreg.
-    eapply IHtpg1 in H3; ok.
-
-  (* CApp *)
-  - introfwd.
-    inversion H3.
-    autoreg.
-    eapply IHtpg in H6; first last; try done.
-    (* Subpattern *)
-    { subst.
-      move: H4.
-      clearall.
-      move=> h. dependent induction h; try inversion H; ok. }
-    (* Renaming hyp *)
-    { cbn in H1.
-      (* rewrite union_empty_r in H1. *) (* FIXME: somehow, this loops..? *)
-      eapply Rename_subset.
-      by eassumption.
-      ok. }
-    econstructor 5; eassumption.
-
-  (* Absurd case (constant typing - binding both F as an axiom and as a constant) *)
-  - introfwd.
-    inversion H4; subst. eapply SubPat_pat_head in H5; autofwd. cbn in H5.
-    move: (binds_toplevel_pat_head H) => eph2.
-    move: (Rename_pat_head ltac:(eassumption)) => eph1.
-    have eqF : F = F0 by congruence.
-    subst.
-    by move: (binds_unique _ _ _ _ _ H H3 uniq_toplevel).
-Qed.
-
-
-
-(* Warning: here, p is assumed to have already been renamed to avoid variables in a.
-   Namely, using the notations of the toplevel theorem, it corresponds to p1, not p *)
-Lemma TODO_name : `{
-  PatternContexts Ω' Γ' F PiB p B →
-  (fv_tm_tm_tm p) ∩ (fv_tm_tm_tm a) [=] empty →
-  MatchSubst a p' b b' →
-  forall args A p'args cop'args Γp' coΓp',
-  Γ' ⊨ b : B →
-  Γ ⊨ a : A →
-  pat_args_default a = args → (* FIXME: temporarily not enforcing head a = F, is it okay? *)
-  (* subpattern p' p → *)
-  decompose_subpattern p' p p'args cop'args Γp' coΓp' → 
-  Γ' = coΓp' ++ Γp' →
-  args_proper_type Γ args Γp' →
-    ∃ B',
-  chain_open_telescope_partial Γ B' PiB (cop'args ++ args) /\
-  (subst_args_in_ctx Γp' args coΓp') ++ Γ ⊨ b' : B'
-}.
-Proof.
-  induction 3; introfwd.
-
-  - cbn in H4. invs H4.
-    move: (decompose_subpattern_pat_head H5); introfwd. subst.
-    ok.
-    + ecbn.
-      have ? : Γp' = nil by cbn in H7; inversion H7. subst.
-      ecbn in H.
-      move: (@dsp_patctx_cotp).
-      move: (PatternContexts_pat_head H) => ?.
-      have ? : F = F0 by congruence. subst.
-      move /(_ _ _ _ _ _ _ _ _ _ H5 H).
-      by ecbn.
-    + ecbn. admit. (* Weakening *)
-
-  (* Rel *)
-  - invs H6; (* CHECK: no need for dependent induction, right? *)
-    softclear H6.
-    (* eapply decompose_subpattern_PatternContexts_full in H6. *)
-    * eapply invert_a_App_Role in H4; autofwd.
-      cbn in IHMatchSubst.
-      with decompose_subpattern do ltac:(fun h => eapply dsp_sub_rel in h).
-      move: H3 H0 IHMatchSubst => /= H3 H0.
-      move/(_ ltac:(ok)).
-      move /(_ _ _ _ _ _ _ H3 H4 _ H17 _).
-      ecbn.
-      invs H5.
-      with args_proper_type do invs.
-      move/(_ _ eq_refl eq_refl ltac:(eassumption)).
-      introfwd.
-      eexists.
-      with chain_open_telescope_partial do ltac:(fun h => eapply chain_open_telescope_partial_subst_Rel in h; try eassumption).
-      ok.
-      (* Substituted typing *)
-      {
-        eapply Typing_tm_subst.
-        move: H11.
-        ecbn.
-        intros; eassumption.
-        by inversion H8.
-      }
-      (* x ∉ dom Γ *)
-      {
-        autoreg.
-        with Ctx do ltac:(fun h => solve [by invs h]).
-      }
-      (* x ∉ fv_tm_args args1 *)
-      {
-        have h : Pattern a1 by eapply MatchSubst_Pattern_1; eauto. (* FIXME: eauto doesn't use MatchSubst_Pattern_1 *)
-        eapply pat_args_default_fv in h.
-        by ok.
-      }
-
-      by ok.
-
-    * (* invs H4. *)
-      with (Typing _ (a_App _ _ _)) do ltac:(fun h => eapply invert_a_App_Role in h; autofwd).
-      get (Typing ((_, _) :: _)) as h3.
-      get (_ [=] empty) as h0.
-      move: h3 h0 IHMatchSubst => /= h3 h0.
-      move/(_ ltac:(ok)).
-      with decompose_subpattern do ltac:(fun h => eapply dsp_invert_rel in h; autofwd; rename h into h1).
-      with decompose_subpattern do ltac:(fun h => eapply dsp_sub_rel in h; rename h into h2).
-      subst.
-      get (Typing _ _ (a_Pi _ _ _)) as h4.
-      get args_proper_type as h8.
-      move /(_ _ _ _ _ _ _ h3 h4 eq_refl h2 _ ltac:(inversion h8; eassumption)).
-      ecbn.
-      simpl_env.
-      move/(_ eq_refl).
-      introfwd.
-      get chain_open_telescope_partial as h5.
-      eapply (@chain_open_telescope_partial_subst_general_rel _ _ _ _ _ _ _ nil) in h5; first last.
-      (* Typing of A *)
-      { ok. }
-
-      (* x ∉ fv_tm_args args0 *)
-      {
-        fold (@app pattern_arg). (* FIXME *)
-        admit.
-      }
-
-
-      (* x0 ∉ dom Γ *)
-      {
-        autoreg.
-        get (Ctx (_ ++ _)) as h6.
-        eapply Ctx_uniq in h6.
-        inversion h6.
-        match goal with
-          H : ?x ∉ _ |- ?x ∉ _ => move: H; simpl_env; by ok
-        end.
-      }
-
-      (* Big existential *)
-      {
-        simpl_env in H4.
-        ok.
-        fold (@app pattern_arg) in h5. (* FIXME *)
-        ecbn in h5.
-        move eq: (coargs ++ p_Tm (Role R) (a_Var_f x) :: pat_args_default a1) => old.
-        all: admit.
-      }
-
-      (* PatCtxTrim ... *)
-      {
-        with args_proper_type do invs.
-        simpl_env.
-        ok.
-      }
-
-
-  - (* Irrel *)
-    admit.
-
-
-  - (* Co *)
-    admit.
-Admitted.
-
-
-
-
-
-Lemma typing_args_proper_type : `{
-  (* TODO: some hypotheses might not be necessary *)
-  chain_open_telescope_deq Γ A PiB args_a →
-  PatternContexts Ωp1 Γp1 F PiB p1 B1 →
-  length args_a = length Γp1 →
-  forall a,
-  Γ ⊨ a : A →
-  pat_args_default a = args_a → 
-  pat_head a = Some F →
-  Pattern a →
-  (* subpattern p1' p1 → *)
-  tm_pattern_agree a p1 →
-  args_proper_type Γ args_a Γp1 /\
-  DefEq Γ (dom Γ) (subst_args_in_term Γp1 args_a B1) A a_Star Rep
-}.
-Proof.
-  intros until 3.
-  move=> a.
-  revert all except a.
-  induction a; intros;
-    try with Pattern do fun h => solve [inv h].
-
-  - (* Rel/Irrel *)
-    intros.
-    destruct nu;
-    cbn in H3;
-    subst.
-    + destruct Γp1; simpl in H1; inversion H1.
-      move: (invert_a_App_Role H2) => [A2 [B2 [TA1 [TA2 TA3]]]]; subst.
-      invs H0; with tm_pattern_agree do ltac:(fun h => inversion h).
-      all: exactly 1 goal.
-
-      eapply invert_cotd_ArgRel in H; first last;
-        try eassumption.
-
-      all: exactly 1 goal.
-      autofwd.
-
-      eapply IHa1 in H; try done.
-      2: { clear H0; eassumption. }
-      all: try eassumption.
-      2: { with Pattern do ltac:(fun h => solve [inversion h; done]). }
-      all: exactly 1 goal. (* Done applying induction *)
-
-      clear IHa1 IHa2.
-      autofwd.
-      ecbn in H1.
-      move: E_PiFst; move/(_ _ _ _ _ _ _ _ _ H1) => deq1.
-      move: E_PiSnd; move/(_ _ _ _ _ _ _ _ _ _ _ H1) => deq2.
-      split.
-
-      { eapply E_Sym in deq1; autoreg; econstructor; try done; eapply E_Conv; eassumption. }
-      { eapply invert_a_App_Role in H2; autofwd.
-        eapply E_Conv in TA2; first last; [| by eapply E_Sym; eassumption |]; [by autoreg |].
-        move: (E_Refl _ (dom Γ) _ _ Nom TA2) => TA2refl.
-        eapply deq2 in TA2refl.
-        move: (E_Trans _ _ _ _ _ _ _ TA2refl (E_Sym _ _ _ _ _ _ TA3)).
-        admit. (* QUESTION *)
-      }
-
-    + (* Irrel *)
-      (* Getting rid of rho = Rel, which is impossible in a pattern (has to be a role instead) *)
-      destruct rho.
-      all: with tm_pattern_agree do ltac:(fun h => try solve [inversion h]).
-
-      admit.
-
-  - (* CApp *)
-    admit.
-
-  - (* Head *)
-    cbn in *.
-    match goal with H : Some _ = Some _ |- _ => invs H end.
-    cbn in *.
-    match goal with H : 0 = length _ |- _ => symmetry in H; eapply length_zero_iff_nil in H end; subst.
-    with chain_open_telescope_deq do ltac:(fun h => dependent induction h) end;
-    with PatternContexts do invs.
-    all: cbn; split; try solve [econstructor | by eapply E_Refl].
-    eapply E_Trans;
-      (* This is essentially an eassumption *)
-      try solve [eapply E_Sub; [eassumption | destruct R; econstructor]].
-    all: exactly 1 goal.
-    eapply IHchain_open_telescope_deq; try done.
-    autoreg; destruct R; eapply E_Conv; ok.
-Admitted.
-
-
-Lemma chain_open_telescope_deq_partial_internal_functionality : `{
-  Γ ⊨ A1 : a_Star →
-  chain_open_telescope_deq Γ A1 PiB args →
-  forall A2,
-  chain_open_telescope_partial Γ A2 PiB args →
-    DefEq Γ (dom Γ) A1 A2 a_Star Rep
-}.
-Proof.
-  intros until 1.
-  move=> h; dependent induction h.
-  - move=> a2 h; dependent induction h. ok.
-  - move=> a2 cpo2; dependent induction cpo2.
-    + eapply E_Trans.
-      eapply E_Sym.
-      eapply E_Sub in H0. eassumption.
-      by destruct R.
-      eapply IHh.
-      by autoreg. ok.
-    + eapply E_Trans.
-      eapply E_Sym.
-      eapply E_Sub.
-      exact H0. by destruct R.
-      eapply IHh. by autoreg.
-      eapply cotp_rel; eassumption.
-    + eapply E_Trans.
-      eapply E_Sym.
-      eapply E_Sub.
-      exact H0. by destruct R.
-      eapply IHh. by autoreg.
-      eapply cotp_irr; eassumption.
-    + eapply E_Trans.
-      eapply E_Sym.
-      eapply E_Sub.
-      exact H0. by destruct R.
-      eapply IHh. by autoreg.
-      eapply cotp_capp; eassumption.
-  - move=> a2 cpo2; dependent induction cpo2; exactly 1 goal.
-    move: IHh.
-    move/(_ ltac:(eauto using chain_open_telescope_deq_Reg) _ cpo2).
-    move/(E_PiSnd _).
-    apply.
-    eauto.
-  - move=> a2 cpo2; dependent induction cpo2; exactly 1 goal.
-    move: IHh.
-    move/(_ ltac:(eauto using chain_open_telescope_deq_Reg) _ cpo2).
-    move/(E_PiSnd _).
-    move/(_ a a (E_Refl _ _ _ _ _ ltac:(ea))) => p.
-    (* FIXME: irr arguments are broken atm *)
-    admit.
-  - move=> a2 cpo2; dependent induction cpo2; exactly 1 goal.
-    move: (chain_open_telescope_deq_Reg h) IHh => reg.
-    move/(_ ltac:(by eassumption) _ cpo2) => eq.
-    move: (eq) => eq2.
-    eapply E_CPiSnd in eq; try eassumption.
-    * autoreg.
-      (* FIXME fragile *)
-      erewrite (to_move _a1_) in eq.
-      erewrite (to_move _b1_) in eq.
-      by eassumption.
-      (* TODO (HELP): pretty sure there's a generalization lemma somewhere..?
-         Possibly in erase.v or erase_syntax.v. It should allow to conclude
-         from `eq`. *)
-    * destruct R; unfold param; destruct str; cbn; ok.
-    * destruct R0; unfold param; destruct str; cbn; ok.
-Admitted.
-
-    
-Theorem MatchSubst_preservation : `{
-  MatchSubst a p1 b1 b' →
-  Rename p b p1 b1 ((fv_tm_tm_tm a) ∪ (fv_tm_tm_tm p)) D →
-  binds F (Ax p b PiB R1 Rs) toplevel →
-(*  Γ' ⊨ b : A'' → *)
-  Γ ⊨ a : A →
-  Γ ⊨ b' : A}.
-Proof.
-  intros until 0.
-  move=> ms rn bds tpg_a.
-
-  (* Deriving basic facts *)
-  move: (Rename_Pattern rn) => [pat_p pat_p1].
-  move: (toplevel_inversion bds) => [Ωp] [Γp] [B] [patctx_p] [tpg_b] [roleing rnge].
-  move: (MatchSubst_match ms) => a_agree_p1.
-  move: (Rename_spec rn) => [fv_p1 fv_b1].
-  have fv_p1a : fv_tm_tm_tm p1 ∩ fv_tm_tm_tm a [=] empty by fsetdec.
-  move: (Rename_PatCtx_Typing_exist rn patctx_p tpg_b) => [Ωp1] [Γp1] [B1] [patctx_p1] tpg_b1.
-  move: (decompose_subpattern_refl patctx_p1) => [args_p1] dsp_p1.
-  move: (Typing_regularity tpg_a) => tpg_A.
-
-  (* First key lemma: getting a cpo on the type of a *) (* FIXME: better name *)
-  move: invert_cons_ln.
-  move/(_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ bds patctx_p rn tpg_a _ a_agree_p1 (SubPat_Refl _ pat_p1)) => cot_a.
-
-  (* Interlude: a's arguments have the proper types *)
-  have tp_args: args_proper_type Γ (pat_args_default a) Γp1. admit. (* TODO: from typing_args_proper_type *)
-
- (* Second key lemma: getting a typing for b' and a cot on its type *) 
-  (* FIXME: name *)
-  move: (@TODO_name).
-  move/(_ _ _ _ _ _ _ _ _ _ _ _ patctx_p1 fv_p1a ms _ _ _ _ _ _ tpg_b1 tpg_a eq_refl dsp_p1) => /=.
-  move/(_ eq_refl).
-  move/(_ tp_args).
-  move=> [B'] [cot_b'] tpg_b'.
-
-  (* Third key lemma: "Functionality" of chain_open_telescope_deq wrt 
-     chain_open_telescope_partial *)
-  move: (@chain_open_telescope_deq_partial_internal_functionality).
-  move/(_ _ _ _ _ tpg_A cot_a _ cot_b') => eq_AB'.
-
-  (* Converting b' to A *)
-  move: (E_Conv).
-  move/(_ _ _ _ _ tpg_b' (E_Sym _ _ _ _ _ _ eq_AB') tpg_A).
-
-  done.
-Admitted.
-*)
 
 (* --------------------------------------------------------- *)
 
@@ -865,6 +77,10 @@ Admitted.
 Definition domFresh {a} (sub:list (atom * a)) s :=
   Forall (fun '(x,_) => x `notin` s) sub.
 
+Lemma domFresh_empty : forall A (G:list(atom*A)), domFresh G empty.
+Proof. 
+  induction G; unfold domFresh in *; try destruct a; eauto.
+Qed.
 
 Lemma domFresh_singleton : forall A (G:list(atom*A)) x, 
    domFresh G (singleton x) <-> x `notin` dom G.
@@ -877,6 +93,14 @@ Proof.
   intro. econstructor; eauto. eapply IHG. fsetdec.
 Qed.
 
+Lemma domFresh_singleton2 : forall A (G:list(atom*A)) x, 
+   x `notin` dom G ->
+   domFresh G (singleton x).
+Proof.
+  intros.
+  erewrite domFresh_singleton.
+  auto.
+Qed.
 
 Lemma domFresh_cons : forall A x (st:A) Gp s,
  domFresh (x ~ st ++ Gp) s <-> 
@@ -903,7 +127,13 @@ Lemma domFresh_union : forall (G:list (atom*sort)) s1 s2,
  domFresh G s1 /\ (domFresh G s2).
 Proof.
   induction G; intros; unfold domFresh in *. split; eauto.
-Admitted.
+  split; move=>h; inversion h; destruct a; simpl.
+  rewrite -> IHG in H2. split_hyp.
+  split; econstructor; try fsetdec; eauto.
+  inversion H. inversion H0.
+  econstructor; eauto 1.
+  rewrite IHG. eauto.
+Qed.
 
 Lemma domFresh_union1 : forall (G:list (atom*sort)) s1 s2,
  domFresh G (s1 `union` s2) -> 
@@ -1094,6 +324,14 @@ Proof.
   intros. simpl. auto.
 Qed.
 
+Lemma cps_co_cons : forall g x s sub1, 
+  co_subst_co_tm g_Triv x (cps_tm s sub1) =
+  cps_tm s ((x, p_Co g) :: sub1).
+Proof.
+  intros. simpl. auto.
+Qed.
+
+
 Lemma cps_nil : forall s,
   cps_tm s ∅ = s.
 Proof. 
@@ -1134,6 +372,24 @@ Proof.
   inversion H1.
   rewrite IHsub; auto.
   rewrite co_subst_co_tm_open_tm_wrt_tm. auto.
+  auto.
+Qed.
+
+Lemma cps_open_tm_wrt_co : forall C a sub,
+    lc_sub sub ->
+    cps_tm (open_tm_wrt_co C a) sub
+     = open_tm_wrt_co (cps_tm C sub) 
+                      (cps_co a sub).
+Proof.
+  induction sub. simpl. auto.
+  move=> LC. inversion LC.
+  simpl. destruct a0. destruct p; simpl.
+  inversion H1.
+  rewrite IHsub; auto.
+  rewrite tm_subst_tm_tm_open_tm_wrt_co; auto.
+  inversion H1.
+  rewrite IHsub; auto.
+  rewrite co_subst_co_tm_open_tm_wrt_co. auto.
   auto.
 Qed.
 
@@ -1228,11 +484,11 @@ Inductive wf_sub (G : context) : list (atom * pattern_arg) -> Prop :=
       x ∉ dom G    ->
       (fv_tm_tm_tm a2) \u (fv_co_co_tm a2) [<=] dom G ->
       wf_sub G ((x,p_Tm nu a2)::sub0)
-  | wf_sub_cons_co : forall c sub0, 
+  | wf_sub_cons_co : forall x sub0, 
       wf_sub G sub0 -> 
-      c ∉ dom sub0 ->
-      c ∉ dom G    ->
-      wf_sub G ((c,p_Co g_Triv)::sub0).
+      x ∉ dom sub0 ->
+      x ∉ dom G    ->
+      wf_sub G ((x,p_Co g_Triv)::sub0).
 
 Hint Constructors wf_sub.
 
@@ -1275,6 +531,27 @@ Proof.
   eapply wf_sub_domFresh; eauto.
 Qed.
 
+Lemma wf_cps_co_subst_var : forall sub0 x G g, 
+    wf_sub G ((x, p_Co g) :: sub0) ->
+    cps_co (g_Var_f x) ((x, p_Co g) :: sub0) = g_Triv.
+Proof.
+  intros.
+  inversion H. subst.
+  generalize dependent sub0.
+  induction sub0; intros; simpl.
+  destruct (x == x) eqn:h. rewrite h; auto. contradiction.
+  destruct a.
+  inversion H3; subst; simpl in *.
+  + rewrite tm_subst_tm_co_fresh_eq; eauto.
+    rewrite cps_co_fresh_eq; eauto.
+    eapply wf_sub_domFresh; simpl; eauto. fsetdec.
+    simpl. eapply domFresh_singleton2. fsetdec.
+  + rewrite (co_subst_co_co_fresh_eq _ _ a); eauto.
+    rewrite cps_co_fresh_eq; eauto; simpl.
+    eapply domFresh_empty.
+    eapply domFresh_singleton2. auto.
+Qed.    
+
 (* --------------------------------------------------------- *)
 
 Lemma apply_pattern_args_tail_Tm : forall rest a b nu,
@@ -1300,7 +577,7 @@ Fixpoint args_roles ( l : list pattern_arg) : list role :=
    match l with 
         | nil => nil
         | ( (p_Tm (Role R) _) :: xs ) => R :: args_roles xs 
-        | ( (p_Tm (Rho Rel) _)  :: xs ) => Nom :: args_roles xs
+        | ( (p_Tm (Rho Rel) _)  :: xs ) => args_roles xs
         | ( (p_Tm (Rho Irrel) _)  :: xs ) => args_roles xs
         | ( (p_Co _         ) :: xs)  => args_roles xs  
         end.
@@ -1390,11 +667,11 @@ Inductive open_telescope : context -> Apps -> tm -> pattern_args -> pattern_args
       DefEq G (dom G) B0 (open_tm_wrt_tm B a) a_Star Rep ->
       open_telescope G (A_cons (A_Tm (Rho Irrel)) apps) (a_Pi Irrel A B) (p_Tm (Rho Irrel) a_Bullet :: args)
                                         (p_Tm (Rho Irrel) a :: targs)  C
-  | open_Co : forall G apps a b A R B B0 args targs g C,
+  | open_Co : forall G apps a b A R B B0 args targs C,
       DefEq G (dom G)  a b A R ->
       open_telescope G apps B0 args targs C ->
       DefEq G (dom G) B0 (open_tm_wrt_co B g_Triv) a_Star Rep ->
-      open_telescope G (A_cons A_Co apps) (a_CPi (Eq a b A R) B) (p_Co g :: args)  (p_Co g_Triv :: targs) C
+      open_telescope G (A_cons A_Co apps) (a_CPi (Eq a b A R) B) (p_Co g_Triv :: args)  (p_Co g_Triv :: targs) C
 .
 
 Hint Constructors open_telescope.
@@ -1419,10 +696,11 @@ Proof.
          eapply open_Irrel; eauto 1.
     ++ simpl in H.
        destruct (IHargs _ G A H) as [PiB [targs h0]]. split_hyp.
-       autoinv. eexists; eexists; split; eauto 1.
-       eapply open_Co; eauto 1.
-Qed.
+       autoinv. subst. eexists; eexists; split; eauto 1.
+       eapply open_Co; eauto 1. 
+Qed. 
 
+(*
 Lemma invert_Typing_pattern_args3 : forall args hd,
   forall G A F Rs, 
     RolePath (apply_pattern_args hd args) F Rs ->
@@ -1454,7 +732,7 @@ Proof.
        eexists; eexists; repeat split; eauto 1.
        eapply open_Co; eauto 1.
        inversion H2. subst. simpl. auto.
-Qed.
+Qed. *)
 
 
 Lemma Typing_a_Fam_unique : forall F G A B, 
@@ -1598,6 +876,28 @@ Proof.
   rewrite Eq2. auto. rewrite IHy. auto.
 Qed.
 
+Lemma cps_pattern_fresh :  forall A pargs1 x p sub (G:list(atom*A)),
+   x `notin` dom G ->
+   fv_co_co_pattern_args (map (cps_pattern_arg^~ sub) pargs1) ⊂ dom G ->
+   fv_tm_tm_pattern_args (map (cps_pattern_arg^~ sub) pargs1) ⊂ dom G ->
+   map (cps_pattern_arg^~ ((x, p) :: sub)) pargs1 = 
+   map (cps_pattern_arg^~ sub) pargs1.
+Proof. 
+  intros A pargs0.
+  induction pargs0; intros; simpl in *; auto.
+  erewrite IHpargs0; eauto.
+  destruct a; simpl in *; f_equal; f_equal.
+  destruct p.
+  simpl.
+  rewrite tm_subst_tm_tm_fresh_eq; auto. 
+  simpl.
+  rewrite co_subst_co_tm_fresh_eq; auto. 
+  destruct p.
+  simpl.
+  rewrite tm_subst_tm_co_fresh_eq; auto. 
+  simpl.
+  rewrite co_subst_co_co_fresh_eq; auto. 
+Qed.
 
 (*
 
@@ -1645,10 +945,10 @@ Lemma BranchTyping_lemma : forall F n G1 G R A scrut hd pargs1 B0 B1 C,
     sub = zip (map fst G1) (rev targs1) ->
     wf_sub G sub ->
     length G1 = length (rev targs1) ->
+    (map (fun a => cps_pattern_arg a sub) pargs1 = args1) ->
     forall B0' targs2,
     open_telescope G n B0' args2 targs2 A ->
     DefEq G (dom G) B0' (cps_tm B0 sub) a_Star Rep ->
-    (map (fun a => cps_pattern_arg a sub) pargs1 = args1) ->
     Typing G (apply_pattern_args hd args1) B0' ->
     forall b1' b1,
     b1' = apply_pattern_args b1 (map degrade args2) ->
@@ -1690,11 +990,6 @@ Proof.
         with (fv_co_co_tm (apply_pattern_args _ _) [<=] _) do ltac:(fun h =>
           rewrite -> fv_co_co_tm_apply_pattern_args in h).
         simpl in *.
-(*
-          have ?: fv_tm_tm_tm hd [<=] dom G. admit.
-          have ?: fv_co_co_tm hd [<=] dom G. admit.  *)
- (*         have ?: fv_tm_tm_pattern_args pargs1 [<=] dom G. 
-          have ?: fv_co_co_pattern_args pargs1 [<=] dom G. admit. *)
           rewrite! cps_tm_apply_pattern_args.
           rewrite (cps_tm_fresh_eq hd).
           eapply wf_sub_domFresh with (G:=G); auto.
@@ -1727,167 +1022,173 @@ Proof.
  
   all: set (sub := zip (map fst G1) (rev targs1)).
   all: set (args1 := map (fun a => cps_pattern_arg a sub) pargs1).
-  all: set (args1' := (args1 ++ [p])) in *.
-  all: set (targs1' :=  (targs1 ++ [p])) in *.
 
-  + (* Role argument *) 
-    destruct p; try destruct nu; simpl in *; try discriminate.
-    match goal with [H : A_Tm _ = _ |- _ ] => inversion H; subst end.
+  all: destruct p; try destruct nu; simpl in *; try discriminate.
+  all: try match goal with [H : A_Tm _ = _ |- _ ] => inversion H; subst end.
+  all: try match goal with [H : A_Co _ = _ |- _ ] => inversion H; subst end. 
 
-    with (open_telescope) do ltac:(fun h => inversion h; subst; clear h).
+  all: with (open_telescope) do ltac:(fun h => inversion h; subst).
+  all: match goal with 
+   [ H : open_telescope ?G ?r _ _ (?p1 :: _) ?A |- _ ] =>
+     set (targs1' :=  (targs1 ++ [p1])) in *
+  end.
 
-    with (Typing G a) do ltac:(fun h => 
-         move: (Typing_context_fv h) => ?; split_hyp).
-    have ?: lc_tm a by eapply Typing_lc1; eauto.
+  all: try 
+    with (Typing G a) do ltac:(fun h =>  move: (Typing_context_fv h) => ?; split_hyp).
+  all: try 
+    with (Typing G a0) do ltac:(fun h =>  move: (Typing_context_fv h) => ?; split_hyp).
+  all: try
+    with (DefEq _ _ a) do ltac:(fun h => move: (DefEq_context_fv h) => ?; split_hyp).
+  all: try have ?: lc_tm a by eapply Typing_lc1; eauto.
+  all: try have ?: lc_tm a0 by eapply Typing_lc1; eauto.
+  (* already have lc_co g *)
+  all: try with (Typing _ _ (cps_tm _ _)) do  ltac:(fun h => rewrite cps_a_Pi in h).
+  all: try with (DefEq _ _ _ (cps_tm _ _)) do  ltac:(fun h => rewrite cps_a_Pi in h).
+  all: autofresh. 
+  all: have ?: x `notin` dom sub by (unhide Fr; rewrite dom_zip_map_fst; auto).
+  all: have ?: x `notin` dom G   by (unhide Fr; fsetdec_fast).
+  all: try match goal with 
+      [ targs1' := ?targs1 ++ [?p (Role ?R) ?a] : _ |- _  ]=> 
+      set (G1' := (x, Tm A0) :: G1) in *;
+      set (sub' := (x, p_Tm (Role R) a) :: (zip (map fst G1) (rev targs1)));
+      set (args1' := args1 ++ [p_Tm (Role R) a]);
+      set (pargs1' := pargs1 ++ [p_Tm (Role R) (a_Var_f x)])
+     end. 
 
-    with (Typing _ _ (cps_tm _ _)) do 
-         ltac:(fun h => rewrite cps_a_Pi in h).
-    with (DefEq _ _ _ (cps_tm _ _)) do 
-         ltac:(fun h => rewrite cps_a_Pi in h).
+  all: try match goal with 
+      [ targs1' := ?targs1 ++ [?p (Rho ?rho) ?a] : _ |- _  ]=> 
+      set (G1' := (x, Tm A0) :: G1) in *;
+      set (sub' := (x, p_Tm (Rho rho) a) :: (zip (map fst G1) (rev targs1)));
+      match rho with 
+         | Rel => 
+            set (args1' := args1 ++ [p_Tm (Rho rho) a]);
+            set (pargs1' := pargs1 ++ [p_Tm (Rho rho) (a_Var_f x)])
+         | Irrel =>
+            set (args1' := args1 ++ [p_Tm (Rho rho) a_Bullet]);
+            set (pargs1' := pargs1 ++ [p_Tm (Rho rho) a_Bullet])
+      end
+     end.
 
-    autofresh.
+  all: try match goal with 
+      [ targs1' := ?targs1 ++ [p_Co ?g] : _ |- _  ]=> 
+      set (G1' := (x, Co phi) :: G1) in *;
+      set (sub' := (x, p_Co g_Triv) :: (zip (map fst G1) (rev targs1)));
+      set (args1' := args1 ++ [p_Co g]);
+      set (pargs1' := pargs1 ++ [p_Co g_Triv])
+     end.
+  all: have ?: length G1' = length (rev targs1') by
+      (unfold G1'; unfold targs1'; rewrite rev_unit; simpl; auto).
+
+   all: try
+      have df :  
+        domFresh G (fv_tm_tm_pattern_args pargs1') by
+          (unfold pargs1';
+           rewrite fv_tm_tm_pattern_args_app;
+           rewrite domFresh_union;
+           split; auto;
+           simpl;
+           rewrite union_empty_r;
+           eauto using domFresh_empty, domFresh_singleton2).  
+
+  all: have es: sub' = zip (map fst G1') (rev targs1') by
+      (unfold sub'; unfold G1'; unfold targs1';
+      rewrite rev_unit; reflexivity). 
+  all: have ?: wf_sub G sub' by (unfold sub'; econstructor; eauto 2; fsetdec).
 
 
-    have ?: x `notin` dom (zip (map fst G1) (rev targs1)).
-    { unhide Fr.       
-      rewrite dom_zip_map_fst; auto.
-    }
+  Opaque cps_tm.
+  all : try 
+    have SA: cps_tm (a_Var_f x) sub' = a by
+    ( unfold sub'; simpl;
+      erewrite wf_cps_subst_var; auto;
+      econstructor; eauto 1;
+      fsetdec ).
+  all: try 
+    have SA: cps_tm (a_Var_f x) sub' = a0 by
+     ( unfold sub'; simpl;
+      erewrite wf_cps_subst_var; auto;
+      econstructor; eauto 1;
+      fsetdec ).
 
-    set (G1' := (x, Tm A0) :: G1) in *.
-    set (sub' := (x, p_Tm (Role R0) a) :: (zip (map fst G1) (rev targs1))).
-    have es: sub' = zip (map fst G1') (rev targs1').
-    {
-      unfold sub'. unfold G1'. unfold targs1'.
-      rewrite rev_unit. reflexivity.
-    }
-    have ?: wf_sub G sub'.
-    {
-      unfold sub'.
-      econstructor; eauto 1.
-      simpl. unhide Fr. fsetdec_fast.
-      fsetdec.
-    }
+  all: try 
+   have SA: cps_co (g_Var_f x) sub' = g_Triv by
+    (  unfold sub';
+       erewrite wf_cps_co_subst_var; auto;
+       econstructor; eauto 1;
+       fsetdec ).
 
-    have SA: cps_tm (a_Var_f x) sub' = a.
-    { unfold sub'. 
-      Opaque cps_tm. simpl.
-      erewrite wf_cps_subst_var; auto.
-      econstructor; eauto 1.
-      unhide Fr. fsetdec_fast. fsetdec.
-    }
-
-    with BranchTyping do ltac:(fun h =>
+  all: with BranchTyping do ltac:(fun h =>
         specialize (IHn G1' G _ _ _ _ _ _ _ _ h); clear h).  
 
+  all: specialize (IHn df args1' args2 eq_refl Rs). 
+  all: try rewrite apply_pattern_args_tail_Tm in IHn.
+  all: try rewrite apply_pattern_args_tail_Co in IHn.
+  all: specialize (IHn ltac:(eauto)).
+  all: specialize (IHn eq_refl).
+  all: specialize (IHn targs1' sub' es ltac:(auto) ltac:(auto)).
 
-    lapply IHn. clear IHn. move=>IHn. 2: {
-
-      rewrite fv_tm_tm_pattern_args_app.
-      rewrite domFresh_union.
-      split; auto.
-      simpl.
-      have eq: (singleton x \u empty) [=] (singleton x). fsetdec.
-      rewrite eq.
-      eapply domFresh_singleton; eauto.
-      unhide Fr. auto.
-    } 
-
-    specialize (IHn  args1' args2 eq_refl Rs). 
-    rewrite apply_pattern_args_tail_Tm in IHn.
-    
-    specialize (IHn ltac:(eauto)).
-
-    specialize (IHn eq_refl).
-
-    specialize (IHn targs1' sub' es ltac:(auto)).
-
-    lapply IHn. clear IHn. move=>IHn. 2: {
-      unfold G1'. unfold targs1'.
-      rewrite rev_unit. simpl. auto.
-    } 
-
-    with (open_telescope) do 
-         ltac:(fun h => specialize (IHn _ _ h); clear h).
-
-    lapply IHn. clear IHn. move=>IHn. 2: {
-      eapply E_Trans with (a1 := open_tm_wrt_tm B0 a); eauto 1.
-      unfold sub'.
-      rewrite cps_open_tm_wrt_tm.       
-      eauto.
-      rewrite SA.
-      Transparent cps_tm. simpl.
-      rewrite tm_subst_tm_tm_fresh_eq.
-      { with (DefEq _ _ (a_Pi _ _ _)) do 
-             ltac:(fun h => move: (DefEq_context_fv h) => ?).
-        split_hyp.
-        simpl in *.
-        eapply subset_notin with (S2 := dom G).
-        unhide Fr. fsetdec_fast. 
-        fsetdec.
-      }
-      eauto.
-    }
-
-
-    lapply IHn. clear IHn. move=> IHn. 2: {
-      with (Typing G (apply_pattern_args _ _)) do ltac:(fun h => 
+  all: with (Typing G (apply_pattern_args _ _)) do ltac:(fun h => 
          move:(Typing_context_fv h) => ?; split_hyp). 
-      with (fv_tm_tm_tm (apply_pattern_args _ _) [<=] _) do ltac:(fun h =>
+  all: with (fv_tm_tm_tm (apply_pattern_args _ _) [<=] _) do ltac:(fun h =>
          rewrite -> fv_tm_tm_tm_apply_pattern_args in h).
-      with (fv_co_co_tm (apply_pattern_args _ _) [<=] _) do ltac:(fun h =>
+  all: with (fv_co_co_tm (apply_pattern_args _ _) [<=] _) do ltac:(fun h =>
          rewrite -> fv_co_co_tm_apply_pattern_args in h).
 
-      unfold args1'.
-      rewrite map_app.
-      f_equal. {
-        have: fv_tm_tm_pattern_args args1 [<=] dom G. fsetdec.
-        have: fv_co_co_pattern_args args1 [<=] dom G. fsetdec.
-        unfold args1.
-        generalize pargs1.
-        induction pargs0; intros; simpl in *; auto.
-        have ?: x `notin` dom G. unhide Fr. fsetdec_fast.
-        rewrite IHpargs0.
-        fsetdec. fsetdec.
-        f_equal.
-        unfold sub'. 
-        destruct a0; simpl in *.
-        rewrite tm_subst_tm_tm_fresh_eq.
-        fsetdec.
-        auto.
-        rewrite tm_subst_tm_co_fresh_eq.
-        fsetdec.
-        auto.
-      }
-      simpl.
-      f_equal. f_equal.
-      erewrite (cps_tm_cons (Rho Rel)).
-      rewrite  (@wf_cps_subst_var _ _ G).
-      econstructor. auto. eauto using Typing_lc1.
-      unhide Fr. fsetdec_fast.
-      unhide Fr. fsetdec_fast.
-      fsetdec.
-      auto.
-    }
+  all: try 
+   have ?: map (cps_pattern_arg^~ sub') pargs1' = args1'
+  by (unfold args1'; unfold args1; rewrite map_app;
+      f_equal;
+      [ unfold sub'; unfold sub;
+        erewrite cps_pattern_fresh; eauto 
+      | simpl; f_equal; f_equal;
+        try eapply (@wf_cps_subst_var _ _ G); 
+        try eapply cps_a_Bullet;
+        try erewrite cps_g_Triv; eauto]).
 
-    lapply IHn. clear IHn. move=> IHn. 2: {
-      eapply E_Conv; eauto 1. 2: { eapply E_Sym; eauto 1. }
+  all: try specialize (IHn ltac:(auto)).
+  all: with (open_telescope) do 
+         ltac:(fun h => specialize (IHn _ _ h); clear h).
+
+  Transparent cps_tm. 
+  all: try 
+     with (DefEq _ _ (a_Pi _ _ _)) do 
+       ltac:(fun h => move: (DefEq_context_fv h) => ?) end;  split_hyp.
+  all: try
+     with (DefEq _ _ (a_CPi _ _)) do 
+       ltac:(fun h => move: (DefEq_context_fv h) => ?) end;  split_hyp.
+
+  all: try
+    have htmp: 
+     DefEq G (dom G) B1 (cps_tm (open_tm_wrt_tm B (a_Var_f x)) sub') a_Star Rep by
+    (
+      eapply E_Trans with (a1 := open_tm_wrt_tm B0 a); eauto 1;
+      unfold sub';
+      rewrite cps_open_tm_wrt_tm; first eauto;
+      rewrite SA;
+      simpl;
+      rewrite tm_subst_tm_tm_fresh_eq; 
+      [ simpl in *;
+        eapply subset_notin with (S2 := dom G); auto
+      | eauto
+      ]
+    ).
+    
++ eapply IHn with (b1 := a_App b1 (Rho Rel) a); auto.
+    ++ eapply E_Conv with (A := open_tm_wrt_tm B0 a); 
+         eauto 1. 2: { eapply E_Sym; eauto 1. }
       eapply E_TApp; eauto 1.
       { autoreg. auto. }
-    }
 
-    eapply IHn; auto. 
-
-    rewrite cps_open_tm_wrt_tm.
-    eapply wf_sub_lc_sub; eauto.
-    rewrite SA.
-    unfold sub'. simpl.
-    rewrite tm_subst_tm_tm_fresh_eq.
+    ++ rewrite cps_open_tm_wrt_tm.
+       eapply wf_sub_lc_sub; eauto.
+       rewrite SA.
+       unfold sub'. simpl.
+       rewrite tm_subst_tm_tm_fresh_eq.
     {  with (Typing _ _ (a_Pi _ _ _)) do 
              ltac:(fun h => move: (Typing_context_fv h) => ?).
         split_hyp.
         simpl in *.
-        eapply subset_notin with (S2 := dom G).
-        unhide Fr. fsetdec_fast. 
+        eapply subset_notin with (S2 := dom G). auto.
         fsetdec.
     }    
     eapply E_App with (A:=  (cps_tm A0 (zip (map fst G1) (rev targs1)))).
@@ -1895,10 +1196,105 @@ Proof.
     eapply E_Conv; eauto 1.
     eapply E_PiFst; eauto 1.
     { autoreg. autoinv. auto. }
-    + (* Rho Rel *) admit.
-    + (* Rho Irrel *) admit.
-    + (* Co *) admit.
+
++ eapply IHn with (b1 := a_App b1 (Rho Rel) a); auto.
+  ++ eapply E_Conv with (A := open_tm_wrt_tm B0 a); 
+       eauto 1. 2: { eapply E_Sym; eauto 1. }
+      eapply E_App; eauto 1.
+      { autoreg. auto. }
+  ++ rewrite cps_open_tm_wrt_tm.
+       eapply wf_sub_lc_sub; eauto.
+       rewrite SA.
+       unfold sub'. simpl.
+       rewrite tm_subst_tm_tm_fresh_eq.
+    {  with (Typing _ _ (a_Pi _ _ _)) do 
+             ltac:(fun h => move: (Typing_context_fv h) => ?).
+        split_hyp.
+        simpl in *.
+        eapply subset_notin with (S2 := dom G). auto.
+        fsetdec.
+    }    
+    eapply E_App with (A:=  (cps_tm A0 (zip (map fst G1) (rev targs1)))).
+    eauto 1.
+    eapply E_Conv; eauto 1.
+    eapply E_PiFst; eauto 1.
+    { autoreg. autoinv. auto. }
++ eapply IHn with (b1 := a_App b1 (Rho Irrel) a_Bullet); auto.
+   ++ eapply E_Trans with (a1 := open_tm_wrt_tm B0 a0); eauto 1;
+      unfold sub';
+      rewrite cps_open_tm_wrt_tm; first eauto;
+      rewrite SA;
+      simpl;
+      rewrite tm_subst_tm_tm_fresh_eq; 
+      [ simpl in *;
+        eapply subset_notin with (S2 := dom G); auto
+      | eauto
+      ].
+   ++ eapply E_Conv with (A := open_tm_wrt_tm B0 a0); 
+        eauto 1. 2: { eapply E_Sym; eauto 1. }
+      eapply E_IApp; eauto 1.
+      { autoreg. auto. }
+   ++ rewrite cps_open_tm_wrt_tm.
+       eapply wf_sub_lc_sub; eauto.
+       rewrite SA.
+       unfold sub'. simpl.
+       rewrite tm_subst_tm_tm_fresh_eq.
+    {  with (Typing _ _ (a_Pi _ _ _)) do 
+             ltac:(fun h => move: (Typing_context_fv h) => ?).
+        split_hyp.
+        simpl in *.
+        eapply subset_notin with (S2 := dom G). auto.
+        fsetdec.
+    }    
+    eapply E_IApp with (A:=  (cps_tm A0 (zip (map fst G1) (rev targs1)))).
+    eauto 1.
+    eapply E_Conv; eauto 1.
+    eapply E_PiFst; eauto 1.
+    { autoreg. autoinv. auto. } 
+
++ eapply IHn with (b1 := a_CApp b1 g_Triv); auto.
+  ++  eapply E_Trans with (a1 := _ B0 _); eauto 2;
+      unfold sub'.
+      rewrite cps_open_tm_wrt_co; first eauto.
+      rewrite SA.
+      simpl.
+      move: H9 => h.
+      destruct phi.
+      rewrite cps_a_CPi in h.
+      simpl in h.
+      move: (E_CPiFst _ _ _ _ _ _ _ _ _ _ _ _ _ h) => h0.
+      rewrite co_subst_co_tm_fresh_eq.
+      rewrite cps_a_CPi in H24.
+      rewrite cps_a_CPi in H25.
+      simpl in *;
+        eapply subset_notin with (S2 := dom G); auto.
+      eapply E_CPiSnd; eauto 1.
+      admit.
+      admit.
+
+  ++ eapply E_Conv; eauto 1. 2: { eapply E_Sym; eauto 1. }
+     eapply E_CApp; eauto 1.
+      { autoreg. auto. }
+  ++ rewrite cps_open_tm_wrt_co.
+       eapply wf_sub_lc_sub; eauto.
+       rewrite SA.
+       unfold sub'. simpl.
+       rewrite co_subst_co_tm_fresh_eq.
+       {  with (Typing _ _ (a_CPi _ _)) do 
+             ltac:(fun h => move: (Typing_context_fv h) => ?).
+          split_hyp.
+          simpl in *.
+          eapply subset_notin with (S2 := dom G). auto.
+          admit.
+       }  
+       move: H9 => h0.
+       move: H12 => h.
+       move: H20 => h1.
+       rewrite cps_a_CPi in h.
+       rewrite cps_a_CPi in h0.
+       admit.
 Admitted.
+
 
 (* Specialized version of main lemma that is "easier" to use. *)
 Lemma BranchTyping_start : forall  G n R A scrut hd B0 B1 C F,
@@ -2012,6 +1408,9 @@ Lemma RolePath_AppRole :
 Proof.
   intros args Rs H. dependent induction H; eauto.
   + intros. destruct args; inversion x. simpl. auto. 
+  + intros. destruct args; inversion x. subst. 
+    destruct p; try destruct nu; inversion H2; subst.
+    simpl. erewrite IHAppRoles; eauto.
   + intros. destruct args; inversion x. subst. 
     destruct p; try destruct nu; inversion H2; subst.
     simpl. erewrite IHAppRoles; eauto.
