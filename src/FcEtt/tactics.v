@@ -485,7 +485,7 @@ Ltac autofresh_param tac hidefresh :=
   let x := fresh "x" in
   pick fresh x;
   autofresh_fixed_param' tac x;
-  hide_fresh_hyps hidefresh.
+  hide_fresh_hyps x hidefresh.
 
 (* Yet another version, that tries to find a suitable variable in the context *)
 (* TODO: could be more robust:
