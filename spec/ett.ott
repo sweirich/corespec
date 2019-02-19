@@ -195,11 +195,11 @@ co, g {{ tex \gamma }} :: 'g_' ::= {{ com explicit coercions }}
    | (# g #)                :: S :: SecretParen
    | g { a / x }            :: S :: TSubst
 
-App :: 'A_' ::= 
+App {{ tex \upsilon }} :: 'A_' ::= 
    | Tm nu           ::    :: Tm 
    | Co              ::    :: Co
 
-Apps :: 'A_' ::= 
+Apps {{ tex \overline{\upsilon} }} :: 'A_' ::= 
    | emptyA            ::    :: nil  
    | Apps , App      :: M  :: snoc  {{ coq (A_snoc [[Apps]] [[App]]) }}
    | App , Apps      ::    :: cons  
@@ -338,14 +338,16 @@ Nat, N {{ tex \mathbb{N} }} :: 'N_' ::= {{ coq nat }}
 %%_ Pattern-specific stuff _%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-pattern_arg :: 'p_' ::= {{ com Pattern arguments }}
+pattern_arg {{ tex \mu }} :: 'p_' ::= {{ com Pattern arguments }}
   | Tm nu a       ::   :: Tm
   | Co g          ::   :: Co
 
 
-pattern_args, PA :: 'pattern_args_' ::= {{ coq list pattern_arg }}
+pattern_args {{ tex \overline{\mu} }}, 
+  PA :: 'pattern_args_' ::= {{ coq list pattern_arg }}
   | none                  ::   :: None {{ coq nil }}
   | pattern_arg , PA ::   :: Cons {{ coq (cons [[pattern_arg]] [[PA]]) }}
+  | PA , pattern_arg ::   :: Snoc {{ coq ([[PA]] ++ [ [[pattern_arg]] ]) }} 
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -732,6 +734,7 @@ defns
 defn
 AppsPath R a +> F Apps  ::  :: AppsPath :: 'AppsPath_'
 {{ com Type headed by constant (partial function) }}
+{{ tex \mathsf{AppsPath} [[a]] [[+>]] [[F]][[Apps]] }}
 by
 
 F : A @ Rs in toplevel
@@ -1518,20 +1521,20 @@ ctx_uniq G
 ------------------------------------------------------------- :: Base
 G |= emptyA case Nom a : A of b @ pattern_args : A -> all c : (a ~ apply b pattern_args : A / Nom) . C | C
 
-G, x : A |= Apps case Nom a : A1 of b @ Tm R x , pattern_args : B -> C | C'
+G, x : A |= Apps case Nom a : A1 of b @ pattern_args , Tm R x : B -> C | C'
 ------------------------------------------------------------------- :: PiRole
 G |= (Tm R, Apps) case Nom a : A1 of b @ pattern_args : all + x : A -> B -> all + x : A -> C | C'
 
 
-G, x : A |= Apps case Nom a : A1 of b @ Tm + x , pattern_args : B -> C | C'
+G, x : A |= Apps case Nom a : A1 of b @ pattern_args , Tm + x : B -> C | C'
 ------------------------------------------------------------------- :: PiRel
 G |= (Tm +, Apps) case Nom a : A1 of b @ pattern_args : all + x : A -> B -> all + x : A -> C | C'
 
-G, x : A |= Apps case Nom a : A1 of b @ Tm - [] , pattern_args : B -> C | C'
+G, x : A |= Apps case Nom a : A1 of b @ pattern_args , Tm - [] : B -> C | C'
 ------------------------------------------------------------------- :: PiIrrel
 G |= (Tm -, Apps) case Nom a : A1 of b @ pattern_args : all - x : A -> B -> all - x : A -> C | C'
 
-G, c : phi |= Apps case Nom a : A of b @ Co o , pattern_args : B -> C | C'
+G, c : phi |= Apps case Nom a : A of b @ pattern_args , Co o : B -> C | C'
 ----------------------------------------------------------------- :: CPi
 G |= (Co, Apps) case Nom a : A of b @ pattern_args : all c : phi. B -> all c : phi. C | C'
 
@@ -2583,7 +2586,7 @@ homs 'a_'
 
   :: Bullet
 
-  :: Pattern {{ tex \mathsf{case} \hspace{3pt} [[a]] \hspace{3pt} \mathsf{of} \hspace{3pt} [[F]] \rightarrow [[b1]] \| \_ \rightarrow [[b2]] }}
+  :: Pattern {{ tex \mathsf{case} \hspace{3pt} [[a]] \hspace{3pt} \mathsf{of} \hspace{3pt} [[F]][[Apps]] \rightarrow [[b1]] \| \_ \rightarrow [[b2]] }}
 
   :: DataCon
   :: Case

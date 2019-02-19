@@ -16,9 +16,10 @@ Require Import FcEtt.ett_roleing.
 Set Bullet Behavior "Strict Subproofs".
 Set Implicit Arguments.
 
+
 Lemma Ctx_strengthen : forall G1 G2, Ctx (G2 ++ G1) -> Ctx G1.
   induction G2; [ | inversion 1]; simpl; auto.
-Qed.
+Qed. 
 
 
 Lemma binds_to_PropWff: forall G0 c phi,
@@ -287,7 +288,8 @@ Proof.
     rewrite tm_subst_tm_tm_apply_pattern_args.
     rewrite tm_subst_tm_tm_apply_pattern_args in h0.
     eapply BranchTyping_Base; eauto 4 using tm_subst_tm_tm_lc_tm.
-
+Admitted. 
+(*
   - pick fresh y and apply BranchTyping_PiRole.
     autorewrite with subst_open_var; eauto 2 with lc.
     rewrite_subst_context.
@@ -301,7 +303,6 @@ Proof.
     eauto.
     simpl. f_equal. destruct (y == x) eqn:eq. subst. 
     have bad: (x `notin` singleton x). fsetdec. hide Fr. fsetdec.
-    rewrite eq. auto.
     rewrite tm_subst_tm_tm_a_App.
     rewrite tm_subst_tm_tm_var_neq; auto.
 
@@ -325,6 +326,7 @@ Proof.
     rewrite_subst_context.
     eapply H0; eauto. (* FIXME: fragile *)
 Admitted. (* Wtf!? Qed bugs on this *)
+*)
 
 Lemma tm_substitution_mutual :
    (forall G0 b B (H : Typing G0 b B),

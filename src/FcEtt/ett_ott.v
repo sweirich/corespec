@@ -1558,16 +1558,16 @@ Inductive BranchTyping : context -> Apps -> role -> tm -> tm -> tm -> pattern_ar
       uniq  G  ->
       ( forall c , c \notin  L  -> BranchTyping G A_nil Nom a A b pattern_args5 A (a_CPi  ( (Eq a  (apply_pattern_args  b   pattern_args5 )  A Nom) )  C)  ( open_tm_wrt_co C (g_Var_f c) )  ) 
  | BranchTyping_PiRole : forall (L:vars) (G:context) (R:role) (Apps5:Apps) (a A1 b:tm) (pattern_args5:pattern_args) (A B C C':tm),
-      ( forall x , x \notin  L  -> BranchTyping  (( x ~ Tm  A ) ++  G )  Apps5 Nom a A1 b  (cons  (p_Tm (Role R) (a_Var_f x))   pattern_args5 )   ( open_tm_wrt_tm B (a_Var_f x) )   ( open_tm_wrt_tm C (a_Var_f x) )  C' )  ->
+      ( forall x , x \notin  L  -> BranchTyping  (( x ~ Tm  A ) ++  G )  Apps5 Nom a A1 b  ( pattern_args5  ++ [  (p_Tm (Role R) (a_Var_f x))  ])   ( open_tm_wrt_tm B (a_Var_f x) )   ( open_tm_wrt_tm C (a_Var_f x) )  C' )  ->
      BranchTyping G  ( (A_cons (A_Tm (Role R)) Apps5) )  Nom a A1 b pattern_args5 (a_Pi Rel A B) (a_Pi Rel A C) C'
  | BranchTyping_PiRel : forall (L:vars) (G:context) (Apps5:Apps) (a A1 b:tm) (pattern_args5:pattern_args) (A B C C':tm),
-      ( forall x , x \notin  L  -> BranchTyping  (( x ~ Tm  A ) ++  G )  Apps5 Nom a A1 b  (cons  (p_Tm (Rho Rel) (a_Var_f x))   pattern_args5 )   ( open_tm_wrt_tm B (a_Var_f x) )   ( open_tm_wrt_tm C (a_Var_f x) )  C' )  ->
+      ( forall x , x \notin  L  -> BranchTyping  (( x ~ Tm  A ) ++  G )  Apps5 Nom a A1 b  ( pattern_args5  ++ [  (p_Tm (Rho Rel) (a_Var_f x))  ])   ( open_tm_wrt_tm B (a_Var_f x) )   ( open_tm_wrt_tm C (a_Var_f x) )  C' )  ->
      BranchTyping G  ( (A_cons (A_Tm (Rho Rel)) Apps5) )  Nom a A1 b pattern_args5 (a_Pi Rel A B) (a_Pi Rel A C) C'
  | BranchTyping_PiIrrel : forall (L:vars) (G:context) (Apps5:Apps) (a A1 b:tm) (pattern_args5:pattern_args) (A B C C':tm),
-      ( forall x , x \notin  L  -> BranchTyping  (( x ~ Tm  A ) ++  G )  Apps5 Nom a A1 b  (cons  (p_Tm (Rho Irrel) a_Bullet)   pattern_args5 )   ( open_tm_wrt_tm B (a_Var_f x) )   ( open_tm_wrt_tm C (a_Var_f x) )  C' )  ->
+      ( forall x , x \notin  L  -> BranchTyping  (( x ~ Tm  A ) ++  G )  Apps5 Nom a A1 b  ( pattern_args5  ++ [  (p_Tm (Rho Irrel) a_Bullet)  ])   ( open_tm_wrt_tm B (a_Var_f x) )   ( open_tm_wrt_tm C (a_Var_f x) )  C' )  ->
      BranchTyping G  ( (A_cons (A_Tm (Rho Irrel)) Apps5) )  Nom a A1 b pattern_args5 (a_Pi Irrel A B) (a_Pi Irrel A C) C'
  | BranchTyping_CPi : forall (L:vars) (G:context) (Apps5:Apps) (a A b:tm) (pattern_args5:pattern_args) (phi:constraint) (B C C':tm),
-      ( forall c , c \notin  L  -> BranchTyping  (( c ~ Co  phi ) ++  G )  Apps5 Nom a A b  (cons  (p_Co g_Triv)   pattern_args5 )   ( open_tm_wrt_co B (g_Var_f c) )   ( open_tm_wrt_co C (g_Var_f c) )  C' )  ->
+      ( forall c , c \notin  L  -> BranchTyping  (( c ~ Co  phi ) ++  G )  Apps5 Nom a A b  ( pattern_args5  ++ [  (p_Co g_Triv)  ])   ( open_tm_wrt_co B (g_Var_f c) )   ( open_tm_wrt_co C (g_Var_f c) )  C' )  ->
      BranchTyping G  ( (A_cons A_Co Apps5) )  Nom a A b pattern_args5 (a_CPi phi B) (a_CPi phi C) C'.
 
 (* defns Jett *)
