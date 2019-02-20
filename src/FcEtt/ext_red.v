@@ -6,11 +6,6 @@ Require Import FcEtt.ett_ott.
 
 Require Import FcEtt.ett_inf.
 Require Import FcEtt.ett_ind.
-(*
-Require Import FcEtt.ett_par.
-*)
-
-
 Require Import FcEtt.ext_wf.
 Require Export FcEtt.ext_invert.
 Require Export FcEtt.ext_weak.
@@ -1577,10 +1572,10 @@ Proof.
   - exists nil. econstructor; eauto 2.
     eapply Typing_a_Fam_unique; eauto 1.
   - with ValuePath do ltac: (fun h => inversion h; subst). 
-    move: (invert_a_App_Role H4) => [A1 [B1 h]]. split_hyp.
+    move: (invert_a_App_Role H4) => [A1 [B1 [F0 [Rs h]]]]. split_hyp.
     with Ctx do ltac:(fun h => inversion h; subst). 
     with uniq do ltac:(fun h => inversion h; subst).
-    edestruct IHtm_pattern_agree as [s h]; eauto 1. 
+    edestruct IHtm_pattern_agree as [s h0]; eauto 2. 
     eexists. econstructor; eauto 1.
 
   - with ValuePath do ltac: (fun h => inversion h; subst). 
@@ -1588,7 +1583,7 @@ Proof.
     with Ctx do ltac:(fun h => inversion h; subst).
     have wf: Ctx G0. auto.
     with uniq do ltac:(fun h => inversion h; subst).
-    edestruct IHtm_pattern_agree as [s h]; eauto 1. 
+    edestruct IHtm_pattern_agree as [s h0]; eauto 1. 
     eexists. econstructor; eauto 1.
 
   - with ValuePath do ltac: (fun h => inversion h; subst). 
@@ -1596,7 +1591,7 @@ Proof.
     with Ctx do ltac:(fun h => inversion h; subst).
     have wf: Ctx G0. auto.
     with uniq do ltac:(fun h => inversion h; subst).
-    edestruct IHtm_pattern_agree as [s h]; eauto 1.
+    edestruct IHtm_pattern_agree as [s h0]; eauto 1.
     destruct phi.
     eexists. econstructor; eauto 1.
 Qed.
@@ -1992,6 +1987,8 @@ Proof.
   eapply MatchTyping_correctness2; eauto 1.
 Qed.
 
+
+
 Lemma MatchSubst_ValuePath : 
   `{ MatchSubst a p1 b1 b' →
      binds F (Ax p b PiB R1 Rs) toplevel →
@@ -1999,6 +1996,42 @@ Lemma MatchSubst_ValuePath :
      ValuePath a F}.
 Proof. induction 1; intros BI RN; inversion RN; subst; eauto.
 Admitted. (* MatchSubst_ValuePath *)
+
+(* We can freshen the axiom WRT to any context *)
+Lemma Axiom_Freshening : forall s (Γ:list(atom*s)), 
+  `{ MatchSubst a p1 b1 b' ->
+  Rename p b p1 b1 D1 D ->
+  PatternContexts Ωp Γp Dp F PiB p B ->
+  Γp ⊨ b : B ->
+  AtomSetImpl.For_all (λ x : atom, x `notin` fv_tm_tm_tm b) Dp -> 
+  exists p2 b2 B' Dp' Ωp' Γp', 
+  MatchSubst a p2 b2 b' /\
+  Rename p b p2 b2 (dom Γ \u D1) D /\
+  PatternContexts Ωp' Γp' Dp' F PiB p2 B' /\
+  Γp' ⊨ b2 : B' /\
+  disjoint Γp' Γ /\
+  AtomSetImpl.For_all (λ x : atom, x `notin` fv_tm_tm_tm b2) Dp'}. 
+Proof.
+  intros.
+
+  move: (MatchSubst_match H) => a_agree_p1.
+  (* Rename the pattern, avoiding dom G *)
+  have Lcb: lc_tm b. eapply Typing_lc1. eauto.  
+  have Pp: Pattern p. eapply patctx_pattern. eauto.
+
+  destruct (rename p b (dom Γ \u (fv_tm_tm_tm a) \u (fv_tm_tm_tm p))) 
+    as [[p3 b3] D3] eqn:EQN.
+  move: (rename_Rename ((dom Γ \u (fv_tm_tm_tm a) \u (fv_tm_tm_tm p)))  Pp Lcb) => RN.
+  rewrite EQN in RN. simpl in RN. clear EQN.
+
+  have a_agree_p: tm_pattern_agree a p.
+  eapply tm_pattern_agree_rename_inv_2; eauto. 
+
+  move: (Rename_chain_subst RN) => eq.
+  move: (Rename_chain_subst H0) => eq2.
+  rewrite <- matchsubst_chain_subst in eq; auto.
+  rewrite <- matchsubst_chain_subst in eq2; auto.
+Admitted. (* Freshening lemma for axioms *)
 
 
 Theorem MatchSubst_preservation2 : `{
@@ -2020,13 +2053,26 @@ Proof.
   (* move: (Rename_PatCtx_Typing_exist rn patctx_p tpg_b) => [Ωp1] [Γp1] [B1] [patctx_p1] tpg_b1. *)
   move: (Typing_regularity tpg_a) => tpg_A.
 
-  (* This is wrong, but I'm ignoring that for now. *)
-  have ms0: MatchSubst a p b b'. admit.
-  have tp0: tm_pattern_agree a p. admit. 
-  have rn0: Rename p b p b empty empty. admit.
+
+  edestruct (@Axiom_Freshening _ Γ) as 
+      [p2 [b2 [B' [Dp' [Ωp' [Γp' h]]]]]]; eauto 1.
+  split_hyp.
+(*
+  have Dp' : atoms. admit.
+  have Ωp' : role_context. admit.
+  have Γp' : context. admit.
+  have ms2: MatchSubst a p2 b2 b'. admit.
+  have PC2: PatternContexts Ωp' Γp' Dp' F PiB p2 B'. admit.
+  have Tb2:  Γp' ⊨ b2 : B'. admit. 
+  have u: uniq (Γp' ++ Γ). admit.
+  have ff: AtomSetImpl.For_all (λ x : atom, x ∉ fv_tm_tm_tm b2) Dp'. admit.
+*)
+  clear ms rn patctx_p a_agree_p1.
 
   (* new stuff *)
-  edestruct PaternPath_MatchTyping with (G := Γ) as [sub0 h]; eauto 2.
+  edestruct PaternPath_MatchTyping 
+    with (a:=a)(G := Γ)(Gp := Γp')(p := p2) as [sub0 h0]; eauto 2.
+  eapply MatchSubst_match; eauto.
   have TF: Typing nil (a_Fam F) PiB. eapply E_Fam; eauto 1. 
   move: (Typing_weakening TF  Γ nil nil eq_refl) => w.
 
@@ -2035,11 +2081,11 @@ Proof.
   eapply uniq_app_4. 
   eapply Ctx_uniq; eauto.
   eapply Ctx_uniq; eauto.
-  (* Need to show that G is disjoint from new pattern context *)
-  admit.
+  auto.
   eapply MatchSubstTyping_start; eauto.
   Unshelve. all: eauto.
-Admitted. (* MatchSubst_preservation2  *)
+Qed.
+
 
 
 (* -------------------------------------------------------- *)
@@ -2118,6 +2164,12 @@ Proof.
   eapply Beta_preservation; eauto.
 Qed.
 
+Lemma PatternContexts_dom :
+  `{ PatternContexts W G D F A p B -> fv_tm_tm_tm p [<=] dom G  }.
+Proof. 
+  induction 1; simpl; try rewrite IHPatternContexts; try fsetdec.
+Qed.  
+
 Lemma Par_fv_preservation: forall W x a b R, Par W a b R ->
                                         x `notin` fv_tm_tm_tm a ->
                                         x `notin` fv_tm_tm_tm b.
@@ -2184,16 +2236,32 @@ Proof.
     case: h1 => h1; eauto.
     fsetdec.
   - apply toplevel_inversion in H.
-    (*
     autofwd.
-    move: (Typing_context_fv H) => ?. split_hyp.
+    inversion H. subst.
+    show_fresh.
     simpl in *.
-    fsetdec. *)
-    admit.
-  - admit.
-  - admit.
+    fsetdec. 
+  - apply toplevel_inversion in H. 
+    autofwd.
+
+    edestruct (@Axiom_Freshening role [(x , Nom)]) as 
+      [p2 [b2 [B' [Dp' [Ωp' [Γp' h]]]]]]. eauto 1. eauto 1.
+    eauto 1. eauto 1. eauto 1.
+    split_hyp.
+    move:(Rename_MatchSubst_fv H14 H13) => h.
+    simpl in *.
+    move=> xin.
+    apply h in xin.
+    destruct (AtomSetImpl.union_1 xin).
+    admit. (* !!!! Rename_MatchSubst_fv seems too weak. *)
+    fsetdec.
+  - admit.  (* Rename / Axiom, same as above *)
   - eauto.
-  - admit.
+  - have: x `notin` fv_tm_tm_tm a'. fsetdec.
+    have: x `notin` fv_tm_tm_tm b1'. fsetdec.
+    move: H4.
+    generalize a' b1' b.
+    induction 1; simpl; try fsetdec.
   - eauto.
 Admitted. (* Par_fv_preservation *)
 
@@ -2213,30 +2281,75 @@ Proof.
       eapply Par_Beta; eauto.
     + inversion H0; subst.
       eapply Par_CBeta; eauto.
-    + inversion H; subst.
+    + move: H3 H2. 
      (* eapply Par_Axiom; eauto. eapply rctx_uniq in H0. auto. *)
      all: admit.
     + inversion H0; subst. eapply Par_PatternTrue; eauto.
-    + inversion H0; subst. (* eapply Par_PatternFalse; eauto *) admit.
+    + inversion H0; subst. eapply Par_PatternFalse; eauto. 
 Admitted. (* reduction in Par *)
 
 
 
 
-Lemma reduction_in_one_fv_preservation: forall x a b R W , reduction_in_one a b R -> roleing W a R ->
-                                        x `notin` fv_tm_tm_tm a ->
-                                        x `notin` fv_tm_tm_tm b.
+
+
+Lemma Beta_fv_preservation : forall x a b R, 
+    Beta a b R -> 
+    x `notin` fv_tm_tm_tm a ->
+    x `notin` fv_tm_tm_tm b.
 Proof.
   intros.
-  eapply Par_fv_preservation; eauto.
-  eapply reduction_in_Par; eauto.
+  induction H.
+  + simpl in *.
+    move => h. 
+    eapply fv_tm_tm_tm_open_tm_wrt_tm_upper in h.
+    fsetdec.
+  + simpl in *.    
+    move => h.
+    eapply fv_tm_tm_tm_open_tm_wrt_co_upper in h.
+    fsetdec.
+  + move: (Rename_MatchSubst_fv H1 H2) => h3. (* Seems too weak *)
+    move: (toplevel_inversion H) => [W [G [D [B [h [h2 _]]]]]].
+    admit.
+  + simpl in *.
+    move: H2 H0.
+    generalize a.
+    induction 1.
+    - intros. fsetdec.
+    - simpl in *.
+      fsetdec.
+    - simpl in *.
+      fsetdec.
+    - simpl in *.
+      fsetdec.
+  + simpl in *. fsetdec.
+Admitted. 
+
+Lemma reduction_in_one_fv_preservation: forall x a b R, 
+    reduction_in_one a b R -> 
+    x `notin` fv_tm_tm_tm a ->
+    x `notin` fv_tm_tm_tm b.
+Proof.
+  induction 1; intros.
+  + autofresh.
+    simpl in *.
+    unhide Fr.
+    rewrite -> fv_tm_tm_tm_open_tm_wrt_tm_upper in H0. 
+    simpl in H0.
+    move: (H0 ltac:(fsetdec)) => h1.
+    move => h. apply h1.
+    apply fv_tm_tm_tm_open_tm_wrt_tm_lower.
+    auto.
+  + simpl in *. fsetdec.
+  + simpl in *. fsetdec.
+  + simpl in *. fsetdec.
+  + eapply Beta_fv_preservation. eauto. eauto.
 Qed.
 
-Lemma reduction_rhocheck : forall a a' rho x R W, 
-    reduction_in_one a a' R -> roleing W a R -> RhoCheck rho x a -> RhoCheck rho x a'.
+Lemma reduction_rhocheck : forall a a' rho x R, 
+    reduction_in_one a a' R -> RhoCheck rho x a -> RhoCheck rho x a'.
 Proof.
-  intros.
-  inversion H1; subst.
+  intros. inversion H0.
   -  eauto using reduction_in_one_lc.
   -  eauto using reduction_in_one_fv_preservation.
 Qed.
@@ -2247,21 +2360,20 @@ Proof.
   (* TODO: clean and make more robust *)
   move=> a a' R r.
   induction r.
-  all: move=> G A_ tpga.
+  all: move=> G A tpga.
   - move: (Typing_regularity tpga) => h0.
-    autoinv. (*
-    eapply E_Conv with (A := (a_Pi Irrel x R x0)); auto.
+    autoinv. 
+    eapply E_Conv with (A := (a_Pi Irrel x x0)); auto.
     pick fresh y and apply E_Abs; auto.
     apply_first_hyp; auto.
-    apply H2. auto. eauto.
-    eapply reduction_rhocheck; eauto.
-    eapply Typing_roleing; eauto.
+    apply H2. auto. 
+    eapply reduction_rhocheck; eauto. 
     eapply H2. auto.
-    eapply H2. auto. eauto.
-  - move: (Typing_regularity tpga) => h0. 
-    autoinv; subst.
-    eapply E_Conv with (A := (open_tm_wrt_tm x0 b)); auto.
-    eapply E_App; eauto. eauto.
+  - move: (Typing_regularity tpga) => h0.
+    destruct nu.
+    autoinv.
+(*    eapply E_Conv with (A := (open_tm_wrt_tm x0 b)); auto.
+    eapply E_TApp; eauto. eauto.
     eapply E_Conv with (A := (open_tm_wrt_tm x0 x1)); auto.
     eapply E_IApp; eauto. eauto.
   - move: (Typing_regularity tpga) => h0. 

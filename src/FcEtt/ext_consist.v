@@ -272,7 +272,7 @@ Proof. intros. inversion H0 as [Q1 Q2].
           eapply Rename_inter_sub_empty. eauto.
           clear. fsetdec. eapply Rename_fv_new_pattern. eauto.
           apply toplevel_inversion in H.
-          inversion H as [W1 [G [B [Q5 [_ [Q6 _]]]]]].
+          inversion H as [W1 [G [D [B [Q5 [_ [Q6 _]]]]]]].
           apply pat_ctx_rctx in Q5. subst. simpl.
           eapply roleing_sub; eauto.
         + eapply matchsubst_fun_ind; eauto.
@@ -294,7 +294,7 @@ Proof. intros. inversion H0 as [Q1 Q2].
           eauto. eapply Rename_inter_sub_empty. eapply H3.
           clear. fsetdec. eapply Rename_fv_new_pattern. eauto.
           apply toplevel_inversion in H.
-          inversion H as [W1 [G [B [Q5 [_ [Q6 _]]]]]].
+          inversion H as [W1 [G [D [B [Q5 [_ [Q6 _]]]]]]].
           apply pat_ctx_rctx in Q5. subst. simpl.
           simpl. eapply roleing_sub; eauto.
         + eapply matchsubst_fun_ind.
@@ -333,7 +333,7 @@ Proof. intros. inversion H0 as [Q1 Q2].
           eapply Rename_inter_sub_empty; eauto.
           clear. fsetdec. eapply Rename_fv_new_pattern. eauto.
           apply toplevel_inversion in H.
-          inversion H as [W1 [G [B [Q5 [_ [Q6 _]]]]]].
+          inversion H as [W1 [G [B[D [Q5 [_ [Q6 _]]]]]]].
           apply pat_ctx_rctx in Q5. subst. simpl.
           eapply roleing_sub; eauto.
         + eapply matchsubst_fun_ind; eauto.
