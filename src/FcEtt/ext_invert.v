@@ -1270,7 +1270,7 @@ Lemma E_Fam2 : ∀ (G : context) F (p A a : tm) R Rs,
 Proof.
   intros.
   eapply E_Fam; eauto 2.
-  move: (toplevel_inversion H0) => [W [K [M h0]]].
+  move: (toplevel_inversion H0) => [W [K [D [M h0]]]].
   split_hyp.
   eauto.
 Qed.
@@ -1373,3 +1373,4 @@ Ltac autoinv :=
   (* TODO *)
   end.
 
+   

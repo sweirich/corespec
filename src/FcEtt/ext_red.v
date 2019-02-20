@@ -20,7 +20,8 @@ Require Import FcEtt.ett_roleing.
 Require Import FcEtt.param.
 Require Import FcEtt.ett_path.
 Require Import FcEtt.ett_match.
-Require Import FcEtt.pattern.
+(* Require Import FcEtt.pattern. *)
+Require Import FcEtt.ett_rename.
 
 Require Export FcEtt.ext_red_one.
 
@@ -48,6 +49,8 @@ Ltac spec_hyp_ctx_only H name :=
     | _ => move: H; move => name
   end.
 
+(* We don't actually need this lemma any more. I rephrased the 
+   judgement so that it is not necessary. *)
 
 Lemma to_move : `{
   Γ ⊨ open_tm_wrt_co a g₁ : A →
@@ -345,6 +348,15 @@ Proof.
   intros. destruct s. simpl. auto. simpl. 
   destruct phi. simpl. auto.
 Qed.
+
+Lemma cps_sort_cons_co : forall x s sub1, 
+  co_subst_co_sort g_Triv x (cps_sort s sub1) =
+  cps_sort s ((x, p_Co g_Triv) :: sub1).
+Proof.
+  intros. destruct s. simpl. auto. simpl. 
+  destruct phi. simpl. auto.
+Qed.
+
 
 Lemma cps_sort_nil : forall s,
   cps_sort s ∅ = s.
@@ -1498,14 +1510,14 @@ Definition sub := list (atom * tm). *)
    
 *)
 Inductive MatchTyping : 
-  context -> tm -> tm -> context -> tm -> tm -> list pattern_arg -> Prop := 
+  context -> tm -> tm -> context -> tm -> tm -> list pattern_arg -> atoms -> Prop := 
   | MatchTyping_Const : forall G F PiB B,
     Typing G (a_Fam F) PiB ->
     DefEq G (dom G) PiB B a_Star Rep ->
-    MatchTyping nil (a_Fam F) PiB G (a_Fam F) B nil
+    MatchTyping nil (a_Fam F) PiB G (a_Fam F) B nil empty
   | MatchTyping_AppRelR : 
-    forall G Gp R p x A1 B1 a1 a2 A2 B2 A sub,
-    MatchTyping Gp p (a_Pi Rel A1 B1) G a1 (a_Pi Rel A2 B2) sub ->
+    forall G Gp R p x A1 B1 a1 a2 A2 B2 A sub D,
+    MatchTyping Gp p (a_Pi Rel A1 B1) G a1 (a_Pi Rel A2 B2) sub D ->
     Typing G a2 A2 ->
     DefEq G (dom G) A (open_tm_wrt_tm B2 a2) a_Star Rep ->
     x `notin` dom Gp ->
@@ -1513,37 +1525,36 @@ Inductive MatchTyping :
     MatchTyping (x ~ Tm A1 ++ Gp)
                 (a_App p  (Role R) (a_Var_f x)) (open_tm_wrt_tm B1 (a_Var_f x))
                 G  (a_App a1 (Role R) a2)          A
-                ((p_Tm (Role R) a2) :: sub) 
+                ((p_Tm (Role R) a2) :: sub) D 
   | MatchTyping_AppIrrel : 
-    forall Gp G p x A1 B1 a1 a2 a2' A2 B2 A sub,
-    MatchTyping Gp p (a_Pi Irrel A1 B1) G a1 (a_Pi Irrel A2 B2) sub ->
+    forall Gp G p x A1 B1 a1 a2 a2' A2 B2 A sub D,
+    MatchTyping Gp p (a_Pi Irrel A1 B1) G a1 (a_Pi Irrel A2 B2) sub D ->
     Typing G a2' A2 ->
     DefEq G (dom G) A (open_tm_wrt_tm B2 a2') a_Star Rep ->
     x `notin` dom Gp ->
     x `notin` dom G ->
-
     MatchTyping (x ~ Tm A1 ++ Gp)
                 (a_App p  (Rho Irrel) a_Bullet) (open_tm_wrt_tm B1 (a_Var_f x))
                 G (a_App a1 (Rho Irrel) a2)       A
-                ((p_Tm (Rho Irrel) a2') :: sub) 
+                ((p_Tm (Rho Irrel) a2') :: sub)  ({{x}} \u D)
   | MatchTyping_CApp : 
     
    `{MatchTyping Gp p (a_CPi (Eq a0 b0 A0 R0) B1) G a1 
-                      (a_CPi (Eq a2 b2 A2 R2) B2) sub ->
+                      (a_CPi (Eq a2 b2 A2 R2) B2) sub D  ->
     DefEq G (dom G) A (open_tm_wrt_co B2 g_Triv) a_Star Rep ->
 (*    DefEq G (dom G) a0 b0 A0 R0 -> *)
     DefEq G (dom G) a2 b2 A2 R2 -> 
     c `notin` dom Gp ->
     c `notin` dom G  ->
 
-    MatchTyping (c ~ Co phi1 ++ Gp) (a_CApp p  g_Triv) 
+    MatchTyping (c ~ Co (Eq a0 b0 A0 R0) ++ Gp) (a_CApp p  g_Triv) 
                 (open_tm_wrt_co B1 (g_Var_f c))
                 G (a_CApp a1 g_Triv) A
-                (p_Co g_Triv :: sub)}
+                (p_Co g_Triv :: sub) D}
 .
 
 Lemma MatchTyping_fv_tm_tm_pattern_args_sub : 
-  `{ MatchTyping Gp p B G a A sub -> fv_tm_tm_pattern_args sub [<=] dom G }.
+  `{ MatchTyping Gp p B G a A sub D -> fv_tm_tm_pattern_args sub [<=] dom G }.
 Proof.
   induction 1; simpl; auto.
   - fsetdec.
@@ -1553,7 +1564,7 @@ Proof.
 Qed.
 
 Lemma MatchTyping_uniq : 
-  `{ MatchTyping Gp p B G a A sub -> uniq (Gp ++ G) } .
+  `{ MatchTyping Gp p B G a A sub D -> uniq (Gp ++ G) } .
 Proof.
   induction 1; simpl; auto.
   eapply Ctx_uniq; eauto. 
@@ -1579,7 +1590,7 @@ Proof.
 Qed. 
 
 Lemma MatchTyping_wf_sub : 
-  `{ MatchTyping Gp p B G a A sub -> 
+  `{ MatchTyping Gp p B G a A sub D -> 
      length Gp = length sub /\
      wf_sub G (zip (map fst Gp) sub) }.
 Proof. 
@@ -1597,13 +1608,13 @@ Qed.
 
 Lemma PaternPath_MatchTyping : forall a p, 
    tm_pattern_agree a p ->
-   `{ PatternContexts Ωp Gp F PiB p B ->
+   `{ PatternContexts Ωp Gp Dp F PiB p B ->
       Typing G (a_Fam F) PiB ->
       ValuePath a F ->
       G ⊨ a : A →
       Ctx Gp ->
       uniq (Gp ++ G) ->
-      exists sub, MatchTyping Gp p B G a A sub}.
+      exists sub, MatchTyping Gp p B G a A sub Dp}.
 Proof.
   induction 1; intros.
   all: with PatternContexts do ltac:(fun h => inversion h).
@@ -1637,7 +1648,7 @@ Qed.
 
 
 Lemma MatchTyping_correctness2 : 
-  `{ MatchTyping Gp p B G a A s ->
+  `{ MatchTyping Gp p B G a A s D ->
      G ∥ dom G ⊨ cps_tm B (zip (map fst Gp) s) ∼ A : a_Star / Rep }.
 Proof.
   induction 1.
@@ -1782,15 +1793,17 @@ Qed.
 
 Lemma MatchSubstTyping :  `{
   forall a p b b' (ms : MatchSubst a p b b'),
-  forall Gp G A B sub, 
-    MatchTyping Gp p B G a A sub ->
+  forall Gp G A B sub D, 
+    MatchTyping Gp p B G a A sub D ->
+    (∀ x : atom, x ∈ D ⟹ x `notin` fv_tm_tm_tm b) ->
   forall C Gp2, 
     uniq (Gp2 ++ G) ->
     (Gp2 ++ Gp ⊨ b : C) ->
     (cps_context Gp2 (zip (map fst Gp) sub) ++ G ⊨ b' : 
           cps_tm C (zip (map fst Gp) sub)) 
+    /\ fv_tm_tm_tm b' [<=] fv_tm_tm_tm b \u dom G
 }.
-Proof.
+Proof. 
   induction 1; intros.
   all: with MatchTyping do ltac:(fun h => inversion h; subst; clear h).
   - simpl in *. 
@@ -1801,26 +1814,29 @@ Proof.
     rewrite EQ.
     with (Typing _ b _) do ltac:(fun h => 
         specialize (Typing_weakening h G Gp2 nil eq_refl)) end.
-    move=> WK. rewrite app_nil_r in WK. apply WK.
-    rewrite app_nil_r in H2.
+    move=> WK. rewrite app_nil_r in WK. 
+    split. 
+    apply WK.
+    rewrite app_nil_r in H3.
     eapply Ctx_app; eauto using Typing_Ctx.
+    fsetdec.
 
   - with MatchTyping do ltac:(fun h =>
-         specialize (IHms Gp0 G _ _ sub0 h C); 
+         specialize (IHms Gp0 G _ _ sub0 D h ltac:(auto) C); 
          move: (MatchTyping_wf_sub h) => [ln wfs];
          move: (MatchTyping_correctness2 h) => de
     ) end.
-  rewrite cps_a_Pi in de.
-    with (Typing _ b1) do ltac:(fun h2 => 
-                 rewrite app_assoc in H2).
+    rewrite cps_a_Pi in de.
+    with (Typing _ b1) do ltac:(fun h2 => move:h2=>Tb1) end. 
+    rewrite app_assoc in Tb1.
     have U: uniq ((Gp2 ++ x ~ Tm A1) ++ G). 
       { 
-        apply Typing_Ctx in H2. apply Ctx_uniq in H2.
+        apply Typing_Ctx in Tb1. apply Ctx_uniq in Tb1.
         simpl_env in *.
         solve_uniq.
       } 
 
-    specialize (IHms _ U H2). 
+    specialize (IHms _ U Tb1). 
     unfold cps_context in *.
     rewrite EnvImpl.map_app in IHms.
     unfold one in IHms.
@@ -1836,9 +1852,9 @@ Proof.
       autoinv.
       auto.
       }
-
+    move: IHms => [Tb2 fvb2].
     destruct tm_substitution_mutual as [L _].
-    specialize (L _ _ _ IHms).
+    specialize (L _ _ _ Tb2).
     specialize (L _ _ _ TA).
     specialize (L (cps_context Gp2 s) x).
     lapply L. clear L. move=>L. 2: {
@@ -1864,23 +1880,31 @@ Proof.
       eapply cps_tm_cons.
     } 
     rewrite EQ5 in L.
+    split.
     eapply L.
+    rewrite fv_tm_tm_tm_tm_subst_tm_tm_upper.
+    move: (Typing_context_fv H13) => [? _].
+    fsetdec.
   - with MatchTyping do ltac:(fun h =>
-         specialize (IHms Gp0 G _ _ sub0 h C); 
+         specialize (IHms Gp0 G _ _ sub0 D0 h);
          move: (MatchTyping_wf_sub h) => [ln wfs];
-         move: (MatchTyping_correctness2 h) => de
+         move: (MatchTyping_correctness2 h) => de 
     ) end.
-  rewrite cps_a_Pi in de.
-    with (Typing _ b1) do ltac:(fun h2 => 
-                 rewrite app_assoc in H2).
+    have ?: (∀ x : atom, x ∈ D0 ⟹ x ∉ fv_tm_tm_tm b1).
+    { intros y In. eapply H1. fsetdec. }
+    specialize (IHms ltac:(auto) C).
+
+    rewrite cps_a_Pi in de.
+    with (Typing _ b1) do ltac:(fun h2 => move: h2=>Tb1) end.
+    rewrite app_assoc in Tb1.
     have U: uniq ((Gp2 ++ x ~ Tm A1) ++ G). 
       { 
-        apply Typing_Ctx in H2. apply Ctx_uniq in H2.
+        apply Typing_Ctx in Tb1. apply Ctx_uniq in Tb1.
         simpl_env in *.
         solve_uniq.
       } 
 
-    specialize (IHms _ U H2). 
+    specialize (IHms _ U Tb1). 
     unfold cps_context in *.
     rewrite EnvImpl.map_app in IHms.
     unfold one in IHms.
@@ -1897,8 +1921,9 @@ Proof.
       auto.
       }
 
+    move: IHms => [Tb2 fvb2].
     destruct tm_substitution_mutual as [L _].
-    specialize (L _ _ _ IHms).
+    specialize (L _ _ _ Tb2).
     specialize (L _ _ _ TA).
     specialize (L (cps_context Gp2 s) x).
     lapply L. clear L. move=>L. 2: {
@@ -1924,87 +1949,90 @@ Proof.
       eapply cps_tm_cons.
     } 
     rewrite EQ5 in L.
-    rewrite tm_subst_tm_tm_fresh_eq in L. admit.
+    rewrite tm_subst_tm_tm_fresh_eq in L.
+    move: (H1 x ltac:(auto)) => Hg. fsetdec.
+    split.
     eapply L.
+    fsetdec.
   - with MatchTyping do ltac:(fun h =>
-         specialize (IHms Gp0 G _ _ sub0 h C); 
+         specialize (IHms Gp0 G _ _ sub0 D h ltac:(auto) C); 
          move: (MatchTyping_wf_sub h) => [ln wfs];
          move: (MatchTyping_correctness2 h) => de
     ) end.
-  rewrite cps_a_CPi in de.
-
-(* ******************************************* 
-    with (Typing _ b1) do ltac:(fun h2 => 
-                 rewrite app_assoc in H2).
-    have U: uniq ((Gp2 ++ x ~ Tm A1) ++ G). 
-      { 
-        apply Typing_Ctx in H2. apply Ctx_uniq in H2.
+    rewrite cps_a_CPi in de.
+    with (Typing _ b1) do ltac:(fun h2 => move:h2=>Tb1). 
+    rewrite app_assoc in Tb1.
+    have U: uniq ((Gp2 ++ c ~ Co (Eq a0 b0 A0 R0)) ++ G). 
+      {
+        apply Typing_Ctx in Tb1. apply Ctx_uniq in Tb1.
         simpl_env in *.
         solve_uniq.
       } 
 
-    specialize (IHms _ U H2). 
+    specialize (IHms _ U Tb1). 
     unfold cps_context in *.
     rewrite EnvImpl.map_app in IHms.
     unfold one in IHms.
     simpl in IHms.
     set (s := (zip (map fst Gp0) sub0)).
-    have TA: Typing G a2' (cps_tm A1 s). {
+    move: IHms => [Tb2 fb2].
+    split; auto.
 
-      eapply E_Conv; eauto 1.
-      eapply E_Sym.
-      eapply E_PiFst.
-      eauto.
-      autoreg.
-      autoinv.
-      auto.
-      }
+    simpl in Tb2.
+    fold s in Tb2. simpl in de. fold s in de.
+    destruct co_substitution_mutual as [L _].
+    specialize (L _ _ _ Tb2 G (dom G) (cps_tm a0 s) (cps_tm b0 s) (cps_tm A0 s) R0).
+    simpl_env in L.
+    specialize (L (EnvImpl.map (cps_sort^~ s) Gp2) c eq_refl).
+    have ?: G ∥ dom G ⊨ cps_tm a0 s ∼ cps_tm b0 s : cps_tm A0 s / R0.
+    { 
+      eapply E_Cast. eapply H7.
+      eapply sym_iso.
+      eapply E_CPiFst. eauto 1.
+    } 
 
-    destruct tm_substitution_mutual as [L _].
-    specialize (L _ _ _ IHms).
-    specialize (L _ _ _ TA).
-    specialize (L (cps_context Gp2 s) x).
-    lapply L. clear L. move=>L. 2: {
-      simpl_env.
-      f_equal.
-    }    
+    specialize (L ltac:(auto)).
     have EQ3: utils.map = EnvImpl.map. auto. rewrite EQ3 in L.
     have EQ4:
-       EnvImpl.map (tm_subst_tm_sort a2' x) (cps_context Gp2 s) = 
-       EnvImpl.map (cps_sort^~ (x ~ (p_Tm (Rho Irrel) a2') ++ s)) Gp2.
+       EnvImpl.map (co_subst_co_sort g_Triv c) (cps_context Gp2 s) = 
+       EnvImpl.map (cps_sort^~ (c ~ (p_Co g_Triv) ++ s)) Gp2.
     { 
       generalize Gp2.
       induction Gp1.
       simpl. auto.
-      simpl. destruct a0. rewrite IHGp1.
-      f_equal. f_equal. eapply cps_sort_cons.
+      simpl. destruct a. rewrite IHGp1.
+      f_equal. f_equal. eapply cps_sort_cons_co.
     }
     rewrite EQ4 in L.
     have EQ5:
-      tm_subst_tm_tm a2' x (cps_tm C s) = 
-      cps_tm C (x ~ (p_Tm (Rho Irrel) a2') ++ s).
+      co_subst_co_tm g_Triv c (cps_tm C s) = 
+      cps_tm C (c ~ (p_Co g_Triv) ++ s).
     {
-      eapply cps_tm_cons.
+      simpl. auto.
     } 
     rewrite EQ5 in L.
-    rewrite tm_subst_tm_tm_fresh_eq in L. admit.
-    eapply L. *)
+    rewrite co_subst_co_tm_fresh_eq in L. admit.
+    eapply L. 
 Admitted.
 
 
 Lemma MatchSubstTyping_start :  `{
   forall a p b b' (ms : MatchSubst a p b b'),
-  forall Gp G A B sub, MatchTyping Gp p B G a A sub ->
+  forall Gp G A B sub Dp, MatchTyping Gp p B G a A sub Dp ->
   G ⊨ A : a_Star -> 
   (Gp ⊨ b : B) ->
+  (AtomSetImpl.For_all (λ x : atom, x ∉ fv_tm_tm_tm b) Dp) ->
   (G ⊨ b' : A) 
 }.
 Proof.
   intros.
   move: (MatchSubstTyping ms H) => h0.
-  specialize (h0 B nil ltac:(eapply Ctx_uniq; eapply Typing_Ctx; eauto) ltac:(auto)).   
+  have f : (∀ x : atom, x ∈ Dp ⟹ x ∉ fv_tm_tm_tm b).
+  { eapply H2. }
+  specialize (h0 f B nil ltac:(eapply Ctx_uniq; eapply Typing_Ctx; eauto)
+                       ltac:(auto) ).   
   simpl in h0.
-  eapply E_Conv; eauto 1.
+  eapply E_Conv; eauto 1. eapply h0.
   eapply MatchTyping_correctness2; eauto 1.
 Qed.
 
@@ -2028,17 +2056,24 @@ Proof.
   move=> ms rn bds tpg_a.
 
   (* Deriving basic facts *)
-  move: (Rename_Pattern rn) => [pat_p pat_p1].
-  move: (toplevel_inversion bds) => [Ωp] [Γp] [B] [patctx_p] [tpg_b] [roleing [rnge tyB]].
+  (* move: (Rename_Pattern rn) => [pat_p pat_p1]. *)
+  move: (toplevel_inversion bds) => [Ωp] [Γp] [Dp] [B] [patctx_p] 
+     [tpg_b] [roleing [rnge [tyB fr]]].
   move: (MatchSubst_match ms) => a_agree_p1.
-  move: (Rename_spec rn) => [fv_p1 fv_b1].
-  move: (Rename_PatCtx_Typing_exist rn patctx_p tpg_b) => [Ωp1] [Γp1] [B1] [patctx_p1] tpg_b1.
+  (* move: (Rename_spec rn) => [fv_p1 fv_b1]. *)
+  (* move: (Rename_PatCtx_Typing_exist rn patctx_p tpg_b) => [Ωp1] [Γp1] [B1] [patctx_p1] tpg_b1. *)
   move: (Typing_regularity tpg_a) => tpg_A.
+
+  (* This is wrong, but I'm ignoring that for now. *)
+  have ms0: MatchSubst a p b b'. admit.
+  have tp0: tm_pattern_agree a p. admit. 
+  have rn0: Rename p b p b empty empty. admit.
 
   (* new stuff *)
   edestruct PaternPath_MatchTyping with (G := Γ) as [sub0 h]; eauto 2.
   have TF: Typing nil (a_Fam F) PiB. eapply E_Fam; eauto 1. 
   move: (Typing_weakening TF  Γ nil nil eq_refl) => w.
+
   simpl_env in w. eapply w; eauto.
   eapply MatchSubst_ValuePath; eauto.
   eapply uniq_app_4. 

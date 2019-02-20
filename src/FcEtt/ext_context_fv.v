@@ -91,7 +91,7 @@ Lemma rctx_fv_co : forall W a R, roleing W a R -> fv_co_co_tm a [<=] empty.
 Proof. intros. eapply rctx_fv_tm_co; eauto.
 Qed.
 
-Lemma pat_ctx_fv : forall W G F A p B, PatternContexts W G F A p B ->
+Lemma pat_ctx_fv : forall W G D F A p B, PatternContexts W G D F A p B ->
                                        dom W [<=] fv_tm_tm_tm p.
 Proof. intros. induction H; simpl; fsetdec.
 Qed.

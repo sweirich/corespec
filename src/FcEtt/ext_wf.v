@@ -110,7 +110,7 @@ Lemma CasePath_lc : forall F a R, CasePath R a F -> lc_tm a.
 Proof. intros. induction H; eauto using ValuePath_lc. 
 Qed.
 
-Lemma PatternContexts_lc2 : forall W G F p A B, PatternContexts W G F A p B -> lc_tm p.
+Lemma PatternContexts_lc2 : forall W G D F p A B, PatternContexts W G D F A p B -> lc_tm p.
 Proof. intros. induction H; eauto.
 Qed.
 

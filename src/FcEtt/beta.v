@@ -60,7 +60,7 @@ Proof.
     simpl.
     econstructor.
     apply tm_subst_tm_tm_lc_tm with (a2 := b) (x1:=x) in H; auto.
-  - move: (toplevel_inversion H) => [X [G [B [h1 [h2 [_ _]]]]]].
+  - move: (toplevel_inversion H) => [X [G [D [B [h1 [h2 [_ _]]]]]]].
     have PP: (Pattern p). eapply axiom_pattern; eauto.
     have LC: lc_tm b0. eapply Typing_lc1; eauto.
 
@@ -117,7 +117,7 @@ Proof.
     simpl.
     econstructor.
     apply co_subst_co_tm_lc_tm with (g1 := b) (c1:=x) in H; auto.
-  - move: (toplevel_inversion H) => [X [G [B [h1 [h2 [_ _]]]]]].
+  - move: (toplevel_inversion H) => [X [G [D [B [h1 [h2 [_ _]]]]]]].
     have PP: (Pattern p). eapply axiom_pattern; eauto.
     have LC: lc_tm b0. eapply Typing_lc1; eauto.
 

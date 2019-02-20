@@ -94,11 +94,11 @@ Inductive sig_sort : Set :=  (*r signature classifier *)
  | Cs (A:tm) (Rs:roles)
  | Ax (p:tm) (a:tm) (A:tm) (R:role) (Rs:roles).
 
+Definition available_props : Type := atoms.
+
 Definition role_context : Set := list ( atom * role ).
 
 Definition context : Set := list ( atom * sort ).
-
-Definition available_props : Type := atoms.
 
 Definition pattern_args : Set := list pattern_arg.
 
@@ -1087,19 +1087,19 @@ with SatApp : const -> Apps -> Prop :=    (* defn SatApp *)
      SatApp F Apps5.
 
 (* defns JPatCtx *)
-Inductive PatternContexts : role_context -> context -> const -> tm -> tm -> tm -> Prop :=    (* defn PatternContexts *)
+Inductive PatternContexts : role_context -> context -> available_props -> const -> tm -> tm -> tm -> Prop :=    (* defn PatternContexts *)
  | PatCtx_Const : forall (F:const) (A:tm),
      lc_tm A ->
-     PatternContexts  nil   nil  F A (a_Fam F) A
- | PatCtx_PiRel : forall (L:vars) (W:role_context) (R:role) (G:context) (A':tm) (F:const) (B p A:tm),
-     PatternContexts W G F B p (a_Pi Rel A' A) ->
-      ( forall x , x \notin  L  -> PatternContexts  (( x  ~  R ) ++  W )   (( x ~ Tm  A' ) ++  G )  F B (a_App p (Role R) (a_Var_f x))  ( open_tm_wrt_tm A (a_Var_f x) )  ) 
- | PatCtx_PiIrr : forall (L:vars) (W:role_context) (G:context) (A':tm) (F:const) (B p A:tm),
-     PatternContexts W G F B p (a_Pi Irrel A' A) ->
-      ( forall x , x \notin  L  -> PatternContexts W  (( x ~ Tm  A' ) ++  G )  F B (a_App p (Rho Irrel) a_Bullet)  ( open_tm_wrt_tm A (a_Var_f x) )  ) 
- | PatCtx_CPi : forall (L:vars) (W:role_context) (G:context) (phi:constraint) (F:const) (B p A:tm),
-     PatternContexts W G F B p (a_CPi phi A) ->
-      ( forall c , c \notin  L  -> PatternContexts W  (( c ~ Co  phi ) ++  G )  F B (a_CApp p g_Triv)  ( open_tm_wrt_co A (g_Var_f c) )  ) .
+     PatternContexts  nil   nil   AtomSetImpl.empty  F A (a_Fam F) A
+ | PatCtx_PiRel : forall (L:vars) (W:role_context) (R:role) (G:context) (A':tm) (D:available_props) (F:const) (B p A:tm),
+     PatternContexts W G D F B p (a_Pi Rel A' A) ->
+      ( forall x , x \notin  L  -> PatternContexts  (( x  ~  R ) ++  W )   (( x ~ Tm  A' ) ++  G )  D F B (a_App p (Role R) (a_Var_f x))  ( open_tm_wrt_tm A (a_Var_f x) )  ) 
+ | PatCtx_PiIrr : forall (L:vars) (W:role_context) (G:context) (A':tm) (D:available_props) (F:const) (B p A:tm),
+     PatternContexts W G D F B p (a_Pi Irrel A' A) ->
+      ( forall x , x \notin  L  -> PatternContexts W  (( x ~ Tm  A' ) ++  G )   (singleton  x  \u  D )  F B (a_App p (Rho Irrel) a_Bullet)  ( open_tm_wrt_tm A (a_Var_f x) )  ) 
+ | PatCtx_CPi : forall (L:vars) (W:role_context) (G:context) (phi:constraint) (D:available_props) (F:const) (B p A:tm),
+     PatternContexts W G D F B p (a_CPi phi A) ->
+      ( forall c , c \notin  L  -> PatternContexts W  (( c ~ Co  phi ) ++  G )  D F B (a_CApp p g_Triv)  ( open_tm_wrt_co A (g_Var_f c) )  ) .
 
 (* defns JRename *)
 Inductive Rename : tm -> tm -> tm -> tm -> available_props -> available_props -> Prop :=    (* defn Rename *)
@@ -1823,12 +1823,13 @@ Inductive Sig : sig -> Prop :=    (* defn Sig *)
      Typing  nil  A a_Star ->
       ~ AtomSetImpl.In  F  (dom  S )  ->
      Sig  (( F ~ (Cs A Rs) )++ S ) 
- | Sig_ConsAx : forall (S:sig) (F:const) (p a A:tm) (R:role) (W:role_context) (G:context) (B:tm),
+ | Sig_ConsAx : forall (S:sig) (F:const) (p a A:tm) (R:role) (W:role_context) (G:context) (D:available_props) (B:tm),
      Sig S ->
       ~ AtomSetImpl.In  F  (dom  S )  ->
      Typing  nil  A a_Star ->
-     PatternContexts W G F A p B ->
+     PatternContexts W G D F A p B ->
      Typing G a B ->
+      (AtomSetImpl.For_all (fun x => x `notin`   (fv_tm_tm_tm  a )  )  D  )  ->
      roleing W a R ->
      Sig  (( F ~ (Ax p a A R  (range( W )) ) )++ S ) .
 

@@ -32,9 +32,9 @@ Notation "ρ-check ρ x A" := (RhoCheck ρ x A) (at level 70, only printing).
 (* Functions *)
 (* Change to ℱ𝒱 instead ?*)
 Notation "'ℱν' a" := (fv_tm_tm_tm a) (at level 50, only printing).
-Notation "'ℱν' a" := (fv_tm_tm_co a) (at level 50, only printing).
+Notation "'ℱνc' a" := (fv_tm_tm_co a) (at level 50, only printing).
 Notation "'ℱν' φ" := (fv_co_co_co φ) (at level 50, only printing).
-Notation "'ℱν' φ" := (fv_co_co_tm φ) (at level 50, only printing).
+Notation "'ℱνc' φ" := (fv_co_co_tm φ) (at level 50, only printing).
 
 Notation "a ∪ b" := (a `union` b) (at level 50).
 Notation "a ∩ b" := (AtomSetImpl.inter a b) (at level 50).
