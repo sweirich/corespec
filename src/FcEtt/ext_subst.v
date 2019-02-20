@@ -277,50 +277,54 @@ Proof.
   induction 1; intros; subst; simpl.
   - autorewrite with subst_open; eauto 3 with lc.
     have LC: lc_tm a0. eauto 3 with lc.
-Admitted.
-(*
-
-    move: (tm_subst_tm_tm_lc_tm _ _ x H4 LC) => h0. simpl in h0.
     rewrite tm_subst_tm_tm_apply_pattern_args.
-    rewrite tm_subst_tm_tm_apply_pattern_args in h0.
     eapply BranchTyping_Base; eauto 4 using tm_subst_tm_tm_lc_tm.
   - pick fresh y and apply BranchTyping_PiRole.
-    autorewrite with subst_open_var; eauto 2 with lc.
+    autofresh with y.
+    autorewrite with subst_open_var; try solve [uha; eauto 2 with lc].
     rewrite_subst_context.
-    replace (a_App (tm_subst_tm_tm a0 x b) (Role R) (a_Var_f y)) with
-        (tm_subst_tm_tm a0 x (a_App b (Role R) (a_Var_f y))).
-    replace ((p_Tm (Role R) (a_Var_f y)
-     :: List.map (tm_subst_tm_pattern_arg a0 x) pattern_args5)) with
-        (List.map (tm_subst_tm_pattern_arg a0 x) (p_Tm (Role R) (a_Var_f y) 
-                                                       :: pattern_args5)).
-
-    eauto.
-    simpl. f_equal. destruct (y == x) eqn:eq. subst. 
-    have bad: (x `notin` singleton x). fsetdec. hide Fr. fsetdec.
-    rewrite tm_subst_tm_tm_a_App.
-    rewrite tm_subst_tm_tm_var_neq; auto.
-
+    move/(_ _ _ _ _ (y ~ Tm A ++ ltac:(ea)) x eq_refl) in H0. (* FIXME: fragile *)
+    especialize H0.
+    rewrite map_app /= in H0.
+    move: H0.
+    case (y == x); first by (intros; uha; subst; exfalso; fsetdec_fast).
+    move=>?; apply.
   - pick fresh y and apply BranchTyping_PiRel.
     autofresh with y.
     autorewrite with subst_open_var; try solve [uha; eauto 2 with lc].
     rewrite_subst_context.
-    move: H0. (* FIXME fragile *)
-    move/(_ _ _ _ ltac:(ea) (y ~ Tm A ++ ltac:(ea)) x eq_refl) => /=.
-    destruct ((y : tmvar) == x);
-      first by (unhide all; subst; exfalso; fsetdec_fast).
+    move/(_ _ _ _ ltac:(ea) (y ~ Tm A ++ ltac:(ea)) x eq_refl) in H0. (* FIXME fragile *)
+    move: H0.
+    rewrite map_app /=.
+    case: (y == x) ; first by (intros; uha; subst; exfalso; fsetdec_fast).
+    move=> ?.
     apply.
   - pick fresh y and apply BranchTyping_PiIrrel.
     autofresh with y.
     autorewrite with subst_open_var; try solve [uha; eauto 2 with lc].
     rewrite_subst_context.
-    eapply H0; eauto. (* FIXME: fragile *)
+    (* TODO: basic blind_spec tactic *)
+    move/(_ _ _ _ _ (y ~ Tm A ++ _) x eq_refl) => /= in H0.
+    especialize H0.
+    move: H0.
+    rewrite map_app.
+    case (y == x); first by (intros; uha; subst; exfalso; fsetdec_fast).
+    move=>?.
+    apply.
   - pick fresh y and apply BranchTyping_CPi.
     autofresh with y.
     autorewrite with subst_open_var; eauto 2 with lc.
     rewrite_subst_context.
-    eapply H0; eauto. (* FIXME: fragile *)
-Admitted. (* Wtf!? Qed bugs on this *)
-*)
+    move/(_ _ _ _ _ (y ~ _ ++ _) x eq_refl) => /= in H0.
+    especialize H0.
+    move: H0.
+    rewrite map_app.
+    apply.
+
+    Unshelve.
+    all: eassumption.
+Qed.
+
 
 Lemma tm_substitution_mutual :
    (forall G0 b B (H : Typing G0 b B),

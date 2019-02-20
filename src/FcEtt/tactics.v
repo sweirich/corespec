@@ -31,12 +31,57 @@ Module TacticsInternals.
 (**** Basic Building Blocks ****)
 (*******************************)
 
+Ltac nl := idtac " ".
+
 (* TODO: reorganize properly so we don't duplicate (see bottom of the file) *)
 Local Tactic Notation "ret" tactic(tac) := let answer := tac in exact answer.
 
 (* Shorthands for instantiation/specialization *)
 Ltac spec2 H x xL := specialize (H x xL).
 Ltac inst2 H x xL := let h := fresh H x in move: (H x xL) => h.
+
+Ltac especialize H :=
+  repeat match type of H with
+    | forall (x : ?t), _ =>
+      let e := fresh "e" in
+      evar (e : t);
+      move: H;
+      move/(_ e) => H;
+      subst e
+  end.
+
+(**** Info tactics ****)
+(* This tactic is meant to help find why 2 terms are not unifiable, by displaying
+   additional information. At the moment, it only decomposes applications. Foralls
+   can be handled using especialize. *)
+Ltac unify_info' disp1 disp2 t1 t2 :=
+  tryif unify t1 t2 then idtac "Success," t1 "and" t2 "are unifiable"
+  else lazymatch t1 with
+    | ?t11 ?t12 =>
+      lazymatch t2 with
+        | ?t21 ?t22 =>
+          tryif unify t12 t22 then
+            idtac "Unifiable arguments:" t12 t22;
+            unify_info' disp1 disp2 t11 t21
+          else
+            (* Splitting this message so that the terms are vertically aligned *)
+            idtac "__Failure: can't unify arguments__";
+            idtac disp1 t12;
+            idtac disp2 t22;
+            nl;
+            idtac "Corresponding functions:";
+            idtac disp1 t11;
+            idtac disp2 t21;
+            nl; nl;
+            idtac "Trying recursively:";
+            unify_info' disp1 disp2 t12 t22;
+            fail "Unification failure"
+        (* TODO: refine this case *)
+        | _ => fail "Can't decompose" disp2 t2 "further"
+      end
+    (* TODO: refine this case - if t2 can't be decomposed either, need to print both *)
+    | _ => fail "Can't decompose" disp1 t1 "further"
+  end.
 
 (* Dynamic type, useful for some tactics *)
 Polymorphic (* Cumulative *) Inductive Dyn : Type := dyn : forall {T : Type}, T -> Dyn.
@@ -825,6 +870,8 @@ Ltac depind x := dependent induction x.
 Ltac exa    x := exact x.
 Ltac ea       := eassumption.
 
+Ltac get_goal := match goal with |- ?g => constr:(g) end.
+
 (* Hiding/unhiding the type of a hyp *)
 Ltac hide      := TacticsInternals.hide.
 Ltac hidewith  := TacticsInternals.hidewith.
@@ -832,6 +879,8 @@ Ltac unhide    := TacticsInternals.unhide.
 Ltac uha       := repeat with TacticsInternals._hide do unhide end; repeat with TacticsInternals._hide_with do unhide.
 Tactic Notation "unhide" "all" := uha.
 Ltac softclear := TacticsInternals.softclear. (* This tactic goes further, and prevents the hyp from being used again *)
+
+Ltac especialize := TacticsInternals.especialize.
 
 (* FIXME: see similar declaration above *)
 Global Notation "'_hidden_'"       := (TacticsInternals._hide _)        (at level 50, only printing).
@@ -845,4 +894,31 @@ Tactic Notation "basic_solve_n" int_or_var(n) := try solve [basic_nosolve_n n].
    provide a tactic that _solves a goal_, and *not* one that _returns a term_. This turns an
    instance of the latter into one of the former. *)
 Tactic Notation "ret" tactic(tac) := let answer := tac in exact answer.
+
+
+(* Finding out why 2 terms are not unifiable *)
+Local Tactic Notation "debugunif_dispatch" preident(disp1) preident(disp2) constr(t1) constr(t2) := TacticsInternals.unify_info' disp1 disp2 t1 t2.
+Tactic Notation "debug" "unify" "hyp"  ident(H1)  "vs" "hyp"  ident(H2)  := debugunif_dispatch hyp1 hyp2 ltac:(ret type of H1) ltac:(ret type of H2).
+Tactic Notation "debug" "unify" "hyp"  ident(H1)  "vs" "goal"            := let g := get_goal in debugunif_dispatch hyp1 goal ltac:(ret type of H1) g.
+Tactic Notation "debug" "unify" "hyp"  ident(H1)  "vs" "term" constr(t2) := debugunif_dispatch hyp trm ltac:(ret type of H1) t2.
+Tactic Notation "debug" "unify" "term" constr(t1) "vs" "term" constr(t2) := debugunif_dispatch tm1 tm2 t1 t2.
+Tactic Notation "debug" "unify" "term" constr(t1) "vs" "goal"            := let g := get_goal in debugunif_dispatch term goal t1 g.
+
+
+(**** Example ****)
+(*
+Goal id True.
+  assert (Hf : id False) by admit.
+  assert (Ht : id True) by admit.
+
+  (* In a real situation, just remove the assert_fails (since the tactic is meant to fail in those cases) *)
+  assert_fails debug unify hyp Ht vs term (id False).
+  assert_fails debug unify hyp Hf vs goal.
+  assert_fails debug unify hyp Ht vs hyp Hf.
+  assert_fails debug unify term (id True) vs term (id False).
+  assert_fails debug unify term (id False) vs goal.
+
+  debug unify hyp Ht vs goal. (* Succeeds if the terms are unifiable *)
+Abort.
+*)
 
