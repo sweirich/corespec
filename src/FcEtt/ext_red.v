@@ -890,7 +890,7 @@ Qed.
 
 Lemma cps_pattern_fresh :  forall A pargs1 x p sub (G:list(atom*A)),
    x `notin` dom G ->
-   fv_co_co_pattern_args (map (cps_pattern_arg^~ sub) pargs1) ⊂ dom G ->
+   fv_co_co_pattern_args (map (cps_pattern_arg^~ sub) pargs1) ⊂ empty ->
    fv_tm_tm_pattern_args (map (cps_pattern_arg^~ sub) pargs1) ⊂ dom G ->
    map (cps_pattern_arg^~ ((x, p) :: sub)) pargs1 = 
    map (cps_pattern_arg^~ sub) pargs1.
@@ -904,11 +904,13 @@ Proof.
   rewrite tm_subst_tm_tm_fresh_eq; auto. 
   simpl.
   rewrite co_subst_co_tm_fresh_eq; auto. 
+  fsetdec.
   destruct p.
   simpl.
   rewrite tm_subst_tm_co_fresh_eq; auto. 
   simpl.
   rewrite co_subst_co_co_fresh_eq; auto. 
+  fsetdec.
 Qed.
 
 (*
@@ -1144,7 +1146,7 @@ Proof.
   all: with (fv_co_co_tm (apply_pattern_args _ _) [<=] _) do ltac:(fun h =>
          rewrite -> fv_co_co_tm_apply_pattern_args in h).
 
-  all: try 
+  all: 
    have ?: map (cps_pattern_arg^~ sub') pargs1' = args1'
   by (unfold args1'; unfold args1; rewrite map_app;
       f_equal;
@@ -1155,7 +1157,7 @@ Proof.
         try eapply cps_a_Bullet;
         try erewrite cps_g_Triv; eauto]).
 
-  all: try specialize (IHn ltac:(auto)).
+  all: specialize (IHn ltac:(auto)).
   all: with (open_telescope) do 
          ltac:(fun h => specialize (IHn _ _ h); clear h).
 
@@ -1274,8 +1276,8 @@ Proof.
         rewrite cps_a_CPi in H24.
         rewrite cps_a_CPi in H25.
         simpl in *.
-        eapply subset_notin with (S2 := dom G). auto.
-        fsetdec.
+        eapply subset_notin with (S2 := empty). auto.
+        rewrite -> union_subset in H25. split_hyp. auto.
       }
       move: H9 => peq.
       fold sub. fold sub in peq.
@@ -1298,9 +1300,9 @@ Proof.
           split_hyp.
           rewrite cps_a_CPi in H30.
           rewrite cps_a_CPi in H31.
-          eapply subset_notin with (S2 := dom G). auto.
+          eapply subset_notin with (S2 := empty). auto.
           simpl in *.
-          fsetdec.
+          rewrite -> union_subset in H31. split_hyp. auto.
        }  
        move: H12 => h.
        move: H9 => h0.
@@ -2011,9 +2013,10 @@ Proof.
       simpl. auto.
     } 
     rewrite EQ5 in L.
-    rewrite co_subst_co_tm_fresh_eq in L. admit.
+    rewrite co_subst_co_tm_fresh_eq in L. 
+    show_fresh. fsetdec.
     eapply L. 
-Admitted.
+Qed.
 
 
 Lemma MatchSubstTyping_start :  `{

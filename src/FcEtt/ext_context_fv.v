@@ -120,29 +120,29 @@ Qed.
 
 Theorem context_fv_mutual :
   (forall G (a : tm) A (H: Typing G a A),
-      fv_tm_tm_tm a [<=] dom G /\ fv_co_co_tm a [<=] dom G /\
-      fv_tm_tm_tm A [<=] dom G /\ fv_co_co_tm A [<=] dom G)
+      fv_tm_tm_tm a [<=] dom G /\ fv_co_co_tm a [<=] empty /\
+      fv_tm_tm_tm A [<=] dom G /\ fv_co_co_tm A [<=] empty)
   /\
   (forall G phi  (H : PropWff G phi ),
-      fv_tm_tm_constraint phi [<=] dom G /\ fv_co_co_constraint phi [<=] dom G)
+      fv_tm_tm_constraint phi [<=] dom G /\ fv_co_co_constraint phi [<=] empty)
   /\
   (forall G D p1 p2  (H : Iso G D p1 p2 ),
-      fv_tm_tm_constraint p1 [<=] dom G /\ fv_co_co_constraint p1 [<=] dom G /\
-      fv_tm_tm_constraint p2 [<=] dom G /\ fv_co_co_constraint p2 [<=] dom G)
+      fv_tm_tm_constraint p1 [<=] dom G /\ fv_co_co_constraint p1 [<=] empty /\
+      fv_tm_tm_constraint p2 [<=] dom G /\ fv_co_co_constraint p2 [<=] empty)
   /\
   (forall G D A B T R (H : DefEq G D A B T R),
-      (fv_tm_tm_tm A [<=] dom G /\ fv_co_co_tm A [<=] dom G /\
-      fv_tm_tm_tm B [<=] dom G /\ fv_co_co_tm B [<=] dom G /\
-      fv_tm_tm_tm T [<=] dom G /\ fv_co_co_tm T [<=] dom G))
+      (fv_tm_tm_tm A [<=] dom G /\ fv_co_co_tm A [<=] empty /\
+      fv_tm_tm_tm B [<=] dom G /\ fv_co_co_tm B [<=] empty /\
+      fv_tm_tm_tm T [<=] dom G /\ fv_co_co_tm T [<=] empty))
 
   /\
   (forall G (H : Ctx G),
       (forall x A,
           binds x (Tm A)   G ->
-          fv_tm_tm_tm         A   [<=] dom G /\ fv_co_co_tm         A   [<=] dom G) /\
+          fv_tm_tm_tm         A   [<=] dom G /\ fv_co_co_tm         A   [<=] empty) /\
       (forall c phi,
           binds c (Co phi) G ->
-          fv_tm_tm_constraint phi [<=] dom G /\ fv_co_co_constraint phi [<=] dom G)).
+          fv_tm_tm_constraint phi [<=] dom G /\ fv_co_co_constraint phi [<=] empty)).
 
 Proof.
   (* TODO: this needs maintenance *)
@@ -202,16 +202,7 @@ Proof.
     eapply fv_tm_tm_tm_open_tm_wrt_tm_lower; auto);
       simpl in h0; apply F.add_neq_iff in h0; auto
            end.
-  all: try match goal with
-    [ H4 : ?y `in` fv_co_co_tm ?B,
-      H5 : ∀ a : atom,
-       a `in` fv_co_co_tm (open_tm_wrt_tm ?B (a_Var_f ?x))
-            → a `in` dom (?x ~ ?s ++ ?G) |- _ ] =>
-    assert (h0: y `in` dom (x ~ s ++ G)) by
-    (eapply H5; eauto;
-    eapply fv_co_co_tm_open_tm_wrt_tm_lower; auto);
-      simpl in h0; apply F.add_neq_iff in h0; auto
-           end.
+
   all: try match goal with
     [ H4 : ?y `in` fv_tm_tm_tm ?B,
       H5 : ∀ a : atom,
@@ -221,16 +212,6 @@ Proof.
     (eapply H5; eauto;
     eapply fv_tm_tm_tm_open_tm_wrt_co_lower; auto);
     simpl in h0; apply F.add_neq_iff in h0; auto
-           end.
-  all: try match goal with
-    [ H4 : ?y `in` fv_co_co_tm ?B,
-      H5 : ∀ a : atom,
-       a `in` fv_co_co_tm (open_tm_wrt_co ?B (g_Var_f ?x))
-            → a `in` dom (?x ~ ?s ++ ?G) |- _ ] =>
-    assert (h0: y `in` dom (x ~ s ++ G)) by
-    (eapply H5; eauto;
-    eapply fv_co_co_tm_open_tm_wrt_co_lower; auto);
-      simpl in h0; apply F.add_neq_iff in h0; auto
            end.
 
   all: try (simpl in *; eapply fv_tm_tm_tm_open_tm_wrt_tm_upper in IN;
@@ -257,6 +238,24 @@ Proof.
 
   all: try solve [ assert (c = y) by auto; subst; eapply binds_In; eauto ].
   all: try solve [ destruct (H0 _ _ b0); simpl in *; eauto].
+  
+  all: try match goal with
+    [ H4 : ?y `in` fv_co_co_tm ?B,
+      H5 : ∀ a : atom,
+       a `in` fv_co_co_tm (open_tm_wrt_tm ?B (a_Var_f ?x))
+            → a `in` empty |- _ ] =>
+    (eapply H5; eauto;
+    eapply fv_co_co_tm_open_tm_wrt_tm_lower; auto)
+      end.
+
+  all: try match goal with
+    [ H4 : ?y `in` fv_co_co_tm ?B,
+      H5 : ∀ a : atom,
+       a `in` fv_co_co_tm (open_tm_wrt_co ?B (g_Var_f ?x))
+            → a `in` empty |- _ ] =>
+    eapply H5; eauto;
+    eapply fv_co_co_tm_open_tm_wrt_co_lower; auto
+  end.
 
 Qed.
 

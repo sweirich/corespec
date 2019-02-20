@@ -88,18 +88,15 @@ Proof.
     show_fresh.
 Qed.
 
+(* The second premise is no longer needed. *)
 Lemma tm_subst_co_fresh_1 :
 forall G a A a0 c s,
   Typing G a A -> Ctx ((c ~ s) ++ G) -> co_subst_co_tm a0 c A = A.
 Proof.
   intros G a A a0 x s H H0.
-  destruct s.
-  - apply co_subst_co_tm_fresh_eq.
-    inversion H0; subst; clear H0.
-    show_fresh.
-  - apply co_subst_co_tm_fresh_eq.
-    inversion H0; subst; clear H0.
-    show_fresh.
+  move: (Typing_context_fv H) => ?. split_hyp.
+  apply co_subst_co_tm_fresh_eq.
+  fsetdec.
 Qed.
 
 Lemma tm_subst_fresh_2 :
@@ -117,13 +114,9 @@ forall G A a0 c s,
   Typing G A a_Star -> Ctx ((c ~ s) ++ G) -> co_subst_co_tm a0 c A = A.
 Proof.
   intros G A a0 x s H H0.
-  destruct s.
-  - apply co_subst_co_tm_fresh_eq.
-    inversion H0; subst; clear H0.
-    show_fresh.
-  - apply co_subst_co_tm_fresh_eq.
-    inversion H0; subst; clear H0.
-    show_fresh.
+  move: (Typing_context_fv H) => ?. split_hyp.
+  apply co_subst_co_tm_fresh_eq.
+  fsetdec.
 Qed.
 
 Lemma co_subst_fresh :
@@ -678,7 +671,7 @@ Proof.
       inversion Hi2; subst; clear Hi2.
       inversion H5; subst; clear H5.
       repeat rewrite co_subst_co_tm_fresh_eq; eauto 2.
-      all: try show_fresh.
+      all: try show_fresh. fsetdec. fsetdec.
       rewrite_env (nil ++(map (co_subst_co_sort g_Triv c1) F) ++ G0).
       eapply (fourth weaken_available_mutual).
       pose K := DefEq_weakening.
@@ -693,7 +686,7 @@ Proof.
       have: c1 `notin` dom G0. inversion h2; auto.
       move => Fr1.
       repeat rewrite co_subst_co_tm_fresh_eq.
-      all: try show_fresh.
+      all: try show_fresh. fsetdec. fsetdec.
       eapply E_Assn; eauto 1.
       eapply H; eauto 1.
       eapply binds_app_3; eauto 1.
