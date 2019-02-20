@@ -588,7 +588,7 @@ Lemma context_Defeq_BranchTyping :
   forall G1 n R a A b aa A1 B C,  BranchTyping G1 n R a A b aa A1 B C 
                        -> forall G2, uniq G2 -> BranchTyping G2 n R a A b aa A1 B C.
 Proof.  
-Admitted.
+Admitted. (* context_Defeq_BranchTyping *)
 (*
   induction 1; intros.
   - eauto.

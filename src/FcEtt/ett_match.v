@@ -1345,7 +1345,7 @@ Lemma Par_AppsPath : forall F a R W a' n, AppsPath R a F n -> Par W a a' R ->
                                         AppsPath R a' F n.
 Proof.
   intros.
-Admitted.
+Admitted. (* Par_AppsPath *)
 
 Ltac invert_par :=
      try match goal with
@@ -1368,7 +1368,7 @@ Proof. intros. induction H; invert_par.
 Qed.
 
 Lemma AppsPath_Par : forall F a R W a' n, Value R a' -> AppsPath R a F n -> Par W a' a R -> AppsPath R a' F n.
-Admitted.
+Admitted.  (* AppsPath_Par *)
 
 
 

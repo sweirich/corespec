@@ -406,7 +406,7 @@ Proof.
   intros.
   eapply Value_Path.
   eauto using AppsPath_CasePath.
-Admitted.
+Admitted. (* AppsPath_Value *)
 
 (* The reduction relation is deterministic *)
 Lemma reduction_in_one_deterministic :

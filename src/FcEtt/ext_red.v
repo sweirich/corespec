@@ -39,41 +39,6 @@ Definition degrade : pattern_arg -> pattern_arg :=
   end.
 
 
-(* FIXME: move *)
-(* Specialize term H, using only hyps present in the context *)
-Ltac spec_hyp_ctx_only H name :=
-  tryif match goal with H' : _ |- _ => unify name H' end then fail 0 name "is already taken" else
-  lazymatch type of H with
-    | forall x : ?T, _ =>
-      match goal with H' : _ |- _ => spec_hyp_ctx_only (H H') name end
-    | _ => move: H; move => name
-  end.
-
-(* We don't actually need this lemma any more. I rephrased the 
-   judgement so that it is not necessary. *)
-
-Lemma to_move : `{
-  Γ ⊨ open_tm_wrt_co a g₁ : A →
-  open_tm_wrt_co a g₁ = open_tm_wrt_co a g₂}.
-Proof.
-  intros until 0.
-  move=> h; dependent induction h.
-  all: try with @eq do fun h => destruct a; try solve [inv h]; cbn in h.
-  all: cbn; try reflexivity.
-
-  (* Solving one idiosyncratic goal *)
-  all: try (match goal with |- open_tm_wrt_co _ _ = open_tm_wrt_co _ _ => idtac end; by move:(IHh1 _ _ eq_refl) => ->).
-
-  all: try injection x; intros.
-  all: unfold open_tm_wrt_co in *.
-  all: try (spec_hyp_ctx_only IHh1 ih1; rewrite <- ih1 in * ).
-  all: try (spec_hyp_ctx_only IHh2 ih2; rewrite <- ih2 in * ).
-  all: try reflexivity.
-
-Admitted.
-Definition open_co := @to_move.
-
-
 (* --------------------------------------------------------- *)
 
 
@@ -836,18 +801,6 @@ Definition arg_agree : pattern_arg -> pattern_arg -> Prop :=
     | (_,_) => False
     end.
 
-
-
-
-(*
-Lemma BaseType_cps : forall A sub,
-   BaseType A -> 
-   BaseType (cps_tm A sub).
-Proof. 
-  intros.
-  inversion H.
-Admitted.
-*)
 
 Lemma fv_tm_tm_tm_apply_pattern_args : forall pargs a, 
         fv_tm_tm_tm (apply_pattern_args a pargs) [=] 
@@ -2045,7 +1998,7 @@ Lemma MatchSubst_ValuePath :
      Rename p b p1 b1 s D →
      ValuePath a F}.
 Proof. induction 1; intros BI RN; inversion RN; subst; eauto.
-Admitted.
+Admitted. (* MatchSubst_ValuePath *)
 
 
 Theorem MatchSubst_preservation2 : `{
@@ -2086,7 +2039,7 @@ Proof.
   admit.
   eapply MatchSubstTyping_start; eauto.
   Unshelve. all: eauto.
-Admitted.
+Admitted. (* MatchSubst_preservation2  *)
 
 
 (* -------------------------------------------------------- *)
@@ -2242,7 +2195,7 @@ Proof.
   - eauto.
   - admit.
   - eauto.
-Admitted.
+Admitted. (* Par_fv_preservation *)
 
 Lemma reduction_in_Par : forall a a' R, reduction_in_one a a' R ->
                                    forall W, roleing W a R -> Par W a a' R.
@@ -2265,7 +2218,7 @@ Proof.
      all: admit.
     + inversion H0; subst. eapply Par_PatternTrue; eauto.
     + inversion H0; subst. (* eapply Par_PatternFalse; eauto *) admit.
-Admitted.
+Admitted. (* reduction in Par *)
 
 
 
@@ -2322,5 +2275,5 @@ Proof.
     eapply E_Conv. eauto. eauto.
     eapply DefEqIso_regularity. eapply E_Sym. eauto.
   - eapply Beta_preservation; eauto. *)
-Admitted.
+Admitted. (* reduction_preservation  *)
 
