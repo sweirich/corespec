@@ -1171,7 +1171,8 @@ Qed.
 Fixpoint applyArgs (a : tm) (b : tm) : tm := match a with
    | a_Fam F => b
    | a_App a' (Role _) b' => a_App (applyArgs a' b) (Rho Rel) b'
-   | a_App a' (Rho rho) b' => a_App (applyArgs a' b) (Rho rho) b'
+   | a_App a' (Rho Rel) b' => a_App (applyArgs a' b) (Rho Rel) b'
+   | a_App a' (Rho Irrel) b' => a_App (applyArgs a' b) (Rho Irrel) b'
    | a_CApp a' g_Triv => a_CApp (applyArgs a' b) g_Triv
    | _ => a_Bullet
    end.
@@ -1180,13 +1181,14 @@ Fixpoint applyArgs (a : tm) (b : tm) : tm := match a with
 Lemma ApplyArgs_applyArgs : forall a b b', ApplyArgs a b b' ->
                              applyArgs a b = b'.
 Proof. intros. induction H; simpl; subst; eauto.
+       destruct rho; auto.
 Qed.
 
 Lemma applyArgs_ApplyArgs : forall R a F b b', CasePath R a F -> lc_tm b ->
                           applyArgs a b = b' -> ApplyArgs a b b'.
 Proof. intros. generalize dependent b'. apply CasePath_ValuePath in H.
        induction H; intros; simpl in *; subst; eauto.
-       destruct nu; eauto.
+       destruct nu; try destruct rho; eauto.
 Qed.
 
 Ltac pattern_head_same := match goal with

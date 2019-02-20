@@ -951,13 +951,6 @@ Proof.
   eauto.
 Qed.
 
-Lemma RolePath_roles_agree : forall F p b A R Rs a Rs',
-      binds F (Ax p b A R Rs) toplevel-> RolePath a F Rs' ->
-      Rs = tm_app_roles a ++ Rs'.
-Proof. intros. induction H0; simpl; eauto. axioms_head_same.
-       axioms_head_same. auto. rewrite <- app_assoc. simpl.
-       eauto.
-Qed.
 
 Lemma MatchSubst_par : forall a1 p b b' b'' W W' a2 R F p1 b1 A R1 Rs,
   MatchSubst a1 p b b' -> ~tm_pattern_agree a1 p1 ->
