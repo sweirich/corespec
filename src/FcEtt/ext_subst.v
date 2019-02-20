@@ -284,12 +284,13 @@ Proof.
   induction 1; intros; subst; simpl.
   - autorewrite with subst_open; eauto 3 with lc.
     have LC: lc_tm a0. eauto 3 with lc.
-    move: (tm_subst_tm_tm_lc_tm _ _ x H3 LC) => h0. simpl in h0.
+Admitted.
+(*
+
+    move: (tm_subst_tm_tm_lc_tm _ _ x H4 LC) => h0. simpl in h0.
     rewrite tm_subst_tm_tm_apply_pattern_args.
     rewrite tm_subst_tm_tm_apply_pattern_args in h0.
     eapply BranchTyping_Base; eauto 4 using tm_subst_tm_tm_lc_tm.
-Admitted. 
-(*
   - pick fresh y and apply BranchTyping_PiRole.
     autorewrite with subst_open_var; eauto 2 with lc.
     rewrite_subst_context.

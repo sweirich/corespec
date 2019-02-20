@@ -1556,14 +1556,13 @@ with reduction : tm -> tm -> role -> Prop :=    (* defn reduction *)
 
 (* defns JBranchTyping *)
 Inductive BranchTyping : context -> Apps -> role -> tm -> tm -> tm -> pattern_args -> tm -> tm -> tm -> Prop :=    (* defn BranchTyping *)
- | BranchTyping_Base : forall (L:vars) (G:context) (a A b:tm) (pattern_args5:pattern_args) (C:tm),
-     lc_tm C  ->
+ | BranchTyping_Base : forall (G:context) (a A b:tm) (pattern_args5:pattern_args) (C1 C2:tm),
      lc_tm a ->
      lc_tm b ->
      lc_tm A ->
-     lc_tm (a_CPi  ( (Eq a  (apply_pattern_args  b   pattern_args5 )  A Nom) )  C) ->
       uniq  G  ->
-      ( forall c , c \notin  L  -> BranchTyping G A_nil Nom a A b pattern_args5 A (a_CPi  ( (Eq a  (apply_pattern_args  b   pattern_args5 )  A Nom) )  C)  ( open_tm_wrt_co C (g_Var_f c) )  ) 
+      (  (open_tm_wrt_co  C1   g_Triv )   =  C2 )  ->
+     BranchTyping G A_nil Nom a A b pattern_args5 A (a_CPi  ( (Eq a  (apply_pattern_args  b   pattern_args5 )  A Nom) )  C1) C2
  | BranchTyping_PiRole : forall (L:vars) (G:context) (R:role) (Apps5:Apps) (a A1 b:tm) (pattern_args5:pattern_args) (A B C C':tm),
       ( forall x , x \notin  L  -> BranchTyping  (( x ~ Tm  A ) ++  G )  Apps5 Nom a A1 b  ( pattern_args5  ++ [  (p_Tm (Role R) (a_Var_f x))  ])   ( open_tm_wrt_tm B (a_Var_f x) )   ( open_tm_wrt_tm C (a_Var_f x) )  C' )  ->
      BranchTyping G  ( (A_cons (A_Tm (Role R)) Apps5) )  Nom a A1 b pattern_args5 (a_Pi Rel A B) (a_Pi Rel A C) C'
@@ -1739,8 +1738,8 @@ with DefEq : context -> available_props -> tm -> tm -> tm -> role -> Prop :=    
      DefEq G D (a_CApp a1 g_Triv) (a_CApp b1 g_Triv)  (  (open_tm_wrt_co  B   g_Triv )  )  R'
  | E_CPiSnd : forall (G:context) (D:available_props) (B1 B2:tm) (R0:role) (a1 a2 A:tm) (R:role) (a1' a2' A':tm) (R':role),
      DefEq G D (a_CPi  ( (Eq a1 a2 A R) )  B1) (a_CPi  ( (Eq a1' a2' A' R') )  B2) a_Star R0 ->
-     DefEq G  (dom  G )  a1 a2 A  (param R   R0 )  ->
-     DefEq G  (dom  G )  a1' a2' A'  (param R'   R0 )  ->
+     DefEq G  (dom  G )  a1 a2 A R ->
+     DefEq G  (dom  G )  a1' a2' A' R' ->
      DefEq G D  (open_tm_wrt_co  B1   g_Triv )   (open_tm_wrt_co  B2   g_Triv )  a_Star R0
  | E_Cast : forall (G:context) (D:available_props) (a' b' A':tm) (R':role) (a b A:tm) (R:role),
      DefEq G D a b A R ->

@@ -780,7 +780,6 @@ Apps ~ Rs
 ----------------------- :: consApp
 Tm + , Apps ~ Rs
 
-
 Apps ~ Rs
 ----------------------- :: consIApp
 Tm - , Apps ~ Rs
@@ -1525,10 +1524,9 @@ G |= Apps case R a : A of b @ pattern_args : B -> C | C' ::    :: BranchTyping :
 by
 
 ctx_uniq G
-{{ lc_tm [[C]] }}
-% ^ better way to do this? (hopefully making ott aware that C is lc)
+C1 { o / c } = C2
 ------------------------------------------------------------- :: Base
-G |= emptyA case Nom a : A of b @ pattern_args : A -> all c : (a ~ apply b pattern_args : A / Nom) . C | C
+G |= emptyA case Nom a : A of b @ pattern_args : A -> all c : (a ~ apply b pattern_args : A / Nom) . C1 | C2
 
 G, x : A |= Apps case Nom a : A1 of b @ pattern_args , Tm R x : B -> C | C'
 ------------------------------------------------------------------- :: PiRole
@@ -1787,8 +1785,8 @@ G ; dom G |= a == b : A/param R R'
 G ; D |= a1 [o] == b1 [o] : (B { o / c })/R'
 
 G ; D |= all c:(a1 ~ a2 : A/R). B1 == all c:(a1'~ a2' : A'/R'). B2 : TYPE/R0
-G ; dom G |= a1 == a2 : A/param R R0
-G ; dom G |= a1' == a2' : A'/param R' R0
+G ; dom G |= a1 == a2 : A/R 
+G ; dom G |= a1' == a2' : A'/ R'
 ----------------------------------------------------------------------------- :: CPiSnd
 G ; D |=  B1 { o / c} == B2 { o / c } : TYPE/R0
 

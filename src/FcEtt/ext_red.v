@@ -968,14 +968,12 @@ Proof.
     set (s := zip (map fst G1) (rev targs1)) in *.
     with (Typing _ _ (cps_tm (a_CPi _ _) _)) 
        do ltac:(fun h => rewrite cps_a_CPi in h; simpl in h).
-    replace (open_tm_wrt_co C0 (g_Var_f c)) with 
-            (open_tm_wrt_co C0 g_Triv). 2: { admit. }
     with (Typing G (open_tm_wrt_co _ _) a_Star) do ltac:(fun h => 
        move:(Typing_context_fv h)=> ?). split_hyp.
     with (Typing G b1) do ltac:(fun h => 
-       replace (cps_tm C0 s) with C0 in h).
-        2: { move: (fv_tm_tm_tm_open_tm_wrt_co_lower C0 (g_Var_f c)) => ?. 
-             move: (fv_co_co_tm_open_tm_wrt_co_lower C0 (g_Var_f c)) => ?. 
+       replace (cps_tm C1 s) with C1 in h).
+        2: { move: (fv_tm_tm_tm_open_tm_wrt_co_lower C1 g_Triv) => ?. 
+             move: (fv_co_co_tm_open_tm_wrt_co_lower C1 g_Triv) => ?. 
              rewrite cps_tm_fresh_eq.
              eapply wf_sub_domFresh with (G:=G); auto.
              eapply wf_sub_domFresh with (G:=G); auto.
@@ -1225,11 +1223,12 @@ Proof.
       rewrite cps_open_tm_wrt_tm; first eauto;
       rewrite SA;
       simpl;
-      rewrite tm_subst_tm_tm_fresh_eq; 
-      [ simpl in *;
-        eapply subset_notin with (S2 := dom G); auto
-      | eauto
-      ].
+      rewrite tm_subst_tm_tm_fresh_eq.
+      simpl in *;
+        eapply subset_notin with (S2 := dom G); auto.
+      move: H9 => peq. 
+      eapply E_PiSnd; eauto 1.
+      eapply E_Refl; eauto 1.
    ++ eapply E_Conv with (A := open_tm_wrt_tm B0 a0); 
         eauto 1. 2: { eapply E_Sym; eauto 1. }
       eapply E_IApp; eauto 1.
@@ -1253,25 +1252,27 @@ Proof.
     { autoreg. autoinv. auto. } 
 
 + eapply IHn with (b1 := a_CApp b1 g_Triv); auto.
-  ++  eapply E_Trans with (a1 := _ B0 _); eauto 2;
+  ++  eapply E_Trans with (a1 := open_tm_wrt_co B0 g_Triv); eauto 1;
       unfold sub'.
       rewrite cps_open_tm_wrt_co; first eauto.
       rewrite SA.
       simpl.
-      move: H9 => h.
-      destruct phi.
-      rewrite cps_a_CPi in h.
-      simpl in h.
-      move: (E_CPiFst _ _ _ _ _ _ _ _ _ _ _ _ _ h) => h0.
       rewrite co_subst_co_tm_fresh_eq.
-      rewrite cps_a_CPi in H24.
-      rewrite cps_a_CPi in H25.
-      simpl in *;
-        eapply subset_notin with (S2 := dom G); auto.
+      { 
+        rewrite cps_a_CPi in H24.
+        rewrite cps_a_CPi in H25.
+        simpl in *.
+        eapply subset_notin with (S2 := dom G). auto.
+        fsetdec.
+      }
+      move: H9 => peq.
+      fold sub. fold sub in peq.
+      destruct phi as [a' b' A0' R'].
+      rewrite cps_a_CPi in peq. simpl in peq.
+      have e1: DefEq G (dom G) a b A0 R. auto.
+      move: (E_CPiFst _ _ _ _ _ _ _ _ _ _ _ _ _ peq) => iso.
+      move: (E_Cast _ _ _ _ _ _ _ _ _ _ e1 iso) => e2.
       eapply E_CPiSnd; eauto 1.
-      admit.
-      admit.
-
   ++ eapply E_Conv; eauto 1. 2: { eapply E_Sym; eauto 1. }
      eapply E_CApp; eauto 1.
       { autoreg. auto. }
@@ -1280,20 +1281,25 @@ Proof.
        rewrite SA.
        unfold sub'. simpl.
        rewrite co_subst_co_tm_fresh_eq.
-       {  with (Typing _ _ (a_CPi _ _)) do 
+       {  with (Typing _ _ (cps_tm (a_CPi _ _) _)) do 
              ltac:(fun h => move: (Typing_context_fv h) => ?).
           split_hyp.
-          simpl in *.
+          rewrite cps_a_CPi in H30.
+          rewrite cps_a_CPi in H31.
           eapply subset_notin with (S2 := dom G). auto.
-          admit.
+          simpl in *.
+          fsetdec.
        }  
-       move: H9 => h0.
        move: H12 => h.
-       move: H20 => h1.
+       move: H9 => h0.
+       destruct phi.
        rewrite cps_a_CPi in h.
        rewrite cps_a_CPi in h0.
-       admit.
-Admitted.
+       simpl in *.
+       eapply E_CApp; eauto 1.
+       eapply E_Cast with (a:=a)(b:=b).  eauto 1.
+       eapply E_CPiFst. eauto 1.
+Qed.
 
 
 (* Specialized version of main lemma that is "easier" to use. *)
@@ -1910,8 +1916,6 @@ Proof.
      eapply E_Sym.
      eapply E_Trans with (a1 := open_tm_wrt_co B1 g_Triv). auto.
      eapply E_CPiSnd; eauto 2.
-     apply E_CPiFst in h5. apply E_Cast in h5; auto 1.
-     all: rewrite param_rep_r; eauto 2.
    - (* Axiom *)
      eapply MatchSubst_preservation2; eauto.
    - (* Pattern True *)
