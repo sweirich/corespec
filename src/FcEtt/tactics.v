@@ -908,8 +908,8 @@ Tactic Notation "debug" "unify" "term" constr(t1) "vs" "goal"            := let 
 (**** Example ****)
 (*
 Goal id True.
-  assert(Hf : id False) by admit.
-  assert(Ht : id True) by admit.
+  assert (Hf : id False) by admit.
+  assert (Ht : id True) by admit.
 
   (* In a real situation, just remove the assert_fails (since the tactic is meant to fail in those cases) *)
   assert_fails debug unify hyp Ht vs term (id False).

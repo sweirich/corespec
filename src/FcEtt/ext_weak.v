@@ -188,7 +188,7 @@ Proof.
   induction 1.
     all: intros; subst. 
     all: try E_pick_fresh y;  try auto_rew_env; try apply_first_hyp; try simpl_env; eauto 3.
-Admitted.
+Admitted. (* BranchTyping_weakening *)
 
 Lemma typing_weakening_mutual:
   (forall G0 a A,   Typing G0 a A ->

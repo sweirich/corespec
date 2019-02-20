@@ -183,7 +183,7 @@ Lemma subtm_pattern_agree_step : forall p b A R1 Rs R a F,
 Proof. 
   induction 1;
   move=> SPA M SR.
-  + move: (toplevel_inversion M) => [W [G [B h]]].
+  + move: (toplevel_inversion M) => [W [G [D0 [B h]]]].
     split_hyp. subst.
     have LCb: lc_tm b by eauto using Typing_lc1.
     have Pp: Pattern p by eapply axiom_pattern; eauto.
@@ -406,7 +406,7 @@ Proof.
   intros.
   eapply Value_Path.
   eauto using AppsPath_CasePath.
-Admitted.
+Admitted. (* AppsPath_Value *)
 
 (* The reduction relation is deterministic *)
 Lemma reduction_in_one_deterministic :

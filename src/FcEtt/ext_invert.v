@@ -588,7 +588,7 @@ Lemma context_Defeq_BranchTyping :
   forall G1 n R a A b aa A1 B C,  BranchTyping G1 n R a A b aa A1 B C 
                        -> forall G2, uniq G2 -> BranchTyping G2 n R a A b aa A1 B C.
 Proof.  
-Admitted.
+Admitted. (* context_Defeq_BranchTyping *)
 (*
   induction 1; intros.
   - eauto.
@@ -1270,7 +1270,7 @@ Lemma E_Fam2 : ∀ (G : context) F (p A a : tm) R Rs,
 Proof.
   intros.
   eapply E_Fam; eauto 2.
-  move: (toplevel_inversion H0) => [W [K [M h0]]].
+  move: (toplevel_inversion H0) => [W [K [D [M h0]]]].
   split_hyp.
   eauto.
 Qed.
@@ -1373,3 +1373,4 @@ Ltac autoinv :=
   (* TODO *)
   end.
 
+   
