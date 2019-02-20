@@ -1527,16 +1527,19 @@ Inductive MatchTyping :
                 G (a_App a1 (Rho Irrel) a2)       A
                 ((p_Tm (Rho Irrel) a2') :: sub) 
   | MatchTyping_CApp : 
-    forall Gp G c p phi1 B1 a1 phi2 B2 A sub,
-    MatchTyping Gp p (a_CPi phi1 B1) G a1 (a_CPi phi2 B2) sub ->
+    
+   `{MatchTyping Gp p (a_CPi (Eq a0 b0 A0 R0) B1) G a1 
+                      (a_CPi (Eq a2 b2 A2 R2) B2) sub ->
     DefEq G (dom G) A (open_tm_wrt_co B2 g_Triv) a_Star Rep ->
+(*    DefEq G (dom G) a0 b0 A0 R0 -> *)
+    DefEq G (dom G) a2 b2 A2 R2 -> 
     c `notin` dom Gp ->
     c `notin` dom G  ->
 
     MatchTyping (c ~ Co phi1 ++ Gp) (a_CApp p  g_Triv) 
                 (open_tm_wrt_co B1 (g_Var_f c))
                 G (a_CApp a1 g_Triv) A
-                (p_Co g_Triv :: sub)
+                (p_Co g_Triv :: sub)}
 .
 
 Lemma MatchTyping_fv_tm_tm_pattern_args_sub : 
@@ -1627,7 +1630,8 @@ Proof.
     with Ctx do ltac:(fun h => inversion h; subst).
     have wf: Ctx G0. auto.
     with uniq do ltac:(fun h => inversion h; subst).
-    edestruct IHtm_pattern_agree as [s h]; eauto 1. 
+    edestruct IHtm_pattern_agree as [s h]; eauto 1.
+    destruct phi.
     eexists. econstructor; eauto 1.
 Qed.
 
@@ -1678,9 +1682,73 @@ Proof.
     eapply E_Refl; eauto 1.
     eapply E_Conv; eauto 1. eapply E_Sym; eauto 1.
     autoreg. auto.
-  + admit.
-  + admit.
-Admitted.
+  +  have EA: DefEq G (dom G) (cps_tm A1 s) A2 a_Star Rep.
+    { eapply E_PiFst; eauto 1. }
+
+    erewrite (cps_tm_cons (Rho Irrel)).  
+ 
+    rewrite cps_open_tm_wrt_tm.
+    { unfold lc_sub. econstructor; eauto. econstructor; eauto. 
+      eapply Typing_lc1; eauto. }    
+    erewrite wf_cps_subst_var. 2: {
+      econstructor; eauto.
+      eapply Typing_lc1; eauto.
+      fsetdec.
+      move: (Typing_context_fv H0) => h. split_hyp.
+      fsetdec. 
+    } 
+
+    eapply E_Trans; eauto 1. 2: { eapply E_Sym. eauto 1. }
+    
+    have EQ2: cps_tm B1 ((x, p_Tm (Rho Irrel) a2') :: s) = 
+              cps_tm B1 s.
+    { rewrite <- cps_tm_cons.
+      rewrite tm_subst_tm_tm_fresh_eq; auto.
+      move: (DefEq_context_fv IHMatchTyping) => h. split_hyp.
+      simpl in *.
+      fsetdec.
+    } 
+
+    rewrite EQ2. 
+    eapply E_PiSnd; eauto 1.
+    eapply E_Refl; eauto 1.
+    eapply E_Conv; eauto 1. eapply E_Sym; eauto 1.
+    autoreg. auto.
+  + 
+    
+   have Eq: Iso G (dom G) (Eq a2 b2 A2 R2)(cps_constraint (Eq a0 b0 A0 R0) s).
+   { simpl in *.
+     eapply E_CPiFst; eauto 1. 
+     eapply E_Sym. eauto 1.
+   }
+
+    erewrite cps_co_cons with (g:=g_Triv). 
+ 
+    rewrite cps_open_tm_wrt_co.
+    { unfold lc_sub. econstructor; eauto. }
+    erewrite wf_cps_co_subst_var with (G:=G)(x:=c). 2: {
+      econstructor; eauto.
+      fsetdec.
+    } 
+
+    eapply E_Trans; eauto 1. 2: { eapply E_Sym. eauto 1. }
+    
+    have EQ2: cps_tm B1 ((c, p_Co g_Triv ) :: s) = 
+              cps_tm B1 s.
+    { rewrite <- cps_co_cons.
+      rewrite co_subst_co_tm_fresh_eq; auto.
+      move: (DefEq_context_fv IHMatchTyping) => h. split_hyp.
+      simpl in *.
+      fsetdec.
+    } 
+
+    rewrite EQ2. 
+    simpl in Eq.
+    eapply E_CPiSnd. eauto 1.
+    eapply E_Cast. 2 : { eauto 1. } 
+    eauto 1.
+    eauto 1.
+Qed.
 
     (* 
 
@@ -1797,8 +1865,130 @@ Proof.
     } 
     rewrite EQ5 in L.
     eapply L.
-  - admit.
-  - admit.
+  - with MatchTyping do ltac:(fun h =>
+         specialize (IHms Gp0 G _ _ sub0 h C); 
+         move: (MatchTyping_wf_sub h) => [ln wfs];
+         move: (MatchTyping_correctness2 h) => de
+    ) end.
+  rewrite cps_a_Pi in de.
+    with (Typing _ b1) do ltac:(fun h2 => 
+                 rewrite app_assoc in H2).
+    have U: uniq ((Gp2 ++ x ~ Tm A1) ++ G). 
+      { 
+        apply Typing_Ctx in H2. apply Ctx_uniq in H2.
+        simpl_env in *.
+        solve_uniq.
+      } 
+
+    specialize (IHms _ U H2). 
+    unfold cps_context in *.
+    rewrite EnvImpl.map_app in IHms.
+    unfold one in IHms.
+    simpl in IHms.
+    set (s := (zip (map fst Gp0) sub0)).
+    have TA: Typing G a2' (cps_tm A1 s). {
+
+      eapply E_Conv; eauto 1.
+      eapply E_Sym.
+      eapply E_PiFst.
+      eauto.
+      autoreg.
+      autoinv.
+      auto.
+      }
+
+    destruct tm_substitution_mutual as [L _].
+    specialize (L _ _ _ IHms).
+    specialize (L _ _ _ TA).
+    specialize (L (cps_context Gp2 s) x).
+    lapply L. clear L. move=>L. 2: {
+      simpl_env.
+      f_equal.
+    }    
+    have EQ3: utils.map = EnvImpl.map. auto. rewrite EQ3 in L.
+    have EQ4:
+       EnvImpl.map (tm_subst_tm_sort a2' x) (cps_context Gp2 s) = 
+       EnvImpl.map (cps_sort^~ (x ~ (p_Tm (Rho Irrel) a2') ++ s)) Gp2.
+    { 
+      generalize Gp2.
+      induction Gp1.
+      simpl. auto.
+      simpl. destruct a0. rewrite IHGp1.
+      f_equal. f_equal. eapply cps_sort_cons.
+    }
+    rewrite EQ4 in L.
+    have EQ5:
+      tm_subst_tm_tm a2' x (cps_tm C s) = 
+      cps_tm C (x ~ (p_Tm (Rho Irrel) a2') ++ s).
+    {
+      eapply cps_tm_cons.
+    } 
+    rewrite EQ5 in L.
+    rewrite tm_subst_tm_tm_fresh_eq in L. admit.
+    eapply L.
+  - with MatchTyping do ltac:(fun h =>
+         specialize (IHms Gp0 G _ _ sub0 h C); 
+         move: (MatchTyping_wf_sub h) => [ln wfs];
+         move: (MatchTyping_correctness2 h) => de
+    ) end.
+  rewrite cps_a_CPi in de.
+
+(* ******************************************* 
+    with (Typing _ b1) do ltac:(fun h2 => 
+                 rewrite app_assoc in H2).
+    have U: uniq ((Gp2 ++ x ~ Tm A1) ++ G). 
+      { 
+        apply Typing_Ctx in H2. apply Ctx_uniq in H2.
+        simpl_env in *.
+        solve_uniq.
+      } 
+
+    specialize (IHms _ U H2). 
+    unfold cps_context in *.
+    rewrite EnvImpl.map_app in IHms.
+    unfold one in IHms.
+    simpl in IHms.
+    set (s := (zip (map fst Gp0) sub0)).
+    have TA: Typing G a2' (cps_tm A1 s). {
+
+      eapply E_Conv; eauto 1.
+      eapply E_Sym.
+      eapply E_PiFst.
+      eauto.
+      autoreg.
+      autoinv.
+      auto.
+      }
+
+    destruct tm_substitution_mutual as [L _].
+    specialize (L _ _ _ IHms).
+    specialize (L _ _ _ TA).
+    specialize (L (cps_context Gp2 s) x).
+    lapply L. clear L. move=>L. 2: {
+      simpl_env.
+      f_equal.
+    }    
+    have EQ3: utils.map = EnvImpl.map. auto. rewrite EQ3 in L.
+    have EQ4:
+       EnvImpl.map (tm_subst_tm_sort a2' x) (cps_context Gp2 s) = 
+       EnvImpl.map (cps_sort^~ (x ~ (p_Tm (Rho Irrel) a2') ++ s)) Gp2.
+    { 
+      generalize Gp2.
+      induction Gp1.
+      simpl. auto.
+      simpl. destruct a0. rewrite IHGp1.
+      f_equal. f_equal. eapply cps_sort_cons.
+    }
+    rewrite EQ4 in L.
+    have EQ5:
+      tm_subst_tm_tm a2' x (cps_tm C s) = 
+      cps_tm C (x ~ (p_Tm (Rho Irrel) a2') ++ s).
+    {
+      eapply cps_tm_cons.
+    } 
+    rewrite EQ5 in L.
+    rewrite tm_subst_tm_tm_fresh_eq in L. admit.
+    eapply L. *)
 Admitted.
 
 
