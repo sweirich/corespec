@@ -31,6 +31,9 @@ Module TacticsInternals.
 (**** Basic Building Blocks ****)
 (*******************************)
 
+(* TODO: reorganize properly so we don't duplicate (see bottom of the file) *)
+Local Tactic Notation "ret" tactic(tac) := let answer := tac in exact answer.
+
 (* Shorthands for instantiation/specialization *)
 Ltac spec2 H x xL := specialize (H x xL).
 Ltac inst2 H x xL := let h := fresh H x in move: (H x xL) => h.
@@ -70,6 +73,16 @@ Ltac has_head t hd :=
     | ?hd' _ => has_head hd' hd
   end.
 
+(* Variant of `has_head_uconstr` that allows t to be headed by lambdas *)
+(* This version succeeds by returning `fun x1 ... xn => tt`, and fails otherwise *)
+Ltac has_head_quant_ret t hd :=
+  match t with
+    | hd => tt
+    (* We're technically allowing interleavings of lambdas and applications. Not sure that's a problem..? *)
+    | fun (x : ?t') => @?tl x => constr:(fun (x : t') => ltac:(ret has_head_quant_ret ltac:(eval hnf in (tl x)) hd))
+    | ?hd' _ => has_head_quant_ret hd' hd
+  end.
+
 (* More general version: this time, `hd` is a uconstr, not a constr (hence the hacky workaround with refine).
    This allows to specify `hd` as a pattern, even a partial one.
    For instance, these (simplified) examples should succeed:
@@ -86,6 +99,70 @@ Ltac has_head_uconstr t hd :=
       | ?t' _ => has_head_uconstr t' hd
     end
   ].
+
+(* Auxiliary tactics for `has_head_uconstr_quant` *)
+(* Generates the type    forall x1 ... xn, exists T, T = t'
+   with t = fun x1 ... xn => t'
+   (thus t' depends on x1, ..., xn) *)
+Ltac unfold_test_eq T t :=
+  match t with
+    | fun (x : ?t) => @?tl x =>
+      constr:(forall (x : t), ltac:(ret unfold_test_eq T ltac:(eval hnf in (tl x))))
+    | _ =>
+      constr:(exists T, T = t)
+  end.
+
+(* "Removes" the last argument of an eta-expanded function.
+    Note that the binder corresponding to that argument is _not_ removed.
+   Eg,   fun G a A => Typing G a A   is turned into   fun G a _ => Typing G a  *)
+Ltac remove_arg a :=
+  match a with
+    | fun (x : ?t) => @?b x =>
+      constr:(fun (x : t) => ltac:(ret remove_arg ltac:(eval hnf in (b x))))
+    | ?t' _ => t'
+  end.
+
+(* Variant of `has_head_uconstr` that allows t to be headed by lambdas *)
+Ltac has_head_uconstr_quant t hd :=
+  first [
+    let T := fresh in
+    (* There might be a way to use a simpler type for unification but it didn't seem to work just as well (e.g. with Display above) *)
+    have _: ltac:(ret unfold_test_eq T t) by intros; refine (@ex_intro _ _ hd (eq_refl _))
+  |
+    has_head_uconstr_quant ltac:(remove_arg t) hd
+  ].
+
+(* Takes a term `t` of shape `fun (x1 : T1) ... (xn : Tn) => tt` and strips its arguments' types `T1`, ... `Tn` (replaced by unit)
+   This tactic returns the result directly or fails if `t` isn't of the right shape *)
+Ltac strip_arg_type t :=
+  match t with
+    | tt => tt
+    | fun (x : ?t') => @?tl x =>
+      (* First erase arguments recursively (need to start from the innermost arguments, to preserve remaining dependencies at all stages) *)
+      let r := constr:(fun (x : t') => ltac:(ret strip_arg_type ltac:(eval hnf in (tl x)))) in
+      (* Then replace the function - that we *now* know doesn't depend on x anymore - with an equivalent function having argument unit.
+        (that way, we're removing the dependencies of x's type (t') on previous arguments, in turn allowing them to be erased) *)
+      match r with fun (x : _) => ?tl' => constr:(fun (x : unit) => tl') end
+  end.
+
+(* This tactic spots the nth argument of type `pi` whose type's head is hd.
+   Its result is in skeletal shape, i.e. fun x1 ... xk => tt (meaning the argument is the (k+1)th argument in pi)
+   In particular, doing so allows bypassing some of the binding-manipulation shortcomings of ltac *)
+Ltac spot_arg_with_head pi hd nth :=
+  match pi with
+    | forall (x : ?t), @?tl x =>
+      (* Check that the argument matches (we don't use `discard`, it's just a way to test whether `has_head_quant_ret` succeeds) *)
+      let discard := has_head_quant_ret t hd in
+      (* Ok, the type of the argument matches; now, do we want this one or a later one? *)
+      match nth with
+        | O => tt
+        | S ?pred => constr:(fun (x : t) => ltac:(ret spot_arg_with_head ltac:(eval hnf in (tl x)) hd pred)) (* Recursive call with tl & pred (both args decreasing) *)
+        | _ => fail 2 (* Not needed for correctness, only to optimize this failure case *)
+      end
+    | forall (x : ?t), @?tl x =>
+      (* Previous branch didn't match, meaning the argument's type didn't match. Check the next. *)
+      constr:(fun (x : t) => ltac:(ret spot_arg_with_head ltac:(eval hnf in (tl x)) hd nth))           (* Recursive call with tl & nth (pi decreasing, nth unchanged) *)
+  end.
 
 
 (* Find an hypothesis which type is headed by constructor `cs`, and
@@ -763,4 +840,9 @@ Global Notation "'_hidden_' ( s )" := (TacticsInternals._hide_with s _) (at leve
 (* FIXME: rely on internals *)
 Tactic Notation "basic_nosolve_n" int_or_var(n) := intuition (subst; eauto n).
 Tactic Notation "basic_solve_n" int_or_var(n) := try solve [basic_nosolve_n n].
+
+(* To use in particular with ltac:() - indeed, recall that with this construction, one needs to
+   provide a tactic that _solves a goal_, and *not* one that _returns a term_. This turns an
+   instance of the latter into one of the former. *)
+Tactic Notation "ret" tactic(tac) := let answer := tac in exact answer.
 
