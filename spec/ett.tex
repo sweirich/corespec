@@ -2393,7 +2393,7 @@
 
 \newcommand{\ottdruleEXXCAppCong}[1]{\ottdrule[#1]{%
 \ottpremise{\Gamma  \ottsym{;}  \Delta  \vDash  \ottnt{a_{{\mathrm{1}}}}  \equiv  \ottnt{b_{{\mathrm{1}}}}  \ottsym{:}  \ottsym{(}   \forall \ottmv{c} \!:\! \ottsym{(}   \ottnt{a}   \sim _{ \ottnt{R} }  \ottnt{b}  :  \ottnt{A}   \ottsym{)} . \ottnt{B}   \ottsym{)}  \ottsym{/}  \ottnt{R'}}%
-\ottpremise{\Gamma  \ottsym{;}   \widetilde { \Gamma }   \vDash  \ottnt{a}  \equiv  \ottnt{b}  \ottsym{:}  \ottnt{A}  \ottsym{/}  \ottkw{param} \, \ottnt{R} \, \ottnt{R'}}%
+\ottpremise{\Gamma  \ottsym{;}   \widetilde { \Gamma }   \vDash  \ottnt{a}  \equiv  \ottnt{b}  \ottsym{:}  \ottnt{A}  \ottsym{/}  \ottnt{R}}%
 }{
 \Gamma  \ottsym{;}  \Delta  \vDash  \ottnt{a_{{\mathrm{1}}}}  \ottsym{[}  \bullet  \ottsym{]}  \equiv  \ottnt{b_{{\mathrm{1}}}}  \ottsym{[}  \bullet  \ottsym{]}  \ottsym{:}  \ottsym{(}  \ottnt{B}  \lbrace  \bullet  \ottsym{/}  \ottmv{c}  \rbrace  \ottsym{)}  \ottsym{/}  \ottnt{R'}}{%
 {\ottdrulename{E\_CAppCong}}{}%
@@ -2442,7 +2442,8 @@
 \ottpremise{\Gamma  \ottsym{;}  \Delta  \vDash  \ottnt{b_{{\mathrm{1}}}}  \equiv  \ottnt{b'_{{\mathrm{1}}}}  \ottsym{:}  \ottnt{B}  \ottsym{/}  \ottnt{R_{{\mathrm{0}}}}}%
 \ottpremise{\Gamma  \ottsym{;}  \Delta  \vDash  \ottnt{b_{{\mathrm{2}}}}  \equiv  \ottnt{b'_{{\mathrm{2}}}}  \ottsym{:}  \ottnt{C}  \ottsym{/}  \ottnt{R_{{\mathrm{0}}}}}%
 \ottpremise{ \Gamma  \vDash \mathsf{case} \hspace{2pt}  \ottnt{a}  :  \ottnt{A}  \hspace{2pt} \mathsf{of} \hspace{2pt}  \ottmv{F}  :  \ottnt{A_{{\mathrm{1}}}}  \Rightarrow  \ottnt{B}  \ | \,  \ottnt{C} }%
-\ottpremise{ \Gamma  \vDash \mathsf{case} \hspace{2pt}  \ottnt{a'}  :  \ottnt{A}  \hspace{2pt} \mathsf{of} \hspace{2pt}  \ottmv{F}  :  \ottnt{A_{{\mathrm{1}}}}  \Rightarrow  \ottnt{B}  \ | \,  \ottnt{C} }%
+\ottpremise{ \Gamma  \vDash \mathsf{case} \hspace{2pt}  \ottnt{a'}  :  \ottnt{A}  \hspace{2pt} \mathsf{of} \hspace{2pt}  \ottmv{F}  :  \ottnt{A_{{\mathrm{1}}}}  \Rightarrow  \ottnt{B'}  \ | \,  \ottnt{C} }%
+\ottpremise{\Gamma  \ottsym{;}  \Delta  \vDash  \ottnt{B}  \equiv  \ottnt{B'}  \ottsym{:}   \star   \ottsym{/}  \ottkw{Rep}}%
 \ottpremise{\ottkw{Sat} \, \ottmv{F} \, \overline{\upsilon}}%
 \ottpremise{\Gamma  \vDash  \ottmv{F}  \ottsym{:}  \ottnt{A_{{\mathrm{1}}}}}%
 }{
@@ -3112,6 +3113,6 @@
 
 \begin{verbatim}
 Definition rules:        224 good    0 bad
-Definition rule clauses: 614 good    0 bad
+Definition rule clauses: 615 good    0 bad
 \end{verbatim}
 \end{document}
