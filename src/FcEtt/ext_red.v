@@ -593,6 +593,27 @@ Proof.
     rewrite! apply_pattern_args_tail_Co. auto.
 Qed.
 
+Lemma MatchSubst_ValuePath : 
+  `{ MatchSubst a p1 b1 b' →
+     binds F (Ax p b PiB R1 Rs) toplevel →
+     Rename p b p1 b1 s D →
+     ValuePath a F}.
+Proof. intros. eapply tm_pattern_agree_ValuePath.
+       eapply tm_pattern_agree_rename_inv_2.
+       eapply MatchSubst_match. all:eauto. econstructor.
+       eapply tm_pattern_agree_refl. eapply axiom_pattern. eauto.
+Qed. (* MatchSubst_ValuePath *)
+
+Lemma RolePath_no_Beta :
+ forall F a R1 Rs, RolePath a F (R1 :: Rs) -> forall R, not (exists a', Beta a a' R).
+Proof. intros. intro. inversion H0 as [a' h1]. eapply no_Value_Beta.
+       eapply Value_Path. move: (RolePath_inversion H) => h.
+       inversion h as [[A h2] | [p [b [A [R2 h2]]]]].
+       apply RolePath_ValuePath in H. eauto.
+       move: (RolePath_subtm_pattern_agree_contr H h2) => h3.
+       eapply CasePath_UnMatch. eapply RolePath_ValuePath; eauto.
+       all:eauto.
+Qed.
 
 Definition arg_app (p : pattern_arg) : App := 
     match p with 
@@ -2022,15 +2043,6 @@ Proof.
 Qed.
 
 
-
-Lemma MatchSubst_ValuePath : 
-  `{ MatchSubst a p1 b1 b' →
-     binds F (Ax p b PiB R1 Rs) toplevel →
-     Rename p b p1 b1 s D →
-     ValuePath a F}.
-Proof. induction 1; intros BI RN; inversion RN; subst; eauto.
-Admitted. (* MatchSubst_ValuePath *)
-
 (* We can freshen the axiom WRT to any context *)
 Lemma Axiom_Freshening : forall s (Γ:list(atom*s)), 
   `{ MatchSubst a p1 b1 b' ->
@@ -2352,53 +2364,6 @@ Proof.
   -  eauto using reduction_in_one_lc.
   -  eauto using reduction_in_one_fv_preservation.
 Qed.
-
-
-Lemma RolePath_no_Beta :
- forall F a R1 Rs, RolePath a F (R1 :: Rs) -> forall R, not (exists a', Beta a a' R).
-Proof. 
-  intros. 
-  move: (RolePath_head H) => hd.
-  dependent induction H; move => [a' h]; inversion h; subst.
-  - with binds do ltac:(fun h => move: (axiom_pattern_head h) => hd1).
-    with MatchSubst do ltac:(fun h => move: (MatchSubst_match h) => tpa).
-    with Rename do ltac:(fun h => move: (Rename_tm_pattern_agree H1) => tpa2).
-    apply tm_pattern_agree_const_same in tpa.
-    apply tm_pattern_agree_const_same in tpa2.
-    simpl in *. rewrite hd1 in tpa2. rewrite tpa2 in tpa. inversion tpa.
-    subst.
-    axioms_head_same.
-  - with binds do ltac:(fun h => move: (axiom_pattern_head h) => hd1).
-    with MatchSubst do ltac:(fun h => move: (MatchSubst_match h) => tpa).
-    with Rename do ltac:(fun h => move: (Rename_tm_pattern_agree H1) => tpa2).
-    apply tm_pattern_agree_const_same in tpa.
-    apply tm_pattern_agree_const_same in tpa2.
-    simpl in *. rewrite hd1 in tpa2. rewrite tpa2 in tpa. inversion tpa.
-    subst.
-    axioms_head_same.
-    move: (toplevel_inversion H) => h0.
-    destruct h0 as [W [ G [ D [B ?]]]]. split_hyp. subst.
-    subst.
-    with MatchSubst do ltac: (fun h => inversion h; subst; clear h) end. 
-    with Rename do ltac: (fun h => inversion h; subst; clear h) end. 
-    with PatternContexts do ltac: (fun h => inversion h; subst; clear h) end. 
-    simpl in *. discriminate.
-  - with binds do ltac:(fun h => move: (axiom_pattern_head h) => hd1).
-    with MatchSubst do ltac:(fun h => move: (MatchSubst_match h) => tpa).
-    with Rename do ltac:(fun h => move: (Rename_tm_pattern_agree h) => tpa2).
-    apply tm_pattern_agree_const_same in tpa.
-    apply tm_pattern_agree_const_same in tpa2.
-    simpl in *. rewrite hd1 in tpa2. rewrite tpa2 in tpa.
-    rewrite tpa in hd. inversion hd. subst.
-    move: (RolePath_subtm_pattern_agree_contr H0 H1).
-    admit.
-  - with RolePath do ltac:(fun h => inversion h).
-  - admit.
-  - with RolePath do ltac:(fun h => inversion h).
-  - admit.
-  - with RolePath do ltac:(fun h => inversion h).
-  - admit.
-Admitted.  (* unsaturated rolepaths do not Beta-reduce *)
 
 Lemma RolePath_preservation :
 forall a a' R, reduction_in_one a a' R -> forall F R1 Rs, 
