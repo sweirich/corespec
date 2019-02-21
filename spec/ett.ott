@@ -274,6 +274,7 @@ roles, Rs {{ tex \overline{R} }}  :: '' ::= {{ coq list role }}
    | Rs ++ Rs'  :: S :: appR {{ coq ([[Rs]]++[[Rs']]) }}
 %% Special case lists for nice printing
 %% curly braces disambiguate Ott parsing, but are not displayed
+   | {}         :: S :: list0 {{ coq nil }} {{ tex }}
    | { R1 }     :: S :: list1 {{ coq ([[R1]]::nil) }}
                               {{ tex [[R1]] }}
    | R1 , R2    :: S :: list2 {{ coq ([[R1]]::[[R2]]::nil) }}
@@ -714,7 +715,7 @@ defns
 defn
 RolePath a = F @ Rs  ::  :: RolePath :: 'RolePath_'
 {{ com Type headed by constant (partial function) }}
-{{ tex \mathsf{RolePath} \ [[a]] [[+>]] [[F]] @ [[Rs]] }}
+{{ tex \mathsf{RolePath} \ [[a]] [[=]] [[F]] @ [[Rs]] }}
 by
 
 F : A @ Rs in toplevel 
@@ -1535,7 +1536,7 @@ JBranchTyping :: '' ::=
 defn
 G |= Apps case R a : A of b @ pattern_args : B -> C | C' ::    :: BranchTyping :: 'BranchTyping_'
 {{ com Branch Typing (aligning the types of case) }}
-{{ tex [[G]] \vDash \mathsf{case} \hspace{2pt} [[a]] : [[A]] \hspace{2pt} \mathsf{of} \hspace{2pt} [[b]] : [[B]] \Rightarrow [[C]] \ | \, [[C']] }}
+{{ tex [[G]] \vDash \mathsf{case} \hspace{2pt} [[a]] : [[A]] \hspace{2pt} \mathsf{of} \hspace{2pt} [[b]] [[@]] [[Apps]] : [[B]] \Rightarrow [[C]] \ | \, [[C']] }}
 by
 
 ctx_uniq G
