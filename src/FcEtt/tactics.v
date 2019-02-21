@@ -75,6 +75,7 @@ Ltac align_type_hyp_vs t t_H H :=
 
 (* "Apply modulo equalities": applies H to the goal and generates equalities for
     the arguments that don't unify *)
+(* TODO: the toplevel tactic need to accept lemmas as input (instead of hypotheses exclusively) *)
 Ltac apply_eq H :=
   first [
     eapply H
