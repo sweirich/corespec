@@ -405,8 +405,8 @@ Lemma AppsPath_Value : forall F Apps a R, AppsPath R a F Apps -> Value R a.
 Proof.
   intros.
   eapply Value_Path.
-  eauto using AppsPath_CasePath.
-Admitted. (* AppsPath_Value *)
+  eapply AppsPath_CasePath; eauto.
+Qed. (* AppsPath_Value *)
 
 (* The reduction relation is deterministic *)
 Lemma reduction_in_one_deterministic :
