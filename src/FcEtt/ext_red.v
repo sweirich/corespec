@@ -439,9 +439,8 @@ Lemma cps_subst_var : forall sub0 x nu a2,
 Proof.
   intros.
   simpl.
-  replace a2 with (cps_tm a2 sub0). 2 : {
+  replace a2 with (cps_tm a2 sub0). 2 :
     rewrite cps_tm_fresh_eq; auto.
-  }
   rewrite cps_tm_tm_subst_tm_tm; auto.
   rewrite tm_subst_tm_tm_var.
   auto.
@@ -861,6 +860,41 @@ Proof.
   fsetdec.
 Qed.
 
+Lemma Beta_fv_preservation : forall x a b R, 
+    Beta a b R -> 
+    x `notin` fv_tm_tm_tm a ->
+    x `notin` fv_tm_tm_tm b.
+Proof.
+  intros.
+  induction H.
+  + simpl in *.
+    move => h. 
+    eapply fv_tm_tm_tm_open_tm_wrt_tm_upper in h.
+    fsetdec.
+  + simpl in *.    
+    move => h.
+    eapply fv_tm_tm_tm_open_tm_wrt_co_upper in h.
+    fsetdec.
+  + move: (Rename_MatchSubst_fv H1 H2) => h3.
+    move: (axiom_body_fv_in_pattern H) => h.
+    intro. move: (AtomSetProperties.in_subset H4 h3) => h1.
+    apply union_iff in h1. inversion h1. apply diff_iff in H5.
+    inversion H5. apply H7. eapply AtomSetProperties.in_subset; eauto.
+    apply H0. auto.
+  + simpl in *.
+    move: H2 H0.
+    generalize a.
+    induction 1.
+    - intros. fsetdec.
+    - simpl in *.
+      fsetdec.
+    - simpl in *.
+      fsetdec.
+    - simpl in *.
+      fsetdec.
+  + simpl in *. fsetdec.
+Qed.
+
 (*
 
 This is the main lemma about the preservation of 
@@ -923,7 +957,7 @@ Proof.
   all: with BranchTyping do ltac:(fun h => inversion h; subst; clear h). 
   all: destruct args2; with (map_arg_app _ = _) do 
            ltac:(fun h=> simpl in h; inversion h).
-  1:{  
+  1:{
     simpl in *.
     with open_telescope do ltac:(fun h => inversion h).
     subst.
@@ -934,13 +968,13 @@ Proof.
        move:(Typing_context_fv h)=> ?). split_hyp.
     with (Typing G b1) do ltac:(fun h => 
        replace (cps_tm C1 s) with C1 in h).
-        2: { move: (fv_tm_tm_tm_open_tm_wrt_co_lower C1 g_Triv) => ?. 
+        2: ( move: (fv_tm_tm_tm_open_tm_wrt_co_lower C1 g_Triv) => ?. 
              move: (fv_co_co_tm_open_tm_wrt_co_lower C1 g_Triv) => ?. 
              rewrite cps_tm_fresh_eq.
              eapply wf_sub_domFresh with (G:=G); auto.
              eapply wf_sub_domFresh with (G:=G); auto.
              auto.
-        }
+        )
     eapply E_CApp; eauto 1.
         {
         with (Typing G (apply_pattern_args _ _)) do ltac:(fun h => 
@@ -978,7 +1012,7 @@ Proof.
           autoreg. 
           eapply E_Conv; eauto 1.
         } 
-  }
+  )
  
   all: set (sub := zip (map fst G1) (rev targs1)).
   all: set (args1 := map (fun a => cps_pattern_arg a sub) pargs1).
@@ -2288,42 +2322,6 @@ Proof.
     + inversion H0; subst. eapply Par_PatternFalse; eauto. 
 Admitted. (* reduction in Par *)
 
-
-
-
-
-
-Lemma Beta_fv_preservation : forall x a b R, 
-    Beta a b R -> 
-    x `notin` fv_tm_tm_tm a ->
-    x `notin` fv_tm_tm_tm b.
-Proof.
-  intros.
-  induction H.
-  + simpl in *.
-    move => h. 
-    eapply fv_tm_tm_tm_open_tm_wrt_tm_upper in h.
-    fsetdec.
-  + simpl in *.    
-    move => h.
-    eapply fv_tm_tm_tm_open_tm_wrt_co_upper in h.
-    fsetdec.
-  + move: (Rename_MatchSubst_fv H1 H2) => h3. (* Seems too weak *)
-    move: (toplevel_inversion H) => [W [G [D [B [h [h2 _]]]]]].
-    admit.
-  + simpl in *.
-    move: H2 H0.
-    generalize a.
-    induction 1.
-    - intros. fsetdec.
-    - simpl in *.
-      fsetdec.
-    - simpl in *.
-      fsetdec.
-    - simpl in *.
-      fsetdec.
-  + simpl in *. fsetdec.
-Admitted. 
 
 Lemma reduction_in_one_fv_preservation: forall x a b R, 
     reduction_in_one a b R -> 
