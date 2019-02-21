@@ -876,6 +876,7 @@ Ltac get_goal := match goal with |- ?g => constr:(g) end.
 Ltac hide      := TacticsInternals.hide.
 Ltac hidewith  := TacticsInternals.hidewith.
 Ltac unhide    := TacticsInternals.unhide.
+
 Ltac uha       := repeat with TacticsInternals._hide do unhide end; repeat with TacticsInternals._hide_with do unhide.
 Tactic Notation "unhide" "all" := uha.
 Ltac softclear := TacticsInternals.softclear. (* This tactic goes further, and prevents the hyp from being used again *)

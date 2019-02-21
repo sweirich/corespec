@@ -355,7 +355,7 @@ Proof.
      eauto. auto. eapply uniq_atoms_toplevel. eauto. auto. auto.
   - (* two pattern matching *)
     move: (ApplyArgs_applyArgs H1) => h1.
-    move: (ApplyArgs_applyArgs H11) => h2.
+    move: (ApplyArgs_applyArgs H12) => h2.
     rewrite h1 in h2. subst.
     auto.
 Qed.

@@ -424,7 +424,7 @@ Proof.
        econstructor. auto. eapply Par_lc2; eauto. eapply Par_lc2; eauto.
        eapply MatchSubst_lc3; eauto. auto.
      + eapply axiom_app_confluence.
-       6: { eauto. }
+       6: eauto.
        all: eauto.
   - (* two cbetas *)
     use_size_induction a0 ac Par1 Par2. inversion Par1; subst.
@@ -657,11 +657,11 @@ Proof.
     use_size_induction b2 b2c Par5 Par6.
     have h0: AppsPath Nom a'0 F Apps5.
     { auto. }
-    pose (P := Par_AppsPath h0 Par2). 
+    pose (P := Par_AppsPath (conj h0 H11) Par2). inversion P.
     exists (a_CApp (applyArgs ac b1c) g_Triv).
     assert (ApplyArgs ac b1c (applyArgs ac b1c)).
-    {eapply applyArgs_ApplyArgs; eauto using AppsPath_CasePath. 
-     eapply Par_lc2; eauto. }
+    {eapply applyArgs_ApplyArgs. eapply AppsPath_CasePath; eauto.
+     eapply Par_lc2; eauto. auto. }
     split. eapply Par_PatternTrue; eauto.
     econstructor. eapply apply_args_par; eauto using AppsPath_CasePath.
   - use_size_induction a0 ac Par1 Par2.
@@ -676,7 +676,7 @@ Proof.
     use_size_induction b2 b2c Par5 Par6.
     have h0: AppsPath Nom a' F Apps5.
     { auto. } 
-    pose (P := Par_AppsPath h0 Par1).
+    pose (P := Par_AppsPath (conj h0 H4) Par1). inversion P.
     exists (a_CApp (applyArgs ac b1c) g_Triv).
     assert (ApplyArgs ac b1c (applyArgs ac b1c)).
     {eapply applyArgs_ApplyArgs; eauto using AppsPath_CasePath.
@@ -688,8 +688,8 @@ Proof.
     use_size_induction b2 b2c Par5 Par6.
     have h0: AppsPath Nom a' F Apps5. auto.
     have h1: AppsPath Nom a'0 F Apps5. auto.
-    pose (P := Par_AppsPath h0 Par1).
-    pose (Q := Par_AppsPath h1 Par2).
+    pose (P := Par_AppsPath (conj h0 H4) Par1). inversion P.
+    pose (Q := Par_AppsPath (conj h1 H14) Par2). inversion Q.
     exists (a_CApp (applyArgs ac b1c) g_Triv).
     assert (ApplyArgs ac b1c (applyArgs ac b1c)).
     {eapply applyArgs_ApplyArgs; eauto using AppsPath_CasePath.
@@ -700,7 +700,7 @@ Proof.
   - use_size_induction a0 ac Par1 Par2.
     have P: AppsPath Nom ac F Apps5.
     { eapply Par_AppsPath. eauto. eauto. }
-    assert (~ AppsPath Nom ac F Apps5). intro. apply H12.
+    assert (~ AppsPath Nom ac F Apps5). intro. apply H13.
     eapply AppsPath_Par; eauto. contradiction.
   - use_size_induction a0 ac Par1 Par2.
     use_size_induction b1 b1c Par3 Par4.
@@ -709,13 +709,13 @@ Proof.
     eapply AppsPath_Par; eauto. exists b2c. split; eauto.
     eapply Par_PatternFalse; eauto. eapply Value_par_Value; eauto.
   - use_size_induction a0 ac Par1 Par2.
-    pose (P := H11). eapply Par_AppsPath in P; eauto.
-    assert (~ AppsPath Nom ac F Apps5). intro. apply H3.
+    pose (P := H11). pose (Q := Par_AppsPath (conj P H13) Par2); eauto.
+    inversion Q. assert (~ AppsPath Nom ac F Apps5). intro. apply H3.
     eapply AppsPath_Par; eauto. contradiction.
   - use_size_induction a0 ac Par1 Par2.
     use_size_induction b1 b1c Par3 Par4.
     use_size_induction b2 b2c Par5 Par6. eauto.
-Qed.
+Qed. 
 
 Lemma confluence : forall W a a1 R, Par W a a1 R -> 
                    forall a2, Par W a a2 R -> exists b,
@@ -892,7 +892,7 @@ Lemma Path_par_app_inversion : forall W F nu a b c R,
 Proof. intros. inversion H; subst; eauto.
         - inversion H0; subst. eauto.
           pose (P := ValuePath_cs_par_ValuePath (ValuePath_sub_app H1) H2 H9).
-          inversion P. exists a',b'; auto. inversion H7.
+          inversion P. inversion H3. exists a',b'; auto. inversion H7.
           pattern_head_tm_agree. apply ValuePath_head in H1.
           simpl in H1. rewrite H1 in U1. inversion U1; subst.
           axioms_head_same.
@@ -926,7 +926,7 @@ Lemma Path_par_capp_inversion : forall W F a c R,
 Proof. intros. inversion H; subst; eauto.
         - inversion H0; subst. eauto.
           pose (P := ValuePath_cs_par_ValuePath (ValuePath_sub_capp H1) H2 H5).
-          inversion P. exists a'; auto. inversion H5.
+          inversion P. inversion H4. exists a'; auto. inversion H5.
           pattern_head_tm_agree. apply ValuePath_head in H1.
           simpl in H1. rewrite H1 in U1. inversion U1; subst.
           axioms_head_same.
@@ -1663,13 +1663,12 @@ Proof.
     apply join_transitive with (b := b); eauto.
   - intros. destruct (H H0 a b A a' b' A' R1 R1 eq_refl eq_refl) as (_ & P1 & P2 & P3).
     auto.
-  - intros. 
-(*    destruct (H H3) as [ac [Q1 Q2]]. 
-    destruct (H1 H3) as [b1c [Q3 Q4]].
-    destruct (H2 H3) as [b2c [Q5 Q6]].
-    exists (a_Pattern R ac F b1c b2c); split;
-    eapply multipar_Pattern; eauto. *)
-    admit.
+  - intros.
+    destruct (H H3) as [ac [Q1 Q2]].
+    destruct (H0 H3) as [b1c [Q3 Q4]].
+    destruct (H1 H3) as [b2c [Q5 Q6]].
+    exists (a_Pattern Nom ac F Apps5 b1c b2c); split;
+    eapply multipar_Pattern; eauto.
   - intros. apply H3 in H5. unfold joins in H5.
     inversion H5 as [c [P1 P2]].
     pose (P3 := P1). pose (P4 := P1). admit. (*

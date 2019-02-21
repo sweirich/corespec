@@ -1393,6 +1393,7 @@ W |= b1 => b1' / R0
 W |= b2 => b2' / R0
 AppsPath Nom a' +> F Apps 
 apply args a' to b1' +> b
+Sat F Apps'
 --------------------------------------------- :: PatternTrue
 W |= (case Nom a of F @ Apps => b1 | _ => b2) => b [o] / R0
 
@@ -1459,6 +1460,7 @@ R1 <= R
 
 AppsPath Nom a +> F Apps
 apply args a to b1 +> b1'
+Sat F Apps'
 ------------------------------------------ :: PatternTrue
 |= case Nom a of F @ Apps => b1 | _ => b2 > b1' [o] / R0
 
@@ -1782,7 +1784,7 @@ G, c: phi1 ; D |= a == b : B/R
 G ; D |=  (/\c . a) == (/\ c . b) : all c:phi1. B/R
 
 G ; D |= a1 == b1 : (all c:(a ~ b : A/R). B)/R'
-G ; dom G |= a == b : A/param R R'
+G ; dom G |= a == b : A/R
 ------------------------------------------------ :: CAppCong
 G ; D |= a1 [o] == b1 [o] : (B { o / c })/R'
 
@@ -1813,7 +1815,8 @@ G ; D |= a == a' : A / Nom
 G ; D |= b1 == b1' : B / R0
 G ; D |= b2 == b2' : C / R0
 G |= Apps case Nom a  : A of F @ none : A1 -> B | C
-G |= Apps case Nom a' : A of F @ none : A1 -> B | C
+G |= Apps case Nom a' : A of F @ none : A1 -> B' | C
+G ; D |= B == B' : TYPE / Rep
 Sat F Apps 
 G |= F : A1
 ------------------------------------------------------------------------ :: PatCong

@@ -186,9 +186,21 @@ Lemma BranchTyping_weakening :
               -> BranchTyping (F ++ E ++ G) n R a A AA FF A1 B C.
 Proof. 
   induction 1.
-    all: intros; subst. 
-    all: try E_pick_fresh y;  try auto_rew_env; try apply_first_hyp; try simpl_env; eauto 3.
-Admitted. (* BranchTyping_weakening *)
+    all: intros; subst.
+    - eapply BranchTyping_Base; eauto 2.
+    - pick fresh y and apply BranchTyping_PiRole; eauto 2.
+      auto_rew_env.
+      apply_first_hyp; try simpl_env; eauto 3.
+    - pick fresh y and apply BranchTyping_PiRel; eauto 2.
+      auto_rew_env.
+      apply_first_hyp; try simpl_env; eauto 3.
+    - pick fresh y and apply BranchTyping_PiIrrel; eauto 2.
+      auto_rew_env.
+      apply_first_hyp; try simpl_env; eauto 3.
+    - pick fresh y and apply BranchTyping_CPi; eauto 2.
+      auto_rew_env.
+      apply_first_hyp; try simpl_env; eauto 3.
+Qed.
 
 Lemma typing_weakening_mutual:
   (forall G0 a A,   Typing G0 a A ->

@@ -1472,12 +1472,13 @@ Inductive Par : role_context -> tm -> tm -> role -> Prop :=    (* defn Par *)
      Par W b1 b1' R0 ->
      Par W b2 b2' R0 ->
      Par W  ( (a_Pattern Nom a F Apps5 b1 b2) )   ( (a_Pattern Nom a' F Apps5 b1' b2') )  R0
- | Par_PatternTrue : forall (W:role_context) (a:tm) (F:const) (Apps5:Apps) (b1 b2 b:tm) (R0:role) (a' b1' b2':tm),
+ | Par_PatternTrue : forall (W:role_context) (a:tm) (F:const) (Apps5:Apps) (b1 b2 b:tm) (R0:role) (a' b1' b2':tm) (Apps':Apps),
      Par W a a' Nom ->
      Par W b1 b1' R0 ->
      Par W b2 b2' R0 ->
      AppsPath Nom a' F Apps5 ->
      ApplyArgs a' b1' b ->
+     SatApp F Apps' ->
      Par W  ( (a_Pattern Nom a F Apps5 b1 b2) )  (a_CApp b g_Triv) R0
  | Par_PatternFalse : forall (W:role_context) (a:tm) (F:const) (Apps5:Apps) (b1 b2 b2':tm) (R0:role) (a' b1':tm),
      Par W a a' Nom ->
@@ -1515,10 +1516,11 @@ Inductive Beta : tm -> tm -> role -> Prop :=    (* defn Beta *)
      MatchSubst a p1 b1 b' ->
      SubRole R1 R ->
      Beta a b' R
- | Beta_PatternTrue : forall (a:tm) (F:const) (Apps5:Apps) (b1 b2 b1':tm) (R0:role),
+ | Beta_PatternTrue : forall (a:tm) (F:const) (Apps5:Apps) (b1 b2 b1':tm) (R0:role) (Apps':Apps),
      lc_tm b2 ->
      AppsPath Nom a F Apps5 ->
      ApplyArgs a b1 b1' ->
+     SatApp F Apps' ->
      Beta (a_Pattern Nom a F Apps5 b1 b2) (a_CApp b1' g_Triv) R0
  | Beta_PatternFalse : forall (a:tm) (F:const) (Apps5:Apps) (b1 b2:tm) (R0:role),
      lc_tm b1 ->
@@ -1734,7 +1736,7 @@ with DefEq : context -> available_props -> tm -> tm -> tm -> role -> Prop :=    
      DefEq G D  ( (a_UCAbs a) )   ( (a_UCAbs b) )  (a_CPi phi1 B) R
  | E_CAppCong : forall (G:context) (D:available_props) (a1 b1 B:tm) (R':role) (a b A:tm) (R:role),
      DefEq G D a1 b1  ( (a_CPi  ( (Eq a b A R) )  B) )  R' ->
-     DefEq G  (dom  G )  a b A  (param R   R' )  ->
+     DefEq G  (dom  G )  a b A R ->
      DefEq G D (a_CApp a1 g_Triv) (a_CApp b1 g_Triv)  (  (open_tm_wrt_co  B   g_Triv )  )  R'
  | E_CPiSnd : forall (G:context) (D:available_props) (B1 B2:tm) (R0:role) (a1 a2 A:tm) (R:role) (a1' a2' A':tm) (R':role),
      DefEq G D (a_CPi  ( (Eq a1 a2 A R) )  B1) (a_CPi  ( (Eq a1' a2' A' R') )  B2) a_Star R0 ->
@@ -1753,12 +1755,13 @@ with DefEq : context -> available_props -> tm -> tm -> tm -> role -> Prop :=    
  | E_IsoSnd : forall (G:context) (D:available_props) (A A' a b:tm) (R1:role) (a' b':tm),
      Iso G D (Eq a b A R1) (Eq a' b' A' R1) ->
      DefEq G D A A' a_Star Rep
- | E_PatCong : forall (G:context) (D:available_props) (a:tm) (F:const) (Apps5:Apps) (b1 b2 a' b1' b2' C:tm) (R0:role) (A B A1:tm),
+ | E_PatCong : forall (G:context) (D:available_props) (a:tm) (F:const) (Apps5:Apps) (b1 b2 a' b1' b2' C:tm) (R0:role) (A B A1 B':tm),
      DefEq G D a a' A Nom ->
      DefEq G D b1 b1' B R0 ->
      DefEq G D b2 b2' C R0 ->
      BranchTyping G Apps5 Nom a A (a_Fam F)  nil  A1 B C ->
-     BranchTyping G Apps5 Nom a' A (a_Fam F)  nil  A1 B C ->
+     BranchTyping G Apps5 Nom a' A (a_Fam F)  nil  A1 B' C ->
+     DefEq G D B B' a_Star Rep ->
      SatApp F Apps5 ->
      Typing G (a_Fam F) A1 ->
      DefEq G D (a_Pattern Nom a F Apps5 b1 b2) (a_Pattern Nom a' F Apps5 b1' b2') C R0

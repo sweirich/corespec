@@ -944,8 +944,8 @@ Proof.
   - intros.
     split_hyp.
     split.
-    eapply E_CApp; eauto 3. eapply E_Sub. eauto. eapply param_sub1.
-    eapply E_CApp; eauto 3. eapply E_Sub. eauto. eapply param_sub1.
+    eapply E_CApp; eauto 3. (* eapply E_Sub. eauto. eapply param_sub1. *)
+    eapply E_CApp; eauto 3. (* eapply E_Sub. eauto. eapply param_sub1. *)
   - intros G D B1 B2 R0 a1 a2 A R a1' a2' A' R' d H d0 H0 d1 H1.
     split_hyp.
     (have: Ctx G by eauto 2) => CTX.
@@ -987,7 +987,8 @@ Proof.
   - intros.
     split_hyp.
     clear con.
-    split; eapply E_Case; eauto 3.
+    split. eapply E_Case; eauto 3.
+    eapply E_Case with (B := B'); eauto 3.
 Unshelve. eauto. all: try exact Rep.
 all: eauto.
 Qed.

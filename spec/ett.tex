@@ -60,7 +60,7 @@
 \ottprodline{|}{\ottkw{Rep}}{}{}{}{}\ottprodnewline
 \ottprodline{|}{ \ottnt{R_{{\mathrm{1}}}}  \cap  \ottnt{R_{{\mathrm{2}}}} } {\textsf{S}}{}{}{}\ottprodnewline
 \ottprodline{|}{\ottkw{param} \, \ottnt{R_{{\mathrm{1}}}} \, \ottnt{R_{{\mathrm{2}}}}} {\textsf{S}}{}{}{}\ottprodnewline
-\ottprodline{|}{\ottkw{app\_role} \, \nu} {\textsf{S}}{}{}{}\ottprodnewline
+\ottprodline{|}{\ottkw{app\_role} \, \nu \, \ottnt{R}} {\textsf{S}}{}{}{}\ottprodnewline
 \ottprodline{|}{\ottsym{(}  \ottnt{R}  \ottsym{)}} {\textsf{S}}{}{}{}}
 
 \newcommand{\ottconstraint}{
@@ -69,7 +69,8 @@
 \ottprodline{|}{\ottsym{(}  \phi  \ottsym{)}} {\textsf{S}}{}{}{}\ottprodnewline
 \ottprodline{|}{\phi  \lbrace  \ottnt{b}  \ottsym{/}  \ottmv{x}  \rbrace} {\textsf{S}}{}{}{}\ottprodnewline
 \ottprodline{|}{|  \phi  |} {\textsf{S}}{}{}{}\ottprodnewline
-\ottprodline{|}{ \ottnt{a}   \sim _{ \ottnt{R} }  \ottnt{b} } {\textsf{S}}{}{}{}}
+\ottprodline{|}{ \ottnt{a}   \sim _{ \ottnt{R} }  \ottnt{b} } {\textsf{S}}{}{}{}\ottprodnewline
+\ottprodline{|}{\ottnt{a}  \sim  \ottnt{b}} {\textsf{S}}{}{}{}}
 
 \newcommand{\otttm}{
 \ottrulehead{\ottnt{tm}  ,\ \ottnt{a}  ,\ \ottnt{b}  ,\ \ottnt{p}  ,\ \ottnt{v}  ,\ \ottnt{w}  ,\ \ottnt{A}  ,\ \ottnt{B}  ,\ \ottnt{C}}{::=}{\ottcom{types and kinds}}\ottprodnewline
@@ -86,10 +87,13 @@
 \ottprodline{|}{ \ottnt{a} \triangleright _{ \ottnt{R} }  \gamma }{}{}{}{}\ottprodnewline
 \ottprodline{|}{\ottmv{F}}{}{}{}{}\ottprodnewline
 \ottprodline{|}{\Box}{}{}{}{}\ottprodnewline
-\ottprodline{|}{ \mathsf{case}_ \ottnt{R}  \hspace{3pt}  \ottnt{a}  \hspace{3pt} \mathsf{of} \hspace{3pt}  \ottmv{F}  \rightarrow  \ottnt{b_{{\mathrm{1}}}}  \| \_ \rightarrow  \ottnt{b_{{\mathrm{2}}}} }{}{}{}{}\ottprodnewline
+\ottprodline{|}{ \mathsf{case} \hspace{3pt}  \ottnt{a}  \hspace{3pt} \mathsf{of} \hspace{3pt}  \ottmv{F} \overline{\upsilon}  \rightarrow  \ottnt{b_{{\mathrm{1}}}}  \| \_ \rightarrow  \ottnt{b_{{\mathrm{2}}}} }{}{}{}{}\ottprodnewline
+\ottprodline{|}{\ottkw{apply} \, \ottnt{a} \, \overline{\mu}} {\textsf{M}}{}{}{}\ottprodnewline
 \ottprodline{|}{\ottmv{K}}{}{}{}{}\ottprodnewline
 \ottprodline{|}{\ottkw{match} \, \ottnt{a} \, \ottkw{with} \, \ottnt{brs}}{}{}{}{}\ottprodnewline
 \ottprodline{|}{\ottkw{sub} \, \ottnt{R} \, \ottnt{a}}{}{}{}{}\ottprodnewline
+\ottprodline{|}{\ottkw{coerce} \, \ottnt{a}}{}{}{}{}\ottprodnewline
+\ottprodline{|}{ \ottnt{a} \  \ottnt{b} }{}{}{}{}\ottprodnewline
 \ottprodline{|}{\ottnt{a}  \lbrace  \ottnt{b}  \ottsym{/}  \ottmv{x}  \rbrace} {\textsf{S}}{}{}{}\ottprodnewline
 \ottprodline{|}{\ottnt{a}  \lbrace  \gamma  \ottsym{/}  \ottmv{c}  \rbrace} {\textsf{S}}{}{}{}\ottprodnewline
 \ottprodline{|}{ \ottnt{a}  \lbrace  \ottnt{b}   \ottsym{/}   \ottmv{x}   \rbrace } {\textsf{S}}{}{}{}\ottprodnewline
@@ -107,9 +111,11 @@
 \ottprodline{|}{ \mathsf{S} } {\textsf{S}}{}{}{}\ottprodnewline
 \ottprodline{|}{\ottkw{True}} {\textsf{S}}{}{}{}\ottprodnewline
 \ottprodline{|}{\ottkw{Fix}} {\textsf{S}}{}{}{}\ottprodnewline
+\ottprodline{|}{\ottkw{Maybe}} {\textsf{S}}{}{}{}\ottprodnewline
+\ottprodline{|}{\ottkw{Just}} {\textsf{S}}{}{}{}\ottprodnewline
+\ottprodline{|}{\ottkw{Nothing}} {\textsf{S}}{}{}{}\ottprodnewline
 \ottprodline{|}{\ottnt{a}  \to  \ottnt{b}} {\textsf{S}}{}{}{}\ottprodnewline
 \ottprodline{|}{\phi  \Rightarrow  \ottnt{A}} {\textsf{S}}{}{}{}\ottprodnewline
-\ottprodline{|}{ \ottnt{a} \  \ottnt{b} } {\textsf{S}}{}{}{}\ottprodnewline
 \ottprodline{|}{ \lambda  \ottmv{x} . \ottnt{a} } {\textsf{S}}{}{}{}\ottprodnewline
 \ottprodline{|}{ \lambda  \ottmv{x} \!:\! \ottnt{A} . \ottnt{a} } {\textsf{S}}{}{}{}\ottprodnewline
 \ottprodline{|}{\forall \, \ottmv{x}  \ottsym{:}  \ottnt{A}  \to  \ottnt{B}} {\textsf{S}}{}{}{}\ottprodnewline
@@ -154,6 +160,18 @@
 \ottprodline{|}{ \gamma } {\textsf{S}}{}{}{}\ottprodnewline
 \ottprodline{|}{\gamma  \lbrace  \ottnt{a}  \ottsym{/}  \ottmv{x}  \rbrace} {\textsf{S}}{}{}{}}
 
+\newcommand{\ottApp}{
+\ottrulehead{\upsilon}{::=}{}\ottprodnewline
+\ottfirstprodline{|}{\ottkw{Tm} \, \nu}{}{}{}{}\ottprodnewline
+\ottprodline{|}{\ottkw{Co}}{}{}{}{}}
+
+\newcommand{\ottApps}{
+\ottrulehead{\overline{\upsilon}}{::=}{}\ottprodnewline
+\ottfirstprodline{|}{\ottkw{emptyA}}{}{}{}{}\ottprodnewline
+\ottprodline{|}{\overline{\upsilon}  \ottsym{,}  \upsilon} {\textsf{M}}{}{}{}\ottprodnewline
+\ottprodline{|}{\upsilon  \ottsym{,}  \overline{\upsilon}}{}{}{}{}\ottprodnewline
+\ottprodline{|}{\ottsym{(}  \overline{\upsilon}  \ottsym{)}} {\textsf{M}}{}{}{}}
+
 \newcommand{\ottroleXXcontext}{
 \ottrulehead{\ottnt{role\_context}  ,\ \Omega}{::=}{\ottcom{role_contexts}}\ottprodnewline
 \ottfirstprodline{|}{\varnothing}{}{}{}{}\ottprodnewline
@@ -168,12 +186,14 @@
 \ottrulehead{\ottnt{roles}  ,\ \ottnt{Rs}}{::=}{}\ottprodnewline
 \ottfirstprodline{|}{ \cdot }{}{}{}{}\ottprodnewline
 \ottprodline{|}{\ottnt{R}  \ottsym{,}  \ottnt{Rs}}{}{}{}{}\ottprodnewline
-\ottprodline{|}{\ottkw{range} \, \Omega} {\textsf{S}}{}{}{}}
+\ottprodline{|}{\ottkw{range} \, \Omega} {\textsf{S}}{}{}{}\ottprodnewline
+\ottprodline{|}{\ottsym{(}  \ottnt{Rs}  \ottsym{)}} {\textsf{S}}{}{}{}\ottprodnewline
+\ottprodline{|}{\ottnt{Rs}  \mathop{++}  \ottnt{Rs'}} {\textsf{S}}{}{}{}}
 
 \newcommand{\ottsigXXsort}{
 \ottrulehead{\ottnt{sig\_sort}}{::=}{\ottcom{signature classifier}}\ottprodnewline
-\ottfirstprodline{|}{ _ \ottnt{Rs}  \,  \ottnt{A} }{}{}{}{}\ottprodnewline
-\ottprodline{|}{ _ \ottnt{Rs}  \,  \ottnt{p}  \sim_ \ottnt{R}   \ottnt{a}  :  \ottnt{A} }{}{}{}{}}
+\ottfirstprodline{|}{ _ \ottnt{Rs}  \  \ottnt{A} }{}{}{}{}\ottprodnewline
+\ottprodline{|}{ _ \ottnt{Rs}  \  \ottnt{p}  \sim_{ \ottnt{R} }  \ottnt{a}  :  \ottnt{A} }{}{}{}{}}
 
 \newcommand{\ottsort}{
 \ottrulehead{\ottnt{sort}}{::=}{\ottcom{binding classifier}}\ottprodnewline
@@ -213,18 +233,21 @@
 
 \newcommand{\ottNat}{
 \ottrulehead{\ottnt{Nat}  ,\ \mathbb{N}}{::=}{}\ottprodnewline
-\ottfirstprodline{|}{ |  \ottnt{a}  | } {\textsf{S}}{}{}{}}
+\ottfirstprodline{|}{\ottsym{0}} {\textsf{M}}{}{}{}\ottprodnewline
+\ottprodline{|}{\Sigma \, \mathbb{N}} {\textsf{M}}{}{}{}\ottprodnewline
+\ottprodline{|}{\ottsym{(}  \mathbb{N}  \ottsym{)}} {\textsf{M}}{}{}{}\ottprodnewline
+\ottprodline{|}{ |  \ottnt{a}  | } {\textsf{S}}{}{}{}}
 
 \newcommand{\ottpatternXXarg}{
-\ottrulehead{\ottnt{pattern\_arg}}{::=}{\ottcom{Pattern arguments}}\ottprodnewline
-\ottfirstprodline{|}{\ottsym{\mbox{$\backslash{}$}Rel}  \ottnt{a} \, \ottnt{R}}{}{}{}{}\ottprodnewline
-\ottprodline{|}{\ottsym{\mbox{$\backslash{}$}Irr}  \ottnt{a}}{}{}{}{}\ottprodnewline
-\ottprodline{|}{\ottsym{\mbox{$\backslash{}$}Coe}  \gamma}{}{}{}{}}
+\ottrulehead{\mu}{::=}{\ottcom{Pattern arguments}}\ottprodnewline
+\ottfirstprodline{|}{\ottkw{Tm} \, \nu \, \ottnt{a}}{}{}{}{}\ottprodnewline
+\ottprodline{|}{\ottkw{Co} \, \gamma}{}{}{}{}}
 
 \newcommand{\ottpatternXXargs}{
-\ottrulehead{\ottnt{pattern\_args}  ,\ \ottnt{PA}}{::=}{}\ottprodnewline
+\ottrulehead{\overline{\mu}  ,\ \ottnt{PA}}{::=}{}\ottprodnewline
 \ottfirstprodline{|}{\ottkw{none}}{}{}{}{}\ottprodnewline
-\ottprodline{|}{\ottnt{PA}  \ottsym{,}  \ottnt{pattern\_arg}}{}{}{}{}}
+\ottprodline{|}{\mu  \ottsym{,}  \ottnt{PA}}{}{}{}{}\ottprodnewline
+\ottprodline{|}{\ottnt{PA}  \ottsym{,}  \mu}{}{}{}{}}
 
 \newcommand{\ottterminals}{
 \ottrulehead{\ottnt{terminals}}{::=}{}\ottprodnewline
@@ -247,6 +270,7 @@
 \ottprodline{|}{ \dashv }{}{}{}{}\ottprodnewline
 \ottprodline{|}{ \vDash }{}{}{}{}\ottprodnewline
 \ottprodline{|}{ \vDash }{}{}{}{}\ottprodnewline
+\ottprodline{|}{ \vDash_{\mathsf{src} } }{}{}{}{}\ottprodnewline
 \ottprodline{|}{ \neq }{}{}{}{}\ottprodnewline
 \ottprodline{|}{ \triangleright }{}{}{}{}\ottprodnewline
 \ottprodline{|}{ \ \mathsf{ok} }{}{}{}{}\ottprodnewline
@@ -304,7 +328,8 @@
 \ottprodline{|}{\ottsym{(}  \psi  \ottsym{)}}{}{}{}{}\ottprodnewline
 \ottprodline{|}{ \suppress{ \psi } }{}{}{}{}\ottprodnewline
 \ottprodline{|}{\ottmv{c}  \ottsym{:}  \ottsym{(a}  \ottsym{:}  \ottnt{A}  \sim  \ottnt{b}  \ottsym{:}  \ottsym{B)} \, \in \, \Gamma}{}{}{}{}\ottprodnewline
-\ottprodline{|}{  }{}{}{}{\ottcom{suppress lc hypothesis generated by Ott}}}
+\ottprodline{|}{  }{}{}{}{\ottcom{suppress lc hypothesis generated by Ott}}\ottprodnewline
+\ottprodline{|}{\Delta  \ottsym{\#}  \Delta_{{\mathrm{2}}}}{}{}{}{}}
 
 \newcommand{\ottJSubRole}{
 \ottrulehead{\ottnt{JSubRole}}{::=}{}\ottprodnewline
@@ -313,6 +338,15 @@
 \newcommand{\ottJRolePath}{
 \ottrulehead{\ottnt{JRolePath}}{::=}{}\ottprodnewline
 \ottfirstprodline{|}{ \mathsf{RolePath} \  \ottnt{a}  =  \ottmv{F}  @  \ottnt{Rs} }{}{}{}{\ottcom{Type headed by constant (partial function)}}}
+
+\newcommand{\ottJAppsPath}{
+\ottrulehead{\ottnt{JAppsPath}}{::=}{}\ottprodnewline
+\ottfirstprodline{|}{ \mathsf{AppsPath}  \ottnt{a}   \mathrel{+\!\!\!\!\!\!\rightarrow}   \ottmv{F} \overline{\upsilon} }{}{}{}{\ottcom{Type headed by constant (partial function)}}}
+
+\newcommand{\ottJSat}{
+\ottrulehead{\ottnt{JSat}}{::=}{}\ottprodnewline
+\ottfirstprodline{|}{\overline{\upsilon}  \sim  \ottnt{Rs}}{}{}{}{}\ottprodnewline
+\ottprodline{|}{\ottkw{Sat} \, \ottmv{F} \, \overline{\upsilon}}{}{}{}{}}
 
 \newcommand{\ottJPatCtx}{
 \ottrulehead{\ottnt{JPatCtx}}{::=}{}\ottprodnewline
@@ -396,7 +430,7 @@
 
 \newcommand{\ottJBranchTyping}{
 \ottrulehead{\ottnt{JBranchTyping}}{::=}{}\ottprodnewline
-\ottfirstprodline{|}{ \Gamma  \vDash \mathsf{case}_{ \ottnt{R} } \hspace{2pt}  \ottnt{a}  :  \ottnt{A}  \hspace{2pt} \mathsf{of} \hspace{2pt}  \ottnt{b}  :  \ottnt{B}  \Rightarrow  \ottnt{C}  \ | \,  \ottnt{C'} }{}{}{}{\ottcom{Branch Typing (aligning the types of case)}}}
+\ottfirstprodline{|}{ \Gamma  \vDash \mathsf{case} \hspace{2pt}  \ottnt{a}  :  \ottnt{A}  \hspace{2pt} \mathsf{of} \hspace{2pt}  \ottnt{b}  :  \ottnt{B}  \Rightarrow  \ottnt{C}  \ | \,  \ottnt{C'} }{}{}{}{\ottcom{Branch Typing (aligning the types of case)}}}
 
 \newcommand{\ottJett}{
 \ottrulehead{\ottnt{Jett}}{::=}{}\ottprodnewline
@@ -415,6 +449,12 @@
 \ottfirstprodline{|}{\ottnt{Rs_{{\mathrm{1}}}}  \Leftarrow  \ottnt{Rs_{{\mathrm{2}}}}}{}{}{}{}\ottprodnewline
 \ottprodline{|}{\Sigma_{{\mathrm{1}}}  \Leftarrow  \Sigma_{{\mathrm{2}}}}{}{}{}{}}
 
+\newcommand{\ottJSrc}{
+\ottrulehead{\ottnt{JSrc}}{::=}{}\ottprodnewline
+\ottfirstprodline{|}{\Gamma  \vDash_{\mathsf{src} }  \ottnt{a}  \ottsym{:}  \ottnt{A}}{}{}{}{\ottcom{source typing}}\ottprodnewline
+\ottprodline{|}{\Gamma  \vDash_{\mathsf{src} }  \ottnt{a}  \leadsto  \ottnt{a'}  \ottsym{:}  \ottnt{A}}{}{}{}{\ottcom{source translation}}\ottprodnewline
+\ottprodline{|}{\Gamma  \vDash_{\mathsf{src} }  \phi  \leadsto  \phi' \, \ \mathsf{ok}}{}{}{}{\ottcom{Prop wellformedness}}}
+
 \newcommand{\ottJann}{
 \ottrulehead{\ottnt{Jann}}{::=}{}\ottprodnewline
 \ottfirstprodline{|}{\Gamma  \vdash  \phi \, \ \mathsf{ok}}{}{}{}{\ottcom{prop wellformedness}}\ottprodnewline
@@ -428,15 +468,12 @@
 \ottfirstprodline{|}{\Gamma  \vdash  \ottnt{a}  \leadsto  \ottnt{b}  \ottsym{/}  \ottnt{R}}{}{}{}{\ottcom{single-step, weak head reduction to
    values for annotated language}}}
 
-\newcommand{\ottJAlt}{
-\ottrulehead{\ottnt{JAlt}}{::=}{}\ottprodnewline
-\ottfirstprodline{|}{\Gamma  \vDash  \ottnt{a}  \ottsym{:}  \ottnt{A}}{}{}{}{}\ottprodnewline
-\ottprodline{|}{\vDash  \ottnt{a}  \ottsym{>}  \ottnt{b}  \ottsym{/}  \ottnt{R}}{}{}{}{\ottcom{fake rules for the paper}}}
-
 \newcommand{\ottjudgement}{
 \ottrulehead{\ottnt{judgement}}{::=}{}\ottprodnewline
 \ottfirstprodline{|}{\ottnt{JSubRole}}{}{}{}{}\ottprodnewline
 \ottprodline{|}{\ottnt{JRolePath}}{}{}{}{}\ottprodnewline
+\ottprodline{|}{\ottnt{JAppsPath}}{}{}{}{}\ottprodnewline
+\ottprodline{|}{\ottnt{JSat}}{}{}{}{}\ottprodnewline
 \ottprodline{|}{\ottnt{JPatCtx}}{}{}{}{}\ottprodnewline
 \ottprodline{|}{\ottnt{JRename}}{}{}{}{}\ottprodnewline
 \ottprodline{|}{\ottnt{JMatchSubst}}{}{}{}{}\ottprodnewline
@@ -460,9 +497,9 @@
 \ottprodline{|}{\ottnt{Jett}}{}{}{}{}\ottprodnewline
 \ottprodline{|}{\ottnt{Jsig}}{}{}{}{}\ottprodnewline
 \ottprodline{|}{\ottnt{Jhiding}}{}{}{}{}\ottprodnewline
+\ottprodline{|}{\ottnt{JSrc}}{}{}{}{}\ottprodnewline
 \ottprodline{|}{\ottnt{Jann}}{}{}{}{}\ottprodnewline
-\ottprodline{|}{\ottnt{Jred}}{}{}{}{}\ottprodnewline
-\ottprodline{|}{\ottnt{JAlt}}{}{}{}{}}
+\ottprodline{|}{\ottnt{Jred}}{}{}{}{}}
 
 \newcommand{\ottuserXXsyntax}{
 \ottrulehead{\ottnt{user\_syntax}}{::=}{}\ottprodnewline
@@ -478,6 +515,8 @@
 \ottprodline{|}{\ottnt{tm}}{}{}{}{}\ottprodnewline
 \ottprodline{|}{\ottnt{brs}}{}{}{}{}\ottprodnewline
 \ottprodline{|}{\ottnt{co}}{}{}{}{}\ottprodnewline
+\ottprodline{|}{\upsilon}{}{}{}{}\ottprodnewline
+\ottprodline{|}{\overline{\upsilon}}{}{}{}{}\ottprodnewline
 \ottprodline{|}{\ottnt{role\_context}}{}{}{}{}\ottprodnewline
 \ottprodline{|}{\ottnt{roles}}{}{}{}{}\ottprodnewline
 \ottprodline{|}{\ottnt{sig\_sort}}{}{}{}{}\ottprodnewline
@@ -486,8 +525,8 @@
 \ottprodline{|}{\ottnt{sig}}{}{}{}{}\ottprodnewline
 \ottprodline{|}{\ottnt{available\_props}}{}{}{}{}\ottprodnewline
 \ottprodline{|}{\ottnt{Nat}}{}{}{}{}\ottprodnewline
-\ottprodline{|}{\ottnt{pattern\_arg}}{}{}{}{}\ottprodnewline
-\ottprodline{|}{\ottnt{pattern\_args}}{}{}{}{}\ottprodnewline
+\ottprodline{|}{\mu}{}{}{}{}\ottprodnewline
+\ottprodline{|}{\overline{\mu}}{}{}{}{}\ottprodnewline
 \ottprodline{|}{\ottnt{terminals}}{}{}{}{}\ottprodnewline
 \ottprodline{|}{\ottnt{formula}}{}{}{}{}}
 
@@ -499,6 +538,8 @@
 \otttm\ottinterrule
 \ottbrs\ottinterrule
 \ottco\ottinterrule
+\ottApp\ottinterrule
+\ottApps\ottinterrule
 \ottroleXXcontext\ottinterrule
 \ottroles\ottinterrule
 \ottsigXXsort\ottinterrule
@@ -513,6 +554,8 @@
 \ottformula\ottinterrule
 \ottJSubRole\ottinterrule
 \ottJRolePath\ottinterrule
+\ottJAppsPath\ottinterrule
+\ottJSat\ottinterrule
 \ottJPatCtx\ottinterrule
 \ottJRename\ottinterrule
 \ottJMatchSubst\ottinterrule
@@ -536,9 +579,9 @@
 \ottJett\ottinterrule
 \ottJsig\ottinterrule
 \ottJhiding\ottinterrule
+\ottJSrc\ottinterrule
 \ottJann\ottinterrule
 \ottJred\ottinterrule
-\ottJAlt\ottinterrule
 \ottjudgement\ottinterrule
 \ottuserXXsyntax\ottafterlastrule
 }}
@@ -589,7 +632,7 @@
 % defns JRolePath
 %% defn RolePath
 \newcommand{\ottdruleRolePathXXAbsConst}[1]{\ottdrule[#1]{%
-\ottpremise{\ottmv{F}  \ottsym{:}   _ \ottnt{Rs}  \,  \ottnt{A}  \, \in \,  \Sigma_0 }%
+\ottpremise{\ottmv{F}  \ottsym{:}   _ \ottnt{Rs}  \  \ottnt{A}  \, \in \,  \Sigma_0 }%
 }{
  \mathsf{RolePath} \  \ottmv{F}  =  \ottmv{F}  @  \ottnt{Rs} }{%
 {\ottdrulename{RolePath\_AbsConst}}{}%
@@ -597,17 +640,25 @@
 
 
 \newcommand{\ottdruleRolePathXXConst}[1]{\ottdrule[#1]{%
-\ottpremise{\ottmv{F}  \ottsym{:}   _ \ottnt{Rs}  \,  \ottnt{p}  \sim_ \ottnt{R_{{\mathrm{1}}}}   \ottnt{a}  :  \ottnt{A}  \, \in \,  \Sigma_0 }%
+\ottpremise{\ottmv{F}  \ottsym{:}   _ \ottnt{Rs}  \  \ottnt{p}  \sim_{ \ottnt{R_{{\mathrm{1}}}} }  \ottnt{a}  :  \ottnt{A}  \, \in \,  \Sigma_0 }%
 }{
  \mathsf{RolePath} \  \ottmv{F}  =  \ottmv{F}  @  \ottnt{Rs} }{%
 {\ottdrulename{RolePath\_Const}}{}%
 }}
 
 
-\newcommand{\ottdruleRolePathXXApp}[1]{\ottdrule[#1]{%
+\newcommand{\ottdruleRolePathXXTApp}[1]{\ottdrule[#1]{%
 \ottpremise{ \mathsf{RolePath} \  \ottnt{a}  =  \ottmv{F}  @  \ottnt{R_{{\mathrm{1}}}}  \ottsym{,}  \ottnt{Rs} }%
 }{
  \mathsf{RolePath} \  \ottsym{(}   \ottnt{a} \  \ottnt{b'} ^{ \ottnt{R_{{\mathrm{1}}}} }   \ottsym{)}  =  \ottmv{F}  @  \ottnt{Rs} }{%
+{\ottdrulename{RolePath\_TApp}}{}%
+}}
+
+
+\newcommand{\ottdruleRolePathXXApp}[1]{\ottdrule[#1]{%
+\ottpremise{ \mathsf{RolePath} \  \ottnt{a}  =  \ottmv{F}  @  \ottnt{Rs} }%
+}{
+ \mathsf{RolePath} \  \ottsym{(}   \ottnt{a} \  \ottnt{b'} ^{ \ottsym{+} }   \ottsym{)}  =  \ottmv{F}  @  \ottnt{Rs} }{%
 {\ottdrulename{RolePath\_App}}{}%
 }}
 
@@ -630,6 +681,7 @@
 \newcommand{\ottdefnRolePath}[1]{\begin{ottdefnblock}[#1]{$ \mathsf{RolePath} \  \ottnt{a}  =  \ottmv{F}  @  \ottnt{Rs} $}{\ottcom{Type headed by constant (partial function)}}
 \ottusedrule{\ottdruleRolePathXXAbsConst{}}
 \ottusedrule{\ottdruleRolePathXXConst{}}
+\ottusedrule{\ottdruleRolePathXXTApp{}}
 \ottusedrule{\ottdruleRolePathXXApp{}}
 \ottusedrule{\ottdruleRolePathXXIApp{}}
 \ottusedrule{\ottdruleRolePathXXCApp{}}
@@ -638,6 +690,136 @@
 
 \newcommand{\ottdefnsJRolePath}{
 \ottdefnRolePath{}}
+
+% defns JAppsPath
+%% defn AppsPath
+\newcommand{\ottdruleAppsPathXXAbsConst}[1]{\ottdrule[#1]{%
+\ottpremise{\ottmv{F}  \ottsym{:}   _ \ottnt{Rs}  \  \ottnt{A}  \, \in \,  \Sigma_0 }%
+}{
+ \mathsf{AppsPath}  \ottmv{F}   \mathrel{+\!\!\!\!\!\!\rightarrow}   \ottmv{F} \ottkw{emptyA} }{%
+{\ottdrulename{AppsPath\_AbsConst}}{}%
+}}
+
+
+\newcommand{\ottdruleAppsPathXXConst}[1]{\ottdrule[#1]{%
+\ottpremise{\ottmv{F}  \ottsym{:}   _ \ottnt{Rs}  \  \ottnt{p}  \sim_{ \ottnt{R_{{\mathrm{1}}}} }  \ottnt{a}  :  \ottnt{A}  \, \in \,  \Sigma_0 }%
+\ottpremise{ \neg  \ottsym{(}   \ottnt{R_{{\mathrm{1}}}}  \leq  \ottnt{R}   \ottsym{)} }%
+}{
+ \mathsf{AppsPath}  \ottmv{F}   \mathrel{+\!\!\!\!\!\!\rightarrow}   \ottmv{F} \ottkw{emptyA} }{%
+{\ottdrulename{AppsPath\_Const}}{}%
+}}
+
+
+\newcommand{\ottdruleAppsPathXXApp}[1]{\ottdrule[#1]{%
+\ottpremise{ \mathsf{AppsPath}  \ottnt{a}   \mathrel{+\!\!\!\!\!\!\rightarrow}   \ottmv{F} \overline{\upsilon} }%
+}{
+ \mathsf{AppsPath}  \ottsym{(}   \ottnt{a} \  \ottnt{b'} ^{ \ottnt{R_{{\mathrm{1}}}} }   \ottsym{)}   \mathrel{+\!\!\!\!\!\!\rightarrow}   \ottmv{F} \ottsym{(}  \overline{\upsilon}  \ottsym{,}  \ottkw{Tm} \, \ottnt{R_{{\mathrm{1}}}}  \ottsym{)} }{%
+{\ottdrulename{AppsPath\_App}}{}%
+}}
+
+
+\newcommand{\ottdruleAppsPathXXIApp}[1]{\ottdrule[#1]{%
+\ottpremise{ \mathsf{AppsPath}  \ottnt{a}   \mathrel{+\!\!\!\!\!\!\rightarrow}   \ottmv{F} \overline{\upsilon} }%
+}{
+ \mathsf{AppsPath}  \ottsym{(}   \ottnt{a} \  \ottnt{b} ^{ \ottsym{-} }   \ottsym{)}   \mathrel{+\!\!\!\!\!\!\rightarrow}   \ottmv{F} \ottsym{(}  \overline{\upsilon}  \ottsym{,}  \ottkw{Tm} \, \ottsym{-}  \ottsym{)} }{%
+{\ottdrulename{AppsPath\_IApp}}{}%
+}}
+
+
+\newcommand{\ottdruleAppsPathXXCApp}[1]{\ottdrule[#1]{%
+\ottpremise{ \mathsf{AppsPath}  \ottnt{a}   \mathrel{+\!\!\!\!\!\!\rightarrow}   \ottmv{F} \overline{\upsilon} }%
+}{
+ \mathsf{AppsPath}  \ottsym{(}  \ottnt{a}  \ottsym{[}  \bullet  \ottsym{]}  \ottsym{)}   \mathrel{+\!\!\!\!\!\!\rightarrow}   \ottmv{F} \ottsym{(}  \overline{\upsilon}  \ottsym{,}  \ottkw{Co}  \ottsym{)} }{%
+{\ottdrulename{AppsPath\_CApp}}{}%
+}}
+
+\newcommand{\ottdefnAppsPath}[1]{\begin{ottdefnblock}[#1]{$ \mathsf{AppsPath}  \ottnt{a}   \mathrel{+\!\!\!\!\!\!\rightarrow}   \ottmv{F} \overline{\upsilon} $}{\ottcom{Type headed by constant (partial function)}}
+\ottusedrule{\ottdruleAppsPathXXAbsConst{}}
+\ottusedrule{\ottdruleAppsPathXXConst{}}
+\ottusedrule{\ottdruleAppsPathXXApp{}}
+\ottusedrule{\ottdruleAppsPathXXIApp{}}
+\ottusedrule{\ottdruleAppsPathXXCApp{}}
+\end{ottdefnblock}}
+
+
+\newcommand{\ottdefnsJAppsPath}{
+\ottdefnAppsPath{}}
+
+% defns JSat
+%% defn AppRoles
+\newcommand{\ottdruleARXXnil}[1]{\ottdrule[#1]{%
+}{
+\ottkw{emptyA}  \sim   \cdot }{%
+{\ottdrulename{AR\_nil}}{}%
+}}
+
+
+\newcommand{\ottdruleARXXconsTApp}[1]{\ottdrule[#1]{%
+\ottpremise{\overline{\upsilon}  \sim  \ottnt{Rs}}%
+}{
+\ottkw{Tm} \, \ottnt{R_{{\mathrm{1}}}}  \ottsym{,}  \overline{\upsilon}  \sim  \ottnt{R_{{\mathrm{1}}}}  \ottsym{,}  \ottnt{Rs}}{%
+{\ottdrulename{AR\_consTApp}}{}%
+}}
+
+
+\newcommand{\ottdruleARXXconsApp}[1]{\ottdrule[#1]{%
+\ottpremise{\overline{\upsilon}  \sim  \ottnt{Rs}}%
+}{
+\ottkw{Tm} \, \ottsym{+}  \ottsym{,}  \overline{\upsilon}  \sim  \ottnt{Rs}}{%
+{\ottdrulename{AR\_consApp}}{}%
+}}
+
+
+\newcommand{\ottdruleARXXconsIApp}[1]{\ottdrule[#1]{%
+\ottpremise{\overline{\upsilon}  \sim  \ottnt{Rs}}%
+}{
+\ottkw{Tm} \, \ottsym{-}  \ottsym{,}  \overline{\upsilon}  \sim  \ottnt{Rs}}{%
+{\ottdrulename{AR\_consIApp}}{}%
+}}
+
+
+\newcommand{\ottdruleARXXconsCApp}[1]{\ottdrule[#1]{%
+\ottpremise{\overline{\upsilon}  \sim  \ottnt{Rs}}%
+}{
+\ottkw{Co}  \ottsym{,}  \overline{\upsilon}  \sim  \ottnt{Rs}}{%
+{\ottdrulename{AR\_consCApp}}{}%
+}}
+
+\newcommand{\ottdefnAppRoles}[1]{\begin{ottdefnblock}[#1]{$\overline{\upsilon}  \sim  \ottnt{Rs}$}{}
+\ottusedrule{\ottdruleARXXnil{}}
+\ottusedrule{\ottdruleARXXconsTApp{}}
+\ottusedrule{\ottdruleARXXconsApp{}}
+\ottusedrule{\ottdruleARXXconsIApp{}}
+\ottusedrule{\ottdruleARXXconsCApp{}}
+\end{ottdefnblock}}
+
+%% defn SatApp
+\newcommand{\ottdruleSatXXConst}[1]{\ottdrule[#1]{%
+\ottpremise{\ottmv{F}  \ottsym{:}   _ \ottnt{Rs}  \  \ottnt{A}  \, \in \,  \Sigma_0 }%
+\ottpremise{\overline{\upsilon}  \sim  \ottnt{Rs}}%
+}{
+\ottkw{Sat} \, \ottmv{F} \, \overline{\upsilon}}{%
+{\ottdrulename{Sat\_Const}}{}%
+}}
+
+
+\newcommand{\ottdruleSatXXAxiom}[1]{\ottdrule[#1]{%
+\ottpremise{\ottmv{F}  \ottsym{:}   _ \ottnt{Rs}  \  \ottnt{p}  \sim_{ \ottnt{R_{{\mathrm{1}}}} }  \ottnt{a_{{\mathrm{0}}}}  :  \ottnt{A_{{\mathrm{1}}}}  \, \in \,  \Sigma_0 }%
+\ottpremise{ \neg  \ottsym{(}   \ottnt{R_{{\mathrm{1}}}}  \leq  \ottkw{Nom}   \ottsym{)} }%
+\ottpremise{\overline{\upsilon}  \sim  \ottnt{Rs}}%
+}{
+\ottkw{Sat} \, \ottmv{F} \, \overline{\upsilon}}{%
+{\ottdrulename{Sat\_Axiom}}{}%
+}}
+
+\newcommand{\ottdefnSatApp}[1]{\begin{ottdefnblock}[#1]{$\ottkw{Sat} \, \ottmv{F} \, \overline{\upsilon}$}{}
+\ottusedrule{\ottdruleSatXXConst{}}
+\ottusedrule{\ottdruleSatXXAxiom{}}
+\end{ottdefnblock}}
+
+
+\newcommand{\ottdefnsJSat}{
+\ottdefnAppRoles{}\ottdefnSatApp{}}
 
 % defns JPatCtx
 %% defn PatternContexts
@@ -781,7 +963,7 @@
 \newcommand{\ottdrulePatDataXXRel}[1]{\ottdrule[#1]{%
 \ottpremise{\ottkw{uncurry} \, \ottnt{p}  \ottsym{=}  \ottmv{F}  \ottsym{@}  \ottnt{PA}}%
 }{
-\ottkw{uncurry} \, \ottsym{(}   \ottnt{p} \  \ottnt{a} ^{ \ottnt{R} }   \ottsym{)}  \ottsym{=}  \ottmv{F}  \ottsym{@}  \ottnt{PA}  \ottsym{,}  \ottsym{\mbox{$\backslash{}$}Rel}  \ottnt{a} \, \ottnt{R}}{%
+\ottkw{uncurry} \, \ottsym{(}   \ottnt{p} \  \ottnt{a} ^{ \ottnt{R} }   \ottsym{)}  \ottsym{=}  \ottmv{F}  \ottsym{@}  \ottkw{Tm} \, \ottnt{R} \, \ottnt{a}  \ottsym{,}  \ottnt{PA}}{%
 {\ottdrulename{PatData\_Rel}}{}%
 }}
 
@@ -811,26 +993,26 @@
 }}
 
 
-\newcommand{\ottdrulePatternXXIrr}[1]{\ottdrule[#1]{%
+\newcommand{\ottdrulePatternXXIrrel}[1]{\ottdrule[#1]{%
 \ottpremise{\ottkw{pattern} \, \ottnt{p}}%
 }{
 \ottkw{pattern} \, \ottsym{(}   \ottnt{p} \  \ottnt{a} ^{ \ottsym{-} }   \ottsym{)}}{%
-{\ottdrulename{Pattern\_Irr}}{}%
+{\ottdrulename{Pattern\_Irrel}}{}%
 }}
 
 
-\newcommand{\ottdrulePatternXXCoe}[1]{\ottdrule[#1]{%
+\newcommand{\ottdrulePatternXXCo}[1]{\ottdrule[#1]{%
 \ottpremise{\ottkw{pattern} \, \ottnt{p}}%
 }{
 \ottkw{pattern} \, \ottsym{(}  \ottnt{p}  \ottsym{[}  \gamma  \ottsym{]}  \ottsym{)}}{%
-{\ottdrulename{Pattern\_Coe}}{}%
+{\ottdrulename{Pattern\_Co}}{}%
 }}
 
 \newcommand{\ottdefnPattern}[1]{\begin{ottdefnblock}[#1]{$\ottkw{pattern} \, \ottnt{p}$}{}
 \ottusedrule{\ottdrulePatternXXHead{}}
 \ottusedrule{\ottdrulePatternXXRel{}}
-\ottusedrule{\ottdrulePatternXXIrr{}}
-\ottusedrule{\ottdrulePatternXXCoe{}}
+\ottusedrule{\ottdrulePatternXXIrrel{}}
+\ottusedrule{\ottdrulePatternXXCo{}}
 \end{ottdefnblock}}
 
 
@@ -855,26 +1037,26 @@
 }}
 
 
-\newcommand{\ottdruleSubPatXXIrr}[1]{\ottdrule[#1]{%
+\newcommand{\ottdruleSubPatXXIrrel}[1]{\ottdrule[#1]{%
 \ottpremise{\ottkw{subpattern} \, \ottnt{p'} \, \ottnt{p}}%
 }{
 \ottkw{subpattern} \, \ottnt{p'} \, \ottsym{(}   \ottnt{p} \  \Box ^{ \ottsym{-} }   \ottsym{)}}{%
-{\ottdrulename{SubPat\_Irr}}{}%
+{\ottdrulename{SubPat\_Irrel}}{}%
 }}
 
 
-\newcommand{\ottdruleSubPatXXCoe}[1]{\ottdrule[#1]{%
+\newcommand{\ottdruleSubPatXXCo}[1]{\ottdrule[#1]{%
 \ottpremise{\ottkw{subpattern} \, \ottnt{p'} \, \ottnt{p}}%
 }{
 \ottkw{subpattern} \, \ottnt{p'} \, \ottsym{(}  \ottnt{p}  \ottsym{[}  \bullet  \ottsym{]}  \ottsym{)}}{%
-{\ottdrulename{SubPat\_Coe}}{}%
+{\ottdrulename{SubPat\_Co}}{}%
 }}
 
 \newcommand{\ottdefnSubPat}[1]{\begin{ottdefnblock}[#1]{$\ottkw{subpattern} \, \ottnt{p'} \, \ottnt{p}$}{\ottcom{Subpattern}}
 \ottusedrule{\ottdruleSubPatXXRefl{}}
 \ottusedrule{\ottdruleSubPatXXRel{}}
-\ottusedrule{\ottdruleSubPatXXIrr{}}
-\ottusedrule{\ottdruleSubPatXXCoe{}}
+\ottusedrule{\ottdruleSubPatXXIrrel{}}
+\ottusedrule{\ottdruleSubPatXXCo{}}
 \end{ottdefnblock}}
 
 
@@ -1006,7 +1188,7 @@
 % defns JValuePath
 %% defn ValuePath
 \newcommand{\ottdruleValuePathXXAbsConst}[1]{\ottdrule[#1]{%
-\ottpremise{\ottmv{F}  \ottsym{:}   _ \ottnt{Rs}  \,  \ottnt{A}  \, \in \,  \Sigma_0 }%
+\ottpremise{\ottmv{F}  \ottsym{:}   _ \ottnt{Rs}  \  \ottnt{A}  \, \in \,  \Sigma_0 }%
 }{
  \mathsf{ValuePath} \  \ottmv{F}   \mathrel{+\!\!\!\!\!\!\rightarrow}   \ottmv{F} }{%
 {\ottdrulename{ValuePath\_AbsConst}}{}%
@@ -1014,7 +1196,7 @@
 
 
 \newcommand{\ottdruleValuePathXXConst}[1]{\ottdrule[#1]{%
-\ottpremise{\ottmv{F}  \ottsym{:}   _ \ottnt{Rs}  \,  \ottnt{p}  \sim_ \ottnt{R_{{\mathrm{1}}}}   \ottnt{a}  :  \ottnt{A}  \, \in \,  \Sigma_0 }%
+\ottpremise{\ottmv{F}  \ottsym{:}   _ \ottnt{Rs}  \  \ottnt{p}  \sim_{ \ottnt{R_{{\mathrm{1}}}} }  \ottnt{a}  :  \ottnt{A}  \, \in \,  \Sigma_0 }%
 }{
  \mathsf{ValuePath} \  \ottmv{F}   \mathrel{+\!\!\!\!\!\!\rightarrow}   \ottmv{F} }{%
 {\ottdrulename{ValuePath\_Const}}{}%
@@ -1051,7 +1233,7 @@
 %% defn CasePath
 \newcommand{\ottdruleCasePathXXAbsConst}[1]{\ottdrule[#1]{%
 \ottpremise{ \mathsf{ValuePath} \  \ottnt{a}   \mathrel{+\!\!\!\!\!\!\rightarrow}   \ottmv{F} }%
-\ottpremise{\ottmv{F}  \ottsym{:}   _ \ottnt{Rs}  \,  \ottnt{A}  \, \in \,  \Sigma_0 }%
+\ottpremise{\ottmv{F}  \ottsym{:}   _ \ottnt{Rs}  \  \ottnt{A}  \, \in \,  \Sigma_0 }%
 }{
  \mathsf{CasePath}_{ \ottnt{R} }\  \ottnt{a}   \mathrel{+\!\!\!\!\!\!\rightarrow}   \ottmv{F} }{%
 {\ottdrulename{CasePath\_AbsConst}}{}%
@@ -1060,7 +1242,7 @@
 
 \newcommand{\ottdruleCasePathXXConst}[1]{\ottdrule[#1]{%
 \ottpremise{ \mathsf{ValuePath} \  \ottnt{a}   \mathrel{+\!\!\!\!\!\!\rightarrow}   \ottmv{F} }%
-\ottpremise{\ottmv{F}  \ottsym{:}   _ \ottnt{Rs}  \,  \ottnt{p}  \sim_ \ottnt{R_{{\mathrm{1}}}}   \ottnt{b}  :  \ottnt{A}  \, \in \,  \Sigma_0 }%
+\ottpremise{\ottmv{F}  \ottsym{:}   _ \ottnt{Rs}  \  \ottnt{p}  \sim_{ \ottnt{R_{{\mathrm{1}}}} }  \ottnt{b}  :  \ottnt{A}  \, \in \,  \Sigma_0 }%
 \ottpremise{ \neg  \ottsym{(}   \ottnt{R_{{\mathrm{1}}}}  \leq  \ottnt{R}   \ottsym{)} }%
 }{
  \mathsf{CasePath}_{ \ottnt{R} }\  \ottnt{a}   \mathrel{+\!\!\!\!\!\!\rightarrow}   \ottmv{F} }{%
@@ -1070,7 +1252,7 @@
 
 \newcommand{\ottdruleCasePathXXUnMatch}[1]{\ottdrule[#1]{%
 \ottpremise{ \mathsf{ValuePath} \  \ottnt{a}   \mathrel{+\!\!\!\!\!\!\rightarrow}   \ottmv{F} }%
-\ottpremise{\ottmv{F}  \ottsym{:}   _ \ottnt{Rs}  \,  \ottnt{p}  \sim_ \ottnt{R_{{\mathrm{1}}}}   \ottnt{b}  :  \ottnt{A}  \, \in \,  \Sigma_0 }%
+\ottpremise{\ottmv{F}  \ottsym{:}   _ \ottnt{Rs}  \  \ottnt{p}  \sim_{ \ottnt{R_{{\mathrm{1}}}} }  \ottnt{b}  :  \ottnt{A}  \, \in \,  \Sigma_0 }%
 \ottpremise{ \neg  \ottsym{(}   \ottnt{a}  \sqsupseteq  \ottnt{p}   \ottsym{)} }%
 }{
  \mathsf{CasePath}_{ \ottnt{R} }\  \ottnt{a}   \mathrel{+\!\!\!\!\!\!\rightarrow}   \ottmv{F} }{%
@@ -1096,11 +1278,19 @@
 }}
 
 
-\newcommand{\ottdruleApplyArgsXXApp}[1]{\ottdrule[#1]{%
+\newcommand{\ottdruleApplyArgsXXAppRole}[1]{\ottdrule[#1]{%
 \ottpremise{ \mathsf{apply~args} \  \ottnt{a}  \ \mathsf{to} \  \ottnt{b}   \mathrel{+\!\!\!\!\!\!\rightarrow}   \ottnt{b'} }%
 }{
- \mathsf{apply~args} \   \ottnt{a} \  \ottnt{a'} ^{ \nu }   \ \mathsf{to} \  \ottnt{b}   \mathrel{+\!\!\!\!\!\!\rightarrow}    \ottnt{b'} \  \ottnt{a'} ^{ \nu }  }{%
-{\ottdrulename{ApplyArgs\_App}}{}%
+ \mathsf{apply~args} \  \ottsym{(}   \ottnt{a} \  \ottnt{a'} ^{ \ottnt{R} }   \ottsym{)}  \ \mathsf{to} \  \ottnt{b}   \mathrel{+\!\!\!\!\!\!\rightarrow}   \ottsym{(}   \ottnt{b'} \  \ottnt{a'} ^{ \ottsym{+} }   \ottsym{)} }{%
+{\ottdrulename{ApplyArgs\_AppRole}}{}%
+}}
+
+
+\newcommand{\ottdruleApplyArgsXXAppRho}[1]{\ottdrule[#1]{%
+\ottpremise{ \mathsf{apply~args} \  \ottnt{a}  \ \mathsf{to} \  \ottnt{b}   \mathrel{+\!\!\!\!\!\!\rightarrow}   \ottnt{b'} }%
+}{
+ \mathsf{apply~args} \  \ottsym{(}   \ottnt{a} \  \ottnt{a'} ^{ \rho }   \ottsym{)}  \ \mathsf{to} \  \ottnt{b}   \mathrel{+\!\!\!\!\!\!\rightarrow}   \ottsym{(}   \ottnt{b'} \  \ottnt{a'} ^{ \rho }   \ottsym{)} }{%
+{\ottdrulename{ApplyArgs\_AppRho}}{}%
 }}
 
 
@@ -1113,7 +1303,8 @@
 
 \newcommand{\ottdefnApplyArgs}[1]{\begin{ottdefnblock}[#1]{$ \mathsf{apply~args} \  \ottnt{a}  \ \mathsf{to} \  \ottnt{b}   \mathrel{+\!\!\!\!\!\!\rightarrow}   \ottnt{b'} $}{\ottcom{apply arguments of a (headed by a constant) to b}}
 \ottusedrule{\ottdruleApplyArgsXXConst{}}
-\ottusedrule{\ottdruleApplyArgsXXApp{}}
+\ottusedrule{\ottdruleApplyArgsXXAppRole{}}
+\ottusedrule{\ottdruleApplyArgsXXAppRho{}}
 \ottusedrule{\ottdruleApplyArgsXXCApp{}}
 \end{ottdefnblock}}
 
@@ -1351,7 +1542,7 @@
 
 \newcommand{\ottdruleroleXXaXXTApp}[1]{\ottdrule[#1]{%
 \ottpremise{ \Omega  \vDash  \ottnt{a}  :  \ottnt{R} }%
-\ottpremise{ \Omega  \vDash  \ottnt{b}  :  \ottnt{R_{{\mathrm{1}}}} }%
+\ottpremise{ \Omega  \vDash  \ottnt{b}  :  \ottkw{param} \, \ottnt{R_{{\mathrm{1}}}} \, \ottnt{R} }%
 }{
  \Omega  \vDash   \ottnt{a} \  \ottnt{b} ^{ \ottnt{R_{{\mathrm{1}}}} }   :  \ottnt{R} }{%
 {\ottdrulename{role\_a\_TApp}}{}%
@@ -1396,7 +1587,7 @@
 
 \newcommand{\ottdruleroleXXaXXConst}[1]{\ottdrule[#1]{%
 \ottpremise{ \emph{uniq}( \Omega ) }%
-\ottpremise{\ottmv{F}  \ottsym{:}   _ \ottnt{Rs}  \,  \ottnt{A}  \, \in \,  \Sigma_0 }%
+\ottpremise{\ottmv{F}  \ottsym{:}   _ \ottnt{Rs}  \  \ottnt{A}  \, \in \,  \Sigma_0 }%
 }{
  \Omega  \vDash  \ottmv{F}  :  \ottnt{R} }{%
 {\ottdrulename{role\_a\_Const}}{}%
@@ -1405,7 +1596,7 @@
 
 \newcommand{\ottdruleroleXXaXXFam}[1]{\ottdrule[#1]{%
 \ottpremise{ \emph{uniq}( \Omega ) }%
-\ottpremise{\ottmv{F}  \ottsym{:}   _ \ottnt{Rs}  \,  \ottnt{p}  \sim_ \ottnt{R}   \ottnt{a}  :  \ottnt{A}  \, \in \,  \Sigma_0 }%
+\ottpremise{\ottmv{F}  \ottsym{:}   _ \ottnt{Rs}  \  \ottnt{p}  \sim_{ \ottnt{R} }  \ottnt{a}  :  \ottnt{A}  \, \in \,  \Sigma_0 }%
 }{
  \Omega  \vDash  \ottmv{F}  :  \ottnt{R_{{\mathrm{1}}}} }{%
 {\ottdrulename{role\_a\_Fam}}{}%
@@ -1413,11 +1604,11 @@
 
 
 \newcommand{\ottdruleroleXXaXXPattern}[1]{\ottdrule[#1]{%
-\ottpremise{ \Omega  \vDash  \ottnt{a}  :  \ottnt{R} }%
+\ottpremise{ \Omega  \vDash  \ottnt{a}  :  \ottkw{Nom} }%
 \ottpremise{ \Omega  \vDash  \ottnt{b_{{\mathrm{1}}}}  :  \ottnt{R_{{\mathrm{1}}}} }%
 \ottpremise{ \Omega  \vDash  \ottnt{b_{{\mathrm{2}}}}  :  \ottnt{R_{{\mathrm{1}}}} }%
 }{
- \Omega  \vDash   \mathsf{case}_ \ottnt{R}  \hspace{3pt}  \ottnt{a}  \hspace{3pt} \mathsf{of} \hspace{3pt}  \ottmv{F}  \rightarrow  \ottnt{b_{{\mathrm{1}}}}  \| \_ \rightarrow  \ottnt{b_{{\mathrm{2}}}}   :  \ottnt{R_{{\mathrm{1}}}} }{%
+ \Omega  \vDash   \mathsf{case} \hspace{3pt}  \ottnt{a}  \hspace{3pt} \mathsf{of} \hspace{3pt}  \ottmv{F} \overline{\upsilon}  \rightarrow  \ottnt{b_{{\mathrm{1}}}}  \| \_ \rightarrow  \ottnt{b_{{\mathrm{2}}}}   :  \ottnt{R_{{\mathrm{1}}}} }{%
 {\ottdrulename{role\_a\_Pattern}}{}%
 }}
 
@@ -1488,7 +1679,7 @@
 
 \newcommand{\ottdruleParXXApp}[1]{\ottdrule[#1]{%
 \ottpremise{ \Omega  \vDash  \ottnt{a}   \Rightarrow _{ \ottnt{R} }  \ottnt{a'} }%
-\ottpremise{ \Omega  \vDash  \ottnt{b}   \Rightarrow _{ \ottsym{(}  \ottkw{app\_role} \, \nu  \ottsym{)} }  \ottnt{b'} }%
+\ottpremise{ \Omega  \vDash  \ottnt{b}   \Rightarrow _{ \ottsym{(}  \ottkw{app\_role} \, \nu \, \ottnt{R}  \ottsym{)} }  \ottnt{b'} }%
 }{
  \Omega  \vDash   \ottnt{a} \  \ottnt{b} ^{ \nu }    \Rightarrow _{ \ottnt{R} }   \ottnt{a'} \  \ottnt{b'} ^{ \nu }  }{%
 {\ottdrulename{Par\_App}}{}%
@@ -1548,7 +1739,7 @@
 
 
 \newcommand{\ottdruleParXXAxiomBase}[1]{\ottdrule[#1]{%
-\ottpremise{\ottmv{F}  \ottsym{:}   _ \ottnt{Rs}  \,  \ottmv{F}  \sim_ \ottnt{R_{{\mathrm{1}}}}   \ottnt{b}  :  \ottnt{A}  \, \in \,  \Sigma_0 }%
+\ottpremise{\ottmv{F}  \ottsym{:}   _ \ottnt{Rs}  \  \ottmv{F}  \sim_{ \ottnt{R_{{\mathrm{1}}}} }  \ottnt{b}  :  \ottnt{A}  \, \in \,  \Sigma_0 }%
 \ottpremise{ \ottnt{R_{{\mathrm{1}}}}  \leq  \ottnt{R} }%
 \ottpremise{ \emph{uniq}( \Omega ) }%
 }{
@@ -1558,10 +1749,10 @@
 
 
 \newcommand{\ottdruleParXXAxiomApp}[1]{\ottdrule[#1]{%
-\ottpremise{\ottmv{F}  \ottsym{:}   _ \ottnt{Rs}  \,  \ottnt{p}  \sim_ \ottnt{R_{{\mathrm{1}}}}   \ottnt{b}  :  \ottnt{A}  \, \in \,  \Sigma_0 }%
+\ottpremise{\ottmv{F}  \ottsym{:}   _ \ottnt{Rs}  \  \ottnt{p}  \sim_{ \ottnt{R_{{\mathrm{1}}}} }  \ottnt{b}  :  \ottnt{A}  \, \in \,  \Sigma_0 }%
 \ottpremise{  \ottnt{a}  \sqsubseteq  \ottnt{p}   \wedge   \neg  \ottsym{(}   \ottnt{a}   \leftrightarrow   \ottnt{p}   \ottsym{)}  }%
 \ottpremise{ \Omega  \vDash  \ottnt{a}   \Rightarrow _{ \ottnt{R} }  \ottnt{a'} }%
-\ottpremise{ \Omega  \vDash  \ottnt{a_{{\mathrm{1}}}}   \Rightarrow _{ \ottsym{(}  \ottkw{app\_role} \, \nu  \ottsym{)} }  \ottnt{a'_{{\mathrm{1}}}} }%
+\ottpremise{ \Omega  \vDash  \ottnt{a_{{\mathrm{1}}}}   \Rightarrow _{ \ottsym{(}  \ottkw{app\_role} \, \nu \, \ottnt{R}  \ottsym{)} }  \ottnt{a'_{{\mathrm{1}}}} }%
 \ottpremise{ \mathsf{rename} \  \ottnt{p}  \rightarrow  \ottnt{b}  \ \mathsf{to} \  \ottnt{p'}  \rightarrow  \ottnt{b'}  \ \mathsf{excluding} \  \ottsym{(}    \widetilde { \Omega }  ,  \mathsf{fv}\! \, \ottnt{p}   \ottsym{)}  \ \mathsf{and} \  \Delta' }%
 \ottpremise{ \mathsf{match} \  \ottsym{(}   \ottnt{a'} \  \ottnt{a'_{{\mathrm{1}}}} ^{ \nu }   \ottsym{)}  \ \mathsf{with} \  \ottnt{p'}  \rightarrow  \ottnt{b'}   \mathrel{+\!\!\!\!\!\!\rightarrow}   \ottnt{a_{{\mathrm{2}}}} }%
 \ottpremise{ \ottnt{R_{{\mathrm{1}}}}  \leq  \ottnt{R} }%
@@ -1572,7 +1763,7 @@
 
 
 \newcommand{\ottdruleParXXAxiomCApp}[1]{\ottdrule[#1]{%
-\ottpremise{\ottmv{F}  \ottsym{:}   _ \ottnt{Rs}  \,  \ottnt{p}  \sim_ \ottnt{R_{{\mathrm{1}}}}   \ottnt{b}  :  \ottnt{A}  \, \in \,  \Sigma_0 }%
+\ottpremise{\ottmv{F}  \ottsym{:}   _ \ottnt{Rs}  \  \ottnt{p}  \sim_{ \ottnt{R_{{\mathrm{1}}}} }  \ottnt{b}  :  \ottnt{A}  \, \in \,  \Sigma_0 }%
 \ottpremise{  \ottnt{a}  \sqsubseteq  \ottnt{p}   \wedge   \neg  \ottsym{(}   \ottnt{a}   \leftrightarrow   \ottnt{p}   \ottsym{)}  }%
 \ottpremise{ \Omega  \vDash  \ottnt{a}   \Rightarrow _{ \ottnt{R} }  \ottnt{a'} }%
 \ottpremise{ \mathsf{rename} \  \ottnt{p}  \rightarrow  \ottnt{b}  \ \mathsf{to} \  \ottnt{p'}  \rightarrow  \ottnt{b'}  \ \mathsf{excluding} \  \ottsym{(}    \widetilde { \Omega }  ,  \mathsf{fv}\! \, \ottnt{p}   \ottsym{)}  \ \mathsf{and} \  \Delta' }%
@@ -1585,35 +1776,36 @@
 
 
 \newcommand{\ottdruleParXXPattern}[1]{\ottdrule[#1]{%
-\ottpremise{ \Omega  \vDash  \ottnt{a}   \Rightarrow _{ \ottnt{R} }  \ottnt{a'} }%
+\ottpremise{ \Omega  \vDash  \ottnt{a}   \Rightarrow _{ \ottkw{Nom} }  \ottnt{a'} }%
 \ottpremise{ \Omega  \vDash  \ottnt{b_{{\mathrm{1}}}}   \Rightarrow _{ \ottnt{R_{{\mathrm{0}}}} }  \ottnt{b'_{{\mathrm{1}}}} }%
 \ottpremise{ \Omega  \vDash  \ottnt{b_{{\mathrm{2}}}}   \Rightarrow _{ \ottnt{R_{{\mathrm{0}}}} }  \ottnt{b'_{{\mathrm{2}}}} }%
 }{
- \Omega  \vDash  \ottsym{(}   \mathsf{case}_ \ottnt{R}  \hspace{3pt}  \ottnt{a}  \hspace{3pt} \mathsf{of} \hspace{3pt}  \ottmv{F}  \rightarrow  \ottnt{b_{{\mathrm{1}}}}  \| \_ \rightarrow  \ottnt{b_{{\mathrm{2}}}}   \ottsym{)}   \Rightarrow _{ \ottnt{R_{{\mathrm{0}}}} }  \ottsym{(}   \mathsf{case}_ \ottnt{R}  \hspace{3pt}  \ottnt{a'}  \hspace{3pt} \mathsf{of} \hspace{3pt}  \ottmv{F}  \rightarrow  \ottnt{b'_{{\mathrm{1}}}}  \| \_ \rightarrow  \ottnt{b'_{{\mathrm{2}}}}   \ottsym{)} }{%
+ \Omega  \vDash  \ottsym{(}   \mathsf{case} \hspace{3pt}  \ottnt{a}  \hspace{3pt} \mathsf{of} \hspace{3pt}  \ottmv{F} \overline{\upsilon}  \rightarrow  \ottnt{b_{{\mathrm{1}}}}  \| \_ \rightarrow  \ottnt{b_{{\mathrm{2}}}}   \ottsym{)}   \Rightarrow _{ \ottnt{R_{{\mathrm{0}}}} }  \ottsym{(}   \mathsf{case} \hspace{3pt}  \ottnt{a'}  \hspace{3pt} \mathsf{of} \hspace{3pt}  \ottmv{F} \overline{\upsilon}  \rightarrow  \ottnt{b'_{{\mathrm{1}}}}  \| \_ \rightarrow  \ottnt{b'_{{\mathrm{2}}}}   \ottsym{)} }{%
 {\ottdrulename{Par\_Pattern}}{}%
 }}
 
 
 \newcommand{\ottdruleParXXPatternTrue}[1]{\ottdrule[#1]{%
-\ottpremise{ \Omega  \vDash  \ottnt{a}   \Rightarrow _{ \ottnt{R} }  \ottnt{a'} }%
+\ottpremise{ \Omega  \vDash  \ottnt{a}   \Rightarrow _{ \ottkw{Nom} }  \ottnt{a'} }%
 \ottpremise{ \Omega  \vDash  \ottnt{b_{{\mathrm{1}}}}   \Rightarrow _{ \ottnt{R_{{\mathrm{0}}}} }  \ottnt{b'_{{\mathrm{1}}}} }%
 \ottpremise{ \Omega  \vDash  \ottnt{b_{{\mathrm{2}}}}   \Rightarrow _{ \ottnt{R_{{\mathrm{0}}}} }  \ottnt{b'_{{\mathrm{2}}}} }%
-\ottpremise{ \mathsf{CasePath}_{ \ottnt{R} }\  \ottnt{a'}   \mathrel{+\!\!\!\!\!\!\rightarrow}   \ottmv{F} }%
+\ottpremise{ \mathsf{AppsPath}  \ottnt{a'}   \mathrel{+\!\!\!\!\!\!\rightarrow}   \ottmv{F} \overline{\upsilon} }%
 \ottpremise{ \mathsf{apply~args} \  \ottnt{a'}  \ \mathsf{to} \  \ottnt{b'_{{\mathrm{1}}}}   \mathrel{+\!\!\!\!\!\!\rightarrow}   \ottnt{b} }%
+\ottpremise{\ottkw{Sat} \, \ottmv{F} \, \overline{\upsilon}'}%
 }{
- \Omega  \vDash  \ottsym{(}   \mathsf{case}_ \ottnt{R}  \hspace{3pt}  \ottnt{a}  \hspace{3pt} \mathsf{of} \hspace{3pt}  \ottmv{F}  \rightarrow  \ottnt{b_{{\mathrm{1}}}}  \| \_ \rightarrow  \ottnt{b_{{\mathrm{2}}}}   \ottsym{)}   \Rightarrow _{ \ottnt{R_{{\mathrm{0}}}} }  \ottnt{b}  \ottsym{[}  \bullet  \ottsym{]} }{%
+ \Omega  \vDash  \ottsym{(}   \mathsf{case} \hspace{3pt}  \ottnt{a}  \hspace{3pt} \mathsf{of} \hspace{3pt}  \ottmv{F} \overline{\upsilon}  \rightarrow  \ottnt{b_{{\mathrm{1}}}}  \| \_ \rightarrow  \ottnt{b_{{\mathrm{2}}}}   \ottsym{)}   \Rightarrow _{ \ottnt{R_{{\mathrm{0}}}} }  \ottnt{b}  \ottsym{[}  \bullet  \ottsym{]} }{%
 {\ottdrulename{Par\_PatternTrue}}{}%
 }}
 
 
 \newcommand{\ottdruleParXXPatternFalse}[1]{\ottdrule[#1]{%
-\ottpremise{ \Omega  \vDash  \ottnt{a}   \Rightarrow _{ \ottnt{R} }  \ottnt{a'} }%
+\ottpremise{ \Omega  \vDash  \ottnt{a}   \Rightarrow _{ \ottkw{Nom} }  \ottnt{a'} }%
 \ottpremise{ \Omega  \vDash  \ottnt{b_{{\mathrm{1}}}}   \Rightarrow _{ \ottnt{R_{{\mathrm{0}}}} }  \ottnt{b'_{{\mathrm{1}}}} }%
 \ottpremise{ \Omega  \vDash  \ottnt{b_{{\mathrm{2}}}}   \Rightarrow _{ \ottnt{R_{{\mathrm{0}}}} }  \ottnt{b'_{{\mathrm{2}}}} }%
-\ottpremise{ \mathsf{Value}_{ \ottnt{R} }\  \ottnt{a'} }%
-\ottpremise{ \neg  \ottsym{(}   \mathsf{CasePath}_{ \ottnt{R} }\  \ottnt{a'}   \mathrel{+\!\!\!\!\!\!\rightarrow}   \ottmv{F}   \ottsym{)} }%
+\ottpremise{ \mathsf{Value}_{ \ottkw{Nom} }\  \ottnt{a'} }%
+\ottpremise{ \neg  \ottsym{(}   \mathsf{AppsPath}  \ottnt{a'}   \mathrel{+\!\!\!\!\!\!\rightarrow}   \ottmv{F} \overline{\upsilon}   \ottsym{)} }%
 }{
- \Omega  \vDash  \ottsym{(}   \mathsf{case}_ \ottnt{R}  \hspace{3pt}  \ottnt{a}  \hspace{3pt} \mathsf{of} \hspace{3pt}  \ottmv{F}  \rightarrow  \ottnt{b_{{\mathrm{1}}}}  \| \_ \rightarrow  \ottnt{b_{{\mathrm{2}}}}   \ottsym{)}   \Rightarrow _{ \ottnt{R_{{\mathrm{0}}}} }  \ottnt{b'_{{\mathrm{2}}}} }{%
+ \Omega  \vDash  \ottsym{(}   \mathsf{case} \hspace{3pt}  \ottnt{a}  \hspace{3pt} \mathsf{of} \hspace{3pt}  \ottmv{F} \overline{\upsilon}  \rightarrow  \ottnt{b_{{\mathrm{1}}}}  \| \_ \rightarrow  \ottnt{b_{{\mathrm{2}}}}   \ottsym{)}   \Rightarrow _{ \ottnt{R_{{\mathrm{0}}}} }  \ottnt{b'_{{\mathrm{2}}}} }{%
 {\ottdrulename{Par\_PatternFalse}}{}%
 }}
 
@@ -1691,7 +1883,7 @@
 
 
 \newcommand{\ottdruleBetaXXAxiom}[1]{\ottdrule[#1]{%
-\ottpremise{\ottmv{F}  \ottsym{:}   _ \ottnt{Rs}  \,  \ottnt{p}  \sim_ \ottnt{R_{{\mathrm{1}}}}   \ottnt{b}  :  \ottnt{A}  \, \in \,  \Sigma_0 }%
+\ottpremise{\ottmv{F}  \ottsym{:}   _ \ottnt{Rs}  \  \ottnt{p}  \sim_{ \ottnt{R_{{\mathrm{1}}}} }  \ottnt{b}  :  \ottnt{A}  \, \in \,  \Sigma_0 }%
 \ottpremise{ \mathsf{rename} \  \ottnt{p}  \rightarrow  \ottnt{b}  \ \mathsf{to} \  \ottnt{p_{{\mathrm{1}}}}  \rightarrow  \ottnt{b_{{\mathrm{1}}}}  \ \mathsf{excluding} \  \ottsym{(}   \mathsf{fv}\! \, \ottnt{a} ,  \mathsf{fv}\! \, \ottnt{p}   \ottsym{)}  \ \mathsf{and} \  \Delta' }%
 \ottpremise{ \mathsf{match} \  \ottnt{a}  \ \mathsf{with} \  \ottnt{p_{{\mathrm{1}}}}  \rightarrow  \ottnt{b_{{\mathrm{1}}}}   \mathrel{+\!\!\!\!\!\!\rightarrow}   \ottnt{b'} }%
 \ottpremise{ \ottnt{R_{{\mathrm{1}}}}  \leq  \ottnt{R} }%
@@ -1702,19 +1894,20 @@
 
 
 \newcommand{\ottdruleBetaXXPatternTrue}[1]{\ottdrule[#1]{%
-\ottpremise{ \mathsf{CasePath}_{ \ottnt{R} }\  \ottnt{a}   \mathrel{+\!\!\!\!\!\!\rightarrow}   \ottmv{F} }%
+\ottpremise{ \mathsf{AppsPath}  \ottnt{a}   \mathrel{+\!\!\!\!\!\!\rightarrow}   \ottmv{F} \overline{\upsilon} }%
 \ottpremise{ \mathsf{apply~args} \  \ottnt{a}  \ \mathsf{to} \  \ottnt{b_{{\mathrm{1}}}}   \mathrel{+\!\!\!\!\!\!\rightarrow}   \ottnt{b'_{{\mathrm{1}}}} }%
+\ottpremise{\ottkw{Sat} \, \ottmv{F} \, \overline{\upsilon}'}%
 }{
- \vDash    \mathsf{case}_ \ottnt{R}  \hspace{3pt}  \ottnt{a}  \hspace{3pt} \mathsf{of} \hspace{3pt}  \ottmv{F}  \rightarrow  \ottnt{b_{{\mathrm{1}}}}  \| \_ \rightarrow  \ottnt{b_{{\mathrm{2}}}}    \ottsym{>} _{ \ottnt{R_{{\mathrm{0}}}} }  \ottnt{b'_{{\mathrm{1}}}}  \ottsym{[}  \bullet  \ottsym{]} }{%
+ \vDash    \mathsf{case} \hspace{3pt}  \ottnt{a}  \hspace{3pt} \mathsf{of} \hspace{3pt}  \ottmv{F} \overline{\upsilon}  \rightarrow  \ottnt{b_{{\mathrm{1}}}}  \| \_ \rightarrow  \ottnt{b_{{\mathrm{2}}}}    \ottsym{>} _{ \ottnt{R_{{\mathrm{0}}}} }  \ottnt{b'_{{\mathrm{1}}}}  \ottsym{[}  \bullet  \ottsym{]} }{%
 {\ottdrulename{Beta\_PatternTrue}}{}%
 }}
 
 
 \newcommand{\ottdruleBetaXXPatternFalse}[1]{\ottdrule[#1]{%
-\ottpremise{ \mathsf{Value}_{ \ottnt{R} }\  \ottnt{a} }%
-\ottpremise{ \neg  \ottsym{(}   \mathsf{CasePath}_{ \ottnt{R} }\  \ottnt{a}   \mathrel{+\!\!\!\!\!\!\rightarrow}   \ottmv{F}   \ottsym{)} }%
+\ottpremise{ \mathsf{Value}_{ \ottkw{Nom} }\  \ottnt{a} }%
+\ottpremise{ \neg  \ottsym{(}   \mathsf{AppsPath}  \ottnt{a}   \mathrel{+\!\!\!\!\!\!\rightarrow}   \ottmv{F} \overline{\upsilon}   \ottsym{)} }%
 }{
- \vDash    \mathsf{case}_ \ottnt{R}  \hspace{3pt}  \ottnt{a}  \hspace{3pt} \mathsf{of} \hspace{3pt}  \ottmv{F}  \rightarrow  \ottnt{b_{{\mathrm{1}}}}  \| \_ \rightarrow  \ottnt{b_{{\mathrm{2}}}}    \ottsym{>} _{ \ottnt{R_{{\mathrm{0}}}} }  \ottnt{b_{{\mathrm{2}}}} }{%
+ \vDash    \mathsf{case} \hspace{3pt}  \ottnt{a}  \hspace{3pt} \mathsf{of} \hspace{3pt}  \ottmv{F} \overline{\upsilon}  \rightarrow  \ottnt{b_{{\mathrm{1}}}}  \| \_ \rightarrow  \ottnt{b_{{\mathrm{2}}}}    \ottsym{>} _{ \ottnt{R_{{\mathrm{0}}}} }  \ottnt{b_{{\mathrm{2}}}} }{%
 {\ottdrulename{Beta\_PatternFalse}}{}%
 }}
 
@@ -1752,9 +1945,9 @@
 
 
 \newcommand{\ottdruleEXXPattern}[1]{\ottdrule[#1]{%
-\ottpremise{ \vDash   \ottnt{a}   \leadsto _{ \ottnt{R} }  \ottnt{a'} }%
+\ottpremise{ \vDash   \ottnt{a}   \leadsto _{ \ottkw{Nom} }  \ottnt{a'} }%
 }{
- \vDash    \mathsf{case}_ \ottnt{R}  \hspace{3pt}  \ottnt{a}  \hspace{3pt} \mathsf{of} \hspace{3pt}  \ottmv{F}  \rightarrow  \ottnt{b_{{\mathrm{1}}}}  \| \_ \rightarrow  \ottnt{b_{{\mathrm{2}}}}    \leadsto _{ \ottnt{R_{{\mathrm{0}}}} }   \mathsf{case}_ \ottnt{R}  \hspace{3pt}  \ottnt{a'}  \hspace{3pt} \mathsf{of} \hspace{3pt}  \ottmv{F}  \rightarrow  \ottnt{b_{{\mathrm{1}}}}  \| \_ \rightarrow  \ottnt{b_{{\mathrm{2}}}}  }{%
+ \vDash    \mathsf{case} \hspace{3pt}  \ottnt{a}  \hspace{3pt} \mathsf{of} \hspace{3pt}  \ottmv{F} \overline{\upsilon}  \rightarrow  \ottnt{b_{{\mathrm{1}}}}  \| \_ \rightarrow  \ottnt{b_{{\mathrm{2}}}}    \leadsto _{ \ottnt{R_{{\mathrm{0}}}} }   \mathsf{case} \hspace{3pt}  \ottnt{a'}  \hspace{3pt} \mathsf{of} \hspace{3pt}  \ottmv{F} \overline{\upsilon}  \rightarrow  \ottnt{b_{{\mathrm{1}}}}  \| \_ \rightarrow  \ottnt{b_{{\mathrm{2}}}}  }{%
 {\ottdrulename{E\_Pattern}}{}%
 }}
 
@@ -1803,38 +1996,47 @@
 %% defn BranchTyping
 \newcommand{\ottdruleBranchTypingXXBase}[1]{\ottdrule[#1]{%
 \ottpremise{ \emph{uniq} \  \Gamma }%
-\ottpremise{\texttt{lc\_tm }\ottnt{C}\texttt{ }}%
+\ottpremise{\ottnt{C_{{\mathrm{1}}}}  \lbrace  \bullet  \ottsym{/}  \ottmv{c}  \rbrace  \ottsym{=}  \ottnt{C_{{\mathrm{2}}}}}%
 }{
- \Gamma  \vDash \mathsf{case}_{ \ottnt{R} } \hspace{2pt}  \ottnt{a}  :  \ottnt{A}  \hspace{2pt} \mathsf{of} \hspace{2pt}  \ottnt{b}  :  \ottnt{A}  \Rightarrow   \forall \ottmv{c} \!:\! \ottsym{(}   \ottnt{a}   \sim _{ \ottnt{R} }  \ottnt{b}  :  \ottnt{A}   \ottsym{)} . \ottnt{C}   \ | \,  \ottnt{C} }{%
+ \Gamma  \vDash \mathsf{case} \hspace{2pt}  \ottnt{a}  :  \ottnt{A}  \hspace{2pt} \mathsf{of} \hspace{2pt}  \ottnt{b}  :  \ottnt{A}  \Rightarrow   \forall \ottmv{c} \!:\! \ottsym{(}   \ottnt{a}   \sim _{ \ottkw{Nom} }  \ottkw{apply} \, \ottnt{b} \, \overline{\mu}  :  \ottnt{A}   \ottsym{)} . \ottnt{C_{{\mathrm{1}}}}   \ | \,  \ottnt{C_{{\mathrm{2}}}} }{%
 {\ottdrulename{BranchTyping\_Base}}{}%
 }}
 
 
-\newcommand{\ottdruleBranchTypingXXPiRel}[1]{\ottdrule[#1]{%
-\ottpremise{ \Gamma  \ottsym{,}  \ottmv{x}  \ottsym{:}  \ottnt{A}  \vDash \mathsf{case}_{ \ottnt{R} } \hspace{2pt}  \ottnt{a}  :  \ottnt{A_{{\mathrm{1}}}}  \hspace{2pt} \mathsf{of} \hspace{2pt}   \ottnt{b} \  \ottmv{x} ^{ \ottsym{+} }   :  \ottnt{B}  \Rightarrow  \ottnt{C}  \ | \,  \ottnt{C'} }%
+\newcommand{\ottdruleBranchTypingXXPiRole}[1]{\ottdrule[#1]{%
+\ottpremise{ \Gamma  \ottsym{,}  \ottmv{x}  \ottsym{:}  \ottnt{A}  \vDash \mathsf{case} \hspace{2pt}  \ottnt{a}  :  \ottnt{A_{{\mathrm{1}}}}  \hspace{2pt} \mathsf{of} \hspace{2pt}  \ottnt{b}  :  \ottnt{B}  \Rightarrow  \ottnt{C}  \ | \,  \ottnt{C'} }%
 }{
- \Gamma  \vDash \mathsf{case}_{ \ottnt{R} } \hspace{2pt}  \ottnt{a}  :  \ottnt{A_{{\mathrm{1}}}}  \hspace{2pt} \mathsf{of} \hspace{2pt}  \ottnt{b}  :   \mathrm{\Pi}^ \ottsym{+} \ottmv{x} \!:\! \ottnt{A} \to \ottnt{B}   \Rightarrow   \mathrm{\Pi}^ \ottsym{+} \ottmv{x} \!:\! \ottnt{A} \to \ottnt{C}   \ | \,  \ottnt{C'} }{%
+ \Gamma  \vDash \mathsf{case} \hspace{2pt}  \ottnt{a}  :  \ottnt{A_{{\mathrm{1}}}}  \hspace{2pt} \mathsf{of} \hspace{2pt}  \ottnt{b}  :   \mathrm{\Pi}^ \ottsym{+} \ottmv{x} \!:\! \ottnt{A} \to \ottnt{B}   \Rightarrow   \mathrm{\Pi}^ \ottsym{+} \ottmv{x} \!:\! \ottnt{A} \to \ottnt{C}   \ | \,  \ottnt{C'} }{%
+{\ottdrulename{BranchTyping\_PiRole}}{}%
+}}
+
+
+\newcommand{\ottdruleBranchTypingXXPiRel}[1]{\ottdrule[#1]{%
+\ottpremise{ \Gamma  \ottsym{,}  \ottmv{x}  \ottsym{:}  \ottnt{A}  \vDash \mathsf{case} \hspace{2pt}  \ottnt{a}  :  \ottnt{A_{{\mathrm{1}}}}  \hspace{2pt} \mathsf{of} \hspace{2pt}  \ottnt{b}  :  \ottnt{B}  \Rightarrow  \ottnt{C}  \ | \,  \ottnt{C'} }%
+}{
+ \Gamma  \vDash \mathsf{case} \hspace{2pt}  \ottnt{a}  :  \ottnt{A_{{\mathrm{1}}}}  \hspace{2pt} \mathsf{of} \hspace{2pt}  \ottnt{b}  :   \mathrm{\Pi}^ \ottsym{+} \ottmv{x} \!:\! \ottnt{A} \to \ottnt{B}   \Rightarrow   \mathrm{\Pi}^ \ottsym{+} \ottmv{x} \!:\! \ottnt{A} \to \ottnt{C}   \ | \,  \ottnt{C'} }{%
 {\ottdrulename{BranchTyping\_PiRel}}{}%
 }}
 
 
 \newcommand{\ottdruleBranchTypingXXPiIrrel}[1]{\ottdrule[#1]{%
-\ottpremise{ \Gamma  \ottsym{,}  \ottmv{x}  \ottsym{:}  \ottnt{A}  \vDash \mathsf{case}_{ \ottnt{R} } \hspace{2pt}  \ottnt{a}  :  \ottnt{A_{{\mathrm{1}}}}  \hspace{2pt} \mathsf{of} \hspace{2pt}   \ottnt{b} \  \Box ^{ \ottsym{-} }   :  \ottnt{B}  \Rightarrow  \ottnt{C}  \ | \,  \ottnt{C'} }%
+\ottpremise{ \Gamma  \ottsym{,}  \ottmv{x}  \ottsym{:}  \ottnt{A}  \vDash \mathsf{case} \hspace{2pt}  \ottnt{a}  :  \ottnt{A_{{\mathrm{1}}}}  \hspace{2pt} \mathsf{of} \hspace{2pt}  \ottnt{b}  :  \ottnt{B}  \Rightarrow  \ottnt{C}  \ | \,  \ottnt{C'} }%
 }{
- \Gamma  \vDash \mathsf{case}_{ \ottnt{R} } \hspace{2pt}  \ottnt{a}  :  \ottnt{A_{{\mathrm{1}}}}  \hspace{2pt} \mathsf{of} \hspace{2pt}  \ottnt{b}  :   \mathrm{\Pi}^ \ottsym{-} \ottmv{x} \!:\! \ottnt{A} \to \ottnt{B}   \Rightarrow   \mathrm{\Pi}^ \ottsym{-} \ottmv{x} \!:\! \ottnt{A} \to \ottnt{C}   \ | \,  \ottnt{C'} }{%
+ \Gamma  \vDash \mathsf{case} \hspace{2pt}  \ottnt{a}  :  \ottnt{A_{{\mathrm{1}}}}  \hspace{2pt} \mathsf{of} \hspace{2pt}  \ottnt{b}  :   \mathrm{\Pi}^ \ottsym{-} \ottmv{x} \!:\! \ottnt{A} \to \ottnt{B}   \Rightarrow   \mathrm{\Pi}^ \ottsym{-} \ottmv{x} \!:\! \ottnt{A} \to \ottnt{C}   \ | \,  \ottnt{C'} }{%
 {\ottdrulename{BranchTyping\_PiIrrel}}{}%
 }}
 
 
 \newcommand{\ottdruleBranchTypingXXCPi}[1]{\ottdrule[#1]{%
-\ottpremise{ \Gamma  \ottsym{,}  \ottmv{c}  \ottsym{:}  \phi  \vDash \mathsf{case}_{ \ottnt{R} } \hspace{2pt}  \ottnt{a}  :  \ottnt{A}  \hspace{2pt} \mathsf{of} \hspace{2pt}  \ottnt{b}  \ottsym{[}  \bullet  \ottsym{]}  :  \ottnt{B}  \Rightarrow  \ottnt{C}  \ | \,  \ottnt{C'} }%
+\ottpremise{ \Gamma  \ottsym{,}  \ottmv{c}  \ottsym{:}  \phi  \vDash \mathsf{case} \hspace{2pt}  \ottnt{a}  :  \ottnt{A}  \hspace{2pt} \mathsf{of} \hspace{2pt}  \ottnt{b}  :  \ottnt{B}  \Rightarrow  \ottnt{C}  \ | \,  \ottnt{C'} }%
 }{
- \Gamma  \vDash \mathsf{case}_{ \ottnt{R} } \hspace{2pt}  \ottnt{a}  :  \ottnt{A}  \hspace{2pt} \mathsf{of} \hspace{2pt}  \ottnt{b}  :   \forall \ottmv{c} \!:\! \phi . \ottnt{B}   \Rightarrow   \forall \ottmv{c} \!:\! \phi . \ottnt{C}   \ | \,  \ottnt{C'} }{%
+ \Gamma  \vDash \mathsf{case} \hspace{2pt}  \ottnt{a}  :  \ottnt{A}  \hspace{2pt} \mathsf{of} \hspace{2pt}  \ottnt{b}  :   \forall \ottmv{c} \!:\! \phi . \ottnt{B}   \Rightarrow   \forall \ottmv{c} \!:\! \phi . \ottnt{C}   \ | \,  \ottnt{C'} }{%
 {\ottdrulename{BranchTyping\_CPi}}{}%
 }}
 
-\newcommand{\ottdefnBranchTyping}[1]{\begin{ottdefnblock}[#1]{$ \Gamma  \vDash \mathsf{case}_{ \ottnt{R} } \hspace{2pt}  \ottnt{a}  :  \ottnt{A}  \hspace{2pt} \mathsf{of} \hspace{2pt}  \ottnt{b}  :  \ottnt{B}  \Rightarrow  \ottnt{C}  \ | \,  \ottnt{C'} $}{\ottcom{Branch Typing (aligning the types of case)}}
+\newcommand{\ottdefnBranchTyping}[1]{\begin{ottdefnblock}[#1]{$ \Gamma  \vDash \mathsf{case} \hspace{2pt}  \ottnt{a}  :  \ottnt{A}  \hspace{2pt} \mathsf{of} \hspace{2pt}  \ottnt{b}  :  \ottnt{B}  \Rightarrow  \ottnt{C}  \ | \,  \ottnt{C'} $}{\ottcom{Branch Typing (aligning the types of case)}}
 \ottusedrule{\ottdruleBranchTypingXXBase{}}
+\ottusedrule{\ottdruleBranchTypingXXPiRole{}}
 \ottusedrule{\ottdruleBranchTypingXXPiRel{}}
 \ottusedrule{\ottdruleBranchTypingXXPiIrrel{}}
 \ottusedrule{\ottdruleBranchTypingXXCPi{}}
@@ -1963,7 +2165,7 @@
 
 \newcommand{\ottdruleEXXConst}[1]{\ottdrule[#1]{%
 \ottpremise{\vDash  \Gamma}%
-\ottpremise{\ottmv{F}  \ottsym{:}   _ \ottnt{Rs}  \,  \ottnt{A}  \, \in \,  \Sigma_0 }%
+\ottpremise{\ottmv{F}  \ottsym{:}   _ \ottnt{Rs}  \  \ottnt{A}  \, \in \,  \Sigma_0 }%
 \ottpremise{ \suppress{ \varnothing  \vDash  \ottnt{A}  \ottsym{:}   \star  } }%
 }{
 \Gamma  \vDash  \ottmv{F}  \ottsym{:}  \ottnt{A}}{%
@@ -1973,7 +2175,7 @@
 
 \newcommand{\ottdruleEXXFam}[1]{\ottdrule[#1]{%
 \ottpremise{\vDash  \Gamma}%
-\ottpremise{\ottmv{F}  \ottsym{:}   _ \ottnt{Rs}  \,  \ottnt{p}  \sim_ \ottnt{R_{{\mathrm{1}}}}   \ottnt{a}  :  \ottnt{A}  \, \in \,  \Sigma_0 }%
+\ottpremise{\ottmv{F}  \ottsym{:}   _ \ottnt{Rs}  \  \ottnt{p}  \sim_{ \ottnt{R_{{\mathrm{1}}}} }  \ottnt{a}  :  \ottnt{A}  \, \in \,  \Sigma_0 }%
 \ottpremise{ \suppress{ \varnothing  \vDash  \ottnt{A}  \ottsym{:}   \star  } }%
 }{
 \Gamma  \vDash  \ottmv{F}  \ottsym{:}  \ottnt{A}}{%
@@ -1983,12 +2185,13 @@
 
 \newcommand{\ottdruleEXXCase}[1]{\ottdrule[#1]{%
 \ottpremise{\Gamma  \vDash  \ottnt{a}  \ottsym{:}  \ottnt{A}}%
-\ottpremise{\Gamma  \vDash  \ottmv{F}  \ottsym{:}  \ottnt{A_{{\mathrm{1}}}}}%
 \ottpremise{\Gamma  \vDash  \ottnt{b_{{\mathrm{1}}}}  \ottsym{:}  \ottnt{B}}%
 \ottpremise{\Gamma  \vDash  \ottnt{b_{{\mathrm{2}}}}  \ottsym{:}  \ottnt{C}}%
-\ottpremise{ \Gamma  \vDash \mathsf{case}_{ \ottnt{R} } \hspace{2pt}  \ottnt{a}  :  \ottnt{A}  \hspace{2pt} \mathsf{of} \hspace{2pt}  \ottmv{F}  :  \ottnt{A_{{\mathrm{1}}}}  \Rightarrow  \ottnt{B}  \ | \,  \ottnt{C} }%
+\ottpremise{ \Gamma  \vDash \mathsf{case} \hspace{2pt}  \ottnt{a}  :  \ottnt{A}  \hspace{2pt} \mathsf{of} \hspace{2pt}  \ottmv{F}  :  \ottnt{A_{{\mathrm{1}}}}  \Rightarrow  \ottnt{B}  \ | \,  \ottnt{C} }%
+\ottpremise{\Gamma  \vDash  \ottmv{F}  \ottsym{:}  \ottnt{A_{{\mathrm{1}}}}}%
+\ottpremise{\ottkw{Sat} \, \ottmv{F} \, \overline{\upsilon}}%
 }{
-\Gamma  \vDash   \mathsf{case}_ \ottnt{R}  \hspace{3pt}  \ottnt{a}  \hspace{3pt} \mathsf{of} \hspace{3pt}  \ottmv{F}  \rightarrow  \ottnt{b_{{\mathrm{1}}}}  \| \_ \rightarrow  \ottnt{b_{{\mathrm{2}}}}   \ottsym{:}  \ottnt{C}}{%
+\Gamma  \vDash   \mathsf{case} \hspace{3pt}  \ottnt{a}  \hspace{3pt} \mathsf{of} \hspace{3pt}  \ottmv{F} \overline{\upsilon}  \rightarrow  \ottnt{b_{{\mathrm{1}}}}  \| \_ \rightarrow  \ottnt{b_{{\mathrm{2}}}}   \ottsym{:}  \ottnt{C}}{%
 {\ottdrulename{E\_Case}}{}%
 }}
 
@@ -2199,8 +2402,8 @@
 
 \newcommand{\ottdruleEXXCPiSnd}[1]{\ottdrule[#1]{%
 \ottpremise{\Gamma  \ottsym{;}  \Delta  \vDash   \forall \ottmv{c} \!:\! \ottsym{(}   \ottnt{a_{{\mathrm{1}}}}   \sim _{ \ottnt{R} }  \ottnt{a_{{\mathrm{2}}}}  :  \ottnt{A}   \ottsym{)} . \ottnt{B_{{\mathrm{1}}}}   \equiv   \forall \ottmv{c} \!:\! \ottsym{(}   \ottnt{a'_{{\mathrm{1}}}}   \sim _{ \ottnt{R'} }  \ottnt{a'_{{\mathrm{2}}}}  :  \ottnt{A'}   \ottsym{)} . \ottnt{B_{{\mathrm{2}}}}   \ottsym{:}   \star   \ottsym{/}  \ottnt{R_{{\mathrm{0}}}}}%
-\ottpremise{\Gamma  \ottsym{;}   \widetilde { \Gamma }   \vDash  \ottnt{a_{{\mathrm{1}}}}  \equiv  \ottnt{a_{{\mathrm{2}}}}  \ottsym{:}  \ottnt{A}  \ottsym{/}  \ottkw{param} \, \ottnt{R} \, \ottnt{R_{{\mathrm{0}}}}}%
-\ottpremise{\Gamma  \ottsym{;}   \widetilde { \Gamma }   \vDash  \ottnt{a'_{{\mathrm{1}}}}  \equiv  \ottnt{a'_{{\mathrm{2}}}}  \ottsym{:}  \ottnt{A'}  \ottsym{/}  \ottkw{param} \, \ottnt{R'} \, \ottnt{R_{{\mathrm{0}}}}}%
+\ottpremise{\Gamma  \ottsym{;}   \widetilde { \Gamma }   \vDash  \ottnt{a_{{\mathrm{1}}}}  \equiv  \ottnt{a_{{\mathrm{2}}}}  \ottsym{:}  \ottnt{A}  \ottsym{/}  \ottnt{R}}%
+\ottpremise{\Gamma  \ottsym{;}   \widetilde { \Gamma }   \vDash  \ottnt{a'_{{\mathrm{1}}}}  \equiv  \ottnt{a'_{{\mathrm{2}}}}  \ottsym{:}  \ottnt{A'}  \ottsym{/}  \ottnt{R'}}%
 }{
 \Gamma  \ottsym{;}  \Delta  \vDash  \ottnt{B_{{\mathrm{1}}}}  \lbrace  \bullet  \ottsym{/}  \ottmv{c}  \rbrace  \equiv  \ottnt{B_{{\mathrm{2}}}}  \lbrace  \bullet  \ottsym{/}  \ottmv{c}  \rbrace  \ottsym{:}   \star   \ottsym{/}  \ottnt{R_{{\mathrm{0}}}}}{%
 {\ottdrulename{E\_CPiSnd}}{}%
@@ -2235,14 +2438,15 @@
 
 
 \newcommand{\ottdruleEXXPatCong}[1]{\ottdrule[#1]{%
-\ottpremise{\Gamma  \ottsym{;}  \Delta  \vDash  \ottnt{a}  \equiv  \ottnt{a'}  \ottsym{:}  \ottnt{A}  \ottsym{/}  \ottnt{R}}%
-\ottpremise{\Gamma  \vDash  \ottmv{F}  \ottsym{:}  \ottnt{A_{{\mathrm{1}}}}}%
+\ottpremise{\Gamma  \ottsym{;}  \Delta  \vDash  \ottnt{a}  \equiv  \ottnt{a'}  \ottsym{:}  \ottnt{A}  \ottsym{/}  \ottkw{Nom}}%
 \ottpremise{\Gamma  \ottsym{;}  \Delta  \vDash  \ottnt{b_{{\mathrm{1}}}}  \equiv  \ottnt{b'_{{\mathrm{1}}}}  \ottsym{:}  \ottnt{B}  \ottsym{/}  \ottnt{R_{{\mathrm{0}}}}}%
 \ottpremise{\Gamma  \ottsym{;}  \Delta  \vDash  \ottnt{b_{{\mathrm{2}}}}  \equiv  \ottnt{b'_{{\mathrm{2}}}}  \ottsym{:}  \ottnt{C}  \ottsym{/}  \ottnt{R_{{\mathrm{0}}}}}%
-\ottpremise{ \Gamma  \vDash \mathsf{case}_{ \ottnt{R} } \hspace{2pt}  \ottnt{a}  :  \ottnt{A}  \hspace{2pt} \mathsf{of} \hspace{2pt}  \ottmv{F}  :  \ottnt{A_{{\mathrm{1}}}}  \Rightarrow  \ottnt{B}  \ | \,  \ottnt{C} }%
-\ottpremise{ \Gamma  \vDash \mathsf{case}_{ \ottnt{R} } \hspace{2pt}  \ottnt{a'}  :  \ottnt{A}  \hspace{2pt} \mathsf{of} \hspace{2pt}  \ottmv{F}  :  \ottnt{A_{{\mathrm{1}}}}  \Rightarrow  \ottnt{B}  \ | \,  \ottnt{C} }%
+\ottpremise{ \Gamma  \vDash \mathsf{case} \hspace{2pt}  \ottnt{a}  :  \ottnt{A}  \hspace{2pt} \mathsf{of} \hspace{2pt}  \ottmv{F}  :  \ottnt{A_{{\mathrm{1}}}}  \Rightarrow  \ottnt{B}  \ | \,  \ottnt{C} }%
+\ottpremise{ \Gamma  \vDash \mathsf{case} \hspace{2pt}  \ottnt{a'}  :  \ottnt{A}  \hspace{2pt} \mathsf{of} \hspace{2pt}  \ottmv{F}  :  \ottnt{A_{{\mathrm{1}}}}  \Rightarrow  \ottnt{B}  \ | \,  \ottnt{C} }%
+\ottpremise{\ottkw{Sat} \, \ottmv{F} \, \overline{\upsilon}}%
+\ottpremise{\Gamma  \vDash  \ottmv{F}  \ottsym{:}  \ottnt{A_{{\mathrm{1}}}}}%
 }{
-\Gamma  \ottsym{;}  \Delta  \vDash   \mathsf{case}_ \ottnt{R}  \hspace{3pt}  \ottnt{a}  \hspace{3pt} \mathsf{of} \hspace{3pt}  \ottmv{F}  \rightarrow  \ottnt{b_{{\mathrm{1}}}}  \| \_ \rightarrow  \ottnt{b_{{\mathrm{2}}}}   \equiv   \mathsf{case}_ \ottnt{R}  \hspace{3pt}  \ottnt{a'}  \hspace{3pt} \mathsf{of} \hspace{3pt}  \ottmv{F}  \rightarrow  \ottnt{b'_{{\mathrm{1}}}}  \| \_ \rightarrow  \ottnt{b'_{{\mathrm{2}}}}   \ottsym{:}  \ottnt{C}  \ottsym{/}  \ottnt{R_{{\mathrm{0}}}}}{%
+\Gamma  \ottsym{;}  \Delta  \vDash   \mathsf{case} \hspace{3pt}  \ottnt{a}  \hspace{3pt} \mathsf{of} \hspace{3pt}  \ottmv{F} \overline{\upsilon}  \rightarrow  \ottnt{b_{{\mathrm{1}}}}  \| \_ \rightarrow  \ottnt{b_{{\mathrm{2}}}}   \equiv   \mathsf{case} \hspace{3pt}  \ottnt{a'}  \hspace{3pt} \mathsf{of} \hspace{3pt}  \ottmv{F} \overline{\upsilon}  \rightarrow  \ottnt{b'_{{\mathrm{1}}}}  \| \_ \rightarrow  \ottnt{b'_{{\mathrm{2}}}}   \ottsym{:}  \ottnt{C}  \ottsym{/}  \ottnt{R_{{\mathrm{0}}}}}{%
 {\ottdrulename{E\_PatCong}}{}%
 }}
 
@@ -2383,7 +2587,7 @@
 \ottpremise{\varnothing  \vDash  \ottnt{A}  \ottsym{:}   \star }%
 \ottpremise{\ottmv{F} \, \not\in \, \mathsf{dom} \, \Sigma}%
 }{
-\vDash   \Sigma  \cup \{ \ottmv{F}  :   _ \ottnt{Rs}  \,  \ottnt{A}  \} }{%
+\vDash   \Sigma  \cup \{ \ottmv{F}  :   _ \ottnt{Rs}  \  \ottnt{A}  \} }{%
 {\ottdrulename{Sig\_ConsConst}}{}%
 }}
 
@@ -2394,9 +2598,10 @@
 \ottpremise{\varnothing  \vDash  \ottnt{A}  \ottsym{:}   \star }%
 \ottpremise{ \Omega  ;  \Gamma   \vDash   \ottnt{p}  :_ \ottmv{F}   \ottnt{B}  \Rightarrow  \ottnt{A} }%
 \ottpremise{\Gamma  \vDash  \ottnt{a}  \ottsym{:}  \ottnt{B}}%
+\ottpremise{\Delta  \ottsym{\#}  \mathsf{fv}\! \, \ottnt{a}}%
 \ottpremise{ \Omega  \vDash  \ottnt{a}  :  \ottnt{R} }%
 }{
-\vDash   \Sigma  \cup \{ \ottmv{F}  :   _ \ottkw{range} \, \Omega  \,  \ottnt{p}  \sim_ \ottnt{R}   \ottnt{a}  :  \ottnt{A}  \} }{%
+\vDash   \Sigma  \cup \{ \ottmv{F}  :   _ \ottkw{range} \, \Omega  \  \ottnt{p}  \sim_{ \ottnt{R} }  \ottnt{a}  :  \ottnt{A}  \} }{%
 {\ottdrulename{Sig\_ConsAx}}{}%
 }}
 
@@ -2445,7 +2650,7 @@
 \ottpremise{\Sigma_{{\mathrm{1}}}  \Leftarrow  \Sigma_{{\mathrm{2}}}}%
 \ottpremise{\ottnt{Rs_{{\mathrm{1}}}}  \Leftarrow  \ottnt{Rs_{{\mathrm{2}}}}}%
 }{
- \Sigma_{{\mathrm{1}}}  \cup \{ \ottmv{F}  :   _ \ottnt{Rs_{{\mathrm{1}}}}  \,  \ottnt{A}  \}   \Leftarrow   \Sigma_{{\mathrm{2}}}  \cup \{ \ottmv{F}  :   _ \ottnt{Rs_{{\mathrm{2}}}}  \,  \ottnt{p}  \sim_ \ottnt{R}   \ottnt{a}  :  \ottnt{A}  \} }{%
+ \Sigma_{{\mathrm{1}}}  \cup \{ \ottmv{F}  :   _ \ottnt{Rs_{{\mathrm{1}}}}  \  \ottnt{A}  \}   \Leftarrow   \Sigma_{{\mathrm{2}}}  \cup \{ \ottmv{F}  :   _ \ottnt{Rs_{{\mathrm{2}}}}  \  \ottnt{p}  \sim_{ \ottnt{R} }  \ottnt{a}  :  \ottnt{A}  \} }{%
 {\ottdrulename{S\_Hide}}{}%
 }}
 
@@ -2454,7 +2659,7 @@
 \ottpremise{\Sigma_{{\mathrm{1}}}  \Leftarrow  \Sigma_{{\mathrm{2}}}}%
 \ottpremise{\ottnt{Rs_{{\mathrm{1}}}}  \Leftarrow  \ottnt{Rs_{{\mathrm{2}}}}}%
 }{
- \Sigma_{{\mathrm{1}}}  \cup \{ \ottmv{F}  :   _ \ottnt{Rs_{{\mathrm{1}}}}  \,  \ottnt{A}  \}   \Leftarrow   \Sigma_{{\mathrm{2}}}  \cup \{ \ottmv{F}  :   _ \ottnt{Rs_{{\mathrm{2}}}}  \,  \ottnt{A}  \} }{%
+ \Sigma_{{\mathrm{1}}}  \cup \{ \ottmv{F}  :   _ \ottnt{Rs_{{\mathrm{1}}}}  \  \ottnt{A}  \}   \Leftarrow   \Sigma_{{\mathrm{2}}}  \cup \{ \ottmv{F}  :   _ \ottnt{Rs_{{\mathrm{2}}}}  \  \ottnt{A}  \} }{%
 {\ottdrulename{S\_WeakenConst}}{}%
 }}
 
@@ -2463,7 +2668,7 @@
 \ottpremise{\Sigma_{{\mathrm{1}}}  \Leftarrow  \Sigma_{{\mathrm{2}}}}%
 \ottpremise{\ottnt{Rs_{{\mathrm{1}}}}  \Leftarrow  \ottnt{Rs_{{\mathrm{2}}}}}%
 }{
- \Sigma_{{\mathrm{1}}}  \cup \{ \ottmv{F}  :   _ \ottnt{Rs_{{\mathrm{1}}}}  \,  \ottnt{p'}  \sim_ \ottnt{R}   \ottnt{a}  :  \ottnt{A}  \}   \Leftarrow   \Sigma_{{\mathrm{2}}}  \cup \{ \ottmv{F}  :   _ \ottnt{Rs_{{\mathrm{2}}}}  \,  \ottnt{p}  \sim_ \ottnt{R}   \ottnt{a}  :  \ottnt{A}  \} }{%
+ \Sigma_{{\mathrm{1}}}  \cup \{ \ottmv{F}  :   _ \ottnt{Rs_{{\mathrm{1}}}}  \  \ottnt{p'}  \sim_{ \ottnt{R} }  \ottnt{a}  :  \ottnt{A}  \}   \Leftarrow   \Sigma_{{\mathrm{2}}}  \cup \{ \ottmv{F}  :   _ \ottnt{Rs_{{\mathrm{2}}}}  \  \ottnt{p}  \sim_{ \ottnt{R} }  \ottnt{a}  :  \ottnt{A}  \} }{%
 {\ottdrulename{S\_WeakenAxiom}}{}%
 }}
 
@@ -2494,6 +2699,335 @@
 
 \newcommand{\ottdefnsJhiding}{
 \ottdefnRoleWeaken{}\ottdefnSigWeaken{}}
+
+% defns JSrc
+%% defn SrcTyping
+\newcommand{\ottdruleSXXStar}[1]{\ottdrule[#1]{%
+\ottpremise{\vDash  \Gamma}%
+}{
+\Gamma  \vDash_{\mathsf{src} }   \star   \ottsym{:}   \star }{%
+{\ottdrulename{S\_Star}}{}%
+}}
+
+
+\newcommand{\ottdruleSXXVar}[1]{\ottdrule[#1]{%
+\ottpremise{\vDash  \Gamma}%
+\ottpremise{\ottmv{x}  \ottsym{:}  \ottnt{A} \, \in \, \Gamma}%
+}{
+\Gamma  \vDash_{\mathsf{src} }  \ottmv{x}  \ottsym{:}  \ottnt{A}}{%
+{\ottdrulename{S\_Var}}{}%
+}}
+
+
+\newcommand{\ottdruleSXXPi}[1]{\ottdrule[#1]{%
+\ottpremise{\Gamma  \vDash_{\mathsf{src} }  \ottnt{A}  \ottsym{:}   \star }%
+\ottpremise{\Gamma  \vDash_{\mathsf{src} }  \ottnt{A}  \leadsto  \ottnt{A'}  \ottsym{:}   \star }%
+\ottpremise{\Gamma  \ottsym{,}  \ottmv{x}  \ottsym{:}  \ottnt{A'}  \vDash_{\mathsf{src} }  \ottnt{B}  \ottsym{:}   \star }%
+}{
+\Gamma  \vDash_{\mathsf{src} }  \ottsym{(}   \mathrm{\Pi}^ \rho \ottmv{x} \!:\! \ottnt{A} \to \ottnt{B}   \ottsym{)}  \ottsym{:}   \star }{%
+{\ottdrulename{S\_Pi}}{}%
+}}
+
+
+\newcommand{\ottdruleSXXAbs}[1]{\ottdrule[#1]{%
+\ottpremise{\Gamma  \ottsym{,}  \ottmv{x}  \ottsym{:}  \ottnt{A}  \vDash_{\mathsf{src} }  \ottnt{a}  \ottsym{:}  \ottnt{B}}%
+}{
+\Gamma  \vDash_{\mathsf{src} }   \lambda  \ottmv{x} . \ottnt{a}   \ottsym{:}  \ottsym{(}   \mathrm{\Pi}^ \ottsym{+} \ottmv{x} \!:\! \ottnt{A} \to \ottnt{B}   \ottsym{)}}{%
+{\ottdrulename{S\_Abs}}{}%
+}}
+
+
+\newcommand{\ottdruleSXXIAbs}[1]{\ottdrule[#1]{%
+\ottpremise{\Gamma  \ottsym{,}  \ottmv{x}  \ottsym{:}  \ottnt{A}  \vDash_{\mathsf{src} }  \ottnt{a}  \ottsym{:}  \ottnt{B}}%
+}{
+\Gamma  \vDash_{\mathsf{src} }  \ottnt{a}  \ottsym{:}  \ottsym{(}   \mathrm{\Pi}^ \ottsym{-} \ottmv{x} \!:\! \ottnt{A} \to \ottnt{B}   \ottsym{)}}{%
+{\ottdrulename{S\_IAbs}}{}%
+}}
+
+
+\newcommand{\ottdruleSXXConv}[1]{\ottdrule[#1]{%
+\ottpremise{\Gamma  \vDash_{\mathsf{src} }  \ottnt{a}  \ottsym{:}  \ottnt{A}}%
+\ottpremise{\Gamma  \ottsym{;}   \widetilde { \Gamma }   \vDash  \ottnt{A}  \equiv  \ottnt{B}  \ottsym{:}   \star   \ottsym{/}  \ottkw{Nom}}%
+}{
+\Gamma  \vDash_{\mathsf{src} }  \ottnt{a}  \ottsym{:}  \ottnt{B}}{%
+{\ottdrulename{S\_Conv}}{}%
+}}
+
+
+\newcommand{\ottdruleSXXCoerce}[1]{\ottdrule[#1]{%
+\ottpremise{\Gamma  \vDash_{\mathsf{src} }  \ottnt{a}  \ottsym{:}  \ottnt{A}}%
+\ottpremise{\Gamma  \ottsym{;}   \widetilde { \Gamma }   \vDash  \ottnt{A}  \equiv  \ottnt{B}  \ottsym{:}   \star   \ottsym{/}  \ottkw{Rep}}%
+}{
+\Gamma  \vDash_{\mathsf{src} }  \ottkw{coerce} \, \ottnt{a}  \ottsym{:}  \ottnt{B}}{%
+{\ottdrulename{S\_Coerce}}{}%
+}}
+
+
+\newcommand{\ottdruleSXXApp}[1]{\ottdrule[#1]{%
+\ottpremise{\Gamma  \vDash_{\mathsf{src} }  \ottnt{b}  \ottsym{:}   \mathrm{\Pi}^ \ottsym{+} \ottmv{x} \!:\! \ottnt{A} \to \ottnt{B} }%
+\ottpremise{\Gamma  \vDash_{\mathsf{src} }  \ottnt{a}  \leadsto  \ottnt{a'}  \ottsym{:}  \ottnt{A}}%
+}{
+\Gamma  \vDash_{\mathsf{src} }   \ottnt{b} \  \ottnt{a}   \ottsym{:}  \ottnt{B}  \lbrace  \ottnt{a'}  \ottsym{/}  \ottmv{x}  \rbrace}{%
+{\ottdrulename{S\_App}}{}%
+}}
+
+
+\newcommand{\ottdruleSXXIApp}[1]{\ottdrule[#1]{%
+\ottpremise{\Gamma  \vDash_{\mathsf{src} }  \ottnt{b}  \ottsym{:}   \mathrm{\Pi}^ \ottsym{-} \ottmv{x} \!:\! \ottnt{A} \to \ottnt{B} }%
+\ottpremise{\Gamma  \vDash  \ottnt{a'}  \ottsym{:}  \ottnt{A}}%
+}{
+\Gamma  \vDash_{\mathsf{src} }  \ottnt{b}  \ottsym{:}  \ottnt{B}  \lbrace  \ottnt{a'}  \ottsym{/}  \ottmv{x}  \rbrace}{%
+{\ottdrulename{S\_IApp}}{}%
+}}
+
+
+\newcommand{\ottdruleSXXCPi}[1]{\ottdrule[#1]{%
+\ottpremise{\Gamma  \vDash_{\mathsf{src} }  \phi  \leadsto  \phi' \, \ \mathsf{ok}}%
+\ottpremise{\Gamma  \ottsym{,}  \ottmv{c}  \ottsym{:}  \phi'  \vDash_{\mathsf{src} }  \ottnt{B}  \ottsym{:}   \star }%
+}{
+\Gamma  \vDash_{\mathsf{src} }   \forall \ottmv{c} \!:\! \phi . \ottnt{B}   \ottsym{:}   \star }{%
+{\ottdrulename{S\_CPi}}{}%
+}}
+
+
+\newcommand{\ottdruleSXXCAbs}[1]{\ottdrule[#1]{%
+\ottpremise{\Gamma  \ottsym{,}  \ottmv{c}  \ottsym{:}  \phi'  \vDash_{\mathsf{src} }  \ottnt{a}  \ottsym{:}  \ottnt{B}}%
+}{
+\Gamma  \vDash_{\mathsf{src} }  \ottnt{a}  \ottsym{:}   \forall \ottmv{c} \!:\! \phi . \ottnt{B} }{%
+{\ottdrulename{S\_CAbs}}{}%
+}}
+
+
+\newcommand{\ottdruleSXXCApp}[1]{\ottdrule[#1]{%
+\ottpremise{\Gamma  \vDash_{\mathsf{src} }  \ottnt{a_{{\mathrm{1}}}}  \ottsym{:}   \forall \ottmv{c} \!:\! \ottsym{(}   \ottnt{a}   \sim _{ \ottnt{R} }  \ottnt{b}  :  \ottnt{A}   \ottsym{)} . \ottnt{B_{{\mathrm{1}}}} }%
+\ottpremise{\Gamma  \ottsym{;}   \widetilde { \Gamma }   \vDash  \ottnt{a}  \equiv  \ottnt{b}  \ottsym{:}  \ottnt{A}  \ottsym{/}  \ottnt{R}}%
+}{
+\Gamma  \vDash_{\mathsf{src} }  \ottnt{a_{{\mathrm{1}}}}  \ottsym{:}  \ottnt{B_{{\mathrm{1}}}}  \lbrace  \bullet  \ottsym{/}  \ottmv{c}  \rbrace}{%
+{\ottdrulename{S\_CApp}}{}%
+}}
+
+
+\newcommand{\ottdruleSXXConst}[1]{\ottdrule[#1]{%
+\ottpremise{\vDash  \Gamma}%
+\ottpremise{\ottmv{F}  \ottsym{:}   _ \ottnt{Rs}  \  \ottnt{A}  \, \in \,  \Sigma_0 }%
+}{
+\Gamma  \vDash_{\mathsf{src} }  \ottmv{F}  \ottsym{:}  \ottnt{A}}{%
+{\ottdrulename{S\_Const}}{}%
+}}
+
+
+\newcommand{\ottdruleSXXFam}[1]{\ottdrule[#1]{%
+\ottpremise{\vDash  \Gamma}%
+}{
+\Gamma  \vDash_{\mathsf{src} }  \ottmv{F}  \ottsym{:}  \ottnt{A}}{%
+{\ottdrulename{S\_Fam}}{}%
+}}
+
+
+\newcommand{\ottdruleSXXCase}[1]{\ottdrule[#1]{%
+\ottpremise{\Gamma  \vDash_{\mathsf{src} }  \ottnt{a}  \ottsym{:}  \ottnt{A}}%
+\ottpremise{\Gamma  \vDash_{\mathsf{src} }  \ottnt{b'_{{\mathrm{1}}}}  \ottsym{:}  \ottnt{B}}%
+\ottpremise{\Gamma  \vDash_{\mathsf{src} }  \ottnt{b'_{{\mathrm{2}}}}  \ottsym{:}  \ottnt{C}}%
+}{
+\Gamma  \vDash_{\mathsf{src} }   \mathsf{case} \hspace{3pt}  \ottnt{a}  \hspace{3pt} \mathsf{of} \hspace{3pt}  \ottmv{F} \overline{\upsilon}  \rightarrow  \ottnt{b_{{\mathrm{1}}}}  \| \_ \rightarrow  \ottnt{b_{{\mathrm{2}}}}   \ottsym{:}  \ottnt{C}}{%
+{\ottdrulename{S\_Case}}{}%
+}}
+
+\newcommand{\ottdefnSrcTyping}[1]{\begin{ottdefnblock}[#1]{$\Gamma  \vDash_{\mathsf{src} }  \ottnt{a}  \ottsym{:}  \ottnt{A}$}{\ottcom{source typing}}
+\ottusedrule{\ottdruleSXXStar{}}
+\ottusedrule{\ottdruleSXXVar{}}
+\ottusedrule{\ottdruleSXXPi{}}
+\ottusedrule{\ottdruleSXXAbs{}}
+\ottusedrule{\ottdruleSXXIAbs{}}
+\ottusedrule{\ottdruleSXXConv{}}
+\ottusedrule{\ottdruleSXXCoerce{}}
+\ottusedrule{\ottdruleSXXApp{}}
+\ottusedrule{\ottdruleSXXIApp{}}
+\ottusedrule{\ottdruleSXXCPi{}}
+\ottusedrule{\ottdruleSXXCAbs{}}
+\ottusedrule{\ottdruleSXXCApp{}}
+\ottusedrule{\ottdruleSXXConst{}}
+\ottusedrule{\ottdruleSXXFam{}}
+\ottusedrule{\ottdruleSXXCase{}}
+\end{ottdefnblock}}
+
+%% defn SrcTrans
+\newcommand{\ottdruleSTXXStar}[1]{\ottdrule[#1]{%
+\ottpremise{\vDash  \Gamma}%
+}{
+\Gamma  \vDash_{\mathsf{src} }   \star   \leadsto   \star   \ottsym{:}   \star }{%
+{\ottdrulename{ST\_Star}}{}%
+}}
+
+
+\newcommand{\ottdruleSTXXVar}[1]{\ottdrule[#1]{%
+\ottpremise{\vDash  \Gamma}%
+\ottpremise{\ottmv{x}  \ottsym{:}  \ottnt{A} \, \in \, \Gamma}%
+}{
+\Gamma  \vDash_{\mathsf{src} }  \ottmv{x}  \leadsto  \ottmv{x}  \ottsym{:}  \ottnt{A}}{%
+{\ottdrulename{ST\_Var}}{}%
+}}
+
+
+\newcommand{\ottdruleSTXXPi}[1]{\ottdrule[#1]{%
+\ottpremise{\Gamma  \vDash_{\mathsf{src} }  \ottnt{A}  \leadsto  \ottnt{A'}  \ottsym{:}   \star }%
+\ottpremise{\Gamma  \ottsym{,}  \ottmv{x}  \ottsym{:}  \ottnt{A'}  \vDash_{\mathsf{src} }  \ottnt{B}  \leadsto  \ottnt{B'}  \ottsym{:}   \star }%
+}{
+\Gamma  \vDash_{\mathsf{src} }  \ottsym{(}   \mathrm{\Pi}^ \rho \ottmv{x} \!:\! \ottnt{A} \to \ottnt{B}   \ottsym{)}  \leadsto  \ottsym{(}   \mathrm{\Pi}^ \rho \ottmv{x} \!:\! \ottnt{A'} \to \ottnt{B'}   \ottsym{)}  \ottsym{:}   \star }{%
+{\ottdrulename{ST\_Pi}}{}%
+}}
+
+
+\newcommand{\ottdruleSTXXAbs}[1]{\ottdrule[#1]{%
+\ottpremise{\Gamma  \ottsym{,}  \ottmv{x}  \ottsym{:}  \ottnt{A}  \vDash_{\mathsf{src} }  \ottnt{a}  \leadsto  \ottnt{a'}  \ottsym{:}  \ottnt{B}}%
+}{
+\Gamma  \vDash_{\mathsf{src} }   \lambda  \ottmv{x} . \ottnt{a}   \leadsto   \mathrm{\lambda}^{ \ottsym{+} } \ottmv{x} . \ottnt{a'}   \ottsym{:}  \ottsym{(}   \mathrm{\Pi}^ \ottsym{+} \ottmv{x} \!:\! \ottnt{A} \to \ottnt{B}   \ottsym{)}}{%
+{\ottdrulename{ST\_Abs}}{}%
+}}
+
+
+\newcommand{\ottdruleSTXXIAbs}[1]{\ottdrule[#1]{%
+\ottpremise{\Gamma  \ottsym{,}  \ottmv{x}  \ottsym{:}  \ottnt{A}  \vDash_{\mathsf{src} }  \ottnt{a}  \leadsto  \ottnt{a'}  \ottsym{:}  \ottnt{B}}%
+\ottpremise{\ottmv{x} \, \not\in \, \mathsf{fv}\! \, \ottnt{a}}%
+}{
+\Gamma  \vDash_{\mathsf{src} }  \ottnt{a}  \leadsto   \mathrm{\lambda}^{ \ottsym{-} } \ottmv{x} . \ottnt{a}   \ottsym{:}  \ottsym{(}   \mathrm{\Pi}^ \ottsym{-} \ottmv{x} \!:\! \ottnt{A} \to \ottnt{B}   \ottsym{)}}{%
+{\ottdrulename{ST\_IAbs}}{}%
+}}
+
+
+\newcommand{\ottdruleSTXXApp}[1]{\ottdrule[#1]{%
+\ottpremise{\Gamma  \vDash_{\mathsf{src} }  \ottnt{b}  \leadsto  \ottnt{b'}  \ottsym{:}   \mathrm{\Pi}^ \ottsym{+} \ottmv{x} \!:\! \ottnt{A} \to \ottnt{B} }%
+\ottpremise{\Gamma  \vDash_{\mathsf{src} }  \ottnt{a}  \leadsto  \ottnt{a'}  \ottsym{:}  \ottnt{A}}%
+}{
+\Gamma  \vDash_{\mathsf{src} }   \ottnt{b} \  \ottnt{a}   \leadsto   \ottnt{b'} \  \ottnt{a'} ^{ \ottsym{+} }   \ottsym{:}  \ottnt{B}  \lbrace  \ottnt{a'}  \ottsym{/}  \ottmv{x}  \rbrace}{%
+{\ottdrulename{ST\_App}}{}%
+}}
+
+
+\newcommand{\ottdruleSTXXTApp}[1]{\ottdrule[#1]{%
+\ottpremise{\Gamma  \vDash_{\mathsf{src} }  \ottnt{b}  \leadsto  \ottnt{b'}  \ottsym{:}   \mathrm{\Pi}^ \ottsym{+} \ottmv{x} \!:\! \ottnt{A} \to \ottnt{B} }%
+\ottpremise{\Gamma  \vDash_{\mathsf{src} }  \ottnt{a}  \leadsto  \ottnt{a'}  \ottsym{:}  \ottnt{A}}%
+\ottpremise{ \mathsf{RolePath} \  \ottnt{b}  =  \ottmv{F}  @  \ottnt{R}  \ottsym{,}  \ottnt{Rs} }%
+}{
+\Gamma  \vDash_{\mathsf{src} }   \ottnt{b} \  \ottnt{a}   \leadsto   \ottnt{b'} \  \ottnt{a'} ^{ \ottnt{R} }   \ottsym{:}  \ottnt{B}  \lbrace  \ottnt{a}  \ottsym{/}  \ottmv{x}  \rbrace}{%
+{\ottdrulename{ST\_TApp}}{}%
+}}
+
+
+\newcommand{\ottdruleSTXXIApp}[1]{\ottdrule[#1]{%
+\ottpremise{\Gamma  \vDash_{\mathsf{src} }  \ottnt{b}  \leadsto  \ottnt{b'}  \ottsym{:}   \mathrm{\Pi}^ \ottsym{-} \ottmv{x} \!:\! \ottnt{A} \to \ottnt{B} }%
+\ottpremise{\Gamma  \vDash  \ottnt{a}  \ottsym{:}  \ottnt{A}}%
+}{
+\Gamma  \vDash_{\mathsf{src} }  \ottnt{b}  \leadsto   \ottnt{b'} \  \Box ^{ \ottsym{-} }   \ottsym{:}  \ottnt{B}  \lbrace  \ottnt{a}  \ottsym{/}  \ottmv{x}  \rbrace}{%
+{\ottdrulename{ST\_IApp}}{}%
+}}
+
+
+\newcommand{\ottdruleSTXXConv}[1]{\ottdrule[#1]{%
+\ottpremise{\Gamma  \vDash_{\mathsf{src} }  \ottnt{a}  \leadsto  \ottnt{a'}  \ottsym{:}  \ottnt{A}}%
+\ottpremise{\Gamma  \ottsym{;}   \widetilde { \Gamma }   \vDash  \ottnt{A}  \equiv  \ottnt{B}  \ottsym{:}   \star   \ottsym{/}  \ottkw{Nom}}%
+}{
+\Gamma  \vDash_{\mathsf{src} }  \ottnt{a}  \leadsto  \ottnt{a'}  \ottsym{:}  \ottnt{B}}{%
+{\ottdrulename{ST\_Conv}}{}%
+}}
+
+
+\newcommand{\ottdruleSTXXCoerce}[1]{\ottdrule[#1]{%
+\ottpremise{\Gamma  \vDash_{\mathsf{src} }  \ottnt{a}  \leadsto  \ottnt{a'}  \ottsym{:}  \ottnt{A}}%
+\ottpremise{\Gamma  \ottsym{;}   \widetilde { \Gamma }   \vDash  \ottnt{A}  \equiv  \ottnt{B}  \ottsym{:}   \star   \ottsym{/}  \ottkw{Rep}}%
+}{
+\Gamma  \vDash_{\mathsf{src} }  \ottkw{coerce} \, \ottnt{a}  \leadsto  \ottnt{a'}  \ottsym{:}  \ottnt{B}}{%
+{\ottdrulename{ST\_Coerce}}{}%
+}}
+
+
+\newcommand{\ottdruleSTXXCPi}[1]{\ottdrule[#1]{%
+\ottpremise{\Gamma  \vDash_{\mathsf{src} }  \phi  \leadsto  \phi' \, \ \mathsf{ok}}%
+\ottpremise{\Gamma  \ottsym{,}  \ottmv{c}  \ottsym{:}  \phi'  \vDash_{\mathsf{src} }  \ottnt{B}  \leadsto  \ottnt{B'}  \ottsym{:}   \star }%
+}{
+\Gamma  \vDash_{\mathsf{src} }   \forall \ottmv{c} \!:\! \phi . \ottnt{B}   \leadsto   \forall \ottmv{c} \!:\! \phi . \ottnt{B'}   \ottsym{:}   \star }{%
+{\ottdrulename{ST\_CPi}}{}%
+}}
+
+
+\newcommand{\ottdruleSTXXCAbs}[1]{\ottdrule[#1]{%
+\ottpremise{\Gamma  \ottsym{,}  \ottmv{c}  \ottsym{:}  \phi  \vDash_{\mathsf{src} }  \ottnt{a}  \leadsto  \ottnt{a'}  \ottsym{:}  \ottnt{B}}%
+}{
+\Gamma  \vDash_{\mathsf{src} }  \ottnt{a}  \leadsto   \mathrm{\Lambda} \ottmv{c} . \ottnt{a'}   \ottsym{:}   \forall \ottmv{c} \!:\! \phi . \ottnt{B} }{%
+{\ottdrulename{ST\_CAbs}}{}%
+}}
+
+
+\newcommand{\ottdruleSTXXCApp}[1]{\ottdrule[#1]{%
+\ottpremise{\Gamma  \vDash_{\mathsf{src} }  \ottnt{a_{{\mathrm{1}}}}  \leadsto  \ottnt{a'_{{\mathrm{1}}}}  \ottsym{:}   \forall \ottmv{c} \!:\! \ottsym{(}   \ottnt{a}   \sim _{ \ottnt{R} }  \ottnt{b}  :  \ottnt{A}   \ottsym{)} . \ottnt{B_{{\mathrm{1}}}} }%
+\ottpremise{\Gamma  \ottsym{;}   \widetilde { \Gamma }   \vDash  \ottnt{a}  \equiv  \ottnt{b}  \ottsym{:}  \ottnt{A}  \ottsym{/}  \ottnt{R}}%
+}{
+\Gamma  \vDash_{\mathsf{src} }  \ottnt{a_{{\mathrm{1}}}}  \leadsto  \ottnt{a'_{{\mathrm{1}}}}  \ottsym{[}  \bullet  \ottsym{]}  \ottsym{:}  \ottnt{B_{{\mathrm{1}}}}  \lbrace  \bullet  \ottsym{/}  \ottmv{c}  \rbrace}{%
+{\ottdrulename{ST\_CApp}}{}%
+}}
+
+
+\newcommand{\ottdruleSTXXConst}[1]{\ottdrule[#1]{%
+\ottpremise{\vDash  \Gamma}%
+\ottpremise{\ottmv{F}  \ottsym{:}   _ \ottnt{Rs}  \  \ottnt{A}  \, \in \,  \Sigma_0 }%
+}{
+\Gamma  \vDash_{\mathsf{src} }  \ottmv{F}  \leadsto  \ottmv{F}  \ottsym{:}  \ottnt{A}}{%
+{\ottdrulename{ST\_Const}}{}%
+}}
+
+
+\newcommand{\ottdruleSTXXFam}[1]{\ottdrule[#1]{%
+\ottpremise{\vDash  \Gamma}%
+}{
+\Gamma  \vDash_{\mathsf{src} }  \ottmv{F}  \leadsto  \ottmv{F}  \ottsym{:}  \ottnt{A}}{%
+{\ottdrulename{ST\_Fam}}{}%
+}}
+
+
+\newcommand{\ottdruleSTXXCase}[1]{\ottdrule[#1]{%
+\ottpremise{\Gamma  \vDash_{\mathsf{src} }  \ottnt{a}  \leadsto  \ottnt{a'}  \ottsym{:}  \ottnt{A}}%
+\ottpremise{\Gamma  \vDash_{\mathsf{src} }  \ottnt{b_{{\mathrm{1}}}}  \leadsto  \ottnt{b'_{{\mathrm{1}}}}  \ottsym{:}  \ottnt{B}}%
+\ottpremise{\Gamma  \vDash_{\mathsf{src} }  \ottnt{b_{{\mathrm{2}}}}  \leadsto  \ottnt{b'_{{\mathrm{2}}}}  \ottsym{:}  \ottnt{C}}%
+}{
+\Gamma  \vDash_{\mathsf{src} }   \mathsf{case} \hspace{3pt}  \ottnt{a}  \hspace{3pt} \mathsf{of} \hspace{3pt}  \ottmv{F} \overline{\upsilon}  \rightarrow  \ottnt{b_{{\mathrm{1}}}}  \| \_ \rightarrow  \ottnt{b_{{\mathrm{2}}}}   \leadsto   \mathsf{case} \hspace{3pt}  \ottnt{a'}  \hspace{3pt} \mathsf{of} \hspace{3pt}  \ottmv{F} \overline{\upsilon}  \rightarrow  \ottnt{b'_{{\mathrm{1}}}}  \| \_ \rightarrow  \ottnt{b'_{{\mathrm{2}}}}   \ottsym{:}  \ottnt{C}}{%
+{\ottdrulename{ST\_Case}}{}%
+}}
+
+\newcommand{\ottdefnSrcTrans}[1]{\begin{ottdefnblock}[#1]{$\Gamma  \vDash_{\mathsf{src} }  \ottnt{a}  \leadsto  \ottnt{a'}  \ottsym{:}  \ottnt{A}$}{\ottcom{source translation}}
+\ottusedrule{\ottdruleSTXXStar{}}
+\ottusedrule{\ottdruleSTXXVar{}}
+\ottusedrule{\ottdruleSTXXPi{}}
+\ottusedrule{\ottdruleSTXXAbs{}}
+\ottusedrule{\ottdruleSTXXIAbs{}}
+\ottusedrule{\ottdruleSTXXApp{}}
+\ottusedrule{\ottdruleSTXXTApp{}}
+\ottusedrule{\ottdruleSTXXIApp{}}
+\ottusedrule{\ottdruleSTXXConv{}}
+\ottusedrule{\ottdruleSTXXCoerce{}}
+\ottusedrule{\ottdruleSTXXCPi{}}
+\ottusedrule{\ottdruleSTXXCAbs{}}
+\ottusedrule{\ottdruleSTXXCApp{}}
+\ottusedrule{\ottdruleSTXXConst{}}
+\ottusedrule{\ottdruleSTXXFam{}}
+\ottusedrule{\ottdruleSTXXCase{}}
+\end{ottdefnblock}}
+
+%% defn SrcPropWff
+\newcommand{\ottdruleSXXWff}[1]{\ottdrule[#1]{%
+\ottpremise{\Gamma  \vDash_{\mathsf{src} }  \ottnt{a}  \leadsto  \ottnt{a'}  \ottsym{:}  \ottnt{A}}%
+\ottpremise{\Gamma  \vDash_{\mathsf{src} }  \ottnt{b}  \leadsto  \ottnt{b'}  \ottsym{:}  \ottnt{A}}%
+}{
+\Gamma  \vDash_{\mathsf{src} }  \ottsym{(}   \ottnt{a}   \sim _{ \ottkw{Nom} }  \ottnt{b}  :  \ottnt{A}   \ottsym{)}  \leadsto  \ottsym{(}   \ottnt{a'}   \sim _{ \ottkw{Nom} }  \ottnt{b'}  :  \ottnt{A}   \ottsym{)} \, \ \mathsf{ok}}{%
+{\ottdrulename{S\_Wff}}{}%
+}}
+
+\newcommand{\ottdefnSrcPropWff}[1]{\begin{ottdefnblock}[#1]{$\Gamma  \vDash_{\mathsf{src} }  \phi  \leadsto  \phi' \, \ \mathsf{ok}$}{\ottcom{Prop wellformedness}}
+\ottusedrule{\ottdruleSXXWff{}}
+\end{ottdefnblock}}
+
+
+\newcommand{\ottdefnsJSrc}{
+\ottdefnSrcTyping{}\ottdefnSrcTrans{}\ottdefnSrcPropWff{}}
 
 % defns Jann
 %% defn AnnPropWff
@@ -2536,42 +3070,11 @@
 \newcommand{\ottdefnsJred}{
 \ottdefnheadXXreduction{}}
 
-% defns JAlt
-%% defn ATyping
-\newcommand{\ottdruleATypingXXConv}[1]{\ottdrule[#1]{%
-\ottpremise{\Gamma  \vDash  \ottnt{a}  \ottsym{:}  \ottnt{A}}%
-\ottpremise{\Gamma  \ottsym{;}   \widetilde { \Gamma }   \vDash  \ottnt{A}  \equiv  \ottnt{B}  \ottsym{:}   \star   \ottsym{/}  \ottkw{Nom}}%
-\ottpremise{ \suppress{ \Gamma  \vDash  \ottnt{B}  \ottsym{:}   \star  } }%
-}{
-\Gamma  \vDash  \ottnt{a}  \ottsym{:}  \ottnt{B}}{%
-{\ottdrulename{ATyping\_Conv}}{}%
-}}
-
-\newcommand{\ottdefnATyping}[1]{\begin{ottdefnblock}[#1]{$\Gamma  \vDash  \ottnt{a}  \ottsym{:}  \ottnt{A}$}{}
-\ottusedrule{\ottdruleATypingXXConv{}}
-\end{ottdefnblock}}
-
-%% defn ABeta
-\newcommand{\ottdruleABetaXXAxiom}[1]{\ottdrule[#1]{%
-\ottpremise{\ottmv{F}  \ottsym{:}   _ \ottnt{Rs}  \,  \ottnt{p}  \sim_ \ottnt{R_{{\mathrm{1}}}}   \ottnt{b}  :  \ottnt{A}  \, \in \,  \Sigma_0 }%
-\ottpremise{ \mathsf{match} \  \ottnt{a}  \ \mathsf{with} \  \ottnt{p}  \rightarrow  \ottnt{b}   \mathrel{+\!\!\!\!\!\!\rightarrow}   \ottnt{b'} }%
-\ottpremise{ \ottnt{R_{{\mathrm{1}}}}  \leq  \ottnt{R} }%
-}{
-\vDash  \ottnt{a}  \ottsym{>}  \ottnt{b'}  \ottsym{/}  \ottnt{R}}{%
-{\ottdrulename{ABeta\_Axiom}}{}%
-}}
-
-\newcommand{\ottdefnABeta}[1]{\begin{ottdefnblock}[#1]{$\vDash  \ottnt{a}  \ottsym{>}  \ottnt{b}  \ottsym{/}  \ottnt{R}$}{\ottcom{fake rules for the paper}}
-\ottusedrule{\ottdruleABetaXXAxiom{}}
-\end{ottdefnblock}}
-
-
-\newcommand{\ottdefnsJAlt}{
-\ottdefnATyping{}\ottdefnABeta{}}
-
 \newcommand{\ottdefnss}{
 \ottdefnsJSubRole
 \ottdefnsJRolePath
+\ottdefnsJAppsPath
+\ottdefnsJSat
 \ottdefnsJPatCtx
 \ottdefnsJRename
 \ottdefnsJMatchSubst
@@ -2595,9 +3098,9 @@
 \ottdefnsJett
 \ottdefnsJsig
 \ottdefnsJhiding
+\ottdefnsJSrc
 \ottdefnsJann
 \ottdefnsJred
-\ottdefnsJAlt
 }
 
 \newcommand{\ottall}{\ottmetavars\\[0pt]
@@ -2608,7 +3111,7 @@
 \ottall
 
 \begin{verbatim}
-Definition rules:        179 good    0 bad
-Definition rule clauses: 493 good    0 bad
+Definition rules:        224 good    0 bad
+Definition rule clauses: 614 good    0 bad
 \end{verbatim}
 \end{document}

@@ -1162,8 +1162,8 @@ Proof. intros. generalize dependent p. induction H; intros; eauto.
            econstructor. apply tm_tm_agree_sym; auto. contradiction.
          - split. intro. inversion H5.
            apply tm_subpattern_agree_case_contr in H3. contradiction.
-         - split. intro. inversion H7.
-           apply tm_subpattern_agree_case_contr in H5. contradiction.
+         - split. intro. inversion H8.
+           apply tm_subpattern_agree_case_contr in H6. contradiction.
          - assert False.
            eapply tm_subpattern_agree_case_contr; eauto. contradiction.
 Qed.
@@ -1228,27 +1228,38 @@ Proof. intros. apply CasePath_head in H. apply CasePath_head in H0.
 Qed.
 
 Lemma ValuePath_cs_par_ValuePath : forall a F A Rs W a' R, ValuePath a F ->
-                 binds F (Cs A Rs) toplevel -> Par W a a' R -> ValuePath a' F.
+                 binds F (Cs A Rs) toplevel -> Par W a a' R ->
+                 ValuePath a' F /\ tm_tm_agree a a'.
 Proof. intros. generalize dependent a'. induction H; intros; eauto.
         - inversion H1; subst; eauto. axioms_head_same.
         - axioms_head_same.
-        - inversion H2; subst. auto. assert (ValuePath (a_UAbs rho a'0) F).
+        - inversion H2; subst. split; auto.
+          apply tm_tm_agree_refl. eapply ValuePath_Pattern_like_tm; eauto.
+          assert (ValuePath (a_UAbs rho a'0) F).
           apply IHValuePath; auto. subst. inversion H3.
-          econstructor. eapply Par_lc2; eauto. eauto. 
+          split; econstructor. eapply Par_lc2; eauto. eapply IHValuePath; eauto.
+          eapply IHValuePath; eauto. eapply Par_lc1; eauto.
+          eapply Par_lc2; eauto.
           assert (head_const a = head_const a'0).
           { inversion H7. apply tm_tm_agree_head_same.
             eapply pattern_like_tm_par; eauto. }
             pattern_head_same. eapply transitivity. symmetry; eauto.
             auto.
-        - inversion H1; subst; auto. assert (ValuePath (a_UCAbs a'0) F).
-          eauto. inversion H2. pattern_head_same. eapply transitivity.
+        - inversion H1; subst. split; auto.
+          apply tm_tm_agree_refl. eapply ValuePath_Pattern_like_tm; eauto.
+          assert (ValuePath (a_UCAbs a'0) F).
+          eapply IHValuePath; eauto. inversion H2.
+          split; econstructor. eapply IHValuePath; eauto.
+          eapply IHValuePath; eauto.
+          pattern_head_same. eapply transitivity.
           symmetry; eauto. inversion H4. apply tm_tm_agree_head_same.
           eapply pattern_like_tm_par; eauto.
 Qed.
 
 Lemma ValuePath_ax_par_ValuePath_1 : forall a F p b A R1 Rs W a' R,
       ValuePath a F -> binds F (Ax p b A R1 Rs) toplevel ->
-      ~(SubRole R1 R) -> Par W a a' R -> ValuePath a' F /\  ~(SubRole R1 R).
+      ~(SubRole R1 R) -> Par W a a' R -> ValuePath a' F /\  ~(SubRole R1 R)
+       /\ tm_tm_agree a a'.
 Proof. intros. generalize dependent a'. generalize dependent p.
        induction H; intros; eauto.
          - axioms_head_same.
@@ -1256,20 +1267,24 @@ Proof. intros. generalize dependent a'. generalize dependent p.
            split; eauto. axioms_head_same.
            contradiction.
          - inversion H3; subst. 
-           + split; eauto.
+           + split; eauto. split; auto.
+             apply tm_tm_agree_refl. eapply ValuePath_Pattern_like_tm; eauto.
            + assert (ValuePath (a_UAbs rho a'0) F).
              eapply IHValuePath; eauto. inversion H4.
            + pose (P := IHValuePath p H2 a'0 H10). inversion P.
-             split; eauto. econstructor. eapply Par_lc2; eauto. auto.
+             inversion H5. split; eauto. econstructor.
+             eapply Par_lc2; eauto. auto. split; auto. econstructor; auto.
+             eapply Par_lc2; eauto.
            + pattern_head_same. eapply transitivity. symmetry; eauto.
              inversion H8. apply tm_tm_agree_head_same.
              eapply pattern_like_tm_par; eauto. contradiction.
           - inversion H2; subst.
-           + split; eauto.
+           + split; eauto. split; auto.
+             apply tm_tm_agree_refl. eapply ValuePath_Pattern_like_tm; eauto.
            + assert (ValuePath (a_UCAbs a'0) F).
              eapply IHValuePath; eauto. inversion H3.
            + pose (P := IHValuePath p H0 a'0 H5).
-             inversion P. split; auto.
+             inversion P. inversion H4. split; auto.
            + pattern_head_same. eapply transitivity.
              symmetry; eauto. inversion H5. apply tm_tm_agree_head_same.
              eapply pattern_like_tm_par; eauto. contradiction.
@@ -1331,21 +1346,64 @@ Proof. intros. generalize dependent a'. generalize dependent p.
              eapply tm_tm_agree_sym; eauto. auto. contradiction.
 Qed.
 
-Lemma Par_CasePath : forall F a R W a', CasePath R a F -> Par W a a' R ->
-                                        CasePath R a' F.
+Lemma Par_CasePath_agree : forall F a R W a', CasePath R a F -> Par W a a' R ->
+                                        CasePath R a' F /\ tm_tm_agree a a'.
 Proof. intros. generalize dependent a'. induction H; intros.
-       - pose (P := ValuePath_cs_par_ValuePath H H0 H1). eauto.
+       - pose (P := ValuePath_cs_par_ValuePath H H0 H1). inversion P.
+         eauto.
        - pose (P := ValuePath_ax_par_ValuePath_1 H H0 H1 H2).
-         inversion P. eauto.
+         inversion P. inversion H4. eauto.
        - pose (P := ValuePath_ax_par_ValuePath_2 H H0 H1 H2).
          inversion P as [P1 [P2 P3]]. eauto.
 Qed.
 
-Lemma Par_AppsPath : forall F a R W a' n, AppsPath R a F n -> Par W a a' R ->
-                                        AppsPath R a' F n.
-Proof.
-  intros.
-Admitted. (* Par_AppsPath *)
+Lemma Par_CasePath : forall F a R W a', CasePath R a F -> Par W a a' R ->
+                                        CasePath R a' F.
+Proof. intros. eapply Par_CasePath_agree; eauto.
+Qed.
+
+Lemma AppsPath_head : forall R a F n, AppsPath R a F n -> head_const a = a_Fam F.
+Proof. intros. induction H; eauto.
+Qed.
+
+Lemma AppsPath_ValuePath : forall R a F n, AppsPath R a F n -> ValuePath a F.
+Proof. intros. induction H; eauto.
+Qed.
+
+Lemma Par_AppsPath : forall F a W a' n n',
+     AppsPath Nom a F n /\ SatApp F n' ->
+     Par W a a' Nom -> AppsPath Nom a' F n /\ SatApp F n'.
+Proof. intros. generalize dependent a'. inversion H.
+       dependent induction H0; intros.
+       - inversion H2; subst. split; eauto. axioms_head_same.
+       - inversion H3; subst. split; eauto. axioms_head_same. contradiction.
+       - inversion H3; subst. split; eauto. split.
+         econstructor. eapply Par_lc2; eauto. eapply IHAppsPath.
+         split; eauto. all:auto. inversion H8; subst.
+         apply AppsPath_head in H1. inversion H2; subst. pattern_head_tm_agree.
+         rewrite H1 in U1. inversion U1; subst.
+         axioms_head_same. pattern_head_tm_agree. rewrite H1 in U1.
+         inversion U1; subst. axioms_head_same. contradiction.
+       - inversion H3; subst. split; eauto.
+         assert (AppsPath Nom (a_UAbs Irrel a'0) F Apps5). eapply IHAppsPath.
+         split; auto. all: auto. inversion H4. split.
+         econstructor. eapply Par_lc2; eauto. eapply IHAppsPath.
+         split; auto. all:auto. inversion H8; subst.
+         apply AppsPath_head in H1. inversion H2; subst. pattern_head_tm_agree.
+         rewrite H1 in U1. inversion U1; subst.
+         axioms_head_same. pattern_head_tm_agree. rewrite H1 in U1.
+         inversion U1; subst. axioms_head_same. contradiction.
+       - inversion H2; subst. split; eauto.
+         assert (AppsPath Nom (a_UCAbs a'0) F Apps5). eapply IHAppsPath.
+         split; auto. all: auto. inversion H3. split.
+         econstructor. eapply IHAppsPath.
+         split; auto. all:auto. inversion H5; subst.
+         apply AppsPath_head in H0. inversion H1; subst. pattern_head_tm_agree.
+         rewrite H0 in U1. inversion U1; subst.
+         axioms_head_same. pattern_head_tm_agree. rewrite H0 in U1.
+         inversion U1; subst. axioms_head_same. contradiction.
+Qed.
+
 
 Ltac invert_par :=
      try match goal with
@@ -1359,18 +1417,42 @@ Ltac invert_par :=
                               (MatchSubst_match Hz) Hw); inversion Q
                  | [ Hu : ValuePath _ _ |- _ ] => inversion Hu
                      end; fail
+      | [ Hx : AppsPath _ _ _ _ ,
+          Hy : Par _ _ _ _ |- _ ] =>
+               apply AppsPath_ValuePath in Hx;
+               inversion Hy; subst;
+                    match goal with
+                 | [ Hz : MatchSubst _ _ _ _,
+                     Hw : Rename _ _ _ _ _ |- _ ] =>
+                       pose (Q := tm_pattern_agree_rename_inv_2
+                              (MatchSubst_match Hz) Hw); inversion Q
+                 | [ Hu : ValuePath _ _ |- _ ] => inversion Hu
+                     end; fail
            end.
 
 Lemma CasePath_Par : forall F a R W a', Value R a' -> CasePath R a F -> Par W a' a R -> CasePath R a' F.
 Proof. intros. induction H; invert_par.
-       pose (P := Par_CasePath H H1). apply CasePath_head in H0.
-       apply CasePath_head in P. rewrite P in H0. inversion H0; subst; auto.
+       pose (P := Par_CasePath H H1). apply CasePath_head in P.
+       apply CasePath_head in H0. rewrite P in H0. inversion H0; subst; auto.
 Qed.
 
-Lemma AppsPath_Par : forall F a R W a' n, Value R a' -> AppsPath R a F n -> Par W a' a R -> AppsPath R a' F n.
-Admitted.  (* AppsPath_Par *)
 
+Lemma tm_tm_agree_AppsPath : forall R a F n a', AppsPath R a F n ->
+      tm_tm_agree a a' -> AppsPath R a' F n.
+Proof. intros. generalize dependent a'.
+       induction H; intros; eauto.
+       all: try (inversion H0; subst; eauto; fail).
+       all: try (inversion H1; subst; eauto).
+Qed.
 
+Lemma AppsPath_Par : forall F a W a' n, Value Nom a' ->
+                     AppsPath Nom a F n ->
+                     Par W a' a Nom -> AppsPath Nom a' F n.
+Proof. intros. dependent induction H; invert_par.
+       move: (Par_CasePath_agree H H1) => h. inversion h.
+       eapply tm_tm_agree_AppsPath. eauto. apply tm_tm_agree_sym.
+       auto.
+Qed.
 
 Lemma Value_par_Value : forall R v W v', Value R v -> Par W v v' R -> Value R v'.
 Proof. intros. generalize dependent W. generalize dependent v'.
@@ -1735,7 +1817,7 @@ Proof. intros. induction H.
         - inversion IHValuePath. left; eauto. right; eauto.
         - inversion IHValuePath. left; eauto. right; eauto.
 Qed.
-
+ 
 Lemma decide_CasePath : forall W a R, roleing W a R -> (exists F, CasePath R a F) \/
                                      (forall F, ~(CasePath R a F)).
 Proof. intros. induction H.
