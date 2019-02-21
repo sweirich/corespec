@@ -115,12 +115,14 @@ Lemma RolePath_subst : forall F a b Rs x, RolePath a F Rs -> lc_tm b ->
                    RolePath (tm_subst_tm_tm b x a) F Rs.
 Proof. intros. induction H; simpl; eauto.
        econstructor; eauto with lngen lc.
+       econstructor; eauto using tm_subst_tm_tm_lc_tm.
 Qed.
 
 Lemma RolePath_subst_co : forall F a b Rs c, RolePath a F Rs -> lc_co b ->
                    RolePath (co_subst_co_tm b c a) F Rs.
 Proof. intros. induction H; simpl; eauto.
        econstructor; eauto with lngen lc.
+       econstructor; eauto using co_subst_co_tm_lc_tm.       
 Qed.
 
 Lemma subst_tm_roleing : forall W1 x R1 W2 a R b, 

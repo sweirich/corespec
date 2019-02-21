@@ -81,12 +81,12 @@ Proof. intros W a a' R H. induction H; eauto.
           erewrite co_subst_co_tm_intro; eauto.
           replace W with (nil ++ W); auto. eapply subst_co_roleing; eauto.
         - apply toplevel_inversion in H.
-          inversion H as [W1 [G1 [B1 [P1 [P2 [P3 P4]]]]]]. inversion P1; subst.
+          inversion H as [W1 [G1 [D1 [B1 [P1 [P2 [P3 P4]]]]]]]. inversion P1; subst.
           replace W with (nil ++ W ++ nil); auto.
           apply roleing_app_rctx; simpl_env. auto.
           eapply roleing_sub; eauto. simpl. apply app_nil_r.
         - apply toplevel_inversion in H.
-          inversion H as [W1 [G [B [h1 [_ [h2 _]]]]]].
+          inversion H as [W1 [G [D [B [h1 [_ [h2 _]]]]]]].
           apply pat_ctx_rctx in h1. subst.
           replace W with (nil ++ W); eauto.
           destruct nu.
@@ -113,7 +113,7 @@ Proof. intros W a a' R H. induction H; eauto.
             eauto. eauto. intro. intro. eapply new_pattern_fv. eauto.
             apply dom_rev in H6. rewrite rev_involutive in H6. auto.
         - apply toplevel_inversion in H.
-          inversion H as [W1 [G [B [h1 [_ [h2 _]]]]]].
+          inversion H as [W1 [G [D [B [h1 [_ [h2 _]]]]]]].
           apply pat_ctx_rctx in h1. subst.
           replace W with (nil ++ W); eauto.
           eapply roleing_match.
@@ -381,7 +381,7 @@ Proof.
     rewrite tm_subst_tm_tm_open_tm_wrt_co_var; auto 1. eapply roleing_lc; eauto.
     eapply H0. auto. eauto. auto.
   - move: (toplevel_inversion H) => h.
-    inversion h as [W1 [G [B [Q1 [_ [Q2 _]]]]]].
+    inversion h as [W1 [G [D [B [Q1 [_ [Q2 _]]]]]]].
     apply pat_ctx_rctx in Q1. simpl in Q1. subst. apply rctx_fv in Q2.
     simpl in Q2. rewrite tm_subst_tm_tm_fresh_eq. fsetdec. eauto.
   - inversion H0.
@@ -542,7 +542,7 @@ Proof.
     eapply Rename_inter_sub_empty. eapply h1. eauto.
     eapply AtomSetProperties.union_subset_3.
     eapply Rename_fv_new_pattern; eauto.
-    apply toplevel_inversion in H. inversion H as [W1 [G [B [_ [_ [Q _]]]]]].
+    apply toplevel_inversion in H. inversion H as [W1 [G [D [B [_ [_ [Q _]]]]]]].
     apply rctx_fv_co in Q. move: (Rename_new_body_fv_co h1 Q) => h2.
     eapply Subset_trans; eauto. eapply Subset_empty_any.
     replace a2 with (matchsubst (a_App a' nu a1') p1 b1).
@@ -582,7 +582,7 @@ Proof.
       with (co_subst_co_tm g c (a_CApp a' g_Triv)) by auto.
     apply MatchSubst_subst_co; auto.
     eapply Rename_inter_sub_empty. eauto. eauto.
-    apply toplevel_inversion in H. inversion H as [W1 [G [B [_ [_ [Q _]]]]]].
+    apply toplevel_inversion in H. inversion H as [W1 [G [D [B [_ [_ [Q _]]]]]]].
     apply rctx_fv_co in Q. move: (Rename_new_body_fv_co h1 Q) => h2.
     eapply AtomSetProperties.union_subset_3.
     eapply Rename_fv_new_pattern; eauto. eapply Subset_trans; eauto.
@@ -951,13 +951,6 @@ Proof.
   eauto.
 Qed.
 
-Lemma RolePath_roles_agree : forall F p b A R Rs a Rs',
-      binds F (Ax p b A R Rs) toplevel-> RolePath a F Rs' ->
-      Rs = tm_app_roles a ++ Rs'.
-Proof. intros. induction H0; simpl; eauto. axioms_head_same.
-       axioms_head_same. auto. rewrite <- app_assoc. simpl.
-       eauto.
-Qed.
 
 Lemma MatchSubst_par : forall a1 p b b' b'' W W' a2 R F p1 b1 A R1 Rs,
   MatchSubst a1 p b b' -> ~tm_pattern_agree a1 p1 ->

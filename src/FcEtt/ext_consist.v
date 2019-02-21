@@ -272,7 +272,7 @@ Proof. intros. inversion H0 as [Q1 Q2].
           eapply Rename_inter_sub_empty. eauto.
           clear. fsetdec. eapply Rename_fv_new_pattern. eauto.
           apply toplevel_inversion in H.
-          inversion H as [W1 [G [B [Q5 [_ [Q6 _]]]]]].
+          inversion H as [W1 [G [D [B [Q5 [_ [Q6 _]]]]]]].
           apply pat_ctx_rctx in Q5. subst. simpl.
           eapply roleing_sub; eauto.
         + eapply matchsubst_fun_ind; eauto.
@@ -294,7 +294,7 @@ Proof. intros. inversion H0 as [Q1 Q2].
           eauto. eapply Rename_inter_sub_empty. eapply H3.
           clear. fsetdec. eapply Rename_fv_new_pattern. eauto.
           apply toplevel_inversion in H.
-          inversion H as [W1 [G [B [Q5 [_ [Q6 _]]]]]].
+          inversion H as [W1 [G [D [B [Q5 [_ [Q6 _]]]]]]].
           apply pat_ctx_rctx in Q5. subst. simpl.
           simpl. eapply roleing_sub; eauto.
         + eapply matchsubst_fun_ind.
@@ -333,7 +333,7 @@ Proof. intros. inversion H0 as [Q1 Q2].
           eapply Rename_inter_sub_empty; eauto.
           clear. fsetdec. eapply Rename_fv_new_pattern. eauto.
           apply toplevel_inversion in H.
-          inversion H as [W1 [G [B [Q5 [_ [Q6 _]]]]]].
+          inversion H as [W1 [G [B[D [Q5 [_ [Q6 _]]]]]]].
           apply pat_ctx_rctx in Q5. subst. simpl.
           eapply roleing_sub; eauto.
         + eapply matchsubst_fun_ind; eauto.
@@ -1701,7 +1701,7 @@ Proof.
     eapply Path_multipar_capp with (F := F) in P2; eauto 1.
     eapply Path_multipar_capp with (F := F) in P4; eauto 1.
     exists a0. split; auto. *)
-Admitted.
+Admitted. (* consistent_mutual *)
 
 Lemma defeq_joins: forall S D A B T R, DefEq S D A B T R -> Good S D ->
                                          joins (ctx_nom S) A B R.
@@ -1836,17 +1836,6 @@ Proof.
     impossible_defeq. apply CasePath_ValuePath in H7. inversion H7.
   - assert False. eapply no_aCAbs. eauto 2. done.
 Qed.
-
-(*
-Lemma BranchTyping_CasePath : forall G R a A F A1 B C,
-      BranchTyping G R a A (a_Fam F) A1 B C -> Value R a -> CasePath R a F.
-Proof. intros. dependent induction H. Admitted.
-
-Lemma canonical_forms_Pattern : forall F a R b1 b2 G A, Good G (dom G) ->
-  Typing G (a_Pattern R a F b1 b2) A -> Value R a -> CasePath R a F.
-Proof. intros. dependent induction H. eapply IHTyping1; eauto.
-       inversion H3; subst. inversion H9; subst. inversion H14; subst.
-*)
 
 
 Definition irrelevant G D (a : tm) :=

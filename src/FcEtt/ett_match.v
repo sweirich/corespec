@@ -90,7 +90,7 @@ Proof. intros. generalize dependent l1. generalize dependent l2.
        - destruct g; auto.
 Qed.
 
-Lemma pat_ctx_rctx : forall W G F A p B, PatternContexts W G F A p B ->
+Lemma pat_ctx_rctx : forall W G D F A p B, PatternContexts W G D F A p B ->
                      W = rev (combine (vars_Pattern p) (pat_app_roles p)).
 Proof. intros. induction H; simpl; eauto.
        rewrite combine_app. rewrite rev_app_distr. simpl. f_equal. auto.
@@ -159,7 +159,7 @@ Qed.
 
 (** Uniqueness **)
 
-Lemma pat_ctx_vars_Pattern : forall W G F A p B, PatternContexts W G F A p B ->
+Lemma pat_ctx_vars_Pattern : forall W G D F A p B, PatternContexts W G D F A p B ->
             vars_Pattern p = rev (List.map fst W).
 Proof. intros. induction H; eauto. simpl. rewrite IHPatternContexts.
        unfold one. auto.
@@ -168,7 +168,7 @@ Qed.
 Lemma uniq_atoms_toplevel : forall F p b A R Rs,
       binds F (Ax p b A R Rs) toplevel -> uniq_atoms_pattern p.
 Proof. intros. apply toplevel_inversion in H.
-       inversion H as [W [G [B [H1 [_ [H3 _]]]]]].
+       inversion H as [W [G [D [B [H1 [_ [H3 _]]]]]]].
        apply pat_ctx_vars_Pattern in H1.
        apply rctx_uniq in H3. apply uniq_NoDup in H3.
        apply NoDup_reverse in H3. rewrite <- H1 in H3. auto.
@@ -299,12 +299,12 @@ Fixpoint matchsubst a p b : tm := match (a,p) with
   end.
 
 
-Lemma patctx_pattern : forall W G F p B A, PatternContexts W G F A p B ->
+Lemma patctx_pattern : forall W G F D p B A, PatternContexts W G D F A p B ->
       Pattern p.
 Proof. intros. induction H; eauto.
 Qed.
 
-Lemma patctx_pattern_head : forall W G F p B A, PatternContexts W G F A p B ->
+Lemma patctx_pattern_head : forall W G F D p B A, PatternContexts W G D F A p B ->
       head_const p = a_Fam F.
 Proof. intros. induction H; simpl; eauto.
 Qed.
@@ -317,7 +317,7 @@ Lemma axiom_pattern : forall F p b A R1 Rs,
       binds F (Ax p b A R1 Rs) toplevel -> Pattern p.
 Proof. intros. assert (P : Sig toplevel). apply Sig_toplevel.
        induction P. inversion H. inversion H. inversion H2. eauto.
-       inversion H. inversion H5; subst. eapply patctx_pattern; eauto.
+       inversion H. inversion H6; subst. eapply patctx_pattern; eauto.
        eauto.
 Qed.
 
@@ -325,7 +325,7 @@ Lemma axiom_pattern_head : forall F p b A R1 Rs,
       binds F (Ax p b A R1 Rs) toplevel -> head_const p = a_Fam F.
 Proof. intros. assert (P : Sig toplevel). apply Sig_toplevel.
        induction P. inversion H. inversion H. inversion H2. eauto.
-       inversion H. inversion H5; subst. eapply patctx_pattern_head; eauto.
+       inversion H. inversion H6; subst. eapply patctx_pattern_head; eauto.
        eauto.
 Qed.
 
@@ -1171,7 +1171,8 @@ Qed.
 Fixpoint applyArgs (a : tm) (b : tm) : tm := match a with
    | a_Fam F => b
    | a_App a' (Role _) b' => a_App (applyArgs a' b) (Rho Rel) b'
-   | a_App a' (Rho rho) b' => a_App (applyArgs a' b) (Rho rho) b'
+   | a_App a' (Rho Rel) b' => a_App (applyArgs a' b) (Rho Rel) b'
+   | a_App a' (Rho Irrel) b' => a_App (applyArgs a' b) (Rho Irrel) b'
    | a_CApp a' g_Triv => a_CApp (applyArgs a' b) g_Triv
    | _ => a_Bullet
    end.
@@ -1180,13 +1181,14 @@ Fixpoint applyArgs (a : tm) (b : tm) : tm := match a with
 Lemma ApplyArgs_applyArgs : forall a b b', ApplyArgs a b b' ->
                              applyArgs a b = b'.
 Proof. intros. induction H; simpl; subst; eauto.
+       destruct rho; auto.
 Qed.
 
 Lemma applyArgs_ApplyArgs : forall R a F b b', CasePath R a F -> lc_tm b ->
                           applyArgs a b = b' -> ApplyArgs a b b'.
 Proof. intros. generalize dependent b'. apply CasePath_ValuePath in H.
        induction H; intros; simpl in *; subst; eauto.
-       destruct nu; eauto.
+       destruct nu; try destruct rho; eauto.
 Qed.
 
 Ltac pattern_head_same := match goal with
@@ -1371,8 +1373,8 @@ Qed.
 Lemma Par_AppsPath : forall F a W a' n n',
      AppsPath Nom a F n /\ SatApp F n' ->
      Par W a a' Nom -> AppsPath Nom a' F n /\ SatApp F n'.
-Proof.
-  intros. generalize dependent a'. inversion H. dependent induction H0; intros.
+Proof. intros. generalize dependent a'. inversion H.
+       dependent induction H0; intros.
        - inversion H2; subst. split; eauto. axioms_head_same.
        - inversion H3; subst. split; eauto. axioms_head_same. contradiction.
        - inversion H3; subst. split; eauto. split.
@@ -1401,6 +1403,7 @@ Proof.
          axioms_head_same. pattern_head_tm_agree. rewrite H0 in U1.
          inversion U1; subst. axioms_head_same. contradiction.
 Qed.
+
 
 Ltac invert_par :=
      try match goal with
@@ -1432,6 +1435,7 @@ Proof. intros. induction H; invert_par.
        pose (P := Par_CasePath H H1). apply CasePath_head in P.
        apply CasePath_head in H0. rewrite P in H0. inversion H0; subst; auto.
 Qed.
+
 
 Lemma tm_tm_agree_AppsPath : forall R a F n a', AppsPath R a F n ->
       tm_tm_agree a a' -> AppsPath R a' F n.
@@ -1607,7 +1611,7 @@ Proof. intros. induction H; simpl; eauto.
           right. exists p, a1, A, R2. rewrite <- app_assoc. eauto.
 Qed.
 
-Lemma PatternContexts_roles : forall W G p F B A, PatternContexts W G F B p A ->
+Lemma PatternContexts_roles : forall W G D p F B A, PatternContexts W G D F B p A ->
       tm_to_roles p = range W.
 Proof. intros. induction H; simpl; eauto. rewrite IHPatternContexts; eauto.
 Qed.
@@ -1632,7 +1636,7 @@ Proof. intros. apply RolePath_inversion in H.
        inversion H as [[A1 H1] | [p1 [b1 [A1 [R1 H1]]]]].
         - axioms_head_same.
         - axioms_head_same. intro. apply toplevel_inversion in H0.
-          inversion H0 as [W [G [B [H3 [H4 [H5 [H6 _]]]]]]].
+          inversion H0 as [W [G [D [B [H3 [H4 [H5 [H6 _]]]]]]]].
           apply PatternContexts_roles in H3. rewrite <- H6 in H3.
           apply subtm_pattern_agree_roles in H2.
           inversion H2 as [Rs'' H7]. rewrite H7 in H3.

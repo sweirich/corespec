@@ -21,9 +21,12 @@ Proof.
 Qed.
 
 (* ------------------------------------------ *)
-Lemma toplevel_inversion : forall F p a A R Rs, binds F (Ax p a A R Rs) toplevel ->
-                                 (exists W G B, PatternContexts W G F A p B /\
-                                Typing G a B /\ roleing W a R /\ Rs = range W /\ Typing nil A a_Star).
+Lemma toplevel_inversion : forall F p a A R Rs, 
+    binds F (Ax p a A R Rs) toplevel ->
+    (exists W G D B, PatternContexts W G D F A p B /\
+        Typing G a B /\ roleing W a R /\ Rs = range W /\ Typing nil A a_Star
+        /\ (AtomSetImpl.For_all (fun x => x `notin`  (fv_tm_tm_tm a)) D) 
+    ).
 Proof.
   have st: Sig toplevel by apply Sig_toplevel.
   induction st.
@@ -32,8 +35,10 @@ Proof.
     inversion H2. eauto.
   - intros.
     match goal with [ H : binds ?F _ _ |- _ ] => inversion H end.
-    match goal with [ H : (_,_) = (_,_) |- _ ] => inversion H end.
-    subst. exists W, G, B. eauto. eauto.
+    match goal with [ H : (_,_) = (_,_) |- _ ] => inversion H ; clear H ; subst end.
+    exists W, G, D, B.
+    repeat split; eauto.
+    auto.
 Qed.
 
 Lemma toplevel_closed_const : forall F A Rs, binds F (Cs A Rs) toplevel ->

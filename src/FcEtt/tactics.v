@@ -31,9 +31,57 @@ Module TacticsInternals.
 (**** Basic Building Blocks ****)
 (*******************************)
 
+Ltac nl := idtac " ".
+
+(* TODO: reorganize properly so we don't duplicate (see bottom of the file) *)
+Local Tactic Notation "ret" tactic(tac) := let answer := tac in exact answer.
+
 (* Shorthands for instantiation/specialization *)
 Ltac spec2 H x xL := specialize (H x xL).
 Ltac inst2 H x xL := let h := fresh H x in move: (H x xL) => h.
+
+Ltac especialize H :=
+  repeat match type of H with
+    | forall (x : ?t), _ =>
+      let e := fresh "e" in
+      evar (e : t);
+      move: H;
+      move/(_ e) => H;
+      subst e
+  end.
+
+(**** Info tactics ****)
+(* This tactic is meant to help find why 2 terms are not unifiable, by displaying
+   additional information. At the moment, it only decomposes applications. Foralls
+   can be handled using especialize. *)
+Ltac unify_info' disp1 disp2 t1 t2 :=
+  tryif unify t1 t2 then idtac "Success," t1 "and" t2 "are unifiable"
+  else lazymatch t1 with
+    | ?t11 ?t12 =>
+      lazymatch t2 with
+        | ?t21 ?t22 =>
+          tryif unify t12 t22 then
+            idtac "Unifiable arguments:" t12 t22;
+            unify_info' disp1 disp2 t11 t21
+          else
+            (* Splitting this message so that the terms are vertically aligned *)
+            idtac "__Failure: can't unify arguments__";
+            idtac disp1 t12;
+            idtac disp2 t22;
+            nl;
+            idtac "Corresponding functions:";
+            idtac disp1 t11;
+            idtac disp2 t21;
+            nl; nl;
+            idtac "Trying recursively:";
+            unify_info' disp1 disp2 t12 t22;
+            fail "Unification failure"
+        (* TODO: refine this case *)
+        | _ => fail "Can't decompose" disp2 t2 "further"
+      end
+    (* TODO: refine this case - if t2 can't be decomposed either, need to print both *)
+    | _ => fail "Can't decompose" disp1 t1 "further"
+  end.
 
 (* Dynamic type, useful for some tactics *)
 Polymorphic (* Cumulative *) Inductive Dyn : Type := dyn : forall {T : Type}, T -> Dyn.
@@ -70,6 +118,16 @@ Ltac has_head t hd :=
     | ?hd' _ => has_head hd' hd
   end.
 
+(* Variant of `has_head_uconstr` that allows t to be headed by lambdas *)
+(* This version succeeds by returning `fun x1 ... xn => tt`, and fails otherwise *)
+Ltac has_head_quant_ret t hd :=
+  match t with
+    | hd => tt
+    (* We're technically allowing interleavings of lambdas and applications. Not sure that's a problem..? *)
+    | fun (x : ?t') => @?tl x => constr:(fun (x : t') => ltac:(ret has_head_quant_ret ltac:(eval hnf in (tl x)) hd))
+    | ?hd' _ => has_head_quant_ret hd' hd
+  end.
+
 (* More general version: this time, `hd` is a uconstr, not a constr (hence the hacky workaround with refine).
    This allows to specify `hd` as a pattern, even a partial one.
    For instance, these (simplified) examples should succeed:
@@ -86,6 +144,70 @@ Ltac has_head_uconstr t hd :=
       | ?t' _ => has_head_uconstr t' hd
     end
   ].
+
+(* Auxiliary tactics for `has_head_uconstr_quant` *)
+(* Generates the type    forall x1 ... xn, exists T, T = t'
+   with t = fun x1 ... xn => t'
+   (thus t' depends on x1, ..., xn) *)
+Ltac unfold_test_eq T t :=
+  match t with
+    | fun (x : ?t) => @?tl x =>
+      constr:(forall (x : t), ltac:(ret unfold_test_eq T ltac:(eval hnf in (tl x))))
+    | _ =>
+      constr:(exists T, T = t)
+  end.
+
+(* "Removes" the last argument of an eta-expanded function.
+    Note that the binder corresponding to that argument is _not_ removed.
+   Eg,   fun G a A => Typing G a A   is turned into   fun G a _ => Typing G a  *)
+Ltac remove_arg a :=
+  match a with
+    | fun (x : ?t) => @?b x =>
+      constr:(fun (x : t) => ltac:(ret remove_arg ltac:(eval hnf in (b x))))
+    | ?t' _ => t'
+  end.
+
+(* Variant of `has_head_uconstr` that allows t to be headed by lambdas *)
+Ltac has_head_uconstr_quant t hd :=
+  first [
+    let T := fresh in
+    (* There might be a way to use a simpler type for unification but it didn't seem to work just as well (e.g. with Display above) *)
+    have _: ltac:(ret unfold_test_eq T t) by intros; refine (@ex_intro _ _ hd (eq_refl _))
+  |
+    has_head_uconstr_quant ltac:(remove_arg t) hd
+  ].
+
+(* Takes a term `t` of shape `fun (x1 : T1) ... (xn : Tn) => tt` and strips its arguments' types `T1`, ... `Tn` (replaced by unit)
+   This tactic returns the result directly or fails if `t` isn't of the right shape *)
+Ltac strip_arg_type t :=
+  match t with
+    | tt => tt
+    | fun (x : ?t') => @?tl x =>
+      (* First erase arguments recursively (need to start from the innermost arguments, to preserve remaining dependencies at all stages) *)
+      let r := constr:(fun (x : t') => ltac:(ret strip_arg_type ltac:(eval hnf in (tl x)))) in
+      (* Then replace the function - that we *now* know doesn't depend on x anymore - with an equivalent function having argument unit.
+        (that way, we're removing the dependencies of x's type (t') on previous arguments, in turn allowing them to be erased) *)
+      match r with fun (x : _) => ?tl' => constr:(fun (x : unit) => tl') end
+  end.
+
+(* This tactic spots the nth argument of type `pi` whose type's head is hd.
+   Its result is in skeletal shape, i.e. fun x1 ... xk => tt (meaning the argument is the (k+1)th argument in pi)
+   In particular, doing so allows bypassing some of the binding-manipulation shortcomings of ltac *)
+Ltac spot_arg_with_head pi hd nth :=
+  match pi with
+    | forall (x : ?t), @?tl x =>
+      (* Check that the argument matches (we don't use `discard`, it's just a way to test whether `has_head_quant_ret` succeeds) *)
+      let discard := has_head_quant_ret t hd in
+      (* Ok, the type of the argument matches; now, do we want this one or a later one? *)
+      match nth with
+        | O => tt
+        | S ?pred => constr:(fun (x : t) => ltac:(ret spot_arg_with_head ltac:(eval hnf in (tl x)) hd pred)) (* Recursive call with tl & pred (both args decreasing) *)
+        | _ => fail 2 (* Not needed for correctness, only to optimize this failure case *)
+      end
+    | forall (x : ?t), @?tl x =>
+      (* Previous branch didn't match, meaning the argument's type didn't match. Check the next. *)
+      constr:(fun (x : t) => ltac:(ret spot_arg_with_head ltac:(eval hnf in (tl x)) hd nth))           (* Recursive call with tl & nth (pi decreasing, nth unchanged) *)
+  end.
 
 
 (* Find an hypothesis which type is headed by constructor `cs`, and
@@ -448,7 +570,7 @@ Ltac fsetdec_fast := solve [break_union; basic_solve_n 3].
    loose the original universal assumption while making the specific instance. The versions
    with a '+' suffic are meant to be used when there are multiple variables involved; they
    add the relevant instances without discarding the original hypothesis. *)
-Ltac autofresh_fixed_param tac x :=
+Ltac autofresh_fixed_param' tac x :=
     (* Trying to spot the freshness assumption and to make it as general as possible
     (in case the co-domain is an evar) *)
     try (
@@ -469,16 +591,23 @@ Ltac autofresh_fixed_param tac x :=
    end;
    unwrap_all.
 
+Ltac hide_fresh_hyps x hide :=
+  tryif hide then
+    repeat match goal with
+      H : x ∉ _ |- _ => hidewith "freshness" H
+    end
+  else idtac.
 
+Ltac autofresh_fixed_param tac x hidefresh :=
+  autofresh_fixed_param' tac x;
+  hide_fresh_hyps x hidefresh.
 
 (* General version that picks up a fresh variable instead *)
-Ltac autofresh_param tac :=
+Ltac autofresh_param tac hidefresh :=
   let x := fresh "x" in
   pick fresh x;
-  autofresh_fixed_param tac x;
-  repeat match goal with
-    H : x ∉ _ |- _ => hidewith "freshness" H
-  end.
+  autofresh_fixed_param' tac x;
+  hide_fresh_hyps x hidefresh.
 
 (* Yet another version, that tries to find a suitable variable in the context *)
 (* TODO: could be more robust:
@@ -487,7 +616,7 @@ Ltac autofresh_param tac :=
 *)
 Ltac autofresh_find_param tac :=
   match goal with
-    x : atom, _ : ?x `notin` _ |- _ => autofresh_fixed_param tac x
+    x : atom, _ : ?x `notin` _ |- _ => autofresh_fixed_param' tac x
   end.
 
 
@@ -691,13 +820,17 @@ Ltac fsetdec_fast := TacticsInternals.fsetdec_fast.
 Ltac autocontra := TacticsInternals.autocontra.
 
 (* Automatically pick fresh variables and solve freshness conditions *)
-Tactic Notation "autofresh"  "with" hyp(x) := TacticsInternals.autofresh_fixed_param TacticsInternals.spec2 x.
-Tactic Notation "autofresh+" "with" hyp(x) := TacticsInternals.autofresh_fixed_param TacticsInternals.inst2 x.
+Tactic Notation "autofresh"  "with" hyp(x) := TacticsInternals.autofresh_fixed_param TacticsInternals.spec2 x idtac.
+Tactic Notation "autofresh'"  "with" hyp(x) := TacticsInternals.autofresh_fixed_param TacticsInternals.spec2 x fail.
+Tactic Notation "autofresh+" "with" hyp(x) := TacticsInternals.autofresh_fixed_param TacticsInternals.inst2 x idtac.
+Tactic Notation "autofresh'+" "with" hyp(x) := TacticsInternals.autofresh_fixed_param TacticsInternals.inst2 x idtac.
 Tactic Notation "autofresh"  "with" "existing" := TacticsInternals.autofresh_find_param TacticsInternals.spec2.
 Tactic Notation "autofresh+" "with" "existing" := TacticsInternals.autofresh_find_param TacticsInternals.inst2.
 Tactic Notation "autofresh" "for" "all" := fail "TODO". (* /!\ issues with unwrap_all *)
-Tactic Notation "autofresh"  := TacticsInternals.autofresh_param TacticsInternals.spec2.
-Tactic Notation "autofresh+" := TacticsInternals.autofresh_param TacticsInternals.inst2.
+Tactic Notation "autofresh"  := TacticsInternals.autofresh_param TacticsInternals.spec2 idtac.
+Tactic Notation "autofresh'"  := TacticsInternals.autofresh_param TacticsInternals.spec2 fail.
+Tactic Notation "autofresh+" := TacticsInternals.autofresh_param TacticsInternals.inst2 idtac.
+Tactic Notation "autofresh'+" := TacticsInternals.autofresh_param TacticsInternals.inst2 fail.
 
 
 
@@ -737,11 +870,18 @@ Ltac depind x := dependent induction x.
 Ltac exa    x := exact x.
 Ltac ea       := eassumption.
 
+Ltac get_goal := match goal with |- ?g => constr:(g) end.
+
 (* Hiding/unhiding the type of a hyp *)
 Ltac hide      := TacticsInternals.hide.
 Ltac hidewith  := TacticsInternals.hidewith.
 Ltac unhide    := TacticsInternals.unhide.
+
+Ltac uha       := repeat with TacticsInternals._hide do unhide end; repeat with TacticsInternals._hide_with do unhide.
+Tactic Notation "unhide" "all" := uha.
 Ltac softclear := TacticsInternals.softclear. (* This tactic goes further, and prevents the hyp from being used again *)
+
+Ltac especialize := TacticsInternals.especialize.
 
 (* FIXME: see similar declaration above *)
 Global Notation "'_hidden_'"       := (TacticsInternals._hide _)        (at level 50, only printing).
@@ -750,4 +890,36 @@ Global Notation "'_hidden_' ( s )" := (TacticsInternals._hide_with s _) (at leve
 (* FIXME: rely on internals *)
 Tactic Notation "basic_nosolve_n" int_or_var(n) := intuition (subst; eauto n).
 Tactic Notation "basic_solve_n" int_or_var(n) := try solve [basic_nosolve_n n].
+
+(* To use in particular with ltac:() - indeed, recall that with this construction, one needs to
+   provide a tactic that _solves a goal_, and *not* one that _returns a term_. This turns an
+   instance of the latter into one of the former. *)
+Tactic Notation "ret" tactic(tac) := let answer := tac in exact answer.
+
+
+(* Finding out why 2 terms are not unifiable *)
+Local Tactic Notation "debugunif_dispatch" preident(disp1) preident(disp2) constr(t1) constr(t2) := TacticsInternals.unify_info' disp1 disp2 t1 t2.
+Tactic Notation "debug" "unify" "hyp"  ident(H1)  "vs" "hyp"  ident(H2)  := debugunif_dispatch hyp1 hyp2 ltac:(ret type of H1) ltac:(ret type of H2).
+Tactic Notation "debug" "unify" "hyp"  ident(H1)  "vs" "goal"            := let g := get_goal in debugunif_dispatch hyp1 goal ltac:(ret type of H1) g.
+Tactic Notation "debug" "unify" "hyp"  ident(H1)  "vs" "term" constr(t2) := debugunif_dispatch hyp trm ltac:(ret type of H1) t2.
+Tactic Notation "debug" "unify" "term" constr(t1) "vs" "term" constr(t2) := debugunif_dispatch tm1 tm2 t1 t2.
+Tactic Notation "debug" "unify" "term" constr(t1) "vs" "goal"            := let g := get_goal in debugunif_dispatch term goal t1 g.
+
+
+(**** Example ****)
+(*
+Goal id True.
+  assert (Hf : id False) by admit.
+  assert (Ht : id True) by admit.
+
+  (* In a real situation, just remove the assert_fails (since the tactic is meant to fail in those cases) *)
+  assert_fails debug unify hyp Ht vs term (id False).
+  assert_fails debug unify hyp Hf vs goal.
+  assert_fails debug unify hyp Ht vs hyp Hf.
+  assert_fails debug unify term (id True) vs term (id False).
+  assert_fails debug unify term (id False) vs goal.
+
+  debug unify hyp Ht vs goal. (* Succeeds if the terms are unifiable *)
+Abort.
+*)
 

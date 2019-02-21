@@ -16,9 +16,10 @@ Require Import FcEtt.ett_roleing.
 Set Bullet Behavior "Strict Subproofs".
 Set Implicit Arguments.
 
+
 Lemma Ctx_strengthen : forall G1 G2, Ctx (G2 ++ G1) -> Ctx G1.
   induction G2; [ | inversion 1]; simpl; auto.
-Qed.
+Qed. 
 
 
 Lemma binds_to_PropWff: forall G0 c phi,
@@ -87,18 +88,15 @@ Proof.
     show_fresh.
 Qed.
 
+(* The second premise is no longer needed. *)
 Lemma tm_subst_co_fresh_1 :
 forall G a A a0 c s,
   Typing G a A -> Ctx ((c ~ s) ++ G) -> co_subst_co_tm a0 c A = A.
 Proof.
   intros G a A a0 x s H H0.
-  destruct s.
-  - apply co_subst_co_tm_fresh_eq.
-    inversion H0; subst; clear H0.
-    show_fresh.
-  - apply co_subst_co_tm_fresh_eq.
-    inversion H0; subst; clear H0.
-    show_fresh.
+  move: (Typing_context_fv H) => ?. split_hyp.
+  apply co_subst_co_tm_fresh_eq.
+  fsetdec.
 Qed.
 
 Lemma tm_subst_fresh_2 :
@@ -116,13 +114,9 @@ forall G A a0 c s,
   Typing G A a_Star -> Ctx ((c ~ s) ++ G) -> co_subst_co_tm a0 c A = A.
 Proof.
   intros G A a0 x s H H0.
-  destruct s.
-  - apply co_subst_co_tm_fresh_eq.
-    inversion H0; subst; clear H0.
-    show_fresh.
-  - apply co_subst_co_tm_fresh_eq.
-    inversion H0; subst; clear H0.
-    show_fresh.
+  move: (Typing_context_fv H) => ?. split_hyp.
+  apply co_subst_co_tm_fresh_eq.
+  fsetdec.
 Qed.
 
 Lemma co_subst_fresh :
@@ -283,45 +277,54 @@ Proof.
   induction 1; intros; subst; simpl.
   - autorewrite with subst_open; eauto 3 with lc.
     have LC: lc_tm a0. eauto 3 with lc.
-    move: (tm_subst_tm_tm_lc_tm _ _ x H3 LC) => h0. simpl in h0.
     rewrite tm_subst_tm_tm_apply_pattern_args.
-    rewrite tm_subst_tm_tm_apply_pattern_args in h0.
     eapply BranchTyping_Base; eauto 4 using tm_subst_tm_tm_lc_tm.
-
   - pick fresh y and apply BranchTyping_PiRole.
-    autorewrite with subst_open_var; eauto 2 with lc.
+    autofresh with y.
+    autorewrite with subst_open_var; try solve [uha; eauto 2 with lc].
     rewrite_subst_context.
-    replace (a_App (tm_subst_tm_tm a0 x b) (Role R) (a_Var_f y)) with
-        (tm_subst_tm_tm a0 x (a_App b (Role R) (a_Var_f y))).
-    replace ((p_Tm (Role R) (a_Var_f y)
-     :: List.map (tm_subst_tm_pattern_arg a0 x) pattern_args5)) with
-        (List.map (tm_subst_tm_pattern_arg a0 x) (p_Tm (Role R) (a_Var_f y) 
-                                                       :: pattern_args5)).
-
-    eauto.
-    simpl. f_equal. destruct (y == x) eqn:eq. subst. 
-    have bad: (x `notin` singleton x). fsetdec. hide Fr. fsetdec.
-    rewrite eq. auto.
-    rewrite tm_subst_tm_tm_a_App.
-    rewrite tm_subst_tm_tm_var_neq; auto.
-
+    move/(_ _ _ _ _ (y ~ Tm A ++ ltac:(ea)) x eq_refl) in H0. (* FIXME: fragile *)
+    especialize H0.
+    rewrite map_app /= in H0.
+    move: H0.
+    case (y == x); first by (intros; uha; subst; exfalso; fsetdec_fast).
+    move=>?; apply.
   - pick fresh y and apply BranchTyping_PiRel.
-    autorewrite with subst_open_var; eauto 2 with lc.
+    autofresh with y.
+    autorewrite with subst_open_var; try solve [uha; eauto 2 with lc].
     rewrite_subst_context.
-    replace (a_App (tm_subst_tm_tm a0 x b) (Rho Rel) (a_Var_f y)) with
-        (tm_subst_tm_tm a0 x (a_App b (Rho Rel) (a_Var_f y))).
-    admit.
-    rewrite tm_subst_tm_tm_a_App.
-    rewrite tm_subst_tm_tm_var_neq; auto.
+    move/(_ _ _ _ ltac:(ea) (y ~ Tm A ++ ltac:(ea)) x eq_refl) in H0. (* FIXME fragile *)
+    move: H0.
+    rewrite map_app /=.
+    case: (y == x) ; first by (intros; uha; subst; exfalso; fsetdec_fast).
+    move=> ?.
+    apply.
   - pick fresh y and apply BranchTyping_PiIrrel.
-    autorewrite with subst_open_var; eauto 2 with lc.
+    autofresh with y.
+    autorewrite with subst_open_var; try solve [uha; eauto 2 with lc].
     rewrite_subst_context.
-    admit. 
+    (* TODO: basic blind_spec tactic *)
+    move/(_ _ _ _ _ (y ~ Tm A ++ _) x eq_refl) => /= in H0.
+    especialize H0.
+    move: H0.
+    rewrite map_app.
+    case (y == x); first by (intros; uha; subst; exfalso; fsetdec_fast).
+    move=>?.
+    apply.
   - pick fresh y and apply BranchTyping_CPi.
+    autofresh with y.
     autorewrite with subst_open_var; eauto 2 with lc.
     rewrite_subst_context.
-    admit.
-Admitted.
+    move/(_ _ _ _ _ (y ~ _ ++ _) x eq_refl) => /= in H0.
+    especialize H0.
+    move: H0.
+    rewrite map_app.
+    apply.
+
+    Unshelve.
+    all: eassumption.
+Qed.
+
 
 Lemma tm_substitution_mutual :
    (forall G0 b B (H : Typing G0 b B),
@@ -672,7 +675,7 @@ Proof.
       inversion Hi2; subst; clear Hi2.
       inversion H5; subst; clear H5.
       repeat rewrite co_subst_co_tm_fresh_eq; eauto 2.
-      all: try show_fresh.
+      all: try show_fresh. fsetdec. fsetdec.
       rewrite_env (nil ++(map (co_subst_co_sort g_Triv c1) F) ++ G0).
       eapply (fourth weaken_available_mutual).
       pose K := DefEq_weakening.
@@ -687,7 +690,7 @@ Proof.
       have: c1 `notin` dom G0. inversion h2; auto.
       move => Fr1.
       repeat rewrite co_subst_co_tm_fresh_eq.
-      all: try show_fresh.
+      all: try show_fresh. fsetdec. fsetdec.
       eapply E_Assn; eauto 1.
       eapply H; eauto 1.
       eapply binds_app_3; eauto 1.
