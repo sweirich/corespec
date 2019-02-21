@@ -2291,8 +2291,6 @@ Admitted. (* reduction in Par *)
 
 
 
-
-
 Lemma Beta_fv_preservation : forall x a b R, 
     Beta a b R -> 
     x `notin` fv_tm_tm_tm a ->
@@ -2354,6 +2352,236 @@ Proof.
   -  eauto using reduction_in_one_fv_preservation.
 Qed.
 
+
+Lemma RolePath_no_Beta :
+ forall F a R1 Rs, RolePath a F (R1 :: Rs) -> forall R, not (exists a', Beta a a' R).
+Proof. 
+  intros. 
+  move: (RolePath_head H) => hd.
+  dependent induction H; move => [a' h]; inversion h; subst.
+  - with binds do ltac:(fun h => move: (axiom_pattern_head h) => hd1).
+    with MatchSubst do ltac:(fun h => move: (MatchSubst_match h) => tpa).
+    with Rename do ltac:(fun h => move: (Rename_tm_pattern_agree H1) => tpa2).
+    apply tm_pattern_agree_const_same in tpa.
+    apply tm_pattern_agree_const_same in tpa2.
+    simpl in *. rewrite hd1 in tpa2. rewrite tpa2 in tpa. inversion tpa.
+    subst.
+    axioms_head_same.
+  - with binds do ltac:(fun h => move: (axiom_pattern_head h) => hd1).
+    with MatchSubst do ltac:(fun h => move: (MatchSubst_match h) => tpa).
+    with Rename do ltac:(fun h => move: (Rename_tm_pattern_agree H1) => tpa2).
+    apply tm_pattern_agree_const_same in tpa.
+    apply tm_pattern_agree_const_same in tpa2.
+    simpl in *. rewrite hd1 in tpa2. rewrite tpa2 in tpa. inversion tpa.
+    subst.
+    axioms_head_same.
+    move: (toplevel_inversion H) => h0.
+    destruct h0 as [W [ G [ D [B ?]]]]. split_hyp. subst.
+    subst.
+    with MatchSubst do ltac: (fun h => inversion h; subst; clear h) end. 
+    with Rename do ltac: (fun h => inversion h; subst; clear h) end. 
+    with PatternContexts do ltac: (fun h => inversion h; subst; clear h) end. 
+    simpl in *. discriminate.
+  - with binds do ltac:(fun h => move: (axiom_pattern_head h) => hd1).
+    with MatchSubst do ltac:(fun h => move: (MatchSubst_match h) => tpa).
+    with Rename do ltac:(fun h => move: (Rename_tm_pattern_agree h) => tpa2).
+    apply tm_pattern_agree_const_same in tpa.
+    apply tm_pattern_agree_const_same in tpa2.
+    simpl in *. rewrite hd1 in tpa2. rewrite tpa2 in tpa.
+    rewrite tpa in hd. inversion hd. subst.
+    move: (RolePath_subtm_pattern_agree_contr H0 H1).
+    admit.
+  - with RolePath do ltac:(fun h => inversion h).
+  - admit.
+  - with RolePath do ltac:(fun h => inversion h).
+  - admit.
+  - with RolePath do ltac:(fun h => inversion h).
+  - admit.
+Admitted.  (* unsaturated rolepaths do not Beta-reduce *)
+
+Lemma RolePath_preservation :
+forall a a' R, reduction_in_one a a' R -> forall F R1 Rs, 
+   RolePath a F (R1 :: Rs) -> RolePath a' F (R1 :: Rs).
+Proof.
+  intros a a' R H.
+  induction H; intros.
+  - inversion H1.
+  - inversion H1; subst; eauto.
+  - inversion H0; subst; eauto.
+  - inversion H2.
+  - assert False.  move: (RolePath_no_Beta H0) => h0.
+    eapply h0. eauto.
+    contradiction.
+Qed.
+
+Lemma  BranchTyping_PiRole_exists : forall x, 
+   `{ BranchTyping (x ~ Tm A ++ G) Apps5 Nom a A1 b
+                 (pattern_args5 ++ one (p_Tm (Role R) (a_Var_f x)))
+                 (open_tm_wrt_tm B (a_Var_f x)) (open_tm_wrt_tm C (a_Var_f x)) C'
+    -> x `notin` fv_tm_tm_tm A \u dom G \u fv_tm_tm_tm a \u fv_tm_tm_tm A1
+             \u fv_tm_tm_tm b \u fv_tm_tm_pattern_args pattern_args5 
+             \u fv_tm_tm_tm B \u fv_tm_tm_tm C \u fv_tm_tm_tm C'
+    -> BranchTyping G (A_cons (A_Tm (Role R)) Apps5) Nom a A1 b pattern_args5
+                      (a_Pi Rel A B) (a_Pi Rel A C) C' }.
+Admitted.
+Lemma BranchTyping_PiRel_exists : forall x,
+   `{ BranchTyping (x ~ Tm A ++ G) Apps5 Nom a A1 b
+                 (pattern_args5 ++ one (p_Tm (Rho Rel) (a_Var_f x)))
+                 (open_tm_wrt_tm B (a_Var_f x)) (open_tm_wrt_tm C (a_Var_f x)) C' 
+   -> x `notin` fv_tm_tm_tm A \u dom G \u fv_tm_tm_tm a \u fv_tm_tm_tm A1
+             \u fv_tm_tm_tm b \u fv_tm_tm_pattern_args pattern_args5 
+             \u fv_tm_tm_tm B \u fv_tm_tm_tm C \u fv_tm_tm_tm C'
+   -> BranchTyping G (A_cons (A_Tm (Rho Rel)) Apps5) Nom a A1 b pattern_args5
+    (a_Pi Rel A B) (a_Pi Rel A C) C'}.
+Admitted.
+Lemma BranchTyping_PiIrrel_exists: forall x,
+  `{  BranchTyping (x ~ Tm A ++ G) Apps5 Nom a A1 b
+                 (pattern_args5 ++ one (p_Tm (Rho Irrel) a_Bullet))
+                 (open_tm_wrt_tm B (a_Var_f x)) (open_tm_wrt_tm C (a_Var_f x)) C'
+  -> x `notin` fv_tm_tm_tm A \u dom G \u fv_tm_tm_tm A1
+             \u fv_tm_tm_tm b \u fv_tm_tm_pattern_args pattern_args5 
+             \u fv_tm_tm_tm B \u fv_tm_tm_tm C \u fv_tm_tm_tm C'
+    -> BranchTyping G (A_cons (A_Tm (Rho Irrel)) Apps5) Nom a A1 b pattern_args5
+    (a_Pi Irrel A B) (a_Pi Irrel A C) C' }.
+Admitted.
+Lemma BranchTyping_CPi_exists : forall c,
+    `{ BranchTyping (c ~ Co phi ++ G) Apps5 Nom a A
+                    b (pattern_args5 ++ one (p_Co g_Triv))
+                    (open_tm_wrt_co B (g_Var_f c))
+                    (open_tm_wrt_co C (g_Var_f c)) C'
+     ->  c `notin` dom G 
+     -> BranchTyping G (A_cons A_Co Apps5) Nom a A b pattern_args5
+        (a_CPi phi B) (a_CPi phi C) C'}.
+Admitted.
+
+Lemma E_PiCong3 :  ∀ x (G : context) D rho (A1 B1 A2 B2 : tm) R',
+    x `notin` dom G \u fv_tm_tm_tm A1 \u fv_tm_tm_tm A2 \u fv_tm_tm_tm B1 
+      \u fv_tm_tm_tm B2 
+    -> DefEq G D A1 A2 a_Star R'
+    → DefEq ([(x, Tm A1)] ++ G) D (open_tm_wrt_tm B1 (a_Var_f x))
+            (open_tm_wrt_tm B2 (a_Var_f x)) a_Star R'
+→ DefEq G D (a_Pi rho A1 B1) (a_Pi rho A2 B2) a_Star R'.
+Admitted.
+
+Lemma E_CPiCong3  : ∀ c (G : context) (D : available_props) a0 b0 T0
+                      (A : tm) a1 b1 T1 (B : tm) R R',
+    c `notin` dom G -> 
+    Iso G D (Eq a0 b0 T0 R) (Eq a1 b1 T1 R)
+    → DefEq ([(c, Co (Eq a0 b0 T0 R))] ++ G) D (open_tm_wrt_co A (g_Var_f c))
+            (open_tm_wrt_co B (g_Var_f c)) a_Star R'
+    → DefEq G D (a_CPi (Eq a0 b0 T0 R) A) (a_CPi (Eq a1 b1 T1 R) B) a_Star R'.
+Admitted.
+
+Lemma BranchTyping_congruence : 
+  `{ BranchTyping G Apps5 Nom a A0 t ps A1 B C ->
+    forall G D a', Typing G B a_Star ->
+    DefEq G D a a' A0 Nom ->
+    exists B', BranchTyping G Apps5 Nom a' A0 t ps A1 B' C /\
+        DefEq G D B B' a_Star Rep}.
+Proof.
+  induction 1; intros. 
+  - subst.
+    autoinv.
+    move: (PropWff_regularity H6) => [t1 t2].
+    move: (DefEq_regularity H5) => t3.
+    move: (PropWff_regularity t3) => [_ t5].
+    exists (a_CPi (Eq a' (apply_pattern_args b pattern_args5) A Nom) C1).
+    split.
+    eapply BranchTyping_Base; eauto. eapply DefEq_lc2; eauto.
+    pick fresh c and apply E_CPiCong2; eauto 1.
+    eapply E_PropCong; eauto 1.
+    eapply E_Refl; eauto 1.
+    move: (H4 c ltac:(auto)) => h0. hide Fr.
+    eapply E_Refl; eauto 1.
+  - autoinv.
+    autofresh.
+    have h0: DefEq (nil ++ [(x0, Tm A)] ++ G0) D a a' A1 Nom.
+    { eapply DefEq_weakening with (F:=nil)(G:=G0).
+      eauto 1. auto. simpl. eapply Typing_Ctx; eauto. }
+    simpl in h0.
+    move: (H0 _ _ _ H3 h0) => [B' [h1 h2]].
+    eexists.
+    split.
+    eapply (@BranchTyping_PiRole_exists x0).
+    rewrite <- (open_tm_wrt_tm_close_tm_wrt_tm B' x0) in h1.
+    eapply h1.  rewrite fv_tm_tm_tm_close_tm_wrt_tm. unhide Fr. fsetdec.
+    eapply (@E_PiCong3 x0); eauto 2.
+    unhide Fr. rewrite fv_tm_tm_tm_close_tm_wrt_tm. fsetdec.
+    rewrite open_tm_wrt_tm_close_tm_wrt_tm.
+    eapply h2.
+  - autoinv. autofresh.
+    have h0: DefEq (nil ++ [(x0, Tm A)] ++ G0) D a a' A1 Nom.
+    { eapply DefEq_weakening with (F:=nil)(G:=G0).
+      eauto 1. auto. simpl. eapply Typing_Ctx; eauto. }
+    simpl in h0.
+    move: (H0 _ _ _ H3 h0) => [B' [h1 h2]].
+    eexists.
+    split.
+    eapply (@BranchTyping_PiRel_exists x0).
+    rewrite <- (open_tm_wrt_tm_close_tm_wrt_tm B' x0) in h1.
+    eapply h1.  rewrite fv_tm_tm_tm_close_tm_wrt_tm. unhide Fr. fsetdec.
+    eapply (@E_PiCong3 x0); eauto 2.
+    unhide Fr. rewrite fv_tm_tm_tm_close_tm_wrt_tm. fsetdec.
+    rewrite open_tm_wrt_tm_close_tm_wrt_tm.
+    eapply h2.
+  - autoinv. autofresh.
+    have h0: DefEq (nil ++ [(x0, Tm A)] ++ G0) D a a' A1 Nom.
+    { eapply DefEq_weakening with (F:=nil)(G:=G0).
+      eauto 1. auto. simpl. eapply Typing_Ctx; eauto. }
+    simpl in h0.
+    move: (H0 _ _ _ H3 h0) => [B' [h1 h2]].
+    eexists.
+    split.
+    eapply (@BranchTyping_PiIrrel_exists x0).
+    rewrite <- (open_tm_wrt_tm_close_tm_wrt_tm B' x0) in h1.
+    eapply h1.  rewrite fv_tm_tm_tm_close_tm_wrt_tm. unhide Fr. fsetdec.
+    eapply (@E_PiCong3 x0); eauto 2.
+    unhide Fr. rewrite fv_tm_tm_tm_close_tm_wrt_tm. fsetdec.
+    rewrite open_tm_wrt_tm_close_tm_wrt_tm.
+    eapply h2.
+  - autoinv. autofresh.
+    have h0: DefEq (nil ++ [(x0, Co phi)] ++ G0) D a a' A Nom.
+    { eapply DefEq_weakening with (F:=nil)(G:=G0).
+      eauto 1. auto. simpl. eapply Typing_Ctx; eauto. }
+    simpl in h0.
+    move: (H0 _ _ _ H3 h0) => [B' [h1 h2]].
+    eexists.
+    split.
+    eapply (@BranchTyping_CPi_exists x0).
+    rewrite <- (open_tm_wrt_co_close_tm_wrt_co B' x0) in h1.
+    eapply h1.  unhide Fr.  fsetdec.
+    destruct phi.
+    eapply (@E_CPiCong3 x0); eauto 2.
+    unhide Fr. fsetdec.
+    eapply refl_iso; eauto 1.
+    rewrite open_tm_wrt_co_close_tm_wrt_co.
+    eapply h2.
+Qed.
+
+Lemma reduction_eq : forall a a' R, 
+    reduction_in_one a a' R -> 
+    forall G D A, Typing G a A -> Typing G a' A -> 
+    DefEq G D a a' A R.
+Proof.
+  induction 1; intros.
+  + autoinv.
+    eapply E_EqConv; eauto 2.
+    pick fresh y and apply E_AbsCong2;
+    try move: (H y ltac:(auto)) => h; clear H;
+    try move: (H0 y ltac:(auto)) => h0; clear H0;
+    try move: (H3 y ltac:(auto)) => h3; clear H3;
+    try move: (H5 y ltac:(auto)) => h5; clear H5;
+    split_hyp; eauto 2.
+    eapply h0; eauto 2.
+    admit.
+    admit.
+  + destruct nu.
+    autoinv.
+    eapply E_EqConv; eauto 2.
+    eapply E_TAppCong; eauto 2.
+    eapply IHreduction_in_one; eauto 2.
+Admitted.
+
 Lemma reduction_preservation : forall a a' R, reduction_in_one a a' R -> forall G A, 
       Typing G a A -> Typing G a' A.
 Proof.
@@ -2372,16 +2600,27 @@ Proof.
   - move: (Typing_regularity tpga) => h0.
     destruct nu.
     autoinv.
-(*    eapply E_Conv with (A := (open_tm_wrt_tm x0 b)); auto.
-    eapply E_TApp; eauto. eauto.
-    eapply E_Conv with (A := (open_tm_wrt_tm x0 x1)); auto.
-    eapply E_IApp; eauto. eauto.
+    eapply E_Conv with (A := (open_tm_wrt_tm x0 b)); auto.
+    move: (RolePath_preservation r H3) => ?.
+    eauto.
+    autoinv. subst.
+    eauto.
+    subst. eauto.
   - move: (Typing_regularity tpga) => h0. 
     autoinv; subst.
     eapply E_Conv with (A:= (open_tm_wrt_co x3 g_Triv)); auto.
-    eapply E_CApp; eauto. eauto.
-  - apply invert_a_Pattern in tpga.
-    inversion tpga as [A [s [B [P1 [P2 [P3 [P4 P5]]]]]]].
+    eapply E_CApp; eauto. 
+  -  move: (Typing_regularity tpga) => h0. 
+     move: (invert_a_Pattern tpga) => h1.
+     move: h1 => [A0 [A1 [B [C h]]]]. split_hyp.
+     eapply E_Conv with (A := C); auto.
+     eapply E_Case; eauto.
+     have h2: Typing G B a_Star. eapply Typing_regularity; eauto 1.
+     have h3: DefEq G (dom G) a a' A0 Rep.
+     { 
+     move: (BranchTyping_congruence H4 _ _ _ h2 ) => ?.
+
+    inversion tpga as 
     eapply E_Pat. eauto. eauto. eapply E_Conv. eauto. eauto.
     eapply DefEqIso_regularity. eapply E_Sym. eauto.
     eapply E_Conv. eauto. eauto.
