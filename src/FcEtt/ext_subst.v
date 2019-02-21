@@ -544,7 +544,7 @@ Qed.
 
 Locate uniq_map.
 
-Lemma BranchTyping_co_subst :  
+Lemma BranchTyping_co_subst :
       forall G0 n R b B b2 aa B2 B3 C (H : BranchTyping G0 n R b B b2 aa B2 B3 C),
       forall G D A1 A2 T R' F c ,
         G0 = (F ++ (c ~ Co (Eq A1 A2 T R') ) ++ G)
@@ -559,16 +559,7 @@ Lemma BranchTyping_co_subst :
                                    (co_subst_co_tm g_Triv c C).
 Proof.
   induction 1; intros; subst.
-  - rewrite open_tm_wrt_co_lc_tm; auto;
-    have ?: lc_tm C1 by admit. (* FIXME: we don't seem to have any information on C1..? *)
-    done.
-    (*
-    rewrite <- (open_tm_wrt_co_lc_tm (co_subst_co_tm g_Triv c0 C1) (g_Var_f c)); auto using co_subst_co_tm_lc_tm.
-    simpl.
-    have LC: lc_co g_Triv. eauto 3 with lc.
-    move: (co_subst_co_tm_lc_tm _ _ c0 H3 LC) => h0. simpl in h0.
-    *)
-    move: BranchTyping_Base => /=.
+  - move: BranchTyping_Base => /=.
     rewrite co_subst_co_tm_apply_pattern_args.
     apply.
     all: try eapply co_subst_co_tm_lc_tm; try done.
@@ -580,36 +571,54 @@ Proof.
     eapply disjoint_map_2.
     eapply disjoint_app_r in H2.
     eapply disjoint_sym.
-    ok.
+    by ok.
     move: co_subst_co_tm_open_tm_wrt_co.
     move/(_ _ _ g_Triv) => /= <- //=.
-    by rewrite open_tm_wrt_co_lc_tm.
-(*
   - simpl.
-    E_pick_fresh y.
-    autorewrite with subst_open_var; eauto 2 with lc.
-    rewrite_subst_context.
-    replace (a_App (co_subst_co_tm g_Triv c b) (Rho Rel) (a_Var_f y)) with
-        (co_subst_co_tm g_Triv c (a_App b (Rho Rel) (a_Var_f y))); auto.
-    eapply H0; eauto.
-    auto.
+    (* FIXME: E_pick_fresh x needs to be updated, to handle role vs Rel properly *)
+    pick fresh y and apply BranchTyping_PiRole.
+    autofresh with y.
+    especialize H0; last first.
+    do 2 (rewrite co_subst_co_tm_open_tm_wrt_tm in H0; try done).
+    rewrite map_app in H0.
+    TacticsInternals.apply_eq H0. (* FIXME: finish apply_eq and update here *)
+    rewrite app_assoc.
+    f_equal.
+    unfold map.
+    eset (e := (eq_sym  (EnvImpl.map_app _ _ _ _ _))).
+    TacticsInternals.apply_eq e.
+    f_equal.
+    (unshelve (instantiate(1:=_))); only 1: econstructor 2; last first.
+    cbn.
+    (unshelve (instantiate(2:=_))); only 1: econstructor 1; last first.
+    cbn. unfold one.
+    f_equal.
+    (unshelve (instantiate(1:=_))); only 1: econstructor 1; last first; by reflexivity.
+    (unshelve (instantiate(1:=_))); only 1: econstructor 1; last first; by reflexivity.
   - simpl. E_pick_fresh y.
     autorewrite with subst_open_var; eauto 2 with lc.
     rewrite_subst_context.
     replace (a_App (co_subst_co_tm g_Triv c b) (Rho Irrel) a_Bullet) with
         (co_subst_co_tm g_Triv c (a_App b (Rho Irrel) a_Bullet)).
-    eapply H0; eauto.
-    auto.
-    auto.
+    TacticsInternals.apply_eq H0. eauto.
+    autorewrite with lngen.
+    rewrite map_app.
+    all: by cbn.
   - simpl. E_pick_fresh y.
     autorewrite with subst_open_var; eauto 2 with lc.
     rewrite_subst_context.
     replace (a_CApp (co_subst_co_tm g_Triv c b) g_Triv) with
-        (co_subst_co_tm g_Triv c (a_CApp b g_Triv)).
-    eapply H0; eauto.
-    simpl. auto.
-    auto. *)
-Admitted.
+        (co_subst_co_tm g_Triv c (a_CApp b g_Triv)) by done.
+    TacticsInternals.apply_eq H0; by try rewrite map_app; done.
+  - cbn.
+    E_pick_fresh y.
+    autorewrite with subst_open_var; eauto 2 with lc.
+    rewrite_subst_context.
+    TacticsInternals.apply_eq H0.
+    by rewrite map_app.
+    Unshelve.
+    all: unfold one; try match goal with |- _ = _ => reflexivity | |- DefEq _ _ _ _ _ _ => ea end; fsetdec_fast.
+Qed.
 
 
 Lemma co_substitution_mutual :
