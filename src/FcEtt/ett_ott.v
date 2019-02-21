@@ -1465,12 +1465,13 @@ Inductive Par : role_context -> tm -> tm -> role -> Prop :=    (* defn Par *)
      Par W b1 b1' R0 ->
      Par W b2 b2' R0 ->
      Par W  ( (a_Pattern Nom a F Apps5 b1 b2) )   ( (a_Pattern Nom a' F Apps5 b1' b2') )  R0
- | Par_PatternTrue : forall (W:role_context) (a:tm) (F:const) (Apps5:Apps) (b1 b2 b:tm) (R0:role) (a' b1' b2':tm),
+ | Par_PatternTrue : forall (W:role_context) (a:tm) (F:const) (Apps5:Apps) (b1 b2 b:tm) (R0:role) (a' b1' b2':tm) (Apps':Apps),
      Par W a a' Nom ->
      Par W b1 b1' R0 ->
      Par W b2 b2' R0 ->
      AppsPath Nom a' F Apps5 ->
      ApplyArgs a' b1' b ->
+     SatApp F Apps' ->
      Par W  ( (a_Pattern Nom a F Apps5 b1 b2) )  (a_CApp b g_Triv) R0
  | Par_PatternFalse : forall (W:role_context) (a:tm) (F:const) (Apps5:Apps) (b1 b2 b2':tm) (R0:role) (a' b1':tm),
      Par W a a' Nom ->
@@ -1508,10 +1509,11 @@ Inductive Beta : tm -> tm -> role -> Prop :=    (* defn Beta *)
      MatchSubst a p1 b1 b' ->
      SubRole R1 R ->
      Beta a b' R
- | Beta_PatternTrue : forall (a:tm) (F:const) (Apps5:Apps) (b1 b2 b1':tm) (R0:role),
+ | Beta_PatternTrue : forall (a:tm) (F:const) (Apps5:Apps) (b1 b2 b1':tm) (R0:role) (Apps':Apps),
      lc_tm b2 ->
      AppsPath Nom a F Apps5 ->
      ApplyArgs a b1 b1' ->
+     SatApp F Apps' ->
      Beta (a_Pattern Nom a F Apps5 b1 b2) (a_CApp b1' g_Triv) R0
  | Beta_PatternFalse : forall (a:tm) (F:const) (Apps5:Apps) (b1 b2:tm) (R0:role),
      lc_tm b1 ->

@@ -740,7 +740,7 @@ Ltac ea       := eassumption.
 (* Hiding/unhiding the type of a hyp *)
 Ltac hide      := TacticsInternals.hide.
 Ltac hidewith  := TacticsInternals.hidewith.
-Ltac unhide    := TacticsInternals.unhide. Print TacticsInternals.unhide.
+Ltac unhide    := TacticsInternals.unhide.
 Ltac softclear := TacticsInternals.softclear. (* This tactic goes further, and prevents the hyp from being used again *)
 
 (* FIXME: see similar declaration above *)
