@@ -542,7 +542,6 @@ Proof.
   all: by rewrite -> IHpat_args.
 Qed.
 
-Locate uniq_map.
 
 Lemma BranchTyping_co_subst :
       forall G0 n R b B b2 aa B2 B3 C (H : BranchTyping G0 n R b B b2 aa B2 B3 C),
