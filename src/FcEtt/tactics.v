@@ -898,12 +898,14 @@ Tactic Notation "ret" tactic(tac) := let answer := tac in exact answer.
 
 
 (* Finding out why 2 terms are not unifiable *)
-(* Selectors: hyp, ehyp (especializes the hyp first), term, goal *)
+(* Selectors: hyp, ehyp (especializes the hyp first), top (top assumption, à la ssr), etop, term, goal *)
 Local Tactic Notation "debugunif_dispatch" preident(disp1) preident(disp2) constr(t1) constr(t2) := TacticsInternals.unify_info' disp1 disp2 t1 t2.
 Tactic Notation "debug" "unify" "hyp"  ident(H1)  "vs" "hyp"  ident(H2)  := debugunif_dispatch hyp1 hyp2 ltac:(ret type of H1) ltac:(ret type of H2).
 Tactic Notation "debug" "unify" "hyp"  ident(H1)  "vs" "goal"            := let g := get_goal in debugunif_dispatch hyp1 goal ltac:(ret type of H1) g.
 Tactic Notation "debug" "unify" "hyp"  ident(H1)  "vs" "term" constr(t2) := debugunif_dispatch hyp trm ltac:(ret type of H1) t2.
 Tactic Notation "debug" "unify" "ehyp" ident(H1)  "vs" "goal"            := especialize H1; let g := get_goal in debugunif_dispatch hyp1 goal ltac:(ret type of H1) g.
+Tactic Notation "debug" "unify" "top"             "vs" "goal"            := let top := fresh "top" in move=> top; let g := get_goal in debugunif_dispatch top_ goal ltac:(ret type of top) g.
+Tactic Notation "debug" "unify" "etop"            "vs" "goal"            := let top := fresh "top" in move=> top; especialize top; let g := get_goal in debugunif_dispatch etop goal ltac:(ret type of top) g.
 Tactic Notation "debug" "unify" "term" constr(t1) "vs" "term" constr(t2) := debugunif_dispatch tm1 tm2 t1 t2.
 Tactic Notation "debug" "unify" "term" constr(t1) "vs" "goal"            := let g := get_goal in debugunif_dispatch term goal t1 g.
 

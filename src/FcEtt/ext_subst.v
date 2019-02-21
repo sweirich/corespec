@@ -16,6 +16,7 @@ Require Import FcEtt.ett_roleing.
 Set Bullet Behavior "Strict Subproofs".
 Set Implicit Arguments.
 
+Generalizable All Variables.
 
 Lemma Ctx_strengthen : forall G1 G2, Ctx (G2 ++ G1) -> Ctx G1.
   induction G2; [ | inversion 1]; simpl; auto.
@@ -406,13 +407,12 @@ Proof.
     erewrite (tm_subst_fresh_2 _ t); auto.
     eapply E_Fam; eauto 2.
   - (* E_Case *)
-    admit.
-(*    eapply E_Case; eauto 2.
-    replace  (tm_subst_tm_tm a0 x a) with a. eauto. admit.
-    replace (a_Fam F) with (tm_subst_tm_tm a0 x (a_Fam F)).
-    replace A1 with (tm_subst_tm_tm a0 x A1).
-    eapply BranchTyping_tm_subst; eauto 2. admit.
-    reflexivity. *)
+    eapply CON;
+      try solve [match goal with H : _ |- _ => eapply H; eauto 3 end].
+    all: exactly 1 goal.
+    move: BranchTyping_tm_subst.
+    move/(_ _ _ _ _ _ (a_Fam F) []) => /=.
+    by apply; try ea; try done.
   - (* E_Assn *)
     destruct (c == x).
     + subst.
@@ -437,15 +437,10 @@ Proof.
     eauto. eauto using Typing_lc1.
   - eapply E_EqConv; eauto 2.
     eapply DefEq_weaken_available; eauto.
-  - admit. (* eapply E_PatCong; eauto 3.
-    replace (a_Fam F) with 
-        (tm_subst_tm_tm a0 x (a_Fam F)).
-    admit. (* eapply BranchTyping_tm_subst; eauto 2. *)
-    auto.
-    replace (a_Fam F) with 
-        (tm_subst_tm_tm a0 x (a_Fam F)).
-    eapply BranchTyping_tm_subst; eauto 2.
-    auto. *)
+  - eapply CON; eauto 3;
+      move: BranchTyping_tm_subst;
+      move/(_ _ _ _ _ _ (a_Fam F) []);
+      apply; try ea; try done.
   - eapply E_LeftRel with (b := tm_subst_tm_tm a0 x b)
                           (b':= tm_subst_tm_tm a0 x b'); eauto 2.
     eapply ValuePath_subst; eauto 2 with lc.
@@ -512,7 +507,7 @@ Proof.
         auto. 
    Unshelve. all: try exact Rep.
    all: eauto.
-Admitted.
+Qed.
 
 Lemma Typing_tm_subst : forall G x A b B (H : Typing ((x ~ Tm A) ++ G) b B),
   forall a, Typing G a A ->
@@ -535,6 +530,20 @@ Proof.
 Qed.
 
 
+Lemma co_subst_co_tm_apply_pattern_args: `{
+  co_subst_co_tm g c (apply_pattern_args b pat_args) =
+  apply_pattern_args
+    (co_subst_co_tm g c b)
+    (List.map (co_subst_co_pattern_arg g c) pat_args)}.
+Proof.
+  intros; move: b.
+  induction pat_args; try done; move=> b /=.
+  match goal with |- ?T => match T with context ctx [match ?x with | _ => _ end] => destruct x end end.
+  all: by rewrite -> IHpat_args.
+Qed.
+
+Locate uniq_map.
+
 Lemma BranchTyping_co_subst :  
       forall G0 n R b B b2 aa B2 B3 C (H : BranchTyping G0 n R b B b2 aa B2 B3 C),
       forall G D A1 A2 T R' F c ,
@@ -548,16 +557,34 @@ Lemma BranchTyping_co_subst :
                                    (co_subst_co_tm g_Triv c B2)
                                    (co_subst_co_tm g_Triv c B3)
                                    (co_subst_co_tm g_Triv c C).
-Proof. 
-Admitted.
-(*
+Proof.
   induction 1; intros; subst.
-  - rewrite open_tm_wrt_co_lc_tm; auto.
-    rewrite <- (open_tm_wrt_co_lc_tm (co_subst_co_tm g_Triv c0 C) (g_Var_f c)); auto using co_subst_co_tm_lc_tm.
+  - rewrite open_tm_wrt_co_lc_tm; auto;
+    have ?: lc_tm C1 by admit. (* FIXME: we don't seem to have any information on C1..? *)
+    done.
+    (*
+    rewrite <- (open_tm_wrt_co_lc_tm (co_subst_co_tm g_Triv c0 C1) (g_Var_f c)); auto using co_subst_co_tm_lc_tm.
     simpl.
     have LC: lc_co g_Triv. eauto 3 with lc.
     move: (co_subst_co_tm_lc_tm _ _ c0 H3 LC) => h0. simpl in h0.
-    eapply BranchTyping_Base; eauto 2 using co_subst_co_tm_lc_tm.
+    *)
+    move: BranchTyping_Base => /=.
+    rewrite co_subst_co_tm_apply_pattern_args.
+    apply.
+    all: try eapply co_subst_co_tm_lc_tm; try done.
+    (* FIXME: isn't there some uniq_solve or something? *)
+    move:(uniq_app_1 _ _ _ H2) (uniq_app_2 _ _ _ H2) => h1 h2.
+    move:(uniq_app_2 _ _ _ h2) => h2'.
+    eapply uniq_app; eauto 3.
+    eapply uniq_app_3 in H2.
+    eapply disjoint_map_2.
+    eapply disjoint_app_r in H2.
+    eapply disjoint_sym.
+    ok.
+    move: co_subst_co_tm_open_tm_wrt_co.
+    move/(_ _ _ g_Triv) => /= <- //=.
+    by rewrite open_tm_wrt_co_lc_tm.
+(*
   - simpl.
     E_pick_fresh y.
     autorewrite with subst_open_var; eauto 2 with lc.
@@ -581,8 +608,8 @@ Admitted.
         (co_subst_co_tm g_Triv c (a_CApp b g_Triv)).
     eapply H0; eauto.
     simpl. auto.
-    auto.
-Qed. *)
+    auto. *)
+Admitted.
 
 
 Lemma co_substitution_mutual :
