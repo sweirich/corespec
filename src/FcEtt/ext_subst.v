@@ -542,7 +542,6 @@ Proof.
   all: by rewrite -> IHpat_args.
 Qed.
 
-Locate uniq_map.
 
 Lemma BranchTyping_co_subst :
       forall G0 n R b B b2 aa B2 B3 C (H : BranchTyping G0 n R b B b2 aa B2 B3 C),
@@ -693,7 +692,12 @@ Proof.
     erewrite (tm_subst_co_fresh_2 _ t); auto.
     eapply E_Fam; eauto 2.
   - (* E_Case *) 
-    admit. 
+    eapply CON; try done;
+      try solve [match goal with H : _ |- _ => eapply H; eauto 3 end].
+      move: BranchTyping_co_subst => bt.
+     TacticsInternals.apply_eq bt.
+     unshelve instantiate (1:= _); [refine (a_Fam _) | reflexivity].
+     unshelve instantiate (1:= _); [refine ([]) | reflexivity].
 (*    eapply E_Case; eauto 2.
     replace (a_Fam F) with  (co_subst_co_tm g_Triv c (a_Fam F)); auto.
     admit. 
@@ -742,15 +746,12 @@ Proof.
     eauto 2.
   - eapply E_IsoSnd; eauto 1.
     eapply H; eauto.
-  - admit. (* eapply E_PatCong; eauto 3.
-    replace (a_Fam F) with 
-        (co_subst_co_tm g_Triv c (a_Fam F)).
-    admit. (* eapply BranchTyping_co_subst; eauto 2. *)
-    auto.
-    replace (a_Fam F) with 
-        (co_subst_co_tm g_Triv c (a_Fam F)).
-    eapply BranchTyping_co_subst; eauto 2.
-    auto. *)
+  - eapply CON; try done;
+      try solve [match goal with H : _ |- _ => eapply H; eauto 3 end];
+    move: BranchTyping_co_subst => bt;
+    TacticsInternals.apply_eq bt;
+    only 1, 3: (unshelve instantiate (1:= _); [refine (a_Fam _) | reflexivity]);
+    do 2 (only 1: unshelve instantiate (1:= _); [refine ([]) | reflexivity]).
   - eapply E_LeftRel with (b := co_subst_co_tm g_Triv c b) (b':= co_subst_co_tm g_Triv c b'); eauto 2.
     eapply ValuePath_subst_co; eauto 2 with lc.
     eapply ValuePath_subst_co; eauto 2 with lc.
@@ -810,8 +811,10 @@ Proof.
       * apply (H _ D _ _ A1 A2 T R'); auto.
       * inversion H4; subst; clear H4.
          apply (H0 G0 D A1 A2 T R' F c1); auto.
-         Unshelve. all:auto.
-Admitted.
+
+  Unshelve.
+  all: unfold one; try match goal with |- _ = _ => reflexivity | |- DefEq _ _ _ _ _ _ => ea end; ea.
+Qed.
 
 Lemma Typing_co_subst:
    forall G D c a1 a2 A R' b B (H : Typing (c ~ (Co (Eq a1 a2 A R')) ++ G) b B),
