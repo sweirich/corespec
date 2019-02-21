@@ -50,6 +50,42 @@ Ltac especialize H :=
       subst e
   end.
 
+(**** More robust apply tactic ****)
+(* Aux *)
+Ltac align_type_hyp_vs t t_H H :=
+  first [
+    unify t t_H; idtac "Done - unifiable"; idtac t; idtac t_H
+  |
+    match t with
+      (* TODO: extend: detect if different number of arguments + make sure heads are unifiable (otherwise we're probably using the wrong hyp) *)
+      | ?t1 ?t2 =>
+        match t_H with
+          | ?t_H1 ?t_H2 =>
+            first [
+              (* Arguments' types match, we good *)
+              unify t2 t_H2; align_type_hyp_vs t1 t_H1 H
+            |
+              have: (t2 = t_H2);
+                [ (* eq aligning the arguments' types, left to the user *) |
+                  move=> ->; align_type_hyp_vs t1 t_H1 H  ]
+            ]
+          end
+      | _ => idtac "done, with remaining goal:" t
+    end].
+
+(* "Apply modulo equalities": applies H to the goal and generates equalities for
+    the arguments that don't unify *)
+Ltac apply_eq H :=
+  first [
+    eapply H
+  |
+    especialize H;
+    let g := match goal with |- ?G => G end in
+    let t := type of H in
+    align_type_hyp_vs g t H;
+    last first;
+    only 1: apply H].
+
 (**** Info tactics ****)
 (* This tactic is meant to help find why 2 terms are not unifiable, by displaying
    additional information. At the moment, it only decomposes applications. Foralls
