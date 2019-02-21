@@ -706,7 +706,7 @@ Ltac E_pick_fresh x :=
                | a_UCAbs _  => E_CAbsCong
                end
       in pick fresh x and apply v
-    | [ |- BranchTyping _ _ _ _ _ _ ?shape _ _ ] => 
+    | [ |- BranchTyping _ _ _ _ _ _ _ ?shape _ _ ] =>
       let v := match shape with 
                | a_Pi Rel _ _ => BranchTyping_PiRel
                | a_Pi Irrel _ _ => BranchTyping_PiIrrel
