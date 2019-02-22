@@ -11,6 +11,7 @@ Require Export FcEtt.beta.
 Require Export FcEtt.ext_wf.
 Require Import FcEtt.ett_path.
 Require Import FcEtt.ext_weak.
+Require Import FcEtt.ett_match.
 Require Import FcEtt.ett_roleing.
 
 Set Bullet Behavior "Strict Subproofs".
@@ -443,32 +444,31 @@ Proof.
       apply; try ea; try done.
   - eapply E_LeftRel with (b := tm_subst_tm_tm a0 x b)
                           (b':= tm_subst_tm_tm a0 x b'); eauto 2.
-    eapply ValuePath_subst; eauto 2 with lc.
-    eapply ValuePath_subst; eauto 2 with lc.
+    move: (CasePath_subst_tm x c (Typing_lc H5).1) => h. eauto.
+    move: (CasePath_subst_tm x c0 (Typing_lc H5).1) => h. eauto.
     autorewrite with open_subst; eauto 2 with lc.
-    eapply H3; eauto.
     autorewrite with open_subst; eauto 2 with lc.
     eapply DefEq_weaken_available; eauto 2.
   - eapply E_LeftIrrel with (b := tm_subst_tm_tm a0 x b)
                           (b':= tm_subst_tm_tm a0 x b'); eauto 2.
-    eapply ValuePath_subst; eauto 2 with lc.
-    eapply ValuePath_subst; eauto 2 with lc.
+    move: (CasePath_subst_tm x c (Typing_lc H5).1) => h. eauto.
+    move: (CasePath_subst_tm x c0 (Typing_lc H5).1) => h. eauto.
     autorewrite with open_subst; eauto 2 with lc.
     eapply H3; eauto.
     autorewrite with open_subst; eauto 2 with lc.
     eapply DefEq_weaken_available; eauto 2.
   - eapply E_Right with (a := tm_subst_tm_tm a0 x a)
                         (a':= tm_subst_tm_tm a0 x a'); eauto 2.
-    eapply ValuePath_subst; eauto 2 with lc.
-    eapply ValuePath_subst; eauto 2 with lc.
+    move: (CasePath_subst_tm x c (Typing_lc H5).1) => h. eauto.
+    move: (CasePath_subst_tm x c0 (Typing_lc H5).1) => h. eauto.
     eapply H; eauto 2.
     eapply H1; eauto 2.
     autorewrite with open_subst; eauto 2 with lc.
     autorewrite with open_subst; eauto 2 with lc.
     eapply DefEq_weaken_available; eauto 2.
   - eapply E_CLeft; eauto 2.
-    eapply ValuePath_subst; eauto 2 with lc.
-    eapply ValuePath_subst; eauto 2 with lc.
+    move: (CasePath_subst_tm x c (Typing_lc H3).1) => h. eauto.
+    move: (CasePath_subst_tm x c0 (Typing_lc H3).1) => h. eauto.
     eapply H; eauto 2.
     eapply H0; eauto 2.
     eapply DefEq_weaken_available; eauto 2.
@@ -752,26 +752,26 @@ Proof.
     TacticsInternals.apply_eq bt;
     only 1, 3: (unshelve instantiate (1:= _); [refine (a_Fam _) | reflexivity]);
     do 2 (only 1: unshelve instantiate (1:= _); [refine ([]) | reflexivity]).
-  - eapply E_LeftRel with (b := co_subst_co_tm g_Triv c b) (b':= co_subst_co_tm g_Triv c b'); eauto 2.
-    eapply ValuePath_subst_co; eauto 2 with lc.
-    eapply ValuePath_subst_co; eauto 2 with lc.
+  - eapply E_LeftRel with (b := co_subst_co_tm g_Triv c1 b) (b':= co_subst_co_tm g_Triv c1 b'); eauto 2.
+    move: (CasePath_subst_co c1 c lc_g_Triv) => h. eauto.
+    move: (CasePath_subst_co c1 c0 lc_g_Triv) => h. eauto.
     autorewrite with open_subst; eauto 2 with lc.
-    eapply H3; eauto.
+    (* eapply H3; eauto. *)
     autorewrite with open_subst; eauto 2 with lc.
     eapply DefEq_weaken_available; eauto 2.
 
-  - eapply E_LeftIrrel with (b := co_subst_co_tm g_Triv c b)
-                              (b':= co_subst_co_tm g_Triv c b'); eauto 2.
-    eapply ValuePath_subst_co; eauto 2 with lc.
-    eapply ValuePath_subst_co; eauto 2 with lc.
+  - eapply E_LeftIrrel with (b := co_subst_co_tm g_Triv c1 b)
+                              (b':= co_subst_co_tm g_Triv c1 b'); eauto 2.
+    move: (CasePath_subst_co c1 c lc_g_Triv) => h. eauto.
+    move: (CasePath_subst_co c1 c0 lc_g_Triv) => h. eauto.
     autorewrite with open_subst; eauto 2 with lc.
     eapply H3; eauto.
     autorewrite with open_subst; eauto 2 with lc.
     eapply DefEq_weaken_available; eauto 2.
-  - eapply E_Right with (a := co_subst_co_tm g_Triv c a)
-                        (a':= co_subst_co_tm g_Triv c a'); eauto 2.
-    eapply ValuePath_subst_co; eauto 2 with lc.
-    eapply ValuePath_subst_co; eauto 2 with lc.
+  - eapply E_Right with (a := co_subst_co_tm g_Triv c1 a)
+                        (a':= co_subst_co_tm g_Triv c1 a'); eauto 2.
+    move: (CasePath_subst_co c1 c lc_g_Triv) => h. eauto.
+    move: (CasePath_subst_co c1 c0 lc_g_Triv) => h. eauto.
     simpl in H. eapply H; eauto 2.
     simpl in H1. eapply H1; eauto 2.
     autorewrite with open_subst; auto.
@@ -779,12 +779,12 @@ Proof.
     autorewrite with open_subst; auto.
     eapply DefEq_weaken_available; eauto 2.
   - eapply E_CLeft; eauto 2.
-    eapply ValuePath_subst_co; eauto 2 with lc.
-    eapply ValuePath_subst_co; eauto 2 with lc.
+    move: (CasePath_subst_co c1 c lc_g_Triv) => h. eauto.
+    move: (CasePath_subst_co c1 c0 lc_g_Triv) => h. eauto.
     eapply H; eauto 2.
     eapply H0; eauto 2.
     eapply DefEq_weaken_available; eauto 2.
-    replace g_Triv with (co_subst_co_co g_Triv c g_Triv).
+    replace g_Triv with (co_subst_co_co g_Triv c1 g_Triv).
     autorewrite with open_subst; eauto 2 with lc.
     auto.
   - induction F; done.

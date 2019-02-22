@@ -23,9 +23,9 @@ Lemma respects_atoms_eq_mutual :
 Proof.
   ext_induction CON; intros; subst; eauto 2.
   all: try solve [eapply CON; eauto 2; try fsetdec].
-  eapply E_LeftRel with (b:=b)(b':=b'); eauto 2.
+  (* eapply E_LeftRel with (b:=b)(b':=b'); eauto 2. *)
   eapply E_LeftIrrel with (b:=b)(b':=b'); eauto 2.
-  eapply E_Right with (a:=a)(a':=a'); eauto 2.
+  (* eapply E_Right with (a:=a)(a':=a'); eauto 2. *)
 Qed.
 
 Definition Iso_respects_atoms_eq   := third  respects_atoms_eq_mutual.
@@ -115,9 +115,9 @@ Proof.
   ext_induction CON.
   all: try done.
   all: intros; try solve [eapply CON; eauto 2].
-  - eapply E_LeftRel   with (b := b) (b' := b'); eauto 2.
+  (* - eapply E_LeftRel   with (b := b) (b' := b'); eauto 2. *)
   - eapply E_LeftIrrel with (b:=b) (b' := b'); eauto 2.
-  - eapply E_Right     with (a:=a)(a':=a'); eauto 2.
+  (* - eapply E_Right     with (a:=a)(a':=a'); eauto 2. *)
 Qed.
 
 Lemma remove_available_mutual:

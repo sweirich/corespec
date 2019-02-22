@@ -1765,9 +1765,9 @@ with DefEq : context -> available_props -> tm -> tm -> tm -> role -> Prop :=    
      SatApp F Apps5 ->
      Typing G (a_Fam F) A1 ->
      DefEq G D (a_Pattern Nom a F Apps5 b1 b2) (a_Pattern Nom a' F Apps5 b1' b2') C R0
- | E_LeftRel : forall (G:context) (D:available_props) (a a' A B:tm) (R':role) (F:const) (b b':tm) (R1:role),
-     ValuePath a F ->
-     ValuePath a' F ->
+ | E_LeftRel : forall (G:context) (D:available_props) (a a' A B:tm) (R' R1:role) (b:tm) (F:const) (b':tm),
+     CasePath R'  ( (a_App a (Role R1) b) )  F ->
+     CasePath R'  ( (a_App a' (Role R1) b') )  F ->
      Typing G a (a_Pi Rel A B) ->
      Typing G b A ->
      Typing G a' (a_Pi Rel A B) ->
@@ -1776,8 +1776,8 @@ with DefEq : context -> available_props -> tm -> tm -> tm -> role -> Prop :=    
      DefEq G  (dom  G )   (open_tm_wrt_tm  B   b )   (open_tm_wrt_tm  B   b' )  a_Star Rep ->
      DefEq G D a a' (a_Pi Rel A B) R'
  | E_LeftIrrel : forall (G:context) (D:available_props) (a a' A B:tm) (R':role) (F:const) (b b':tm),
-     ValuePath a F ->
-     ValuePath a' F ->
+     CasePath R'  ( (a_App a (Rho Irrel) a_Bullet) )  F ->
+     CasePath R'  ( (a_App a' (Rho Irrel) a_Bullet) )  F ->
      Typing G a (a_Pi Irrel A B) ->
      Typing G b A ->
      Typing G a' (a_Pi Irrel A B) ->
@@ -1786,8 +1786,8 @@ with DefEq : context -> available_props -> tm -> tm -> tm -> role -> Prop :=    
      DefEq G  (dom  G )   (open_tm_wrt_tm  B   b )   (open_tm_wrt_tm  B   b' )  a_Star Rep ->
      DefEq G D a a' (a_Pi Irrel A B) R'
  | E_Right : forall (G:context) (D:available_props) (b b' A:tm) (R1 R':role) (a:tm) (F:const) (a' B:tm),
-     ValuePath a F ->
-     ValuePath a' F ->
+     CasePath R'  ( (a_App a (Role R1) b) )  F ->
+     CasePath R'  ( (a_App a' (Role R1) b') )  F ->
      Typing G a (a_Pi Rel A B) ->
      Typing G b A ->
      Typing G a' (a_Pi Rel A B) ->
@@ -1796,8 +1796,8 @@ with DefEq : context -> available_props -> tm -> tm -> tm -> role -> Prop :=    
      DefEq G  (dom  G )   (open_tm_wrt_tm  B   b )   (open_tm_wrt_tm  B   b' )  a_Star Rep ->
      DefEq G D b b' A  (param R1   R' ) 
  | E_CLeft : forall (G:context) (D:available_props) (a a' a1 a2 A:tm) (R1:role) (B:tm) (R':role) (F:const),
-     ValuePath a F ->
-     ValuePath a' F ->
+     CasePath R'  ( (a_CApp a g_Triv) )  F ->
+     CasePath R'  ( (a_CApp a' g_Triv) )  F ->
      Typing G a (a_CPi  ( (Eq a1 a2 A R1) )  B) ->
      Typing G a' (a_CPi  ( (Eq a1 a2 A R1) )  B) ->
      DefEq G  (dom  G )  a1 a2 A  (param R1   R' )  ->

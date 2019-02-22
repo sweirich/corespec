@@ -1822,8 +1822,8 @@ G |= F : A1
 ------------------------------------------------------------------------ :: PatCong
 G ; D |= case Nom a of F @ Apps => b1 | _ => b2 == case Nom a' of F @ Apps => b1' | _ => b2' : C / R0
 
-ValuePath a  +> F
-ValuePath a' +> F
+CasePath R' (a R1 b)  +> F
+CasePath R' (a' R1 b') +> F
 G |= a : all +x:A  -> B
 G |= b : A
 G |= a' : all +x:A  -> B
@@ -1833,8 +1833,8 @@ G ; dom G |= B {b/x} == B {b'/x} : TYPE / Rep
 -------------------------------------------------- :: LeftRel
 G ; D |= a == a' : all + x: A -> B / R'
 
-ValuePath a  +> F
-ValuePath a' +> F
+CasePath R' (a - [])  +> F
+CasePath R' (a' - []) +> F
 G |= a : all -x:A -> B
 G |= b : A
 G |= a' : all -x:A -> B
@@ -1845,8 +1845,8 @@ G ; dom G |= B {b/x} == B {b'/x} : TYPE/Rep
 G ; D |= a == a' : all -x: A -> B/R'
 
 
-ValuePath a  +> F
-ValuePath a' +> F
+CasePath R' (a R1 b) +> F
+CasePath R' (a' R1 b') +> F
 G |= a : all +x:A -> B
 G |= b : A
 G |= a' : all +x:A -> B
@@ -1857,8 +1857,8 @@ G ; dom G |= B {b/x} == B {b'/x} : TYPE/Rep
 G ; D |= b == b' : A/param R1 R'
 
 
-ValuePath a  +> F
-ValuePath a' +> F
+CasePath R' (a [o])  +> F
+CasePath R' (a' [o]) +> F
 G |= a  : all c:(a1 ~ a2:A/R1). B
 G |= a' : all c:(a1 ~ a2:A/R1). B
 G ; dom G |= a1 == a2 : A/param R1 R'

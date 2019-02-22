@@ -951,142 +951,146 @@ Proof. intros. inversion H; subst; eauto.
           eapply ValuePath_ax_par_ValuePath_2; eauto.
           apply (ValuePath_sub_capp H1). contradiction.
 Qed.
-(*
-Lemma Path_par_app_fst : forall W F rho a b a' b' R R1, CasePath R a F ->
+
+Lemma Path_par_app_fst : forall W F nu a b a' b' R,
+      CasePath R (a_App a nu b) F ->
       Par W (a_App a nu b) (a_App a' nu b') R -> Par W a a' R.
-Proof. intros. generalize dependent a'. induction H; intros.
-        - inversion H0; subst. apply rctx_uniq in H6. eauto.
-          inversion H8; subst.
-          assert (Cs A = Ax (a_UAbs rho R1 a'0) A0 R2).
-          eapply binds_unique; eauto using uniq_toplevel.
-          inversion H1. auto.
-        - inversion H1; subst. apply rctx_uniq in H7. eauto.
-          inversion H9; subst.
-          assert (Ax a A R0 = Ax (a_UAbs rho R1 a'0) A0 R3).
-          eapply binds_unique; eauto using uniq_toplevel.
-          inversion H2; subst. contradiction. eauto.
-        - inversion H1; subst. inversion H7; subst.
-          eauto. eapply Par_Path in H9; eauto.
-          inversion H9. eauto.
-        - inversion H0; subst. inversion H6; subst. eauto.
-          eapply Par_Path in H8; eauto.
-          inversion H8. eauto.
+Proof. intros. inversion H0; subst.
+       - inversion H6; subst; eauto.
+       - move: (Par_CasePath (CasePath_app H) H7) => h.
+         apply CasePath_ValuePath in h. inversion h.
+       - auto.
+       - inversion H5; subst. pattern_head_tm_agree.
+         move: (CasePath_head H) => h. simpl in h.
+         rewrite U1 in h. inversion h; subst. inversion H; subst.
+         all:axioms_head_same. contradiction.
+         assert False. apply H10. econstructor.
+         eapply tm_pattern_agree_cong.
+         eapply tm_pattern_agree_rename_inv_2.
+         eapply MatchSubst_match; eauto. eauto.
+         econstructor. apply tm_tm_agree_sym.
+         eapply ValuePath_ax_par_ValuePath_2; eauto.
+         inversion H3; subst; auto. intro.
+         apply H2. apply tm_pattern_agree_sub; auto.
+         eapply Par_lc2; eauto. eapply Par_lc1; eauto.
+         contradiction.
 Qed.
 
-Lemma Path_par_app_snd : forall W F rho a b a' b' R R1, Path F a R ->
-      Par W (a_App a rho R1 b) (a_App a' rho R1 b') R -> Par W b b' (param R1 R).
-Proof. intros. generalize dependent a'. induction H; intros.
-        - inversion H0; subst. inversion H6; subst. eauto.
-          eapply Par_Path in H8; eauto. inversion H8. auto.
-        - inversion H1; subst. inversion H7; subst. eauto.
-          eapply Par_Path in H9; eauto.
-          inversion H9. eauto.
-        - inversion H1; subst. inversion H7; subst.
-          eauto. eapply Par_Path in H9; eauto.
-          inversion H9. eauto.
-        - inversion H0; subst. inversion H6; subst. eauto.
-          eapply Par_Path in H8; eauto.
-          inversion H8. eauto.
+Lemma Path_par_app_snd : forall W F nu a b a' b' R,
+      CasePath R (a_App a nu b) F ->
+      Par W (a_App a nu b) (a_App a' nu b') R ->
+      Par W b b' (app_role nu R).
+Proof. intros. inversion H0; subst.
+       - inversion H6; subst; eauto.
+       - move: (Par_CasePath (CasePath_app H) H7) => h.
+         apply CasePath_ValuePath in h. inversion h.
+       - auto.
+       - inversion H5; subst. pattern_head_tm_agree.
+         move: (CasePath_head H) => h. simpl in h.
+         rewrite U1 in h. inversion h; subst. inversion H; subst.
+         all:axioms_head_same. contradiction.
+         assert False. apply H10. econstructor.
+         eapply tm_pattern_agree_cong.
+         eapply tm_pattern_agree_rename_inv_2.
+         eapply MatchSubst_match; eauto. eauto.
+         econstructor. apply tm_tm_agree_sym.
+         eapply ValuePath_ax_par_ValuePath_2; eauto.
+         inversion H3; subst; auto. intro.
+         apply H2. apply tm_pattern_agree_sub; auto.
+         eapply Par_lc2; eauto. eapply Par_lc1; eauto.
+         contradiction.
 Qed.
 
-Lemma Path_par_capp : forall W F a a' R, Path F a R ->
+Lemma Path_par_capp : forall W F a a' R, CasePath R (a_CApp a g_Triv) F ->
       Par W (a_CApp a g_Triv) (a_CApp a' g_Triv) R -> Par W a a' R.
-Proof. intros. generalize dependent a'. induction H; intros.
-        - inversion H0; subst. apply rctx_uniq in H4. eauto.
-          inversion H4; subst.
-          assert (Cs A = Ax (a_UCAbs a'0) A0 R1).
-          eapply binds_unique; eauto using uniq_toplevel.
-          inversion H1. auto.
-        - inversion H1; subst. apply rctx_uniq in H5. eauto.
-          inversion H5; subst.
-          assert (Ax a A R1 = Ax (a_UCAbs a'0) A0 R2).
-          eapply binds_unique; eauto using uniq_toplevel.
-          inversion H2; subst. contradiction. eauto.
-        - inversion H1; subst. inversion H5; subst.
-          eauto. eapply Par_Path in H5; eauto.
-          inversion H5. eauto.
-        - inversion H0; subst. inversion H4; subst. eauto.
-          eapply Par_Path in H4; eauto.
-          inversion H4. eauto.
+Proof. intros. inversion H0; subst.
+       - inversion H4; subst; eauto.
+       - move: (Par_CasePath (CasePath_capp H) H4) => h.
+         apply CasePath_ValuePath in h. inversion h.
+       - auto.
+       - inversion H3; subst. pattern_head_tm_agree.
+         move: (CasePath_head H) => h. simpl in h.
+         rewrite U1 in h. inversion h; subst. inversion H; subst.
+         all:axioms_head_same. contradiction.
+         assert False. apply H11. econstructor.
+         eapply tm_pattern_agree_cong.
+         eapply tm_pattern_agree_rename_inv_2.
+         eapply MatchSubst_match; eauto. eauto.
+         econstructor. apply tm_tm_agree_sym.
+         eapply ValuePath_ax_par_ValuePath_2; eauto.
+         inversion H9; subst; auto.
+         contradiction.
 Qed.
 
-Lemma Path_multipar_app_inversion : forall W F rho a b c R R1, Path F a R ->
-      multipar W (a_App a rho R1 b) c R -> exists a' b', c = a_App a' rho R1 b'.
+Lemma Path_multipar_app_inversion : forall W F nu a b c R,
+          CasePath R (a_App a nu b) F -> multipar W (a_App a nu b) c R ->
+          exists a' b', c = a_App a' nu b'.
 Proof. intros. dependent induction H0.
         - eauto.
         - pose (H2 := H1).
           apply Path_par_app_inversion with (F := F) in H2; eauto 1.
-          inversion H2 as [a1 [b1 P]]. subst.
-          pose (H3 := H1).
-          apply Path_par_app_fst with (F := F) in H3; auto 1.
-          apply Par_Path with (F := F) in H3; auto 1.
-          destruct (IHmultipar rho a1 b1 R1 H3 ltac:(auto)) as [a2 [b2 Q]].
+          inversion H2 as [a1 [b1 P]].
+          pose (H3 := H1). subst.
+          apply Par_CasePath with (F := F) in H3; auto 1.
+          destruct (IHmultipar nu a1 b1 H3 ltac:(auto)) as [a2 [b2 Q]].
           eauto.
 Qed.
 
-Lemma Path_multipar_capp_inversion : forall W F a c R, Path F a R ->
-          multipar W (a_CApp a g_Triv) c R -> exists a', c = a_CApp a' g_Triv.
+Lemma Path_multipar_capp_inversion : forall W F a c R,
+        CasePath R (a_CApp a g_Triv) F -> multipar W (a_CApp a g_Triv) c R ->
+        exists a', c = a_CApp a' g_Triv.
 Proof. intros. dependent induction H0.
         - eauto.
         - pose (H2 := H1).
           apply Path_par_capp_inversion with (F := F) in H2; eauto 1.
           inversion H2 as [a1 P]. subst.
           pose (H3 := H1).
-          apply Path_par_capp with (F := F) in H3; auto 1.
-          apply Par_Path with (F := F) in H3; auto 1.
+          apply Par_CasePath with (F := F) in H3; auto 1.
           destruct (IHmultipar a1 H3 ltac:(auto)) as [a2 Q].
           eauto.
 Qed.
 
-Lemma Path_multipar_app_fst : forall W F rho a b a' b' R R1, Path F a R ->
-      multipar W (a_App a rho R1 b) (a_App a' rho R1 b') R -> multipar W a a' R.
+Lemma Path_multipar_app_fst : forall W F nu a b a' b' R,
+      CasePath R (a_App a nu b) F ->
+      multipar W (a_App a nu b) (a_App a' nu b') R ->
+      multipar W a a' R.
 Proof. intros. dependent induction H0.
-        - inversion H0; subst. eauto.
+        - inversion H0; subst; eauto.
         - pose (H2 := H1).
           apply Path_par_app_inversion with (F := F) in H2; eauto 1.
           inversion H2 as [a1 [b1 P]]. subst.
-          pose (H3 := H1).
+          pose (H3 := H1). move: (Par_CasePath H H3) => h.
           apply Path_par_app_fst with (F := F) in H3; auto 1.
-          apply Par_Path with (F := F) in H3; auto 1.
-          pose (Q := IHmultipar rho a1 b1 a' b' R1 H3 ltac:(auto) ltac:(auto)).
-          pose (H4 := H1).
-          apply Path_par_app_fst with (F := F) in H4; auto 1.
-          eapply mp_step; eauto.
+          eauto.
 Qed.
 
-Lemma Path_multipar_app_snd : forall W F rho a b a' b' R R1, Path F a R ->
-      multipar W (a_App a rho R1 b) (a_App a' rho R1 b') R ->
-      multipar W b b' (param R1 R).
+Lemma Path_multipar_app_snd :  forall W F nu a b a' b' R,
+      CasePath R (a_App a nu b) F ->
+      multipar W (a_App a nu b) (a_App a' nu b') R ->
+      multipar W b b' (app_role nu R).
 Proof. intros. dependent induction H0.
-        - inversion H0; subst. eauto.
+        - inversion H0; subst; eapply multipar_sub; eauto.
         - pose (H2 := H1).
           apply Path_par_app_inversion with (F := F) in H2; eauto 1.
           inversion H2 as [a1 [b1 P]]. subst.
-          pose (H3 := H1).
-          apply Path_par_app_fst with (F := F) in H3; auto 1.
-          apply Par_Path with (F := F) in H3; auto 1.
-          pose (Q := IHmultipar rho a1 b1 a' b' R1 H3 ltac:(auto) ltac:(auto)).
-          pose (H4 := H1).
-          apply Path_par_app_snd with (F := F) in H4; auto 1.
-          eapply mp_step; eauto.
+          pose (H3 := H1). move: (Par_CasePath H H3) => h.
+          apply Path_par_app_snd with (F := F) in H3; auto 1.
+          eauto.
 Qed.
 
-Lemma Path_multipar_capp : forall W F a a' R, Path F a R ->
-      multipar W (a_CApp a g_Triv) (a_CApp a' g_Triv) R -> multipar W a a' R.
+Lemma Path_multipar_capp : forall W F a a' R, CasePath R (a_CApp a g_Triv) F ->
+      multipar W (a_CApp a g_Triv) (a_CApp a' g_Triv) R ->
+      multipar W a a' R.
 Proof. intros. dependent induction H0.
-        - inversion H0; subst. eauto.
+        - inversion H0; subst; eauto.
         - pose (H2 := H1).
           apply Path_par_capp_inversion with (F := F) in H2; eauto 1.
           inversion H2 as [a1 P]. subst.
-          pose (H3 := H1).
+          pose (H3 := H1). move: (Par_CasePath H H3) => h.
           apply Path_par_capp with (F := F) in H3; auto 1.
-          apply Par_Path with (F := F) in H3; auto 1.
-          pose (Q := IHmultipar a1 a' H3 ltac:(auto) ltac:(auto)).
-          pose (H4 := H1).
-          apply Path_par_capp with (F := F) in H4; auto 1.
-          eapply mp_step; eauto.
+          eauto.
 Qed.
-*)
+
 (* ------------------------------------------------------ *)
 
 Lemma joins_lc_fst : forall W a b R, joins W a b R -> lc_tm a.
@@ -1670,38 +1674,39 @@ Proof.
     exists (a_Pattern Nom ac F Apps5 b1c b2c); split;
     eapply multipar_Pattern; eauto.
   - intros. apply H3 in H5. unfold joins in H5.
-    inversion H5 as [c [P1 P2]].
-    pose (P3 := P1). pose (P4 := P1). admit. (*
+    inversion H5 as [c1 [P1 P2]].
+    pose (P3 := P1). pose (P4 := P1).
     eapply Path_multipar_app_inversion with (F := F) in P3; eauto 1.
     inversion P3 as [a1 [b1 Q]]. subst.
     eapply Path_multipar_app_fst with (F := F) in P2; eauto 1.
     eapply Path_multipar_app_fst with (F := F) in P4; eauto 1.
-    exists a1. split; auto. *)
+    exists a1. split; auto.
   - intros. apply H3 in H5. unfold joins in H5.
-    inversion H5 as [c [P1 P2]].
-    pose (P3 := P1). pose (P4 := P1). admit. (*
+    inversion H5 as [c1 [P1 P2]].
+    pose (P3 := P1). pose (P4 := P1).
     eapply Path_multipar_app_inversion with (F := F) in P3; eauto 1.
     inversion P3 as [a1 [b1 Q]]. subst.
     eapply Path_multipar_app_fst with (F := F) in P2; eauto 1.
     eapply Path_multipar_app_fst with (F := F) in P4; eauto 1.
-    exists a1. split; auto. *)
+    exists a1. split; auto.
   - intros. apply H3 in H5. unfold joins in H5.
-    inversion H5 as [c [P1 P2]].
-    pose (P3 := P1). pose (P4 := P1). admit. (*
+    inversion H5 as [c1 [P1 P2]].
+    pose (P3 := P1). pose (P4 := P1).
     eapply Path_multipar_app_inversion with (F := F) in P3; eauto 1.
     inversion P3 as [a1 [b1 Q]]. subst.
     eapply Path_multipar_app_snd with (F := F) in P2; eauto 1.
     eapply Path_multipar_app_snd with (F := F) in P4; eauto 1.
-    exists b1. split; auto. *)
+    exists b1. split; auto.
   - intros. apply H2 in H3. unfold joins in H3.
-    inversion H3 as [c [P1 P2]].
-    pose (P3 := P1). pose (P4 := P1). admit. (*
+    inversion H3 as [c1 [P1 P2]].
+    pose (P3 := P1). pose (P4 := P1).
     eapply Path_multipar_capp_inversion with (F := F) in P3; eauto 1.
     inversion P3 as [a0 Q]. subst.
     eapply Path_multipar_capp with (F := F) in P2; eauto 1.
     eapply Path_multipar_capp with (F := F) in P4; eauto 1.
-    exists a0. split; auto. *)
-Admitted. (* consistent_mutual *)
+    exists a0. split; auto.
+    Unshelve. auto.
+Qed.
 
 Lemma defeq_joins: forall S D A B T R, DefEq S D A B T R -> Good S D ->
                                          joins (ctx_nom S) A B R.

@@ -2453,8 +2453,8 @@
 
 
 \newcommand{\ottdruleEXXLeftRel}[1]{\ottdrule[#1]{%
-\ottpremise{ \mathsf{ValuePath} \  \ottnt{a}   \mathrel{+\!\!\!\!\!\!\rightarrow}   \ottmv{F} }%
-\ottpremise{ \mathsf{ValuePath} \  \ottnt{a'}   \mathrel{+\!\!\!\!\!\!\rightarrow}   \ottmv{F} }%
+\ottpremise{ \mathsf{CasePath}_{ \ottnt{R'} }\  \ottsym{(}   \ottnt{a} \  \ottnt{b} ^{ \ottnt{R_{{\mathrm{1}}}} }   \ottsym{)}   \mathrel{+\!\!\!\!\!\!\rightarrow}   \ottmv{F} }%
+\ottpremise{ \mathsf{CasePath}_{ \ottnt{R'} }\  \ottsym{(}   \ottnt{a'} \  \ottnt{b'} ^{ \ottnt{R_{{\mathrm{1}}}} }   \ottsym{)}   \mathrel{+\!\!\!\!\!\!\rightarrow}   \ottmv{F} }%
 \ottpremise{\Gamma  \vDash  \ottnt{a}  \ottsym{:}   \mathrm{\Pi}^ \ottsym{+} \ottmv{x} \!:\! \ottnt{A} \to \ottnt{B} }%
 \ottpremise{\Gamma  \vDash  \ottnt{b}  \ottsym{:}  \ottnt{A}}%
 \ottpremise{\Gamma  \vDash  \ottnt{a'}  \ottsym{:}   \mathrm{\Pi}^ \ottsym{+} \ottmv{x} \!:\! \ottnt{A} \to \ottnt{B} }%
@@ -2468,8 +2468,8 @@
 
 
 \newcommand{\ottdruleEXXLeftIrrel}[1]{\ottdrule[#1]{%
-\ottpremise{ \mathsf{ValuePath} \  \ottnt{a}   \mathrel{+\!\!\!\!\!\!\rightarrow}   \ottmv{F} }%
-\ottpremise{ \mathsf{ValuePath} \  \ottnt{a'}   \mathrel{+\!\!\!\!\!\!\rightarrow}   \ottmv{F} }%
+\ottpremise{ \mathsf{CasePath}_{ \ottnt{R'} }\  \ottsym{(}   \ottnt{a} \  \Box ^{ \ottsym{-} }   \ottsym{)}   \mathrel{+\!\!\!\!\!\!\rightarrow}   \ottmv{F} }%
+\ottpremise{ \mathsf{CasePath}_{ \ottnt{R'} }\  \ottsym{(}   \ottnt{a'} \  \Box ^{ \ottsym{-} }   \ottsym{)}   \mathrel{+\!\!\!\!\!\!\rightarrow}   \ottmv{F} }%
 \ottpremise{\Gamma  \vDash  \ottnt{a}  \ottsym{:}   \mathrm{\Pi}^ \ottsym{-} \ottmv{x} \!:\! \ottnt{A} \to \ottnt{B} }%
 \ottpremise{\Gamma  \vDash  \ottnt{b}  \ottsym{:}  \ottnt{A}}%
 \ottpremise{\Gamma  \vDash  \ottnt{a'}  \ottsym{:}   \mathrm{\Pi}^ \ottsym{-} \ottmv{x} \!:\! \ottnt{A} \to \ottnt{B} }%
@@ -2483,8 +2483,8 @@
 
 
 \newcommand{\ottdruleEXXRight}[1]{\ottdrule[#1]{%
-\ottpremise{ \mathsf{ValuePath} \  \ottnt{a}   \mathrel{+\!\!\!\!\!\!\rightarrow}   \ottmv{F} }%
-\ottpremise{ \mathsf{ValuePath} \  \ottnt{a'}   \mathrel{+\!\!\!\!\!\!\rightarrow}   \ottmv{F} }%
+\ottpremise{ \mathsf{CasePath}_{ \ottnt{R'} }\  \ottsym{(}   \ottnt{a} \  \ottnt{b} ^{ \ottnt{R_{{\mathrm{1}}}} }   \ottsym{)}   \mathrel{+\!\!\!\!\!\!\rightarrow}   \ottmv{F} }%
+\ottpremise{ \mathsf{CasePath}_{ \ottnt{R'} }\  \ottsym{(}   \ottnt{a'} \  \ottnt{b'} ^{ \ottnt{R_{{\mathrm{1}}}} }   \ottsym{)}   \mathrel{+\!\!\!\!\!\!\rightarrow}   \ottmv{F} }%
 \ottpremise{\Gamma  \vDash  \ottnt{a}  \ottsym{:}   \mathrm{\Pi}^ \ottsym{+} \ottmv{x} \!:\! \ottnt{A} \to \ottnt{B} }%
 \ottpremise{\Gamma  \vDash  \ottnt{b}  \ottsym{:}  \ottnt{A}}%
 \ottpremise{\Gamma  \vDash  \ottnt{a'}  \ottsym{:}   \mathrm{\Pi}^ \ottsym{+} \ottmv{x} \!:\! \ottnt{A} \to \ottnt{B} }%
@@ -2498,8 +2498,8 @@
 
 
 \newcommand{\ottdruleEXXCLeft}[1]{\ottdrule[#1]{%
-\ottpremise{ \mathsf{ValuePath} \  \ottnt{a}   \mathrel{+\!\!\!\!\!\!\rightarrow}   \ottmv{F} }%
-\ottpremise{ \mathsf{ValuePath} \  \ottnt{a'}   \mathrel{+\!\!\!\!\!\!\rightarrow}   \ottmv{F} }%
+\ottpremise{ \mathsf{CasePath}_{ \ottnt{R'} }\  \ottsym{(}  \ottnt{a}  \ottsym{[}  \bullet  \ottsym{]}  \ottsym{)}   \mathrel{+\!\!\!\!\!\!\rightarrow}   \ottmv{F} }%
+\ottpremise{ \mathsf{CasePath}_{ \ottnt{R'} }\  \ottsym{(}  \ottnt{a'}  \ottsym{[}  \bullet  \ottsym{]}  \ottsym{)}   \mathrel{+\!\!\!\!\!\!\rightarrow}   \ottmv{F} }%
 \ottpremise{\Gamma  \vDash  \ottnt{a}  \ottsym{:}   \forall \ottmv{c} \!:\! \ottsym{(}   \ottnt{a_{{\mathrm{1}}}}   \sim _{ \ottnt{R_{{\mathrm{1}}}} }  \ottnt{a_{{\mathrm{2}}}}  :  \ottnt{A}   \ottsym{)} . \ottnt{B} }%
 \ottpremise{\Gamma  \vDash  \ottnt{a'}  \ottsym{:}   \forall \ottmv{c} \!:\! \ottsym{(}   \ottnt{a_{{\mathrm{1}}}}   \sim _{ \ottnt{R_{{\mathrm{1}}}} }  \ottnt{a_{{\mathrm{2}}}}  :  \ottnt{A}   \ottsym{)} . \ottnt{B} }%
 \ottpremise{\Gamma  \ottsym{;}   \widetilde { \Gamma }   \vDash  \ottnt{a_{{\mathrm{1}}}}  \equiv  \ottnt{a_{{\mathrm{2}}}}  \ottsym{:}  \ottnt{A}  \ottsym{/}  \ottkw{param} \, \ottnt{R_{{\mathrm{1}}}} \, \ottnt{R'}}%
