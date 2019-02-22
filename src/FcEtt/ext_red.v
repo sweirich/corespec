@@ -2042,6 +2042,9 @@ Proof.
   eapply MatchTyping_correctness2; eauto 1.
 Qed.
 
+(* TODO: move this to ett_match *)
+Hint Resolve tm_pattern_agree_cong tm_pattern_agree_tm_tm_agree : nominal.
+Hint Resolve Rename_tm_pattern_agree : nominal.
 
 (* We can freshen the axiom WRT to any context *)
 Lemma Axiom_Freshening : forall s (Γ:list(atom*s)), 
@@ -2075,8 +2078,10 @@ Proof.
 
   move: (Rename_chain_subst RN) => eq.
   move: (Rename_chain_subst H0) => eq2.
-  rewrite <- matchsubst_chain_subst in eq; auto.
-  rewrite <- matchsubst_chain_subst in eq2; auto.
+  rewrite <- matchsubst_chain_subst in eq; eauto with nominal.
+  rewrite <- matchsubst_chain_subst in eq2; eauto with nominal.
+  repeat eexists.
+
 Admitted. (* Freshening lemma for axioms *)
 
 
