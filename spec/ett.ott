@@ -18,7 +18,7 @@ metavar covar, c ::=
 metavar datacon, K ::=
   {{ coq atom }}
 
-metavar const, T, F, Age ::=
+metavar const, T, F ::=
   {{ coq atom }}
   {{ lex Alphanum }}
 
@@ -52,6 +52,7 @@ role, R :: '' ::= {{ com Role }}
   | Rep         ::   :: Rep
   | min R1 R2   :: S :: Min
   | param R1 R2 :: S :: Param
+    {{ tex [[R1]]\sqcap[[R2]] }}
   | app_role nu R :: S :: App {{ coq app_role [[nu]] [[R]] }}
   | ( R )       :: S :: RParen
 
@@ -124,6 +125,7 @@ tm, a, b, p, v, w, A, B, C :: 'a_' ::= {{ com types and kinds }}
 
   %% abbreviations for examples
   | Int                  :: S :: Int
+  | Age                  :: S :: Age
   | Bool                 :: S :: Bool
   | Nat                  :: S :: Nat
   | Vec                  :: S :: Vec
@@ -264,18 +266,28 @@ role_context, W {{ tex \Omega }} :: 'rctx_' ::= {{ com role_contexts }}
    | ( W )           :: M  :: Paren   {{ coq ([[W]]) }}
    | (# W #)         :: M  :: SecretParen {{ coq [[W]] }} {{ tex [[W]] }}
 
-roles, Rs :: '' ::= {{ coq list role }} 
-   | nilR       ::  :: nilR {{ coq nil }}
-   | R , Rs     ::  :: consR {{ coq ([[R]]::[[Rs]]) }}
-   | range W   :: S :: rangeR {{ coq (range([[W]])) }}
+roles, Rs {{ tex \overline{R} }}  :: '' ::= {{ coq list role }} 
+   | nilR       ::   :: nilR {{ coq nil }}
+   | R , Rs     ::   :: consR {{ coq ([[R]]::[[Rs]]) }}
+   | range W    :: S :: rangeR {{ coq (range([[W]])) }}
    | ( Rs )     :: S :: RolesParen {{ coq ([[Rs]]) }}
-   | Rs ++ Rs' :: S :: appR {{ coq ([[Rs]]++[[Rs']]) }}
+   | Rs ++ Rs'  :: S :: appR {{ coq ([[Rs]]++[[Rs']]) }}
+%% Special case lists for nice printing
+%% curly braces disambiguate Ott parsing, but are not displayed
+   | {}         :: S :: list0 {{ coq nil }} {{ tex }}
+   | { R1 }     :: S :: list1 {{ coq ([[R1]]::nil) }}
+                              {{ tex [[R1]] }}
+   | R1 , R2    :: S :: list2 {{ coq ([[R1]]::[[R2]]::nil) }}
+                              {{ tex [[R1]], [[R2]] }}
+   | R1 , R2 , R3 :: S :: list3 {{ coq ([[R1]]::[[R2]]::[[R3]]::nil) }}
+                              {{ tex [[R1]], [[R2]] , [[R3]] }}
+
 
 sig_sort :: '' ::= {{ com signature classifier }}
    | A @ Rs            ::    :: Cs
-     {{ tex _[[Rs]] \ [[A]] }}
+     {{ tex  [[A]] [[@]] [[Rs]] }}
    | p ~ a : A / R @ Rs    ::    :: Ax
-     {{ tex _[[Rs]] \ [[p]] \sim_{[[R]]} [[a]] : [[A]]  }}
+     {{ tex [[p]] \sim_{[[R]]} [[a]] : [[A]] @ [[Rs]] }}
 
 sort :: '' ::= {{ com binding classifier }}
    | Tm A             ::   :: Tm
@@ -703,7 +715,7 @@ defns
 defn
 RolePath a = F @ Rs  ::  :: RolePath :: 'RolePath_'
 {{ com Type headed by constant (partial function) }}
-{{ tex \mathsf{RolePath} \ [[a]] = [[F]] @ [[Rs]] }}
+{{ tex \mathsf{RolePath} \ [[a]] [[=]] [[F]] @ [[Rs]] }}
 by
 
 F : A @ Rs in toplevel 
@@ -1524,7 +1536,7 @@ JBranchTyping :: '' ::=
 defn
 G |= Apps case R a : A of b @ pattern_args : B -> C | C' ::    :: BranchTyping :: 'BranchTyping_'
 {{ com Branch Typing (aligning the types of case) }}
-{{ tex [[G]] \vDash \mathsf{case} \hspace{2pt} [[a]] : [[A]] \hspace{2pt} \mathsf{of} \hspace{2pt} [[b]] : [[B]] \Rightarrow [[C]] \ | \, [[C']] }}
+{{ tex [[G]] \vDash \mathsf{case} \hspace{2pt} [[a]] : [[A]] \hspace{2pt} \mathsf{of} \hspace{2pt} [[b]] [[@]] [[Apps]] : [[B]] \Rightarrow [[C]] \ | \, [[C']] }}
 by
 
 ctx_uniq G
@@ -1685,6 +1697,7 @@ defn
 
 G ; D |= a == b : A / R ::     :: DefEq :: 'E_'
 {{ com definitional equality }}
+{{ tex [[G]] ; [[D]] [[|=]] [[a]] [[==]]_{[[R]]} [[b]] : [[A]] }}
 by
 
 |= G
@@ -1748,7 +1761,7 @@ G ; D |= a1 + a2 == b1 + b2 : (B { a2 / x })/R'
 G ; D |= a1 == b1 : (all + x:A -> B)/R'
 G ; D |= a2 == b2 : A/ param R R'
 RolePath a1 = F @ R, Rs
-RolePath b1 = F' @ R, Rs'
+RolePath b1 = F @ R, Rs
 G |= b1 R b2 : B { a2 / x }
 ------------------------------------------------ :: TAppCong
 G ; D |= a1 R a2 == b1 R b2 : (B { a2 / x })/R'
@@ -2695,6 +2708,7 @@ homs 'a_'
 
   %% abbreviations for examples
   :: Int           {{ coq 0                                        }}
+  :: Age           {{ coq 0                                        }}
   :: Bool          {{ coq 0                                        }}
   :: Nat           {{ coq 0                                        }}
   :: Vec           {{ coq 0                                        }}
