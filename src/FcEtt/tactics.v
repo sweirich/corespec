@@ -26,6 +26,14 @@ Require Import Coq.Strings.String.
 *)
 
 
+(* Hints & databases *)
+
+(* Rewrite db with standard facts, like general stuff we use all the time *)
+Hint Rewrite map_app app_assoc : std.
+
+
+
+
 Module TacticsInternals.
 (*******************************)
 (**** Basic Building Blocks ****)
@@ -154,6 +162,7 @@ Global Notation "'_hidden_' ( s )" := (_hide_with s _) (at level 50, only printi
 Ltac hide H       := match type of H with | _hide ?T => rewrite <- (_eq_hide T) in H | _hide_with ?s ?T => rewrite <- (_eq_hide_with s T) in H | ?T => rewrite -> (_eq_hide T) in H end.
 Ltac hidewith s H := match type of H with | _hide ?T => rewrite <- (_eq_hide T) in H | _hide_with ?s ?T => rewrite <- (_eq_hide_with s T) in H | ?T => rewrite -> (_eq_hide_with s T) in H end.
 Ltac unhide H     := match type of H with | _hide ?T => rewrite <- (_eq_hide T) in H | _hide_with ?s ?T => rewrite <- (_eq_hide_with s T) in H | _ => fail "Not hidden" end.
+Ltac unhide_all   := repeat match goal with | H : _hide _ |- _ => unhide H end; repeat match goal with | H : _hide_with _ _ |- _ => unhide H end.
 
 
 Ltac unwrap_dyn d :=
@@ -715,12 +724,12 @@ Ltac autotype :=
     | [ |- _ ∧ _ ] => split
 
     (* Force failure if fsetdec can't solve this goal (there shouldn't be cases where other tactics can solve it) *)
-    | [ |- _ `in` _   ] => try fsetdec_fast; first [fsetdec | fail 2]
-    | [ |- ¬ _ `in` _ ] => try fsetdec_fast; first [fsetdec | fail 2]
+    | [ |- _ `in` _   ] => unhide_all; try fsetdec_fast; first [fsetdec | fail 2]
+    | [ |- ¬ _ `in` _ ] => unhide_all; try fsetdec_fast; first [fsetdec | fail 2]
 
 
-    | [ |- _ [=] _  ] => first [fsetdec | fail 2]
-    | [ |- _ [<=] _ ] => first [fsetdec | fail 2]
+    | [ |- _ [=] _  ] => first [unhide_all; fsetdec | fail 2]
+    | [ |- _ [<=] _ ] => first [unhide_all; fsetdec | fail 2]
 
 
     | [ |- ?C _                         = ?C _                         ] => prove_eq_same_head
@@ -934,7 +943,7 @@ Ltac hide      := TacticsInternals.hide.
 Ltac hidewith  := TacticsInternals.hidewith.
 Ltac unhide    := TacticsInternals.unhide.
 
-Ltac uha       := repeat with TacticsInternals._hide do unhide end; repeat with TacticsInternals._hide_with do unhide.
+Ltac uha       := TacticsInternals.unhide_all.
 Tactic Notation "unhide" "all" := uha.
 Ltac softclear := TacticsInternals.softclear. (* This tactic goes further, and prevents the hyp from being used again *)
 
@@ -965,7 +974,6 @@ Tactic Notation "debug" "unify" "top"             "vs" "goal"            := let 
 Tactic Notation "debug" "unify" "etop"            "vs" "goal"            := let top := fresh "top" in move=> top; especialize top; let g := get_goal in debugunif_dispatch etop goal ltac:(ret type of top) g.
 Tactic Notation "debug" "unify" "term" constr(t1) "vs" "term" constr(t2) := debugunif_dispatch tm1 tm2 t1 t2.
 Tactic Notation "debug" "unify" "term" constr(t1) "vs" "goal"            := let g := get_goal in debugunif_dispatch term goal t1 g.
-
 
 (**** Example ****)
 (*
