@@ -707,8 +707,12 @@ Ltac E_pick_fresh x :=
                end
       in pick fresh x and apply v
     | [ |- BranchTyping _ _ _ _ _ _ _ ?shape _ _ ] =>
-      let v := match shape with 
+      let v := multimatch shape with
+               (* FIXME: right now, to disambiguate rel/role, we use the
+                  simplest strategy - use the first one to work. We could
+                  be smarter by trying to match other arguments *)
                | a_Pi Rel _ _ => BranchTyping_PiRel
+               | a_Pi Rel _ _ => BranchTyping_PiRole
                | a_Pi Irrel _ _ => BranchTyping_PiIrrel
                | a_CPi _ _ => BranchTyping_CPi
                end

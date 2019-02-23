@@ -542,7 +542,6 @@ Proof.
   all: by rewrite -> IHpat_args.
 Qed.
 
-
 Lemma BranchTyping_co_subst :
       forall G0 n R b B b2 aa B2 B3 C (H : BranchTyping G0 n R b B b2 aa B2 B3 C),
       forall G D A1 A2 T R' F c ,
@@ -558,6 +557,16 @@ Lemma BranchTyping_co_subst :
                                    (co_subst_co_tm g_Triv c C).
 Proof.
   induction 1; intros; subst.
+  all: try solve [
+    cbn; E_pick_fresh y;
+    autofresh with y;
+    rewrite_subst_context;
+    by happly H0;
+      (autorewrite with subst_open_var std using move=>//);
+      move=>//; uha; fsetdec_fast].
+
+  all: exactly 1 goal.
+
   - move: BranchTyping_Base => /=.
     rewrite co_subst_co_tm_apply_pattern_args.
     apply.
@@ -573,48 +582,7 @@ Proof.
     by ok.
     move: co_subst_co_tm_open_tm_wrt_co.
     move/(_ _ _ g_Triv) => /= <- //=.
-  - simpl.
-    (* FIXME: E_pick_fresh x needs to be updated, to handle role vs Rel properly *)
-    pick fresh y and apply BranchTyping_PiRole.
-    autofresh with y.
-    especialize H0; last first.
-    do 2 (rewrite co_subst_co_tm_open_tm_wrt_tm in H0; try done).
-    rewrite map_app in H0.
-    TacticsInternals.apply_eq H0. (* FIXME: finish apply_eq and update here *)
-    rewrite app_assoc.
-    f_equal.
-    unfold map.
-    eset (e := (eq_sym  (EnvImpl.map_app _ _ _ _ _))).
-    TacticsInternals.apply_eq e.
-    f_equal.
-    (unshelve (instantiate(1:=_))); only 1: econstructor 2; last first.
-    cbn.
-    (unshelve (instantiate(2:=_))); only 1: econstructor 1; last first.
-    cbn. unfold one.
-    f_equal.
-    (unshelve (instantiate(1:=_))); only 1: econstructor 1; last first; by reflexivity.
-    (unshelve (instantiate(1:=_))); only 1: econstructor 1; last first; by reflexivity.
-  - simpl. E_pick_fresh y.
-    autorewrite with subst_open_var; eauto 2 with lc.
-    rewrite_subst_context.
-    replace (a_App (co_subst_co_tm g_Triv c b) (Rho Irrel) a_Bullet) with
-        (co_subst_co_tm g_Triv c (a_App b (Rho Irrel) a_Bullet)).
-    TacticsInternals.apply_eq H0. eauto.
-    autorewrite with lngen.
-    rewrite map_app.
-    all: by cbn.
-  - simpl. E_pick_fresh y.
-    autorewrite with subst_open_var; eauto 2 with lc.
-    rewrite_subst_context.
-    replace (a_CApp (co_subst_co_tm g_Triv c b) g_Triv) with
-        (co_subst_co_tm g_Triv c (a_CApp b g_Triv)) by done.
-    TacticsInternals.apply_eq H0; by try rewrite map_app; done.
-  - cbn.
-    E_pick_fresh y.
-    autorewrite with subst_open_var; eauto 2 with lc.
-    rewrite_subst_context.
-    TacticsInternals.apply_eq H0.
-    by rewrite map_app.
+
     Unshelve.
     all: unfold one; try match goal with |- _ = _ => reflexivity | |- DefEq _ _ _ _ _ _ => ea end; fsetdec_fast.
 Qed.
@@ -695,7 +663,7 @@ Proof.
     eapply CON; try done;
       try solve [match goal with H : _ |- _ => eapply H; eauto 3 end].
       move: BranchTyping_co_subst => bt.
-     TacticsInternals.apply_eq bt.
+     happly bt.
      unshelve instantiate (1:= _); [refine (a_Fam _) | reflexivity].
      unshelve instantiate (1:= _); [refine ([]) | reflexivity].
 (*    eapply E_Case; eauto 2.
@@ -749,7 +717,7 @@ Proof.
   - eapply CON; try done;
       try solve [match goal with H : _ |- _ => eapply H; eauto 3 end];
     move: BranchTyping_co_subst => bt;
-    TacticsInternals.apply_eq bt;
+    happly bt;
     only 1, 3: (unshelve instantiate (1:= _); [refine (a_Fam _) | reflexivity]);
     do 2 (only 1: unshelve instantiate (1:= _); [refine ([]) | reflexivity]).
   - eapply E_LeftRel with (b := co_subst_co_tm g_Triv c1 b) (b':= co_subst_co_tm g_Triv c1 b'); eauto 2.
