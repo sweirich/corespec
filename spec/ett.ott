@@ -52,7 +52,7 @@ role, R :: '' ::= {{ com Role }}
   | Rep         ::   :: Rep
   | min R1 R2   :: S :: Min
   | param R1 R2 :: S :: Param
-    {{ tex [[R1]]\sqcap[[R2]] }}
+    {{ tex [[R1]]\wedge[[R2]] }}
   | app_role nu R :: S :: App {{ coq app_role [[nu]] [[R]] }}
   | ( R )       :: S :: RParen
 
@@ -78,6 +78,7 @@ tm, a, b, p, v, w, A, B, C :: 'a_' ::= {{ com types and kinds }}
   | /\ c : phi . b       ::   :: CAbs  (+ bind c in b +)
   | /\ c  . b            ::   :: UCAbs (+ bind c in b +)
   | a [ g ]              ::   :: CApp
+  {{ tex [[a]]\;[[g]] }}
   | all c : phi . B      ::   :: CPi   (+ bind c in B +)
 
   | a |> R g             ::   :: Conv
@@ -87,9 +88,10 @@ tm, a, b, p, v, w, A, B, C :: 'a_' ::= {{ com types and kinds }}
   | []                   ::   :: Bullet
 
   | case R a of F @ Apps => b1 | _ => b2 ::   :: Pattern
-
+   {{ tex \mathsf{case} \hspace{3pt} [[a]] \hspace{3pt} \mathsf{of} \hspace{3pt} [[F]]\ [[Apps]] \rightarrow [[b1]] \| \_ \rightarrow [[b2]] }}
   | apply a pattern_args :: M :: ApplyPA
     {{ coq (apply_pattern_args [[a]] [[pattern_args]]) }}
+    {{ tex [[a]]\;[[pattern_args]] }}
 
   %% currently unused but ready for extension
   | K                    ::   :: DataCon
@@ -99,7 +101,7 @@ tm, a, b, p, v, w, A, B, C :: 'a_' ::= {{ com types and kinds }}
   | sub R a              ::    :: Sub
 
   %% source language only
-  | coerce a             ::    :: Coerce
+  | coerce               ::    :: Coerce
   | a b                  ::    :: SrcApp
 
   %% standard substitution, using open
@@ -199,13 +201,21 @@ co, g {{ tex \gamma }} :: 'g_' ::= {{ com explicit coercions }}
 
 App {{ tex \upsilon }} :: 'A_' ::= 
    | Tm nu           ::    :: Tm 
+     {{ tex [[nu]] }}
    | Co              ::    :: Co
+     %% What to use for this one? 
+     {{ tex \bullet }}
 
 Apps {{ tex \overline{\upsilon} }} :: 'A_' ::= 
    | emptyA            ::    :: nil  
-   | Apps , App      :: M  :: snoc  {{ coq (A_snoc [[Apps]] [[App]]) }}
+     {{ tex }}
+   | Apps , App      :: M  :: snoc  
+     {{ coq (A_snoc [[Apps]] [[App]]) }}
+     {{ tex [[Apps]]\;[[App]] }}
    | App , Apps      ::    :: cons  
-   | ( Apps )        :: M  :: Paren {{ coq ([[Apps]]) }}
+     {{ tex [[App]]\;[[Apps]] }}
+   | ( Apps )        :: M  :: Paren 
+     {{ coq ([[Apps]]) }}
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -285,9 +295,9 @@ roles, Rs {{ tex \overline{R} }}  :: '' ::= {{ coq list role }}
 
 sig_sort :: '' ::= {{ com signature classifier }}
    | A @ Rs            ::    :: Cs
-     {{ tex  [[A]] [[@]] [[Rs]] }}
+     {{ tex  [[A]]\ [[@]]\ [[Rs]] }}
    | p ~ a : A / R @ Rs    ::    :: Ax
-     {{ tex [[p]] \sim_{[[R]]} [[a]] : [[A]] @ [[Rs]] }}
+     {{ tex [[p]] \sim_{[[R]]} [[a]] : [[A]]\ [[@]]\ [[Rs]] }}
 
 sort :: '' ::= {{ com binding classifier }}
    | Tm A             ::   :: Tm
@@ -352,15 +362,21 @@ Nat, N {{ tex \mathbb{N} }} :: 'N_' ::= {{ coq nat }}
 
 pattern_arg {{ tex \mu }} :: 'p_' ::= {{ com Pattern arguments }}
   | Tm nu a       ::   :: Tm
+  {{ tex [[a]]^{[[nu]]} }}
   | Co g          ::   :: Co
-
+  {{ tex [[g]] }}
 
 pattern_args {{ tex \overline{\mu} }}, 
   PA :: 'pattern_args_' ::= {{ coq list pattern_arg }}
-  | none                  ::   :: None {{ coq nil }}
-  | pattern_arg , PA ::   :: Cons {{ coq (cons [[pattern_arg]] [[PA]]) }}
-  | PA , pattern_arg ::   :: Snoc {{ coq ([[PA]] ++ [ [[pattern_arg]] ]) }} 
-
+  | none                  ::   :: None 
+   {{ coq nil }}
+   {{ tex }}
+  | pattern_arg , PA ::   :: Cons 
+   {{ coq (cons [[pattern_arg]] [[PA]]) }}
+   {{ tex [[pattern_arg]]\;[[PA]] }}
+  | PA , pattern_arg ::   :: Snoc 
+   {{ coq ([[PA]] ++ [ [[pattern_arg]] ]) }} 
+   {{ tex [[PA]]\;[[pattern_arg]] }}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%_ Substs and fvs         _%%
@@ -713,36 +729,34 @@ defns
    JRolePath :: '' ::=
 
 defn
-RolePath a = F @ Rs  ::  :: RolePath :: 'RolePath_'
+RolePath a +> F @ Rs  ::  :: RolePath :: 'RolePath_'
 {{ com Type headed by constant (partial function) }}
-{{ tex \mathsf{RolePath} \ [[a]] [[=]] [[F]] @ [[Rs]] }}
+{{ tex \mathsf{RolePath} \ [[a]] [[+>]] [[F]] @ [[Rs]] }}
 by
 
 F : A @ Rs in toplevel 
-% Noms Rs'
 --------------------- :: AbsConst
-RolePath F = F @ Rs
+RolePath F +> F @ Rs
 
 F : p ~ a : A/R1 @ Rs in toplevel
-% Noms Rs' 
 --------------------------------- :: Const
-RolePath F = F @ Rs
+RolePath F +> F @ Rs
 
-RolePath a = F @ R1,Rs
+RolePath a +> F @ R1,Rs
 ---------------------------- :: TApp
-RolePath (a R1 b') = F @ Rs
+RolePath (a R1 b') +> F @ Rs
 
-RolePath a = F @ Rs
+RolePath a +> F @ Rs
 ---------------------------- :: App
-RolePath (a + b') = F @ Rs
+RolePath (a + b') +> F @ Rs
 
-RolePath a = F @ Rs
+RolePath a +> F @ Rs
 ---------------------- :: IApp
-RolePath (a - []) = F @ Rs
+RolePath (a - []) +> F @ Rs
 
-RolePath a = F @ Rs
+RolePath a +> F @ Rs
 ---------------------- :: CApp
-RolePath (a [o]) = F @ Rs
+RolePath (a [o]) +> F @ Rs
 
 
 
@@ -752,7 +766,7 @@ defns
 defn
 AppsPath R a +> F Apps  ::  :: AppsPath :: 'AppsPath_'
 {{ com Type headed by constant (partial function) }}
-{{ tex \mathsf{AppsPath} [[a]] [[+>]] [[F]][[Apps]] }}
+{{ tex \mathsf{AppsPath}\;[[a]] [[+>]] [[F]]\;[[Apps]] }}
 by
 
 F : A @ Rs in toplevel
@@ -780,27 +794,27 @@ defns
    JSat :: '' ::=
 
 defn  
-Apps ~ Rs ::   :: AppRoles :: 'AR_'
+Apps <-> Rs ::   :: AppRoles :: 'AR_'
 by
 
 -------------------- :: nil
-emptyA ~ nilR
+emptyA <-> nilR
 
-Apps ~ Rs
+Apps <-> Rs
 ----------------------- :: consTApp
-Tm R1 , Apps ~ R1 , Rs
+Tm R1 , Apps <-> R1 , Rs
 
-Apps ~ Rs
+Apps <-> Rs
 ----------------------- :: consApp
-Tm + , Apps ~ Rs
+Tm + , Apps <-> Rs
 
-Apps ~ Rs
+Apps <-> Rs
 ----------------------- :: consIApp
-Tm - , Apps ~ Rs
+Tm - , Apps <-> Rs
 
-Apps ~ Rs
+Apps <-> Rs
 ----------------------- :: consCApp
-Co , Apps ~ Rs
+Co , Apps <-> Rs
 
 
 defn
@@ -809,13 +823,13 @@ defn
 
 
 F : A @ Rs in toplevel
-Apps ~ Rs
+Apps <-> Rs
 --------------------------- :: Const
 Sat F Apps
 
 F : p ~ a0 : A1 / R1 @ Rs in toplevel
 not (R1 <= Nom)
-Apps ~ Rs
+Apps <-> Rs
 -------------------------------------- :: Axiom
 Sat F Apps
 
@@ -826,7 +840,7 @@ JPatCtx :: '' ::=
 defn
 W ; G ; D |= F , A ; p : B  :: :: PatternContexts :: 'PatCtx_'
 {{ com Contexts generated by a pattern (variables bound by the pattern) }}
-{{ tex [[W]] ; [[G]] [[|=]] [[p]] :_[[F]] [[B]] \Rightarrow [[A]] }}
+{{ tex [[W]] ; [[G]]; [[D]] [[|=]] [[p]] :_[[F]] [[B]] \Rightarrow [[A]] }}
 by
 
 ------------------------------ :: Const
@@ -894,30 +908,6 @@ match a1 with a2 -> b1 +> b2
 ------------------------------------------------------ :: CApp
 match (a1 [o]) with (a2 [o]) -> b1 +> b2
 
-
-defns
-JPatData :: '' ::=
-
-defn
-uncurry p = F @ PA :: :: PatData :: 'PatData_'
-{{ com Pattern data (head & arguments) }}
-by
-
-
--------------------- :: Head
-uncurry F = F @ none
-
-
-uncurry p = F @ PA
------------------------------------------ :: Rel
-uncurry (p R a) = F @ Tm R a , PA
-
-% TODO: other cases (left out for now for development purposes)
-
-% TODO: If possible, I think we should just scrap that relation and
-%       use `pattern` + `head_const` & `pattern_args` instead.
-%       If needed, we can always add these two functions right after
-%       the definition of `pattern`
 
 defns
 JIsPattern :: '' ::=
@@ -1053,8 +1043,8 @@ defns
 
 defn
 ValuePath a +> F  ::  :: ValuePath :: 'ValuePath_'
-{{ com Type headed by constant (role-sensitive partial function used in value) }}
-{{ tex \mathsf{ValuePath} \ [[a]] [[+>]] [[F]] }}
+{{ com Path headed by valid constructor }}
+{{ tex \mathsf{ValidPath} \ [[a]] [[+>]] [[F]] }}
 by
 
 F : A @ Rs in toplevel
@@ -1079,8 +1069,8 @@ defns
 
 defn
 CasePath R a +> F  ::  :: CasePath :: 'CasePath_'
-{{ com Type headed by constant (role-sensitive partial function used in case) }}
-{{ tex \mathsf{CasePath}_{[[R]]}\ [[a]] [[+>]] [[F]] }}
+{{ com Path that is a value }}
+{{ tex \mathsf{ValuePath}_{[[R]]}\ [[a]] [[+>]] [[F]] }}
 by
 
 ValuePath a +> F
@@ -1196,7 +1186,7 @@ defns
 
 defn
    consistent a b R ::  :: consistent :: 'consistent_a_'
-   {{ com (erased) types do not differ in their heads }}
+   {{ com Types do not differ in their heads }}
   {{ tex \suppress{\mathsf{consistent}_{[[R]]}\ [[a]] \ [[b]] } }}
 by
 
@@ -1323,7 +1313,7 @@ defns
 defn
  W |= a => b / R ::  :: Par :: 'Par_'
 {{ tex [[W]] \vDash [[a]] [[=>]]_{[[R]]} [[b]] }}
-{{ com parallel reduction (implicit language) }}
+{{ com parallel reduction }}
 by
 
 W |= a : R
@@ -1450,8 +1440,8 @@ defns
 
 defn
 |= a > b / R  ::     :: Beta :: 'Beta_'
-{{ com primitive reductions on erased terms }}
-{{ tex [[|=]] [[a]] [[>]]_{[[R]]} [[b]] }}
+{{ com primitive reductions }}
+{{ tex [[|=]] [[a]] \rightarrow^{\beta}_{[[R]]} [[b]] }}
 by
 
 Value R1 (\rho x. v)
@@ -1536,7 +1526,8 @@ JBranchTyping :: '' ::=
 defn
 G |= Apps case R a : A of b @ pattern_args : B -> C | C' ::    :: BranchTyping :: 'BranchTyping_'
 {{ com Branch Typing (aligning the types of case) }}
-{{ tex [[G]] \vDash \mathsf{case} \hspace{2pt} [[a]] : [[A]] \hspace{2pt} \mathsf{of} \hspace{2pt} [[b]] [[@]] [[Apps]] : [[B]] \Rightarrow [[C]] \ | \, [[C']] }}
+%% All cases are at Nom, so we elide the role
+{{ tex [[G]] \vDash \mathsf{case} \hspace{2pt} ([[a]]\sim[[b]]\;[[pattern_args]]:[[A]]) \hspace{2pt} \mathsf{of} \hspace{2pt}  F\;{[[Apps]]} : [[B]] \Rightarrow [[C]] \ | \, [[C']] }}
 by
 
 ctx_uniq G
@@ -1615,7 +1606,7 @@ G |= b + a : B { a / x }
 
 G |= b : all+ x : A -> B
 G |= a : A
-RolePath b = F @ R, Rs
+RolePath b +> F @ R, Rs
 ------------------------------------- :: TApp
 G |= b R a : B { a / x }
 
@@ -1760,8 +1751,8 @@ G ; D |= a1 + a2 == b1 + b2 : (B { a2 / x })/R'
 %% R <= R1 and R <= R2 ??
 G ; D |= a1 == b1 : (all + x:A -> B)/R'
 G ; D |= a2 == b2 : A/ param R R'
-RolePath a1 = F @ R, Rs
-RolePath b1 = F @ R, Rs
+RolePath a1 +> F @ R, Rs
+RolePath b1 +> F @ R, Rs
 G |= b1 R b2 : B { a2 / x }
 ------------------------------------------------ :: TAppCong
 G ; D |= a1 R a2 == b1 R b2 : (B { a2 / x })/R'
@@ -2111,7 +2102,7 @@ G ||=src b a ~> b' + a' : B { a' / x }
 
 G ||=src b ~> b' : all+ x : A -> B
 G ||=src a ~> a' : A
-RolePath b = F @ R, Rs
+RolePath b +> F @ R, Rs
 ------------------------------------- :: TApp
 G ||=src b a ~> b' R a' : B { a / x }
 
@@ -2572,6 +2563,8 @@ by
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % TODO: move these in different files
+%% SCW: Actuallly, I dislike how these are separated from the above, especially since they 
+%% refer to metavariables defined elsewhere
 
 %%%%____ Formatting ____%%%%
 
@@ -2603,7 +2596,7 @@ homs 'a_'
 
   :: CAbs     {{ tex [[/\]][[c]]\!:\![[phi]].[[b]]                        }}
   :: UCAbs    {{ tex [[/\]][[c]].[[b]]                                    }}
-  :: CApp
+  :: CApp    
   :: CPi      {{ tex [[all]][[c]]\!:\![[phi]].[[B]]                       }}
 
   :: Conv     {{ tex [[a]][[|>]]_{[[R]]} [[g]]                            }}
@@ -2612,7 +2605,7 @@ homs 'a_'
 
   :: Bullet
 
-  :: Pattern {{ tex \mathsf{case} \hspace{3pt} [[a]] \hspace{3pt} \mathsf{of} \hspace{3pt} [[F]][[Apps]] \rightarrow [[b1]] \| \_ \rightarrow [[b2]] }}
+  :: Pattern 
 
   :: DataCon
   :: Case
