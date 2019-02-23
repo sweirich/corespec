@@ -50,11 +50,11 @@ Ltac especialize H :=
       subst e
   end.
 
-(**** More robust apply tactic ****)
+(**** More powerful apply tactic ****)
 (* Aux *)
 Ltac align_type_hyp_vs t t_H H :=
   first [
-    unify t t_H; idtac "Done - unifiable"; idtac t; idtac t_H
+    unify t t_H; idtac "Done - heads are unifiable:"; idtac t; idtac t_H
   |
     match t with
       (* TODO: extend: detect if different number of arguments + make sure heads are unifiable (otherwise we're probably using the wrong hyp) *)
@@ -70,22 +70,36 @@ Ltac align_type_hyp_vs t t_H H :=
                   move=> ->; align_type_hyp_vs t1 t_H1 H  ]
             ]
           end
-      | _ => idtac "done, with remaining goal:" t
+      | _ =>
+        (* Can't decompose t further. What about t_H? *)
+        lazymatch t_H with
+          | ?t_H1 ?t_H2 =>
+            fail "Can't align types: not the same number of arguments"
+          | _ =>
+            idtac "Done, but heads are not unifiable. This might mean we're applying the wrong hyp/term - unless this is expected";
+            idtac t; idtac t_H;
+            have->: (t = t_H)
+        end
     end].
 
-(* "Apply modulo equalities": applies H to the goal and generates equalities for
+(* "Apply modulo equalities": applies `hyp_or_tm` to the goal and generates equalities for
     the arguments that don't unify *)
-(* TODO: the toplevel tactic need to accept lemmas as input (instead of hypotheses exclusively) *)
-Ltac apply_eq H :=
+Ltac apply_eq hyp_or_tm :=
   first [
-    eapply H
+    eapply hyp_or_tm
   |
-    especialize H;
+    (* hyp_or_tm can be a constr (which includes a mere hyp ident) or a uconstr (eset accepts both) *)
+    let f := fresh "f" in
+    eset (f := hyp_or_tm);
+    clearbody f; (* To match apply's behavior *)
+    especialize f; (* Instantiate f with evars as needed *)
     let g := match goal with |- ?G => G end in
-    let t := type of H in
-    align_type_hyp_vs g t H;
+    let t := type of f in
+    align_type_hyp_vs g t f;
     last first;
-    only 1: apply H].
+    only 1: apply f;
+    clear f
+   ].
 
 (**** Info tactics ****)
 (* This tactic is meant to help find why 2 terms are not unifiable, by displaying
@@ -848,6 +862,12 @@ Ltac introfwd     := intros; autofwd.
 Ltac autoprem     := TacticsInternals.autoprem.
 Ltac autospec H   := TacticsInternals.spec_hyp H ltac:(solve [eassumption | eauto 2]).
 Ltac autospec' H sol := TacticsInternals.spec_hyp H sol.
+
+(* Heterogeneous apply - applies hyp even if types don't unify (generating equality obligations as needed) *)
+(* Note: open to more canonical naming - suggestions welcome *)
+Tactic Notation "happly" uconstr(arg) := TacticsInternals.apply_eq arg.
+Ltac ha                               := TacticsInternals.apply_eq. (* Shorter version, can be passed as argument. Wrap arg in uconstr:() if needed *)
+
 
 (* TODO Tries to solve free variable obligations *)
 Ltac autofv       := TacticsInternals.autofv.
