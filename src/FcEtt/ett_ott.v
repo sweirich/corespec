@@ -47,7 +47,7 @@ with tm : Set :=  (*r types and kinds *)
  | a_DataCon (K:datacon)
  | a_Case (a:tm) (brs5:brs)
  | a_Sub (R:role) (a:tm)
- | a_Coerce (a:tm)
+ | a_Coerce : tm
  | a_SrcApp (a:tm) (b:tm)
 with brs : Set :=  (*r case branches *)
  | br_None : brs
@@ -171,7 +171,7 @@ with open_tm_wrt_co_rec (k:nat) (g5:co) (a5:tm) {struct a5}: tm :=
   | (a_DataCon K) => a_DataCon K
   | (a_Case a brs5) => a_Case (open_tm_wrt_co_rec k g5 a) (open_brs_wrt_co_rec k g5 brs5)
   | (a_Sub R a) => a_Sub R (open_tm_wrt_co_rec k g5 a)
-  | (a_Coerce a) => a_Coerce (open_tm_wrt_co_rec k g5 a)
+  | a_Coerce => a_Coerce 
   | (a_SrcApp a b) => a_SrcApp (open_tm_wrt_co_rec k g5 a) (open_tm_wrt_co_rec k g5 b)
 end
 with open_constraint_wrt_co_rec (k:nat) (g5:co) (phi5:constraint) : constraint :=
@@ -238,7 +238,7 @@ with open_tm_wrt_tm_rec (k:nat) (a5:tm) (a_6:tm) {struct a_6}: tm :=
   | (a_DataCon K) => a_DataCon K
   | (a_Case a brs5) => a_Case (open_tm_wrt_tm_rec k a5 a) (open_brs_wrt_tm_rec k a5 brs5)
   | (a_Sub R a) => a_Sub R (open_tm_wrt_tm_rec k a5 a)
-  | (a_Coerce a) => a_Coerce (open_tm_wrt_tm_rec k a5 a)
+  | a_Coerce => a_Coerce 
   | (a_SrcApp a b) => a_SrcApp (open_tm_wrt_tm_rec k a5 a) (open_tm_wrt_tm_rec k a5 b)
 end
 with open_constraint_wrt_tm_rec (k:nat) (a5:tm) (phi5:constraint) : constraint :=
@@ -474,9 +474,8 @@ with lc_tm : tm -> Prop :=    (* defn lc_tm *)
  | lc_a_Sub : forall (R:role) (a:tm),
      (lc_tm a) ->
      (lc_tm (a_Sub R a))
- | lc_a_Coerce : forall (a:tm),
-     (lc_tm a) ->
-     (lc_tm (a_Coerce a))
+ | lc_a_Coerce : 
+     (lc_tm a_Coerce)
  | lc_a_SrcApp : forall (a b:tm),
      (lc_tm a) ->
      (lc_tm b) ->
@@ -571,7 +570,7 @@ with fv_tm_tm_tm (a5:tm) : vars :=
   | (a_DataCon K) => {}
   | (a_Case a brs5) => (fv_tm_tm_tm a) \u (fv_tm_tm_brs brs5)
   | (a_Sub R a) => (fv_tm_tm_tm a)
-  | (a_Coerce a) => (fv_tm_tm_tm a)
+  | a_Coerce => {}
   | (a_SrcApp a b) => (fv_tm_tm_tm a) \u (fv_tm_tm_tm b)
 end
 with fv_tm_tm_constraint (phi5:constraint) : vars :=
@@ -633,7 +632,7 @@ with fv_co_co_tm (a5:tm) : vars :=
   | (a_DataCon K) => {}
   | (a_Case a brs5) => (fv_co_co_tm a) \u (fv_co_co_brs brs5)
   | (a_Sub R a) => (fv_co_co_tm a)
-  | (a_Coerce a) => (fv_co_co_tm a)
+  | a_Coerce => {}
   | (a_SrcApp a b) => (fv_co_co_tm a) \u (fv_co_co_tm b)
 end
 with fv_co_co_constraint (phi5:constraint) : vars :=
@@ -732,7 +731,7 @@ with tm_subst_tm_tm (a5:tm) (x5:tmvar) (a_6:tm) {struct a_6} : tm :=
   | (a_DataCon K) => a_DataCon K
   | (a_Case a brs5) => a_Case (tm_subst_tm_tm a5 x5 a) (tm_subst_tm_brs a5 x5 brs5)
   | (a_Sub R a) => a_Sub R (tm_subst_tm_tm a5 x5 a)
-  | (a_Coerce a) => a_Coerce (tm_subst_tm_tm a5 x5 a)
+  | a_Coerce => a_Coerce 
   | (a_SrcApp a b) => a_SrcApp (tm_subst_tm_tm a5 x5 a) (tm_subst_tm_tm a5 x5 b)
 end
 with tm_subst_tm_constraint (a5:tm) (x5:tmvar) (phi5:constraint) {struct phi5} : constraint :=
@@ -794,7 +793,7 @@ with co_subst_co_tm (g5:co) (c5:covar) (a5:tm) {struct a5} : tm :=
   | (a_DataCon K) => a_DataCon K
   | (a_Case a brs5) => a_Case (co_subst_co_tm g5 c5 a) (co_subst_co_brs g5 c5 brs5)
   | (a_Sub R a) => a_Sub R (co_subst_co_tm g5 c5 a)
-  | (a_Coerce a) => a_Coerce (co_subst_co_tm g5 c5 a)
+  | a_Coerce => a_Coerce 
   | (a_SrcApp a b) => a_SrcApp (co_subst_co_tm g5 c5 a) (co_subst_co_tm g5 c5 b)
 end
 with co_subst_co_constraint (g5:co) (c5:covar) (phi5:constraint) {struct phi5} : constraint :=
@@ -1894,7 +1893,7 @@ Inductive SrcTyping : context -> tm -> tm -> Prop :=    (* defn SrcTyping *)
  | S_Coerce : forall (G:context) (a B A:tm),
      SrcTyping G a A ->
      DefEq G  (dom  G )  A B a_Star Rep ->
-     SrcTyping G (a_Coerce a) B
+     SrcTyping G (a_SrcApp a_Coerce a) B
  | S_App : forall (G:context) (b a B a' A:tm),
      SrcTyping G b (a_Pi Rel A B) ->
      SrcTrans G a a' A ->
@@ -1969,7 +1968,7 @@ with SrcTrans : context -> tm -> tm -> tm -> Prop :=    (* defn SrcTrans *)
  | ST_Coerce : forall (G:context) (a a' B A:tm),
      SrcTrans G a a' A ->
      DefEq G  (dom  G )  A B a_Star Rep ->
-     SrcTrans G (a_Coerce a) a' B
+     SrcTrans G (a_SrcApp a_Coerce a) a' B
  | ST_CPi : forall (L:vars) (G:context) (phi:constraint) (B B':tm) (phi':constraint),
      SrcPropWff G phi phi' ->
       ( forall c , c \notin  L  -> SrcTrans  (( c ~ Co  phi' ) ++  G )   ( open_tm_wrt_co B (g_Var_f c) )   ( open_tm_wrt_co B' (g_Var_f c) )  a_Star )  ->
