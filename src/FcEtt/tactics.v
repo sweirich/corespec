@@ -31,6 +31,9 @@ Require Import Coq.Strings.String.
 (* Rewrite db with standard facts, like general stuff we use all the time *)
 Hint Rewrite map_app app_assoc : std.
 
+(* `one` tends to get in the way *)
+Definition unfold_one : `(forall (t : T), one t = t :: []) := ltac:(done).
+Hint Rewrite unfold_one : std.
 
 
 

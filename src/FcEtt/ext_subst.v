@@ -263,6 +263,7 @@ Proof.
   simpl. rewrite IHpa. simpl. auto.
 Qed.
 
+
 Lemma BranchTyping_tm_subst :  
       forall G0 n R b B b2 aa B2 B3 C (H : BranchTyping G0 n R b B b2 aa B2 B3 C),
       forall G a A, Typing G a A ->
@@ -277,54 +278,23 @@ Lemma BranchTyping_tm_subst :
                                    (tm_subst_tm_tm a x C).
 Proof. 
   induction 1; intros; subst; simpl.
+  all: try solve [
+    cbn; E_pick_fresh y;
+    autofresh with y;
+    rewrite_subst_context;
+    happly H0;
+      uha;
+      (autorewrite with subst_open_var std using move=>//=);
+      move=>//; try fsetdec_fast; eauto 2 with lc;
+    case: (y == x) => //; intros; subst; exfalso; fsetdec_fast].
+
   - autorewrite with subst_open; eauto 3 with lc.
     have LC: lc_tm a0. eauto 3 with lc.
     rewrite tm_subst_tm_tm_apply_pattern_args.
     eapply BranchTyping_Base; eauto 4 using tm_subst_tm_tm_lc_tm.
-  - pick fresh y and apply BranchTyping_PiRole.
-    autofresh with y.
-    autorewrite with subst_open_var; try solve [uha; eauto 2 with lc].
-    rewrite_subst_context.
-    move/(_ _ _ _ _ (y ~ Tm A ++ ltac:(ea)) x eq_refl) in H0. (* FIXME: fragile *)
-    especialize H0.
-    rewrite map_app /= in H0.
-    move: H0.
-    case (y == x); first by (intros; uha; subst; exfalso; fsetdec_fast).
-    move=>?; apply.
-  - pick fresh y and apply BranchTyping_PiRel.
-    autofresh with y.
-    autorewrite with subst_open_var; try solve [uha; eauto 2 with lc].
-    rewrite_subst_context.
-    move/(_ _ _ _ ltac:(ea) (y ~ Tm A ++ ltac:(ea)) x eq_refl) in H0. (* FIXME fragile *)
-    move: H0.
-    rewrite map_app /=.
-    case: (y == x) ; first by (intros; uha; subst; exfalso; fsetdec_fast).
-    move=> ?.
-    apply.
-  - pick fresh y and apply BranchTyping_PiIrrel.
-    autofresh with y.
-    autorewrite with subst_open_var; try solve [uha; eauto 2 with lc].
-    rewrite_subst_context.
-    (* TODO: basic blind_spec tactic *)
-    move/(_ _ _ _ _ (y ~ Tm A ++ _) x eq_refl) => /= in H0.
-    especialize H0.
-    move: H0.
-    rewrite map_app.
-    case (y == x); first by (intros; uha; subst; exfalso; fsetdec_fast).
-    move=>?.
-    apply.
-  - pick fresh y and apply BranchTyping_CPi.
-    autofresh with y.
-    autorewrite with subst_open_var; eauto 2 with lc.
-    rewrite_subst_context.
-    move/(_ _ _ _ _ (y ~ _ ++ _) x eq_refl) => /= in H0.
-    especialize H0.
-    move: H0.
-    rewrite map_app.
-    apply.
 
-    Unshelve.
-    all: eassumption.
+  Unshelve.
+  all: unfold one; try match goal with |- _ = _ => reflexivity end; ea.
 Qed.
 
 
