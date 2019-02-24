@@ -89,6 +89,12 @@ tm, a, b, p, v, w, A, B, C :: 'a_' ::= {{ com types and kinds }}
 
   | case R a of F @ Apps => b1 | _ => b2 ::   :: Pattern
    {{ tex \mathsf{case} \hspace{3pt} [[a]] \hspace{3pt} \mathsf{of} \hspace{3pt} [[F]]\ [[Apps]] \rightarrow [[b1]] \| \_ \rightarrow [[b2]] }}
+
+
+  | case a of F @ pattern_args => b1 | _ => b2 :: M :: FakePattern
+   {{ tex \mathsf{case} \hspace{3pt} [[a]] \hspace{3pt} \mathsf{of} \hspace{3pt} [[F]]\ [[pattern_args]] \rightarrow [[b1]] \| \_ \rightarrow [[b2]] }}
+   {{ coq 0 }}
+
   | apply a pattern_args :: M :: ApplyPA
     {{ coq (apply_pattern_args [[a]] [[pattern_args]]) }}
     {{ tex [[a]]\;[[pattern_args]] }}
