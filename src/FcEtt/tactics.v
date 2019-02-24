@@ -36,11 +36,40 @@ Definition unfold_one : `(forall (t : T), one t = t :: []) := ltac:(done).
 Hint Rewrite unfold_one : std.
 
 
+(* Module for the types that some tactics rely on. We don't want to export these types - only their
+   notations, defined below. *)
+Module TacticsTypes.
+
+  (* Dynamic type *)
+  Polymorphic (* Cumulative *) Inductive Dyn : Type := dyn : forall {T : Type}, T -> Dyn.
+
+  (* Currently unused *)
+  Inductive Display {T : Type} : T → Prop := display : ∀ (t : T), Display t.
+
+  (* Hiding/unhiding the type of a hyp *)
+  Polymorphic Definition _hide         {T : Type}              (t : T) : T                  := t.
+  Polymorphic Definition _hide_with    {T : Type} (s : string) (t : T) : T                  := t.
+  Polymorphic Definition _eq_hide      {T : Type}              (t : T) : t = _hide t        := eq_refl.
+  Polymorphic Definition _eq_hide_with {T : Type} (s : string) (t : T) : t = _hide_with s t := eq_refl.
+
+End TacticsTypes.
+
+(* Exported notations *)
+Notation "![ ]!" := nil (format "![ ]!") : list_scope.
+Notation "![ x ]!" := (cons (TacticsTypes.dyn x) nil) : list_scope.
+Notation "![ x ; y ; .. ; z ]!" := (cons (TacticsTypes.dyn x) (cons (TacticsTypes.dyn y) .. (cons (TacticsTypes.dyn z) nil) ..)) : list_scope.
+
+Global Notation "'_hidden_'"       := (TacticsTypes._hide _)        (at level 50, only printing).
+Global Notation "'_hidden_' ( s )" := (TacticsTypes._hide_with s _) (at level 50, only printing).
+
+
 
 Module TacticsInternals.
 (*******************************)
 (**** Basic Building Blocks ****)
 (*******************************)
+
+Import TacticsTypes.
 
 Ltac nl := idtac " ".
 
@@ -145,22 +174,18 @@ Ltac unify_info' disp1 disp2 t1 t2 :=
     | _ => fail "Can't decompose" disp1 t1 "further"
   end.
 
-(* Dynamic type, useful for some tactics *)
-Polymorphic (* Cumulative *) Inductive Dyn : Type := dyn : forall {T : Type}, T -> Dyn.
 
-Inductive Display {T : Type} : T → Prop := display : ∀ (t : T), Display t.
+(* Tactic that succeeds only if `t` fails to unify with every element of `l` *)
+Ltac avoid_unify_list t l :=
+  lazymatch l with
+    | dyn ?t' :: ?tl =>
+      tryif assert_fails unify t t'
+      then avoid_unify_list t tl
+      else fail "Unifiable with an element of the list"
+    | [] => idtac
+    | _ => fail 99 "avoid_unify_list: incorrect argument given"
+  end.
 
-(* Hiding/unhiding the type of a hyp *)
-Polymorphic Definition _hide         {T : Type}              (t : T) : T                  := t.
-Polymorphic Definition _hide_with    {T : Type} (s : string) (t : T) : T                  := t.
-Polymorphic Definition _eq_hide      {T : Type}              (t : T) : t = _hide t        := eq_refl.
-Polymorphic Definition _eq_hide_with {T : Type} (s : string) (t : T) : t = _hide_with s t := eq_refl.
-
-(* FIXME: defining the notation here doesn't work. Could we somehow export it?
-          Otherwise just put the types & notations in another (exported) module
-          or at the toplevel. *)
-Global Notation "'_hidden_'"       := (_hide _)        (at level 50, only printing).
-Global Notation "'_hidden_' ( s )" := (_hide_with s _) (at level 50, only printing).
 
 Ltac hide H       := match type of H with | _hide ?T => rewrite <- (_eq_hide T) in H | _hide_with ?s ?T => rewrite <- (_eq_hide_with s T) in H | ?T => rewrite -> (_eq_hide T) in H end.
 Ltac hidewith s H := match type of H with | _hide ?T => rewrite <- (_eq_hide T) in H | _hide_with ?s ?T => rewrite <- (_eq_hide_with s T) in H | ?T => rewrite -> (_eq_hide_with s T) in H end.
@@ -282,13 +307,15 @@ Ltac find_hyp_and_perform head_check cs tac :=
 
 (* Optimization (of the previous one): first tries to use the typed version if possible, otherwise falls back to the slow, general one *)
 Ltac find_hyp_and_perform_optim cs tac :=
-  first [
+  tryif
     let cs' := type_term cs in
-    idtac "Switching to fast mode";
+    idtac "Switching to fast mode"
+  then
+    (* FIXME: we're duplicating the typing of cs *)
+    let cs' := type_term cs in
     find_hyp_and_perform has_head cs' tac
-  |
-    find_hyp_and_perform has_head_uconstr cs tac
-  ].
+  else
+    find_hyp_and_perform has_head_uconstr cs tac.
 
 
 (* TODO: This is subsumed by pcess_hyps down there. Make sure we never need to use *specifically* this tactic, then remove it *)
@@ -907,19 +934,32 @@ Tactic Notation "autofresh'+" := TacticsInternals.autofresh_param TacticsInterna
 
 (* Find an hypothesis which type is headed by constructor cs, and
    apply tac to it *)
-(* Fast version - `hd` must be a well-typed coq term (e.g. `Typing Γ`, but not say `Typing _ a`) *)
-(* This is now deprecated, since "with do" now automatically tries to use the faster matching *)
-Tactic Notation "withf" constr(hd) "do" tactic(tac)       := (idtac "Deprecated. Please use with instead"; TacticsInternals.find_hyp_and_perform TacticsInternals.has_head hd tac).
-Tactic Notation "withf" constr(hd) "do" tactic(tac) "end" := (idtac "Deprecated. Please use with instead"; TacticsInternals.find_hyp_and_perform TacticsInternals.has_head hd tac).
-(* More general version, that accepts a pattern (uconstr) (hence also accepts `Typing _ a`). Will switch to a fast matching if possible *)
+(* General version, that accepts a pattern (uconstr) (hence also accepts `Typing _ a`). Will switch to a fast matching if possible *)
 Tactic Notation "with" uconstr(hd) "do" tactic(tac)       := TacticsInternals.find_hyp_and_perform_optim hd tac.
 Tactic Notation "with" uconstr(hd) "do" tactic(tac) "end" := TacticsInternals.find_hyp_and_perform_optim hd tac.
+Tactic Notation "with" uconstr(hd) "excl" constr(excl) "do" tactic(tac) :=
+  TacticsInternals.find_hyp_and_perform_optim hd ltac:(fun h => TacticsInternals.avoid_unify_list h excl; tac h).
 
 (* Specialized version to find and rename hypothesis *)
 Tactic Notation "get" uconstr(hd) "as" ident(name) := TacticsInternals.find_hyp_and_perform_optim hd ltac:(fun h => rename h into name).
-(* Fast version (no pattern allowed) *)
-(* Deprecated for the same reason as above *)
-Tactic Notation "getf" constr(hd) "as" ident(name) := (idtac "Deprecated. Please use get instead"; TacticsInternals.find_hyp_and_perform TacticsInternals.has_head hd ltac:(fun h => rename h into name)).
+Tactic Notation "get" uconstr(hd) "excl" constr(excl) "as" ident(name) :=
+  TacticsInternals.find_hyp_and_perform_optim hd ltac:(fun h => TacticsInternals.avoid_unify_list h excl; rename h into name).
+
+(* For convenience, here are inlined version of the "excl" forms with just a few arguments.
+   TODO: understand how to interact with the list_hyp() for of ltac, so we can use this one instead *)
+Tactic Notation "with" uconstr(hd) "excl" ident(e1) "do" tactic(tac) :=
+  TacticsInternals.find_hyp_and_perform_optim hd ltac:(fun h => TacticsInternals.avoid_unify_list h (![e1]!); tac h).
+Tactic Notation "with" uconstr(hd) "excl" ident(e1) "," ident(e2) "do" tactic(tac) :=
+  TacticsInternals.find_hyp_and_perform_optim hd ltac:(fun h => TacticsInternals.avoid_unify_list h (![e1; e2]!); tac h).
+Tactic Notation "with" uconstr(hd) "excl" ident(e1) "," ident(e2) "," ident(e3) "do" tactic(tac) :=
+  TacticsInternals.find_hyp_and_perform_optim hd ltac:(fun h => TacticsInternals.avoid_unify_list h (![e1; e2; e3]!); tac h).
+
+Tactic Notation "get" uconstr(hd) "excl" ident(e1) "as" ident(name) :=
+  TacticsInternals.find_hyp_and_perform_optim hd ltac:(fun h => TacticsInternals.avoid_unify_list h ![e1]!; rename h into name).
+Tactic Notation "get" uconstr(hd) "excl" ident(e1) "," ident(e2) "as" ident(name) :=
+  TacticsInternals.find_hyp_and_perform_optim hd ltac:(fun h => TacticsInternals.avoid_unify_list h ![e1; e2]!; rename h into name).
+Tactic Notation "get" uconstr(hd) "excl" ident(e1) "," ident(e2) "," ident(e3) "as" ident(name) :=
+  TacticsInternals.find_hyp_and_perform_optim hd ltac:(fun h => TacticsInternals.avoid_unify_list h ![e1; e2; e3]!; rename h into name).
 
 
 (** Misc **)
@@ -932,6 +972,10 @@ Tactic Notation "exactly" integer(n) "goal" := TacticsInternals.check_num_goals_
 Tactic Notation "exactly" integer(n) "goals" := TacticsInternals.check_num_goals_eq n.
 
 (* Shorthands, that can be partially applied (for those which take arguments) *)
+Ltac cse      := fun h => case: h.
+Ltac dstr     := fun h => destruct h.
+Ltac dstrct   := dstr.
+Ltac ddstr    := fun h => dependent destruction h.
 Ltac inv      := TacticsInternals.inv.
 Ltac invs     := TacticsInternals.invs. (* Inversion (of a hyp) and substitution *)
 Ltac applyin  := TacticsInternals.applyin.
@@ -952,9 +996,8 @@ Ltac softclear := TacticsInternals.softclear. (* This tactic goes further, and p
 
 Ltac especialize := TacticsInternals.especialize.
 
-(* FIXME: see similar declaration above *)
-Global Notation "'_hidden_'"       := (TacticsInternals._hide _)        (at level 50, only printing).
-Global Notation "'_hidden_' ( s )" := (TacticsInternals._hide_with s _) (at level 50, only printing).
+Ltac print := fun h => idtac h.
+
 
 (* FIXME: rely on internals *)
 Tactic Notation "basic_nosolve_n" int_or_var(n) := intuition (subst; eauto n).
