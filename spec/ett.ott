@@ -93,6 +93,12 @@ tm, a, b, p, v, w, A, B, C :: 'a_' ::= {{ com types and kinds }}
 
   | case R a of F @ Apps => b1 | _ => b2 ::   :: Pattern
    {{ tex \mathsf{case} \hspace{3pt} [[a]] \hspace{3pt} \mathsf{of} \hspace{3pt} [[F]]\ [[Apps]] \rightarrow [[b1]] \| \_ \rightarrow [[b2]] }}
+
+
+  | case a of F @ pattern_args => b1 | _ => b2 :: M :: FakePattern
+   {{ tex \mathsf{case} \hspace{3pt} [[a]] \hspace{3pt} \mathsf{of} \hspace{3pt} [[F]]\ [[pattern_args]] \rightarrow [[b1]] \| \_ \rightarrow [[b2]] }}
+   {{ coq 0 }}
+
   | apply a pattern_args :: M :: ApplyPA
     {{ coq (apply_pattern_args [[a]] [[pattern_args]]) }}
     {{ tex [[a]]\;[[pattern_args]] }}
@@ -122,6 +128,9 @@ tm, a, b, p, v, w, A, B, C :: 'a_' ::= {{ com types and kinds }}
   | a {{{ b / x }}}      :: S :: SecretSubst
   | a {{{ g / c }}}      :: S :: SecretSubstC
 
+  %% for typesetting metatheory
+  | theta a              :: S :: cps_subst
+  {{ coq (cps_tm [[theta]] [[a]]) }}
 
   | ( a )                :: S :: Paren
   %% Ott parsing precedence is hard
@@ -280,6 +289,14 @@ parsing
 
 grammar
 
+theta {{ tex \theta }} :: 'cps_' ::= {{ coq list ( atom * pattern_arg ) }}
+  | empty                      ::    :: Empty
+   {{ tex }}
+	{{ coq nil }}
+  | x |-> pattern_arg , theta  ::    :: Cons
+   {{ tex [[x]] \mapsto [[pattern_arg]] , [[theta]] }}
+   {{ coq ([[x]]~[[pattern_arg]] ++ [[theta]]) }}
+
 role_context, W {{ tex \Omega }} :: 'rctx_' ::= {{ com role_contexts }}
                                           {{ coq list ( atom * role ) }}
    | empty           ::    :: Empty   {{ coq nil }}
@@ -351,6 +368,8 @@ sig, S {{ tex \Sigma }} :: 'sig_' ::=
   | | S |          :: M  :: Erase
    {{ coq (erase_sig [[S]]) }}
 
+  | theta G        :: M :: cps_G
+   {{ coq 0 }}
 
 available_props, D {{ tex \Delta }} :: 'D_' ::= {{ coq atoms }} {{ coq-universe Type }}
    | emptyD          ::    :: Empty   {{ coq AtomSetImpl.empty }} {{ tex \varnothing }}
@@ -1450,6 +1469,7 @@ W |= a1 <=> a2 / R
 
 defns
  Jbeta :: '' ::=
+
 
 defn
 |= a > b / R  ::     :: Beta :: 'Beta_'
