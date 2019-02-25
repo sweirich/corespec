@@ -1611,7 +1611,7 @@ Proof.
   move: (Typing_context_fv H0) => h. split_hyp. fsetdec.
 Qed.  
 
-Lemma PaternPath_MatchTyping : forall a p, 
+Lemma PatternPath_MatchTyping : forall a p, 
    tm_pattern_agree a p ->
    `{ PatternContexts Ωp Gp Dp F PiB p B ->
       Typing G (a_Fam F) PiB ->
@@ -2121,7 +2121,7 @@ Proof.
   clear ms rn patctx_p a_agree_p1.
 
   (* new stuff *)
-  edestruct PaternPath_MatchTyping 
+  edestruct PatternPath_MatchTyping 
     with (a:=a)(G := Γ)(Gp := Γp')(p := p2) as [sub0 h0]; eauto 2.
   eapply MatchSubst_match; eauto.
   have TF: Typing nil (a_Fam F) PiB. eapply E_Fam; eauto 1. 

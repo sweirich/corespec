@@ -1134,7 +1134,8 @@ Proof. intros. generalize dependent p. induction H; intros; eauto.
          - assert False. eapply tm_subpattern_agree_pi_cpi_contr; eauto.
            contradiction.
          - pattern_head_tm_agree. simpl in U1.
-           inversion U1; subst. axioms_head_same. inversion H3; subst.
+           inversion U1; subst. 
+           axioms_head_same. inversion H3; subst.
            contradiction.
          - pattern_head. pattern_head_tm_agree. simpl in U1.
            assert (P : tm_tm_agree a a').
