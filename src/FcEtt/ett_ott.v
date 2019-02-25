@@ -964,38 +964,74 @@ Fixpoint A_snoc (xs : Apps) (x : App)  : Apps :=
   | A_cons y ys => (A_cons y (A_snoc ys x))
   end.
 
-
-(* -------------- A specific signature with Fix ------------ *)
-Definition Fix : atom.
-  pick fresh F.
-  exact F.
-Qed.
-
-Definition FixVar1 : atom.
- pick fresh F.
- exact F.
-Qed.
-
-Definition FixVar2 : atom.
- pick fresh F.
- exact F.
-Qed.
-
-Definition FixPat : tm := a_App (a_App (a_Fam Fix) (Rho Irrel) (a_Var_f FixVar1)) (Rho Rel) (a_Var_f FixVar2).
-
-Definition FixDef : tm := a_App (a_Var_f FixVar2) (Rho Rel) (a_App (a_App (a_Fam Fix) (Rho Irrel) a_Bullet) (Rho Rel) (a_Var_f FixVar2)).
-
-Definition FixTy : tm := a_Var_f FixVar1.
-
-Definition an_toplevel : sig := Fix ~ Ax FixPat FixDef FixTy Rep (Nom :: [Nom]).
-
-Definition toplevel : sig := erase_sig an_toplevel Nom.
-
 Fixpoint range (L : role_context) : roles :=
   match L with
   | nil => nil
   | (x,R) :: L' => range(L') ++ [ R ]
   end.
+
+
+(* -------------- A specific signature with Fix ------------ *)
+
+
+Definition constants :
+  { Star    : atom & 
+  { Fix     : atom &
+  { FixVar1 : atom &
+  { FixVar2 : atom &
+      Fix `notin` singleton Star /\
+      FixVar1 `notin` singleton Star  \u (singleton Fix) /\
+      FixVar2 `notin` singleton Star \u singleton Fix  \u singleton FixVar1  } } } }.
+Proof.
+  pick fresh Star.
+  pick fresh Fix.
+  pick fresh FixVar1.
+  pick fresh FixVar2.
+  exists Star.
+  exists Fix.
+  exists FixVar1.
+  exists FixVar2.
+  repeat split; auto.
+Defined.
+
+Definition Star : atom.
+  destruct constants as [s _].
+  exact s.
+Defined.
+
+Definition Fix : atom.
+  destruct constants as [_ [f _] ].
+  exact f.
+Defined.
+
+Lemma noteq : Star <> Fix.
+Proof.
+  unfold Star, Fix.
+  destruct constants as [s [f [f1 [f2 h] ] ] ].
+  destruct h as [g _].
+  fsetdec.
+Qed.
+
+Definition FixVar1 : atom.
+  destruct constants as [_ [_ [f1 _] ] ].
+  exact f1.
+Defined.
+
+Definition FixVar2 : atom.
+  destruct constants as [_ [_ [_ [f2 _] ] ] ].
+  exact f2.
+Defined.
+
+Definition FixPat : tm := a_App (a_App (a_Fam Fix) (Rho Irrel) a_Bullet) (Rho Rel) (a_Var_f FixVar2).
+
+Definition FixDef : tm := a_App (a_Var_f FixVar2) (Rho Rel)
+                              (a_App (a_App (a_Fam Fix) (Rho Irrel) a_Bullet) (Rho Rel) (a_Var_f FixVar2)).
+
+Definition FixTy : tm  := a_Pi Irrel a_Star 
+                             (a_Pi Rel (a_Pi Rel (a_Var_b 0) (a_Var_b 1)) (a_Var_b 1)).
+
+Definition toplevel : sig := Fix ~ Ax FixPat FixDef FixTy Rep (Nom :: [Nom]).
+
 
 
 
