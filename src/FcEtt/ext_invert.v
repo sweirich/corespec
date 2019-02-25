@@ -71,11 +71,11 @@ Proof.
 Qed.
 
 Lemma invert_a_Fam : `(
-    Typing G (a_Fam F) A ->
+    Typing G (a_Fam (T : const) ) A ->
     (exists B Rs, DefEq G (dom G) A B a_Star Rep /\
-           binds F (Cs B Rs) toplevel /\ Typing nil B a_Star) \/
+           binds T (Cs B Rs) toplevel /\ Typing nil B a_Star) \/
     (exists p a B R1 Rs, DefEq G (dom G) A B a_Star Rep /\
-           binds F (Ax p a B R1 Rs) toplevel /\ Typing nil B a_Star)).
+           binds T (Ax p a B R1 Rs) toplevel /\ Typing nil B a_Star)).
 Proof.
   intros G F A H. dependent induction H.
   - destruct (IHTyping1 F) as [(B0 & h1 & h2 & h3) | (p & a & B1 & R' & Rs & h0 & h1 & h3)]; try done.
@@ -89,7 +89,7 @@ Proof.
     eapply E_Refl.
     eapply Typing_weakening with (F:=nil)(E:=G)(G:=nil) in H1.
     simpl_env in H1. auto. auto. simpl_env. auto.
-Qed. 
+Qed.
 
 
 Lemma invert_a_Star: `(Typing G a_Star A →
@@ -387,7 +387,7 @@ Proof.
   move e : (a_App a (Role R) b) => t1.
   move => h1.
   induction h1; auto; try done.
-  - exists A, B, F, Rs. inversion e; subst.
+  - exists A, B, T, Rs. inversion e; subst.
     assert (h2 : Typing G (open_tm_wrt_tm B a0) a_Star).
     + (have: Typing G (a_Pi Rel A B) a_Star 
         by apply (Typing_regularity h1_1)) => h3.
@@ -432,19 +432,19 @@ Proof.
 Qed.
 
 Lemma invert_a_Pattern : `(
-      Typing G (a_Pattern R a F n b1 b2) C0 ->
+      Typing G (a_Pattern R a (T : const) n b1 b2) C0 ->
       exists A A1 B C, Typing G a A 
                 /\ Typing G b1 B /\ Typing G b2 C 
-                /\ BranchTyping G n R a A (a_Fam F) nil A1 B C
-                /\ Typing G (a_Fam F) A1
-                /\ SatApp F n
+                /\ BranchTyping G n R a A (a_Fam T) nil A1 B C
+                /\ Typing G (a_Fam T) A1
+                /\ SatApp T n
                 /\ DefEq G (dom G) C C0 a_Star Rep).
 Proof. intros. dependent induction H.
-        - destruct (IHTyping1 R a F n b1 b2 ltac:(auto)) as
+        - destruct (IHTyping1 R a T n b1 b2 ltac:(auto)) as
           [A0 [A1 [B0 [C [P1 [P2 [P3 [P4 [P5 [P6 P7]]]]]]]]]].
           split_hyp.
           exists A0, A1, B0, C. repeat split; eauto 2.
-        - repeat eexists; eauto 1. 
+        - repeat eexists; eauto 1.
           eapply E_Refl; eauto using Typing_lc2.
           eapply Typing_regularity; eauto.
 Qed.
@@ -1357,22 +1357,23 @@ Ltac autoreg :=
 (****************************)
 
 Ltac autoinv :=
-  repeat match goal with  
-    | [H : _ ⊨ a_App _ (Rho Rel)   _ : _ |- _] => eapply invert_a_App_Rel in H; autofwd
-    | [H : _ ⊨ a_App _ (Rho Irrel) _ : _ |- _] => eapply invert_a_App_Irrel in H; autofwd
-    | [H : _ ⊨ a_App _ (Rho ?ρ)    _ : _ |- _] => destruct ρ
-    | [H : _ ⊨ a_App _ (Role ?R)   _ : _ |- _] => eapply invert_a_App_Role in H; autofwd
-    | [H : _ ⊨ a_CApp _ _        : _ |- _] => eapply invert_a_CApp in H; autofwd
-    | [H : _ ⊨ a_UAbs _ _        : _ |- _] => eapply invert_a_UAbs in H; autofwd
-    | [H : _ ⊨ a_UCAbs _         : _ |- _] => eapply invert_a_UCAbs in H; autofwd
-    | [H : _ ⊨ a_Fam _           : _ |- _] => eapply invert_a_Fam in H; destruct H; autofwd
-    | [H : _ ⊨ a_Pattern _ _ _ _ _ _ : _ |- _ ] => eapply invert_a_Pattern in H; 
+  repeat match goal with
+    | [H : _ ⊨ a_Fam f_Star           : _ |- _] => eapply invert_a_Star in H; autofwd
+    | [H : _ ⊨ a_Fam (f_Const ?T)     : _ |- _] => eapply invert_a_Fam in H; destruct H; autofwd
+    | [H : _ ⊨ a_Fam ?F               : _ |- _] => destruct F
+    | [H : _ ⊨ a_App _ (Rho Rel)   _  : _ |- _] => eapply invert_a_App_Rel in H; autofwd
+    | [H : _ ⊨ a_App _ (Rho Irrel) _  : _ |- _] => eapply invert_a_App_Irrel in H; autofwd
+    | [H : _ ⊨ a_App _ (Rho ?ρ)    _  : _ |- _] => destruct ρ
+    | [H : _ ⊨ a_App _ (Role ?R)   _  : _ |- _] => eapply invert_a_App_Role in H; autofwd
+    | [H : _ ⊨ a_CApp _ _             : _ |- _] => eapply invert_a_CApp in H; autofwd
+    | [H : _ ⊨ a_UAbs _ _             : _ |- _] => eapply invert_a_UAbs in H; autofwd
+    | [H : _ ⊨ a_UCAbs _              : _ |- _] => eapply invert_a_UCAbs in H; autofwd
+    | [H : _ ⊨ a_Pattern _ _ _ _ _ _  : _ |- _ ] => eapply invert_a_Pattern in H; 
          autofwd
-    | [H : _ ⊨ a_Pi _ _ _        : _ |- _] => eapply invert_a_Pi in H; destruct H; autofwd
-    | [H : _ ⊨ a_CPi _ _        : _ |- _] => eapply invert_a_CPi in H; destruct H; autofwd
+    | [H : _ ⊨ a_Pi _ _ _             : _ |- _] => eapply invert_a_Pi in H; destruct H; autofwd
+    | [H : _ ⊨ a_CPi _ _              : _ |- _] => eapply invert_a_CPi in H; destruct H; autofwd
 
 (*    | [H : _ ⊨ a_Conv _ _ _      : _ / _ |- _] => eapply invert_a_Conv in H; pcess_hyps *)
   (* TODO *)
   end.
 
-   

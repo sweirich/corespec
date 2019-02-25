@@ -521,7 +521,7 @@ Proof.
     rewrite cps_co_fresh_eq; eauto; simpl.
     eapply domFresh_empty.
     eapply domFresh_singleton2. auto.
-Qed.    
+Qed.
 
 (* --------------------------------------------------------- *)
 
@@ -595,9 +595,9 @@ Qed.
 
 Lemma MatchSubst_ValuePath : 
   `{ MatchSubst a p1 b1 b' →
-     binds F (Ax p b PiB R1 Rs) toplevel →
+     binds T (Ax p b PiB R1 Rs) toplevel →
      Rename p b p1 b1 s D →
-     ValuePath a F}.
+     ValuePath a T}.
 Proof. intros. eapply tm_pattern_agree_ValuePath.
        eapply tm_pattern_agree_rename_inv_2.
        eapply MatchSubst_match. all:eauto. econstructor.
@@ -727,16 +727,16 @@ Proof.
 Qed. *)
 
 
-Lemma Typing_a_Fam_unique : forall F G A B, 
-      Typing G (a_Fam F) A -> Typing G (a_Fam F) B -> DefEq G (dom G) A B a_Star Rep.
+Lemma Typing_a_Fam_unique : forall f G A B, 
+      Typing G (a_Fam f) A -> Typing G (a_Fam f) B -> DefEq G (dom G) A B a_Star Rep.
 Proof.
   intros.
-  autoinv.
-  all: match goal with 
-      | [ H : binds _ _ _ , H1 : binds _ _ _ |- _ ] => 
-        move: (binds_unique _ _ _ _ _ H3 H1 uniq_toplevel) => e ;
-        inversion e                                                               
-      end.
+  autoinv;
+    only 1: eauto.
+  all: with binds do fun h1 =>
+    with binds excl h1 do fun h2 =>
+      move: (binds_unique _ _ _ _ _ h1 h2 uniq_toplevel) => e;
+        inversion e.
   + subst.
     eapply E_Trans; eauto 1.
     eapply E_Sym; eauto 1.
@@ -1372,9 +1372,9 @@ Proof.
   simpl. eauto.
   intros. simpl. rewrite IHargs. eauto.
 Qed.
-  
-Lemma AppsPath_arg_app' : forall rargs args, rargs = rev args -> forall n R F,
-  AppsPath R (apply_pattern_args (a_Fam F) args) F n -> 
+
+Lemma AppsPath_arg_app' : forall rargs args, rargs = rev args -> forall n R (T : const),
+  AppsPath R (apply_pattern_args (a_Fam T) args) T n -> 
   map_arg_app args = n.
 Proof.
   induction rargs.
@@ -1385,16 +1385,16 @@ Proof.
     apply shuffle in H.
     rewrite H in AP.
     destruct a; try destruct nu.
-    all: try rewrite apply_pattern_args_tail_Tm in AP.    
-    all: try rewrite apply_pattern_args_tail_Co in AP.    
+    all: try rewrite apply_pattern_args_tail_Tm in AP.
+    all: try rewrite apply_pattern_args_tail_Co in AP.
     all: inversion AP; subst.
     all: rewrite map_arg_app_snoc; f_equal;
       eapply IHrargs; eauto. 
     all: rewrite rev_involutive; auto.
 Qed.
 
-Lemma AppsPath_arg_app : forall args n R F,
-  AppsPath R (apply_pattern_args (a_Fam F) args) F n -> 
+Lemma AppsPath_arg_app : forall args n R (T : const),
+  AppsPath R (apply_pattern_args (a_Fam T) args) T n -> 
   map_arg_app args = n.
 Proof.
   intros args. intros.
@@ -1402,9 +1402,9 @@ Proof.
   eauto.
 Qed.
 
-Lemma RolePath_args : forall F Rs, 
-    RolePath (a_Fam F) F Rs ->
-    forall args Rs', RolePath (apply_pattern_args (a_Fam F) (rev args)) F Rs' ->
+Lemma RolePath_args : forall (T : const) Rs, 
+    RolePath (a_Fam T) T Rs ->
+    forall args Rs', RolePath (apply_pattern_args (a_Fam T) (rev args)) T Rs' ->
     Rs = (args_roles (rev args)) ++ Rs'.
 Proof.
   intros F Rs RP.
@@ -1446,13 +1446,13 @@ Proof.
 Unshelve. all: eauto.
 Qed.
 
-Lemma BranchTyping_preservation : forall G n R a A F B0 B1 C,
-    BranchTyping G n R a A (a_Fam F) nil B0 B1 C ->
-    CasePath R a F ->
-    AppsPath R a F n ->
-    SatApp F n ->
+Lemma BranchTyping_preservation : forall G n R a A (T : const) B0 B1 C,
+    BranchTyping G n R a A (a_Fam T) nil B0 B1 C ->
+    CasePath R a T ->
+    AppsPath R a T n ->
+    SatApp T n ->
     Typing G a A ->
-    Typing G (a_Fam F) B0 ->
+    Typing G (a_Fam T) B0 ->
     forall b1, Typing G b1 B1 ->
     forall b1', ApplyArgs a b1 b1' ->
     Typing G C a_Star ->
@@ -1464,7 +1464,7 @@ Proof.
   edestruct ApplyArgs_pattern_args as [args [h0 h1]]; eauto 1.
   subst a.
   move: (invert_Typing_pattern_args2 _ _  Ta) => [PiB [targs [h2 h4]]].
-  
+
   have eq: map_arg_app args = n.  eapply AppsPath_arg_app; eauto.
   rewrite eq in h2.
 
@@ -1475,7 +1475,7 @@ Proof.
     ++ replace (args_roles args) with Rs. 
        eauto. eapply RolePath_AppRole; eauto.
        rewrite eq. auto.
-  }     
+  }
   eapply BranchTyping_start with (Rs := nil); eauto 1.
   rewrite app_nil_r; eauto.
   eapply Typing_a_Fam_unique; eauto 1.
@@ -1609,13 +1609,13 @@ Proof.
   all: try rewrite SD; auto.
   move: (Typing_context_fv H0) => h. split_hyp. fsetdec.
   move: (Typing_context_fv H0) => h. split_hyp. fsetdec.
-Qed.  
+Qed.
 
 Lemma PaternPath_MatchTyping : forall a p, 
    tm_pattern_agree a p ->
-   `{ PatternContexts Ωp Gp Dp F PiB p B ->
-      Typing G (a_Fam F) PiB ->
-      ValuePath a F ->
+   `{ PatternContexts Ωp Gp Dp T PiB p B ->
+      Typing G (a_Fam T) PiB ->
+      ValuePath a T ->
       G ⊨ a : A →
       Ctx Gp ->
       uniq (Gp ++ G) ->
@@ -2050,13 +2050,13 @@ Hint Resolve Rename_tm_pattern_agree : nominal.
 Lemma Axiom_Freshening : forall s (Γ:list(atom*s)), 
   `{ MatchSubst a p1 b1 b' ->
   Rename p b p1 b1 D1 D ->
-  PatternContexts Ωp Γp Dp F PiB p B ->
+  PatternContexts Ωp Γp Dp T PiB p B ->
   Γp ⊨ b : B ->
   AtomSetImpl.For_all (λ x : atom, x `notin` fv_tm_tm_tm b) Dp -> 
   exists p2 b2 B' Dp' Ωp' Γp', 
   MatchSubst a p2 b2 b' /\
   Rename p b p2 b2 (dom Γ \u D1) D /\
-  PatternContexts Ωp' Γp' Dp' F PiB p2 B' /\
+  PatternContexts Ωp' Γp' Dp' T PiB p2 B' /\
   Γp' ⊨ b2 : B' /\
   disjoint Γp' Γ /\
   AtomSetImpl.For_all (λ x : atom, x `notin` fv_tm_tm_tm b2) Dp'}. 
@@ -2088,7 +2088,7 @@ Admitted. (* Freshening lemma for axioms *)
 Theorem MatchSubst_preservation2 : `{
   MatchSubst a p1 b1 b' →
   Rename p b p1 b1 ((fv_tm_tm_tm a) ∪ (fv_tm_tm_tm p)) D →
-  binds F (Ax p b PiB R1 Rs) toplevel →
+  binds T (Ax p b PiB R1 Rs) toplevel →
   Γ ⊨ a : A →
   Γ ⊨ b' : A}.
 Proof.
@@ -2124,7 +2124,7 @@ Proof.
   edestruct PaternPath_MatchTyping 
     with (a:=a)(G := Γ)(Gp := Γp')(p := p2) as [sub0 h0]; eauto 2.
   eapply MatchSubst_match; eauto.
-  have TF: Typing nil (a_Fam F) PiB. eapply E_Fam; eauto 1. 
+  have TF: Typing nil (a_Fam T) PiB. eapply E_Fam; eauto 1. 
   move: (Typing_weakening TF  Γ nil nil eq_refl) => w.
 
   simpl_env in w. eapply w; eauto.
@@ -2216,7 +2216,7 @@ Proof.
 Qed.
 
 Lemma PatternContexts_dom :
-  `{ PatternContexts W G D F A p B -> fv_tm_tm_tm p [<=] dom G  }.
+  `{ PatternContexts W G D T A p B -> fv_tm_tm_tm p [<=] dom G  }.
 Proof. 
   induction 1; simpl; try rewrite IHPatternContexts; try fsetdec.
 Qed.  

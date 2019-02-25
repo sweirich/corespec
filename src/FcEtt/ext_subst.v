@@ -276,7 +276,7 @@ Lemma BranchTyping_tm_subst :
                                    (tm_subst_tm_tm a x B2)
                                    (tm_subst_tm_tm a x B3)
                                    (tm_subst_tm_tm a x C).
-Proof. 
+Proof.
   induction 1; intros; subst; simpl.
   all: try solve [
     cbn; E_pick_fresh y;
@@ -382,7 +382,8 @@ Proof.
       try solve [match goal with H : _ |- _ => eapply H; eauto 3 end].
     all: exactly 1 goal.
     move: BranchTyping_tm_subst.
-    move/(_ _ _ _ _ _ (a_Fam F) []) => /=.
+    with const do fun T =>
+      move/(_ _ _ _ _ _ (a_Fam T) []) => /=.
     by apply; try ea; try done.
   - (* E_Assn *)
     destruct (c == x).
@@ -410,7 +411,8 @@ Proof.
     eapply DefEq_weaken_available; eauto.
   - eapply CON; eauto 3;
       move: BranchTyping_tm_subst;
-      move/(_ _ _ _ _ _ (a_Fam F) []);
+      with const do fun T =>
+        move/(_ _ _ _ _ _ (a_Fam T) []);
       apply; try ea; try done.
   - eapply E_LeftRel with (b := tm_subst_tm_tm a0 x b)
                           (b':= tm_subst_tm_tm a0 x b'); eauto 2.

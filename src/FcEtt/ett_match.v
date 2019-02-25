@@ -17,8 +17,9 @@ Require Import Omega.
 
 (** Patterns, agreement and substitution function **)
 
+(* FIXME: why this instead of pattern (defined in ott)? *)
 Inductive Pattern : tm -> Prop :=
-  | Pattern_Fam : forall F, Pattern (a_Fam F)
+  | Pattern_Fam : forall T, Pattern (a_Fam (f_Const T))
   | Pattern_AppR : forall a1 R x, Pattern a1 -> Pattern (a_App a1 (Role R) (a_Var_f x))
   | Pattern_IApp : forall a1, Pattern a1 -> Pattern (a_App a1 (Rho Irrel) a_Bullet)
   | Pattern_CApp : forall a1, Pattern a1 -> Pattern (a_CApp a1 g_Triv).
@@ -1142,7 +1143,9 @@ Proof. intros. generalize dependent p. induction H; intros; eauto.
                eapply tm_subpattern_agree_sub_app; eauto. intro.
                eapply tm_subpattern_agree_app_contr; eauto.
              }
-           assert (F = F0).
+           get const as T1.
+           get atom excl ![T1]! as F1.
+           assert (F1 = T1).
              { apply tm_tm_agree_head_same in P.
                rewrite U in P. rewrite U1 in P. inversion P; auto.
              }
@@ -1157,7 +1160,9 @@ Proof. intros. generalize dependent p. induction H; intros; eauto.
                eapply tm_subpattern_agree_sub_capp; eauto. intro.
                eapply tm_subpattern_agree_capp_contr; eauto.
              }
-           assert (F = F0).
+           get const as T1.
+           get atom as F1.
+           assert (F1 = T1).
              { apply tm_tm_agree_head_same in P.
                rewrite U in P. rewrite U1 in P. inversion P; auto.
              }
@@ -1241,7 +1246,7 @@ Proof. intros. generalize dependent a'. induction H; intros; eauto.
         - axioms_head_same.
         - inversion H2; subst. split; auto.
           apply tm_tm_agree_refl. eapply ValuePath_Pattern_like_tm; eauto.
-          assert (ValuePath (a_UAbs rho a'0) F).
+          assert (ValuePath (a_UAbs rho a'0) T).
           apply IHValuePath; auto. subst. inversion H3.
           split; econstructor. eapply Par_lc2; eauto. eapply IHValuePath; eauto.
           eapply IHValuePath; eauto. eapply Par_lc1; eauto.
@@ -1253,7 +1258,7 @@ Proof. intros. generalize dependent a'. induction H; intros; eauto.
             auto.
         - inversion H1; subst. split; auto.
           apply tm_tm_agree_refl. eapply ValuePath_Pattern_like_tm; eauto.
-          assert (ValuePath (a_UCAbs a'0) F).
+          assert (ValuePath (a_UCAbs a'0) T).
           eapply IHValuePath; eauto. inversion H2.
           split; econstructor. eapply IHValuePath; eauto.
           eapply IHValuePath; eauto.
@@ -1275,7 +1280,7 @@ Proof. intros. generalize dependent a'. generalize dependent p.
          - inversion H3; subst. 
            + split; eauto. split; auto.
              apply tm_tm_agree_refl. eapply ValuePath_Pattern_like_tm; eauto.
-           + assert (ValuePath (a_UAbs rho a'0) F).
+           + assert (ValuePath (a_UAbs rho a'0) T).
              eapply IHValuePath; eauto. inversion H4.
            + pose (P := IHValuePath p H2 a'0 H10). inversion P.
              inversion H5. split; eauto. econstructor.
@@ -1287,7 +1292,7 @@ Proof. intros. generalize dependent a'. generalize dependent p.
           - inversion H2; subst.
            + split; eauto. split; auto.
              apply tm_tm_agree_refl. eapply ValuePath_Pattern_like_tm; eauto.
-           + assert (ValuePath (a_UCAbs a'0) F).
+           + assert (ValuePath (a_UCAbs a'0) T).
              eapply IHValuePath; eauto. inversion H3.
            + pose (P := IHValuePath p H0 a'0 H5).
              inversion P. inversion H4. split; auto.
@@ -1314,7 +1319,7 @@ Proof. intros. generalize dependent a'. generalize dependent p.
          - inversion H3; subst.
            + repeat split; simpl in *; eauto. eapply tm_tm_agree_refl; eauto.
              econstructor. eapply ValuePath_Pattern_like_tm; eauto. auto.
-           + assert (ValuePath (a_UAbs rho a'0) F).
+           + assert (ValuePath (a_UAbs rho a'0) T).
              eapply IHValuePath; eauto. inversion H4.
            + pose (P := IHValuePath p H1 ltac:(eauto) a'0 H10).
              inversion P as [P1 [P2 P3]].
@@ -1335,7 +1340,7 @@ Proof. intros. generalize dependent a'. generalize dependent p.
           - inversion H2; subst.
            + repeat split; simpl in *; eauto. eapply tm_tm_agree_refl; eauto.
              eapply ValuePath_Pattern_like_tm; eauto.
-           + assert (ValuePath (a_UCAbs a'0) F).
+           + assert (ValuePath (a_UCAbs a'0) T).
              eapply IHValuePath; eauto. inversion H3.
            + pose (P := IHValuePath p H0 ltac:(eauto) a'0 H5).
              inversion P as [P1 [P2 P3]].
@@ -1391,7 +1396,7 @@ Proof. intros. generalize dependent a'. inversion H.
          axioms_head_same. pattern_head_tm_agree. rewrite H1 in U1.
          inversion U1; subst. axioms_head_same. contradiction.
        - inversion H3; subst. split; eauto.
-         assert (AppsPath Nom (a_UAbs Irrel a'0) F Apps5). eapply IHAppsPath.
+         assert (AppsPath Nom (a_UAbs Irrel a'0) T Apps5). eapply IHAppsPath.
          split; auto. all: auto. inversion H4. split.
          econstructor. eapply Par_lc2; eauto. eapply IHAppsPath.
          split; auto. all:auto. inversion H8; subst.
@@ -1400,7 +1405,7 @@ Proof. intros. generalize dependent a'. inversion H.
          axioms_head_same. pattern_head_tm_agree. rewrite H1 in U1.
          inversion U1; subst. axioms_head_same. contradiction.
        - inversion H2; subst. split; eauto.
-         assert (AppsPath Nom (a_UCAbs a'0) F Apps5). eapply IHAppsPath.
+         assert (AppsPath Nom (a_UCAbs a'0) T Apps5). eapply IHAppsPath.
          split; auto. all: auto. inversion H3. split.
          econstructor. eapply IHAppsPath.
          split; auto. all:auto. inversion H5; subst.
@@ -1522,7 +1527,9 @@ Proof. intros. generalize dependent a'. generalize dependent b'.
        (* By induction on ApplyArgs *)
        induction H; intros.
          - inversion H1; subst. inversion H3; subst. auto.
-           assert (F0 = F). { eapply CasePath_head in H0; simpl in H0; 
+           get const as T1.
+           get const excl ![T1]! as T2.
+           assert (T1 = T2). { eapply CasePath_head in H0; simpl in H0; 
            inversion H0; auto. } subst.
            inversion H0; subst; axioms_head_same. contradiction. assert False.
            apply H9. eauto. contradiction.
@@ -1810,8 +1817,8 @@ Proof. intros. induction H.
         - inversion IHroleing. inversion H0 as [F h1].
           left; exists F. eauto.
           right. intros F h1. inversion h1; subst. apply (H0 F); auto.
-        - left. exists F; eauto.
-        - left. exists F; eauto.
+        - left. exists T; eauto.
+        - left. exists T; eauto.
 Qed.
 
 Lemma ValuePath_const_form : forall a F, ValuePath a F ->
@@ -1871,7 +1878,7 @@ Proof. intros. induction H.
     left. exists F'. eapply CasePath_UnMatch; eauto. econstructor.
     eapply roleing_lc; eauto. auto. contradiction. contradiction.
     left. exists F'. eapply CasePath_Const; eauto. econstructor.
-    eapply roleing_lc; eauto. auto. right. intros F' h1. 
+    eapply roleing_lc; eauto. auto. right. intros F' h1.
     inversion h1; subst. inversion H2; subst. eapply H1; eauto.
     eapply H1; eapply CasePath_Const; eauto. inversion H2; subst. eauto.
     eapply H1; eapply CasePath_UnMatch; eauto. inversion H2; subst. eauto.
@@ -1897,16 +1904,17 @@ Proof. intros. induction H.
     inversion h1; subst. inversion H1; subst. eapply H0; eauto.
     eapply H0; eapply CasePath_Const; eauto. inversion H1; subst. eauto.
     eapply H0; eapply CasePath_UnMatch; eauto. inversion H1; subst. eauto.
-  - left. exists F. eauto.
+  - left. with const do fun h => exists h. eauto.
   - move: (sub_dec R R1) => h1. inversion h1.
-    assert (U: lc_tm (a_Fam F)). eauto.
+    get const as T1.
+    assert (U: lc_tm (a_Fam T1)). eauto.
     move: (subtm_pattern_agree_dec p U) => h1'. inversion h1; inversion h1'.
     right. intros F' h2.
     move: (CasePath_ValuePath h2) => h3. apply ValuePath_head in h3.
     simpl in h3. inversion h3; subst. inversion h2; subst. axioms_head_same.
     axioms_head_same. contradiction. axioms_head_same. contradiction.
-    left. exists F. eapply CasePath_UnMatch; eauto. contradiction.
-    contradiction. left. exists F. eapply CasePath_Const; eauto.
+    left. exists T1. eapply CasePath_UnMatch; eauto. contradiction.
+    contradiction. left. with const do fun t => exists t. eapply CasePath_Const; eauto.
 Qed.
 
 Lemma CasePath_dec : forall W a R F, roleing W a R -> 
@@ -2143,11 +2151,13 @@ Proof.
          ltac:(fun h => apply snoc_injective1 in h; inversion h) end;
     subst; auto].
 
-  destruct (eq_dec F F0). subst.
+  all: get const as T1.
+  all: get const excl ![T1]! as T2.
+  destruct (eq_dec T1 T2). subst.
   left. eauto.
   right. move=> h; inversion h; subst; contradiction.
 
-  destruct (eq_dec F F0). subst.
+  destruct (eq_dec T1 T2). subst.
   destruct (sub_dec R R1).
   right. move=> h; inversion h; subst. 
   axioms_head_same.

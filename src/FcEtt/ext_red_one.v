@@ -142,20 +142,16 @@ Proof.
   intros R a H.
   move=> b RR.
   induction RR.
-  - inversion H. autofresh. auto.
-    eapply not_CasePath_a_UAbs; eauto. 
-  - eapply IHRR. 
-    match goal with 
-      [ H : Value ?R ?a |- _ ] =>
-      inversion H; eapply Value_Path with (F:=F); subst end.
-    invert_Path; eauto.
-  - eapply IHRR. 
-    match goal with 
-      [ H : Value ?R ?a |- _ ] =>
-      inversion H; eapply Value_Path with (F:=F); subst end.
-    invert_Path; eauto.
-  - inversion H.
-    invert_Path; eauto.
+  all: try solve [
+    with (_ -> False) do fun ih =>
+      eapply ih;
+      with Value do fun h =>
+        inversion h;
+        with const do fun T =>
+          eapply Value_Path with (T:=T); subst end;
+        by invert_Path; eauto].
+  - with Value do invs. autofresh. auto.
+    eapply not_CasePath_a_UAbs; eauto.
   - eapply no_Value_Beta; eauto.
 Qed.
 
@@ -370,7 +366,8 @@ Lemma BetaAxiom_a_App_only : forall F p b0 A R0 Rs p1 b1 D' a2 a nu b R1
 Proof.
   intros. 
   move: (MatchSubst_match H4) => h4.
-  eapply Value_Path with (F:=F).
+  with atom do fun f =>
+    eapply Value_Path with (T:=f).
   eapply CasePath_UnMatch; eauto.
   + inversion h4; subst. eapply tm_pattern_agree_ValuePath; eauto.
     eapply tm_subpattern_agree_sub_app. econstructor.
@@ -390,13 +387,16 @@ Lemma BetaAxiom_a_CApp_only : forall F p b0 A R0 Rs p1 b1 D' a2 a  R1
   Value R1 a.
 Proof.
   intros.
-  move: (MatchSubst_match H4) => h4.
-  eapply Value_Path with (F:=F).
+  with MatchSubst do fun h =>
+    move: (h) => /(MatchSubst_match) h4.
+  with atom do fun f =>
+  eapply Value_Path with (T:=f).
   eapply CasePath_UnMatch; eauto.
   + inversion h4; subst. eapply tm_pattern_agree_ValuePath; eauto.
     eapply tm_subpattern_agree_sub_capp. econstructor.
     eapply Rename_tm_pattern_agree; eauto.
-  + move: (tm_pattern_agree_rename_inv_2 h4 H3) => h5. 
+  + with Rename do fun H3 =>
+    move: (tm_pattern_agree_rename_inv_2 h4 H3) => h5. 
     intro. eapply subtm_pattern_agree_capp_contr; eauto.
 Qed.
 

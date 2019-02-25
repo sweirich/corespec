@@ -104,6 +104,8 @@ Proof. intros. dependent induction H; auto.
        pose (P := IHMatchSubst ltac:(auto)). rewrite P. auto.
 Qed.
 
+Instance eqdec_eq_F : EqDec_eq F. move=>//; by decide equality. Qed.
+
 Lemma match_dec : forall a p, lc_tm a -> MatchSubst a p a_Bullet a_Bullet \/ ~(MatchSubst a p a_Bullet a_Bullet).
 Proof. intros. generalize dependent a.
        induction p; intros; try (right; intro P; inversion P; fail).
@@ -134,8 +136,14 @@ Proof. intros. generalize dependent a.
           inversion H; subst. pose (Q := IHp a H2). inversion Q.
           left; eauto. right. intro P. inversion P. contradiction.
         - destruct a; try (right; intro P; inversion P; fail).
-          destruct (F0 == F). subst. left. eauto.
-          right; intro P; inversion P; contradiction.
+          get F as f1.
+          get F excl ![f1]! as f2.
+          case eq1: f1 => [|t1]; try solve [right; inversion 1].
+          case eq2: f2 => [|t2]; try solve [right; inversion 1].
+          subst.
+          destruct (t1 == t2); subst.
+          by left; eauto.
+          by right; inversion 1; contradiction.
 Qed.
 
 
