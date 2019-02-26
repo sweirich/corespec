@@ -1665,8 +1665,7 @@ Proof.
 
   all: try erewrite (cps_a_Pi) in IHMatchTyping.
   all: try rewrite cps_a_CPi in IHMatchTyping.
-  + 
-    have EA: DefEq G (dom G) (cps_tm A1 s) A2 a_Star Rep.
+  + have EA: DefEq G (dom G) (cps_tm A1 s) A2 a_Star Rep.
     { eapply E_PiFst; eauto 1. }
 
     erewrite (cps_tm_cons (Rho Rel)).  
@@ -1681,7 +1680,7 @@ Proof.
       fsetdec. 
     
 
-    eapply E_Trans; eauto 1. 2: eapply E_Sym. eauto 1.
+    eapply E_Trans; eauto 1. 2: eapply E_Sym; eauto 1.
     
     have EQ2: cps_tm B1 ((x, p_Tm (Rho Rel) a2) :: s) = 
               cps_tm B1 s.
@@ -1860,10 +1859,8 @@ Proof.
     specialize (L _ _ _ Tb2).
     specialize (L _ _ _ TA).
     specialize (L (cps_context Gp2 s) x).
-    lapply L. clear L. move=>L. 2: {
-      simpl_env.
-      f_equal.
-    }    
+    lapply L. clear L. move=>L. 2:   simpl_env; f_equal.
+
     have EQ3: utils.map = EnvImpl.map. auto. rewrite EQ3 in L.
     have EQ4:
        EnvImpl.map (tm_subst_tm_sort a x) (cps_context Gp2 s) = 
