@@ -976,7 +976,7 @@ Qed.
 (** --------------------------------------------------------------
     --------------------------------------------------------------
  **)
-
+(*
 Inductive var : Set :=
   | var_tmvar : atom -> var
   | var_covar : atom -> var.
@@ -1122,4 +1122,4 @@ Proof. intros. generalize dependent a. generalize dependent b.
           eapply tm_substitution_mutual. eapply IHPatternContexts. auto.
           rewrite app_assoc. eauto.
           rewrite fold_left_app.
-
+*)
