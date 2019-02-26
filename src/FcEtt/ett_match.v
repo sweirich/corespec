@@ -58,17 +58,6 @@ Lemma RolePath_head : forall F a Rs, RolePath a F Rs -> head_const a = a_Fam F.
 Proof. intros. induction H; eauto.
 Qed.
 
-(* SCW: Why do we have tm_app_roles? This seems to be unused and 
-   identical to pat_app_roles. *)
-
-Fixpoint tm_app_roles (a : tm) : list role := match a with
-  | a_Fam F => []
-  | a_App a1 (Role R) a2 => tm_app_roles a1 ++ [ R ]
-  | a_App a1 (Rho Irrel) a_Bullet => tm_app_roles a1
-  | a_CApp a1 g_Triv => tm_app_roles a1
-  | _ => []
-  end.
-
 Fixpoint pat_app_roles (a : tm) : list role := match a with
   | a_Fam F => []
   | a_App a1 (Role R) (a_Var_f _) => pat_app_roles a1 ++ [ R ]

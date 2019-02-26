@@ -978,7 +978,7 @@ Proof.
   all: with BranchTyping do ltac:(fun h => inversion h; subst; clear h). 
   all: destruct args2; with (map_arg_app _ = _) do 
            ltac:(fun h=> simpl in h; inversion h).
-  1:{
+  {
     simpl in *.
     with open_telescope do ltac:(fun h => inversion h).
     subst.
@@ -989,14 +989,13 @@ Proof.
        move:(Typing_context_fv h)=> ?). split_hyp.
     with (Typing G b1) do ltac:(fun h => 
        replace (cps_tm C1 s) with C1 in h).
-        2: { move: (fv_tm_tm_tm_open_tm_wrt_co_lower C1 g_Triv) => ?. 
+        Focus 2.  move: (fv_tm_tm_tm_open_tm_wrt_co_lower C1 g_Triv) => ?. 
              move: (fv_co_co_tm_open_tm_wrt_co_lower C1 g_Triv) => ?. 
              rewrite cps_tm_fresh_eq.
              eapply wf_sub_domFresh with (G:=G); auto.
              eapply wf_sub_domFresh with (G:=G); auto.
              auto.
-        }
-    eapply E_CApp; eauto 1.
+     eapply E_CApp; eauto 1.
         {
         with (Typing G (apply_pattern_args _ _)) do ltac:(fun h => 
           move:(Typing_context_fv h) => ?; split_hyp). 
@@ -1190,7 +1189,7 @@ Proof.
     
 + eapply IHn with (b1 := a_App b1 (Rho Rel) a); auto.
     ++ eapply E_Conv with (A := open_tm_wrt_tm B0 a); 
-         eauto 1. 2: { eapply E_Sym; eauto 1. }
+         eauto 1. 2: eapply E_Sym; eauto 1.
       eapply E_TApp; eauto 1.
       { autoreg. auto. }
 
@@ -1214,7 +1213,7 @@ Proof.
 
 + eapply IHn with (b1 := a_App b1 (Rho Rel) a); auto.
   ++ eapply E_Conv with (A := open_tm_wrt_tm B0 a); 
-       eauto 1. 2: { eapply E_Sym; eauto 1. }
+       eauto 1. 2: eapply E_Sym; eauto 1.
       eapply E_App; eauto 1.
       { autoreg. auto. }
   ++ rewrite cps_open_tm_wrt_tm.
@@ -1247,7 +1246,7 @@ Proof.
       eapply E_PiSnd; eauto 1.
       eapply E_Refl; eauto 1.
    ++ eapply E_Conv with (A := open_tm_wrt_tm B0 a0); 
-        eauto 1. 2: { eapply E_Sym; eauto 1. }
+        eauto 1. 2: eapply E_Sym; eauto 1.
       eapply E_IApp; eauto 1.
       { autoreg. auto. }
    ++ rewrite cps_open_tm_wrt_tm.
@@ -1290,7 +1289,7 @@ Proof.
       move: (E_CPiFst _ _ _ _ _ _ _ _ _ _ _ _ _ peq) => iso.
       move: (E_Cast _ _ _ _ _ _ _ _ _ _ e1 iso) => e2.
       eapply E_CPiSnd; eauto 1.
-  ++ eapply E_Conv; eauto 1. 2: { eapply E_Sym; eauto 1. }
+  ++ eapply E_Conv; eauto 1. 2: eapply E_Sym; eauto 1.
      eapply E_CApp; eauto 1.
       { autoreg. auto. }
   ++ rewrite cps_open_tm_wrt_co.
@@ -1674,15 +1673,15 @@ Proof.
  
     rewrite cps_open_tm_wrt_tm.
     { unfold lc_sub. econstructor; eauto. econstructor; eauto. eapply Typing_lc1; eauto. }    
-    erewrite wf_cps_subst_var. 2: {
+    erewrite wf_cps_subst_var. Focus 2. 
       econstructor; eauto.
       eapply Typing_lc1; eauto.
       fsetdec.
       move: (Typing_context_fv H0) => h. split_hyp.
       fsetdec. 
-    } 
+    
 
-    eapply E_Trans; eauto 1. 2: { eapply E_Sym. eauto 1. }
+    eapply E_Trans; eauto 1. 2: eapply E_Sym. eauto 1.
     
     have EQ2: cps_tm B1 ((x, p_Tm (Rho Rel) a2) :: s) = 
               cps_tm B1 s.
@@ -1691,7 +1690,7 @@ Proof.
       move: (DefEq_context_fv IHMatchTyping) => h. split_hyp.
       simpl in *.
       fsetdec.
-    } 
+    }
 
     rewrite EQ2. 
     eapply E_PiSnd; eauto 1.
@@ -1706,15 +1705,15 @@ Proof.
     rewrite cps_open_tm_wrt_tm.
     { unfold lc_sub. econstructor; eauto. econstructor; eauto. 
       eapply Typing_lc1; eauto. }    
-    erewrite wf_cps_subst_var. 2: {
+    erewrite wf_cps_subst_var. Focus 2.
       econstructor; eauto.
       eapply Typing_lc1; eauto.
       fsetdec.
       move: (Typing_context_fv H0) => h. split_hyp.
       fsetdec. 
-    } 
+    
 
-    eapply E_Trans; eauto 1. 2: { eapply E_Sym. eauto 1. }
+    eapply E_Trans; eauto 1. 2: eapply E_Sym; eauto 1.
     
     have EQ2: cps_tm B1 ((x, p_Tm (Rho Irrel) a2') :: s) = 
               cps_tm B1 s.
@@ -1742,12 +1741,11 @@ Proof.
  
     rewrite cps_open_tm_wrt_co.
     { unfold lc_sub. econstructor; eauto. }
-    erewrite wf_cps_co_subst_var with (G:=G)(x:=c). 2: {
+    erewrite wf_cps_co_subst_var with (G:=G)(x:=c). Focus 2.
       econstructor; eauto.
       fsetdec.
-    } 
 
-    eapply E_Trans; eauto 1. 2: { eapply E_Sym. eauto 1. }
+    eapply E_Trans; eauto 1. 2: eapply E_Sym; eauto 1.
     
     have EQ2: cps_tm B1 ((c, p_Co g_Triv ) :: s) = 
               cps_tm B1 s.
@@ -1761,7 +1759,7 @@ Proof.
     rewrite EQ2. 
     simpl in Eq.
     eapply E_CPiSnd. eauto 1.
-    eapply E_Cast. 2 : { eauto 1. } 
+    eapply E_Cast. 2 : eauto 1. 
     eauto 1.
     eauto 1.
 Qed.
@@ -1826,7 +1824,7 @@ Proof.
     eapply Ctx_app; eauto using Typing_Ctx.
     fsetdec.
 
-  - with MatchTyping do ltac:(fun h =>
+  -  with MatchTyping do ltac:(fun h =>
          specialize (IHms Gp0 G _ _ sub0 D h ltac:(auto) C); 
          move: (MatchTyping_wf_sub h) => [ln wfs];
          move: (MatchTyping_correctness2 h) => de
