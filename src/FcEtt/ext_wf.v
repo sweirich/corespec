@@ -177,11 +177,11 @@ Qed.
 Lemma Par_lc2 : forall W a a' R, Par W a a' R → lc_tm a'.
 Proof.
   intros. induction H; eauto. 
-  eapply roleing_lc; eauto.
-  lc_solve. lc_solve.
-  with binds do ltac:(fun h =>
-       apply toplevel_inversion in h; inversion h; autofwd).
-  all: eauto 2 using roleing_lc, MatchSubst_lc4.
+  all: try with binds do ltac:(fun h =>
+     apply toplevel_inversion in h; inversion h; autofwd).
+
+  all: try solve [eauto 2 using roleing_lc, MatchSubst_lc4].
+  all: try solve [lc_solve]. 
   econstructor; eauto using ApplyArgs_lc3.
 Qed.
 
@@ -267,6 +267,7 @@ Hint Resolve AppsPath_lc.
 Lemma Beta_lc1 : forall a a' R, Beta a a' R -> lc_tm a.
 Proof.
   intros.  induction H; auto.
+  all: try with AxiomUnfold do ltac:(fun h => inversion h; subst).
   - eapply Value_lc in H0. eauto. 
   - eauto 2 with lc.
   - constructor; eauto 3 with lc.
@@ -278,6 +279,7 @@ Qed.
 Lemma Beta_lc2 : forall a a' R, Beta a a' R -> lc_tm a'.
 Proof.
   intros.  induction H; auto.
+  all: try with AxiomUnfold do ltac:(fun h => inversion h; subst; eauto).
   - apply Value_lc in H0. inversion H0.
     apply lc_body_tm_wrt_tm; auto.
   - inversion H. apply lc_body_tm_wrt_co; auto.

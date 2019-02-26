@@ -982,6 +982,11 @@ Ltac pattern_head_tm_agree := match goal with
       end.
 
 Ltac axioms_head_same := match goal with
+     | [ P11 : binds ?F (Cs ?A1 ?Rs1) toplevel,
+         P12 : binds ?F (Cs ?A2 ?Rs2) toplevel |- _ ] =>
+         assert (P13 : Cs A1 Rs1 = Cs A2 Rs2);
+         [ eapply binds_unique; eauto using uniq_toplevel 
+         | inversion P13; subst; clear P13; clear P12]
      | [ P11 : binds ?F (Ax ?p1 ?b1 ?A1 ?R1 ?Rs1) toplevel,
          P12 : binds ?F (Cs ?A2 ?Rs2) toplevel |- _ ] =>
          assert (P13 : Ax p1 b1 A1 R1 Rs1 = Cs A2 Rs2);
@@ -1118,7 +1123,8 @@ Proof. intros. generalize dependent p. induction H; intros; eauto.
          - assert False. eapply tm_subpattern_agree_pi_cpi_contr; eauto.
            contradiction.
          - pattern_head_tm_agree. simpl in U1.
-           inversion U1; subst. axioms_head_same. inversion H3; subst.
+           inversion U1; subst. 
+           axioms_head_same. inversion H3; subst.
            contradiction.
          - pattern_head. pattern_head_tm_agree. simpl in U1.
            assert (P : tm_tm_agree a a').
@@ -1221,6 +1227,7 @@ Lemma ValuePath_cs_par_ValuePath : forall a F A Rs W a' R, ValuePath a F ->
                  ValuePath a' F /\ tm_tm_agree a a'.
 Proof. intros. generalize dependent a'. induction H; intros; eauto.
         - inversion H1; subst; eauto. axioms_head_same.
+          axioms_head_same.
         - axioms_head_same.
         - inversion H2; subst. split; auto.
           apply tm_tm_agree_refl. eapply ValuePath_Pattern_like_tm; eauto.

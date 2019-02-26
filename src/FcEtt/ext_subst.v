@@ -263,6 +263,7 @@ Proof.
   simpl. rewrite IHpa. simpl. auto.
 Qed.
 
+
 Lemma BranchTyping_tm_subst :  
       forall G0 n R b B b2 aa B2 B3 C (H : BranchTyping G0 n R b B b2 aa B2 B3 C),
       forall G a A, Typing G a A ->
@@ -277,54 +278,23 @@ Lemma BranchTyping_tm_subst :
                                    (tm_subst_tm_tm a x C).
 Proof. 
   induction 1; intros; subst; simpl.
+  all: try solve [
+    cbn; E_pick_fresh y;
+    autofresh with y;
+    rewrite_subst_context;
+    happly H0;
+      uha;
+      (autorewrite with subst_open_var std using move=>//=);
+      move=>//; try fsetdec_fast; eauto 2 with lc;
+    case: (y == x) => //; intros; subst; exfalso; fsetdec_fast].
+
   - autorewrite with subst_open; eauto 3 with lc.
     have LC: lc_tm a0. eauto 3 with lc.
     rewrite tm_subst_tm_tm_apply_pattern_args.
     eapply BranchTyping_Base; eauto 4 using tm_subst_tm_tm_lc_tm.
-  - pick fresh y and apply BranchTyping_PiRole.
-    autofresh with y.
-    autorewrite with subst_open_var; try solve [uha; eauto 2 with lc].
-    rewrite_subst_context.
-    move/(_ _ _ _ _ (y ~ Tm A ++ ltac:(ea)) x eq_refl) in H0. (* FIXME: fragile *)
-    especialize H0.
-    rewrite map_app /= in H0.
-    move: H0.
-    case (y == x); first by (intros; uha; subst; exfalso; fsetdec_fast).
-    move=>?; apply.
-  - pick fresh y and apply BranchTyping_PiRel.
-    autofresh with y.
-    autorewrite with subst_open_var; try solve [uha; eauto 2 with lc].
-    rewrite_subst_context.
-    move/(_ _ _ _ ltac:(ea) (y ~ Tm A ++ ltac:(ea)) x eq_refl) in H0. (* FIXME fragile *)
-    move: H0.
-    rewrite map_app /=.
-    case: (y == x) ; first by (intros; uha; subst; exfalso; fsetdec_fast).
-    move=> ?.
-    apply.
-  - pick fresh y and apply BranchTyping_PiIrrel.
-    autofresh with y.
-    autorewrite with subst_open_var; try solve [uha; eauto 2 with lc].
-    rewrite_subst_context.
-    (* TODO: basic blind_spec tactic *)
-    move/(_ _ _ _ _ (y ~ Tm A ++ _) x eq_refl) => /= in H0.
-    especialize H0.
-    move: H0.
-    rewrite map_app.
-    case (y == x); first by (intros; uha; subst; exfalso; fsetdec_fast).
-    move=>?.
-    apply.
-  - pick fresh y and apply BranchTyping_CPi.
-    autofresh with y.
-    autorewrite with subst_open_var; eauto 2 with lc.
-    rewrite_subst_context.
-    move/(_ _ _ _ _ (y ~ _ ++ _) x eq_refl) => /= in H0.
-    especialize H0.
-    move: H0.
-    rewrite map_app.
-    apply.
 
-    Unshelve.
-    all: eassumption.
+  Unshelve.
+  all: unfold one; try match goal with |- _ = _ => reflexivity end; ea.
 Qed.
 
 
@@ -542,7 +512,6 @@ Proof.
   all: by rewrite -> IHpat_args.
 Qed.
 
-
 Lemma BranchTyping_co_subst :
       forall G0 n R b B b2 aa B2 B3 C (H : BranchTyping G0 n R b B b2 aa B2 B3 C),
       forall G D A1 A2 T R' F c ,
@@ -558,6 +527,16 @@ Lemma BranchTyping_co_subst :
                                    (co_subst_co_tm g_Triv c C).
 Proof.
   induction 1; intros; subst.
+  all: try solve [
+    cbn; E_pick_fresh y;
+    autofresh with y;
+    rewrite_subst_context;
+    by happly H0;
+      (autorewrite with subst_open_var std using move=>//);
+      move=>//; uha; fsetdec_fast].
+
+  all: exactly 1 goal.
+
   - move: BranchTyping_Base => /=.
     rewrite co_subst_co_tm_apply_pattern_args.
     apply.
@@ -573,48 +552,7 @@ Proof.
     by ok.
     move: co_subst_co_tm_open_tm_wrt_co.
     move/(_ _ _ g_Triv) => /= <- //=.
-  - simpl.
-    (* FIXME: E_pick_fresh x needs to be updated, to handle role vs Rel properly *)
-    pick fresh y and apply BranchTyping_PiRole.
-    autofresh with y.
-    especialize H0; last first.
-    do 2 (rewrite co_subst_co_tm_open_tm_wrt_tm in H0; try done).
-    rewrite map_app in H0.
-    TacticsInternals.apply_eq H0. (* FIXME: finish apply_eq and update here *)
-    rewrite app_assoc.
-    f_equal.
-    unfold map.
-    eset (e := (eq_sym  (EnvImpl.map_app _ _ _ _ _))).
-    TacticsInternals.apply_eq e.
-    f_equal.
-    (unshelve (instantiate(1:=_))); only 1: econstructor 2; last first.
-    cbn.
-    (unshelve (instantiate(2:=_))); only 1: econstructor 1; last first.
-    cbn. unfold one.
-    f_equal.
-    (unshelve (instantiate(1:=_))); only 1: econstructor 1; last first; by reflexivity.
-    (unshelve (instantiate(1:=_))); only 1: econstructor 1; last first; by reflexivity.
-  - simpl. E_pick_fresh y.
-    autorewrite with subst_open_var; eauto 2 with lc.
-    rewrite_subst_context.
-    replace (a_App (co_subst_co_tm g_Triv c b) (Rho Irrel) a_Bullet) with
-        (co_subst_co_tm g_Triv c (a_App b (Rho Irrel) a_Bullet)).
-    TacticsInternals.apply_eq H0. eauto.
-    autorewrite with lngen.
-    rewrite map_app.
-    all: by cbn.
-  - simpl. E_pick_fresh y.
-    autorewrite with subst_open_var; eauto 2 with lc.
-    rewrite_subst_context.
-    replace (a_CApp (co_subst_co_tm g_Triv c b) g_Triv) with
-        (co_subst_co_tm g_Triv c (a_CApp b g_Triv)) by done.
-    TacticsInternals.apply_eq H0; by try rewrite map_app; done.
-  - cbn.
-    E_pick_fresh y.
-    autorewrite with subst_open_var; eauto 2 with lc.
-    rewrite_subst_context.
-    TacticsInternals.apply_eq H0.
-    by rewrite map_app.
+
     Unshelve.
     all: unfold one; try match goal with |- _ = _ => reflexivity | |- DefEq _ _ _ _ _ _ => ea end; fsetdec_fast.
 Qed.
@@ -695,7 +633,7 @@ Proof.
     eapply CON; try done;
       try solve [match goal with H : _ |- _ => eapply H; eauto 3 end].
       move: BranchTyping_co_subst => bt.
-     TacticsInternals.apply_eq bt.
+     happly bt.
      unshelve instantiate (1:= _); [refine (a_Fam _) | reflexivity].
      unshelve instantiate (1:= _); [refine ([]) | reflexivity].
 (*    eapply E_Case; eauto 2.
@@ -749,7 +687,7 @@ Proof.
   - eapply CON; try done;
       try solve [match goal with H : _ |- _ => eapply H; eauto 3 end];
     move: BranchTyping_co_subst => bt;
-    TacticsInternals.apply_eq bt;
+    happly bt;
     only 1, 3: (unshelve instantiate (1:= _); [refine (a_Fam _) | reflexivity]);
     do 2 (only 1: unshelve instantiate (1:= _); [refine ([]) | reflexivity]).
   - eapply E_LeftRel with (b := co_subst_co_tm g_Triv c1 b) (b':= co_subst_co_tm g_Triv c1 b'); eauto 2.

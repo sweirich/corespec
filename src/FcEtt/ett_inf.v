@@ -122,7 +122,7 @@ Fixpoint close_tm_wrt_tm_rec (n1 : nat) (x1 : tmvar) (a1 : tm) {struct a1} : tm 
     | a_DataCon K1 => a_DataCon K1
     | a_Case a2 brs1 => a_Case (close_tm_wrt_tm_rec n1 x1 a2) (close_brs_wrt_tm_rec n1 x1 brs1)
     | a_Sub R1 a2 => a_Sub R1 (close_tm_wrt_tm_rec n1 x1 a2)
-    | a_Coerce a2 => a_Coerce (close_tm_wrt_tm_rec n1 x1 a2)
+    | a_Coerce => a_Coerce
     | a_SrcApp a2 b1 => a_SrcApp (close_tm_wrt_tm_rec n1 x1 a2) (close_tm_wrt_tm_rec n1 x1 b1)
   end
 
@@ -187,7 +187,7 @@ Fixpoint close_tm_wrt_co_rec (n1 : nat) (c1 : covar) (a1 : tm) {struct a1} : tm 
     | a_DataCon K1 => a_DataCon K1
     | a_Case a2 brs1 => a_Case (close_tm_wrt_co_rec n1 c1 a2) (close_brs_wrt_co_rec n1 c1 brs1)
     | a_Sub R1 a2 => a_Sub R1 (close_tm_wrt_co_rec n1 c1 a2)
-    | a_Coerce a2 => a_Coerce (close_tm_wrt_co_rec n1 c1 a2)
+    | a_Coerce => a_Coerce
     | a_SrcApp a2 b1 => a_SrcApp (close_tm_wrt_co_rec n1 c1 a2) (close_tm_wrt_co_rec n1 c1 b1)
   end
 
@@ -302,7 +302,7 @@ Fixpoint size_tm (a1 : tm) {struct a1} : nat :=
     | a_DataCon K1 => 1
     | a_Case a2 brs1 => 1 + (size_tm a2) + (size_brs brs1)
     | a_Sub R1 a2 => 1 + (size_role R1) + (size_tm a2)
-    | a_Coerce a2 => 1 + (size_tm a2)
+    | a_Coerce => 1
     | a_SrcApp a2 b1 => 1 + (size_tm a2) + (size_tm b1)
   end
 
@@ -413,9 +413,8 @@ Inductive degree_tm_wrt_tm : nat -> tm -> Prop :=
   | degree_wrt_tm_a_Sub : forall n1 R1 a1,
     degree_tm_wrt_tm n1 a1 ->
     degree_tm_wrt_tm n1 (a_Sub R1 a1)
-  | degree_wrt_tm_a_Coerce : forall n1 a1,
-    degree_tm_wrt_tm n1 a1 ->
-    degree_tm_wrt_tm n1 (a_Coerce a1)
+  | degree_wrt_tm_a_Coerce : forall n1,
+    degree_tm_wrt_tm n1 (a_Coerce)
   | degree_wrt_tm_a_SrcApp : forall n1 a1 b1,
     degree_tm_wrt_tm n1 a1 ->
     degree_tm_wrt_tm n1 b1 ->
@@ -594,9 +593,8 @@ Inductive degree_tm_wrt_co : nat -> tm -> Prop :=
   | degree_wrt_co_a_Sub : forall n1 R1 a1,
     degree_tm_wrt_co n1 a1 ->
     degree_tm_wrt_co n1 (a_Sub R1 a1)
-  | degree_wrt_co_a_Coerce : forall n1 a1,
-    degree_tm_wrt_co n1 a1 ->
-    degree_tm_wrt_co n1 (a_Coerce a1)
+  | degree_wrt_co_a_Coerce : forall n1,
+    degree_tm_wrt_co n1 (a_Coerce)
   | degree_wrt_co_a_SrcApp : forall n1 a1 b1,
     degree_tm_wrt_co n1 a1 ->
     degree_tm_wrt_co n1 b1 ->
@@ -818,9 +816,8 @@ Inductive lc_set_tm : tm -> Set :=
   | lc_set_a_Sub : forall R1 a1,
     lc_set_tm a1 ->
     lc_set_tm (a_Sub R1 a1)
-  | lc_set_a_Coerce : forall a1,
-    lc_set_tm a1 ->
-    lc_set_tm (a_Coerce a1)
+  | lc_set_a_Coerce :
+    lc_set_tm (a_Coerce)
   | lc_set_a_SrcApp : forall a1 b1,
     lc_set_tm a1 ->
     lc_set_tm b1 ->

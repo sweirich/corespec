@@ -11,6 +11,7 @@ Require Import FcEtt.utils.
 Require Import FcEtt.ext_weak.
 Require Import FcEtt.ext_subst.
 Require Import FcEtt.ext_invert.
+Require Import FcEtt.ett_roleing.
 
 Set Bullet Behavior "Strict Subproofs".
 Set Implicit Arguments.
@@ -98,7 +99,9 @@ Proof.
       eapply h0.
       rewrite tm_subst_tm_tm_var_neq. auto. auto.
       rewrite tm_subst_tm_tm_var_neq. auto. auto.
-    + eapply (first tm_substitution_mutual _ _ _ _ H1); eauto 2.
+    + replace a_Star with (tm_subst_tm_tm a1 x a_Star).
+      eapply (first tm_substitution_mutual); eauto 2. 
+      simpl. auto.
     + intros x0 FrLx.
       have h0 := RC x0 ltac:(auto).
       have e1: a_Var_f x0 = tm_subst_tm_tm a1 x (a_Var_f x0); auto.
@@ -131,77 +134,108 @@ Proof.
         -- apply Rho_IrrRel; auto.
            inversion h0; subst; clear h0.
            apply tm_subst_tm_tm_fresh; auto.
-  - (* app rel *) intros G b R a B R' A H K1 K2 K3 G1 G2 x A1 R0 a1 a2 D H1 H2 H3.
+  - (* app rel *) intros. 
     subst. simpl.
-    rewrite tm_subst_tm_tm_open_tm_wrt_tm.
+    rewrite tm_subst_tm_tm_open_tm_wrt_tm; eauto 2 using Typing_lc1.
     eapply E_AppCong; eauto 2.
-    eapply K1; eauto 2.
-    eapply (Typing_lc H2).
+    eapply H; eauto 2.
+  - (* TApp case *)
+    intros. subst. simpl.
+    have IHb: DefEq (map (tm_subst_tm_sort a1 x) G2 ++ G1) D
+                (tm_subst_tm_tm a1 x b)
+                (tm_subst_tm_tm a2 x b)
+                (tm_subst_tm_tm a1 x (a_Pi Rel A B)) R0.
+    { eauto. } clear H.
+    have IHa: DefEq (map (tm_subst_tm_sort a1 x) G2 ++ G1) D
+                (tm_subst_tm_tm a1 x a)
+                (tm_subst_tm_tm a2 x a)
+                (tm_subst_tm_tm a1 x A) (param R R0).
+    { eauto. } 
+    
+    rewrite tm_subst_tm_tm_open_tm_wrt_tm; eauto 2 using Typing_lc1.    
+    eapply E_TAppCong; eauto 2.
+    eapply RolePath_subst; eauto 2 using Typing_lc1.
+    eapply RolePath_subst; eauto 2 using DefEq_lc2.
+    simpl in IHb.
+    have Tb: Typing (map (tm_subst_tm_sort a1 x) G2 ++ G1) 
+                 (tm_subst_tm_tm a2 x b)
+                 (a_Pi Rel (tm_subst_tm_tm a1 x A) (tm_subst_tm_tm a1 x B)).
+    { autoreg. auto. }
+    have Ta: Typing (map (tm_subst_tm_sort a1 x) G2 ++ G1) 
+                 (tm_subst_tm_tm a2 x a)
+                 (tm_subst_tm_tm a1 x A).
+    { autoreg. auto. }
+    eapply E_Conv with 
+        (A := (open_tm_wrt_tm (tm_subst_tm_tm a1 x B) (tm_subst_tm_tm a2 x a))).
+    eapply E_TApp; eauto 2.
+    eapply RolePath_subst; eauto 2 using DefEq_lc2.
+    eapply E_Sym.
+    eapply E_PiSnd with (A1 := tm_subst_tm_tm a1 x A) 
+                        (A2 := tm_subst_tm_tm a1 x A) (rho:=Rel); eauto 1.
+    admit. (* OK, substitution *)
+    eapply H0; eauto 2. eapply (fourth weaken_available_mutual).
+    eapply DefEq_weaken_available; eauto 1.
+    rewrite dom_app. fsetdec.
+    replace a_Star with (tm_subst_tm_tm a1 x a_Star).
+    admit. (* Ok, substitution *)
+    simpl. auto.
   - (* app irrel case *)
-    intros G b R B a R' A K0 K1 K2 K3 G1 G2 x A1 R0 a1 a2 D H2 H3 H4. subst.
+    intros. subst.
     simpl.
-    rewrite tm_subst_tm_tm_open_tm_wrt_tm.
+    rewrite tm_subst_tm_tm_open_tm_wrt_tm; eauto 2 using Typing_lc1.
     eapply E_IAppCong.
-    eapply K1; eauto.
+    eapply H; eauto 3.
     fold tm_subst_tm_tm.
     eapply (first tm_substitution_mutual); eauto.
-    eapply (DefEq_lc H4).
   - (* conv *)
-    intros G a B R A R0 t H d H0 t0 H1 G1 G2 x A1 R' a1 a2 D H2 H3 H4.
+    intros.
     subst.
-    move: (@H1 G1 G2 x A1 R' a1 a2 D eq_refl H3 H4) => h0.
+    move: (@H1 G1 G2 x A1 R a1 a2 D eq_refl H3 H4) => h0.
     clear H1.
-    move: (@H G1 G2 x A1 R' a1 a2 D eq_refl H3 H4) => h1.
+    move: (@H G1 G2 x A1 R a1 a2 D eq_refl H3 H4) => h1.
     clear H.
     eapply E_EqConv. eauto.
-    pose K := fourth tm_substitution_mutual _ _ _ _ _ _ d _ _ _ _ H3.
+    pose K := fourth tm_substitution_mutual _ _ _ _ _ _ d _ _ _ H3.
     eapply DefEq_weaken_available.
     apply K. auto.
     move: (DefEq_regularity h0) => h2. inversion h2. subst.
-    auto. eauto.
+    auto. 
   - (* cpi *)
-    intros L G phi B R t H p H0 G1 G2 x A1 R' a1 a2 D H1 H2 H3.
+    intros L G phi B t H p H0 G1 G2 x A1 R a1 a2 D H1 H2 H3.
     destruct phi; subst. simpl.
     eapply (@E_CPiCong2 (L \u singleton x)).
     + eapply H0. eauto. eauto. eauto.
     + intros c Fr.
       assert (Frc : c `notin` L). auto.
-      move: (@H c Frc G1 ([(c, Co (Eq a b A R0))] ++ G2) x A1 R' a1 a2 D eq_refl H2 H3) => h0.
-      rewrite tm_subst_tm_tm_open_tm_wrt_co in h0.
-      rewrite tm_subst_tm_tm_open_tm_wrt_co in h0.
-      rewrite map_app in h0.
-      replace (tm_subst_tm_co a1 x (g_Var_f c)) with (g_Var_f c) in h0.
-      replace (tm_subst_tm_co a2 x (g_Var_f c)) with (g_Var_f c) in h0.
-      eapply h0.
-      simpl. auto.
-      simpl. auto.
-      eapply (DefEq_lc H3).
-      eapply (DefEq_lc H3).
+      move: (@H c Frc G1 ([(c, Co (Eq a b A R0))] ++ G2) x A1 R a1 a2 D eq_refl H2 H3) => h0.
+      rewrite tm_subst_tm_tm_open_tm_wrt_co in h0; eauto 2 using Typing_lc1.
+      rewrite tm_subst_tm_tm_open_tm_wrt_co in h0; eauto 2 using DefEq_lc2.
   - (* cabs *)
-    intros L G a phi B R t H p H0 G1 G2 x A1 R' a1 a2 D H1 H2 H3.
+    intros L G a phi B t H p H0 G1 G2 x A1 R' a1 a2 D H1 H2 H3.
     subst. simpl.
     eapply (E_CAbsCong (L \u singleton x)).
     + intros c Fr. assert (FrL: c `notin` L). auto.
-      move: (@H c FrL _ ([(c, Co phi)] ++ G2) x _ _ _ _ _ eq_refl H2 H3) => h0.
+      move: (@H c FrL G1 ([(c, Co phi)] ++ G2) x A1 R' a1 a2 D eq_refl H2 H3) => h0.
       repeat (rewrite tm_subst_tm_tm_open_tm_wrt_co in h0).
-      rewrite map_app in h0.
+      eapply Typing_lc1; eauto.
+      eapply DefEq_lc2; eauto.
+      eapply Typing_lc1; eauto.
+      unfold map in h0.
+      rewrite EnvImpl.map_app in h0.
       repeat (replace (tm_subst_tm_co a1 x (a_Var_f x0)) with (a_Var_f x0) in h0).
       eapply h0.
-      eapply (DefEq_lc H3).
-      eapply (DefEq_lc H3).
-      eapply (DefEq_lc H3).
     + eapply (second tm_substitution_mutual); eauto 1.
   - (* Capp *)
-    intros G a1 B1 R a b A R' t H d H0 G1 G2 x A1 R0 a0 a2 D H1 H2 H3.
+    intros G a1 B1 a b A R' t H d H0 G1 G2 x A1 R0 a0 a2 D H1 H2 H3.
     subst. simpl.
-    rewrite tm_subst_tm_tm_open_tm_wrt_co.
+    rewrite tm_subst_tm_tm_open_tm_wrt_co; eauto 2 using Typing_lc1.
     eapply E_CAppCong with (a:=tm_subst_tm_tm a0 x a)(b:= tm_subst_tm_tm a0 x b); eauto 2.
     eapply (H _ _ x _ _ _ _ _ eq_refl H2 H3); eauto 2.
     fold tm_subst_tm_tm.
     eapply (fourth tm_substitution_mutual) in d; [idtac|apply H2|eauto].
     eapply DefEq_weaken_available in d.
     eauto.
-    eapply (Typing_lc H2).
+    simpl_env. auto.
   - intros. simpl. subst G.
     eapply E_Refl.
     eapply E_Const.
@@ -209,19 +243,26 @@ Proof.
     erewrite tm_subst_fresh_2; auto; eauto 2.
     erewrite tm_subst_fresh_2; eauto 2.
   - intros. simpl. subst G.
-    move: (toplevel_closed b) => h0.
-    move: (Typing_regularity h0) => h1.
+    move: (toplevel_inversion b) => [W0 [G0 [D0 [B0 h0]]]].
+    split_hyp.
+    admit. 
+(*    move: (Typing_regularity h0) => h1.
     have CNil: Ctx [(x, Tm A R)]. econstructor; auto. eauto.
     rewrite (tm_subst_fresh_2 _ h1 CNil). clear CNil.
     eapply E_Refl.
     eapply E_Fam; eauto 2.
-    eapply (fifth tm_substitution_mutual); eauto.
-  - intros. simpl. eapply E_PatCong; eauto.
-  - intros G a b A R R0 t H t0 H0 t1 H1 G1 G2 x A1 R' a1 a2 D H2 H3 H4.
+    eapply (fifth tm_substitution_mutual); eauto. *)
+  - intros. simpl. eapply E_PatCong; eauto 2.
+    (* BranchTyping_tm_subst. *)
+    admit.
+    admit.
+    admit.
+    admit.
+  - intros G a b A R t H t0 H0 t1 H1 G1 G2 x A1 a1 a2 D H2 H3 H4.
     simpl.
-    pose K1 := H G1 G2 _ _ _ _ _ _ H2 H3 H4. clearbody K1. clear H.
-    pose K2 := H0 _ _ _ _ _ _ _ _ H2 H3 H4. clearbody K2. clear H0.
-    pose K3 := H1 _ _ _ _ _ _ _ _ H2 H3 H4. clearbody K3. clear H1.
+    pose K1 := H G1 G2 _ _ R _ _ _ H2 H3 H4. clearbody K1. clear H.
+    pose K2 := H0 _ _ _ _ R _ _ _ H2 H3 H4. clearbody K2. clear H0.
+    pose K3 := H1 _ _ _ _ R _ _ _ H2 H3 H4. clearbody K3. clear H1.
     move: (DefEq_regularity K1) => wf1.
     move: (DefEq_regularity K2) => wf2.
     move: (DefEq_regularity K3) => wf3.
@@ -248,5 +289,5 @@ Proof.
       eapply E_Conv; eauto 2.
       eapply E_Sub; eauto 2.
     }
-    eapply trans_iso. eapply H. auto. Unshelve. all: exact Rep.
-Qed.
+    eapply trans_iso. eapply H. auto. Unshelve. all: eauto.
+Admitted.
