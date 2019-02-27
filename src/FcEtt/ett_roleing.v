@@ -111,14 +111,14 @@ Proof. intros W a R1 R2 H S. generalize dependent R2.
        eapply param_covariant. auto.
 Qed.
 
-Lemma RolePath_subst : forall F a b Rs x, RolePath a F Rs -> lc_tm b ->
-                   RolePath (tm_subst_tm_tm b x a) F Rs.
+Lemma RolePath_subst : forall a b Rs x, RolePath a Rs -> lc_tm b ->
+                   RolePath (tm_subst_tm_tm b x a) Rs.
 Proof. intros. induction H; simpl; eauto.
        all: econstructor; eauto using tm_subst_tm_tm_lc_tm with lngen lc.
 Qed.
 
-Lemma RolePath_subst_co : forall F a b Rs c, RolePath a F Rs -> lc_co b ->
-                   RolePath (co_subst_co_tm b c a) F Rs.
+Lemma RolePath_subst_co : forall a b Rs c, RolePath a Rs -> lc_co b ->
+                   RolePath (co_subst_co_tm b c a) Rs.
 Proof. intros. induction H; simpl; eauto.
        all: econstructor; eauto using co_subst_co_tm_lc_tm with lngen lc.
 Qed.

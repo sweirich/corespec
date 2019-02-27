@@ -378,16 +378,16 @@ Qed.
 
 Lemma invert_a_App_Role: `{
     Typing G (a_App a (Role R) b) C ->
-    exists A B F Rs, Typing G a (a_Pi Rel A B) /\
+    exists A B Rs, Typing G a (a_Pi Rel A B) /\
            Typing G b A /\
            DefEq G (dom G) C (open_tm_wrt_tm B b) a_Star Rep /\
-           RolePath a  F  (R :: Rs) }.
+           RolePath a (R :: Rs) }.
 Proof.
   intros G a R b C.
   move e : (a_App a (Role R) b) => t1.
   move => h1.
   induction h1; auto; try done.
-  - exists A, B, F, Rs. inversion e; subst.
+  - exists A, B, Rs. inversion e; subst.
     assert (h2 : Typing G (open_tm_wrt_tm B a0) a_Star).
     + (have: Typing G (a_Pi Rel A B) a_Star 
         by apply (Typing_regularity h1_1)) => h3.
@@ -397,8 +397,8 @@ Proof.
       replace a_Star with (tm_subst_tm_tm a0 x a_Star); auto.
       apply Typing_tm_subst with (A := A); eauto using param_sub1.
     + repeat split; auto. 
-  - destruct (IHh1_1 e) as [A0 [B0 [F0 [Rs0 [b0 [h3 [h4 h5]]]]]]].
-    exists A0, B0, F0, Rs0.
+  - destruct (IHh1_1 e) as [A0 [B0 [Rs0 [b0 [h3 [h4 h5]]]]]].
+    exists A0, B0, Rs0.
     repeat split; auto.
     apply (E_Trans _ _ _ _ _ _ A); auto.
 Qed.

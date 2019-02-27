@@ -122,14 +122,18 @@ Proof. intros. eapply tm_pattern_agree_ValuePath.
 Qed. (* MatchSubst_ValuePath *)
 
 Lemma RolePath_no_Beta :
- forall F a R1 Rs, RolePath a F (R1 :: Rs) -> forall R, not (exists a', Beta a a' R).
-Proof. intros. intro. inversion H0 as [a' h1]. eapply no_Value_Beta.
-       eapply Value_Path. move: (RolePath_inversion H) => h.
-       inversion h as [[A h2] | [p [b [A [R2 h2]]]]].
-       apply RolePath_ValuePath in H. eauto.
-       move: (RolePath_subtm_pattern_agree_contr H h2) => h3.
-       eapply CasePath_UnMatch. eapply RolePath_ValuePath; eauto.
-       all:eauto.
+ forall  a R1 Rs, RolePath a (R1 :: Rs) -> forall R, not (exists a', Beta a a' R).
+Proof. intros. intro. inversion H0 as [a' h1]. eapply no_Value_Beta; try apply h1.
+       move: (RolePath_inversion H) => h.
+       move: (RolePath_ValuePath H) => [F0 VP]. 
+       destruct h as [[F [A [h2 h3]]] | [F [p [b [A [R2 [ h2 h3]]]]]]];
+         move: (ValuePath_head VP) => eq.
+       + rewrite eq in h3;  inversion h3; subst. 
+         eapply Value_Path; eapply CasePath_AbsConst; eauto 2.
+       + move: (RolePath_subtm_pattern_agree_contr H h2) => h4.
+         rewrite h3 in eq. inversion eq. subst.
+         eapply Value_Path.
+         eapply CasePath_UnMatch; eauto 3.
 Qed.
 
 Definition arg_app (p : pattern_arg) : App := 
@@ -386,12 +390,12 @@ In the base case, we will have the opposite
  *)
 
 
-Lemma BranchTyping_lemma : forall F n G1 G R A scrut hd pargs1 B0 B1 C,
+Lemma BranchTyping_lemma : forall n G1 G R A scrut hd pargs1 B0 B1 C,
     BranchTyping (G1 ++ G) n R scrut A hd pargs1 B0 B1 C ->
     domFresh G (fv_tm_tm_pattern_args pargs1) ->
     forall args1 args2 , 
     map_arg_app args2 = n ->
-    forall Rs, RolePath (apply_pattern_args hd args1) F (args_roles args2 ++ Rs) -> 
+    forall Rs, RolePath (apply_pattern_args hd args1) (args_roles args2 ++ Rs) -> 
     scrut = apply_pattern_args (apply_pattern_args hd args1) args2  ->
     forall targs1 sub, 
     sub = zip (List.map fst G1) (rev targs1) ->
@@ -408,7 +412,7 @@ Lemma BranchTyping_lemma : forall F n G1 G R A scrut hd pargs1 B0 B1 C,
     Typing G C a_Star ->
     Typing G (a_CApp b1' g_Triv) C.
 Proof.
-  intros F n. induction n.
+  intros n. induction n.
   all: intros.
   all: with BranchTyping do ltac:(fun h => inversion h; subst; clear h). 
   all: destruct args2; with (map_arg_app _ = _) do 
@@ -755,10 +759,10 @@ Qed.
 
 
 (* Specialized version of main lemma that is "easier" to use. *)
-Lemma BranchTyping_start : forall  G n R A scrut hd B0 B1 C F,
+Lemma BranchTyping_start : forall  G n R A scrut hd B0 B1 C,
     BranchTyping G n R scrut A hd nil B0 B1 C ->
     forall args, map_arg_app args = n ->
-    forall Rs, RolePath hd F (args_roles args ++ Rs) ->
+    forall Rs, RolePath hd (args_roles args ++ Rs) ->
     scrut = apply_pattern_args hd args  ->
     forall B0' targs,
     open_telescope G n B0' args targs A ->
@@ -838,15 +842,15 @@ Proof.
 Qed.
 
 Lemma RolePath_args : forall F Rs, 
-    RolePath (a_Fam F) F Rs ->
-    forall args Rs', RolePath (apply_pattern_args (a_Fam F) (rev args)) F Rs' ->
+    RolePath (a_Fam F) Rs ->
+    forall args Rs', RolePath (apply_pattern_args (a_Fam F) (rev args)) Rs' ->
     Rs = (args_roles (rev args)) ++ Rs'.
 Proof.
   intros F Rs RP.
   induction args; intros Rs' RP'.
   - simpl in *. 
     inversion RP; inversion RP'; subst.
-    all: move: (binds_unique _ _ _ _ _ H0 H4 uniq_toplevel) => EQ; inversion EQ.
+    all: move: (binds_unique _ _ _ _ _ H0 H3 uniq_toplevel) => EQ; inversion EQ.
     all: auto.
   - simpl in *.
     destruct a; try destruct nu; try destruct rho.
@@ -861,7 +865,7 @@ Qed.
 
 Lemma RolePath_AppRole : 
     forall args Rs, AppRoles (map_arg_app args) Rs -> 
-    forall hd F,  RolePath hd F Rs ->
+    forall hd,  RolePath hd Rs ->
     Rs = args_roles args.
 Proof.
   intros args Rs H. dependent induction H; eauto.
@@ -903,7 +907,7 @@ Proof.
   have eq: map_arg_app args = n.  eapply AppsPath_arg_app; eauto.
   rewrite eq in h2.
 
-  have RP: RolePath (a_Fam F) F (args_roles args).
+  have RP: RolePath (a_Fam F) (args_roles args).
   { inversion SA. subst.
     ++ replace (args_roles args) with Rs. 
        eauto. eapply RolePath_AppRole; eauto.
@@ -1802,8 +1806,8 @@ Proof.
 Qed.
 
 Lemma RolePath_preservation :
-forall a a' R, reduction_in_one a a' R -> forall F R1 Rs, 
-   RolePath a F (R1 :: Rs) -> RolePath a' F (R1 :: Rs).
+forall a a' R, reduction_in_one a a' R -> forall R1 Rs, 
+   RolePath a  (R1 :: Rs) -> RolePath a'  (R1 :: Rs).
 Proof.
   intros a a' R H.
   induction H; intros.

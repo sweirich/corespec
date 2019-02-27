@@ -52,9 +52,10 @@ Fixpoint head_const (a : tm) : tm := match a with
   | _ => a_Bullet
   end.
 
-Lemma RolePath_head : forall F a Rs, RolePath a F Rs -> head_const a = a_Fam F.
+(*
+Lemma RolePath_head : forall a Rs, RolePath a Rs -> head_const a = a_Fam F.
 Proof. intros. induction H; eauto.
-Qed.
+Qed. *)
 
 Fixpoint pat_app_roles (a : tm) : list role := match a with
   | a_Fam F => []
@@ -1596,17 +1597,18 @@ Fixpoint tm_to_roles (a : tm) : roles := match a with
     end.
 
 
-Lemma RolePath_inversion : forall a F Rs, RolePath a F Rs ->
-         (exists A,  binds F (Cs A (tm_to_roles a ++ Rs)) toplevel) \/
-         (exists p b A R, binds F (Ax p b A R (tm_to_roles a ++ Rs)) toplevel).
+Lemma RolePath_inversion : forall a Rs, RolePath a Rs ->
+         (exists F A,  binds F (Cs A (tm_to_roles a ++ Rs)) toplevel /\ head_const a = a_Fam F) \/
+         (exists F p b A R, binds F (Ax p b A R (tm_to_roles a ++ Rs))  toplevel
+                                /\ head_const a = a_Fam F).
 Proof. intros. induction H; simpl; eauto.
-        - right. exists p, a, A, R1; eauto.
-        - inversion IHRolePath as [[A H1] | [p [a1 [A [R2 H1]]]]].
-          left. exists A. rewrite <- app_assoc. eauto.
-          right. exists p, a1, A, R2. rewrite <- app_assoc. eauto.
-        - inversion IHRolePath as [[A H1] | [p [a1 [A [R2 H1]]]]].
-          left. exists A. rewrite <- app_assoc. eauto.
-          right. exists p, a1, A, R2. rewrite <- app_assoc. eauto.
+        - right. exists F, p, a, A, R1; eauto.
+        - inversion IHRolePath as [[F [A [H1 H2]]] | [F [p [a1 [A [R2 [H1 H2]]]]]]].
+          left. exists F, A. rewrite <- app_assoc. eauto.
+          right. exists F, p, a1, A, R2. rewrite <- app_assoc. eauto.
+        - inversion IHRolePath as [[F [A [H1 H2]]] | [F [p [a1 [A [R2 [H1 H2]]]]]]].
+          left. exists F, A. rewrite <- app_assoc. eauto.
+          right. exists F, p, a1, A, R2. rewrite <- app_assoc. eauto.
 Qed.
 
 Lemma PatternContexts_roles : forall W G D p F B A, PatternContexts W G D F B p A ->
@@ -1629,10 +1631,13 @@ Proof. intros. induction H; simpl; eauto.
 Qed.
 
 Lemma RolePath_subtm_pattern_agree_contr : forall a F p b A R Rs R0 Rs',
-      RolePath a F (R0 :: Rs') -> binds F (Ax p b A R Rs) toplevel ->
+      RolePath a (R0 :: Rs') -> binds F (Ax p b A R Rs) toplevel -> head_const a = a_Fam F ->
       ~(subtm_pattern_agree a p).
 Proof. intros. apply RolePath_inversion in H.
-       inversion H as [[A1 H1] | [p1 [b1 [A1 [R1 H1]]]]].
+       inversion H as [[F0 [A1 [h1 h2]]] | [F0 [p1 [b1 [A1 [R1 [h1 h2]]]]]]].
+       all: match goal with 
+              [ H1 : head_const ?a = a_Fam ?F, H2 : head_const ?a = a_Fam ?F0 |- _] => 
+              rewrite H1 in H2; inversion H2; clear H2; subst end.
         - axioms_head_same.
         - axioms_head_same. intro. apply toplevel_inversion in H0.
           inversion H0 as [W [G [D [B [H3 [H4 [H5 [H6 _]]]]]]]].
