@@ -1066,7 +1066,7 @@ Inductive RolePath : tm -> const -> roles -> Prop :=    (* defn RolePath *)
      RolePath  ( (a_App a (Role R1) b') )  F Rs
  | RolePath_App : forall (a b':tm) (F:const) (Rs:roles),
      lc_tm b' ->
-     RolePath a F Rs ->
+     RolePath a F  ( Nom :: Rs )  ->
      RolePath  ( (a_App a (Rho Rel) b') )  F Rs
  | RolePath_IApp : forall (a:tm) (F:const) (Rs:roles),
      RolePath a F Rs ->
@@ -1105,7 +1105,7 @@ Inductive AppRoles : Apps -> roles -> Prop :=    (* defn AppRoles *)
      AppRoles (A_cons (A_Tm (Role R1)) Apps5)  ( R1 :: Rs ) 
  | AR_consApp : forall (Apps5:Apps) (Rs:roles),
      AppRoles Apps5 Rs ->
-     AppRoles (A_cons (A_Tm (Rho Rel)) Apps5) Rs
+     AppRoles (A_cons (A_Tm (Rho Rel)) Apps5)  ( Nom :: Rs ) 
  | AR_consIApp : forall (Apps5:Apps) (Rs:roles),
      AppRoles Apps5 Rs ->
      AppRoles (A_cons (A_Tm (Rho Irrel)) Apps5) Rs

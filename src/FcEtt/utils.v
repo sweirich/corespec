@@ -1,4 +1,5 @@
 Require Import FcEtt.imports.
+Require Import FcEtt.tactics.
 
 Set Bullet Behavior "Strict Subproofs".
 Set Implicit Arguments.
@@ -60,6 +61,114 @@ Lemma utils_map_map : forall A B C (f : B -> C) (g: A -> B) (G:list(atom*A)),
 Proof.
   induction G. simpl. auto.
   simpl. destruct a. f_equal. auto.
+Qed.
+
+
+
+
+Definition domFresh {a} (sub:list (atom * a)) s :=
+  Forall (fun '(x,_) => x `notin` s) sub.
+
+Lemma domFresh_empty : forall A (G:list(atom*A)), domFresh G empty.
+Proof. 
+  induction G; unfold domFresh in *; try destruct a; eauto.
+Qed.
+
+Lemma domFresh_singleton : forall A (G:list(atom*A)) x, 
+   domFresh G (singleton x) <-> x `notin` dom G.
+Proof.
+  induction G; intros; unfold domFresh. 
+  simpl. split. auto. intro. auto.
+  destruct a. simpl. 
+  split. intro h; inversion h. subst.
+  apply IHG in H2. fsetdec.
+  intro. econstructor; eauto. eapply IHG. fsetdec.
+Qed.
+
+Lemma domFresh_singleton2 : forall A (G:list(atom*A)) x, 
+   x `notin` dom G ->
+   domFresh G (singleton x).
+Proof.
+  intros.
+  erewrite domFresh_singleton.
+  auto.
+Qed.
+
+Lemma domFresh_cons : forall A x (st:A) Gp s,
+ domFresh (x ~ st ++ Gp) s <-> 
+ x `notin` s /\ (domFresh Gp s).
+Proof. 
+  intros.
+  unfold domFresh in *.  
+  split. intro h. inversion h. auto.
+  intros [h0 h1].
+  econstructor; eauto.
+Qed.
+
+Lemma domFresh_cons1 : forall A x (st:A) Gp s,
+ domFresh (x ~ st ++ Gp) s -> 
+ x `notin` s /\ (domFresh Gp s).
+Proof.
+  intros.
+  rewrite -> domFresh_cons in H.
+  auto.
+Qed.
+
+Lemma domFresh_union : forall (G:list (atom*sort)) s1 s2,
+ domFresh G (s1 `union` s2) <-> 
+ domFresh G s1 /\ (domFresh G s2).
+Proof.
+  induction G; intros; unfold domFresh in *. split; eauto.
+  split; move=>h; inversion h; destruct a; simpl.
+  rewrite -> IHG in H2. split_hyp.
+  split; econstructor; try fsetdec; eauto.
+  inversion H. inversion H0.
+  econstructor; eauto 1.
+  rewrite IHG. eauto.
+Qed.
+
+Lemma domFresh_union1 : forall (G:list (atom*sort)) s1 s2,
+ domFresh G (s1 `union` s2) -> 
+ domFresh G s1 /\ (domFresh G s2).
+Proof.
+  intros.
+  rewrite -> domFresh_union in H.
+  auto.
+Qed.
+
+Lemma domFresh_sub : forall A (G:list(atom*A)) s1 s2, 
+    s1 [<=] s2 -> domFresh G s2 -> domFresh G s1.
+Proof. 
+  induction G; unfold domFresh; simpl.
+  intros; auto.
+  intros.
+  inversion H0. destruct a.
+  econstructor; eauto.
+  eapply IHG; eauto.
+Qed.
+
+
+
+Lemma dom_zip_map_fst : forall D C (G:list(atom*D)) (x:list C),
+  length G = length x ->
+  dom (zip (List.map fst G) x) [=] dom G.
+Proof. 
+  induction G; intros; simpl; auto. reflexivity.
+  simpl in H. inversion H.
+  destruct x. destruct a. 
+  inversion H.
+  destruct a. simpl. rewrite IHG. fsetdec. auto.
+Qed.
+
+Lemma domFresh_map_fst_eq : forall A (G1: list(atom*A)) B (G2:list(atom*B)) s, 
+    (List.map fst G1) = (List.map fst G2) -> 
+    domFresh G1 s -> domFresh G2 s.
+Proof.   
+  induction G1;
+  intros; unfold domFresh in *; destruct G2; inversion H; inversion H0;  simpl.
+  auto.
+  econstructor; eauto.
+  destruct a. destruct p. simpl in *. subst. auto.
 Qed.
 
 

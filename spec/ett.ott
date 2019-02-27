@@ -135,6 +135,8 @@ tm, a, b, p, v, w, A, B, C :: 'a_' ::= {{ com types and kinds }}
   |  | a | R             :: S :: Erase
 
   %% abbreviations for examples
+  | String               :: S :: String
+  | HTML                 :: S :: HTML
   | Int                  :: S :: Int
   | Age                  :: S :: Age
   | Bool                 :: S :: Bool
@@ -807,7 +809,7 @@ RolePath a +> F @ R1,Rs
 ---------------------------- :: TApp
 RolePath (a R1 b') +> F @ Rs
 
-RolePath a +> F @ Rs
+RolePath a +> F @ Nom, Rs
 ---------------------------- :: App
 RolePath (a + b') +> F @ Rs
 
@@ -867,7 +869,7 @@ Tm R1 , Apps <-> R1 , Rs
 
 Apps <-> Rs
 ----------------------- :: consApp
-Tm + , Apps <-> Rs
+Tm + , Apps <-> Nom , Rs
 
 Apps <-> Rs
 ----------------------- :: consIApp
@@ -1105,7 +1107,7 @@ defns
 defn
 ValuePath a +> F  ::  :: ValuePath :: 'ValuePath_'
 {{ com Path headed by valid constructor }}
-{{ tex \mathsf{ValidPath} \ [[a]] [[+>]] [[F]] }}
+{{ tex \mathsf{ValuePath} \ [[a]] [[+>]] [[F]] }}
 by
 
 F : A @ Rs in toplevel
@@ -1131,7 +1133,7 @@ defns
 defn
 CasePath R a +> F  ::  :: CasePath :: 'CasePath_'
 {{ com Path that is a value }}
-{{ tex \mathsf{ValuePath}_{[[R]]}\ [[a]] [[+>]] [[F]] }}
+{{ tex \mathsf{CasePath}_{[[R]]}\ [[a]] [[+>]] [[F]] }}
 by
 
 ValuePath a +> F
@@ -1147,7 +1149,7 @@ CasePath R a +> F
 
 ValuePath a +> F
 F : p ~ b : A/R1 @ Rs in toplevel
-not (a  = p +)
+not (a = p +)
 ------------------------------------- :: UnMatch
 CasePath R a +> F
 
@@ -2763,6 +2765,8 @@ homs 'a_'
   :: Erase         {{ coq (erase_tm [[a]][[R]])                    }}
 
   %% abbreviations for examples
+  :: String        {{ coq 0                                        }}
+  :: HTML          {{ coq 0                                        }}
   :: Int           {{ coq 0                                        }}
   :: Age           {{ coq 0                                        }}
   :: Bool          {{ coq 0                                        }}

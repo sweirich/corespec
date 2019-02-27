@@ -25,9 +25,7 @@ Inductive Pattern : tm -> Prop :=
 
 Hint Constructors Pattern.
 
-(* SCW:  Maybe this should be the one that we call 'Path'??? It is like 
-   ValuePath except that it doesn't say the head, nor check that the head 
-   is bound in the signature. *)
+
 Inductive Pattern_like_tm : tm -> Prop :=
   | Pat_tm_Fam : forall F, Pattern_like_tm (a_Fam F)
   | Pat_tm_AppR : forall a1 nu a2, Pattern_like_tm a1 -> lc_tm a2 ->
@@ -1591,7 +1589,8 @@ Qed.
 Fixpoint tm_to_roles (a : tm) : roles := match a with
     | a_Fam F => nil
     | a_App a1 (Role R) _ => tm_to_roles a1 ++ [ R ]
-    | a_App a1 (Rho _) _ => tm_to_roles a1
+    | a_App a1 (Rho Rel) _ => tm_to_roles a1 ++ [Nom]
+    | a_App a1 (Rho Irrel) _ => tm_to_roles a1
     | a_CApp a1 _ => tm_to_roles a1
     | _ => nil
     end.
@@ -1602,6 +1601,9 @@ Lemma RolePath_inversion : forall a F Rs, RolePath a F Rs ->
          (exists p b A R, binds F (Ax p b A R (tm_to_roles a ++ Rs)) toplevel).
 Proof. intros. induction H; simpl; eauto.
         - right. exists p, a, A, R1; eauto.
+        - inversion IHRolePath as [[A H1] | [p [a1 [A [R2 H1]]]]].
+          left. exists A. rewrite <- app_assoc. eauto.
+          right. exists p, a1, A, R2. rewrite <- app_assoc. eauto.
         - inversion IHRolePath as [[A H1] | [p [a1 [A [R2 H1]]]]].
           left. exists A. rewrite <- app_assoc. eauto.
           right. exists p, a1, A, R2. rewrite <- app_assoc. eauto.
@@ -1621,8 +1623,9 @@ Lemma subtm_pattern_agree_roles : forall a p, subtm_pattern_agree a p ->
       exists Rs', tm_to_roles a = tm_to_roles p ++ Rs'.
 Proof. intros. induction H; simpl; eauto.
        exists nil; rewrite app_nil_r; apply tm_pattern_agree_roles; auto.
-       destruct nu; eauto. inversion IHsubtm_pattern_agree as [Rs' H1].
-       exists (Rs' ++ [R]). rewrite H1. rewrite app_assoc; auto.
+       destruct nu; try destruct rho; eauto. 
+       all: inversion IHsubtm_pattern_agree as [Rs' H1].
+       all: eexists; erewrite H1; erewrite app_assoc; eauto.
 Qed.
 
 Lemma RolePath_subtm_pattern_agree_contr : forall a F p b A R Rs R0 Rs',
