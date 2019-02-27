@@ -215,14 +215,34 @@ Qed.
 Hint Resolve Typing_roleing : roleing.
 
 
-(*
-Lemma toplevel_roleing1 : forall W F a A R, binds F (Ax a A R) toplevel -> 
-                                           uniq W -> roleing W a R.
+(* This lemma says that if we have roled an expression with the "best" assumption, 
+   we can decrease it and the expression will stay well-roled. *)
+
+Lemma roleing_ctx_weakening : 
+  forall W a R, roleing W a R -> forall W1 x R1 R2 W2, 
+      W = W1 ++ (x ~ R1) ++ W2 ->
+      SubRole R2 R1 ->
+      roleing (W1 ++ (x ~ R2) ++ W2) a R.
 Proof.
-  intros.
-  move: (toplevel_closed H) => h0.
-  replace W with (nil ++ W ++ nil).
-  apply roleing_app_rctx. simpl_env; auto.
-  simpl_env. pose (P := Typing_roleing h0). simpl in P.
-  auto. simpl_env. auto.
-Qed. *)
+  induction 1; intros; subst; eauto.
+  all: try match goal with [H : uniq _ |- _ ] => have 
+         U: uniq (W1 ++ x ~ R2 ++ W2) by solve_uniq end.
+  all: eauto.
+  - destruct (x == x0); subst. 
+    + have eq: R = R0. eapply binds_mid_eq; eauto. subst.
+      have sr: SubRole R2 R1; eauto.
+      econstructor; eauto 1. solve_uniq. eauto.
+    + eapply binds_remove_mid in H0; auto.
+      eapply (binds_weaken _ x R _ (x0 ~ R2) _) in H0.
+      econstructor; eauto 1. solve_uniq. 
+  - pick fresh y and apply role_a_Abs.
+    specialize (H0 y ltac:(auto)).
+    auto_rew_env.
+    eapply H0; simpl_env; eauto.
+  - pick fresh y and apply role_a_Pi; eauto.
+    specialize (H1 y ltac:(auto)).
+    auto_rew_env.
+    eapply H1; simpl_env; eauto.
+  - pick fresh y and apply role_a_CPi; eauto.
+Qed.
+
