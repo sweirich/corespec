@@ -91,8 +91,8 @@ tm, a, b, p, v, w, A, B, C :: 'a_' ::= {{ com types and kinds }}
    {{ tex \mathsf{case} \hspace{3pt} [[a]] \hspace{3pt} \mathsf{of} \hspace{3pt} [[F]]\ [[Apps]] \rightarrow [[b1]] \| \_ \rightarrow [[b2]] }}
 
 
-  | case a of F @ pattern_args => b1 | _ => b2 :: M :: FakePattern
-   {{ tex \mathsf{case} \hspace{3pt} [[a]] \hspace{3pt} \mathsf{of} \hspace{3pt} [[F]]\ [[pattern_args]] \rightarrow [[b1]] \| \_ \rightarrow [[b2]] }}
+  | case a of p => b1 | _ => b2 :: M :: FakePattern
+   {{ tex \mathsf{case} \hspace{3pt} [[a]] \hspace{3pt} \mathsf{of} \hspace{3pt} [[p]] \rightarrow [[b1]] \| \_ \rightarrow [[b2]] }}
    {{ coq 0 }}
 
   | apply a pattern_args :: M :: ApplyPA
@@ -953,7 +953,7 @@ JMatchSubst :: '' ::=
 defn
 match a1 with p -> b1 +> b2 :: :: MatchSubst :: 'MatchSubst_'
 {{ com match and substitute }}
-{{ tex \mathsf{match} \ [[a1]] \ \mathsf{with} \ [[p]] \rightarrow [[b1]] [[+>]] [[b2]] }}
+{{ tex \mathit{match}( [[a1]] , [[p]] , [[b1]] ) = [[b2]] }}
 by
 
 ----------------------------------------- :: Const
