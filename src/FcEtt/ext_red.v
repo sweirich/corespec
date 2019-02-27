@@ -2380,66 +2380,6 @@ Proof.
     contradiction.
 Qed.
 
-(* -------------------- These are convenience functions -------- *)
-
-Lemma  BranchTyping_PiRole_exists : forall x, 
-   `{ BranchTyping (x ~ Tm A ++ G) Apps5 Nom a A1 b
-                 (pattern_args5 ++ one (p_Tm (Role R) (a_Var_f x)))
-                 (open_tm_wrt_tm B (a_Var_f x)) (open_tm_wrt_tm C (a_Var_f x)) C'
-    -> x `notin` fv_tm_tm_tm A \u dom G \u fv_tm_tm_tm a \u fv_tm_tm_tm A1
-             \u fv_tm_tm_tm b \u fv_tm_tm_pattern_args pattern_args5 
-             \u fv_tm_tm_tm B \u fv_tm_tm_tm C \u fv_tm_tm_tm C'
-    -> BranchTyping G (A_cons (A_Tm (Role R)) Apps5) Nom a A1 b pattern_args5
-                      (a_Pi Rel A B) (a_Pi Rel A C) C' }.
-Admitted. (* Renaming lemma *)
-Lemma BranchTyping_PiRel_exists : forall x,
-   `{ BranchTyping (x ~ Tm A ++ G) Apps5 Nom a A1 b
-                 (pattern_args5 ++ one (p_Tm (Rho Rel) (a_Var_f x)))
-                 (open_tm_wrt_tm B (a_Var_f x)) (open_tm_wrt_tm C (a_Var_f x)) C' 
-   -> x `notin` fv_tm_tm_tm A \u dom G \u fv_tm_tm_tm a \u fv_tm_tm_tm A1
-             \u fv_tm_tm_tm b \u fv_tm_tm_pattern_args pattern_args5 
-             \u fv_tm_tm_tm B \u fv_tm_tm_tm C \u fv_tm_tm_tm C'
-   -> BranchTyping G (A_cons (A_Tm (Rho Rel)) Apps5) Nom a A1 b pattern_args5
-    (a_Pi Rel A B) (a_Pi Rel A C) C'}.
-Admitted. (* Renaming lemma *)
-Lemma BranchTyping_PiIrrel_exists: forall x,
-  `{  BranchTyping (x ~ Tm A ++ G) Apps5 Nom a A1 b
-                 (pattern_args5 ++ one (p_Tm (Rho Irrel) a_Bullet))
-                 (open_tm_wrt_tm B (a_Var_f x)) (open_tm_wrt_tm C (a_Var_f x)) C'
-  -> x `notin` fv_tm_tm_tm A \u dom G \u fv_tm_tm_tm A1
-             \u fv_tm_tm_tm b \u fv_tm_tm_pattern_args pattern_args5 
-             \u fv_tm_tm_tm B \u fv_tm_tm_tm C \u fv_tm_tm_tm C'
-    -> BranchTyping G (A_cons (A_Tm (Rho Irrel)) Apps5) Nom a A1 b pattern_args5
-    (a_Pi Irrel A B) (a_Pi Irrel A C) C' }.
-Admitted. (* Renaming lemma *)
-Lemma BranchTyping_CPi_exists : forall c,
-    `{ BranchTyping (c ~ Co phi ++ G) Apps5 Nom a A
-                    b (pattern_args5 ++ one (p_Co g_Triv))
-                    (open_tm_wrt_co B (g_Var_f c))
-                    (open_tm_wrt_co C (g_Var_f c)) C'
-     ->  c `notin` dom G 
-     -> BranchTyping G (A_cons A_Co Apps5) Nom a A b pattern_args5
-        (a_CPi phi B) (a_CPi phi C) C'}.
-Admitted. (* Renaming lemma *)
-
-Lemma E_PiCong3 :  ∀ x (G : context) D rho (A1 B1 A2 B2 : tm) R',
-    x `notin` dom G \u fv_tm_tm_tm A1 \u fv_tm_tm_tm A2 \u fv_tm_tm_tm B1 
-      \u fv_tm_tm_tm B2 
-    -> DefEq G D A1 A2 a_Star R'
-    → DefEq ([(x, Tm A1)] ++ G) D (open_tm_wrt_tm B1 (a_Var_f x))
-            (open_tm_wrt_tm B2 (a_Var_f x)) a_Star R'
-→ DefEq G D (a_Pi rho A1 B1) (a_Pi rho A2 B2) a_Star R'.
-Admitted. (* Renaming lemma *)
-
-Lemma E_CPiCong3  : ∀ c (G : context) (D : available_props) a0 b0 T0
-                      (A : tm) a1 b1 T1 (B : tm) R R',
-    c `notin` dom G -> 
-    Iso G D (Eq a0 b0 T0 R) (Eq a1 b1 T1 R)
-    → DefEq ([(c, Co (Eq a0 b0 T0 R))] ++ G) D (open_tm_wrt_co A (g_Var_f c))
-            (open_tm_wrt_co B (g_Var_f c)) a_Star R'
-    → DefEq G D (a_CPi (Eq a0 b0 T0 R) A) (a_CPi (Eq a1 b1 T1 R) B) a_Star R'.
-Admitted. (* Renaming lemma *)
-
 Lemma BranchTyping_congruence : 
   `{ BranchTyping G Apps5 Nom a A0 t ps A1 B C ->
     forall G D a', Typing G B a_Star ->
@@ -2470,7 +2410,7 @@ Proof.
     move: (H0 _ _ _ H3 h0) => [B' [h1 h2]].
     eexists.
     split.
-    eapply (@BranchTyping_PiRole_exists x0).
+    eapply (@BranchTyping_PiRole_exists x0); auto.
     rewrite <- (open_tm_wrt_tm_close_tm_wrt_tm B' x0) in h1.
     eapply h1.  rewrite fv_tm_tm_tm_close_tm_wrt_tm. unhide Fr. fsetdec.
     eapply (@E_PiCong3 x0); eauto 2.
@@ -2485,7 +2425,7 @@ Proof.
     move: (H0 _ _ _ H3 h0) => [B' [h1 h2]].
     eexists.
     split.
-    eapply (@BranchTyping_PiRel_exists x0).
+    eapply (@BranchTyping_PiRel_exists x0); auto.
     rewrite <- (open_tm_wrt_tm_close_tm_wrt_tm B' x0) in h1.
     eapply h1.  rewrite fv_tm_tm_tm_close_tm_wrt_tm. unhide Fr. fsetdec.
     eapply (@E_PiCong3 x0); eauto 2.
@@ -2500,7 +2440,7 @@ Proof.
     move: (H0 _ _ _ H3 h0) => [B' [h1 h2]].
     eexists.
     split.
-    eapply (@BranchTyping_PiIrrel_exists x0).
+    eapply (@BranchTyping_PiIrrel_exists x0); auto.
     rewrite <- (open_tm_wrt_tm_close_tm_wrt_tm B' x0) in h1.
     eapply h1.  rewrite fv_tm_tm_tm_close_tm_wrt_tm. unhide Fr. fsetdec.
     eapply (@E_PiCong3 x0); eauto 2.
@@ -2515,7 +2455,7 @@ Proof.
     move: (H0 _ _ _ H3 h0) => [B' [h1 h2]].
     eexists.
     split.
-    eapply (@BranchTyping_CPi_exists x0).
+    eapply (@BranchTyping_CPi_exists x0); auto.
     rewrite <- (open_tm_wrt_co_close_tm_wrt_co B' x0) in h1.
     eapply h1.  unhide Fr.  fsetdec.
     destruct phi.

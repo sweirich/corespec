@@ -1286,6 +1286,35 @@ Proof.
 Qed.
 
 
+
+Lemma E_PiCong3 :  ∀ x (G : context) D rho (A1 B1 A2 B2 : tm) R',
+    x `notin` dom G \u fv_tm_tm_tm A1 \u fv_tm_tm_tm A2 \u fv_tm_tm_tm B1 
+      \u fv_tm_tm_tm B2 
+    -> DefEq G D A1 A2 a_Star R'
+    → DefEq ([(x, Tm A1)] ++ G) D (open_tm_wrt_tm B1 (a_Var_f x))
+            (open_tm_wrt_tm B2 (a_Var_f x)) a_Star R'
+    → DefEq G D (a_Pi rho A1 B1) (a_Pi rho A2 B2) a_Star R'.
+Proof. 
+  intros. 
+  pick fresh y and apply E_PiCong2; auto.
+   replace a_Star with (open_tm_wrt_tm a_Star (a_Var_f y)); auto.
+  eapply DefEq_swap; auto.
+Qed.
+
+Lemma E_CPiCong3  : ∀ c (G : context) (D : available_props) a0 b0 T0
+                      (A : tm) a1 b1 T1 (B : tm) R R',
+    c `notin` dom G -> 
+    Iso G D (Eq a0 b0 T0 R) (Eq a1 b1 T1 R)
+    → DefEq ([(c, Co (Eq a0 b0 T0 R))] ++ G) D (open_tm_wrt_co A (g_Var_f c))
+            (open_tm_wrt_co B (g_Var_f c)) a_Star R'
+    → DefEq G D (a_CPi (Eq a0 b0 T0 R) A) (a_CPi (Eq a1 b1 T1 R) B) a_Star R'.
+Proof.
+  intros.
+  pick fresh y and apply E_CPiCong2; auto.
+  (* Needs DefEq_swap_co *)
+Admitted. (* Renaming lemma *)
+
+
 (****************************)
 (**** Regularity Tactics ****)
 (****************************)

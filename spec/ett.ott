@@ -144,6 +144,7 @@ tm, a, b, p, v, w, A, B, C :: 'a_' ::= {{ com types and kinds }}
   | Succ                 :: S :: Succ
   | True                 :: S :: True
   | Fix                  :: S :: Fix
+  | Set                  :: S :: Set
   | Maybe                :: S :: Maybe
   | Just                 :: S :: Just
   | Nothing              :: S :: Nothing
@@ -152,6 +153,7 @@ tm, a, b, p, v, w, A, B, C :: 'a_' ::= {{ com types and kinds }}
   | \ x . a              :: S :: RelUAbs
   | \ x : A . a          :: S :: RelAbs
   | all x : A -> B       :: S :: RelPi
+    {{ tex \Pi [[x]]\!:\![[A]] . [[B]] }}
   | if phi then a else b :: S :: If
 
 
@@ -315,6 +317,10 @@ sig_sort :: '' ::= {{ com signature classifier }}
      {{ tex  [[A]]\ [[@]]\ [[Rs]] }}
    | p ~ a : A / R @ Rs    ::    :: Ax
      {{ tex [[p]] \sim_{[[R]]} [[a]] : [[A]]\ [[@]]\ [[Rs]] }}
+
+   | F ~ a : A / R         ::  M  :: SAx
+     {{ tex  \sim_{[[R]]} [[a]] : [[A]] }}
+     {{ coq (Ax (a_Fam [[F]]) [[a]] [[A]] [[R]] nil) }}
 
 sort :: '' ::= {{ com binding classifier }}
    | Tm A             ::   :: Tm
@@ -2694,6 +2700,7 @@ homs 'a_'
   :: Succ    {{ tex \mathsf{S} }}
   :: True
   :: Fix
+  :: Set
   :: Arrow
   :: CArrow
   :: SrcApp  {{ tex [[a]]\ [[b]]                  }}
@@ -2772,6 +2779,7 @@ homs 'a_'
   :: RelPi         {{ coq (a_Pi  Rel [[A]] [[B]])                  }}
   :: If            {{ coq 0                                        }}
   :: Maybe         {{ coq 0                                        }}
+  :: Set           {{ coq 0                                        }}
   :: Just          {{ coq 0                                        }}
   :: Nothing       {{ coq 0                                        }}
 

@@ -830,6 +830,173 @@ Proof.
   Unshelve. all: auto.
 Qed.
 
+Lemma BranchTyping_swap : forall x1 x G a b A A1 B C C' Apps args,
+      x1 `notin` fv_tm_tm_tm a \u fv_tm_tm_tm b \u fv_tm_tm_tm A1 \u dom G
+                  \u fv_tm_tm_tm C' \u fv_tm_tm_tm B \u fv_tm_tm_tm C
+    -> Typing G A a_Star
+    -> x `notin` dom G \u {{ x1 }}
+    -> BranchTyping ([(x1, Tm A)] ++ G) Apps Nom a A1 b 
+                   args
+                   (open_tm_wrt_tm B (a_Var_f x1))
+                   (open_tm_wrt_tm C (a_Var_f x1))
+                   C'
+    -> BranchTyping ([(x, Tm A)] ++ G) Apps Nom a A1 b 
+                   (List.map (tm_subst_tm_pattern_arg (a_Var_f x) x1) args)
+                   (open_tm_wrt_tm B (a_Var_f x))
+                   (open_tm_wrt_tm C (a_Var_f x))
+                   C'.
+Proof. 
+  intros.
+  assert (AC: Ctx ((x1 ~ Tm A) ++ G)). constructor; eauto.
+  inversion AC; subst.
+  assert (TV : Typing ([(x,Tm A)] ++ G) (a_Var_f x) A).
+  { eapply E_Var; eauto 3. 
+    eapply E_ConsTm; eauto 2. }
+  assert (CTX : Ctx ([(x1,Tm A)] ++ [(x, Tm A)] ++ G)).
+  { eapply E_ConsTm; eauto 2.
+  with (Typing G A a_Star) do ltac:(fun h => 
+    pose M1 := (Typing_weakening h [(x,Tm A)] nil G)).
+  simpl_env in M1; eapply M1; eauto. }
+
+  with BranchTyping do ltac:(fun h => 
+     move: (BranchTyping_weakening h [(x,Tm A)] [(x1, Tm A)] G eq_refl (Ctx_uniq CTX)) => K1).
+  move: (BranchTyping_tm_subst K1 TV nil x1 eq_refl) => K2. 
+  simpl_env in K2.
+  rewrite (tm_subst_tm_tm_fresh_eq a) in K2; auto.
+  rewrite (tm_subst_tm_tm_fresh_eq A1) in K2; auto.
+  rewrite (tm_subst_tm_tm_fresh_eq b) in K2; auto.
+
+
+  rewrite -tm_subst_tm_tm_intro in K2; auto.
+  rewrite -tm_subst_tm_tm_intro in K2; auto.
+  rewrite (tm_subst_tm_tm_fresh_eq C') in K2; auto.
+  Unshelve. all: try exact Rep.
+Qed.
+
+
+
+
+Lemma tm_subst_tm_pattern_args_fresh_eq : forall args x a,
+  x `notin` fv_tm_tm_pattern_args args
+  → List.map (tm_subst_tm_pattern_arg a x) args = args.
+Proof.
+  induction args. simpl; auto.
+  intros. simpl in *.
+  f_equal; auto.
+  destruct a; simpl in *.
+  rewrite tm_subst_tm_tm_fresh_eq; auto.
+  rewrite tm_subst_tm_co_fresh_eq; auto.
+Qed.
+
+Lemma co_subst_co_pattern_args_fresh_eq : forall args x a,
+  x `notin` fv_co_co_pattern_args args
+  → List.map (co_subst_co_pattern_arg a x) args = args.
+Proof.
+  induction args. simpl; auto.
+  intros. simpl in *.
+  f_equal; auto.
+  destruct a; simpl in *.
+  rewrite co_subst_co_tm_fresh_eq; auto.
+  rewrite co_subst_co_co_fresh_eq; auto.
+Qed.
+
+
+
+Lemma  BranchTyping_PiRole_exists : forall x, 
+   `{ 
+      BranchTyping (x ~ Tm A ++ G) Apps5 Nom a A1 b
+                 (pattern_args5 ++ one (p_Tm (Role R) (a_Var_f x)))
+                 (open_tm_wrt_tm B (a_Var_f x)) (open_tm_wrt_tm C (a_Var_f x)) C'
+    -> x `notin` fv_tm_tm_tm A \u dom G \u fv_tm_tm_tm a \u fv_tm_tm_tm A1
+             \u fv_tm_tm_tm b \u fv_tm_tm_pattern_args pattern_args5 
+             \u fv_tm_tm_tm B \u fv_tm_tm_tm C \u fv_tm_tm_tm C'
+    -> Typing G A a_Star 
+    -> BranchTyping G (A_cons (A_Tm (Role R)) Apps5) Nom a A1 b pattern_args5
+                      (a_Pi Rel A B) (a_Pi Rel A C) C' }.
+Proof. 
+  intros. 
+  pick fresh y and apply BranchTyping_PiRole; auto.
+  replace (pattern_args5 ++ one (p_Tm (Role R) (a_Var_f y))) with 
+        (List.map (tm_subst_tm_pattern_arg (a_Var_f y) x)
+                  (pattern_args5 ++ one (p_Tm (Role R) (a_Var_f x)))).
+  eapply BranchTyping_swap; auto.
+  rewrite map_app.
+  simpl. 
+  case h: (x == x); try done.
+  f_equal.
+  rewrite tm_subst_tm_pattern_args_fresh_eq; auto.
+Qed.
+
+
+
+Lemma BranchTyping_PiRel_exists : forall x,
+   `{ BranchTyping (x ~ Tm A ++ G) Apps5 Nom a A1 b
+                 (pattern_args5 ++ one (p_Tm (Rho Rel) (a_Var_f x)))
+                 (open_tm_wrt_tm B (a_Var_f x)) (open_tm_wrt_tm C (a_Var_f x)) C' 
+   -> x `notin` fv_tm_tm_tm A \u dom G \u fv_tm_tm_tm a \u fv_tm_tm_tm A1
+             \u fv_tm_tm_tm b \u fv_tm_tm_pattern_args pattern_args5 
+             \u fv_tm_tm_tm B \u fv_tm_tm_tm C \u fv_tm_tm_tm C'
+   -> Typing G A a_Star
+   -> BranchTyping G (A_cons (A_Tm (Rho Rel)) Apps5) Nom a A1 b pattern_args5
+    (a_Pi Rel A B) (a_Pi Rel A C) C'}.
+Proof. 
+  intros. 
+  pick fresh y and apply BranchTyping_PiRel; auto.
+  replace (pattern_args5 ++ one (p_Tm (Rho Rel) (a_Var_f y))) with 
+        (List.map (tm_subst_tm_pattern_arg (a_Var_f y) x)
+                  (pattern_args5 ++ one (p_Tm (Rho Rel) (a_Var_f x)))).
+  eapply BranchTyping_swap; auto.
+  rewrite map_app.
+  simpl. 
+  case h: (x == x); try done.
+  f_equal.
+  rewrite tm_subst_tm_pattern_args_fresh_eq; auto.
+Qed.
+
+Lemma BranchTyping_PiIrrel_exists: forall x,
+  `{  BranchTyping (x ~ Tm A ++ G) Apps5 Nom a A1 b
+                 (pattern_args5 ++ one (p_Tm (Rho Irrel) a_Bullet))
+                 (open_tm_wrt_tm B (a_Var_f x)) (open_tm_wrt_tm C (a_Var_f x)) C'
+  -> x `notin` fv_tm_tm_tm A \u dom G \u fv_tm_tm_tm A1 \u fv_tm_tm_tm a
+             \u fv_tm_tm_tm b \u fv_tm_tm_pattern_args pattern_args5 
+             \u fv_tm_tm_tm B \u fv_tm_tm_tm C \u fv_tm_tm_tm C'
+    -> Typing G A a_Star
+    -> BranchTyping G (A_cons (A_Tm (Rho Irrel)) Apps5) Nom a A1 b pattern_args5
+    (a_Pi Irrel A B) (a_Pi Irrel A C) C' }.
+Proof. 
+ intros. 
+  pick fresh y and apply BranchTyping_PiIrrel; auto.
+  replace (pattern_args5 ++ one (p_Tm (Rho Irrel) a_Bullet)) with 
+        (List.map (tm_subst_tm_pattern_arg (a_Var_f y) x)
+                  (pattern_args5 ++ one (p_Tm (Rho Irrel) a_Bullet))).
+  eapply BranchTyping_swap; auto.
+  rewrite map_app.
+  simpl. 
+  case h: (x == x); try done.
+  f_equal.
+  rewrite tm_subst_tm_pattern_args_fresh_eq; auto.
+Qed.
+
+Lemma BranchTyping_CPi_exists : forall c,
+    `{ BranchTyping (c ~ Co phi ++ G) Apps5 Nom a A
+                    b (pattern_args5 ++ one (p_Co g_Triv))
+                    (open_tm_wrt_co B (g_Var_f c))
+                    (open_tm_wrt_co C (g_Var_f c)) C'
+     ->  c `notin` dom G 
+     -> PropWff G phi
+     -> BranchTyping G (A_cons A_Co Apps5) Nom a A b pattern_args5
+        (a_CPi phi B) (a_CPi phi C) C'}.
+Proof. 
+  intros. 
+  pick fresh y and apply BranchTyping_CPi; auto.
+  replace (pattern_args5 ++ one (p_Co g_Triv)) with 
+        (List.map (tm_subst_tm_pattern_arg (a_Var_f y) c)
+                  (pattern_args5 ++ one (p_Co g_Triv))).
+Admitted. (* Renaming *)
+
+
+
+
 (* -------------------- *)
 
 
