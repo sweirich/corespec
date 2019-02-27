@@ -514,47 +514,82 @@ Qed.
 
 Lemma BranchTyping_co_subst :
       forall G0 n R b B b2 aa B2 B3 C (H : BranchTyping G0 n R b B b2 aa B2 B3 C),
-      forall G D A1 A2 T R' F c ,
+      forall G D A1 A2 T R' F c g,
         G0 = (F ++ (c ~ Co (Eq A1 A2 T R') ) ++ G)
         -> DefEq G D A1 A2 T R'
-        -> BranchTyping (map (co_subst_co_sort g_Triv c) F ++ G) n R
-                                   (co_subst_co_tm g_Triv c b)
-                                   (co_subst_co_tm g_Triv c B)
-                                   (co_subst_co_tm g_Triv c b2)
-                                   (List.map (co_subst_co_pattern_arg g_Triv c) aa)
-                                   (co_subst_co_tm g_Triv c B2)
-                                   (co_subst_co_tm g_Triv c B3)
-                                   (co_subst_co_tm g_Triv c C).
+        -> lc_co g
+        -> BranchTyping (map (co_subst_co_sort g c) F ++ G) n R
+                                   (co_subst_co_tm g c b)
+                                   (co_subst_co_tm g c B)
+                                   (co_subst_co_tm g c b2)
+                                   (List.map (co_subst_co_pattern_arg g c) aa)
+                                   (co_subst_co_tm g c B2)
+                                   (co_subst_co_tm g c B3)
+                                   (co_subst_co_tm g c C).
 Proof.
   induction 1; intros; subst.
-  all: try solve [
-    cbn; E_pick_fresh y;
-    autofresh with y;
-    rewrite_subst_context;
-    by happly H0;
-      (autorewrite with subst_open_var std using move=>//);
-      move=>//; uha; fsetdec_fast].
-
-  all: exactly 1 goal.
 
   - move: BranchTyping_Base => /=.
     rewrite co_subst_co_tm_apply_pattern_args.
     apply.
     all: try eapply co_subst_co_tm_lc_tm; try done.
-    (* FIXME: isn't there some uniq_solve or something? *)
-    move:(uniq_app_1 _ _ _ H2) (uniq_app_2 _ _ _ H2) => h1 h2.
-    move:(uniq_app_2 _ _ _ h2) => h2'.
-    eapply uniq_app; eauto 3.
-    eapply uniq_app_3 in H2.
-    eapply disjoint_map_2.
-    eapply disjoint_app_r in H2.
-    eapply disjoint_sym.
-    by ok.
+    solve_uniq.
     move: co_subst_co_tm_open_tm_wrt_co.
     move/(_ _ _ g_Triv) => /= <- //=.
-
+  - cbn; E_pick_fresh y;
+    autofresh with y;
+    rewrite_subst_context; auto.
+    happly H0.
+      (autorewrite with subst_open_var std using move=>//).
+      (autorewrite with subst_open_var std using move=>//).
+      auto.
+      (autorewrite with subst_open_var std using move=>//).
+      auto.
     Unshelve.
-    all: unfold one; try match goal with |- _ = _ => reflexivity | |- DefEq _ _ _ _ _ _ => ea end; fsetdec_fast.
+    all: try simpl_env.
+    all: try reflexivity.
+    all: eauto 1.
+  - cbn; E_pick_fresh y;
+    autofresh with y;
+    rewrite_subst_context; auto.
+    happly H0.
+      (autorewrite with subst_open_var std using move=>//).
+      (autorewrite with subst_open_var std using move=>//).
+      auto.
+      (autorewrite with subst_open_var std using move=>//).
+      auto.
+    Unshelve.
+    all: try simpl_env.
+    all: try reflexivity.
+    all: eauto 1.
+  - cbn; E_pick_fresh y;
+    autofresh with y;
+    rewrite_subst_context; auto.
+    happly H0.
+      (autorewrite with subst_open_var std using move=>//).
+      (autorewrite with subst_open_var std using move=>//).
+      auto.
+      (autorewrite with subst_open_var std using move=>//).
+      auto.
+    Unshelve.
+    all: try simpl_env.
+    all: try reflexivity.
+    all: eauto 1.
+  - cbn; E_pick_fresh y;
+    autofresh with y;
+    rewrite_subst_context; auto.
+    happly H0.
+      (autorewrite with subst_open_var std using move=>//).
+      (autorewrite with subst_open_var std using move=>//).
+      unhide Fr. auto.
+      auto.
+      (autorewrite with subst_open_var std using move=>//).
+      unhide Fr. auto.
+      auto.
+    Unshelve.
+    all: try simpl_env.
+    all: try reflexivity.
+    all: eauto 1.
 Qed.
 
 
@@ -751,7 +786,7 @@ Proof.
          apply (H0 G0 D A1 A2 T R' F c1); auto.
 
   Unshelve.
-  all: unfold one; try match goal with |- _ = _ => reflexivity | |- DefEq _ _ _ _ _ _ => ea end; ea.
+  all: unfold one; try match goal with |- _ = _ => reflexivity | |- DefEq _ _ _ _ _ _ => ea end; auto; ea.
 Qed.
 
 Lemma Typing_co_subst:
@@ -874,6 +909,51 @@ Proof.
 Qed.
 
 
+Lemma BranchTyping_swap_co : forall x1 x G a b A1 B C C' Apps args phi,
+      x1 `notin` fv_co_co_tm a \u fv_co_co_tm b \u fv_co_co_tm A1 \u dom G
+                  \u fv_co_co_tm C' \u fv_co_co_tm B \u fv_co_co_tm C
+    -> PropWff G phi
+    -> x `notin` dom G \u {{ x1 }}
+    -> BranchTyping ([(x1, Co phi)] ++ G) Apps Nom a A1 b 
+                   args
+                   (open_tm_wrt_co B (g_Var_f x1))
+                   (open_tm_wrt_co C (g_Var_f x1))
+                   C'
+    -> BranchTyping ([(x, Co phi)] ++ G) Apps Nom a A1 b 
+                   (List.map (co_subst_co_pattern_arg (g_Var_f x) x1) args)
+                   (open_tm_wrt_co B (g_Var_f x))
+                   (open_tm_wrt_co C (g_Var_f x))
+                   C'.
+Proof. 
+  intros.
+  destruct phi as [a0 b0 A0 R0].
+  assert (AC: Ctx ((x ~ Co (Eq a0 b0 A0 R0) ++ G))). constructor; eauto.
+  inversion AC; subst.
+
+  assert (TV : DefEq ([(x,Co (Eq a0 b0 A0 R0))] ++ G) 
+                   (dom ([(x,Co (Eq a0 b0 A0 R0))] ++ G)) a0 b0 A0 R0).
+  { eapply E_Assn; eauto 3. 
+    simpl. auto. }
+  assert (CTX : Ctx ([(x1,Co (Eq a0 b0 A0 R0))] ++ [(x, Co (Eq a0 b0 A0 R0))] ++ G)).
+  { eapply E_ConsCo; eauto 2.
+  with PropWff do ltac:(fun h => 
+    pose M1 := (PropWff_weakening h [(x,Co (Eq a0 b0 A0 R0))] nil G)).
+  simpl_env in M1; eapply M1; eauto. } 
+
+  with BranchTyping do ltac:(fun h => 
+     move: (BranchTyping_weakening h [(x,Co (Eq a0 b0 A0 R0))] [(x1, Co (Eq a0 b0 A0 R0))] G eq_refl (Ctx_uniq CTX)) => K1).
+  move: (BranchTyping_co_subst K1) => K2. 
+  move: (@K2 ([(x,Co (Eq a0 b0 A0 R0))] ++ G)
+              (dom ([(x,Co (Eq a0 b0 A0 R0))] ++ G)) a0 b0 A0 R0 nil x1 (g_Var_f x)) => K3.
+ 
+  move: (K3 eq_refl TV ltac:(auto)) => K4. 
+  rewrite (co_subst_co_tm_fresh_eq a) in K4; auto.
+  rewrite (co_subst_co_tm_fresh_eq A1) in K4; auto.
+  rewrite (co_subst_co_tm_fresh_eq b) in K4; auto.
+  rewrite -co_subst_co_tm_intro in K4; auto.
+  rewrite -co_subst_co_tm_intro in K4; auto.
+  rewrite (co_subst_co_tm_fresh_eq C') in K4; auto.
+Qed.
 
 
 Lemma tm_subst_tm_pattern_args_fresh_eq : forall args x a,
@@ -982,7 +1062,13 @@ Lemma BranchTyping_CPi_exists : forall c,
                     b (pattern_args5 ++ one (p_Co g_Triv))
                     (open_tm_wrt_co B (g_Var_f c))
                     (open_tm_wrt_co C (g_Var_f c)) C'
-     ->  c `notin` dom G 
+     -> c `notin` 
+           union (fv_co_co_tm a)
+            (union (fv_co_co_tm b)
+               (union (fv_co_co_tm A)
+                  (union (dom G)
+                     (union (fv_co_co_tm C') (union (fv_co_co_tm B) 
+                                               (union (fv_co_co_pattern_args pattern_args5)     (fv_co_co_tm C)))))))
      -> PropWff G phi
      -> BranchTyping G (A_cons A_Co Apps5) Nom a A b pattern_args5
         (a_CPi phi B) (a_CPi phi C) C'}.
@@ -990,9 +1076,13 @@ Proof.
   intros. 
   pick fresh y and apply BranchTyping_CPi; auto.
   replace (pattern_args5 ++ one (p_Co g_Triv)) with 
-        (List.map (tm_subst_tm_pattern_arg (a_Var_f y) c)
+        (List.map (co_subst_co_pattern_arg (g_Var_f y) c)
                   (pattern_args5 ++ one (p_Co g_Triv))).
-Admitted. (* Renaming *)
+  eapply BranchTyping_swap_co; auto.
+  rewrite map_app.
+  simpl.
+  rewrite co_subst_co_pattern_args_fresh_eq; auto.
+Qed.
 
 
 

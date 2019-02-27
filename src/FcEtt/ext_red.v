@@ -2457,7 +2457,9 @@ Proof.
     split.
     eapply (@BranchTyping_CPi_exists x0); auto.
     rewrite <- (open_tm_wrt_co_close_tm_wrt_co B' x0) in h1.
-    eapply h1.  unhide Fr.  fsetdec.
+    eapply h1.  unhide Fr.  
+    rewrite fv_co_co_tm_close_tm_wrt_co.
+    fsetdec.
     destruct phi.
     eapply (@E_CPiCong3 x0); eauto 2.
     unhide Fr. fsetdec.
