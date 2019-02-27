@@ -296,6 +296,9 @@ role_context, W {{ tex \Omega }} :: 'rctx_' ::= {{ com role_contexts }}
    | var_pat p       :: M  :: Pat {{ coq (var_pat([[p]])) }}
    | ( W )           :: M  :: Paren   {{ coq ([[W]]) }}
    | (# W #)         :: M  :: SecretParen {{ coq [[W]] }} {{ tex [[W]] }}
+   | ctx_nom G       :: M  :: CtxNom {{ coq (ctx_nom [[G]]) }}
+    {{ tex [[G]]_{\mathsf{Nom} } }}
+
 
 roles, Rs {{ tex \overline{R} }}  :: '' ::= {{ coq list role }} 
    | nilR       ::   :: nilR {{ coq nil }}
