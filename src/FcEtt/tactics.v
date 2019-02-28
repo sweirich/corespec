@@ -937,7 +937,7 @@ Tactic Notation "autofresh'+" := TacticsInternals.autofresh_param TacticsInterna
 (* General version, that accepts a pattern (uconstr) (hence also accepts `Typing _ a`). Will switch to a fast matching if possible *)
 Tactic Notation "with" uconstr(hd) "do" tactic(tac)       := TacticsInternals.find_hyp_and_perform_optim hd tac.
 Tactic Notation "with" uconstr(hd) "do" tactic(tac) "end" := TacticsInternals.find_hyp_and_perform_optim hd tac.
-Tactic Notation "with" uconstr(hd) "excl" constr(excl) "do" tactic(tac) :=
+ Tactic Notation "with" uconstr(hd) "excl" constr(excl) "do" tactic(tac) :=
   TacticsInternals.find_hyp_and_perform_optim hd ltac:(fun h => TacticsInternals.avoid_unify_list h excl; tac h).
 
 (* Specialized version to find and rename hypothesis *)
