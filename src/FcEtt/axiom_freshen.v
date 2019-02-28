@@ -172,54 +172,62 @@ Qed.
 Lemma remove_in_same : forall s x, remove x s [=] remove x (singleton x \u s).
 Proof. intros. fsetdec.
 Qed.
-(*
-Lemma PatternContexts_irrvar_cong : forall W G D1 D2 F A p B,
-      PatternContexts W G D1 F A p B -> D1 [=] D2 ->
-      PatternContexts W G D2 F A p B.
-Proof. intros. generalize dependent D2. induction H; intros; eauto.
-       admit. move: (AtomSetProperties.In_dec x D) => h.
-       inversion h. 
 
-Lemma PatternContexts_rename : forall W G D F p A B x y,
+Lemma PatternContexts_rename_tm : forall W G D F p A B x y,
       PatternContexts W G D F A p B -> y `notin` dom G -> x `notin` codom G ->
       PatternContexts (rename_role_context y x W) (rename_context_tm y x G)
-       (rename_atoms y x D) F (tm_subst_tm_tm (a_Var_f y) x A)
+       (List.map (rename_atom y x) D) F (tm_subst_tm_tm (a_Var_f y) x A)
        (tm_subst_tm_tm (a_Var_f y) x p) (tm_subst_tm_tm (a_Var_f y) x B).
 Proof. intros. induction H.
-        - simpl in *. unfold rename_atoms.
-          destruct (AtomSetImpl.mem x empty) eqn:h.
-          apply AtomSetImpl.mem_2 in h. fsetdec. eauto with lngen lc.
+        - simpl in *. econstructor; eauto with lngen lc.
         - destruct (x0 == x). subst. rewrite tm_subst_tm_tm_open_tm_wrt_tm.
           eauto. rewrite tm_subst_tm_tm_same_diff.
           rewrite tm_subst_tm_tm_app_same_diff. 
-          simpl. unfold rename_atom. destruct (x == x); [|contradiction].
+          simpl. rewrite rename_atom_diff.
           eapply PatCtx_PiRel with (L := remove y L).
           eauto. eauto. rewrite tm_subst_tm_tm_open_tm_wrt_tm.
           eauto. rewrite tm_subst_tm_tm_diff. auto.
           rewrite tm_subst_tm_tm_app_diff. auto.
-          simpl. unfold rename_atom. destruct (x0 == x); [contradiction|].
+          simpl. rewrite rename_atom_diff_same. auto.
           eapply PatCtx_PiRel with (L := remove x0 L).
           eauto. eauto.
         - destruct (x0 == x). subst. rewrite tm_subst_tm_tm_open_tm_wrt_tm.
           eauto. rewrite tm_subst_tm_tm_same_diff.
-          simpl. unfold rename_atom. destruct (x == x); [|contradiction].
-          unfold rename_atoms in *.
-          destruct (AtomSetImpl.mem x (union (singleton x) D)) eqn:h.
-          destruct (AtomSetImpl.mem x D) eqn:h'.
-          replace (singleton y \u (remove x (singleton x \u D)))
-          with (singleton y \u singleton y \u (remove x (singleton x \u D))).
+          simpl. rewrite rename_atom_diff.
           eapply PatCtx_PiIrr with (L := remove y L).
-          replace (remove x (singleton x \u D)) with (remove x D).
-          eauto. intro. apply remove_in_same. clear. simpl in *.
-          move: (AtomSetProperties.In_dec x D) => h1.
-          inversion h1. earch "dec" "`in`".
-          eauto. eauto. rewrite tm_subst_tm_tm_open_tm_wrt_tm.
-          eauto. rewrite tm_subst_tm_tm_diff. auto.
-          rewrite tm_subst_tm_tm_app_diff. auto.
-          simpl. unfold rename_atom. destruct (x0 == x); [contradiction|].
-          eapply PatCtx_PiRel with (L := remove x0 L).
-          eauto. eauto.  
-*)
+          eauto. eauto. simpl. rewrite rename_atom_diff_same. auto.
+          rewrite tm_subst_tm_tm_open_tm_wrt_tm. eauto.
+          rewrite (tm_subst_tm_tm_fresh_eq (a_Var_f x0)).
+          simpl; auto. eapply PatCtx_PiIrr with (L := remove x0 L).
+          eauto. eauto.
+        - simpl in *. destruct (c == x). subst.
+          assert False. apply H1. eauto. contradiction.
+          rewrite rename_atom_diff_same. auto.
+          rewrite tm_subst_tm_tm_open_tm_wrt_co. eauto. simpl.
+          eapply PatCtx_CPi with (L := remove c L). eauto. auto.
+Qed.
+(*
+Lemma PatternContexts_rename_co : forall W G D F p A B x y,
+      PatternContexts W G D F A p B -> y `notin` dom G -> x `notin` tmdom G ->
+      PatternContexts (rename_role_context y x W) (rename_context_co y x G)
+       (List.map (rename_atom y x) D) F (co_subst_co_tm (g_Var_f y) x A)
+       (co_subst_co_tm g_Triv x p) (co_subst_co_tm (g_Var_f y) x B).
+Proof. intros. induction H; simpl in *.
+        - econstructor; eauto with lngen lc.
+        - destruct (x0 == x). subst. assert False. apply H1. eauto.
+          contradiction. rewrite rename_atom_diff_same. auto.
+          rewrite co_subst_co_tm_open_tm_wrt_tm. eauto. simpl.
+          eapply PatCtx_PiRel with (L := remove x0 L). eauto. auto.
+        - destruct (x0 == x). subst. assert False. apply H1. eauto.
+          contradiction. rewrite rename_atom_diff_same. auto.
+          rewrite co_subst_co_tm_open_tm_wrt_tm. eauto. simpl.
+          eapply PatCtx_PiIrr with (L := remove x0 L). eauto. auto.
+        - destruct (c == x). subst.
+          rewrite rename_atom_diff. rewrite co_subst_co_tm_open_tm_wrt_co.
+          eauto. simpl. destruct (x == x) eqn:h. rewrite h.
+          eapply PatCtx_CPi with (L := remove y L). eauto. auto.
+Qed. *)
+
 Lemma tm_rename_mutual :
    (forall G b B (H : Typing G b B),
       forall x y, y `notin` dom G -> x `notin` codom G ->
