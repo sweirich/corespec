@@ -148,6 +148,7 @@ tm, a, b, p, v, w, A, B, C :: 'a_' ::= {{ com types and kinds }}
   | Succ                 :: S :: Succ
   | True                 :: S :: True
   | Fix                  :: S :: Fix
+  | Set                  :: S :: Set
   | Maybe                :: S :: Maybe
   | Just                 :: S :: Just
   | Nothing              :: S :: Nothing
@@ -2766,6 +2767,7 @@ homs 'a_'
   :: RelPi         {{ coq (a_Pi  Rel [[A]] [[B]])                  }}
   :: If            {{ coq 0                                        }}
   :: Maybe         {{ coq 0                                        }}
+  :: Set           {{ coq 0                                        }}
   :: Just          {{ coq 0                                        }}
   :: Nothing       {{ coq 0                                        }}
 
