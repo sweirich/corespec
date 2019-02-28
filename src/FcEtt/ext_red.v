@@ -954,11 +954,11 @@ Definition sub := list (atom * tm). *)
    
 *)
 Inductive MatchTyping : 
-  context -> tm -> tm -> context -> tm -> tm -> list pattern_arg -> atoms -> Prop := 
+  context -> tm -> tm -> context -> tm -> tm -> list pattern_arg -> list atom -> Prop := 
   | MatchTyping_Const : forall G F PiB B,
     Typing G (a_Fam F) PiB ->
     DefEq G (dom G) PiB B a_Star Rep ->
-    MatchTyping nil (a_Fam F) PiB G (a_Fam F) B nil empty
+    MatchTyping nil (a_Fam F) PiB G (a_Fam F) B nil nil
   | MatchTyping_AppRelR : 
     forall G Gp R p x A1 B1 a1 a2 A2 B2 A sub D,
     MatchTyping Gp p (a_Pi Rel A1 B1) G a1 (a_Pi Rel A2 B2) sub D ->
@@ -980,7 +980,7 @@ Inductive MatchTyping :
     MatchTyping (x ~ Tm A1 ++ Gp)
                 (a_App p  (Rho Irrel) a_Bullet) (open_tm_wrt_tm B1 (a_Var_f x))
                 G (a_App a1 (Rho Irrel) a2)       A
-                ((p_Tm (Rho Irrel) a2') :: sub)  ({{x}} \u D)
+                ((p_Tm (Rho Irrel) a2') :: sub)  (x :: D)
   | MatchTyping_CApp : 
     
    `{MatchTyping Gp p (a_CPi (Eq a0 b0 A0 R0) B1) G a1 
@@ -1192,7 +1192,7 @@ Proof.
       rewrite co_subst_co_tm_fresh_eq; auto.
       move: (DefEq_context_fv IHMatchTyping) => h. split_hyp.
       simpl in *.
-      fsetdec.
+      clear - H5. fsetdec.
     } 
 
     rewrite EQ2. 
@@ -1237,7 +1237,7 @@ Lemma MatchSubstTyping :  `{
   forall a p b b' (ms : MatchSubst a p b b'),
   forall Gp G A B sub D, 
     MatchTyping Gp p B G a A sub D ->
-    (∀ x : atom, x ∈ D ⟹ x `notin` fv_tm_tm_tm b) ->
+    (∀ x : atom, In x D -> x `notin` fv_tm_tm_tm b) ->
   forall C Gp2, 
     uniq (Gp2 ++ G) ->
     (Gp2 ++ Gp ⊨ b : C) ->
@@ -1330,8 +1330,8 @@ Proof.
          move: (MatchTyping_wf_sub h) => [ln wfs];
          move: (MatchTyping_correctness2 h) => de 
     ) end.
-    have ?: (∀ x : atom, x ∈ D0 ⟹ x ∉ fv_tm_tm_tm b1).
-    { intros y In. eapply H1. fsetdec. }
+    have ?: (∀ x : atom, In x D0 ⟹ x ∉ fv_tm_tm_tm b1).
+    { intros y In. eapply H1. simpl; eauto. }
     specialize (IHms ltac:(auto) C).
 
     rewrite cps_a_Pi in de.
@@ -1390,7 +1390,7 @@ Proof.
     } 
     rewrite EQ5 in L.
     rewrite tm_subst_tm_tm_fresh_eq in L.
-    move: (H1 x ltac:(auto)) => Hg. fsetdec.
+    intro. apply (H1 x); simpl; auto. fsetdec.
     split.
     eapply L.
     fsetdec.
@@ -1462,13 +1462,13 @@ Lemma MatchSubstTyping_start :  `{
   forall Gp G A B sub Dp, MatchTyping Gp p B G a A sub Dp ->
   G ⊨ A : a_Star -> 
   (Gp ⊨ b : B) ->
-  (AtomSetImpl.For_all (λ x : atom, x ∉ fv_tm_tm_tm b) Dp) ->
+  (forall x, In x Dp -> x `notin` fv_tm_tm_tm b) ->
   (G ⊨ b' : A) 
 }.
 Proof.
   intros.
   move: (MatchSubstTyping ms H) => h0.
-  have f : (∀ x : atom, x ∈ Dp ⟹ x ∉ fv_tm_tm_tm b).
+  have f : (∀ x : atom, In x Dp ⟹ x ∉ fv_tm_tm_tm b).
   { eapply H2. }
   specialize (h0 f B nil ltac:(eapply Ctx_uniq; eapply Typing_Ctx; eauto)
                        ltac:(auto) ).   
@@ -1487,14 +1487,14 @@ Lemma Axiom_Freshening : forall s (Γ:list(atom*s)),
   Rename p b p1 b1 D1 D ->
   PatternContexts Ωp Γp Dp F PiB p B ->
   Γp ⊨ b : B ->
-  AtomSetImpl.For_all (λ x : atom, x `notin` fv_tm_tm_tm b) Dp -> 
+  (forall x, In x Dp -> x `notin` fv_tm_tm_tm b) -> 
   exists p2 b2 B' Dp' Ωp' Γp', 
   MatchSubst a p2 b2 b' /\
   Rename p b p2 b2 (dom Γ \u D1) D /\
   PatternContexts Ωp' Γp' Dp' F PiB p2 B' /\
   Γp' ⊨ b2 : B' /\
   disjoint Γp' Γ /\
-  AtomSetImpl.For_all (λ x : atom, x `notin` fv_tm_tm_tm b2) Dp'}. 
+  (forall x, In x Dp' -> x `notin` fv_tm_tm_tm b2)}. 
 Proof.
   intros.
 
