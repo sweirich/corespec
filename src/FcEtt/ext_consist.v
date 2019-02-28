@@ -359,8 +359,7 @@ Proof.
   inversion P1; inversion P2; subst.
   all: try solve [invert_equality].
 
-  (* 63 subgoals *)
-  (* TODO: there may be a way to check the number of subgoals (and guard against a innvalid number) *)
+  all: exactly 61 goals.
 
   all: try_Refl_left.
   all: try_Refl_right.
@@ -650,44 +649,46 @@ Proof.
   - use_size_induction a0 ac Par1 Par2.
     use_size_induction b1 b1c Par3 Par4.
     use_size_induction b2 b2c Par5 Par6.
-    exists (a_Pattern Nom ac T Apps5 b1c b2c).
+    exists (a_Pattern Nom ac F5 Apps5 b1c b2c).
     split; eapply Par_Pattern; eauto.
   - use_size_induction a0 ac Par1 Par2.
     use_size_induction b1 b1c Par3 Par4.
     use_size_induction b2 b2c Par5 Par6.
-    have h0: AppsPath Nom a'0 T Apps5.
+    have h0: AppsPath Nom a'0 F5 Apps5.
     { auto. }
     pose (P := Par_AppsPath (conj h0 H11) Par2). inversion P.
     exists (a_CApp (applyArgs ac b1c) g_Triv).
     assert (ApplyArgs ac b1c (applyArgs ac b1c)).
-    {eapply applyArgs_ApplyArgs. eapply AppsPath_CasePath; eauto.
-     eapply Par_lc2; eauto. auto. }
+    { eapply applyArgs_ApplyArgs'; last by done.
+      by eauto using AppsPath_ValuePath.
+      by eapply Par_lc2; eauto. }
     split. eapply Par_PatternTrue; eauto.
-    econstructor. eapply apply_args_par; eauto using AppsPath_CasePath.
+    econstructor.
+    eapply apply_args_par; eauto using AppsPath_CasePath.
   - use_size_induction a0 ac Par1 Par2.
     use_size_induction b1 b1c Par3 Par4.
     use_size_induction b2 b2c Par5 Par6.
-    assert (~ AppsPath Nom ac T Apps5). intro. apply H10.
+    assert (~ AppsPath Nom ac F5 Apps5). intro. apply H10.
     eapply AppsPath_Par; eauto. 
     exists b2c. split; eauto.
     eapply Par_PatternFalse; eauto. eapply Value_par_Value; eauto.
   - use_size_induction a0 ac Par1 Par2.
     use_size_induction b1 b1c Par3 Par4.
     use_size_induction b2 b2c Par5 Par6.
-    have h0: AppsPath Nom a' T Apps5.
-    { auto. } 
+    have h0: AppsPath Nom a' F5 Apps5.
+    { auto. }
     pose (P := Par_AppsPath (conj h0 H4) Par1). inversion P.
     exists (a_CApp (applyArgs ac b1c) g_Triv).
     assert (ApplyArgs ac b1c (applyArgs ac b1c)).
-    {eapply applyArgs_ApplyArgs; eauto using AppsPath_CasePath.
+    { eapply applyArgs_ApplyArgs; eauto using AppsPath_CasePath.
      eapply Par_lc2; eauto using AppsPath_CasePath. }
     split. econstructor. eapply apply_args_par; eauto using AppsPath_CasePath.
     eapply Par_PatternTrue; eauto.
   - use_size_induction a0 ac Par1 Par2.
     use_size_induction b1 b1c Par3 Par4.
     use_size_induction b2 b2c Par5 Par6.
-    have h0: AppsPath Nom a' T Apps5. auto.
-    have h1: AppsPath Nom a'0 T Apps5. auto.
+    have h0: AppsPath Nom a' F5 Apps5. auto.
+    have h1: AppsPath Nom a'0 F5 Apps5. auto.
     pose (P := Par_AppsPath (conj h0 H4) Par1). inversion P.
     pose (Q := Par_AppsPath (conj h1 H14) Par2). inversion Q.
     exists (a_CApp (applyArgs ac b1c) g_Triv).
@@ -698,24 +699,25 @@ Proof.
     eapply AppsPath_CasePath; eauto.
     eapply apply_args_par; eauto using AppsPath_CasePath.
   - use_size_induction a0 ac Par1 Par2.
-    have P: AppsPath Nom ac T Apps5.
+    have P: AppsPath Nom ac F5 Apps5.
     { eapply Par_AppsPath. eauto. eauto. }
-    assert (~ AppsPath Nom ac T Apps5). intro. apply H13.
+    assert (~ AppsPath Nom ac F5 Apps5). intro. apply H13.
     eapply AppsPath_Par; eauto. contradiction.
   - use_size_induction a0 ac Par1 Par2.
     use_size_induction b1 b1c Par3 Par4.
     use_size_induction b2 b2c Par5 Par6.
-    assert (~ AppsPath Nom ac T Apps5). intro. apply H3.
+    assert (~ AppsPath Nom ac F5 Apps5). intro. apply H3.
     eapply AppsPath_Par; eauto. exists b2c. split; eauto.
     eapply Par_PatternFalse; eauto. eapply Value_par_Value; eauto.
   - use_size_induction a0 ac Par1 Par2.
     pose (P := H11). pose (Q := Par_AppsPath (conj P H13) Par2); eauto.
-    inversion Q. assert (~ AppsPath Nom ac T Apps5). intro. apply H3.
+    inversion Q.
+    assert (~ AppsPath Nom ac F5 Apps5). intro. apply H3.
     eapply AppsPath_Par; eauto. contradiction.
   - use_size_induction a0 ac Par1 Par2.
     use_size_induction b1 b1c Par3 Par4.
     use_size_induction b2 b2c Par5 Par6. eauto.
-Qed. 
+Qed.
 
 Lemma confluence : forall W a a1 R, Par W a a1 R -> 
                    forall a2, Par W a a2 R -> exists b,
@@ -811,15 +813,16 @@ Hint Constructors not_Path_head_form.
 
 Lemma Path_head_form_Path_consist : forall W F a b R, CasePath R a F ->
                        multipar W a b R -> consistent a b R.
-Proof. intros. eapply consistent_a_CasePath; eauto.
-       eapply multipar_CasePath; eauto.
+Proof. intros.
+       eapply consistent_a_CasePath; eauto.
+       eapply multipar_CasePath; eauto 4.
 Qed.
 
 Lemma Path_head_form_no_Path_consist : forall a b R, Path_head_form a ->
          lc_tm b -> (forall F, ~(CasePath R a F)) -> consistent a b R.
 Proof. intros. eapply consistent_a_Step_L. auto.
        intro H2; inversion H2; subst; try (inversion H; fail).
-       pose (Q := H1 F); contradiction.
+       all: eapply H1; eauto.
 Qed.
 
 Lemma Path_head_form_consist : forall W a b R, Path_head_form a ->
@@ -827,7 +830,7 @@ Lemma Path_head_form_consist : forall W a b R, Path_head_form a ->
 Proof. intros. inversion H; subst.
        all: (assert (H' := H0); apply multipar_roleing_tm_fst in H';
        apply decide_CasePath in H'; inversion H' as [[F0 Q]|n]).
-       all: try(eapply Path_head_form_Path_consist; eauto; fail).
+       all: try(eapply Path_head_form_Path_consist; with CasePath do invs end; try with ValuePath do invs end; eauto; fail).
        all: try(apply multipar_lc2 in H0;
             eapply Path_head_form_no_Path_consist; eauto; fail).
 Qed.
@@ -840,10 +843,11 @@ Proof. intros. destruct H as (t & MSL & MSR).
        apply decide_CasePath in P. apply decide_CasePath in Q.
        inversion P as [[F1 S]|n]. inversion Q as [[F2 S']|n'].
        assert (F1 = F2). eapply multipar_CasePath_join_head. eapply MSL.
-       eapply MSR. auto. auto. subst. eauto.
+       eapply MSR. auto. auto. subst.
+       all: try solve [eapply consistent_a_CasePath; eauto].
        apply multipar_lc1 in MSL. apply consist_sym.
        eapply Path_head_form_no_Path_consist; eauto.
-       apply multipar_lc1 in MSR. eapply Path_head_form_no_Path_consist; eauto.
+       apply multipar_lc1 in MSR. eauto. eapply Path_head_form_no_Path_consist; eauto.
 Qed.
 
 
@@ -886,6 +890,34 @@ Lemma ValuePath_sub_capp : forall a F, ValuePath (a_CApp a g_Triv) F ->
 Proof. intros. dependent induction H; eauto.
 Qed.
 
+(* FIXME: move to ett_match *)
+Lemma ValuePath_star_Par_preservation : forall a b W R,
+  ValuePath a f_Star -> Par W a b R -> ValuePath b f_Star /\ tm_tm_agree a b.
+Proof.
+  intros.
+  move: b H0.
+  depind H; intros; eauto.
+  by invs H0; eauto.
+  + invs H1.
+    - eauto 7 using tm_tm_agree_refl, ValuePath_Pattern_like_tm.
+    - unshelve especialize IHValuePath; last first; try ea; try done; autofwd.
+      solve [with ValuePath do inv].
+    - unshelve especialize IHValuePath; last first; try ea; try done.
+      split; econstructor; try by autofwd; by eauto using Par_lc2.
+    - unshelve especialize IHValuePath; last first; try ea; try done; autofwd.
+      move: (tm_subpattern_agree_ValuePath H4 H5) => h.
+      repeat with ValuePath do applyin ValuePath_head. rewrite H0 in h. inversion h.
+  + invs H0.
+    - eauto 7 using tm_tm_agree_refl, ValuePath_Pattern_like_tm.
+    - unshelve especialize IHValuePath; last first; try ea; try done; autofwd.
+      solve [with ValuePath do inv].
+    - unshelve especialize IHValuePath; last first; try ea; try done.
+      split; econstructor; try by autofwd; by eauto using Par_lc2.
+    - unshelve especialize IHValuePath; last first; try ea; try done; autofwd.
+      move: (tm_subpattern_agree_ValuePath H3 H2) => h.
+      repeat with ValuePath do applyin ValuePath_head. rewrite H in h. inversion h.
+Qed.
+
 Lemma Path_par_app_inversion : forall W F nu a b c R,
           CasePath R (a_App a nu b) F -> Par W (a_App a nu b) c R ->
           exists a' b', c = a_App a' nu b'.
@@ -918,6 +950,9 @@ Proof. intros. inversion H; subst; eauto.
           eapply ValuePath_ax_par_ValuePath_2; eauto.
           apply (ValuePath_sub_app H1). eapply Par_lc2; eauto.
           eapply Par_lc1; eauto. contradiction.
+        - move: ValuePath_star_Par_preservation => h.
+          unshelve especialize h; last first; try ea; autofwd.
+          inversion H3. eauto.
 Qed.
 
 Lemma Path_par_capp_inversion : forall W F a c R,
@@ -950,6 +985,9 @@ Proof. intros. inversion H; subst; eauto.
           eauto. econstructor. apply tm_tm_agree_sym.
           eapply ValuePath_ax_par_ValuePath_2; eauto.
           apply (ValuePath_sub_capp H1). contradiction.
+        - move: ValuePath_star_Par_preservation => h.
+          unshelve especialize h; last first; try ea; autofwd.
+          inversion H3. eauto.
 Qed.
 
 Lemma Path_par_app_fst : forall W F nu a b a' b' R,
@@ -964,13 +1002,13 @@ Proof. intros. inversion H0; subst.
          move: (CasePath_head H) => h. simpl in h.
          rewrite U1 in h. inversion h; subst. inversion H; subst.
          all:axioms_head_same. contradiction.
-         assert False. apply H10. econstructor.
+         assert False. apply H15. econstructor.
          eapply tm_pattern_agree_cong.
          eapply tm_pattern_agree_rename_inv_2.
          eapply MatchSubst_match; eauto. eauto.
          econstructor. apply tm_tm_agree_sym.
          eapply ValuePath_ax_par_ValuePath_2; eauto.
-         inversion H3; subst; auto. intro.
+         inversion H8; subst; auto. intro.
          apply H2. apply tm_pattern_agree_sub; auto.
          eapply Par_lc2; eauto. eapply Par_lc1; eauto.
          contradiction.
@@ -989,13 +1027,13 @@ Proof. intros. inversion H0; subst.
          move: (CasePath_head H) => h. simpl in h.
          rewrite U1 in h. inversion h; subst. inversion H; subst.
          all:axioms_head_same. contradiction.
-         assert False. apply H10. econstructor.
+         assert False. apply H15. econstructor.
          eapply tm_pattern_agree_cong.
          eapply tm_pattern_agree_rename_inv_2.
          eapply MatchSubst_match; eauto. eauto.
          econstructor. apply tm_tm_agree_sym.
          eapply ValuePath_ax_par_ValuePath_2; eauto.
-         inversion H3; subst; auto. intro.
+         inversion H8; subst; auto. intro.
          apply H2. apply tm_pattern_agree_sub; auto.
          eapply Par_lc2; eauto. eapply Par_lc1; eauto.
          contradiction.
@@ -1012,13 +1050,13 @@ Proof. intros. inversion H0; subst.
          move: (CasePath_head H) => h. simpl in h.
          rewrite U1 in h. inversion h; subst. inversion H; subst.
          all:axioms_head_same. contradiction.
-         assert False. apply H11. econstructor.
+         assert False. apply H14. econstructor.
          eapply tm_pattern_agree_cong.
          eapply tm_pattern_agree_rename_inv_2.
          eapply MatchSubst_match; eauto. eauto.
          econstructor. apply tm_tm_agree_sym.
          eapply ValuePath_ax_par_ValuePath_2; eauto.
-         inversion H9; subst; auto.
+         inversion H10; subst; auto.
          contradiction.
 Qed.
 
@@ -1493,7 +1531,7 @@ Proof.
        - apply Typing_roleing in t; inversion t; subst.
          econstructor; eauto. econstructor; eauto. eapply roleing_sub; eauto.
        - inversion H4; subst.
-           + inversion H3; subst. assert (a_Fam F = a_Fam F0).
+           + inversion H3; subst. assert (a_Fam T = a_Fam T0).
              eapply transitivity. symmetry. eapply axiom_pattern_head; eauto.
              auto. inversion H7; subst. eapply Par_AxiomBase.
              eauto. auto. eapply rctx_uniq. eapply Typing_roleing; eauto.
@@ -1671,39 +1709,39 @@ Proof.
     destruct (H H4) as [ac [Q1 Q2]].
     destruct (H0 H4) as [b1c [Q3 Q4]].
     destruct (H1 H4) as [b2c [Q5 Q6]].
-    exists (a_Pattern Nom ac T Apps5 b1c b2c); split;
+    exists (a_Pattern Nom ac F5 Apps5 b1c b2c); split;
     eapply multipar_Pattern; eauto.
   - intros. apply H3 in H5. unfold joins in H5.
     inversion H5 as [c1 [P1 P2]].
     pose (P3 := P1). pose (P4 := P1).
-    eapply Path_multipar_app_inversion with (F := F) in P3; eauto 1.
+    eapply Path_multipar_app_inversion with (F := T) in P3; eauto 1.
     inversion P3 as [a1 [b1 Q]]. subst.
-    eapply Path_multipar_app_fst with (F := F) in P2; eauto 1.
-    eapply Path_multipar_app_fst with (F := F) in P4; eauto 1.
+    eapply Path_multipar_app_fst with (F := T) in P2; eauto 1.
+    eapply Path_multipar_app_fst with (F := T) in P4; eauto 1.
     exists a1. split; auto.
   - intros. apply H3 in H5. unfold joins in H5.
     inversion H5 as [c1 [P1 P2]].
     pose (P3 := P1). pose (P4 := P1).
-    eapply Path_multipar_app_inversion with (F := F) in P3; eauto 1.
+    eapply Path_multipar_app_inversion with (F := T) in P3; eauto 1.
     inversion P3 as [a1 [b1 Q]]. subst.
-    eapply Path_multipar_app_fst with (F := F) in P2; eauto 1.
-    eapply Path_multipar_app_fst with (F := F) in P4; eauto 1.
+    eapply Path_multipar_app_fst with (F := T) in P2; eauto 1.
+    eapply Path_multipar_app_fst with (F := T) in P4; eauto 1.
     exists a1. split; auto.
   - intros. apply H3 in H5. unfold joins in H5.
     inversion H5 as [c1 [P1 P2]].
     pose (P3 := P1). pose (P4 := P1).
-    eapply Path_multipar_app_inversion with (F := F) in P3; eauto 1.
+    eapply Path_multipar_app_inversion with (F := T) in P3; eauto 1.
     inversion P3 as [a1 [b1 Q]]. subst.
-    eapply Path_multipar_app_snd with (F := F) in P2; eauto 1.
-    eapply Path_multipar_app_snd with (F := F) in P4; eauto 1.
+    eapply Path_multipar_app_snd with (F := T) in P2; eauto 1.
+    eapply Path_multipar_app_snd with (F := T) in P4; eauto 1.
     exists b1. split; auto.
   - intros. apply H2 in H3. unfold joins in H3.
     inversion H3 as [c1 [P1 P2]].
     pose (P3 := P1). pose (P4 := P1).
-    eapply Path_multipar_capp_inversion with (F := F) in P3; eauto 1.
+    eapply Path_multipar_capp_inversion with (F := T) in P3; eauto 1.
     inversion P3 as [a0 Q]. subst.
-    eapply Path_multipar_capp with (F := F) in P2; eauto 1.
-    eapply Path_multipar_capp with (F := F) in P4; eauto 1.
+    eapply Path_multipar_capp with (F := T) in P2; eauto 1.
+    eapply Path_multipar_capp with (F := T) in P4; eauto 1.
     exists a0. split; auto.
     Unshelve. auto.
 Qed.
@@ -1730,7 +1768,7 @@ Lemma no_aCAbs : forall G A' a A, Typing G (a_CAbs A' a) A -> False.
 Proof.
   intros. dependent induction H. by apply: IHTyping1.
 Qed.
-
+(*
 Lemma consistent_Star : forall A0 R,
     consistent a_Star A0 R -> value_type R A0 -> A0 = a_Star.
 Proof.
@@ -1741,7 +1779,7 @@ Proof.
   all: try solve [apply CasePath_ValuePath in H; inversion H].
   all: try solve [apply CasePath_ValuePath in H4; inversion H4].
   all: done.
-Qed.
+Qed. *)
 
 
 (* When we have a defeq in the context between two value types, show that it
@@ -1769,26 +1807,29 @@ Proof.
   - assert False. eapply no_aAbs. eauto 2. done.
   - apply invert_a_UAbs in H0; eauto.
     destruct H0 as [A1 [B2 [H2 _]]].
-    impossible_defeq. apply CasePath_ValuePath in H8. inversion H8.
+    impossible_defeq.
+    solve [with CasePath do comp1 ltac:(applyin CasePath_ValuePath) inv].
   - apply invert_a_UAbs in H0; eauto.
     destruct H0 as (A1 & A2 & DE & A).
-    impossible_defeq. apply CasePath_ValuePath in H6. inversion H6.
+    impossible_defeq.
+    solve [with CasePath do comp1 ltac:(applyin CasePath_ValuePath) inv].
   - assert False. eapply no_aCAbs. eauto 2. done.
   - apply invert_a_UCAbs in H0; eauto.
     destruct H0 as [a0 [b [T [R1 [B1 [R2 [Q [P _]]]]]]]].
-    impossible_defeq. apply CasePath_ValuePath in H7. inversion H7.
+    impossible_defeq.
+    solve [with CasePath do comp1 ltac:(applyin CasePath_ValuePath) inv].
 Qed.
 
-
-
+(*
 Lemma DefEq_Star: forall A G D R, Good G D -> value_type R A ->
            DefEq G D A a_Star a_Star R -> A = a_Star.
 Proof.
   intros.
-  apply defeq_consistent in H1; eauto.
-  inversion H1; eauto; subst; try done. apply CasePath_ValuePath in H3.
-  inversion H3.
+  move: (defeq_consistent H1 ltac:(eauto)) => h.
+  depind h; try eauto; try done.
+  repeat with CasePath do fun h => move/CasePath_ValuePath in h; try (invs h; exactly 1 goal).
 Qed.
+*)
 
 Lemma canonical_forms_Pi : forall G rho a A B R', Good G (dom G) ->
     Typing G a (a_Pi rho A B) -> Value R' a ->
@@ -1796,9 +1837,6 @@ Lemma canonical_forms_Pi : forall G rho a A B R', Good G (dom G) ->
 Proof.
   intros G rho a A B R' C H H0.
   inversion H0; subst; eauto.
-  - apply invert_a_Star in H; eauto.
-    impossible_defeq.
-    apply CasePath_ValuePath in H5. inversion H5.
   - eapply invert_a_Pi in H; eauto.
     destruct H as [H _]; eauto.
     impossible_defeq. apply CasePath_ValuePath in H7. inversion H7.
@@ -1824,8 +1862,6 @@ Lemma canonical_forms_CPi : forall G a phi B R, Good G (dom G) ->
 Proof.
   intros G a phi B R C H H0.
   inversion H0; subst; eauto.
-  - apply invert_a_Star in H; eauto.
-    impossible_defeq. apply CasePath_ValuePath in H6. inversion H6.
   - eapply invert_a_Pi in H; eauto.
     destruct H as [H _]; eauto.
     impossible_defeq. apply CasePath_ValuePath in H8. inversion H8.
@@ -1884,6 +1920,7 @@ Lemma progress : forall G a A R, Typing G a A ->
 Proof. intros. generalize dependent R.
        assert (lc_tm a). {eapply Typing_lc1; eauto. }
        induction H; intros; eauto; try done.
+  all: exactly 10 goals.
   - unfold irrelevant in *.
     apply H0 in H2. simpl in H2. fsetdec.
   - left; econstructor; auto.
@@ -1913,11 +1950,11 @@ Proof. intros. generalize dependent R.
     inversion H1; subst. edestruct IHTyping1 as [V | [b' h0]]; auto 1.
     + unfold irrelevant in H0. inversion H0. split; auto.
       intros. pose (Q := H3 x A0 H8). simpl in Q. eauto.
-    + apply canonical_forms_Pi with (R' := R) in H; auto.
+    + move: (H) => save_tpg.
+      apply canonical_forms_Pi with (R' := R) in H; auto.
       destruct H as [[a1 e1] | [F Q]]; subst. right.
       exists (open_tm_wrt_tm a1 a); eauto. inversion Q; subst.
-        * left; eauto.
-        * left; eauto.
+      all: try by try left; eauto.
         * pose (P1 := sub_dec R1 R). inversion P1 as [P11 | P11].
            ** pose (P2 := subtm_pattern_agree_dec p H1).
               inversion P2 as [P21 | P21].
@@ -1925,7 +1962,6 @@ Proof. intros. generalize dependent R.
               inversion h as [a' h']. right. exists a'; auto.
               left; eauto.
            ** left; eauto.
-         * auto.
     + right. exists (a_App b' (Rho Rel) a); eauto.
   - unfold irrelevant in H0. inversion H0.
     inversion H1; subst.
@@ -1935,8 +1971,7 @@ Proof. intros. generalize dependent R.
     + apply canonical_forms_Pi with (R' := R0) in H; auto.
       destruct H as [[a1 e1] | [F0 Q]]; subst. inversion H3.
       inversion Q; subst.
-        * left; eauto.
-        * left; eauto.
+      all: try by left; eauto.
         * pose (P1 := sub_dec R2 R0). inversion P1 as [P11 | P11].
            ** pose (P2 := subtm_pattern_agree_dec p H1).
               inversion P2 as [P21 | P21].
@@ -1946,6 +1981,7 @@ Proof. intros. generalize dependent R.
            ** left; eauto.
     + right. exists (a_App b' (Role R) a); eauto.
   - unfold irrelevant in H0. inversion H0.
+    move: (H) => save_tpg.
     inversion H1; subst.
     edestruct IHTyping1 with (R := R) as [V | [b' h0]]; auto 1.
     + unfold irrelevant in H0. inversion H0. split; auto.
@@ -1953,8 +1989,7 @@ Proof. intros. generalize dependent R.
     + apply canonical_forms_Pi with (R' := R) in H; auto.
       destruct H as [[a1 e1] | [F Q]]; subst. right.
       exists (open_tm_wrt_tm a1 a_Bullet); eauto. inversion Q; subst.
-        * left; eauto.
-        * left; eauto.
+      all: try by left; eauto.
         * pose (P1 := sub_dec R1 R). inversion P1 as [P11 | P11].
            ** pose (P2 := subtm_pattern_agree_dec p H1).
               inversion P2 as [P21 | P21].
@@ -1965,6 +2000,7 @@ Proof. intros. generalize dependent R.
     + right. exists (a_App b' (Rho Irrel) a_Bullet); eauto.
   - left. constructor; eauto. inversion H1; auto.
   - unfold irrelevant in H0. inversion H0.
+    move: (H) => save_tpg.
     inversion H1; subst.
     edestruct IHTyping with (R := R0) as [V | [b' h0]]; auto 1.
     + unfold irrelevant in H0. inversion H0. split; auto.
@@ -1972,8 +2008,7 @@ Proof. intros. generalize dependent R.
     + apply canonical_forms_CPi with (R := R0) in H; auto.
       destruct H as [[a2 e2] | [F Q]]; subst. right.
       exists (open_tm_wrt_co a2 g_Triv); eauto. inversion Q; subst.
-        * left; eauto.
-        * left; eauto.
+      all: try by left; eauto.
         * pose (P1 := sub_dec R2 R0). inversion P1 as [P11 | P11].
            ** pose (P2 := subtm_pattern_agree_dec p H1).
               inversion P2 as [P21 | P21].
@@ -1988,7 +2023,27 @@ Proof. intros. generalize dependent R.
         inversion h as [a' h']. right. exists a'; auto.
       * left; eauto.
     + left; eauto.
-  - inversion H1; subst. unfold irrelevant in H0. inversion H0.
+  - dstr F5. 
+    { (* a_Star *)
+      right.
+      unshelve especialize IHTyping1.
+      { (* Irrelevant *)
+        unfold irrelevant in H0; autofwd.
+        split; eauto 1.
+        move=> x A0 bd; move: (H0 x A0 bd) => /= h.
+        by fsetdec.
+      }
+      by eauto using Typing_lc1.
+      by exact Nom.
+      destruct IHTyping1.
+      with SatApp do invs. (* Apps5 = nil *)
+      move: (decide_AppsPath (Typing_roleing H ) f_Star A_nil) => [ap | nap].
+      move: (@applyArgs_ApplyArgs' a f_Star b1 (applyArgs a b1) (AppsPath_ValuePath ap) ltac:(eauto using Typing_lc1) eq_refl) => aa.
+      by eexists; eapply E_Prim; eapply Beta_PatternTrue; try ea; eauto using Typing_lc1.
+      eexists; eapply E_Prim; eapply Beta_PatternFalse; try ea; eauto using Typing_lc1; by eapply nsub_Value; eauto.
+      autofwd. eexists. eapply E_Pattern; try ea; eauto using Typing_lc1.
+    }
+    inversion H1; subst. unfold irrelevant in H0. inversion H0.
     assert (irrelevant G (dom G) a). split; auto 1. intros.
     pose (Q := H7 x A0 H9). simpl in Q. eauto.
     destruct (IHTyping1 H9 H10 Nom) as [Q1 | Q1].
@@ -1997,7 +2052,7 @@ Proof. intros. generalize dependent R.
     inversion H11 as [Q2 | Q2].
     right. exists (a_CApp (applyArgs a b1) g_Triv).
     eapply E_Prim; eapply Beta_PatternTrue; eauto.
-    eapply applyArgs_ApplyArgs; eauto using AppsPath_CasePath.
+    eapply applyArgs_ApplyArgs; try eapply AppsPath_CasePath; eauto. Locate AppsPath_CasePath.
     right. exists b2. eapply E_Prim; eapply Beta_PatternFalse; eauto.
     inversion Q1 as [a' Q2].
     right. exists (a_Pattern Nom a' T Apps5 b1 b2); eauto.

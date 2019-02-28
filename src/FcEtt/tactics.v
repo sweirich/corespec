@@ -302,7 +302,7 @@ Ltac spot_arg_with_head pi hd nth :=
    apply `tac` to it. Parametrized by `head_check` for efficiency vs
    generality trade-off *)
 Ltac find_hyp_and_perform head_check cs tac :=
-    match goal with
+    multimatch goal with
       H : ?t |- _ => head_check t cs; idtac "Matching hyp:" H; tac H end.
 
 (* Optimization (of the previous one): first tries to use the typed version if possible, otherwise falls back to the slow, general one *)
@@ -367,7 +367,8 @@ Ltac check_num_goals_eq g := let n:= numgoals in guard n=g.
 
 Ltac inv  H := inversion H. (* Alias - supports partial application *)
 Ltac invs H := inversion H; subst. (* Inversion and substitution (think "InvS") *)
-Ltac applyin f H := apply f in H.
+Ltac applyin f H  := apply f in H.
+Ltac eapplyin f H := eapply f in H.
 
 (*****************)
 (**** Solvers ****)
@@ -972,6 +973,7 @@ Tactic Notation "exactly" integer(n) "goal" := TacticsInternals.check_num_goals_
 Tactic Notation "exactly" integer(n) "goals" := TacticsInternals.check_num_goals_eq n.
 
 (* Shorthands, that can be partially applied (for those which take arguments) *)
+Ltac cbnin    := fun h => cbn in h.
 Ltac cse      := fun h => case: h.
 Ltac dstr     := fun h => destruct h.
 Ltac dstrct   := dstr.
@@ -979,6 +981,8 @@ Ltac ddstr    := fun h => dependent destruction h.
 Ltac inv      := TacticsInternals.inv.
 Ltac invs     := TacticsInternals.invs. (* Inversion (of a hyp) and substitution *)
 Ltac applyin  := TacticsInternals.applyin.
+Ltac eapplyin := TacticsInternals.applyin.
+Ltac ind      := fun h => induction h.
 Ltac depind x := dependent induction x.
 Ltac exa    x := exact x.
 Ltac ea       := eassumption.
@@ -997,6 +1001,11 @@ Ltac softclear := TacticsInternals.softclear. (* This tactic goes further, and p
 Ltac especialize := TacticsInternals.especialize.
 
 Ltac print := fun h => idtac h.
+
+(* FIXME: defining the notation as tac1 && tac 2 triggers a stack overflow, why? *)
+(* TODO: associativity *)
+(* Tactic Notation (at level 5) tactic(tac1) "&&" tactic(tac2) := fun h => tac1 h; tac2 h. *)
+Ltac comp1 tac1 tac2 h := tac1 h; tac2 h.
 
 
 (* FIXME: rely on internals *)

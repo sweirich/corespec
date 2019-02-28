@@ -87,8 +87,6 @@ Qed.
 
 
 
-Lemma not_ValuePath_a_Star : forall F, ValuePath a_Star F -> False.
-Proof. intros. dependent induction H. Qed.
 Lemma not_ValuePath_a_Pi : forall F rho A B, ValuePath (a_Pi rho A B) F -> False.
 Proof. intros. dependent induction H. Qed.
 Lemma not_ValuePath_a_CPi : forall F phi B, ValuePath (a_CPi phi B) F -> False.
@@ -99,8 +97,6 @@ Lemma not_ValuePath_a_UCAbs : forall a F, ValuePath (a_UCAbs a) F -> False.
 Proof. intros. dependent induction H. Qed.
 
 
-Lemma not_CasePath_a_Star : forall F R, CasePath R a_Star F -> False.
-Proof. intros. inversion H; eauto using not_ValuePath_a_Star. Qed.
 Lemma not_CasePath_a_Pi : forall F R rho A B, CasePath R (a_Pi rho A B) F -> False.
 Proof. intros. inversion H; eauto using not_ValuePath_a_Pi. Qed.
 Lemma not_CasePath_a_CPi : forall F R phi B, CasePath R (a_CPi phi B) F -> False.
@@ -147,8 +143,8 @@ Proof.
       eapply ih;
       with Value do fun h =>
         inversion h;
-        with const do fun T =>
-          eapply Value_Path with (T:=T); subst end;
+        with F do fun T =>
+          eapply Value_Path with (F5:=F5); subst end;
         by invert_Path; eauto].
   - with Value do invs. autofresh. auto.
     eapply not_CasePath_a_UAbs; eauto.
@@ -170,10 +166,10 @@ Lemma tm_pattern_agree_lc2 :
   forall a p, tm_pattern_agree a p -> lc_tm p.
 Proof. induction 1; eauto. Qed.
 
-Lemma subtm_pattern_agree_step : forall p b A R1 Rs R a F, 
+Lemma subtm_pattern_agree_step : forall p b A R1 Rs R a (T : const), 
   subtm_pattern_agree a p
-  -> ValuePath a F
-  -> binds F (Ax p b A R1 Rs) toplevel
+  -> ValuePath a T
+  -> binds T (Ax p b A R1 Rs) toplevel
   -> SubRole R1 R
   -> exists a', reduction_in_one a a' R.
 Proof. 
@@ -250,6 +246,7 @@ Lemma nsub_CasePath :
 Proof.
   move=> R v F H. 
   inversion H; subst; intros R' SR.
+  - eauto.
   - eauto.
   - eauto.
   - eauto.
@@ -367,7 +364,7 @@ Proof.
   intros. 
   move: (MatchSubst_match H4) => h4.
   with atom do fun f =>
-    eapply Value_Path with (T:=f).
+    eapply Value_Path with (F5:=f).
   eapply CasePath_UnMatch; eauto.
   + inversion h4; subst. eapply tm_pattern_agree_ValuePath; eauto.
     eapply tm_subpattern_agree_sub_app. econstructor.
@@ -390,7 +387,7 @@ Proof.
   with MatchSubst do fun h =>
     move: (h) => /(MatchSubst_match) h4.
   with atom do fun f =>
-  eapply Value_Path with (T:=f).
+  eapply Value_Path with (F5:=f).
   eapply CasePath_UnMatch; eauto.
   + inversion h4; subst. eapply tm_pattern_agree_ValuePath; eauto.
     eapply tm_subpattern_agree_sub_capp. econstructor.
@@ -400,13 +397,13 @@ Proof.
     intro. eapply subtm_pattern_agree_capp_contr; eauto.
 Qed.
 
-
 Lemma AppsPath_Value : forall F Apps a R, AppsPath R a F Apps -> Value R a.
 Proof.
   intros.
   eapply Value_Path.
   eapply AppsPath_CasePath; eauto.
 Qed. (* AppsPath_Value *)
+
 
 (* The reduction relation is deterministic *)
 Lemma reduction_in_one_deterministic :
@@ -447,9 +444,10 @@ Proof.
     Value_no_red.
   - (* left side is scrutinee evaluation, right is Beta *)
     inversion H2. invert_MatchSubst.
-    have VF: Value Nom a. eauto using AppsPath_Value.
-    Value_no_red.
-    Value_no_red.
+    have VF: Value Nom a. dstr F5. subst.
+    1-2: by eauto using AppsPath_Value.
+    by Value_no_red.
+    by Value_no_red.
   - (* left size is Beta_Axiom, right side is AppLeft. *)
     have VF: Value R a0. eapply BetaAxiom_a_App_only; eauto.
     Value_no_red.

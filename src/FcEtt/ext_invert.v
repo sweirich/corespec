@@ -431,7 +431,7 @@ Proof.
     eauto using param_sub1.
 Qed.
 
-Lemma invert_a_Pattern : `(
+Lemma invert_a_Pattern_Const : `(
       Typing G (a_Pattern R a (T : const) n b1 b2) C0 ->
       exists A A1 B C, Typing G a A 
                 /\ Typing G b1 B /\ Typing G b2 C 
@@ -448,6 +448,39 @@ Proof. intros. dependent induction H.
           eapply E_Refl; eauto using Typing_lc2.
           eapply Typing_regularity; eauto.
 Qed.
+
+
+Lemma invert_a_Pattern_Star : `(
+      Γ ⊨ a_Pattern R a f_Star n b1 b2 : C0 ->
+      exists A A1 A2 C,
+                   Γ ⊨ a : A1
+                /\ Γ ⊨ b1 : a_CPi (Eq a a_Star A2 Nom) C
+                /\ Γ ⊨ b2 : open_tm_wrt_co C g_Triv
+                /\ n = A_nil
+                /\ BranchTyping Γ A_nil Nom a A a_Star nil A (a_CPi (Eq a a_Star A2 Nom) C) (open_tm_wrt_co C g_Triv)
+                /\ SatApp f_Star A_nil
+                /\ DefEq Γ (dom Γ) (open_tm_wrt_co C g_Triv) C0 a_Star Rep
+(*                 /\ (open_tm_wrt_co C g_Triv) = a_Star *)
+                /\ A1 = a_Star
+                /\ Γ ∥ dom Γ ⊨ A2 ∼ a_Star : a_Star / Rep
+                /\ Γ ∥ dom Γ ⊨ A ∼ a_Star : a_Star / Rep).
+Proof.
+  intros. dependent induction H.
+  - move: (IHTyping1 R a n b1 b2 ltac:(auto)) => [C] p.
+    autofwd; ok.
+  - hide IHTyping1; hide IHTyping2; hide IHTyping3; hide IHTyping4.
+    with SatApp do invs.
+    with BranchTyping do comp1 invs cbnin.
+    with (_ ⊨ _ : a_CPi _ _) do cbnin.
+    move eq: A1 => A2.
+(*     rewrite eq in H3. applyin invert_a_Star H3. *)
+    with (_ ⊨ a_Star : _) do fun h => rewrite eq in h; applyin invert_a_Star h;
+      with (_ ⊨ a : _) do fun tpg => rewrite eq in tpg; move=>/E_Conv /(_ h ltac:(eauto)) in tpg.
+    subst A2.
+    do 4 eexists; repeat (split;[solve [ea|reflexivity|eapply E_Refl; eapply Typing_regularity; eauto 3]|]). subst.
+    by ea.
+Qed.
+
 
 (* --------------------------------------------------- *)
 
@@ -1359,7 +1392,7 @@ Ltac autoreg :=
 Ltac autoinv :=
   repeat match goal with
     | [H : _ ⊨ a_Fam f_Star           : _ |- _] => eapply invert_a_Star in H; autofwd
-    | [H : _ ⊨ a_Fam (f_Const ?T)     : _ |- _] => eapply invert_a_Fam in H; destruct H; autofwd
+    | [H : _ ⊨ a_Fam (f_Const _)      : _ |- _] => eapply invert_a_Fam in H; destruct H; autofwd
     | [H : _ ⊨ a_Fam ?F               : _ |- _] => destruct F
     | [H : _ ⊨ a_App _ (Rho Rel)   _  : _ |- _] => eapply invert_a_App_Rel in H; autofwd
     | [H : _ ⊨ a_App _ (Rho Irrel) _  : _ |- _] => eapply invert_a_App_Irrel in H; autofwd
@@ -1368,8 +1401,9 @@ Ltac autoinv :=
     | [H : _ ⊨ a_CApp _ _             : _ |- _] => eapply invert_a_CApp in H; autofwd
     | [H : _ ⊨ a_UAbs _ _             : _ |- _] => eapply invert_a_UAbs in H; autofwd
     | [H : _ ⊨ a_UCAbs _              : _ |- _] => eapply invert_a_UCAbs in H; autofwd
-    | [H : _ ⊨ a_Pattern _ _ _ _ _ _  : _ |- _ ] => eapply invert_a_Pattern in H; 
-         autofwd
+    | [H : _ ⊨ a_Pattern _ _ (f_Const _) _ _ _  : _ |- _ ] => eapply invert_a_Pattern_Const in H; autofwd
+    | [H : _ ⊨ a_Pattern _ _ f_Star _ _ _  : _ |- _ ] => eapply invert_a_Pattern_Star in H; autofwd
+    | [H : _ ⊨ a_Pattern _ _ ?F _ _ _  : _ |- _ ] => destruct F
     | [H : _ ⊨ a_Pi _ _ _             : _ |- _] => eapply invert_a_Pi in H; destruct H; autofwd
     | [H : _ ⊨ a_CPi _ _              : _ |- _] => eapply invert_a_CPi in H; destruct H; autofwd
 

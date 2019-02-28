@@ -170,18 +170,18 @@ Proof. intros. induction H; simpl; eauto.
        econstructor; eauto with lngen lc.
 Qed.
 
-Lemma AppsPath_ValuePath : forall a F n R,
+Lemma AppsPath_ValuePath_const : forall a F n R,
   AppsPath R a F n -> ValuePath a F /\ 
-                     ((exists A Rs,  binds F (Cs A Rs) toplevel) \/
-                      (exists p a A R1 Rs, binds F (Ax p a A R1 Rs) toplevel /\
-                                       ¬ SubRole R1 R)).
+                     ((exists A Rs T,  binds T (Cs A Rs) toplevel /\ F = T) \/
+                      (exists p a A R1 Rs T, binds T (Ax p a A R1 Rs) toplevel /\ F = T  /\
+                                       ¬ SubRole R1 R) \/
+                      (F = f_Star)).
 Proof.
   intros.
   dependent induction H.
+  - split; eauto 8.
+  - split; eauto 11.
   - split; eauto.
-  - split; eauto.
-    right.
-    repeat eexists. eauto. eauto.
   - destruct IHAppsPath. auto.
   - destruct IHAppsPath. auto.
   - destruct IHAppsPath. auto.
@@ -192,11 +192,9 @@ Lemma AppsPath_CasePath : forall a F n R,
   AppsPath R a F n -> CasePath R a F.
 Proof.
   intros.
-  edestruct AppsPath_ValuePath; eauto 1.
-  destruct H1.
-  move: H1 => [A [Rs h]].
-  econstructor; eauto.
-  move: H1 => [p [a0 [A [R1 [Rs h]]]]].
-  split_hyp.
+  edestruct AppsPath_ValuePath_const; eauto 1.
+  destruct H1; [|destruct H1];
+  autofwd; subst;
+  try with eq do invs end;
   eauto.
 Qed.

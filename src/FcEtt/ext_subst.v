@@ -382,7 +382,8 @@ Proof.
       try solve [match goal with H : _ |- _ => eapply H; eauto 3 end].
     all: exactly 1 goal.
     move: BranchTyping_tm_subst.
-    with const do fun T =>
+    try (let l := fresh l in rename F into l).
+    with F do fun T =>
       move/(_ _ _ _ _ _ (a_Fam T) []) => /=.
     by apply; try ea; try done.
   - (* E_Assn *)
@@ -409,9 +410,10 @@ Proof.
     eauto. eauto using Typing_lc1.
   - eapply E_EqConv; eauto 2.
     eapply DefEq_weaken_available; eauto.
-  - eapply CON; eauto 3;
+  - try rename F into get_OUT.
+    eapply CON; eauto 3;
       move: BranchTyping_tm_subst;
-      with const do fun T =>
+      with F do fun T =>
         move/(_ _ _ _ _ _ (a_Fam T) []);
       apply; try ea; try done.
   - eapply E_LeftRel with (b := tm_subst_tm_tm a0 x b)

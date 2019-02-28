@@ -571,6 +571,8 @@ Proof.
     inversion VP; subst.
     repeat split; eauto.
     repeat split; eauto.
+  + move=> VP. exists nil.
+    invs VP; move=> //=.
   + move=> VP. inversion VP; subst.
     move: (IHApplyArgs ltac:(auto)) => [rest [h0 h1]].
     rewrite h0. rewrite h1.
@@ -609,7 +611,7 @@ Lemma RolePath_no_Beta :
 Proof. intros. intro. inversion H0 as [a' h1]. eapply no_Value_Beta.
        eapply Value_Path. move: (RolePath_inversion H) => h.
        inversion h as [[A h2] | [p [b [A [R2 h2]]]]].
-       apply RolePath_ValuePath in H. eauto.
+       apply RolePath_ValuePath in H. econstructor; eauto.
        move: (RolePath_subtm_pattern_agree_contr H h2) => h3.
        eapply CasePath_UnMatch. eapply RolePath_ValuePath; eauto.
        all:eauto.
@@ -907,6 +909,7 @@ Proof.
     generalize a.
     induction 1.
     - intros. fsetdec.
+    - cbn. by fsetdec.
     - simpl in *.
       fsetdec.
     - simpl in *.
@@ -1446,6 +1449,7 @@ Proof.
 Unshelve. all: eauto.
 Qed.
 
+(* TODO: could be renamed (..._const) *)
 Lemma BranchTyping_preservation : forall G n R a A (T : const) B0 B1 C,
     BranchTyping G n R a A (a_Fam T) nil B0 B1 C ->
     CasePath R a T ->
@@ -1479,6 +1483,28 @@ Proof.
   eapply BranchTyping_start with (Rs := nil); eauto 1.
   rewrite app_nil_r; eauto.
   eapply Typing_a_Fam_unique; eauto 1.
+Qed.
+
+
+Lemma BranchTyping_preservation_Star : forall G n R a A B0 B1 C,
+    BranchTyping G n R a A (a_Fam f_Star) nil B0 B1 C ->
+    AppsPath R a f_Star n ->
+    SatApp f_Star n ->
+    Typing G a A ->
+    Typing G (a_Fam f_Star) B0 ->
+    forall b1, Typing G b1 B1 ->
+    forall b1', ApplyArgs a b1 b1' ->
+    Typing G C a_Star ->
+    Typing G  (a_CApp b1' g_Triv) C.
+Proof.
+  intros.
+  with SatApp do invs.
+  with BranchTyping do invs.
+  cbn in *.
+  with AppsPath do invs.
+  all: try match goal with H : A_snoc ?x _ = A_nil |- _ => destruct x; cbn in H; discriminate H end.
+  with ApplyArgs do invs.
+  by eauto.
 Qed.
 
 (* --------------------------------------------------------- *)
@@ -2196,14 +2222,26 @@ Proof.
      eapply E_CPiSnd; eauto 2.
    - (* Axiom *)
      eapply MatchSubst_preservation2; eauto.
-   - (* Pattern True *)
-     move: (invert_a_Pattern TH) => [A [A1 [B0 [C h]]]].
-     split_hyp.
-     eapply E_Conv with (A := C); eauto 1.
-     eapply BranchTyping_preservation; eauto 1.
-     eauto using AppsPath_CasePath.
-     autoreg. auto.
-     autoreg. auto.
+    - (* Pattern True *)
+      (* TODO: variant of autoinv that applies inversion only a fixed number of times
+         (here, we don't use it since it is too aggressive and does one unecessary inversion) *)
+      with F do dstr end;
+        [ move: (invert_a_Pattern_Star TH) => [A] [A1] [C] h |
+          move: (invert_a_Pattern_Const TH) => [A] [A1] [B0] [C] h].
+      + autofwd.
+        eapply E_Conv; try ea; try by autoreg.
+        eapply BranchTyping_preservation_Star.
+        all: try ea.
+        all: try by with SatApp do invs.
+        subst. eapply E_Conv; by autoreg; eauto.
+        autoreg; eapply E_Conv; by eauto.
+        by autoreg.
+      + split_hyp.
+        eapply E_Conv with (A := C); eauto 1.
+        eapply BranchTyping_preservation; eauto 1.
+        eauto using AppsPath_CasePath.
+        autoreg. auto.
+        autoreg. auto.
    - dependent induction TH; eauto.
 Qed.
 
@@ -2591,8 +2629,37 @@ Proof.
       eapply E_CApp; eauto. 
     + eapply E_EqConv with (A:= (open_tm_wrt_co x3 g_Triv)); auto.
       eapply E_CAppCong; eauto 2.
-  -  move: (Typing_regularity tpga) => h0. 
-     move: (invert_a_Pattern tpga) => h1.
+  -  move: (Typing_regularity tpga) => h0.
+     destruct F5.
+      { (* F = Star *)
+        autoinv. subst x0.
+        unshelve especialize IHr; last first; only 2: ea.
+        move: (H5) => h5.
+        move/BranchTyping_congruence in H5.
+        move/(_ G D _ ltac:(autoreg; ea) ) in H5.
+        have tmp : G ∥ D ⊨ a ∼ a' : x / Nom.
+        eapply E_EqConv; first by autofwd; ea. by eauto.
+        by autoreg.
+        move/(_ _ tmp) in H5.
+        autofwd.
+        subst.
+        split.
+        eapply E_Conv; try ea.
+        eapply E_Case. 4:{ ea. } all: eauto 3.
+        eapply E_Conv; [ea|eauto..]. by autoreg.
+        eapply E_Conv; [ea|eauto..]. by autoreg.
+        eapply E_Conv; [econstructor|eauto..]; by autoreg.
+        eapply E_EqConv; last first. done. ea.
+        eapply E_PatCong.
+        autofwd; ea.
+        1-2: try eapply E_Refl; eauto.
+        ea.
+        ea.
+        by eauto.
+        by eauto.
+        eapply E_Conv; [econstructor|eauto..]; by autoreg.
+      }
+     move: (invert_a_Pattern_Const tpga) => h1.
      move: h1 => [A0 [A1 [B [C h]]]]. split_hyp.
      move: (IHr _ _ D H1) => [h1 h2].
      split.
