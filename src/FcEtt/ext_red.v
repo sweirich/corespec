@@ -1,6 +1,7 @@
 Require Import FcEtt.imports.
 Require Import FcEtt.tactics.
 Require Import FcEtt.notations.
+Require Import FcEtt.utils.
 
 Require Import FcEtt.ett_ott.
 
@@ -20,6 +21,8 @@ Require Import FcEtt.ett_rename.
 
 Require Export FcEtt.ext_red_one.
 
+Require Import FcEtt.chain_subst.
+
 
 Set Bullet Behavior "Strict Subproofs".
 Set Implicit Arguments.
@@ -36,492 +39,6 @@ Definition degrade : pattern_arg -> pattern_arg :=
 
 (* --------------------------------------------------------- *)
 
-
-Definition domFresh {a} (sub:list (atom * a)) s :=
-  Forall (fun '(x,_) => x `notin` s) sub.
-
-Lemma domFresh_empty : forall A (G:list(atom*A)), domFresh G empty.
-Proof. 
-  induction G; unfold domFresh in *; try destruct a; eauto.
-Qed.
-
-Lemma domFresh_singleton : forall A (G:list(atom*A)) x, 
-   domFresh G (singleton x) <-> x `notin` dom G.
-Proof.
-  induction G; intros; unfold domFresh. 
-  simpl. split. auto. intro. auto.
-  destruct a. simpl. 
-  split. intro h; inversion h. subst.
-  apply IHG in H2. fsetdec.
-  intro. econstructor; eauto. eapply IHG. fsetdec.
-Qed.
-
-Lemma domFresh_singleton2 : forall A (G:list(atom*A)) x, 
-   x `notin` dom G ->
-   domFresh G (singleton x).
-Proof.
-  intros.
-  erewrite domFresh_singleton.
-  auto.
-Qed.
-
-Lemma domFresh_cons : forall A x (st:A) Gp s,
- domFresh (x ~ st ++ Gp) s <-> 
- x `notin` s /\ (domFresh Gp s).
-Proof. 
-  intros.
-  unfold domFresh in *.  
-  split. intro h. inversion h. auto.
-  intros [h0 h1].
-  econstructor; eauto.
-Qed.
-
-Lemma domFresh_cons1 : forall A x (st:A) Gp s,
- domFresh (x ~ st ++ Gp) s -> 
- x `notin` s /\ (domFresh Gp s).
-Proof.
-  intros.
-  rewrite -> domFresh_cons in H.
-  auto.
-Qed.
-
-Lemma domFresh_union : forall (G:list (atom*sort)) s1 s2,
- domFresh G (s1 `union` s2) <-> 
- domFresh G s1 /\ (domFresh G s2).
-Proof.
-  induction G; intros; unfold domFresh in *. split; eauto.
-  split; move=>h; inversion h; destruct a; simpl.
-  rewrite -> IHG in H2. split_hyp.
-  split; econstructor; try fsetdec; eauto.
-  inversion H. inversion H0.
-  econstructor; eauto 1.
-  rewrite IHG. eauto.
-Qed.
-
-Lemma domFresh_union1 : forall (G:list (atom*sort)) s1 s2,
- domFresh G (s1 `union` s2) -> 
- domFresh G s1 /\ (domFresh G s2).
-Proof.
-  intros.
-  rewrite -> domFresh_union in H.
-  auto.
-Qed.
-
-Lemma domFresh_sub : forall A (G:list(atom*A)) s1 s2, 
-    s1 [<=] s2 -> domFresh G s2 -> domFresh G s1.
-Proof. 
-  induction G; unfold domFresh; simpl.
-  intros; auto.
-  intros.
-  inversion H0. destruct a.
-  econstructor; eauto.
-  eapply IHG; eauto.
-Qed.
-
-
-
-Lemma dom_zip_map_fst : forall D C (G:list(atom*D)) (x:list C),
-  length G = length x ->
-  dom (zip (map fst G) x) [=] dom G.
-Proof. 
-  induction G; intros; simpl; auto. reflexivity.
-  simpl in H. inversion H.
-  destruct x. destruct a. 
-  inversion H.
-  destruct a. simpl. rewrite IHG. fsetdec. auto.
-Qed.
-
-Lemma domFresh_map_fst_eq : forall A (G1: list(atom*A)) B (G2:list(atom*B)) s, 
-    (map fst G1) = (map fst G2) -> 
-    domFresh G1 s -> domFresh G2 s.
-Proof.   
-  induction G1;
-  intros; unfold domFresh in *; destruct G2; inversion H; inversion H0;  simpl.
-  auto.
-  econstructor; eauto.
-  destruct a. destruct p. simpl in *. subst. auto.
-Qed.
-
-
-
-
-(* --------------------------------------------------------- *)
-
-(* Chain (multi-) substitutions *)
-
-(* 
-   Give a context (G) and a list of pattern_args (args), we can create 
-   a multi-substitution as 
-
-       sub := zip (fst G) args 
-
-*)
-
-(* TODO: generate this with ott?? *)
-Definition pattern_arg_subst_tm : pattern_arg -> atom -> tm -> tm :=
- fun arg x b =>
-  match arg with 
-  | p_Tm nu a => tm_subst_tm_tm a x b
-  | p_Co _    => co_subst_co_tm g_Triv x b
-  end.
-
-Definition pattern_arg_subst_co : pattern_arg -> atom -> co -> co :=
- fun arg x b =>
-  match arg with 
-  | p_Tm nu a => tm_subst_tm_co a x b
-  | p_Co _    => co_subst_co_co g_Triv x b
-  end.
-
-
-(* This operation applies that substitution to an arbitrary tm *)
-Definition cps_tm : tm -> list (atom * pattern_arg) -> tm :=
-  fold_right (fun '(x,y) b => pattern_arg_subst_tm y x b).
-
-Definition cps_co : co -> list (atom * pattern_arg) -> co :=
-  fold_right (fun '(x,y) b => pattern_arg_subst_co y x b).
-
-
-Definition cps_constraint phi sub :=
-  match phi with 
-  | Eq a b A R => Eq (cps_tm a sub) (cps_tm b sub) (cps_tm A sub) R
-  end.
-Definition cps_sort (s : sort) sub :=
-  match s with 
-  | Tm A   => Tm (cps_tm A sub)
-  | Co phi => Co (cps_constraint phi sub)
-  end.
-Definition cps_context (G : context) su : context :=
-  EnvImpl.map (fun so => cps_sort so su) G.
-
-Definition cps_pattern_arg pa s :=
-  match pa with 
-  | p_Tm nu a => p_Tm nu (cps_tm a s)
-  | p_Co g    => p_Co (cps_co g s)
-  end.
-
-
-(* Predicates about these substitutions *)
-
-Definition lc_sub (sub:list(atom*pattern_arg)) :=
-  Forall (fun '(x,p) => lc_pattern_arg p) sub.
-
-(*
-Definition rngFresh x (sub:list(atom*pattern_arg)) :=
-  Forall (fun '(y,t) => x `notin` singleton y `union` (fv_tm_tm_pattern_arg t)) sub.
-*)
-
-(* cps properties --- homemorphic over term forms *)
-
-Lemma cps_a_CPi : forall phi C sub, 
-    cps_tm (a_CPi phi C) sub = 
-        (a_CPi (cps_constraint phi sub) 
-               (cps_tm C sub)).
-Proof.
-  intros. induction sub; destruct phi; simpl; auto.
-  destruct a; simpl; rewrite IHsub.
-  destruct p; simpl; auto.
-Qed.
-
-Lemma cps_a_Pi : forall nu A B sub,
-   cps_tm (a_Pi nu A B) sub = 
-               a_Pi nu (cps_tm A sub)
-                        (cps_tm B sub).
-Proof. 
-  intros. induction sub; simpl; auto.
-  destruct a; simpl. rewrite IHsub.
-  destruct p; simpl; auto.
-Qed.
-
-Lemma cps_a_App : forall l nu a1 a2,
-           cps_tm (a_App a1 nu a2) l =
-           a_App (cps_tm a1 l) nu 
-                 (cps_tm a2 l).
-Proof. intros. induction l. simpl; auto. 
-       destruct a; simpl. rewrite IHl.
-       destruct p; simpl; auto.
-Qed.
-
-Lemma cps_a_CApp : forall l a g, 
-    cps_tm (a_CApp a g) l =
-    a_CApp (cps_tm a l) (cps_co g l).
-Proof. intros. induction l. simpl; auto. destruct a0; simpl.
-       destruct p; rewrite IHl; auto.
-Qed.
-
-Lemma cps_g_Triv : forall s, 
-    cps_co g_Triv s = g_Triv.
-Proof. induction s; try destruct p; simpl; auto.
-destruct a. rewrite IHs. destruct p. simpl. auto. simpl. auto.
-Qed.
-
-Lemma cps_a_Bullet : forall s, 
-    cps_tm a_Bullet s = a_Bullet.
-Proof. induction s; try destruct p; simpl; auto.
-destruct a. rewrite IHs. destruct p. simpl. auto. simpl. auto.
-Qed.
-
-
-Lemma cps_tm_apply_pattern_args : forall pargs hd s,  
-   (cps_tm (apply_pattern_args hd pargs) s) =
-      (apply_pattern_args 
-         (cps_tm hd s) 
-         (map (fun p => cps_pattern_arg p s) pargs)).
-Proof. 
-  induction pargs;
-  intros; simpl; auto.
-  destruct a; try destruct nu; try destruct rho; simpl;
-  rewrite IHpargs; 
-  try rewrite cps_a_App; 
-  try rewrite cps_a_CApp; 
-  try rewrite cps_a_Bullet;
-  try rewrite cps_g_Triv;
-  auto.
-Qed.
-
-(* ----------------------------------- *)
-
-Lemma cps_tm_cons : forall nu a x s sub1, 
-  tm_subst_tm_tm a x (cps_tm s sub1) =
-  cps_tm s ((x, p_Tm nu a) :: sub1).
-Proof.
-  intros. simpl. auto.
-Qed.
-
-Lemma cps_co_cons : forall g x s sub1, 
-  co_subst_co_tm g_Triv x (cps_tm s sub1) =
-  cps_tm s ((x, p_Co g) :: sub1).
-Proof.
-  intros. simpl. auto.
-Qed.
-
-
-Lemma cps_nil : forall s,
-  cps_tm s ∅ = s.
-Proof. 
-  intros. auto.
-Qed.
-
-Lemma cps_sort_cons : forall a x s nu sub1, 
-  tm_subst_tm_sort a x (cps_sort s sub1) =
-  cps_sort s ((x, p_Tm nu a) :: sub1).
-Proof.
-  intros. destruct s. simpl. auto. simpl. 
-  destruct phi. simpl. auto.
-Qed.
-
-Lemma cps_sort_cons_co : forall x s sub1, 
-  co_subst_co_sort g_Triv x (cps_sort s sub1) =
-  cps_sort s ((x, p_Co g_Triv) :: sub1).
-Proof.
-  intros. destruct s. simpl. auto. simpl. 
-  destruct phi. simpl. auto.
-Qed.
-
-
-Lemma cps_sort_nil : forall s,
-  cps_sort s ∅ = s.
-Proof. 
-  destruct s. simpl. auto.
-  destruct phi. simpl. auto.
-Qed.
-
-(* ----------------------------------- *)
-(* Interaction with other functions *)
-
-
-Lemma cps_open_tm_wrt_tm : forall C a sub,
-    lc_sub sub ->
-    cps_tm (open_tm_wrt_tm C a) sub
-     = open_tm_wrt_tm (cps_tm C sub) 
-                      (cps_tm a sub).
-Proof.
-  induction sub. simpl. auto.
-  move=> LC. inversion LC.
-  simpl. destruct a0. destruct p; simpl.
-  inversion H1.
-  rewrite IHsub; auto.
-  rewrite tm_subst_tm_tm_open_tm_wrt_tm; auto.
-  inversion H1.
-  rewrite IHsub; auto.
-  rewrite co_subst_co_tm_open_tm_wrt_tm. auto.
-  auto.
-Qed.
-
-Lemma cps_open_tm_wrt_co : forall C a sub,
-    lc_sub sub ->
-    cps_tm (open_tm_wrt_co C a) sub
-     = open_tm_wrt_co (cps_tm C sub) 
-                      (cps_co a sub).
-Proof.
-  induction sub. simpl. auto.
-  move=> LC. inversion LC.
-  simpl. destruct a0. destruct p; simpl.
-  inversion H1.
-  rewrite IHsub; auto.
-  rewrite tm_subst_tm_tm_open_tm_wrt_co; auto.
-  inversion H1.
-  rewrite IHsub; auto.
-  rewrite co_subst_co_tm_open_tm_wrt_co. auto.
-  auto.
-Qed.
-
-
-Lemma cps_close_tm_wrt_tm : forall C x sub,
-    lc_sub sub ->
-    x `notin` dom sub ->
-    x `notin` fv_tm_tm_pattern_args_rng sub ->
-    cps_tm (close_tm_wrt_tm x C) sub
-     = close_tm_wrt_tm x (cps_tm C sub).
-Proof.
-  induction sub; intros; simpl; auto.
-  destruct a. unfold fv_tm_tm_pattern_args_rng in *.
-  destruct p; simpl in *; inversion H; subst; inversion H4; auto; subst.
-  rewrite <- tm_subst_tm_tm_close_tm_wrt_tm; auto.
-  rewrite IHsub; auto.
-  rewrite <- co_subst_co_tm_close_tm_wrt_tm; auto.
-  rewrite IHsub; auto.
-Qed.
-
-Lemma cps_tm_tm_subst_tm_tm: forall b a x sub, 
-    lc_sub sub ->
-    x `notin` dom sub ->
-    x `notin` fv_tm_tm_pattern_args_rng sub ->
-    tm_subst_tm_tm (cps_tm a sub) x (cps_tm b sub)
-    = cps_tm (tm_subst_tm_tm a x b) sub.
-Proof.
-  intros.
-  rewrite (tm_subst_tm_tm_spec b a x).
-  rewrite cps_open_tm_wrt_tm; auto.
-  rewrite cps_close_tm_wrt_tm; auto.
-  rewrite tm_subst_tm_tm_spec.
-  auto. 
-Qed.
-
-Lemma cps_tm_fresh_eq : forall a sub,
-    domFresh sub (fv_tm_tm_tm a) ->
-    domFresh sub (fv_co_co_tm a) ->
-    cps_tm a sub = a.
-Proof. 
-  induction sub; intros; simpl; auto.
-  inversion H; subst.
-  inversion H0; subst.
-  destruct a0; destruct p; simpl in *.
-  rewrite tm_subst_tm_tm_fresh_eq; auto.
-  rewrite IHsub; auto.
-  rewrite co_subst_co_tm_fresh_eq; auto.
-  rewrite IHsub; auto.
-Qed. 
-
-Lemma cps_co_fresh_eq : forall a sub,
-    domFresh sub (fv_tm_tm_co a) ->
-    domFresh sub (fv_co_co_co a) ->
-    cps_co a sub = a.
-Proof. 
-  induction sub; intros; simpl; auto.
-  inversion H; subst.
-  inversion H0; subst.
-  destruct a0; destruct p; simpl in *.
-  rewrite tm_subst_tm_co_fresh_eq; auto.
-  rewrite IHsub; auto.
-  rewrite co_subst_co_co_fresh_eq; auto.
-  rewrite IHsub; auto.
-Qed. 
-
-
-
-Lemma cps_subst_var : forall sub0 x nu a2,  
-    lc_sub sub0 ->
-    x ∉ dom sub0 ->
-    x ∉ fv_tm_tm_pattern_args_rng sub0 ->
-    domFresh sub0 (fv_tm_tm_tm a2) ->
-    domFresh sub0 (fv_co_co_tm a2) ->
-    cps_tm (a_Var_f x) ((x, p_Tm nu a2) :: sub0) = a2.
-Proof.
-  intros.
-  simpl.
-  replace a2 with (cps_tm a2 sub0). 2 :
-    rewrite cps_tm_fresh_eq; auto.
-  rewrite cps_tm_tm_subst_tm_tm; auto.
-  rewrite tm_subst_tm_tm_var.
-  auto.
-Qed.
-
-Inductive wf_sub (G : context) : list (atom * pattern_arg) -> Prop :=
-  | wf_sub_nil     : wf_sub G nil
-  | wf_sub_cons_tm : forall x nu a2 sub0, 
-      wf_sub G sub0 ->
-      lc_tm a2 ->
-      x ∉ dom sub0 ->
-      x ∉ dom G    ->
-      (fv_tm_tm_tm a2) \u (fv_co_co_tm a2) [<=] dom G ->
-      wf_sub G ((x,p_Tm nu a2)::sub0)
-  | wf_sub_cons_co : forall x sub0, 
-      wf_sub G sub0 -> 
-      x ∉ dom sub0 ->
-      x ∉ dom G    ->
-      wf_sub G ((x,p_Co g_Triv)::sub0).
-
-Hint Constructors wf_sub.
-
-Lemma wf_sub_pattern_args :
-  forall G sub, wf_sub G sub -> fv_tm_tm_pattern_args_rng sub [<=] dom G.
-Proof. 
-  induction 1; unfold fv_tm_tm_pattern_args_rng in *; simpl; eauto.
-  fsetdec.
-  rewrite IHwf_sub. fsetdec.
-  rewrite IHwf_sub. fsetdec.
-Qed. 
-
-Lemma wf_sub_lc_sub : forall G sub, 
-    wf_sub G sub -> lc_sub sub.
-Proof. 
-  induction 1; unfold lc_sub; eauto. 
-Qed.
-
-Hint Resolve wf_sub_lc_sub.
-
-Lemma wf_sub_domFresh : forall G s sub, 
-  s [<=] (dom G) -> wf_sub G sub -> domFresh sub s.
-Proof. 
-  intros. induction H0.
-  all: unfold domFresh in *.
-  all: eauto.
-Qed.
-
-
-Lemma wf_cps_subst_var : forall sub0 x G nu a2, 
-    wf_sub G ((x, p_Tm nu a2) :: sub0) ->
-    cps_tm (a_Var_f x) ((x, p_Tm nu a2) :: sub0) = a2.
-Proof.
-  intros.
-  inversion H. subst.
-  eapply cps_subst_var; eauto 1. eauto.
-  move: (wf_sub_pattern_args H4) => h0.
-  fsetdec.
-  eapply wf_sub_domFresh; eauto.
-  eapply wf_sub_domFresh; eauto.
-Qed.
-
-Lemma wf_cps_co_subst_var : forall sub0 x G g, 
-    wf_sub G ((x, p_Co g) :: sub0) ->
-    cps_co (g_Var_f x) ((x, p_Co g) :: sub0) = g_Triv.
-Proof.
-  intros.
-  inversion H. subst.
-  generalize dependent sub0.
-  induction sub0; intros; simpl.
-  destruct (x == x) eqn:h. rewrite h; auto. contradiction.
-  destruct a.
-  inversion H3; subst; simpl in *.
-  + rewrite tm_subst_tm_co_fresh_eq; eauto.
-    rewrite cps_co_fresh_eq; eauto.
-    eapply wf_sub_domFresh; simpl; eauto. fsetdec.
-    simpl. eapply domFresh_singleton2. fsetdec.
-  + rewrite (co_subst_co_co_fresh_eq _ _ a); eauto.
-    rewrite cps_co_fresh_eq; eauto; simpl.
-    eapply domFresh_empty.
-    eapply domFresh_singleton2. auto.
-Qed.    
 
 (* --------------------------------------------------------- *)
 
@@ -548,7 +65,7 @@ Fixpoint args_roles ( l : list pattern_arg) : list role :=
    match l with 
         | nil => nil
         | ( (p_Tm (Role R) _) :: xs ) => R :: args_roles xs 
-        | ( (p_Tm (Rho Rel) _)  :: xs ) => args_roles xs
+        | ( (p_Tm (Rho Rel) _)  :: xs ) => Nom :: args_roles xs
         | ( (p_Tm (Rho Irrel) _)  :: xs ) => args_roles xs
         | ( (p_Co _         ) :: xs)  => args_roles xs  
         end.
@@ -564,7 +81,7 @@ Lemma ApplyArgs_pattern_args : forall a b1 b1' F,
  ApplyArgs a b1 b1' 
  -> ValuePath a F
  -> exists args, a = apply_pattern_args (a_Fam F) args 
-       /\ b1' = apply_pattern_args b1 (map degrade args).
+       /\ b1' = apply_pattern_args b1 (List.map degrade args).
 Proof.
   induction 1.
   + move=> VP. exists nil.  
@@ -605,14 +122,18 @@ Proof. intros. eapply tm_pattern_agree_ValuePath.
 Qed. (* MatchSubst_ValuePath *)
 
 Lemma RolePath_no_Beta :
- forall F a R1 Rs, RolePath a F (R1 :: Rs) -> forall R, not (exists a', Beta a a' R).
-Proof. intros. intro. inversion H0 as [a' h1]. eapply no_Value_Beta.
-       eapply Value_Path. move: (RolePath_inversion H) => h.
-       inversion h as [[A h2] | [p [b [A [R2 h2]]]]].
-       apply RolePath_ValuePath in H. eauto.
-       move: (RolePath_subtm_pattern_agree_contr H h2) => h3.
-       eapply CasePath_UnMatch. eapply RolePath_ValuePath; eauto.
-       all:eauto.
+ forall  a R1 Rs, RolePath a (R1 :: Rs) -> forall R, not (exists a', Beta a a' R).
+Proof. intros. intro. inversion H0 as [a' h1]. eapply no_Value_Beta; try apply h1.
+       move: (RolePath_inversion H) => h.
+       move: (RolePath_ValuePath H) => [F0 VP]. 
+       destruct h as [[F [A [h2 h3]]] | [F [p [b [A [R2 [ h2 h3]]]]]]];
+         move: (ValuePath_head VP) => eq.
+       + rewrite eq in h3;  inversion h3; subst. 
+         eapply Value_Path; eapply CasePath_AbsConst; eauto 2.
+       + move: (RolePath_subtm_pattern_agree_contr H h2) => h4.
+         rewrite h3 in eq. inversion eq. subst.
+         eapply Value_Path.
+         eapply CasePath_UnMatch; eauto 3.
 Qed.
 
 Definition arg_app (p : pattern_arg) : App := 
@@ -692,41 +213,6 @@ Proof.
        eapply open_Co; eauto 1. 
 Qed. 
 
-(*
-Lemma invert_Typing_pattern_args3 : forall args hd,
-  forall G A F Rs, 
-    RolePath (apply_pattern_args hd args) F Rs ->
-    Typing G (apply_pattern_args hd args) A -> 
-  exists PiB targs, open_telescope G (map_arg_app args) PiB args targs A
-   /\ G ⊨ hd : PiB /\ RolePath hd F (args_roles args ++ Rs).
-Proof.   
-  induction args; intros hd G A F Rs RP H.
-  + reg H. simpl. 
-    exists A. exists nil.
-    repeat split; auto.
-  + destruct a. 
-    ++ simpl in H.
-       destruct (IHargs _ G A F Rs RP H) as [PiB [targs h0]]. split_hyp.
-       destruct nu; try destruct rho; autoinv.
-       - do 2 eexists; repeat split; eauto 1.
-         eapply open_Role; eauto 1.
-         inversion H2. simpl. auto.
-       - do 2 eexists; repeat split; eauto 1. 
-         eapply open_Rel; eauto 1.
-         inversion H2. 
-       - subst. inversion H2. subst. 
-         do 2 eexists. repeat split.
-         eapply open_Irrel; eauto 1.
-         eauto 1. simpl. auto.
-    ++ simpl in H.
-       destruct (IHargs _ G A F Rs RP H) as [PiB [targs h0]]. split_hyp.
-       autoinv. subst. 
-       eexists; eexists; repeat split; eauto 1.
-       eapply open_Co; eauto 1.
-       inversion H2. subst. simpl. auto.
-Qed. *)
-
-
 Lemma Typing_a_Fam_unique : forall F G A B, 
       Typing G (a_Fam F) A -> Typing G (a_Fam F) B -> DefEq G (dom G) A B a_Star Rep.
 Proof.
@@ -744,29 +230,6 @@ Proof.
     eapply E_Trans; eauto 1.
     eapply E_Sym; eauto 1.
 Qed.
-
-(* Currently unusud, but could be useful *)
-
-Inductive BaseType : tm -> Prop :=
-  | BaseType_Star : BaseType a_Star
-  | BaseType_Path : forall a F, ValuePath a F -> BaseType a.
-
-(* ConstType A holds when 
-      A is of the form Pi Tele . B  where B is a base type
-*)
-(*
-Inductive ConstType : list App -> tm -> Prop := 
- | ConstBase : forall A, 
-    BaseType A -> ConstType nil A 
- | ConstPi   : forall n rho A B,
-     (forall x, ConstType n (open_tm_wrt_tm B (a_Var_f x))) ->
-     ConstType (A_Tm rho :: n) (a_Pi rho A B)
- | ConstCPi   : forall n phi B , 
-     (forall c, ConstType n (open_tm_wrt_co B (g_Var_f c))) ->
-     ConstType (A_Co :: n) (a_CPi phi B).
-*)
-
-
 
 
 Inductive arg_targ : pattern_arg -> pattern_arg -> Prop :=
@@ -856,30 +319,6 @@ Proof.
   rewrite Eq2. auto. rewrite IHy. auto.
 Qed.
 
-Lemma cps_pattern_fresh :  forall A pargs1 x p sub (G:list(atom*A)),
-   x `notin` dom G ->
-   fv_co_co_pattern_args (map (cps_pattern_arg^~ sub) pargs1) ⊂ empty ->
-   fv_tm_tm_pattern_args (map (cps_pattern_arg^~ sub) pargs1) ⊂ dom G ->
-   map (cps_pattern_arg^~ ((x, p) :: sub)) pargs1 = 
-   map (cps_pattern_arg^~ sub) pargs1.
-Proof. 
-  intros A pargs0.
-  induction pargs0; intros; simpl in *; auto.
-  erewrite IHpargs0; eauto.
-  destruct a; simpl in *; f_equal; f_equal.
-  destruct p.
-  simpl.
-  rewrite tm_subst_tm_tm_fresh_eq; auto. 
-  simpl.
-  rewrite co_subst_co_tm_fresh_eq; auto. 
-  fsetdec.
-  destruct p.
-  simpl.
-  rewrite tm_subst_tm_co_fresh_eq; auto. 
-  simpl.
-  rewrite co_subst_co_co_fresh_eq; auto. 
-  fsetdec.
-Qed.
 
 Lemma Beta_fv_preservation : forall x a b R, 
     Beta a b R -> 
@@ -951,29 +390,29 @@ In the base case, we will have the opposite
  *)
 
 
-Lemma BranchTyping_lemma : forall F n G1 G R A scrut hd pargs1 B0 B1 C,
+Lemma BranchTyping_lemma : forall n G1 G R A scrut hd pargs1 B0 B1 C,
     BranchTyping (G1 ++ G) n R scrut A hd pargs1 B0 B1 C ->
     domFresh G (fv_tm_tm_pattern_args pargs1) ->
     forall args1 args2 , 
     map_arg_app args2 = n ->
-    forall Rs, RolePath (apply_pattern_args hd args1) F (args_roles args2 ++ Rs) ->
+    forall Rs, RolePath (apply_pattern_args hd args1) (args_roles args2 ++ Rs) -> 
     scrut = apply_pattern_args (apply_pattern_args hd args1) args2  ->
     forall targs1 sub, 
-    sub = zip (map fst G1) (rev targs1) ->
+    sub = zip (List.map fst G1) (rev targs1) ->
     wf_sub G sub ->
     length G1 = length (rev targs1) ->
-    (map (fun a => cps_pattern_arg a sub) pargs1 = args1) ->
+    (List.map (fun a => cps_pattern_arg a sub) pargs1 = args1) ->
     forall B0' targs2,
     open_telescope G n B0' args2 targs2 A ->
     DefEq G (dom G) B0' (cps_tm B0 sub) a_Star Rep ->
     Typing G (apply_pattern_args hd args1) B0' ->
     forall b1' b1,
-    b1' = apply_pattern_args b1 (map degrade args2) ->
+    b1' = apply_pattern_args b1 (List.map degrade args2) ->
     Typing G b1 (cps_tm B1 sub) ->
     Typing G C a_Star ->
     Typing G (a_CApp b1' g_Triv) C.
 Proof.
-  intros F n. induction n.
+  intros n. induction n.
   all: intros.
   all: with BranchTyping do ltac:(fun h => inversion h; subst; clear h). 
   all: destruct args2; with (map_arg_app _ = _) do 
@@ -982,7 +421,7 @@ Proof.
     simpl in *.
     with open_telescope do ltac:(fun h => inversion h).
     subst.
-    set (s := zip (map fst G1) (rev targs1)) in *.
+    set (s := zip (List.map fst G1) (rev targs1)) in *.
     with (Typing _ _ (cps_tm (a_CPi _ _) _)) 
        do ltac:(fun h => rewrite cps_a_CPi in h; simpl in h).
     with (Typing G (open_tm_wrt_co _ _) a_Star) do ltac:(fun h => 
@@ -1011,10 +450,10 @@ Proof.
           
           have eq: 
             wf_sub G s ->
-            fv_tm_tm_pattern_args (map (cps_pattern_arg^~ s) pargs1) [<=] dom G ->
-            fv_co_co_pattern_args (map (cps_pattern_arg^~ s) pargs1) [<=] dom G ->
-            (map (cps_pattern_arg^~ s) (map (cps_pattern_arg^~ s) pargs1) = 
-                      (map (cps_pattern_arg^~ s) pargs1)).
+            fv_tm_tm_pattern_args (List.map (cps_pattern_arg^~ s) pargs1) [<=] dom G ->
+            fv_co_co_pattern_args (List.map (cps_pattern_arg^~ s) pargs1) [<=] dom G ->
+            (List.map (cps_pattern_arg^~ s) (List.map (cps_pattern_arg^~ s) pargs1) = 
+                      (List.map (cps_pattern_arg^~ s) pargs1)).
           { 
             generalize s. generalize pargs1. 
             induction pargs0; intros; simpl; auto.
@@ -1034,8 +473,8 @@ Proof.
         } 
   }
  
-  all: set (sub := zip (map fst G1) (rev targs1)).
-  all: set (args1 := map (fun a => cps_pattern_arg a sub) pargs1).
+  all: set (sub := zip (List.map fst G1) (rev targs1)).
+  all: set (args1 := List.map (fun a => cps_pattern_arg a sub) pargs1).
 
   all: destruct p; try destruct nu; simpl in *; try discriminate.
   all: try match goal with [H : A_Tm _ = _ |- _ ] => inversion H; subst end.
@@ -1064,7 +503,7 @@ Proof.
   all: try match goal with 
       [ targs1' := ?targs1 ++ [?p (Role ?R) ?a] : _ |- _  ]=> 
       set (G1' := (x, Tm A0) :: G1) in *;
-      set (sub' := (x, p_Tm (Role R) a) :: (zip (map fst G1) (rev targs1)));
+      set (sub' := (x, p_Tm (Role R) a) :: (zip (List.map fst G1) (rev targs1)));
       set (args1' := args1 ++ [p_Tm (Role R) a]);
       set (pargs1' := pargs1 ++ [p_Tm (Role R) (a_Var_f x)])
      end. 
@@ -1072,7 +511,7 @@ Proof.
   all: try match goal with 
       [ targs1' := ?targs1 ++ [?p (Rho ?rho) ?a] : _ |- _  ]=> 
       set (G1' := (x, Tm A0) :: G1) in *;
-      set (sub' := (x, p_Tm (Rho rho) a) :: (zip (map fst G1) (rev targs1)));
+      set (sub' := (x, p_Tm (Rho rho) a) :: (zip (List.map fst G1) (rev targs1)));
       match rho with 
          | Rel => 
             set (args1' := args1 ++ [p_Tm (Rho rho) a]);
@@ -1086,7 +525,7 @@ Proof.
   all: try match goal with 
       [ targs1' := ?targs1 ++ [p_Co ?g] : _ |- _  ]=> 
       set (G1' := (x, Co phi) :: G1) in *;
-      set (sub' := (x, p_Co g_Triv) :: (zip (map fst G1) (rev targs1)));
+      set (sub' := (x, p_Co g_Triv) :: (zip (List.map fst G1) (rev targs1)));
       set (args1' := args1 ++ [p_Co g]);
       set (pargs1' := pargs1 ++ [p_Co g_Triv])
      end.
@@ -1104,7 +543,7 @@ Proof.
            rewrite union_empty_r;
            eauto using domFresh_empty, domFresh_singleton2).  
 
-  all: have es: sub' = zip (map fst G1') (rev targs1') by
+  all: have es: sub' = zip (List.map fst G1') (rev targs1') by
       (unfold sub'; unfold G1'; unfold targs1';
       rewrite rev_unit; reflexivity). 
   all: have ?: wf_sub G sub' by (unfold sub'; econstructor; eauto 2; fsetdec).
@@ -1137,6 +576,7 @@ Proof.
   all: specialize (IHn df args1' args2 eq_refl Rs). 
   all: try rewrite apply_pattern_args_tail_Tm in IHn.
   all: try rewrite apply_pattern_args_tail_Co in IHn.
+
   all: specialize (IHn ltac:(eauto)).
   all: specialize (IHn eq_refl).
   all: specialize (IHn targs1' sub' es ltac:(auto) ltac:(auto)).
@@ -1149,7 +589,7 @@ Proof.
          rewrite -> fv_co_co_tm_apply_pattern_args in h).
 
   all: 
-   have ?: map (cps_pattern_arg^~ sub') pargs1' = args1'
+   have ?: List.map (cps_pattern_arg^~ sub') pargs1' = args1'
   by (unfold args1'; unfold args1; rewrite map_app;
       f_equal;
       [ unfold sub'; unfold sub;
@@ -1205,7 +645,7 @@ Proof.
         eapply subset_notin with (S2 := dom G). auto.
         fsetdec.
     }    
-    eapply E_App with (A:=  (cps_tm A0 (zip (map fst G1) (rev targs1)))).
+    eapply E_App with (A:=  (cps_tm A0 (zip (List.map fst G1) (rev targs1)))).
     eauto 1.
     eapply E_Conv; eauto 1.
     eapply E_PiFst; eauto 1.
@@ -1228,7 +668,7 @@ Proof.
         eapply subset_notin with (S2 := dom G). auto.
         fsetdec.
     }    
-    eapply E_App with (A:=  (cps_tm A0 (zip (map fst G1) (rev targs1)))).
+    eapply E_App with (A:=  (cps_tm A0 (zip (List.map fst G1) (rev targs1)))).
     eauto 1.
     eapply E_Conv; eauto 1.
     eapply E_PiFst; eauto 1.
@@ -1261,7 +701,7 @@ Proof.
         eapply subset_notin with (S2 := dom G). auto.
         fsetdec.
     }    
-    eapply E_IApp with (A:=  (cps_tm A0 (zip (map fst G1) (rev targs1)))).
+    eapply E_IApp with (A:=  (cps_tm A0 (zip (List.map fst G1) (rev targs1)))).
     eauto 1.
     eapply E_Conv; eauto 1.
     eapply E_PiFst; eauto 1.
@@ -1319,17 +759,17 @@ Qed.
 
 
 (* Specialized version of main lemma that is "easier" to use. *)
-Lemma BranchTyping_start : forall  G n R A scrut hd B0 B1 C F,
+Lemma BranchTyping_start : forall  G n R A scrut hd B0 B1 C,
     BranchTyping G n R scrut A hd nil B0 B1 C ->
     forall args, map_arg_app args = n ->
-    forall Rs, RolePath hd F (args_roles args ++ Rs) ->
+    forall Rs, RolePath hd (args_roles args ++ Rs) ->
     scrut = apply_pattern_args hd args  ->
     forall B0' targs,
     open_telescope G n B0' args targs A ->
     DefEq G (dom G) B0' B0 a_Star Rep ->
     Typing G hd B0' ->
     forall b1' b1,
-    b1' = apply_pattern_args b1 (map degrade args) ->
+    b1' = apply_pattern_args b1 (List.map degrade args) ->
     Typing G b1 B1  ->
     Typing G C a_Star ->
     Typing G (a_CApp b1' g_Triv) C.
@@ -1402,15 +842,15 @@ Proof.
 Qed.
 
 Lemma RolePath_args : forall F Rs, 
-    RolePath (a_Fam F) F Rs ->
-    forall args Rs', RolePath (apply_pattern_args (a_Fam F) (rev args)) F Rs' ->
+    RolePath (a_Fam F) Rs ->
+    forall args Rs', RolePath (apply_pattern_args (a_Fam F) (rev args)) Rs' ->
     Rs = (args_roles (rev args)) ++ Rs'.
 Proof.
   intros F Rs RP.
   induction args; intros Rs' RP'.
   - simpl in *. 
     inversion RP; inversion RP'; subst.
-    all: move: (binds_unique _ _ _ _ _ H0 H4 uniq_toplevel) => EQ; inversion EQ.
+    all: move: (binds_unique _ _ _ _ _ H0 H3 uniq_toplevel) => EQ; inversion EQ.
     all: auto.
   - simpl in *.
     destruct a; try destruct nu; try destruct rho.
@@ -1425,7 +865,7 @@ Qed.
 
 Lemma RolePath_AppRole : 
     forall args Rs, AppRoles (map_arg_app args) Rs -> 
-    forall hd F,  RolePath hd F Rs ->
+    forall hd,  RolePath hd Rs ->
     Rs = args_roles args.
 Proof.
   intros args Rs H. dependent induction H; eauto.
@@ -1467,7 +907,7 @@ Proof.
   have eq: map_arg_app args = n.  eapply AppsPath_arg_app; eauto.
   rewrite eq in h2.
 
-  have RP: RolePath (a_Fam F) F (args_roles args).
+  have RP: RolePath (a_Fam F) (args_roles args).
   { inversion SA. subst.
     ++ replace (args_roles args) with Rs. 
        eauto. eapply RolePath_AppRole; eauto.
@@ -1575,7 +1015,7 @@ Proof.
 Qed.
 
 
-Lemma map_fst_zip : forall A B (a : list A) (b: list B), length a = length b -> (map fst (zip a b)) = a.
+Lemma map_fst_zip : forall A B (a : list A) (b: list B), length a = length b -> (List.map fst (zip a b)) = a.
 Proof.
   intros A B a. induction a.
   all: intros b H.
@@ -1584,7 +1024,7 @@ Proof.
   f_equal. auto.
 Qed. 
 
-Lemma map_snd_zip : forall A B (a : list A) (b: list B), length a = length b -> (map snd (zip a b)) = b.
+Lemma map_snd_zip : forall A B (a : list A) (b: list B), length a = length b -> (List.map snd (zip a b)) = b.
 Proof.
   intros A B a. induction a.
   all: intros b H.
@@ -1596,12 +1036,12 @@ Qed.
 Lemma MatchTyping_wf_sub : 
   `{ MatchTyping Gp p B G a A sub D -> 
      length Gp = length sub /\
-     wf_sub G (zip (map fst Gp) sub) }.
+     wf_sub G (zip (List.map fst Gp) sub) }.
 Proof. 
   induction 1; simpl; auto.
   all: destruct IHMatchTyping. 
   all: split; auto.
-  all: have SD: dom (zip (map fst Gp) sub) [=] (dom Gp) by
+  all: have SD: dom (zip (List.map fst Gp) sub) [=] (dom Gp) by
          (rewrite dom_zip_map_fst; auto; reflexivity).
   all: econstructor; eauto 2.
   all: try eapply Typing_lc1; eauto.
@@ -1653,12 +1093,12 @@ Qed.
 
 Lemma MatchTyping_correctness2 : 
   `{ MatchTyping Gp p B G a A s D ->
-     G ∥ dom G ⊨ cps_tm B (zip (map fst Gp) s) ∼ A : a_Star / Rep }.
+     G ∥ dom G ⊨ cps_tm B (zip (List.map fst Gp) s) ∼ A : a_Star / Rep }.
 Proof.
   induction 1.
   all: intros; simpl in *; auto.
   all: move: (MatchTyping_wf_sub H) => [h0 h1].
-  all: set (s := zip (map fst Gp) sub) in *.
+  all: set (s := zip (List.map fst Gp) sub) in *.
   all: have SD: dom s [=] dom Gp by
          (unfold s; eapply dom_zip_map_fst; eauto).
   all: have LC: lc_sub s by eauto.
@@ -1801,8 +1241,8 @@ Lemma MatchSubstTyping :  `{
   forall C Gp2, 
     uniq (Gp2 ++ G) ->
     (Gp2 ++ Gp ⊨ b : C) ->
-    (cps_context Gp2 (zip (map fst Gp) sub) ++ G ⊨ b' : 
-          cps_tm C (zip (map fst Gp) sub)) 
+    (cps_context Gp2 (zip (List.map fst Gp) sub) ++ G ⊨ b' : 
+          cps_tm C (zip (List.map fst Gp) sub)) 
     /\ fv_tm_tm_tm b' [<=] fv_tm_tm_tm b \u dom G
 }.
 Proof. 
@@ -1843,7 +1283,7 @@ Proof.
     rewrite EnvImpl.map_app in IHms.
     unfold one in IHms.
     simpl in IHms.
-    set (s := (zip (map fst Gp0) sub0)).
+    set (s := (zip (List.map fst Gp0) sub0)).
     have TA: Typing G a (cps_tm A1 s). {
 
       eapply E_Conv; eauto 1.
@@ -1909,7 +1349,7 @@ Proof.
     rewrite EnvImpl.map_app in IHms.
     unfold one in IHms.
     simpl in IHms.
-    set (s := (zip (map fst Gp0) sub0)).
+    set (s := (zip (List.map fst Gp0) sub0)).
     have TA: Typing G a2' (cps_tm A1 s). {
 
       eapply E_Conv; eauto 1.
@@ -1974,7 +1414,7 @@ Proof.
     rewrite EnvImpl.map_app in IHms.
     unfold one in IHms.
     simpl in IHms.
-    set (s := (zip (map fst Gp0) sub0)).
+    set (s := (zip (List.map fst Gp0) sub0)).
     move: IHms => [Tb2 fb2].
     split; auto.
 
@@ -2366,8 +1806,8 @@ Proof.
 Qed.
 
 Lemma RolePath_preservation :
-forall a a' R, reduction_in_one a a' R -> forall F R1 Rs, 
-   RolePath a F (R1 :: Rs) -> RolePath a' F (R1 :: Rs).
+forall a a' R, reduction_in_one a a' R -> forall R1 Rs, 
+   RolePath a  (R1 :: Rs) -> RolePath a'  (R1 :: Rs).
 Proof.
   intros a a' R H.
   induction H; intros.
@@ -2379,66 +1819,6 @@ Proof.
     eapply h0. eauto.
     contradiction.
 Qed.
-
-(* -------------------- These are convenience functions -------- *)
-
-Lemma  BranchTyping_PiRole_exists : forall x, 
-   `{ BranchTyping (x ~ Tm A ++ G) Apps5 Nom a A1 b
-                 (pattern_args5 ++ one (p_Tm (Role R) (a_Var_f x)))
-                 (open_tm_wrt_tm B (a_Var_f x)) (open_tm_wrt_tm C (a_Var_f x)) C'
-    -> x `notin` fv_tm_tm_tm A \u dom G \u fv_tm_tm_tm a \u fv_tm_tm_tm A1
-             \u fv_tm_tm_tm b \u fv_tm_tm_pattern_args pattern_args5 
-             \u fv_tm_tm_tm B \u fv_tm_tm_tm C \u fv_tm_tm_tm C'
-    -> BranchTyping G (A_cons (A_Tm (Role R)) Apps5) Nom a A1 b pattern_args5
-                      (a_Pi Rel A B) (a_Pi Rel A C) C' }.
-Admitted. (* Renaming lemma *)
-Lemma BranchTyping_PiRel_exists : forall x,
-   `{ BranchTyping (x ~ Tm A ++ G) Apps5 Nom a A1 b
-                 (pattern_args5 ++ one (p_Tm (Rho Rel) (a_Var_f x)))
-                 (open_tm_wrt_tm B (a_Var_f x)) (open_tm_wrt_tm C (a_Var_f x)) C' 
-   -> x `notin` fv_tm_tm_tm A \u dom G \u fv_tm_tm_tm a \u fv_tm_tm_tm A1
-             \u fv_tm_tm_tm b \u fv_tm_tm_pattern_args pattern_args5 
-             \u fv_tm_tm_tm B \u fv_tm_tm_tm C \u fv_tm_tm_tm C'
-   -> BranchTyping G (A_cons (A_Tm (Rho Rel)) Apps5) Nom a A1 b pattern_args5
-    (a_Pi Rel A B) (a_Pi Rel A C) C'}.
-Admitted. (* Renaming lemma *)
-Lemma BranchTyping_PiIrrel_exists: forall x,
-  `{  BranchTyping (x ~ Tm A ++ G) Apps5 Nom a A1 b
-                 (pattern_args5 ++ one (p_Tm (Rho Irrel) a_Bullet))
-                 (open_tm_wrt_tm B (a_Var_f x)) (open_tm_wrt_tm C (a_Var_f x)) C'
-  -> x `notin` fv_tm_tm_tm A \u dom G \u fv_tm_tm_tm A1
-             \u fv_tm_tm_tm b \u fv_tm_tm_pattern_args pattern_args5 
-             \u fv_tm_tm_tm B \u fv_tm_tm_tm C \u fv_tm_tm_tm C'
-    -> BranchTyping G (A_cons (A_Tm (Rho Irrel)) Apps5) Nom a A1 b pattern_args5
-    (a_Pi Irrel A B) (a_Pi Irrel A C) C' }.
-Admitted. (* Renaming lemma *)
-Lemma BranchTyping_CPi_exists : forall c,
-    `{ BranchTyping (c ~ Co phi ++ G) Apps5 Nom a A
-                    b (pattern_args5 ++ one (p_Co g_Triv))
-                    (open_tm_wrt_co B (g_Var_f c))
-                    (open_tm_wrt_co C (g_Var_f c)) C'
-     ->  c `notin` dom G 
-     -> BranchTyping G (A_cons A_Co Apps5) Nom a A b pattern_args5
-        (a_CPi phi B) (a_CPi phi C) C'}.
-Admitted. (* Renaming lemma *)
-
-Lemma E_PiCong3 :  ∀ x (G : context) D rho (A1 B1 A2 B2 : tm) R',
-    x `notin` dom G \u fv_tm_tm_tm A1 \u fv_tm_tm_tm A2 \u fv_tm_tm_tm B1 
-      \u fv_tm_tm_tm B2 
-    -> DefEq G D A1 A2 a_Star R'
-    → DefEq ([(x, Tm A1)] ++ G) D (open_tm_wrt_tm B1 (a_Var_f x))
-            (open_tm_wrt_tm B2 (a_Var_f x)) a_Star R'
-→ DefEq G D (a_Pi rho A1 B1) (a_Pi rho A2 B2) a_Star R'.
-Admitted. (* Renaming lemma *)
-
-Lemma E_CPiCong3  : ∀ c (G : context) (D : available_props) a0 b0 T0
-                      (A : tm) a1 b1 T1 (B : tm) R R',
-    c `notin` dom G -> 
-    Iso G D (Eq a0 b0 T0 R) (Eq a1 b1 T1 R)
-    → DefEq ([(c, Co (Eq a0 b0 T0 R))] ++ G) D (open_tm_wrt_co A (g_Var_f c))
-            (open_tm_wrt_co B (g_Var_f c)) a_Star R'
-    → DefEq G D (a_CPi (Eq a0 b0 T0 R) A) (a_CPi (Eq a1 b1 T1 R) B) a_Star R'.
-Admitted. (* Renaming lemma *)
 
 Lemma BranchTyping_congruence : 
   `{ BranchTyping G Apps5 Nom a A0 t ps A1 B C ->
@@ -2470,7 +1850,7 @@ Proof.
     move: (H0 _ _ _ H3 h0) => [B' [h1 h2]].
     eexists.
     split.
-    eapply (@BranchTyping_PiRole_exists x0).
+    eapply (@BranchTyping_PiRole_exists x0); auto.
     rewrite <- (open_tm_wrt_tm_close_tm_wrt_tm B' x0) in h1.
     eapply h1.  rewrite fv_tm_tm_tm_close_tm_wrt_tm. unhide Fr. fsetdec.
     eapply (@E_PiCong3 x0); eauto 2.
@@ -2485,7 +1865,7 @@ Proof.
     move: (H0 _ _ _ H3 h0) => [B' [h1 h2]].
     eexists.
     split.
-    eapply (@BranchTyping_PiRel_exists x0).
+    eapply (@BranchTyping_PiRel_exists x0); auto.
     rewrite <- (open_tm_wrt_tm_close_tm_wrt_tm B' x0) in h1.
     eapply h1.  rewrite fv_tm_tm_tm_close_tm_wrt_tm. unhide Fr. fsetdec.
     eapply (@E_PiCong3 x0); eauto 2.
@@ -2500,7 +1880,7 @@ Proof.
     move: (H0 _ _ _ H3 h0) => [B' [h1 h2]].
     eexists.
     split.
-    eapply (@BranchTyping_PiIrrel_exists x0).
+    eapply (@BranchTyping_PiIrrel_exists x0); auto.
     rewrite <- (open_tm_wrt_tm_close_tm_wrt_tm B' x0) in h1.
     eapply h1.  rewrite fv_tm_tm_tm_close_tm_wrt_tm. unhide Fr. fsetdec.
     eapply (@E_PiCong3 x0); eauto 2.
@@ -2515,9 +1895,11 @@ Proof.
     move: (H0 _ _ _ H3 h0) => [B' [h1 h2]].
     eexists.
     split.
-    eapply (@BranchTyping_CPi_exists x0).
+    eapply (@BranchTyping_CPi_exists x0); auto.
     rewrite <- (open_tm_wrt_co_close_tm_wrt_co B' x0) in h1.
-    eapply h1.  unhide Fr.  fsetdec.
+    eapply h1.  unhide Fr.  
+    rewrite fv_co_co_tm_close_tm_wrt_co.
+    fsetdec.
     destruct phi.
     eapply (@E_CPiCong3 x0); eauto 2.
     unhide Fr. fsetdec.

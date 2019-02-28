@@ -91,8 +91,8 @@ tm, a, b, p, v, w, A, B, C :: 'a_' ::= {{ com types and kinds }}
    {{ tex \mathsf{case} \hspace{3pt} [[a]] \hspace{3pt} \mathsf{of} \hspace{3pt} [[F]]\ [[Apps]] \rightarrow [[b1]] \| \_ \rightarrow [[b2]] }}
 
 
-  | case a of F @ pattern_args => b1 | _ => b2 :: M :: FakePattern
-   {{ tex \mathsf{case} \hspace{3pt} [[a]] \hspace{3pt} \mathsf{of} \hspace{3pt} [[F]]\ [[pattern_args]] \rightarrow [[b1]] \| \_ \rightarrow [[b2]] }}
+  | case a of p => b1 | _ => b2 :: M :: FakePattern
+   {{ tex \mathsf{case} \hspace{3pt} [[a]] \hspace{3pt} \mathsf{of} \hspace{3pt} [[p]] \rightarrow [[b1]] \| \_ \rightarrow [[b2]] }}
    {{ coq 0 }}
 
   | apply a pattern_args :: M :: ApplyPA
@@ -135,6 +135,8 @@ tm, a, b, p, v, w, A, B, C :: 'a_' ::= {{ com types and kinds }}
   |  | a | R             :: S :: Erase
 
   %% abbreviations for examples
+  | String               :: S :: String
+  | HTML                 :: S :: HTML
   | Int                  :: S :: Int
   | Age                  :: S :: Age
   | Bool                 :: S :: Bool
@@ -144,6 +146,7 @@ tm, a, b, p, v, w, A, B, C :: 'a_' ::= {{ com types and kinds }}
   | Succ                 :: S :: Succ
   | True                 :: S :: True
   | Fix                  :: S :: Fix
+  | Set                  :: S :: Set
   | Maybe                :: S :: Maybe
   | Just                 :: S :: Just
   | Nothing              :: S :: Nothing
@@ -152,6 +155,7 @@ tm, a, b, p, v, w, A, B, C :: 'a_' ::= {{ com types and kinds }}
   | \ x . a              :: S :: RelUAbs
   | \ x : A . a          :: S :: RelAbs
   | all x : A -> B       :: S :: RelPi
+    {{ tex \Pi [[x]]\!:\![[A]] . [[B]] }}
   | if phi then a else b :: S :: If
 
 
@@ -292,6 +296,9 @@ role_context, W {{ tex \Omega }} :: 'rctx_' ::= {{ com role_contexts }}
    | var_pat p       :: M  :: Pat {{ coq (var_pat([[p]])) }}
    | ( W )           :: M  :: Paren   {{ coq ([[W]]) }}
    | (# W #)         :: M  :: SecretParen {{ coq [[W]] }} {{ tex [[W]] }}
+   | ctx_nom G       :: M  :: CtxNom {{ coq (ctx_nom [[G]]) }}
+    {{ tex [[G]]_{\mathsf{Nom} } }}
+
 
 roles, Rs {{ tex \overline{R} }}  :: '' ::= {{ coq list role }} 
    | nilR       ::   :: nilR {{ coq nil }}
@@ -315,6 +322,10 @@ sig_sort :: '' ::= {{ com signature classifier }}
      {{ tex  [[A]]\ [[@]]\ [[Rs]] }}
    | p ~ a : A / R @ Rs    ::    :: Ax
      {{ tex [[p]] \sim_{[[R]]} [[a]] : [[A]]\ [[@]]\ [[Rs]] }}
+
+   | F ~ a : A / R         ::  M  :: SAx
+     {{ tex  \sim_{[[R]]} [[a]] : [[A]] }}
+     {{ coq (Ax (a_Fam [[F]]) [[a]] [[A]] [[R]] nil) }}
 
 sort :: '' ::= {{ com binding classifier }}
    | Tm A             ::   :: Tm
@@ -784,34 +795,34 @@ defns
    JRolePath :: '' ::=
 
 defn
-RolePath a +> F @ Rs  ::  :: RolePath :: 'RolePath_'
-{{ com Type headed by constant (partial function) }}
-{{ tex \mathsf{RolePath} \ [[a]] [[+>]] [[F]] @ [[Rs]] }}
+RolePath a +> Rs  ::  :: RolePath :: 'RolePath_'
+{{ com Calculate remaining roles for path (partial function) }}
+{{ tex \mathit{Roles}([[a]]) = [[Rs]] }}
 by
 
 F : A @ Rs in toplevel 
 --------------------- :: AbsConst
-RolePath F +> F @ Rs
+RolePath F +> Rs
 
 F : p ~ a : A/R1 @ Rs in toplevel
 --------------------------------- :: Const
-RolePath F +> F @ Rs
+RolePath F +> Rs
 
-RolePath a +> F @ R1,Rs
+RolePath a +> R1,Rs
 ---------------------------- :: TApp
-RolePath (a R1 b') +> F @ Rs
+RolePath a R1 b +> Rs
 
-RolePath a +> F @ Rs
+RolePath a +>  Nom, Rs
 ---------------------------- :: App
-RolePath (a + b') +> F @ Rs
+RolePath a + b +> Rs
 
-RolePath a +> F @ Rs
+RolePath a +>  Rs
 ---------------------- :: IApp
-RolePath (a - []) +> F @ Rs
+RolePath a - [] +> Rs
 
-RolePath a +> F @ Rs
+RolePath a +> Rs
 ---------------------- :: CApp
-RolePath (a [o]) +> F @ Rs
+RolePath a [o] +> Rs
 
 
 
@@ -861,7 +872,7 @@ Tm R1 , Apps <-> R1 , Rs
 
 Apps <-> Rs
 ----------------------- :: consApp
-Tm + , Apps <-> Rs
+Tm + , Apps <-> Nom , Rs
 
 Apps <-> Rs
 ----------------------- :: consIApp
@@ -945,7 +956,7 @@ JMatchSubst :: '' ::=
 defn
 match a1 with p -> b1 +> b2 :: :: MatchSubst :: 'MatchSubst_'
 {{ com match and substitute }}
-{{ tex \mathsf{match} \ [[a1]] \ \mathsf{with} \ [[p]] \rightarrow [[b1]] [[+>]] [[b2]] }}
+{{ tex \mathit{match}( [[a1]] , [[p]] , [[b1]] ) = [[b2]] }}
 by
 
 ----------------------------------------- :: Const
@@ -1099,7 +1110,7 @@ defns
 defn
 ValuePath a +> F  ::  :: ValuePath :: 'ValuePath_'
 {{ com Path headed by valid constructor }}
-{{ tex \mathsf{ValidPath} \ [[a]] [[+>]] [[F]] }}
+{{ tex \mathsf{ValuePath} \ [[a]] [[+>]] [[F]] }}
 by
 
 F : A @ Rs in toplevel
@@ -1125,7 +1136,7 @@ defns
 defn
 CasePath R a +> F  ::  :: CasePath :: 'CasePath_'
 {{ com Path that is a value }}
-{{ tex \mathsf{ValuePath}_{[[R]]}\ [[a]] [[+>]] [[F]] }}
+{{ tex \mathsf{CasePath}_{[[R]]}\ [[a]] [[+>]] [[F]] }}
 by
 
 ValuePath a +> F
@@ -1141,7 +1152,7 @@ CasePath R a +> F
 
 ValuePath a +> F
 F : p ~ b : A/R1 @ Rs in toplevel
-not (a  = p +)
+not (a = p +)
 ------------------------------------- :: UnMatch
 CasePath R a +> F
 
@@ -1662,7 +1673,7 @@ G |= b + a : B { a / x }
 
 G |= b : all+ x : A -> B
 G |= a : A
-RolePath b +> F @ R, Rs
+RolePath b +> R, Rs
 ------------------------------------- :: TApp
 G |= b R a : B { a / x }
 
@@ -1807,8 +1818,8 @@ G ; D |= a1 + a2 == b1 + b2 : (B { a2 / x })/R'
 %% R <= R1 and R <= R2 ??
 G ; D |= a1 == b1 : (all + x:A -> B)/R'
 G ; D |= a2 == b2 : A/ param R R'
-RolePath a1 +> F @ R, Rs
-RolePath b1 +> F @ R, Rs
+RolePath a1 +> R, Rs
+RolePath b1 +> R, Rs
 G |= b1 R b2 : B { a2 / x }
 ------------------------------------------------ :: TAppCong
 G ; D |= a1 R a2 == b1 R b2 : (B { a2 / x })/R'
@@ -2158,7 +2169,7 @@ G ||=src b a ~> b' + a' : B { a' / x }
 
 G ||=src b ~> b' : all+ x : A -> B
 G ||=src a ~> a' : A
-RolePath b +> F @ R, Rs
+RolePath b +> R, Rs
 ------------------------------------- :: TApp
 G ||=src b a ~> b' R a' : B { a / x }
 
@@ -2694,6 +2705,7 @@ homs 'a_'
   :: Succ    {{ tex \mathsf{S} }}
   :: True
   :: Fix
+  :: Set
   :: Arrow
   :: CArrow
   :: SrcApp  {{ tex [[a]]\ [[b]]                  }}
@@ -2756,6 +2768,8 @@ homs 'a_'
   :: Erase         {{ coq (erase_tm [[a]][[R]])                    }}
 
   %% abbreviations for examples
+  :: String        {{ coq 0                                        }}
+  :: HTML          {{ coq 0                                        }}
   :: Int           {{ coq 0                                        }}
   :: Age           {{ coq 0                                        }}
   :: Bool          {{ coq 0                                        }}
@@ -2772,6 +2786,7 @@ homs 'a_'
   :: RelPi         {{ coq (a_Pi  Rel [[A]] [[B]])                  }}
   :: If            {{ coq 0                                        }}
   :: Maybe         {{ coq 0                                        }}
+  :: Set           {{ coq 0                                        }}
   :: Just          {{ coq 0                                        }}
   :: Nothing       {{ coq 0                                        }}
 

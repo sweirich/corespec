@@ -75,8 +75,8 @@ Qed.
 
 
 
-Lemma RolePath_ValuePath : forall a F Rs, RolePath a F Rs -> ValuePath a F.
-Proof. intros. induction H; eauto.
+Lemma RolePath_ValuePath : forall a Rs, RolePath a Rs -> exists F, ValuePath a F.
+Proof. intros. induction H; try destruct IHRolePath; eauto.
 Qed.
 
 Lemma CasePath_ValuePath : forall R a F, CasePath R a F -> ValuePath a F.
