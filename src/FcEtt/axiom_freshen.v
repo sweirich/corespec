@@ -19,33 +19,61 @@ Require Export FcEtt.ext_red_one.
 Require Import FcEtt.ett_match.
 Require Import FcEtt.ett_rename.
 
-Definition rename_atom (a b c : atom) : atom := if c == b then a else c.
+(** Some shortcuts **)
+
+Lemma tm_subst_tm_tm_same_diff : forall x y,
+       tm_subst_tm_tm (a_Var_f y) x (a_Var_f x) = a_Var_f y.
+Proof. intros. simpl. destruct (x == x). auto. contradiction.
+Qed.
+
+Lemma tm_subst_tm_tm_app_same_diff : forall x y p nu,
+      tm_subst_tm_tm (a_Var_f y) x (a_App p nu (a_Var_f x)) =
+      a_App (tm_subst_tm_tm (a_Var_f y) x p) nu (a_Var_f y).
+Proof. intros. simpl. f_equal. destruct (x == x). auto. contradiction.
+Qed.
+
+Lemma tm_subst_tm_tm_diff : forall x y z, z <> x ->
+       tm_subst_tm_tm (a_Var_f y) x (a_Var_f z) = a_Var_f z.
+Proof. intros. simpl. destruct (z == x). contradiction. auto.
+Qed.
+
+Lemma tm_subst_tm_tm_app_diff : forall x y p nu z, z <> x ->
+      tm_subst_tm_tm (a_Var_f y) x (a_App p nu (a_Var_f z)) =
+      a_App (tm_subst_tm_tm (a_Var_f y) x p) nu (a_Var_f z).
+Proof. intros. simpl. f_equal. destruct (z == x). contradiction. auto.
+Qed.
+
+(** tmvars and covars in context **)
 
 Fixpoint codom (G : context) :=
    match G with
-    | nil => empty
+    | nil => nil
     | (x, Tm _) :: G' => codom G'
-    | (c, Co _) :: G' => singleton c \u codom G'
+    | (c, Co _) :: G' => c :: codom G'
    end.
 
 Fixpoint tmdom (G : context) :=
    match G with
-    | nil => empty
-    | (x, Tm _) :: G' => singleton x \u tmdom G'
+    | nil => nil
+    | (x, Tm _) :: G' => x :: tmdom G'
     | (c, Co _) :: G' => tmdom G'
    end.
 
-Lemma binds_codom : forall G c phi, binds c (Co phi) G -> c `in` codom G.
-Proof. intro G. induction G; intros; eauto. inversion H.
-       destruct a. destruct s; inversion H; simpl. inversion H0. eauto.
-       inversion H0; eauto. eauto.
+(** Correctness specification **)
+
+Lemma binds_codom : forall G c phi, binds c (Co phi) G -> In c (codom G).
+Proof. intro G. induction G; intros; eauto. inversion H. subst.
+       simpl; auto. destruct a. destruct s; simpl. eauto. eauto.
 Qed.
 
-Lemma binds_tmdom : forall G x A, binds x (Tm A) G -> x `in` tmdom G.
-Proof. intro G. induction G; intros; eauto. inversion H.
-       destruct a. destruct s; inversion H; simpl. inversion H0. eauto.
-       eauto. inversion H0. eauto.
+Lemma binds_tmdom : forall G x A, binds x (Tm A) G -> In x (tmdom G).
+Proof. intro G. induction G; intros; eauto. inversion H. subst.
+       simpl; auto. destruct a. destruct s; simpl. eauto. eauto.
 Qed.
+
+(** Renaming definitions **)
+
+Definition rename_atom (a b c : atom) : atom := if c == b then a else c.
 
 Definition rename_context_tm (a b : atom) G :=
  List.map 
@@ -53,7 +81,7 @@ Definition rename_context_tm (a b : atom) G :=
 
 Definition rename_context_co (a b : atom) G :=
  List.map 
-  (fun zA => (rename_atom a b zA.1, co_subst_co_sort g_Triv b zA.2)) G.
+  (fun zA => (rename_atom a b zA.1, co_subst_co_sort (g_Var_f a) b zA.2)) G.
 
 Definition rename_role_context (a b : atom) (W : role_context) :=
  List.map (fun zR => (rename_atom a b zR.1, zR.2)) W.
@@ -61,11 +89,8 @@ Definition rename_role_context (a b : atom) (W : role_context) :=
 Definition rename_atoms (a b : atom) D :=
   if (AtomSetImpl.mem b D) then singleton a \u (remove b D) else D.
 
-Lemma rename_context_tm_app :
-      forall G1 G2 x y, rename_context_tm y x (G1 ++ G2) =
-                        rename_context_tm y x G1 ++ rename_context_tm y x G2.
-Proof. intros G1. induction G1; intros; eauto. simpl. f_equal. eauto.
-Qed.
+
+(** Lemmas about renaming atoms **)
 
 Lemma rename_atom_same : forall y a, rename_atom y y a = a.
 Proof. intros. unfold rename_atom. destruct (a == y); auto.
@@ -77,6 +102,24 @@ Qed.
 
 Lemma rename_atom_diff_same : forall x y a, a <> x -> rename_atom y x a = a.
 Proof. intros. unfold rename_atom. destruct (a == x); auto. contradiction.
+Qed.
+
+(** Lemmas about renamed atoms in contexts **)
+
+Lemma rename_binds_tm : forall G x x0 y s, binds x s G ->
+      binds (rename_atom y x0 x) (tm_subst_tm_sort (a_Var_f y) x0 s)
+                                              (rename_context_tm y x0 G).
+Proof. intro G. induction G; intros; eauto.
+       inversion H; subst. simpl. unfold rename_atom.
+       destruct (x == x0); eauto. simpl. eauto.
+Qed.
+
+Lemma rename_binds_co : forall G x x0 y s, binds x s G ->
+      binds (rename_atom y x0 x) (co_subst_co_sort (g_Var_f y) x0 s)
+                                 (rename_context_co y x0 G).
+Proof. intro G. induction G; intros; eauto.
+       inversion H; subst. simpl. unfold rename_atom.
+       destruct (x == x0); eauto. simpl. eauto.
 Qed.
 
 Lemma rename_context_tm_notin : forall G x y z, x `notin` dom G ->
@@ -111,70 +154,11 @@ Proof. induction G; intros. eauto. destruct a; simpl in *.
        rewrite rename_atom_diff_same in h. auto. auto.
 Qed.
 
-Lemma tm_subst_tm_same_mutual : forall y,
-      (forall b, tm_subst_tm_tm (a_Var_f y) y b = b) /\
-      (forall brs, tm_subst_tm_brs (a_Var_f y) y brs = brs) /\
-      (forall g, tm_subst_tm_co (a_Var_f y) y g = g) /\
-      (forall phi, tm_subst_tm_constraint (a_Var_f y) y phi = phi).
-Proof. intros. apply tm_brs_co_constraint_mutind; intros; simpl; f_equal; eauto.
-       destruct (x == y); subst; auto.
-Qed.
 
-Lemma tm_subst_tm_sort_same : forall y s, tm_subst_tm_sort (a_Var_f y) y s = s.
-Proof. intros. destruct s; simpl; f_equal; eapply (tm_subst_tm_same_mutual y).
-Qed.
-
-Lemma rename_context_tm_same : forall y G,
-      rename_context_tm y y G = G.
-Proof. intros. induction G; eauto.
-       destruct a. simpl. rewrite rename_atom_same.
-       rewrite tm_subst_tm_sort_same. f_equal; auto.
-Qed.
-
-Lemma rename_binds_tm : forall G x x0 y s, binds x s G ->
-      binds (rename_atom y x0 x) (tm_subst_tm_sort (a_Var_f y) x0 s)
-                                              (rename_context_tm y x0 G).
-Proof. intro G. induction G; intros; eauto.
-       inversion H; subst. simpl. unfold rename_atom.
-       destruct (x == x0); eauto. simpl. eauto.
-Qed.
-
-Lemma rename_binds_co : forall G x x0 y s, binds x s G ->
-      binds (rename_atom y x0 x) (co_subst_co_sort g_Triv x0 s)
-                                 (rename_context_co y x0 G).
-Proof. intro G. induction G; intros; eauto.
-       inversion H; subst. simpl. unfold rename_atom.
-       destruct (x == x0); eauto. simpl. eauto.
-Qed.
-
-Lemma tm_subst_tm_tm_same_diff : forall x y,
-       tm_subst_tm_tm (a_Var_f y) x (a_Var_f x) = a_Var_f y.
-Proof. intros. simpl. destruct (x == x). auto. contradiction.
-Qed.
-
-Lemma tm_subst_tm_tm_app_same_diff : forall x y p nu,
-      tm_subst_tm_tm (a_Var_f y) x (a_App p nu (a_Var_f x)) =
-      a_App (tm_subst_tm_tm (a_Var_f y) x p) nu (a_Var_f y).
-Proof. intros. simpl. f_equal. destruct (x == x). auto. contradiction.
-Qed.
-
-Lemma tm_subst_tm_tm_diff : forall x y z, z <> x ->
-       tm_subst_tm_tm (a_Var_f y) x (a_Var_f z) = a_Var_f z.
-Proof. intros. simpl. destruct (z == x). contradiction. auto.
-Qed.
-
-Lemma tm_subst_tm_tm_app_diff : forall x y p nu z, z <> x ->
-      tm_subst_tm_tm (a_Var_f y) x (a_App p nu (a_Var_f z)) =
-      a_App (tm_subst_tm_tm (a_Var_f y) x p) nu (a_Var_f z).
-Proof. intros. simpl. f_equal. destruct (z == x). contradiction. auto.
-Qed.
-
-Lemma remove_in_same : forall s x, remove x s [=] remove x (singleton x \u s).
-Proof. intros. fsetdec.
-Qed.
+(** Renaming PatternContexts **)
 
 Lemma PatternContexts_rename_tm : forall W G D F p A B x y,
-      PatternContexts W G D F A p B -> y `notin` dom G -> x `notin` codom G ->
+      PatternContexts W G D F A p B -> y `notin` dom G -> ~In x (codom G) ->
       PatternContexts (rename_role_context y x W) (rename_context_tm y x G)
        (List.map (rename_atom y x) D) F (tm_subst_tm_tm (a_Var_f y) x A)
        (tm_subst_tm_tm (a_Var_f y) x p) (tm_subst_tm_tm (a_Var_f y) x B).
@@ -206,50 +190,54 @@ Proof. intros. induction H.
           rewrite tm_subst_tm_tm_open_tm_wrt_co. eauto. simpl.
           eapply PatCtx_CPi with (L := remove c L). eauto. auto.
 Qed.
-(*
+
+
 Lemma PatternContexts_rename_co : forall W G D F p A B x y,
-      PatternContexts W G D F A p B -> y `notin` dom G -> x `notin` tmdom G ->
+      PatternContexts W G D F A p B -> y `notin` dom G -> ~In x (tmdom G) ->
       PatternContexts (rename_role_context y x W) (rename_context_co y x G)
        (List.map (rename_atom y x) D) F (co_subst_co_tm (g_Var_f y) x A)
-       (co_subst_co_tm g_Triv x p) (co_subst_co_tm (g_Var_f y) x B).
+       (co_subst_co_tm (g_Var_f y) x p) (co_subst_co_tm (g_Var_f y) x B).
 Proof. intros. induction H; simpl in *.
         - econstructor; eauto with lngen lc.
         - destruct (x0 == x). subst. assert False. apply H1. eauto.
           contradiction. rewrite rename_atom_diff_same. auto.
-          rewrite co_subst_co_tm_open_tm_wrt_tm. eauto. simpl.
-          eapply PatCtx_PiRel with (L := remove x0 L). eauto. auto.
+          rewrite co_subst_co_tm_open_tm_wrt_tm. eauto.
+          simpl. eapply PatCtx_PiRel with (L := remove x0 L). eauto. auto.
         - destruct (x0 == x). subst. assert False. apply H1. eauto.
           contradiction. rewrite rename_atom_diff_same. auto.
           rewrite co_subst_co_tm_open_tm_wrt_tm. eauto. simpl.
           eapply PatCtx_PiIrr with (L := remove x0 L). eauto. auto.
-        - destruct (c == x). subst.
+        - destruct (c == x) eqn:h. subst.
           rewrite rename_atom_diff. rewrite co_subst_co_tm_open_tm_wrt_co.
-          eauto. simpl. destruct (x == x) eqn:h. rewrite h.
+          eauto. simpl. destruct (x == x) eqn:h1. rewrite h1.
           eapply PatCtx_CPi with (L := remove y L). eauto. auto.
-Qed. *)
+          contradiction. rewrite co_subst_co_tm_open_tm_wrt_co. eauto.
+          simpl. rewrite h. rewrite rename_atom_diff_same. auto.
+          eapply PatCtx_CPi with (L := remove c L). eauto. auto.
+Qed.
 
 Lemma tm_rename_mutual :
    (forall G b B (H : Typing G b B),
-      forall x y, y `notin` dom G -> x `notin` codom G ->
+      forall x y, y `notin` dom G -> ~In x (codom G) ->
         Typing (rename_context_tm y x G)
                (tm_subst_tm_tm (a_Var_f y) x b)
                (tm_subst_tm_tm (a_Var_f y) x B)) /\
     (forall G phi  (H : PropWff G phi),
-       forall x y, y `notin` dom G -> x `notin` codom G ->
+       forall x y, y `notin` dom G -> ~In x (codom G) ->
         PropWff (rename_context_tm y x G)
                 (tm_subst_tm_constraint (a_Var_f y) x phi) ) /\
     (forall G D p1 p2  (H : Iso G D p1 p2 ),
-       forall x y, y `notin` dom G -> x `notin` codom G ->
+       forall x y, y `notin` dom G -> ~In x (codom G) ->
         Iso (rename_context_tm y x G) D
             (tm_subst_tm_constraint (a_Var_f y) x p1)
             (tm_subst_tm_constraint (a_Var_f y) x p2) ) /\
     (forall G D A B T R (H : DefEq G D A B T R),
-       forall x y, y `notin` dom G -> x `notin` codom G ->
+       forall x y, y `notin` dom G -> ~In x (codom G) ->
          DefEq (rename_context_tm y x G) D
                (tm_subst_tm_tm (a_Var_f y) x A) (tm_subst_tm_tm (a_Var_f y) x B)
                (tm_subst_tm_tm (a_Var_f y) x T) R) /\
     (forall G (H : Ctx G),
-        forall x y, y `notin` dom G -> x `notin` codom G ->
+        forall x y, y `notin` dom G -> ~In x (codom G) ->
                         Ctx (rename_context_tm y x G)).
 Proof. ext_induction CON; intros; subst; simpl.
         - eauto.
@@ -288,7 +276,8 @@ Proof. ext_induction CON; intros; subst; simpl.
           simpl in *. rewrite rename_atom_diff_same in h. eauto.
           rewrite tm_subst_tm_tm_open_tm_wrt_co in h. eauto.
           rewrite (tm_subst_tm_co_fresh_eq (g_Var_f c)) in h.
-          simpl; auto. apply h; auto.
+          simpl; auto. apply h. auto. intro. inversion H4. eauto.
+          contradiction.
         - eapply E_CAbs with (L := singleton y \u singleton x \u L); eauto.
           intros. move: (H c ltac:(auto) x y) => h.
           simpl in *. rewrite rename_atom_diff_same in h. eauto.
@@ -296,7 +285,8 @@ Proof. ext_induction CON; intros; subst; simpl.
           rewrite (tm_subst_tm_co_fresh_eq (g_Var_f c)) in h.
           simpl; auto. rewrite tm_subst_tm_tm_open_tm_wrt_co in h. eauto.
           rewrite (tm_subst_tm_co_fresh_eq (g_Var_f c)) in h.
-          simpl; auto. apply h; auto.
+          simpl; auto. apply h. auto. intro h1. inversion h1. eauto.
+          contradiction.
         - simpl in *. rewrite tm_subst_tm_tm_open_tm_wrt_co; eauto.
         - simpl in *. eapply E_Const. eauto.
           rewrite tm_subst_tm_tm_fresh_eq. apply Typing_context_fv in t.
@@ -370,6 +360,7 @@ Proof. ext_induction CON; intros; subst; simpl.
           simpl; auto. rewrite tm_subst_tm_tm_open_tm_wrt_co in h. eauto.
           rewrite (tm_subst_tm_co_fresh_eq (g_Var_f c)) in h.
           simpl; auto. apply h; auto. eauto. all: simpl in *; eauto.
+          intro h1. inversion h1. eauto. contradiction.
         - eapply E_CAbsCong with (L := singleton y \u singleton x \u L).
           intros. move: (H c ltac:(auto) x y) => h.
           simpl in *. rewrite rename_atom_diff_same in h. eauto.
@@ -379,7 +370,8 @@ Proof. ext_induction CON; intros; subst; simpl.
           rewrite (tm_subst_tm_co_fresh_eq (g_Var_f c)) in h.
           simpl; auto. rewrite tm_subst_tm_tm_open_tm_wrt_co in h. eauto.
           rewrite (tm_subst_tm_co_fresh_eq (g_Var_f c)) in h.
-          simpl; auto. apply h; auto. eauto.
+          simpl; auto. apply h; auto.
+          intro h1. inversion h1. eauto. contradiction. eauto.
         - rewrite tm_subst_tm_tm_open_tm_wrt_co. eauto.
           eapply E_CAppCong. simpl in *; eauto. eauto.
         - rewrite tm_subst_tm_tm_open_tm_wrt_co. eauto.
@@ -432,26 +424,26 @@ Admitted.
 
 Lemma co_rename_mutual :
    (forall G b B (H : Typing G b B),
-      forall x y, y `notin` dom G -> x `notin` tmdom G ->
+      forall x y, y `notin` dom G -> ~In x (tmdom G) ->
         Typing (rename_context_co y x G)
-               (co_subst_co_tm g_Triv x b)
-               (co_subst_co_tm g_Triv x B)) /\
+               (co_subst_co_tm (g_Var_f y) x b)
+               (co_subst_co_tm (g_Var_f y) x B)) /\
     (forall G phi  (H : PropWff G phi),
-       forall x y, y `notin` dom G -> x `notin` tmdom G ->
+       forall x y, y `notin` dom G -> ~In x (tmdom G) ->
         PropWff (rename_context_co y x G)
-                (co_subst_co_constraint g_Triv x phi) ) /\
+                (co_subst_co_constraint (g_Var_f y) x phi) ) /\
     (forall G D p1 p2  (H : Iso G D p1 p2 ),
-       forall x y, y `notin` dom G -> x `notin` tmdom G ->
+       forall x y, y `notin` dom G -> ~In x (tmdom G) ->
         Iso (rename_context_co y x G) (rename_atoms y x D)
-            (co_subst_co_constraint g_Triv x p1)
-            (co_subst_co_constraint g_Triv x p2) ) /\
+            (co_subst_co_constraint (g_Var_f y) x p1)
+            (co_subst_co_constraint (g_Var_f y) x p2) ) /\
     (forall G D A B T R (H : DefEq G D A B T R),
-       forall x y, y `notin` dom G -> x `notin` tmdom G ->
+       forall x y, y `notin` dom G -> ~In x (tmdom G) ->
          DefEq (rename_context_co y x G) (rename_atoms y x D)
-               (co_subst_co_tm g_Triv x A) (co_subst_co_tm g_Triv x B)
-               (co_subst_co_tm g_Triv x T) R) /\
+               (co_subst_co_tm (g_Var_f y) x A) (co_subst_co_tm (g_Var_f y) x B)
+               (co_subst_co_tm (g_Var_f y) x T) R) /\
     (forall G (H : Ctx G),
-        forall x y, y `notin` dom G -> x `notin` tmdom G ->
+        forall x y, y `notin` dom G -> ~In x (tmdom G) ->
                         Ctx (rename_context_co y x G)).
 Proof. ext_induction CON; intros; subst; simpl.
         - eauto.
@@ -465,6 +457,7 @@ Proof. ext_induction CON; intros; subst; simpl.
           rewrite co_subst_co_tm_open_tm_wrt_tm in h. eauto.
           rewrite (co_subst_co_tm_fresh_eq (a_Var_f x0)) in h.
           simpl; auto. apply h; auto.
+          intro h1. inversion h1. eauto. contradiction.
         - eapply E_Abs with
              (L := singleton y \u singleton x \u L); eauto.
           intros. move: (H x0 ltac:(auto) x y) => h.
@@ -474,8 +467,9 @@ Proof. ext_induction CON; intros; subst; simpl.
           simpl; auto. rewrite co_subst_co_tm_open_tm_wrt_tm in h. eauto.
           rewrite (co_subst_co_tm_fresh_eq (a_Var_f x0)) in h.
           simpl; auto. apply h; auto.
+          intro h1. inversion h1. eauto. contradiction.
           intros. destruct rho. eauto.
-          replace (a_Var_f x0) with (co_subst_co_tm g_Triv x (a_Var_f x0)).
+          replace (a_Var_f x0) with (co_subst_co_tm (g_Var_f y) x (a_Var_f x0)).
           rewrite <- co_subst_co_tm_open_tm_wrt_tm. econstructor.
           rewrite fv_tm_tm_tm_co_subst_co_tm_upper.
           move: (r x0 ltac:(auto)) => h. inversion h; subst. eauto. eauto.
@@ -534,6 +528,7 @@ Proof. ext_induction CON; intros; subst; simpl.
           simpl; auto. rewrite co_subst_co_tm_open_tm_wrt_tm in h. eauto.
           rewrite (co_subst_co_tm_fresh_eq (a_Var_f x0)) in h.
           simpl; auto. apply h; auto. all: eauto.
+          intro h1. inversion h1. eauto. contradiction.
         - eapply E_AbsCong with (L := singleton y \u singleton x \u L).
           + intros. move: (H x0 ltac:(auto) x y) => h.
           simpl in *. rewrite rename_atom_diff_same in h. eauto.
@@ -544,15 +539,16 @@ Proof. ext_induction CON; intros; subst; simpl.
           simpl; auto. rewrite co_subst_co_tm_open_tm_wrt_tm in h. eauto.
           rewrite (co_subst_co_tm_fresh_eq (a_Var_f x0)) in h.
           simpl; auto. apply h; auto.
+          intro h1. inversion h1. eauto. contradiction.
           + eauto.
           + intros. destruct rho. eauto.
-          replace (a_Var_f x0) with (co_subst_co_tm g_Triv x (a_Var_f x0)).
+          replace (a_Var_f x0) with (co_subst_co_tm (g_Var_f y) x (a_Var_f x0)).
           rewrite <- co_subst_co_tm_open_tm_wrt_tm. econstructor.
           rewrite fv_tm_tm_tm_co_subst_co_tm_upper.
           move: (r x0 ltac:(auto)) => h. inversion h; subst. eauto. eauto.
           apply co_subst_co_tm_fresh_eq; eauto.
           + intros. destruct rho. eauto.
-          replace (a_Var_f x0) with (co_subst_co_tm g_Triv x (a_Var_f x0)).
+          replace (a_Var_f x0) with (co_subst_co_tm (g_Var_f y) x (a_Var_f x0)).
           rewrite <- co_subst_co_tm_open_tm_wrt_tm. econstructor.
           rewrite fv_tm_tm_tm_co_subst_co_tm_upper.
           move: (r0 x0 ltac:(auto)) => h. inversion h; subst. eauto. eauto.
@@ -598,8 +594,8 @@ Proof. ext_induction CON; intros; subst; simpl.
         - eapply E_IsoSnd; eauto.
         - eapply E_PatCong. eauto. eauto. eauto. admit. admit. all:eauto.
         - eapply E_LeftRel.
-          move: (CasePath_subst_co x c lc_g_Triv) => h.
-          eauto. move: (CasePath_subst_co x c0 lc_g_Triv) => h0. eauto.
+          move: (CasePath_subst_co x c (lc_g_Var_f y)) => h.
+          eauto. move: (CasePath_subst_co x c0 (lc_g_Var_f y)) => h0. eauto.
           eauto. eauto. eauto. eauto.
           move: (H3 x y ltac:(auto) ltac:(auto)) => h. 
           rewrite co_subst_co_tm_open_tm_wrt_tm in h. eauto. eapply h.
@@ -607,8 +603,8 @@ Proof. ext_induction CON; intros; subst; simpl.
           rewrite co_subst_co_tm_open_tm_wrt_tm in h. eauto.
           rewrite co_subst_co_tm_open_tm_wrt_tm in h. eauto. eauto.
         - eapply E_LeftIrrel.
-          move: (CasePath_subst_co x c lc_g_Triv) => h.
-          eauto. move: (CasePath_subst_co x c0 lc_g_Triv) => h0. eauto.
+          move: (CasePath_subst_co x c (lc_g_Var_f y)) => h.
+          eauto. move: (CasePath_subst_co x c0 (lc_g_Var_f y)) => h0. eauto.
           eauto. eauto. eauto. eauto.
           move: (H3 x y ltac:(auto) ltac:(auto)) => h. 
           rewrite co_subst_co_tm_open_tm_wrt_tm in h. eauto. eapply h.
@@ -616,8 +612,8 @@ Proof. ext_induction CON; intros; subst; simpl.
           rewrite co_subst_co_tm_open_tm_wrt_tm in h. eauto.
           rewrite co_subst_co_tm_open_tm_wrt_tm in h. eauto. eauto.
         - eapply E_Right.
-          move: (CasePath_subst_co x c lc_g_Triv) => h.
-          eauto. move: (CasePath_subst_co x c0 lc_g_Triv) => h0. eauto.
+          move: (CasePath_subst_co x c (lc_g_Var_f y)) => h.
+          eauto. move: (CasePath_subst_co x c0 (lc_g_Var_f y)) => h0. eauto.
           eauto. eauto. eauto. eauto.
           move: (H3 x y ltac:(auto) ltac:(auto)) => h. 
           rewrite co_subst_co_tm_open_tm_wrt_tm in h. eauto. eapply h.
@@ -625,8 +621,8 @@ Proof. ext_induction CON; intros; subst; simpl.
           rewrite co_subst_co_tm_open_tm_wrt_tm in h. eauto.
           rewrite co_subst_co_tm_open_tm_wrt_tm in h. eauto. eauto.
         - eapply E_CLeft.
-          move: (CasePath_subst_co x c lc_g_Triv) => h.
-          eauto. move: (CasePath_subst_co x c0 lc_g_Triv) => h0. eauto.
+          move: (CasePath_subst_co x c (lc_g_Var_f y)) => h.
+          eauto. move: (CasePath_subst_co x c0 (lc_g_Var_f y)) => h0. eauto.
           simpl in *; eauto. simpl in *; eauto. eauto.
           move: (H2 x y ltac:(auto) ltac:(auto)) => h.
           rewrite co_subst_co_tm_open_tm_wrt_co in h. eauto.
@@ -675,7 +671,6 @@ Definition list_rename_tm l (A : tm) :=
 Definition list_rename_context_tm l (G : context) :=
    fold_left (fun G' yx => rename_context_tm yx.1 yx.2 G') l G.
 
-
 (* ------------------------------------------------------------------ *)
 
 (* Lemmas on domains and codoms of singly renamed and list-renamed contexts *)
@@ -691,13 +686,13 @@ Proof. induction G; intros; eauto. destruct a. simpl in *.
 Qed.
 
 Lemma rename_context_tm_codom : forall G x y,
-      (forall z, z `in` codom (rename_context_tm y x G) ->
-                                  z `in` codom G \/ z = y).
+      (forall z, In z (codom (rename_context_tm y x G)) ->
+                                  In z (codom G) \/ z = y).
 Proof. induction G; intros; eauto. destruct a. destruct s; simpl in *. eauto.
-       apply union_iff in H. inversion H; clear H.
+       inversion H; clear H.
        - unfold rename_atom in H0.
          destruct (a == x). apply singleton_iff in H0. subst. auto.
-         apply singleton_iff in H0. subst. auto.
+         apply singleton_iff in H0. subst. auto. auto.
        - move: (IHG x y z H0) => h. inversion h; auto.
 Qed.
 
@@ -712,8 +707,8 @@ Proof. induction l; eauto.
 Qed.
 
 Lemma list_rename_context_tm_codom : forall l G,
-      (forall x, x `in` codom (list_rename_context_tm l G) ->
-                      x `in` codom G \/ In x (left_list l)).
+      (forall x, In x (codom (list_rename_context_tm l G)) ->
+                      In x (codom G) \/ In x (left_list l)).
 Proof. induction l; eauto.
        intros. destruct a. simpl in *.
        move: (IHl (rename_context_tm a a0 G) x H) => h.
@@ -801,11 +796,11 @@ Qed.
 
 (** Main tmvars renaming lemma **)
 
-Lemma list_tm_rename_mutual :
+Lemma list_tm_rename_typing :
     forall l G, NoDup (left_list l) -> NoDup (right_list l) ->
                 disj_list_list (left_list l) (right_list l) ->
                 disj_list_set (left_list l) (dom G) ->
-                disj_list_set (right_list l) (codom G) ->
+                disj_list_list (right_list l) (codom G) ->
     (forall b B (H : Typing G b B),
         Typing (list_rename_context_tm l G)
                (list_rename_tm l b)
@@ -847,7 +842,7 @@ Qed.
 (* Definitions *)
 
 Definition list_rename_co (l : list (atom * atom)) (A : tm) :=
-   fold_left (fun z yx => co_subst_co_tm g_Triv yx.2 z) l A.
+   fold_left (fun z yx => co_subst_co_tm (g_Var_f yx.1) yx.2 z) l A.
 
 Definition list_rename_context_co l (G : context) :=
    fold_left (fun G' yx => rename_context_co yx.1 yx.2 G') l G.
@@ -868,13 +863,13 @@ Proof. induction G; intros; eauto. destruct a. simpl in *.
 Qed.
 
 Lemma rename_context_co_tmdom : forall G x y,
-      (forall z, z `in` tmdom (rename_context_co y x G) ->
-                                  z `in` tmdom G \/ z = y).
+      (forall z, In z (tmdom (rename_context_co y x G)) ->
+                                  In z (tmdom G) \/ z = y).
 Proof. induction G; intros; eauto. destruct a. destruct s; simpl in *; eauto.
-       apply union_iff in H. inversion H; clear H.
+       inversion H; clear H.
        - unfold rename_atom in H0.
          destruct (a == x). apply singleton_iff in H0. subst. auto.
-         apply singleton_iff in H0. subst. auto.
+         apply singleton_iff in H0. subst. auto. auto.
        - move: (IHG x y z H0) => h. inversion h; auto.
 Qed.
 
@@ -889,8 +884,8 @@ Proof. induction l; eauto.
 Qed.
 
 Lemma list_rename_context_co_tmdom : forall l G,
-      (forall x, x `in` tmdom (list_rename_context_co l G) ->
-                      x `in` tmdom G \/ In x (left_list l)).
+      (forall x, In x (tmdom (list_rename_context_co l G)) ->
+                      In x (tmdom G) \/ In x (left_list l)).
 Proof. induction l; eauto.
        intros. destruct a. simpl in *.
        move: (IHl (rename_context_co a a0 G) x H) => h.
@@ -902,18 +897,22 @@ Qed.
 
 (* Lemmas on commutativity of two rename operations for tms, sorts, contexts *)
 
-Lemma subst_commute_tm_co : forall A x1 x2, x1 <> x2 ->
-      co_subst_co_tm g_Triv x2 (co_subst_co_tm g_Triv x1 A) =
-      co_subst_co_tm g_Triv x1 (co_subst_co_tm g_Triv x2 A).
+Lemma subst_commute_tm_co : forall A x1 x2 y1 y2,
+      x2 <> x1 -> x2 <> y1 -> y2 <> x1 ->
+      co_subst_co_tm (g_Var_f y2) x2 (co_subst_co_tm (g_Var_f y1) x1 A) =
+      co_subst_co_tm (g_Var_f y1) x1 (co_subst_co_tm (g_Var_f y2) x2 A).
 Proof. intros. rewrite co_subst_co_tm_co_subst_co_tm; eauto.
+       rewrite co_subst_co_co_fresh_eq. simpl; auto. auto.
 Qed.
 
-Lemma subst_commute_sort_co : forall s x1 x2, x1 <> x2 ->
-      co_subst_co_sort g_Triv x2 (co_subst_co_sort g_Triv x1 s) =
-      co_subst_co_sort g_Triv x1 (co_subst_co_sort g_Triv x2 s).
+Lemma subst_commute_sort_co : forall s x1 x2 y1 y2,
+      x2 <> x1 -> x2 <> y1 -> y2 <> x1 ->
+      co_subst_co_sort (g_Var_f y2) x2 (co_subst_co_sort (g_Var_f y1) x1 s) =
+      co_subst_co_sort (g_Var_f y1) x1 (co_subst_co_sort (g_Var_f y2) x2 s).
 Proof. intros. destruct s; simpl; f_equal.
-       rewrite co_subst_co_tm_co_subst_co_tm; eauto.
+       apply subst_commute_tm_co; auto.
        rewrite co_subst_co_constraint_co_subst_co_constraint; eauto.
+       rewrite co_subst_co_co_fresh_eq. simpl; auto. auto.
 Qed.
 
 Lemma rename_context_commute_co :  forall G x1 y1 x2 y2,
@@ -930,10 +929,10 @@ Qed.
 (* Lemmas on commutativity of list-renaming and a single rename on tms
    and contexts *)
 
-Lemma list_rename_rename_commute_co : forall l x b,
-      ~In x (left_list l) -> ~In x (right_list l) ->
-      list_rename_co l (co_subst_co_tm g_Triv x b) =
-      co_subst_co_tm g_Triv x (list_rename_co l b).
+Lemma list_rename_rename_commute_co : forall l x y b,
+      ~In x (left_list l) -> ~In x (right_list l) -> ~In y (right_list l) ->
+      list_rename_co l (co_subst_co_tm (g_Var_f y) x b) =
+      co_subst_co_tm (g_Var_f y) x (list_rename_co l b).
 Proof. induction l; intros; eauto.
        destruct a; simpl in *. rewrite subst_commute_tm_co.
        simpl; eauto. simpl; eauto. eauto. eapply IHl; eauto.
@@ -951,11 +950,11 @@ Qed.
 
 (** Main covars renaming lemma **)
 
-Lemma list_co_rename_mutual :
+Lemma list_co_rename_typing :
     forall l G, NoDup (left_list l) -> NoDup (right_list l) ->
                 disj_list_list (left_list l) (right_list l) ->
                 disj_list_set (left_list l) (dom G) ->
-                disj_list_set (right_list l) (tmdom G) ->
+                disj_list_list (right_list l) (tmdom G) ->
     (forall b B (H : Typing G b B),
         Typing (list_rename_context_co l G)
                (list_rename_co l b)
@@ -965,8 +964,10 @@ Proof. induction l; intros; eauto.
        unfold disj_list_list in *. unfold disj_list_set in *.
        rewrite list_rename_rename_commute_co. intro. apply (H1 a0).
        simpl; auto. simpl; auto. inversion H0; subst; auto.
+       intro. apply (H1 a). simpl; auto. simpl; auto.
        rewrite list_rename_rename_commute_co. intro. apply (H1 a0).
        simpl; auto. simpl; auto. inversion H0; subst; auto.
+       intro. apply (H1 a). simpl; auto. simpl; auto.
        rewrite list_rename_rename_commute_context_co.
        intro. apply (H1 a0). simpl; auto. simpl; auto.
        inversion H0; subst; auto. intro. apply (H1 a). simpl; auto. simpl; auto.
@@ -984,7 +985,259 @@ Qed.
 (** --------------------------------------------------------------
     --------------------------------------------------------------
  **)
+
+Definition list_rename_role_context l W :=
+  fold_left (fun W' yx => rename_role_context yx.1 yx.2 W') l W.
+
+Lemma list_rename_atom_app : forall V a1 a2 l,
+      List.map (list_rename_atom ((a1, a2) :: l)) V =
+      List.map (list_rename_atom l) (List.map (rename_atom a1 a2) V).
+Proof. induction V; intros. auto.
+       simpl. f_equal. eauto.
+Qed.
+
+(** PatternContexts list version **)
+
+Lemma list_tm_rename_PatternContexts: forall l W G V F A p B,
+       NoDup (left_list l) -> NoDup (right_list l) ->
+       disj_list_list (left_list l) (right_list l) ->
+       disj_list_set (left_list l) (dom G) ->
+       disj_list_list (right_list l) (codom G) ->
+      PatternContexts W G V F A p B ->
+      PatternContexts (list_rename_role_context l W)
+      (list_rename_context_tm l G) (List.map (list_rename_atom l) V)
+      F (list_rename_tm l A) (list_rename_tm l p) (list_rename_tm l B).
+Proof. induction l; intros; simpl in *.
+       unfold list_rename_atom. simpl. eauto.
+       clear - H4. induction H4; eauto. simpl. econstructor. auto. eauto.
+       destruct a. simpl. rewrite list_rename_atom_app. eapply IHl.
+       inversion H; auto. inversion H0; auto. unfold disj_list_list in *.
+       intros. intro. apply (H1 x). simpl; auto. simpl; auto.
+       unfold disj_list_set in *.
+       intros. intro. apply rename_context_tm_dom in H6.
+       inversion H6; clear H6. apply (H2 x). simpl; auto. auto.
+       subst. inversion H; auto.
+       unfold disj_list_list in *.
+       intros. intro. apply rename_context_tm_codom in H6.
+       inversion H6; clear H6. apply (H3 x). simpl; auto. auto.
+       subst. apply (H1 a). simpl; auto. simpl; auto.
+       eapply PatternContexts_rename_tm. auto. unfold disj_list_set in *.
+       intro. apply (H2 a). simpl; auto. auto. intro.
+       unfold disj_list_list in *. apply (H3 a0). simpl; auto. auto.
+Qed.
+
+Lemma list_co_rename_PatternContexts: forall l W G V F A p B,
+       NoDup (left_list l) -> NoDup (right_list l) ->
+       disj_list_list (left_list l) (right_list l) ->
+       disj_list_set (left_list l) (dom G) ->
+       disj_list_list (right_list l) (tmdom G) ->
+      PatternContexts W G V F A p B ->
+      PatternContexts (list_rename_role_context l W)
+      (list_rename_context_co l G) (List.map (list_rename_atom l) V)
+      F (list_rename_co l A) (list_rename_co l p) (list_rename_co l B).
+Proof. induction l; intros; simpl in *.
+       unfold list_rename_atom. simpl. eauto.
+       clear - H4. induction H4; eauto. simpl. econstructor. auto. eauto.
+       destruct a. simpl. rewrite list_rename_atom_app. eapply IHl.
+       inversion H; auto. inversion H0; auto. unfold disj_list_list in *.
+       intros. intro. apply (H1 x). simpl; auto. simpl; auto.
+       unfold disj_list_set in *.
+       intros. intro. apply rename_context_co_dom in H6.
+       inversion H6; clear H6. apply (H2 x). simpl; auto. auto.
+       subst. inversion H; auto.
+       unfold disj_list_list in *.
+       intros. intro. apply rename_context_co_tmdom in H6.
+       inversion H6; clear H6. apply (H3 x). simpl; auto. auto.
+       subst. apply (H1 a). simpl; auto. simpl; auto.
+       eapply PatternContexts_rename_co. auto. unfold disj_list_set in *.
+       intro. apply (H2 a). simpl; auto. auto. intro.
+       unfold disj_list_list in *. apply (H3 a0). simpl; auto. auto.
+Qed.
+
+(** -----------------------------------------------------
+    -----------------------------------------------------
+ **)
+
+Lemma codom_dom : forall G x, In x (codom G) -> x `in` dom G.
+Proof. induction G; intros; simpl in *; eauto.
+       contradiction. destruct a. destruct s; simpl in *; eauto.
+       inversion H; eauto.
+Qed.
+
+Lemma tmdom_dom : forall G x, In x (tmdom G) -> x `in` dom G.
+Proof. induction G; intros; simpl in *; eauto.
+       contradiction. destruct a. destruct s; simpl in *; eauto.
+       inversion H; eauto.
+Qed.
+
+Lemma tm_subst_same : forall l A,
+     (forall x, In x (right_list l) -> x `notin` fv_tm_tm_tm A) ->
+     list_rename_tm l A = A.
+Proof. induction l; intros. eauto.
+       destruct a. simpl. rewrite tm_subst_tm_tm_fresh_eq.
+       eapply H. simpl; auto. eapply IHl. intros. eapply H.
+       simpl; auto.
+Qed.
+
+Lemma co_subst_same : forall l A,
+     (forall x, In x (right_list l) -> x `notin` fv_co_co_tm A) ->
+     list_rename_co l A = A.
+Proof. induction l; intros. eauto.
+       destruct a. simpl. rewrite co_subst_co_tm_fresh_eq.
+       eapply H. simpl; auto. eapply IHl. intros. eapply H.
+       simpl; auto.
+Qed.
+
+Fixpoint var_var_pairs (px py : tm) : list (var * var) :=
+   match (px,py) with
+ | (a_Fam F, a_Fam F') => []
+ | (a_App p1 (Role R) (a_Var_f y), a_App p2 (Role R') (a_Var_f x)) =>
+                                       var_var_pairs p1 p2 ++ [(y,x)]
+ | (a_App p1 (Rho Irrel) a_Bullet, a_App p2 (Rho Irrel) a_Bullet) =>
+                                       var_var_pairs p1 p2
+ | (a_CApp p1 g_Triv, a_CApp p2 g_Triv) => var_var_pairs p1 p2
+ | (_,_) => []
+   end.
+
+Fixpoint list_to_pattern (F : const) (l : list atom) :=
+  match l with
+  | nil => a_Fam F
+  | x :: l' => a_App (list_to_pattern F l') (Role Nom) (a_Var_f x)
+  end.
+
+Lemma list_to_pattern_Pattern : forall F l, Pattern (list_to_pattern F l).
+Proof. induction l; simpl; eauto.
+Qed.
+
+Lemma var_tmvar_covar : forall G x, x `in` dom G -> In x (tmdom G) \/
+                                                    In x (codom G).
+Proof. induction G; intros. simpl in *. left; fsetdec.
+       destruct a. destruct s; simpl in *. apply add_iff in H.
+       inversion H. eauto. move: (IHG x H0) => h. inversion h; eauto.
+       apply add_iff in H. inversion H. eauto.
+       move: (IHG x H0) => h. inversion h; eauto.
+Qed.
+
+Lemma PatternContexts_tmvars : forall W G D F A p B x,
+      PatternContexts W G D F A p B -> In x (tmdom G) ->
+      x `in` fv_tm_tm_tm p \/ In x D.
+Proof. intros. induction H; simpl in *; eauto.
+       inversion H0; clear H0. subst. left. clear. fsetdec.
+       move: (IHPatternContexts H2) => h. inversion h; eauto.
+       inversion H0. subst. auto.
+       move: (IHPatternContexts H2) => h. inversion h; eauto.
+       move: (IHPatternContexts H0) => h. inversion h; eauto.
+Qed.
+
+Lemma rename_context_tmdom : forall l G,
+      tmdom (list_rename_context_tm l G) =
+      List.map (list_rename_atom l) (tmdom G).
+Proof. induction l; intros; simpl in *.
+       unfold list_rename_atom. simpl.
+       induction G; eauto. destruct a. destruct s; simpl in *; eauto.
+       f_equal; auto.
+       destruct a. simpl. rewrite IHl. clear.
+       induction G. unfold list_rename_atom. simpl. auto.
+       destruct a1. destruct s. simpl. f_equal. auto.
+       simpl. auto.
+Qed.
+
+Lemma rename_context_codom : forall l G,
+      codom (list_rename_context_co l G) =
+      List.map (list_rename_atom l) (codom G).
+Proof. induction l; intros; simpl in *.
+       unfold list_rename_atom. simpl.
+       induction G; eauto. destruct a. destruct s; simpl in *; eauto.
+       f_equal; auto.
+       destruct a. simpl. rewrite IHl. clear.
+       induction G. unfold list_rename_atom. simpl. auto.
+       destruct a1. destruct s. simpl. auto. simpl. f_equal. auto.
+Qed.
+
+Lemma axiom_fresh : forall p b p1 b1 D1 D1' D2 W G V F A B,
+      fv_tm_tm_tm A [<=] empty /\ fv_co_co_tm A [<=] empty ->
+      Rename p b p1 b1 D1 D1' /\
+      PatternContexts W G V F A p B /\
+      Typing G b B ->
+      exists p2 b2 D2' W' G' V' B',
+      Rename p b p2 b2 D2 D2' /\
+      PatternContexts W' G' V' F A p2 B' /\
+      Typing G' b2 B' /\ disjoint G' G.
+Proof. intros. inversion H0 as [h1 [h2 h3]]; clear H0.
+       move: (patctx_pattern h2) => h4.
+       move: (Typing_lc1 h3) => h5.
+       move: (Rename_exists D2 h4 h5) => h6.
+       inversion h6 as [p' [b' [D2' h7]]].
+       remember (var_var_pairs p' p) as l1.
+       move: (list_to_pattern_Pattern F V) => h8.
+       move: (Rename_exists (D2 \u D2') h8 lc_a_Bullet) => h9.
+       inversion h9 as [px [bx [Dx hx]]].
+       remember (var_var_pairs px (list_to_pattern F V)) as l2.
+       move: (list_to_pattern_Pattern F (codom G)) => h10.
+       move: (Rename_exists (D2 \u D2' \u Dx) h10 lc_a_Bullet) => h11.
+       inversion h11 as [py [bz [Dy hy]]].
+       remember (var_var_pairs py (list_to_pattern F (codom G))) as l3.
+       remember (list_rename_co l3 (list_rename_tm l2 (list_rename_tm l1 p))) as p2.
+       remember (list_rename_co l3 (list_rename_tm l2 (list_rename_tm l1 b))) as b2.
+       remember (list_rename_co l3 (list_rename_tm l2 (list_rename_tm l1 B))) as B'.
+       remember (list_rename_co l3 (list_rename_tm l2 (list_rename_tm l1 A))) as A'.
+       assert (A = A'). clear Heql1 Heql2 Heql3.
+       subst. rewrite (tm_subst_same l1). intros. intro. clear - H1 H.
+       inversion H. fsetdec. rewrite tm_subst_same. intros. intro. clear - H1 H.
+       inversion H. fsetdec. rewrite co_subst_same. intros. intro. clear - H1 H.
+       inversion H. fsetdec. auto.
+       remember (list_rename_context_co l3 
+             (list_rename_context_tm l2 (list_rename_context_tm l1 G))) as G'.
+       remember (list_rename_role_context l3 
+             (list_rename_role_context l2 (list_rename_role_context l1 W))) as W'.
+       remember (List.map (list_rename_atom l3)
+           (List.map (list_rename_atom l2) (List.map (list_rename_atom l1) V))) as V'.
+       exists p2, b2, D2', W', G', V', B'.
+       repeat split.
+       - clear Heql1 Heql2 Heql3. assert (Q1 : p2 = p'). admit.
+         rewrite Q1.
+         assert (Q2 : b2 = b'). admit. rewrite Q2. auto.
+       - clear Heql1 Heql2 Heql3.
+         subst. rewrite H0. eapply list_co_rename_PatternContexts.
+         admit. admit. admit. admit. admit.
+         eapply list_tm_rename_PatternContexts.
+         admit. admit. admit. admit. admit.
+         eapply list_tm_rename_PatternContexts.
+         admit. admit. admit. admit. admit. auto.
+       - clear Heql1 Heql2 Heql3. subst.
+         eapply list_co_rename_typing.
+         admit. admit. admit. admit. admit.
+         eapply list_tm_rename_typing.
+         admit. admit. admit. admit. admit.
+         eapply list_tm_rename_typing.
+         admit. admit. admit. admit. admit. auto.
+       - intro. intros. Admitted.
+
+Definition atom_pairs_rename (G : context) (D : atoms) :=
+  let tmvars := tmdom G in
+  let (atom_pairs_tmvar, new_tmvars) := atoms_excl tmvars (dom G \u D) in
+  let covars := codom G in
+  let (atom_pairs_covar, _) := atoms_excl covars (D \u new_tmvars) in
+  (atom_pairs_tmvar,atom_pairs_covar).
+
+Definition rename_entire_context (G : context) (D : atoms) :=
+  let (atom_pairs_tmvar,atom_pairs_covar) := atom_pairs_rename G D in
+  list_rename_context_tm atom_pairs_tmvar
+      (list_rename_context_co atom_pairs_covar G).
+
+
 (*
+Lemma renamed_context_disj : forall G D, disjoint G (rename_entire_context G D).
+Proof. induction G; intros. simpl; eauto.
+       intro. intros. apply inter_iff in H. inversion H;clear H.
+       unfold rename_entire_context in *.
+
+
+
+Definition 
+
+
+
 Inductive var : Set :=
   | var_tmvar : atom -> var
   | var_covar : atom -> var.

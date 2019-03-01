@@ -237,7 +237,7 @@ Qed.
 
 (* Facts about NoDup *)
 
-Lemma uniq_NoDup : forall (l : role_context), uniq l -> NoDup (List.map fst l).
+Lemma uniq_NoDup : forall A (l : list (atom * A)), uniq l -> NoDup (List.map fst l).
 Proof. intros. induction H; simpl. apply NoDup_nil. apply NoDup_cons.
        intro. apply H0. clear - H1. induction E; eauto. simpl in *.
        inversion H1. destruct a. simpl in H. rewrite H. eauto.
