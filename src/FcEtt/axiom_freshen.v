@@ -1204,34 +1204,80 @@ Proof. induction l; intros; eauto. destruct a. simpl in *.
 Qed.
 
 Lemma list_rename_atom_inll : forall l a, In a (right_list l) ->
-      NoDup (right_list l) ->
       disj_list_list (left_list l) (right_list l) ->
       In (list_rename_atom l a) (left_list l).
 Proof. induction l; intros; eauto.
        simpl. destruct a. simpl in *.
        inversion H; clear H. subst. rewrite rename_atom_diff.
        left. rewrite list_rename_atom_same.
-       unfold disj_list_list in *. intro. eapply (H1 a). simpl; auto.
+       unfold disj_list_list in *. intro. eapply (H0 a). simpl; auto.
        simpl; auto. auto. destruct (a0 == a1). subst.
-       rewrite rename_atom_diff. right. Admitted.
+       rewrite rename_atom_diff. rewrite list_rename_atom_same.
+       unfold disj_list_list in *. intro. eapply (H0 a). simpl; auto.
+       simpl; auto. auto. right. rewrite rename_atom_diff_same.
+       auto. eapply IHl. auto. unfold disj_list_list in *. intros.
+       intro. apply (H0 x). simpl; auto. simpl; auto.
+Qed.
 
 Lemma tmdom_renamed_context : forall G l,
-      NoDup (right_list l) ->
-      NoDup (left_list l) ->
       disj_list_list (left_list l) (right_list l) ->
       (forall x, In x (tmdom G) -> In x (right_list l)) ->
       (forall y, In y (tmdom (list_rename_context_tm l G))
                                   -> In y (left_list l)).
 Proof. induction G; intros; simpl in *.
-       rewrite list_rename_context_tm_nil in H3. simpl in H3. contradiction.
-       destruct a. rewrite cons_app_one in H3.
-       rewrite list_rename_context_tm_app in H3.
-       rewrite tmdom_app in H3. apply in_app_or in H3.
-       inversion H3. destruct s.
+       rewrite list_rename_context_tm_nil in H1. simpl in H1. contradiction.
+       destruct a. rewrite cons_app_one in H1.
+       rewrite list_rename_context_tm_app in H1.
+       rewrite tmdom_app in H1. apply in_app_or in H1.
+       inversion H1. destruct s.
        assert (y = list_rename_atom l a). admit. subst.
-        simpl in *.
-        eapply IHG; eauto.
-       intros.   Admitted.
+       apply list_rename_atom_inll. apply (H0 a). simpl; auto. auto.
+       admit. eapply IHG; eauto. destruct s; intros; eauto.
+       apply (H0 x). simpl; auto.   Admitted.
+
+Lemma codom_app : forall G1 G2, codom (G1 ++ G2) = codom G1 ++ codom G2.
+Proof. induction G1; intros; eauto.
+       destruct a. destruct s. simpl. eauto. simpl. f_equal. eauto.
+Qed.
+
+Lemma list_rename_context_co_nil : forall l, list_rename_context_co l nil = nil.
+Proof. induction l; eauto.
+Qed.
+
+Lemma rename_context_co_app : forall G1 G2 y x,
+      rename_context_co y x (G1 ++ G2) =
+                     rename_context_co y x G1 ++ rename_context_co y x G2.
+Proof. induction G1; intros; eauto.
+       simpl. destruct a. simpl. f_equal. eauto.
+Qed.
+
+Lemma list_rename_context_co_app : forall l G1 G2,
+      list_rename_context_co l (G1 ++ G2) = list_rename_context_co l G1
+         ++ list_rename_context_co l G2.
+Proof. induction l. intros. unfold list_rename_context_co. simpl.
+       auto. intros. destruct G1.
+       simpl. rewrite list_rename_context_co_nil. simpl. auto.
+       simpl. destruct a. simpl. destruct p. simpl.
+       rewrite cons_app_one. rewrite IHl. rewrite cons_app_one.
+       rewrite IHl. rewrite <- app_assoc. f_equal.
+       rewrite rename_context_co_app. eauto.
+Qed.
+
+Lemma codom_renamed_context : forall G l,
+      disj_list_list (left_list l) (right_list l) ->
+      (forall x, In x (codom G) -> In x (right_list l)) ->
+      (forall y, In y (codom (list_rename_context_co l G))
+                                  -> In y (left_list l)).
+Proof. induction G; intros; simpl in *.
+       rewrite list_rename_context_co_nil in H1. simpl in H1. contradiction.
+       destruct a. rewrite cons_app_one in H1.
+       rewrite list_rename_context_co_app in H1.
+       rewrite codom_app in H1. apply in_app_or in H1.
+       inversion H1. destruct s. admit.
+       assert (y = list_rename_atom l a). admit. subst.
+       apply list_rename_atom_inll. apply (H0 a). simpl; auto. auto.
+       eapply IHG; eauto. destruct s; intros; eauto.
+       apply (H0 x). simpl; auto.   Admitted.
 
 Lemma axiom_fresh : forall p b p1 b1 D1 D1' D2 W G V F A B,
       fv_tm_tm_tm A [<=] empty /\ fv_co_co_tm A [<=] empty ->
