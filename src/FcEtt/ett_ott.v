@@ -1551,13 +1551,13 @@ Inductive Beta : tm -> tm -> role -> Prop :=    (* defn Beta *)
      AppsPath Nom a F Apps5 ->
      ApplyArgs a b1 b1' ->
      SatApp F Apps' ->
-     Beta (a_Pattern Nom a F Apps5 b1 b2) (a_CApp b1' g_Triv) R0
+     Beta  ( (a_Pattern Nom a F Apps5 b1 b2) )  (a_CApp b1' g_Triv) R0
  | Beta_PatternFalse : forall (a:tm) (F:const) (Apps5:Apps) (b1 b2:tm) (R0:role),
      lc_tm b1 ->
      lc_tm b2 ->
      Value Nom a ->
       not (  ( AppsPath Nom a F Apps5 )  )  ->
-     Beta (a_Pattern Nom a F Apps5 b1 b2) b2 R0
+     Beta  ( (a_Pattern Nom a F Apps5 b1 b2) )  b2 R0
 with reduction_in_one : tm -> tm -> role -> Prop :=    (* defn reduction_in_one *)
  | E_AbsTerm : forall (L:vars) (a a':tm) (R1:role),
       ( forall x , x \notin  L  -> reduction_in_one  ( open_tm_wrt_tm a (a_Var_f x) )   ( open_tm_wrt_tm a' (a_Var_f x) )  R1 )  ->
@@ -1573,7 +1573,7 @@ with reduction_in_one : tm -> tm -> role -> Prop :=    (* defn reduction_in_one 
      lc_tm b1 ->
      lc_tm b2 ->
      reduction_in_one a a' Nom ->
-     reduction_in_one (a_Pattern Nom a F Apps5 b1 b2) (a_Pattern Nom a' F Apps5 b1 b2) R0
+     reduction_in_one  ( (a_Pattern Nom a F Apps5 b1 b2) )   ( (a_Pattern Nom a' F Apps5 b1 b2) )  R0
  | E_Prim : forall (a b:tm) (R:role),
      Beta a b R ->
      reduction_in_one a b R

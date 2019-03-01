@@ -12,6 +12,53 @@ Require Import FcEtt.notations.
 Require Import FcEtt.param.
 Require Import FcEtt.tactics.
 
+Lemma RolesApps : forall Rs, exists r, AppRoles r Rs.
+Proof.
+  induction Rs.
+  exists A_nil. auto.
+  destruct IHRs as [r h].
+  case: a.
+  exists (A_cons (A_Tm (Rho Rel)) r). eauto.
+  exists (A_cons (A_Tm (Role Rep)) r). eauto.
+Qed.  
+
+Lemma AppsPath_Sat : forall R A F r,
+  AppsPath R A F r -> exists r', SatApp F r'.
+Proof.
+  intros.
+  induction H.
+  + destruct (RolesApps Rs) as [r p].
+  exists r. eauto.
+  + destruct (RolesApps Rs) as [r h0].
+  exists r. eauto.
+  + destruct IHAppsPath as [r' sa].
+    ++ inversion sa; subst.
+       exists r'. auto.
+       exists r'. auto.
+  + destruct IHAppsPath as [r' sa].
+    inversion sa; subst.
+       exists r'. auto.
+       exists r'. auto.
+  + destruct IHAppsPath as [r' sa].
+    inversion sa; subst.
+       exists r'. auto.
+       exists r'. auto.
+Qed.
+
+Lemma Beta_PatternTrue2 : 
+      ∀ (a : tm) (F : const) (Apps5 : Apps) (b1 b2 b1' : tm) 
+         (R0 : role) , lc_tm b2
+                             ⟹ AppsPath Nom a F Apps5
+                             ⟹ ApplyArgs a b1 b1'
+                             ⟹ Beta
+                             (a_Pattern Nom a F Apps5 b1 b2)
+                             (a_CApp b1' g_Triv) R0.
+Proof.
+  intros.
+  destruct (AppsPath_Sat H0).
+  eapply Beta_PatternTrue; eauto.
+Qed.  
+
 Set Bullet Behavior "Strict Subproofs".
 Set Implicit Arguments.
 
