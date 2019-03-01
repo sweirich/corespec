@@ -499,6 +499,32 @@ Proof.
   RhoCheck_inversion y; eauto with lngen lc.
 Qed.
 
+Lemma co_subst_rho_g: forall L x y a rho g
+    (Neq: x <> y)
+    (Fr2: y `notin` L \u fv_tm_tm_co g)
+    (LC: lc_co g)
+    (K : (forall x, x `notin` L -> RhoCheck rho x (open_tm_wrt_tm a (a_Var_f x)))),
+    RhoCheck rho y  (co_subst_co_tm g x (open_tm_wrt_tm a (a_Var_f y))).
+Proof.
+  intros.
+  RhoCheck_inversion y; eauto with lngen lc.
+Qed.
+
+Lemma co_subst_rho_g2: forall L x y a rho g
+    (Neq: x <> y)
+    (Fr2: y `notin` L \u fv_tm_tm_co g)
+    (LC: lc_co g)
+    (K : (forall x, x `notin` L -> RhoCheck rho x (open_tm_wrt_tm a (a_Var_f x)))),
+    RhoCheck rho y (open_tm_wrt_tm (co_subst_co_tm g x a) (a_Var_f y)).
+Proof.
+  intros.
+  RhoCheck_inversion y; eauto with lngen lc.
+  replace (a_Var_f y) with (co_subst_co_tm g x (a_Var_f y)).
+  autorewrite with open_subst; eauto with lngen lc.
+  simpl. auto.
+Qed.
+
+
 
 Lemma co_subst_co_tm_apply_pattern_args: `{
   co_subst_co_tm g c (apply_pattern_args b pat_args) =
@@ -595,34 +621,40 @@ Qed.
 
 Lemma co_substitution_mutual :
     (forall G0 b B (H : Typing G0 b B),
-        forall G D A1 A2 T R' F c ,
+        forall G D A1 A2 T R' F c g,
           G0 = (F ++ (c ~ Co (Eq A1 A2 T R') ) ++ G)
           -> DefEq G D A1 A2 T R'
-          -> Typing (map (co_subst_co_sort g_Triv c) F ++ G) (co_subst_co_tm g_Triv c b) (co_subst_co_tm g_Triv c B)) /\
+          -> lc_co g
+          -> Typing (map (co_subst_co_sort g c) F ++ G)
+                   (co_subst_co_tm g c b) (co_subst_co_tm g c B)) /\
     (forall G0 phi  (H : PropWff G0 phi ),
-        forall G D A1 A2 T R' F c,
+        forall G D A1 A2 T R' F c g,
           G0 = (F ++ (c ~ Co (Eq A1 A2 T R') ) ++ G)
           -> DefEq G D A1 A2 T R'
-          -> PropWff (map (co_subst_co_sort g_Triv c) F ++ G) (co_subst_co_constraint g_Triv c phi) ) /\
+          -> lc_co g
+          -> PropWff (map (co_subst_co_sort g c) F ++ G) (co_subst_co_constraint g c phi) ) /\
     (forall G0 D0 p1 p2  (H : Iso G0 D0 p1 p2 ),
-          forall G D A1 A2 T R' F c,
+          forall G D A1 A2 T R' F c g,
             G0 = (F ++ (c ~ Co (Eq A1 A2 T R') ) ++ G)
             -> DefEq G D A1 A2 T R'
-            -> Iso (map (co_subst_co_sort g_Triv c) F ++ G) (union D (remove c D0))
-                    (co_subst_co_constraint g_Triv c p1)
-                    (co_subst_co_constraint g_Triv c p2) ) /\
+            -> lc_co g
+            -> Iso (map (co_subst_co_sort g c) F ++ G) (union D (remove c D0))
+                    (co_subst_co_constraint g c p1)
+                    (co_subst_co_constraint g c p2) ) /\
     (forall G0 D0 A B T R'' (H : DefEq G0 D0 A B T R''),
-        forall G D F c A1 A2 T1 R',
+        forall G D F c A1 A2 T1 R' g,
           G0 = (F ++ (c ~ Co (Eq A1 A2 T1 R') ) ++ G)
           -> DefEq G D A1 A2 T1 R'
-          -> DefEq (map (co_subst_co_sort g_Triv c) F ++ G) (union D (remove c D0))
-                  (co_subst_co_tm g_Triv c A) (co_subst_co_tm g_Triv c B)
-                  (co_subst_co_tm g_Triv c T) R'') /\
+          -> lc_co g
+          -> DefEq (map (co_subst_co_sort g c) F ++ G) (union D (remove c D0))
+                  (co_subst_co_tm g c A) (co_subst_co_tm g c B)
+                  (co_subst_co_tm g c T) R'') /\
     (forall G0 (H : Ctx G0),
-        forall G D F c A1 A2 T R',
+        forall G D F c A1 A2 T R' g,
           G0 = (F ++ (c ~ Co (Eq A1 A2 T R') ) ++ G)
           -> DefEq G D A1 A2 T R'
-          -> Ctx (map (co_subst_co_sort g_Triv c) F ++ G)).
+          -> lc_co g
+          -> Ctx (map (co_subst_co_sort g c) F ++ G)).
 Proof.
   ext_induction CON; 
   (* adds an assumption to the context saying what branch we are in. *)
@@ -632,7 +664,7 @@ Proof.
                     try rewrite_subst_context; eauto 3
                   | autorewrite with subst_open; eauto 2 with lc ].
   all: try eapply_E_subst; eauto 2.
-  all: try solve [eapply co_subst_rho; eauto 2].
+  all: try solve [eapply (@co_subst_rho_g L); eauto 2].
   all: try solve [eapply_first_hyp; eauto 2; auto].
   all: try solve [eapply RolePath_subst_co; eauto 2 with lc].
   all: try solve [eapply DefEq_weaken_available; eauto 2].
@@ -643,7 +675,8 @@ Proof.
       apply E_Var; auto.
       * apply (H _ D _ _ A1 A2 T R'); auto.
       * apply binds_app_2.
-        apply binds_map_4; auto.
+        eapply binds_map_2 with (f:= (co_subst_co_sort g c0)) in h0.
+        simpl in h0. auto.
     + intros b.
       apply binds_app_1 in b.
       case:b; try solve [move => h0; inversion h0; inversion H0].
@@ -671,25 +704,23 @@ Proof.
      happly bt.
      unshelve instantiate (1:= _); [refine (a_Fam _) | reflexivity].
      unshelve instantiate (1:= _); [refine ([]) | reflexivity].
-(*    eapply E_Case; eauto 2.
-    replace (a_Fam F) with  (co_subst_co_tm g_Triv c (a_Fam F)); auto.
-    admit. 
-    admit. eapply BranchTyping_co_subst; eauto 2. *)
   - eapply E_CPiFst; eauto 3.
     eapply H; eauto.
   -  destruct (binds_cases G0 F c _ c1 _ (Ctx_uniq c0) b0) as [ (bf & NE & Fr) | [(E1 & E2) | (bg & NE & Fr)]].
     + eapply E_Assn; eauto 3.
       apply binds_app_2.
-      apply binds_map_5. eauto 1.
+      eapply binds_map_2 with (f := (co_subst_co_sort g c1)) in bf.
+      simpl in bf.
+      auto.
     + inversion E2. subst. clear E2.
       have: Ctx ([(c1, Co (Eq A1 A2 T1 R'))] ++ G0).
       apply (Ctx_strengthen _ F); auto.
       move => Hi2.
       inversion Hi2; subst; clear Hi2.
-      inversion H5; subst; clear H5.
+      inversion H6; subst; clear H6.
       repeat rewrite co_subst_co_tm_fresh_eq; eauto 2.
       all: try show_fresh. fsetdec. fsetdec.
-      rewrite_env (nil ++(map (co_subst_co_sort g_Triv c1) F) ++ G0).
+      rewrite_env (nil ++(map (co_subst_co_sort g c1) F) ++ G0).
       eapply (fourth weaken_available_mutual).
       pose K := DefEq_weakening.
       apply (K _ _ _ _ _ _ H1); eauto 2.
@@ -725,26 +756,26 @@ Proof.
     happly bt;
     only 1, 3: (unshelve instantiate (1:= _); [refine (a_Fam _) | reflexivity]);
     do 2 (only 1: unshelve instantiate (1:= _); [refine ([]) | reflexivity]).
-  - eapply E_LeftRel with (b := co_subst_co_tm g_Triv c1 b) (b':= co_subst_co_tm g_Triv c1 b'); eauto 2.
-    move: (CasePath_subst_co c1 c lc_g_Triv) => h. eauto.
-    move: (CasePath_subst_co c1 c0 lc_g_Triv) => h. eauto.
+  - eapply E_LeftRel with (b := co_subst_co_tm g c1 b) (b':= co_subst_co_tm g c1 b'); eauto 2.
+    move: (CasePath_subst_co c1 c H7) => h. eauto.
+    move: (CasePath_subst_co c1 c0 H7) => h. eauto.
     autorewrite with open_subst; eauto 2 with lc.
     (* eapply H3; eauto. *)
     autorewrite with open_subst; eauto 2 with lc.
     eapply DefEq_weaken_available; eauto 2.
 
-  - eapply E_LeftIrrel with (b := co_subst_co_tm g_Triv c1 b)
-                              (b':= co_subst_co_tm g_Triv c1 b'); eauto 2.
-    move: (CasePath_subst_co c1 c lc_g_Triv) => h. eauto.
-    move: (CasePath_subst_co c1 c0 lc_g_Triv) => h. eauto.
+  - eapply E_LeftIrrel with (b := co_subst_co_tm g c1 b)
+                              (b':= co_subst_co_tm g c1 b'); eauto 2.
+    move: (CasePath_subst_co c1 c H7) => h. eauto.
+    move: (CasePath_subst_co c1 c0 H7) => h. eauto.
     autorewrite with open_subst; eauto 2 with lc.
     eapply H3; eauto.
     autorewrite with open_subst; eauto 2 with lc.
     eapply DefEq_weaken_available; eauto 2.
-  - eapply E_Right with (a := co_subst_co_tm g_Triv c1 a)
-                        (a':= co_subst_co_tm g_Triv c1 a'); eauto 2.
-    move: (CasePath_subst_co c1 c lc_g_Triv) => h. eauto.
-    move: (CasePath_subst_co c1 c0 lc_g_Triv) => h. eauto.
+  - eapply E_Right with (a := co_subst_co_tm g c1 a)
+                        (a':= co_subst_co_tm g c1 a'); eauto 2.
+    move: (CasePath_subst_co c1 c H7) => h. eauto.
+    move: (CasePath_subst_co c1 c0 H7) => h. eauto.
     simpl in H. eapply H; eauto 2.
     simpl in H1. eapply H1; eauto 2.
     autorewrite with open_subst; auto.
@@ -752,12 +783,12 @@ Proof.
     autorewrite with open_subst; auto.
     eapply DefEq_weaken_available; eauto 2.
   - eapply E_CLeft; eauto 2.
-    move: (CasePath_subst_co c1 c lc_g_Triv) => h. eauto.
-    move: (CasePath_subst_co c1 c0 lc_g_Triv) => h. eauto.
+    move: (CasePath_subst_co c1 c H5) => h. eauto.
+    move: (CasePath_subst_co c1 c0 H5) => h. eauto.
     eapply H; eauto 2.
     eapply H0; eauto 2.
     eapply DefEq_weaken_available; eauto 2.
-    replace g_Triv with (co_subst_co_co g_Triv c1 g_Triv).
+    replace g_Triv with (co_subst_co_co g c1 g_Triv).
     autorewrite with open_subst; eauto 2 with lc.
     auto.
   - induction F; done.
@@ -776,13 +807,13 @@ Proof.
         auto.
   - inversion H1; subst; clear H1.
     induction F; try done.
-    + inversion H4; subst; clear H4; auto.
+    + inversion H5; subst; clear H5; auto.
     + destruct a.
-      destruct s; try inversion H4.
+      destruct s; try inversion H5.
       simpl; subst.
       apply E_ConsCo; auto.
       * apply (H _ D _ _ A1 A2 T R'); auto.
-      * inversion H4; subst; clear H4.
+      * inversion H5; subst; clear H5.
          apply (H0 G0 D A1 A2 T R' F c1); auto.
 
   Unshelve.
@@ -864,6 +895,273 @@ Proof.
   rewrite -tm_subst_tm_tm_intro in K2; auto.
   Unshelve. all: auto.
 Qed.
+
+Ltac co_subst_hyp :=
+  match goal with
+  | [a0 : Typing _ (a_UAbs ?rho ?A1 ?b) _  |-  
+          Typing _ (a_UAbs ?rho (_ ?A1) (_ ?b)) _ ] =>
+      eapply (first co_substitution_mutual _ _ _ a0); eauto
+  | [a0 :  Typing _ (a_Pi ?rho ?A1 ?B1) _ |- 
+           Typing _ (a_Pi ?rho (_ ?A1) (_ ?B1)) _  ] =>
+      eapply (first co_substitution_mutual _ _ _ a0); eauto
+  | [a0 : Typing _ (a_UCAbs ?phi ?B) _  |- Typing _ (a_UCAbs (_ ?phi) (_ ?B)) _ ] =>
+      eapply (first co_substitution_mutual _ _ _ a0); eauto
+  | [a0 : Typing _ (a_CPi ?phi ?B) _ |- Typing _ (a_CPi (_ ?phi) (_ ?B)) _ ] =>
+    eapply (first co_substitution_mutual _ _ _ a0); eauto
+  | [ a0 : Typing _ (a_App ?a1 ?rho ?a2) _ |- 
+           Typing _ (a_App (_ ?a1) ?rho (_ ?a2)) _ ] =>
+    eapply (first co_substitution_mutual _ _ _ a0); eauto
+  | [ a0 : Typing _ (a_CApp ?a1 ?g2) _ |- Typing _ (a_CApp (_ ?a1) (_ ?g2)) _ ] =>
+    eapply (first co_substitution_mutual _ _ _ a0); eauto
+  | [a0 : DefEq _  _  (a_CPi ?phi1 ?B1) (a_CPi ?phi2 ?B2) _  _ |-
+     DefEq _ _  (a_CPi (_ ?phi1) _) (a_CPi (_ ?phi2) _) _ _  ] =>
+    eapply DefEq_weaken_available;
+    eapply (fourth co_substitution_mutual _ _ _ _ _ a0);
+    eauto
+  | [a0 : PropWff _ (Eq ?a ?b ?A ?R) |- PropWff _ (Eq (_ ?a) (_ ?b) (_ ?A) ?R) ] =>
+    eapply (second co_substitution_mutual _ _ a0); eauto
+  | [ a0 : Typing _ ?a _ |- Typing _ (_ ?a) _ ] =>
+    eapply (first co_substitution_mutual _ _ _ a0); eauto
+  | [a0 : DefEq _ _ ?a _ _ _ |- DefEq _ _ (_ ?a) _ _ _ ] =>
+      eapply DefEq_weaken_available;
+      eapply (fourth co_substitution_mutual _ _ _ _ _ a0);
+      eauto
+  end.
+
+Ltac prepare_env :=
+  match goal with
+    | [ |- context[ (?x' ~ (?S (?sub ?a1 ?x ?A))) ++ map (?tm_subst_tm_sort ?a1 ?x) ?F ++ ?G ] ] =>
+    rewrite app_assoc;
+    replace (x' ~ (S (sub a1 x A)) ++  map (co_subst_co_sort a1 x) F) with
+    (map (co_subst_co_sort a1 x) (x' ~ S A ++ F)); eauto 2 using map_app
+    | [ |- context[ (?x' ~ (?S (Eq (?sub ?a) (?sub ?b) (?sub ?A) ?R))) ++ map (?tm_subst_tm_sort ?a1 ?x) ?F ++ ?G ] ] =>
+    rewrite app_assoc;
+    replace (x' ~ (S (Eq (sub a) (sub b) (sub A) R)) ++  map (co_subst_co_sort a1 x) F) with
+    (map (co_subst_co_sort a1 x) (x' ~ S (Eq a b A R) ++ F)); eauto 2 using map_app
+
+  end.
+
+
+
+(* The co_swap version needs a special version of the 
+   substitution lemma. *)
+
+Lemma co_substitution_mutual2 :
+    (forall G0 b B, Typing G0 b B -> True) /\
+    (forall G0 phi, PropWff G0 phi -> True) /\
+    (forall G0 D0 p1 p2 (H : Iso G0 D0 p1 p2),
+        forall D G g A1 A2 A3 R F c, G0 = (F ++ (c ~ Co (Eq A1 A2 A3 R)) ++ G)
+                              -> DefEq G D A1 A2 A3 R
+                              -> lc_co g
+                              -> c `notin` D0
+                              -> Iso (map (co_subst_co_sort g c) F ++ G)
+                                       D0
+                                       (co_subst_co_constraint g c p1)
+                                       (co_subst_co_constraint g c p2)) /\
+    (forall G0 D0 a b A R1 (H : DefEq G0 D0 a b A R1),
+        forall G D g F c A1 A2 A3 R, G0 = (F ++ (c ~ Co (Eq A1 A2 A3 R)) ++ G)
+                              -> DefEq G D A1 A2 A3 R
+                              -> lc_co g
+                              -> c `notin` D0
+                              -> DefEq (map (co_subst_co_sort g c) F ++ G) D0
+                                         (co_subst_co_tm g c a) 
+                                         (co_subst_co_tm g c b)
+                                         (co_subst_co_tm g c A) R1) /\
+    (forall G0, Ctx G0 -> True).
+Proof. 
+  ext_induction CON; 
+  (* adds an assumption to the context saying what branch we are in. *)
+  (* apply typing_wff_iso_defeq_mutual; *)
+  intros; subst; auto.
+
+  all: simpl co_subst_co_tm in *;
+       simpl co_subst_co_co in *;
+       simpl co_subst_co_constraint in *.
+
+  all: match goal with
+         [H1 : DefEq ?G0 ?D ?A1 ?A2 ?A3 ?R |- _ ] =>
+         move: (DefEq_lc H1) => [? [? ?]] end.
+
+  all: try (E_pick_fresh x'; eauto 2; try (have neq: c <> x' by fsetdec_fast)).
+
+
+  all: (* rho check *)
+      try (apply (@co_subst_rho_g2 L); auto).
+
+  all: (* substitution dance for the body *)
+       try (autorewrite with subst_open_var; auto;
+            rewrite_body;
+            autorewrite with subst_open; auto;
+            try (simpl; case: (x' == c) => [?|//]; by subst)).
+
+  all: try (prepare_env; repeat autorewrite with subst_open_var => //;
+       eauto using app_assoc).
+
+  all: try (autorewrite with open_subst; eauto 2; 
+            eapply DefEq_weaken_available; eauto 2).
+
+  all: try co_subst_hyp.
+
+  all: try (autorewrite with subst_open; auto).
+
+  all: try solve [eapply CON; eauto 2; try co_subst_hyp].
+
+  - simpl; simpl in H.
+    apply binds_app_1 in b0.
+    case:b0; try done.
+    + move => h0.
+      * eapply E_Assn; eauto 2.
+        eapply (fifth co_substitution_mutual); eauto.
+        apply binds_app_2.
+        apply binds_map with (f:= co_subst_co_sort g c1) in h0; eauto.
+    + move => h0.
+      destruct (eq_dec c c1); first subst c1. done.
+      destruct (binds_app_1 _ c _ _ _ h0).
+      pose K := ( binds_one_1 _ _ _ _ _ H0). done.
+      eapply E_Assn; eauto 2.
+      eapply (fifth co_substitution_mutual); eauto 1.
+      assert (c1 `notin` dom G0).
+      eapply fresh_mid_tail. eapply Ctx_uniq. eauto 1.
+      assert (PropWff G0 (Eq a b A R)).
+      eapply binds_to_PropWff; eauto 1.
+      eapply Ctx_strengthen.
+      eapply Ctx_strengthen. eauto 2.
+      inversion H5. subst.
+      move: (Typing_context_fv H10) => ?. 
+      move: (Typing_context_fv H12) => ?.
+      split_hyp.
+      rewrite co_subst_co_tm_fresh_eq; auto. fsetdec.
+      apply binds_app_3; eauto.
+      rewrite co_subst_co_tm_fresh_eq.
+      fsetdec.
+      rewrite co_subst_co_tm_fresh_eq.
+      fsetdec.
+      auto.
+  - eapply E_Beta; try co_subst_hyp; eauto.
+    eapply Beta_co_subst; auto.
+  - eapply E_TAppCong; eauto 2.
+    eapply RolePath_subst_co; eauto.
+    eapply RolePath_subst_co; eauto.
+    autorewrite with open_subst.
+    co_subst_hyp.
+    auto.
+  - eapply (first co_substitution_mutual _ _ _ t); eauto.
+  - eapply (first co_substitution_mutual _ _ _ t0); eauto.
+  - eapply (second co_substitution_mutual _ _ p); eauto.
+  - eapply E_CAppCong; eauto 2.
+    autorewrite with open_subst. 
+    eapply DefEq_weaken_available.
+    eapply (fourth co_substitution_mutual _ _ _ _ _ _ d0); eauto.
+  - simpl. eapply CON; eauto 2. 
+    eapply DefEq_weaken_available.
+    eapply (fourth co_substitution_mutual _ _ _ _ _ _ d0); eauto.
+    eapply DefEq_weaken_available.
+    eapply (fourth co_substitution_mutual _ _ _ _ _ _ d1); eauto.
+  - eapply CON; eauto 2.
+    eapply DefEq_weaken_available.
+    eapply (fourth co_substitution_mutual _ _ _ _ _ _ d0); eauto.
+    co_subst_hyp.
+  - eapply CON; eauto 2.
+    replace nil with (List.map (co_subst_co_pattern_arg g c) nil); auto.
+    replace (a_Fam F) with (co_subst_co_tm g c (a_Fam F)); try auto. 
+    eapply BranchTyping_co_subst; eauto 2.
+    replace nil with (List.map (co_subst_co_pattern_arg g c) nil); auto.
+    replace (a_Fam F) with (co_subst_co_tm g c (a_Fam F)); try auto. 
+    eapply BranchTyping_co_subst; eauto 2.
+    replace (a_Fam F) with (co_subst_co_tm g c (a_Fam F)); try auto. 
+    co_subst_hyp.
+  - eapply CON; eauto 2.
+    eapply (CasePath_subst_co _ c); auto.
+    eapply (CasePath_subst_co _ c0); auto.
+    all: try co_subst_hyp.
+    all: fold co_subst_co_tm.
+    autorewrite with open_subst; auto.
+    eapply H3; eauto 2.
+    replace a_Star with (co_subst_co_tm g c1 a_Star).
+    autorewrite with open_subst; auto.
+    eapply DefEq_weaken_available.
+    eapply (fourth co_substitution_mutual _ _ _ _ _ _ d0); eauto.
+    auto.
+  - eapply CON; eauto 2.
+    eapply (CasePath_subst_co _ c); auto.
+    eapply (CasePath_subst_co _ c0); auto.
+    all: try co_subst_hyp.
+    eapply (first co_substitution_mutual _ _ _ t0); eauto.
+    eapply (first co_substitution_mutual _ _ _ t2); eauto.
+    autorewrite with open_subst; auto.
+    eapply H3; eauto 2.
+    eapply DefEq_weaken_available.
+    autorewrite with open_subst; auto.
+    replace a_Star with (co_subst_co_tm g c1 a_Star).
+    eapply (fourth co_substitution_mutual _ _ _ _ _ _ d0); eauto.
+    reflexivity.
+  - eapply CON; eauto 2.
+    eapply (CasePath_subst_co _ c); auto.
+    eapply (CasePath_subst_co _ c0); auto.
+    all: try co_subst_hyp.
+    all: fold co_subst_co_tm.
+    autorewrite with open_subst; auto.
+    eapply H3; eauto 2.
+    eapply DefEq_weaken_available.
+    autorewrite with open_subst; auto.
+    replace a_Star with (co_subst_co_tm g c1 a_Star).
+    eapply (fourth co_substitution_mutual _ _ _ _ _ _ d0); eauto.
+    reflexivity.
+  - eapply CON; eauto 2.
+    eapply (CasePath_subst_co _ c); auto.
+    eapply (CasePath_subst_co _ c0); auto.
+    all: try co_subst_hyp.
+    all: fold co_subst_co_tm.
+    eapply DefEq_weaken_available.
+    eapply (fourth co_substitution_mutual _ _ _ _ _ _ d); eauto.
+    replace (open_tm_wrt_co (co_subst_co_tm g c1 B) g_Triv) with 
+        (co_subst_co_tm g c1 (open_tm_wrt_co B g_Triv)).
+    eapply H2; eauto 2.
+    autorewrite with subst_open. simpl. auto. auto.
+Unshelve. 
+  all: try eauto 1.
+Qed.
+  
+
+
+Lemma DefEq_swap_co : forall x1 x G phi D b1 b2 B R,
+   x1 `notin` fv_co_co_tm b1 \u fv_co_co_tm b2 \u fv_co_co_tm B \u dom G \u D
+  -> x `notin` dom G \u {{ x1 }}
+  -> DefEq ([(x1, Co phi)] ++ G) D
+          (open_tm_wrt_co b1 (g_Var_f x1)) (open_tm_wrt_co b2 (g_Var_f x1))
+          (open_tm_wrt_co B (g_Var_f x1)) R
+  -> DefEq ([(x, Co phi)] ++ G) D
+          (open_tm_wrt_co b1 (g_Var_f x)) (open_tm_wrt_co b2 (g_Var_f x))
+          (open_tm_wrt_co B (g_Var_f x)) R.
+Proof.
+  intros.
+
+  destruct phi as [a0 b0 A0 R0].
+  assert (AC: Ctx ((x ~ Co (Eq a0 b0 A0 R0) ++ G))).
+  move: (DefEq_Ctx H1) => h0. inversion h0. eauto.
+  inversion AC; subst.
+
+  assert (TV : DefEq ([(x,Co (Eq a0 b0 A0 R0))] ++ G) 
+                   (dom ([(x,Co (Eq a0 b0 A0 R0))] ++ G)) a0 b0 A0 R0).
+  { eapply E_Assn; eauto 3. 
+    simpl. auto. }
+  assert (CTX : Ctx ([(x1,Co (Eq a0 b0 A0 R0))] ++ [(x, Co (Eq a0 b0 A0 R0))] ++ G)).
+  { eapply E_ConsCo; eauto 2.
+  with PropWff do ltac:(fun h => 
+    pose M1 := (PropWff_weakening h [(x,Co (Eq a0 b0 A0 R0))] nil G)).
+  simpl_env in M1; eapply M1; eauto. }
+
+  move: (DefEq_weakening H1 [(x,Co (Eq a0 b0 A0 R0))] 
+                            [(x1, Co (Eq a0 b0 A0 R0))] G eq_refl CTX) => K1.
+  move: (fourth co_substitution_mutual2 _ _ _ _ _ _ K1 
+                ([(x,Co (Eq a0 b0 A0 R0))] ++ G) _ (g_Var_f x) 
+                nil x1 _ _ _ _  eq_refl TV ltac:(auto)) => K2.  
+  simpl_env in K2.
+  rewrite -co_subst_co_tm_intro in K2; auto.
+  rewrite -co_subst_co_tm_intro in K2; auto.
+  rewrite -co_subst_co_tm_intro in K2; auto.
+Qed.
+
 
 Lemma BranchTyping_swap : forall x1 x G a b A A1 B C C' Apps args,
       x1 `notin` fv_tm_tm_tm a \u fv_tm_tm_tm b \u fv_tm_tm_tm A1 \u dom G

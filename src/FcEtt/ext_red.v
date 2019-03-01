@@ -1423,7 +1423,7 @@ Proof.
     destruct co_substitution_mutual as [L _].
     specialize (L _ _ _ Tb2 G (dom G) (cps_tm a0 s) (cps_tm b0 s) (cps_tm A0 s) R0).
     simpl_env in L.
-    specialize (L (EnvImpl.map (cps_sort^~ s) Gp2) c eq_refl).
+    specialize (L (EnvImpl.map (cps_sort^~ s) Gp2) c g_Triv eq_refl).
     have ?: G ∥ dom G ⊨ cps_tm a0 s ∼ cps_tm b0 s : cps_tm A0 s / R0.
     { 
       eapply E_Cast. eapply H7.
@@ -1454,6 +1454,7 @@ Proof.
     rewrite co_subst_co_tm_fresh_eq in L. 
     show_fresh. fsetdec.
     eapply L. 
+    auto.
 Qed.
 
 
@@ -1902,7 +1903,9 @@ Proof.
     fsetdec.
     destruct phi.
     eapply (@E_CPiCong3 x0); eauto 2.
-    unhide Fr. fsetdec.
+    unhide Fr. 
+    autorewrite with lngen.
+    fsetdec.
     eapply refl_iso; eauto 1.
     rewrite open_tm_wrt_co_close_tm_wrt_co.
     eapply h2.

@@ -1303,7 +1303,7 @@ Qed.
 
 Lemma E_CPiCong3  : ∀ c (G : context) (D : available_props) a0 b0 T0
                       (A : tm) a1 b1 T1 (B : tm) R R',
-    c `notin` dom G -> 
+    c `notin` dom G \u D \u fv_co_co_tm A \u fv_co_co_tm B-> 
     Iso G D (Eq a0 b0 T0 R) (Eq a1 b1 T1 R)
     → DefEq ([(c, Co (Eq a0 b0 T0 R))] ++ G) D (open_tm_wrt_co A (g_Var_f c))
             (open_tm_wrt_co B (g_Var_f c)) a_Star R'
@@ -1311,8 +1311,13 @@ Lemma E_CPiCong3  : ∀ c (G : context) (D : available_props) a0 b0 T0
 Proof.
   intros.
   pick fresh y and apply E_CPiCong2; auto.
-  (* Needs DefEq_swap_co *)
-Admitted. (* Renaming lemma *)
+  replace (a_Star) with (open_tm_wrt_co a_Star (g_Var_f y)).
+  eapply (@DefEq_swap_co c y). simpl. 
+  hide Fr. fsetdec.
+  fsetdec.
+  auto.
+  reflexivity.
+Qed.
 
 
 (****************************)
