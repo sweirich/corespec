@@ -637,13 +637,13 @@ Admitted.
 
 (** Some useful functions and propositions **)
 
-Fixpoint left_list (l : list (atom * atom)) :=
+Fixpoint left_list A B (l : list (A * B)) :=
    match l with
    | nil => nil
    | (y, x) :: l' => y :: (left_list l')
    end.
 
-Fixpoint right_list (l : list (atom * atom)) :=
+Fixpoint right_list A B (l : list (A * B)) :=
    match l with
    | nil => nil
    | (y, x) :: l' => x :: (right_list l')
@@ -1154,6 +1154,85 @@ Proof. induction l; intros; simpl in *.
        destruct a1. destruct s. simpl. auto. simpl. f_equal. auto.
 Qed.
 
+Lemma list_rename_context_tm_nil : forall l, list_rename_context_tm l nil = nil.
+Proof. induction l; eauto.
+Qed.
+
+Lemma rename_context_tm_app : forall G1 G2 y x,
+      rename_context_tm y x (G1 ++ G2) =
+                     rename_context_tm y x G1 ++ rename_context_tm y x G2.
+Proof. induction G1; intros; eauto.
+       simpl. destruct a. simpl. f_equal. eauto.
+Qed.
+
+Lemma list_rename_context_tm_app : forall l G1 G2,
+      list_rename_context_tm l (G1 ++ G2) = list_rename_context_tm l G1
+         ++ list_rename_context_tm l G2.
+Proof. induction l. intros. unfold list_rename_context_tm. simpl.
+       auto. intros. destruct G1.
+       simpl. rewrite list_rename_context_tm_nil. simpl. auto.
+       simpl. destruct a. simpl. destruct p. simpl.
+       rewrite cons_app_one. rewrite IHl. rewrite cons_app_one.
+       rewrite IHl. rewrite <- app_assoc. f_equal.
+       rewrite rename_context_tm_app. eauto.
+Qed.
+
+Lemma list_rename_context_tm_split : forall l G,
+      left_list (list_rename_context_tm l G) =
+      List.map (list_rename_atom l) (left_list G).
+Proof. induction l; intros; simpl in *.
+       unfold list_rename_atom. simpl.
+       induction G; eauto. destruct a. destruct s; simpl in *; eauto.
+       f_equal; auto. f_equal; auto.
+       destruct a. simpl. rewrite IHl. clear.
+       induction G. unfold list_rename_atom. simpl. auto.
+       destruct a1. destruct s. simpl. f_equal. auto.
+       simpl. f_equal; auto.
+Qed.
+
+Lemma tmdom_app : forall G1 G2, tmdom (G1 ++ G2) = tmdom G1 ++ tmdom G2.
+Proof. induction G1; intros; eauto.
+       destruct a. destruct s. simpl. f_equal. eauto.
+       simpl. eauto.
+Qed.
+
+Lemma list_rename_atom_same : forall l a, ~In a (right_list l) ->
+      list_rename_atom l a = a.
+Proof. induction l; intros; eauto. destruct a. simpl in *.
+       destruct (a0 == a1). subst. assert False. apply H. auto.
+       contradiction. rewrite rename_atom_diff_same. auto. eauto.
+Qed.
+
+Lemma list_rename_atom_inll : forall l a, In a (right_list l) ->
+      NoDup (right_list l) ->
+      disj_list_list (left_list l) (right_list l) ->
+      In (list_rename_atom l a) (left_list l).
+Proof. induction l; intros; eauto.
+       simpl. destruct a. simpl in *.
+       inversion H; clear H. subst. rewrite rename_atom_diff.
+       left. rewrite list_rename_atom_same.
+       unfold disj_list_list in *. intro. eapply (H1 a). simpl; auto.
+       simpl; auto. auto. destruct (a0 == a1). subst.
+       rewrite rename_atom_diff. right. Admitted.
+
+Lemma tmdom_renamed_context : forall G l,
+      NoDup (right_list l) ->
+      NoDup (left_list l) ->
+      disj_list_list (left_list l) (right_list l) ->
+      (forall x, In x (tmdom G) -> In x (right_list l)) ->
+      (forall y, In y (tmdom (list_rename_context_tm l G))
+                                  -> In y (left_list l)).
+Proof. induction G; intros; simpl in *.
+       rewrite list_rename_context_tm_nil in H3. simpl in H3. contradiction.
+       destruct a. rewrite cons_app_one in H3.
+       rewrite list_rename_context_tm_app in H3.
+       rewrite tmdom_app in H3. apply in_app_or in H3.
+       inversion H3. destruct s.
+       assert (y = list_rename_atom l a). admit. subst.
+        simpl in *.
+        eapply IHG; eauto.
+       intros.   Admitted.
+
 Lemma axiom_fresh : forall p b p1 b1 D1 D1' D2 W G V F A B,
       fv_tm_tm_tm A [<=] empty /\ fv_co_co_tm A [<=] empty ->
       Rename p b p1 b1 D1 D1' /\
@@ -1186,13 +1265,18 @@ Proof. intros. inversion H0 as [h1 [h2 h3]]; clear H0.
        inversion H. fsetdec. rewrite tm_subst_same. intros. intro. clear - H1 H.
        inversion H. fsetdec. rewrite co_subst_same. intros. intro. clear - H1 H.
        inversion H. fsetdec. auto.
-       remember (list_rename_context_co l3 
-             (list_rename_context_tm l2 (list_rename_context_tm l1 G))) as G'.
+       remember (list_rename_context_co l3
+                  (list_rename_context_tm (l1 ++ l2) G)) as G'.
        remember (list_rename_role_context l3 
-             (list_rename_role_context l2 (list_rename_role_context l1 W))) as W'.
+             (list_rename_role_context (l1 ++ l2) W)) as W'.
        remember (List.map (list_rename_atom l3)
-           (List.map (list_rename_atom l2) (List.map (list_rename_atom l1) V))) as V'.
+           (List.map (list_rename_atom (l1 ++ l2)) V)) as V'.
        exists p2, b2, D2', W', G', V', B'.
+       (*assert (P1 : NoDup (left_list l3)).
+       assert (P2 : NoDup (right_list l3)).
+       assert (P3 : disjoint_list_set (left_list l3)
+                    (dom (list_rename_context_tm (l1 ++ l2) G))).
+       assert (P4 : disjoint_list_list (right_list *)         
        repeat split.
        - clear Heql1 Heql2 Heql3. assert (Q1 : p2 = p'). admit.
          rewrite Q1.
@@ -1200,19 +1284,19 @@ Proof. intros. inversion H0 as [h1 [h2 h3]]; clear H0.
        - clear Heql1 Heql2 Heql3.
          subst. rewrite H0. eapply list_co_rename_PatternContexts.
          admit. admit. admit. admit. admit.
-         eapply list_tm_rename_PatternContexts.
-         admit. admit. admit. admit. admit.
+         unfold list_rename_tm. rewrite <- fold_left_app.
+         rewrite <- fold_left_app. rewrite <- fold_left_app.
          eapply list_tm_rename_PatternContexts.
          admit. admit. admit. admit. admit. auto.
        - clear Heql1 Heql2 Heql3. subst.
          eapply list_co_rename_typing.
          admit. admit. admit. admit. admit.
-         eapply list_tm_rename_typing.
-         admit. admit. admit. admit. admit.
+         unfold list_rename_tm. rewrite <- fold_left_app.
+         rewrite <- fold_left_app.
          eapply list_tm_rename_typing.
          admit. admit. admit. admit. admit. auto.
        - intro. intros. Admitted.
-
+(*
 Definition atom_pairs_rename (G : context) (D : atoms) :=
   let tmvars := tmdom G in
   let (atom_pairs_tmvar, new_tmvars) := atoms_excl tmvars (dom G \u D) in
@@ -1226,7 +1310,6 @@ Definition rename_entire_context (G : context) (D : atoms) :=
       (list_rename_context_co atom_pairs_covar G).
 
 
-(*
 Lemma renamed_context_disj : forall G D, disjoint G (rename_entire_context G D).
 Proof. induction G; intros. simpl; eauto.
        intro. intros. apply inter_iff in H. inversion H;clear H.
