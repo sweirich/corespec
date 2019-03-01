@@ -1034,7 +1034,7 @@ Definition FixDef : tm := a_App (a_Var_f FixVar2) (Rho Rel)
 Definition FixTy : tm  := a_Pi Irrel a_Star 
                              (a_Pi Rel (a_Pi Rel (a_Var_b 0) (a_Var_b 1)) (a_Var_b 1)).
 
-Definition toplevel : sig := Fix ~ Ax FixPat FixDef FixTy Rep (Nom :: [Nom]).
+Definition toplevel : sig := Fix ~ Ax FixPat FixDef FixTy Nom [Nom].
 
 
 

@@ -144,11 +144,6 @@ Proof.
   intros. subst.  eapply E_IApp; eauto.
 Qed.
 
-Definition FixTy := a_Pi Irrel a_Star (a_Pi Rel (a_Pi Rel (a_Var_b 0) (a_Var_b 1)) (a_Var_b 1)).
-Definition FixDef := 
-a_App (a_Var_f FixVar2) (Rho Rel)
-  (a_App (a_App (a_Fam Fix) (Rho Irrel) a_Bullet) (Rho Rel) (a_Var_f FixVar2)).
-
 Lemma FixTy_typing :
   Typing nil FixTy a_Star.
 Proof.
@@ -226,13 +221,36 @@ Proof.
   eauto.
 Qed. 
 
-Lemma FixPatCtx : PatternContexts FixRolCtx FixCtx [ FixVar1 ] Fix FixTy FixPat BodyTy.
+(* 
+Inductive PatternContexts : role_context -> context -> atom_list -> const -> tm -> tm -> tm -> Prop :=    (* defn PatternContexts *)
+ | PatCtx_Const : forall (F:const) (A:tm),
+     lc_tm A ->
+     PatternContexts  nil   nil   nil  F A (a_Fam F) A
+ | PatCtx_PiRel : forall (L:vars) (W:role_context) (R:role) (G:context) (A':tm) (V:atom_list) (F:const) (B p A:tm),
+     PatternContexts W G V F B p (a_Pi Rel A' A) ->
+      ( forall x , x \notin  L  -> PatternContexts  (( x  ~  R ) ++  W )   (( x ~ Tm  A' ) ++  G )  V F B (a_App p (Role R) (a_Var_f x))  ( open_tm_wrt_tm A (a_Var_f x) )  ) 
+ 
+| PatCtx_PiIrr : forall (L:vars) (W:role_context) (G:context) (A':tm)
+    (V:atom_list) (F:const) (B p A:tm),
+     PatternContexts W G V F B p (a_Pi Irrel A' A) ->
+      ( forall x , x \notin  L  -> 
+     PatternContexts W  (( x ~ Tm  A' ) ++  G )  
+                  ( x  ::  V )  F B 
+     (a_App p (Rho Irrel) a_Bullet)  
+     ( open_tm_wrt_tm A (a_Var_f x) )  ) 
+ | PatCtx_CPi : forall (L:vars) (W:role_context) (G:context) (phi:constraint) (V:atom_list) (F:const) (B p A:tm),
+     PatternContexts W G V F B p (a_CPi phi A) ->
+      ( forall c , c \notin  L  -> PatternContexts W  (( c ~ Co  phi ) ++  G )  V F B (a_CApp p g_Triv)  ( open_tm_wrt_co A (g_Var_f c) )  ) .
+*)
+
+
+Lemma FixPatCtx : PatternContexts FixRolCtx FixCtx [ FixVar1 ] Fix  FixTy FixPat BodyTy.
 Proof.
   unfold FixRolCtx, FixCtx, FixPat, FixTy, BodyTy.
   simpl_env.
+  set A :=  (a_Pi Rel (a_Var_b 0) (a_Var_b 1)).
+  replace  (a_Var_f FixVar1) with ( open_tm_wrt_tm A (a_Var_f FixVar2)).
 Admitted.
-
-Definition toplevel : sig := Fix ~ Ax FixPat FixDef FixTy Nom [Nom].
 
 Lemma Sig_toplevel: Sig toplevel. Proof. 
   unfold toplevel.
