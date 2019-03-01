@@ -756,7 +756,7 @@ Definition FixVar2 : atom.
   exact f2.
 Defined.
 
-Definition FixPat : tm := a_App (a_App (a_Fam Fix) (Rho Irrel) a_Bullet) (Rho Rel) (a_Var_f FixVar2).
+Definition FixPat : tm := a_App (a_App (a_Fam Fix) (Rho Irrel) a_Bullet) (Role Nom) (a_Var_f FixVar2).
 
 Definition FixDef : tm := a_App (a_Var_f FixVar2) (Rho Rel)
                               (a_App (a_App (a_Fam Fix) (Rho Irrel) a_Bullet) (Rho Rel) (a_Var_f FixVar2)).

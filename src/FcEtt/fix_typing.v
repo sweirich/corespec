@@ -14,7 +14,6 @@ Set Implicit Arguments.
 
 This module proves the following results:
 
-     Lemma AnnSig_an_toplevel: AnnSig an_toplevel.
      Lemma Sig_toplevel: Sig toplevel.
 
 
@@ -22,92 +21,7 @@ It *should* be the only place in the development that
 unfolds the definition of an_toplevel. That way, if we change the
 definition of the signature in ett.ott, we only need to change this file.
 
-In this case, it uses the fact that an_toplevel (defined in ett.ott)
-contains the following definitions:
-
-Definition Fix : atom.
-  pick fresh F.
-  exact F.
-Qed.
-
-Definition FixDef : tm :=
-  (a_Abs Irrel a_Star
-         (a_Abs Rel (a_Pi Rel (a_Var_b 0) (a_Var_b 1))
-                (a_App (a_Var_b 0) Rel
-                       (a_App (a_App (a_Fam Fix) Irrel (a_Var_b 1)) Rel (a_Var_b 0))))).
-
-Definition FixTy : tm :=
-  a_Pi Irrel a_Star
-       (a_Pi Rel (a_Pi Rel (a_Var_b 0) (a_Var_b 1))
-             (a_Var_b 1)).
-
-
-Lemma AxFix : binds Fix (Ax FixDef FixTy FixTy Nom [Nom]) an_toplevel.
-  unfold an_toplevel.
-  eauto.
-Qed.
-
-Ltac an_use_binder f x :=
-  pick fresh x and apply f; eauto;
-  unfold open_tm_wrt_tm; simpl; simpl_env; eauto;
-  match goal with
-    [ |- AnnTyping ?ctx ?a ?A ?R] =>
-    assert (AnnCtx ctx); [econstructor; eauto|idtac]
-  end.
-
-Lemma An_App_intro :
-  forall (G : context) (b : tm) (rho : relflag) R (a B A C : tm),
-       AnnTyping G b (a_Pi rho A B) R -> (open_tm_wrt_tm B a) = C ->
-       AnnTyping G a A R -> AnnTyping G (a_App b (Rho rho) a) C R.
-Proof.
-  intros. subst. eapply An_App; eauto.
-Qed.
-
-
-Lemma FixTy_Star :
-  AnnTyping nil FixTy a_Star Nom.
-Proof.
-  an_use_binder An_Pi X.
-  an_use_binder An_Pi Z.
-  an_use_binder An_Pi W.
-  eauto.
-  eauto.
-  an_use_binder An_Pi W.
-  eauto.
-Qed.
-
-Lemma FixDef_FixTy :
-  AnnTyping nil FixDef FixTy Nom.
-Proof.
-  an_use_binder An_Abs X.
-  an_use_binder An_Abs x.
-  { an_use_binder An_Pi Z. eauto. }
-  { an_use_binder An_Pi Z. eauto. }
-  { eapply An_App_intro; eauto.
-    { eapply An_App_intro; simpl; eauto.
-      { eapply An_App_intro; simpl; eauto.
-        eapply An_Fam; eauto.
-        eapply AxFix.
-        an_use_binder An_Pi Z.
-        an_use_binder An_Pi W; eauto.
-        an_use_binder An_Pi M; eauto.
-        an_use_binder An_Pi N; eauto.
-        unfold open_tm_wrt_tm. simpl. eauto. }
-      unfold open_tm_wrt_tm. simpl. eauto.
-    }
-  }
-Qed.
-(*
-Lemma AnnSig_an_toplevel: AnnSig an_toplevel.
-Proof.
-  unfold an_toplevel.
-  econstructor; eauto.
-(*  eapply AxFix. *)
-  eapply FixTy_Star. eauto.
-  eapply FixDef_FixTy.
-Qed.*)
 *)
-
 
 (* ---------------------------------------------------------- *)
 
@@ -155,9 +69,6 @@ Proof.
   use_binder E_Pi W.
   eauto. 
 Qed.
-
-Definition FixPat : tm := 
-    a_App (a_App (a_Fam Fix) (Rho Irrel) a_Bullet) (Rho Rel) (a_Var_f FixVar2).
 
 Definition FixCtx : context := 
   ( FixVar2 , Tm (a_Pi Rel (a_Var_f FixVar1) (a_Var_f FixVar1))) :: ( FixVar1 , Tm a_Star) :: nil.
@@ -221,36 +132,43 @@ Proof.
   eauto.
 Qed. 
 
-(* 
-Inductive PatternContexts : role_context -> context -> atom_list -> const -> tm -> tm -> tm -> Prop :=    (* defn PatternContexts *)
- | PatCtx_Const : forall (F:const) (A:tm),
-     lc_tm A ->
-     PatternContexts  nil   nil   nil  F A (a_Fam F) A
- | PatCtx_PiRel : forall (L:vars) (W:role_context) (R:role) (G:context) (A':tm) (V:atom_list) (F:const) (B p A:tm),
-     PatternContexts W G V F B p (a_Pi Rel A' A) ->
-      ( forall x , x \notin  L  -> PatternContexts  (( x  ~  R ) ++  W )   (( x ~ Tm  A' ) ++  G )  V F B (a_App p (Role R) (a_Var_f x))  ( open_tm_wrt_tm A (a_Var_f x) )  ) 
- 
-| PatCtx_PiIrr : forall (L:vars) (W:role_context) (G:context) (A':tm)
-    (V:atom_list) (F:const) (B p A:tm),
-     PatternContexts W G V F B p (a_Pi Irrel A' A) ->
-      ( forall x , x \notin  L  -> 
-     PatternContexts W  (( x ~ Tm  A' ) ++  G )  
-                  ( x  ::  V )  F B 
-     (a_App p (Rho Irrel) a_Bullet)  
-     ( open_tm_wrt_tm A (a_Var_f x) )  ) 
- | PatCtx_CPi : forall (L:vars) (W:role_context) (G:context) (phi:constraint) (V:atom_list) (F:const) (B p A:tm),
-     PatternContexts W G V F B p (a_CPi phi A) ->
-      ( forall c , c \notin  L  -> PatternContexts W  (( c ~ Co  phi ) ++  G )  V F B (a_CApp p g_Triv)  ( open_tm_wrt_co A (g_Var_f c) )  ) .
-*)
 
 
 Lemma FixPatCtx : PatternContexts FixRolCtx FixCtx [ FixVar1 ] Fix  FixTy FixPat BodyTy.
 Proof.
   unfold FixRolCtx, FixCtx, FixPat, FixTy, BodyTy.
   simpl_env.
-  set A :=  (a_Pi Rel (a_Var_b 0) (a_Var_b 1)).
-  replace  (a_Var_f FixVar1) with ( open_tm_wrt_tm A (a_Var_f FixVar2)).
-Admitted.
+  have h2:
+    PatternContexts [] [] [] Fix FixTy (a_Fam Fix) FixTy.
+  { 
+    eapply PatCtx_Const.
+    unfold FixTy.
+    eapply lc_a_Pi; auto.
+    intro x. cbn. econstructor; eauto.
+    eapply lc_a_Pi; auto.
+    intro y. cbn. auto.
+    intro y. cbn. auto.
+  } 
+  set A' := (a_Pi Rel (a_Var_f FixVar1) (a_Var_f FixVar1)).
+  set A := (a_Var_f FixVar1).
+  set p2:= (a_App (a_Fam Fix) (Rho Irrel) a_Bullet).
+  have h: PatternContexts [] [(FixVar1, Tm a_Star)] [FixVar1] Fix FixTy p2 (a_Pi Rel A' A).
+  { 
+    set AA:= (a_Pi Rel (a_Pi Rel (a_Var_b 0) (a_Var_b 1)) (a_Var_b 1)).
+    move: (PatCtx_PiIrr empty [] [] a_Star [] Fix FixTy (a_Fam Fix) AA) => pp2.
+    move: (pp2 h2 FixVar1 ltac:(auto)) => pp3.
+    unfold p2.
+    cbn in pp3.
+    unfold A'.
+    unfold A.
+    eapply pp3.
+  } 
+  move: (PatCtx_PiRel empty [] Nom [(FixVar1, Tm a_Star)] A' [ FixVar1 ] Fix FixTy) => p1.
+  move: (p1 p2 A h FixVar2 ltac:(auto)) => p3.
+  cbn in p3.
+  fold FixTy.
+  eapply p3.
+Qed.
 
 Lemma Sig_toplevel: Sig toplevel. Proof. 
   unfold toplevel.
