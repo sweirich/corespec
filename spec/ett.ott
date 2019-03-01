@@ -1539,7 +1539,7 @@ R1 <= R
 
 AppsPath Nom a +> F Apps
 apply args a to b1 +> b1'
-Sat F Apps'
+[ Sat F Apps' ]
 ------------------------------------------ :: PatternTrue
 |= (case Nom a of F @ Apps => b1 | _ => b2) > b1' [o] / R0
 
