@@ -2,6 +2,7 @@ Require Import Metalib.Metatheory.
 Require Import FcEtt.ett_ott.
 Require Import FcEtt.ett_inf.
 Require Import FcEtt.param.
+Require Import FcEtt.imports.
 
 Set Bullet Behavior "Strict Subproofs".
 Set Implicit Arguments.
@@ -105,11 +106,21 @@ Proof.
   eapply FixTy_Star. eauto.
   eapply FixDef_FixTy.
 Qed.*)
+*)
+
 
 (* ---------------------------------------------------------- *)
 
 Ltac use_binder f x :=
   pick fresh x and apply f;
+  unfold open_tm_wrt_tm; simpl; simpl_env; eauto;
+  match goal with
+    [ |- Typing ?ctx ?a ?A ] =>
+    assert (Ctx ctx); [econstructor; eauto|idtac]
+  end.
+
+Ltac use_binderL f x L :=
+  pick fresh x excluding L and apply f;
   unfold open_tm_wrt_tm; simpl; simpl_env; eauto;
   match goal with
     [ |- Typing ?ctx ?a ?A ] =>
@@ -133,8 +144,13 @@ Proof.
   intros. subst.  eapply E_IApp; eauto.
 Qed.
 
-Lemma FixTy_erase :
-  Typing nil (erase_tm FixTy Nom) a_Star.
+Definition FixTy := a_Pi Irrel a_Star (a_Pi Rel (a_Pi Rel (a_Var_b 0) (a_Var_b 1)) (a_Var_b 1)).
+Definition FixDef := 
+a_App (a_Var_f FixVar2) (Rho Rel)
+  (a_App (a_App (a_Fam Fix) (Rho Irrel) a_Bullet) (Rho Rel) (a_Var_f FixVar2)).
+
+Lemma FixTy_typing :
+  Typing nil FixTy a_Star.
 Proof.
   use_binder E_Pi X.
   use_binder E_Pi Z.
@@ -142,8 +158,22 @@ Proof.
   eauto.
   eauto.
   use_binder E_Pi W.
-  eauto. Unshelve. all: exact Rep.
+  eauto. 
 Qed.
+
+Definition FixPat : tm := a_App (a_App (a_Fam Fix) (Rho Irrel) a_Bullet) (Rho Rel) (a_Var_f FixVar2).
+
+Definition FixCtx : context := 
+  ( FixVar2 , Tm (a_Pi Rel (a_Var_f FixVar1) (a_Var_f FixVar1))) :: ( FixVar1 , Tm a_Star) :: nil.
+
+Lemma CtxFixCtx : Ctx FixCtx.
+Proof.
+  unfold FixCtx. 
+  have h: Ctx [( FixVar1 , Tm a_Star)]. econstructor; eauto 2.
+  econstructor; eauto 2.
+  + pick fresh x excluding {{ FixVar1 }} and apply E_Pi.
+    eapply E_Pi with (L := {{ FixVar1 }}).
+    simpl.
 
 Lemma FixDef_FixTy_erase :
   Typing nil (erase_tm FixDef Nom) (erase_tm FixTy Nom).
