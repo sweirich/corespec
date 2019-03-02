@@ -296,6 +296,7 @@ role_context, W {{ tex \Omega }} :: 'rctx_' ::= {{ com role_contexts }}
    | empty           ::    :: Empty   {{ coq nil }}
    | x : R           ::    :: Tm      {{ coq ([[x]] ~ [[R]]) }}
    | W , x : R       ::    :: ConsTm  {{ coq (([[x]] ~ [[R]]) ++ [[W]]) }}
+   {{ tex [[W]],[[x]]\!:\![[R]] }}
    | W ++ W'         :: M  :: Append  {{ coq ([[W]] ++ [[W']]) }}
    {{tex [[W]],[[W']]}}
    | var_pat p       :: M  :: Pat {{ coq (var_pat([[p]])) }}
@@ -309,7 +310,7 @@ roles, Rs {{ tex \overline{R} }}  :: '' ::= {{ coq list role }}
    | nilR       ::   :: nilR {{ coq nil }}
    | R , Rs     ::   :: consR {{ coq ([[R]]::[[Rs]]) }}
    | range W    :: S :: rangeR {{ coq (range([[W]])) }}
-	{{ tex \mathsf{cod}[[W]] }}
+	{{ tex \mathsf{rng}[[W]] }}
    | ( Rs )     :: S :: RolesParen {{ coq ([[Rs]]) }}
    | Rs ++ Rs'  :: S :: appR {{ coq ([[Rs]]++[[Rs']]) }}
 %% Special case lists for nice printing
@@ -342,8 +343,9 @@ context, G {{ tex \Gamma }} :: 'ctx_' ::= {{ com contexts }}
    | empty           ::    :: Empty   {{ coq nil }}
 
    | G , x : A       ::    :: ConsTm  {{ coq (([[x]]~ Tm [[A]]) ++ [[G]]) }}
+    {{ tex [[G]], [[x]]\!:\![[A]] }}
    | G , c : phi     ::    :: ConsCo  {{ coq (([[c]]~ Co [[phi]]) ++ [[G]]) }}
-
+    {{ tex [[G]], [[c]]\!:\![[phi]] }}
    | G { b / x }     :: M  :: SubstA  {{ coq (open_context_wrt_tm [[x G]][[b]] }}
    | G { g / c }     :: M  :: SubstG  {{ coq (open_context_wrt_co [[c G]][[g]]  }}
    | G ++ G'         :: M  :: Append  {{ coq ([[G]] ++ [[G']]) }}
@@ -1521,9 +1523,9 @@ defn
 {{ tex [[|=]] [[a]] \rightarrow^{\beta}_{[[R]]} [[b]] }}
 by
 
-Value R1 (\rho x. v)
+Value R (\rho x. v)
 ------------------------------------ :: AppAbs
-|= (\rho x.v) rho b > v { b / x } / R1
+|= (\rho x.v) rho b > v { b / x } / R
 
 
 ------------------------------- :: CAppCAbs
@@ -1541,12 +1543,12 @@ AppsPath Nom a +> F Apps
 apply args a to b1 +> b1'
 [ Sat F Apps' ]
 ------------------------------------------ :: PatternTrue
-|= (case Nom a of F @ Apps => b1 | _ => b2) > b1' [o] / R0
+|= (case Nom a of F @ Apps => b1 | _ => b2) > b1' [o] / R
 
 Value Nom a
 not (AppsPath Nom a +> F Apps)
 ------------------------------------------ :: PatternFalse
-|= (case Nom a of F @ Apps => b1 | _ => b2) > b2 / R0
+|= (case Nom a of F @ Apps => b1 | _ => b2) > b2 / R
 
 defn
  |= a ~> b / R ::   :: reduction_in_one :: 'E_'
@@ -1554,13 +1556,13 @@ defn
 {{ tex [[|=]] [[a]] [[~>]]_{[[R]]} [[b]] }}
 by
 
-|= a ~> a' / R1
+|= a ~> a' / R
 -------------------------  :: AbsTerm
-|= \- x.a ~> \- x.a' / R1
+|= \- x.a ~> \- x.a' / R
 
-|= a ~> a' / R1
+|= a ~> a' / R
 -------------------------  :: AppLeft
-|= a nu b ~> a' nu b / R1
+|= a nu b ~> a' nu b / R
 
 |= a  ~> a' / R
 -----------------------------   :: CAppLeft
@@ -1568,7 +1570,7 @@ by
 
 |= a ~> a' / Nom
 ----------------------------------------------------------------------- :: Pattern
-|= (case Nom a of F @ Apps => b1 | _ => b2) ~> (case Nom a' of F @ Apps => b1 | _ => b2) / R0
+|= (case Nom a of F @ Apps => b1 | _ => b2) ~> (case Nom a' of F @ Apps => b1 | _ => b2) / R
 
 |= a > b / R
 ----------------------------- :: Prim
@@ -1834,20 +1836,20 @@ G |= b1 R b2 : B { a2 / x }
 ------------------------------------------------ :: TAppCong
 G ; D |= a1 R a2 == b1 R b2 : (B { a2 / x })/R'
 
-G ; D |= a1 == b1 : (all - x:A -> B)/R'
+G ; D |= a1 == b1 : (all - x:A -> B)/R
 G |= a : A
 ---------------------------------------------- :: IAppCong
-G ; D |= a1 - [] == b1 - [] : (B { a / x })/R'
+G ; D |= a1 - [] == b1 - [] : (B { a / x })/R
 
 
 G ; D |= all rho x:A1 -> B1 == all rho x:A2 -> B2 : TYPE/R'
 ----------------------------------------------------------- :: PiFst
 G ; D |=  A1 == A2 : TYPE/ R'
 
-G ; D |= all rho x:A1 -> B1 == all rho x:A2 -> B2 : TYPE/R'
+G ; D |= all rho x:A1 -> B1 == all rho x:A2 -> B2 : TYPE/R
 G ; D |= a1 == a2 : A1/ Nom
 ------------------------------------------------------------ :: PiSnd
-G ; D |=  B1 {a1 /x}  == B2 {a2/x} : TYPE/R'
+G ; D |=  B1 {a1 /x}  == B2 {a2/x} : TYPE/R
 
 %% Rules related to Coercion Abstraction
 
@@ -1926,16 +1928,16 @@ G ; dom G |= B {b/x} == B {b'/x} : TYPE/Rep
 G ; D |= a == a' : all -x: A -> B/R'
 
 
-CasePath R' (a R1 b) +> F
-CasePath R' (a' R1 b') +> F
+CasePath R2 (a R1 b) +> F
+CasePath R2 (a' R1 b') +> F
 G |= a : all +x:A -> B
 G |= b : A
 G |= a' : all +x:A -> B
 G |= b' : A
-G ; D |= a R1 b == a' R1 b' : B { b / x }/R'
+G ; D |= a R1 b == a' R1 b' : B { b / x }/R2
 G ; dom G |= B {b/x} == B {b'/x} : TYPE/Rep
 ----------------------------------------------- :: Right
-G ; D |= b == b' : A/param R1 R'
+G ; D |= b == b' : A/param R1 R2
 
 
 CasePath R' (a [o])  +> F

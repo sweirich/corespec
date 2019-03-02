@@ -1533,10 +1533,10 @@ with joins : role_context -> tm -> tm -> role -> Prop :=    (* defn joins *)
 
 (* defns Jbeta *)
 Inductive Beta : tm -> tm -> role -> Prop :=    (* defn Beta *)
- | Beta_AppAbs : forall (rho:relflag) (v b:tm) (R1:role),
+ | Beta_AppAbs : forall (rho:relflag) (v b:tm) (R:role),
      lc_tm b ->
-     Value R1  ( (a_UAbs rho v) )  ->
-     Beta (a_App  ( (a_UAbs rho v) )  (Rho rho) b)  (open_tm_wrt_tm  v   b )  R1
+     Value R  ( (a_UAbs rho v) )  ->
+     Beta (a_App  ( (a_UAbs rho v) )  (Rho rho) b)  (open_tm_wrt_tm  v   b )  R
  | Beta_CAppCAbs : forall (a':tm) (R:role),
      lc_tm (a_UCAbs a') ->
      Beta (a_CApp  ( (a_UCAbs a') )  g_Triv)  (open_tm_wrt_co  a'   g_Triv )  R
@@ -1546,34 +1546,34 @@ Inductive Beta : tm -> tm -> role -> Prop :=    (* defn Beta *)
      MatchSubst a p1 b1 b' ->
      SubRole R1 R ->
      Beta a b' R
- | Beta_PatternTrue : forall (a:tm) (F:const) (Apps5:Apps) (b1 b2 b1':tm) (R0:role) (Apps':Apps),
+ | Beta_PatternTrue : forall (a:tm) (F:const) (Apps5:Apps) (b1 b2 b1':tm) (R:role) (Apps':Apps),
      lc_tm b2 ->
      AppsPath Nom a F Apps5 ->
      ApplyArgs a b1 b1' ->
-     SatApp F Apps' ->
-     Beta  ( (a_Pattern Nom a F Apps5 b1 b2) )  (a_CApp b1' g_Triv) R0
- | Beta_PatternFalse : forall (a:tm) (F:const) (Apps5:Apps) (b1 b2:tm) (R0:role),
+      ( SatApp F Apps' )  ->
+     Beta  ( (a_Pattern Nom a F Apps5 b1 b2) )  (a_CApp b1' g_Triv) R
+ | Beta_PatternFalse : forall (a:tm) (F:const) (Apps5:Apps) (b1 b2:tm) (R:role),
      lc_tm b1 ->
      lc_tm b2 ->
      Value Nom a ->
       not (  ( AppsPath Nom a F Apps5 )  )  ->
-     Beta  ( (a_Pattern Nom a F Apps5 b1 b2) )  b2 R0
+     Beta  ( (a_Pattern Nom a F Apps5 b1 b2) )  b2 R
 with reduction_in_one : tm -> tm -> role -> Prop :=    (* defn reduction_in_one *)
- | E_AbsTerm : forall (L:vars) (a a':tm) (R1:role),
-      ( forall x , x \notin  L  -> reduction_in_one  ( open_tm_wrt_tm a (a_Var_f x) )   ( open_tm_wrt_tm a' (a_Var_f x) )  R1 )  ->
-     reduction_in_one (a_UAbs Irrel a) (a_UAbs Irrel a') R1
- | E_AppLeft : forall (a:tm) (nu:appflag) (b a':tm) (R1:role),
+ | E_AbsTerm : forall (L:vars) (a a':tm) (R:role),
+      ( forall x , x \notin  L  -> reduction_in_one  ( open_tm_wrt_tm a (a_Var_f x) )   ( open_tm_wrt_tm a' (a_Var_f x) )  R )  ->
+     reduction_in_one (a_UAbs Irrel a) (a_UAbs Irrel a') R
+ | E_AppLeft : forall (a:tm) (nu:appflag) (b a':tm) (R:role),
      lc_tm b ->
-     reduction_in_one a a' R1 ->
-     reduction_in_one (a_App a nu b) (a_App a' nu b) R1
+     reduction_in_one a a' R ->
+     reduction_in_one (a_App a nu b) (a_App a' nu b) R
  | E_CAppLeft : forall (a a':tm) (R:role),
      reduction_in_one a a' R ->
      reduction_in_one (a_CApp a g_Triv) (a_CApp a' g_Triv) R
- | E_Pattern : forall (a:tm) (F:const) (Apps5:Apps) (b1 b2 a':tm) (R0:role),
+ | E_Pattern : forall (a:tm) (F:const) (Apps5:Apps) (b1 b2 a':tm) (R:role),
      lc_tm b1 ->
      lc_tm b2 ->
      reduction_in_one a a' Nom ->
-     reduction_in_one  ( (a_Pattern Nom a F Apps5 b1 b2) )   ( (a_Pattern Nom a' F Apps5 b1 b2) )  R0
+     reduction_in_one  ( (a_Pattern Nom a F Apps5 b1 b2) )   ( (a_Pattern Nom a' F Apps5 b1 b2) )  R
  | E_Prim : forall (a b:tm) (R:role),
      Beta a b R ->
      reduction_in_one a b R
@@ -1742,17 +1742,17 @@ with DefEq : context -> available_props -> tm -> tm -> tm -> role -> Prop :=    
      RolePath b1  ( R :: Rs )  ->
      Typing G (a_App b1 (Role R) b2)  (open_tm_wrt_tm  B   a2 )  ->
      DefEq G D (a_App a1 (Role R) a2) (a_App b1 (Role R) b2)  (  (open_tm_wrt_tm  B   a2 )  )  R'
- | E_IAppCong : forall (G:context) (D:available_props) (a1 b1 B a:tm) (R':role) (A:tm),
-     DefEq G D a1 b1  ( (a_Pi Irrel A B) )  R' ->
+ | E_IAppCong : forall (G:context) (D:available_props) (a1 b1 B a:tm) (R:role) (A:tm),
+     DefEq G D a1 b1  ( (a_Pi Irrel A B) )  R ->
      Typing G a A ->
-     DefEq G D (a_App a1 (Rho Irrel) a_Bullet) (a_App b1 (Rho Irrel) a_Bullet)  (  (open_tm_wrt_tm  B   a )  )  R'
+     DefEq G D (a_App a1 (Rho Irrel) a_Bullet) (a_App b1 (Rho Irrel) a_Bullet)  (  (open_tm_wrt_tm  B   a )  )  R
  | E_PiFst : forall (G:context) (D:available_props) (A1 A2:tm) (R':role) (rho:relflag) (B1 B2:tm),
      DefEq G D (a_Pi rho A1 B1) (a_Pi rho A2 B2) a_Star R' ->
      DefEq G D A1 A2 a_Star R'
- | E_PiSnd : forall (G:context) (D:available_props) (B1 a1 B2 a2:tm) (R':role) (rho:relflag) (A1 A2:tm),
-     DefEq G D (a_Pi rho A1 B1) (a_Pi rho A2 B2) a_Star R' ->
+ | E_PiSnd : forall (G:context) (D:available_props) (B1 a1 B2 a2:tm) (R:role) (rho:relflag) (A1 A2:tm),
+     DefEq G D (a_Pi rho A1 B1) (a_Pi rho A2 B2) a_Star R ->
      DefEq G D a1 a2 A1 Nom ->
-     DefEq G D  (open_tm_wrt_tm  B1   a1 )   (open_tm_wrt_tm  B2   a2 )  a_Star R'
+     DefEq G D  (open_tm_wrt_tm  B1   a1 )   (open_tm_wrt_tm  B2   a2 )  a_Star R
  | E_CPiCong : forall (L:vars) (G:context) (D:available_props) (a1 b1 A1:tm) (R:role) (A a2 b2 A2 B:tm) (R':role),
      Iso G D (Eq a1 b1 A1 R) (Eq a2 b2 A2 R) ->
       ( forall c , c \notin  L  -> DefEq  (( c ~ Co  (Eq a1 b1 A1 R) ) ++  G )  D  ( open_tm_wrt_co A (g_Var_f c) )   ( open_tm_wrt_co B (g_Var_f c) )  a_Star R' )  ->
@@ -1815,16 +1815,16 @@ with DefEq : context -> available_props -> tm -> tm -> tm -> role -> Prop :=    
      DefEq G D (a_App a (Rho Irrel) a_Bullet) (a_App a' (Rho Irrel) a_Bullet)  (open_tm_wrt_tm  B   b )  R' ->
      DefEq G  (dom  G )   (open_tm_wrt_tm  B   b )   (open_tm_wrt_tm  B   b' )  a_Star Rep ->
      DefEq G D a a' (a_Pi Irrel A B) R'
- | E_Right : forall (G:context) (D:available_props) (b b' A:tm) (R1 R':role) (a:tm) (F:const) (a' B:tm),
-     CasePath R'  ( (a_App a (Role R1) b) )  F ->
-     CasePath R'  ( (a_App a' (Role R1) b') )  F ->
+ | E_Right : forall (G:context) (D:available_props) (b b' A:tm) (R1 R2:role) (a:tm) (F:const) (a' B:tm),
+     CasePath R2  ( (a_App a (Role R1) b) )  F ->
+     CasePath R2  ( (a_App a' (Role R1) b') )  F ->
      Typing G a (a_Pi Rel A B) ->
      Typing G b A ->
      Typing G a' (a_Pi Rel A B) ->
      Typing G b' A ->
-     DefEq G D (a_App a (Role R1) b) (a_App a' (Role R1) b')  (open_tm_wrt_tm  B   b )  R' ->
+     DefEq G D (a_App a (Role R1) b) (a_App a' (Role R1) b')  (open_tm_wrt_tm  B   b )  R2 ->
      DefEq G  (dom  G )   (open_tm_wrt_tm  B   b )   (open_tm_wrt_tm  B   b' )  a_Star Rep ->
-     DefEq G D b b' A  (param R1   R' ) 
+     DefEq G D b b' A  (param R1   R2 ) 
  | E_CLeft : forall (G:context) (D:available_props) (a a' a1 a2 A:tm) (R1:role) (B:tm) (R':role) (F:const),
      CasePath R'  ( (a_CApp a g_Triv) )  F ->
      CasePath R'  ( (a_CApp a' g_Triv) )  F ->
