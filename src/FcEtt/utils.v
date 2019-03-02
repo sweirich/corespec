@@ -172,6 +172,20 @@ Proof.
 Qed.
 
 
+Instance Proper_domFresh {A} : 
+  Proper (Logic.eq ==> AtomSetImpl.Equal ==> iff) (@domFresh A).
+Proof. 
+  move=> x y Eq1 z w Eq2.
+  subst.
+  induction y; unfold domFresh. split; eauto.
+  split; unfold domFresh in *. 
+  intro h; inversion h; destruct a; econstructor; eauto.
+  rewrite <- Eq2. auto. rewrite <- IHy. auto.
+  intro h; inversion h; destruct a; econstructor; eauto.
+  rewrite Eq2. auto. rewrite IHy. auto.
+Qed.
+
+
 (* -------------------------------------- *)
 
 Lemma binds_map_3 :
@@ -272,3 +286,23 @@ Proof. intros. induction H; simpl; eauto. apply uniq_reorder_1.
        simpl. econstructor. auto. intro. apply H0. apply dom_rev in H1.
        rewrite rev_involutive in H1. auto.
 Qed.
+
+(* ----------------------------------------- *)
+
+Lemma map_fst_zip : forall A B (a : list A) (b: list B), length a = length b -> (List.map fst (zip a b)) = a.
+Proof.
+  intros A B a. induction a.
+  all: intros b H.
+  all: destruct b; inversion H; simpl in *.
+  auto.
+  f_equal. auto.
+Qed. 
+
+Lemma map_snd_zip : forall A B (a : list A) (b: list B), length a = length b -> (List.map snd (zip a b)) = b.
+Proof.
+  intros A B a. induction a.
+  all: intros b H.
+  all: destruct b; inversion H; simpl in *.
+  auto.
+  f_equal. auto.
+Qed. 

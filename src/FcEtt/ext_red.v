@@ -16,7 +16,6 @@ Require Import FcEtt.ett_roleing.
 Require Import FcEtt.param.
 Require Import FcEtt.ett_path.
 Require Import FcEtt.ett_match.
-(* Require Import FcEtt.pattern. *)
 Require Import FcEtt.ett_rename.
 
 Require Export FcEtt.ext_red_one.
@@ -30,14 +29,65 @@ Set Implicit Arguments.
 (* FIXME: temporary *)
 Generalizable All Variables.
 
+
+(* --------------------------------------------------------- *)
+(* General operations on pattern_args *)
+
+(* At a pattern match we need to convert roles to Rels -- 
+   our RHS are composed of applications of explicit 
+   functions, not constructors *)
 Definition degrade : pattern_arg -> pattern_arg :=
   fun p => match p with 
   | p_Tm (Role R) a => p_Tm (Rho Rel) a
   | _ => p
   end.
 
+Fixpoint args_roles (l : list pattern_arg) : list role :=
+   match l with 
+   | nil => nil
+   | ( (p_Tm (Role R) _) :: xs )     => R   :: args_roles xs 
+   | ( (p_Tm (Rho Rel) _)  :: xs )   => Nom :: args_roles xs
+   | ( (p_Tm (Rho Irrel) _)  :: xs ) => args_roles xs
+   | ( (p_Co _         ) :: xs)      => args_roles xs  
+   end.
 
-(* --------------------------------------------------------- *)
+Definition arg_app (p : pattern_arg) : App := 
+    match p with 
+      | p_Tm nu _ => A_Tm nu
+      | p_Co _    => A_Co
+    end.
+
+Fixpoint map_arg_app (p : list pattern_arg) : Apps :=
+  match p with 
+  | nil => A_nil
+  | cons arg args => A_cons (arg_app arg) (map_arg_app args)
+  end.
+
+(* The connection between the args used in an application
+   and the args used in the type of the application. The difference
+   is that Irrelevant args have a_Bullet on one side but 
+   an actual term on the other. *)
+
+Inductive arg_targ : pattern_arg -> pattern_arg -> Prop :=
+  | AT_Role  : forall R a, 
+      arg_targ (p_Tm (Role R) a) (p_Tm (Role R) a)
+  | AT_Irrel :forall a, 
+      arg_targ (p_Tm (Rho Irrel) a_Bullet) (p_Tm (Rho Irrel) a) 
+  | AT_Rel   : forall a,
+      arg_targ (p_Tm (Rho Rel) a) (p_Tm (Rho Rel) a)
+  | AT_Co    : arg_targ (p_Co g_Triv) (p_Co g_Triv) 
+.
+
+
+(* A relation that holds when a pattern_arg matches 
+   a pattern. *)
+Definition arg_agree : pattern_arg -> pattern_arg -> Prop :=
+  fun arg pat => 
+    match (arg,pat) with 
+    | (p_Tm nu1 a, p_Tm nu2 p) => nu1 = nu2 /\ tm_pattern_agree a p 
+    | (p_Co _, p_Co _) => True
+    | (_,_) => False
+    end.
 
 
 (* --------------------------------------------------------- *)
@@ -61,21 +111,16 @@ Proof.
   destruct a; try destruct nu; try destruct rho; simpl; rewrite IHrest; auto.
 Qed.
 
-Fixpoint args_roles ( l : list pattern_arg) : list role :=
-   match l with 
-        | nil => nil
-        | ( (p_Tm (Role R) _) :: xs ) => R :: args_roles xs 
-        | ( (p_Tm (Rho Rel) _)  :: xs ) => Nom :: args_roles xs
-        | ( (p_Tm (Rho Irrel) _)  :: xs ) => args_roles xs
-        | ( (p_Co _         ) :: xs)  => args_roles xs  
-        end.
 
-Lemma args_roles_app : forall l1 l2, 
+Lemma args_roles_app : forall (l1 l2 : list pattern_arg), 
     args_roles (l1 ++ l2) = args_roles l1 ++ args_roles l2.
 Proof. 
   induction l1; intros; eauto. 
   destruct a; try destruct nu; try destruct rho; simpl; rewrite IHl1; eauto.
 Qed.
+
+(* We can decompose ApplyArgs into an applications
+   of a list of args *)
   
 Lemma ApplyArgs_pattern_args : forall a b1 b1' F,
  ApplyArgs a b1 b1' 
@@ -136,26 +181,24 @@ Proof. intros. intro. inversion H0 as [a' h1]. eapply no_Value_Beta; try apply h
          eapply CasePath_UnMatch; eauto 3.
 Qed.
 
-Definition arg_app (p : pattern_arg) : App := 
-    match p with 
-      | p_Tm nu _ => A_Tm nu
-      | p_Co _    => A_Co
-    end.
-
-Fixpoint map_arg_app (p : list pattern_arg) : Apps :=
-  match p with 
-  | nil => A_nil
-  | cons arg args => A_cons (arg_app arg) (map_arg_app args)
-  end.
 
 
-(* 
-   open_telescope G n PiB args targs A 
+(* A general judgment for typing a telescope 
+
+   Something like:  PiB = Pi x1:A1. ... xn:An. B
+   and 
+        G |= each argi : Ai { prior targs / prior xs }
+   producing        
+        A = B { targs / xs }
+
+   So,
+
+      open_telescope G n PiB args targs A 
 
    holds when 
       - the args line up with the applicators n
       - each arg/targ typechecks according to G
-      - the targs include the implicit type arguments
+      - the targs include the implicit type arguments, args includes a_Bullet
       - each targ matches the Pis in B and, after instantiation,
         produces a final type A
  *)
@@ -189,6 +232,11 @@ Inductive open_telescope : context -> Apps -> tm -> pattern_args -> pattern_args
 
 Hint Constructors open_telescope.
 
+(* open_telescope captures the typing information in a sequence of applications. 
+
+   If we have such as sequence, we can always produce the telescope
+   and a typing derivation for the head. *)
+
 Lemma invert_Typing_pattern_args2 : forall args hd,
   forall G A, Typing G (apply_pattern_args hd args) A -> 
   exists PiB targs, open_telescope G (map_arg_app args) PiB args targs A
@@ -213,8 +261,12 @@ Proof.
        eapply open_Co; eauto 1. 
 Qed. 
 
+(* In general, we don't have unique types. But we do have them 
+   for a_Fam. *)
 Lemma Typing_a_Fam_unique : forall F G A B, 
-      Typing G (a_Fam F) A -> Typing G (a_Fam F) B -> DefEq G (dom G) A B a_Star Rep.
+      Typing G (a_Fam F) A -> 
+      Typing G (a_Fam F) B ->
+      DefEq G (dom G) A B a_Star Rep.
 Proof.
   intros.
   autoinv.
@@ -232,15 +284,10 @@ Proof.
 Qed.
 
 
-Inductive arg_targ : pattern_arg -> pattern_arg -> Prop :=
-  | AT_Role  : forall R a, 
-      arg_targ (p_Tm (Role R) a) (p_Tm (Role R) a)
-  | AT_Irrel :forall a, 
-      arg_targ (p_Tm (Rho Irrel) a_Bullet) (p_Tm (Rho Irrel) a) 
-  | AT_Rel   : forall a,
-      arg_targ (p_Tm (Rho Rel) a) (p_Tm (Rho Rel) a)
-  | AT_Co    : arg_targ (p_Co g_Triv) (p_Co g_Triv) 
-.
+Definition has_unique_type (G : context) (a: tm) : Prop :=
+  forall A B, Typing G a A -> Typing G a B -> 
+         DefEq G (dom G) A B a_Star Rep.
+
 
 
 Lemma ValuePath_apply_pattern_args : forall args hd F,
@@ -258,7 +305,7 @@ Proof.
   auto.
 Qed.
 
-
+(*
 Lemma tm_subst_tm_tm_apply_pattern_args : forall args a0 x a,
    tm_subst_tm_tm a0 x (apply_pattern_args a args) = 
    apply_pattern_args (tm_subst_tm_tm a0 x a) 
@@ -270,15 +317,9 @@ Proof.
   rewrite IHargs; auto.
   rewrite IHargs; auto.
 Qed.
+*)
 
-Definition arg_agree : pattern_arg -> pattern_arg -> Prop :=
-  fun arg pat => 
-    match (arg,pat) with 
-    | (p_Tm nu1 a, p_Tm nu2 p) => nu1 = nu2 /\ tm_pattern_agree a p 
-    | (p_Co _, p_Co _) => True
-    | (_,_) => False
-    end.
-
+(* ----------------------------------------------------- *)
 
 Lemma fv_tm_tm_tm_apply_pattern_args : forall pargs a, 
         fv_tm_tm_tm (apply_pattern_args a pargs) [=] 
@@ -307,53 +348,7 @@ Lemma fv_tm_tm_pattern_args_app : forall pargs1 pargs2,
 Proof. induction pargs1; intros; simpl; try rewrite IHpargs1; fsetdec.
 Qed.
 
-Instance Proper_domFresh {A} : Proper (Logic.eq ==> AtomSetImpl.Equal ==> iff) (@domFresh A).
-Proof. 
-  move=> x y Eq1 z w Eq2.
-  subst.
-  induction y; unfold domFresh. split; eauto.
-  split; unfold domFresh in *. 
-  intro h; inversion h; destruct a; econstructor; eauto.
-  rewrite <- Eq2. auto. rewrite <- IHy. auto.
-  intro h; inversion h; destruct a; econstructor; eauto.
-  rewrite Eq2. auto. rewrite IHy. auto.
-Qed.
-
-
-Lemma Beta_fv_preservation : forall x a b R, 
-    Beta a b R -> 
-    x `notin` fv_tm_tm_tm a ->
-    x `notin` fv_tm_tm_tm b.
-Proof.
-  intros.
-  induction H.
-  + simpl in *.
-    move => h. 
-    eapply fv_tm_tm_tm_open_tm_wrt_tm_upper in h.
-    fsetdec.
-  + simpl in *.    
-    move => h.
-    eapply fv_tm_tm_tm_open_tm_wrt_co_upper in h.
-    fsetdec.
-  + move: (Rename_MatchSubst_fv H1 H2) => h3.
-    move: (axiom_body_fv_in_pattern H) => h.
-    intro. move: (AtomSetProperties.in_subset H4 h3) => h1.
-    apply union_iff in h1. inversion h1. apply diff_iff in H5.
-    inversion H5. apply H7. eapply AtomSetProperties.in_subset; eauto.
-    apply H0. auto.
-  + simpl in *.
-    move: H2 H0.
-    generalize a.
-    induction 1.
-    - intros. fsetdec.
-    - simpl in *.
-      fsetdec.
-    - simpl in *.
-      fsetdec.
-    - simpl in *.
-      fsetdec.
-  + simpl in *. fsetdec.
-Qed.
+(* ----------------------------------------------------- *)
 
 (*
 
@@ -380,21 +375,35 @@ In the base case, we will have the opposite
    scrut = hd @ args1  @ args2
    pat   = hd @ pargs1 @ pargs2
 
-     |= pargs1 : G1
-  
+     G1 |= pargs1 
 
+   sub = G1 |-> targs
+  
 *)
 
-(* For roles, we need to know that the non-nominal prefix of args 
-   matches the Roles for F. 
- *)
-
-
 Lemma BranchTyping_lemma : forall n G1 G R A scrut hd pargs1 B0 B1 C,
+    (* We have a branchtyping judgment from the typing rule for 
+       pattern matching. We are proving this by induction on 'n'
+       the pattern we are matching against. 
+
+       G1 variables bound by the pattern so far
+       G  context of the pattern match
+       R  role of the pattern match (must be Nom)
+       scrut - scrutinee of the pattern match
+       A       type of scrutinee 
+       hd      first part of the scrutinee
+       pargs1  remaining pattern 
+       B0       
+       B1 
+       C
+    *)
     BranchTyping (G1 ++ G) n R scrut A hd pargs1 B0 B1 C ->
+    (* The variables that we bind in the pattern can't already be 
+       in the context *)
     domFresh G (fv_tm_tm_pattern_args pargs1) ->
     forall args1 args2 , 
     map_arg_app args2 = n ->
+    (* the arguments that we match in the scrutinee. *)
     forall Rs, RolePath (apply_pattern_args hd args1) (args_roles args2 ++ Rs) -> 
     scrut = apply_pattern_args (apply_pattern_args hd args1) args2  ->
     forall targs1 sub, 
@@ -885,11 +894,32 @@ Proof.
 Unshelve. all: eauto.
 Qed.
 
+Lemma AppRolesRoles: forall n, exists Rs, AppRoles n Rs.
+Proof.
+  induction n. exists nil. auto.
+  destruct IHn as [Rs h0].
+  destruct App5.
+  destruct nu.
+  exists (R :: Rs).  eauto.
+  destruct rho.
+  exists (Nom :: Rs). eauto.
+  exists Rs. eauto.
+  exists Rs. eauto.
+Qed.
+
+Lemma AppsPath_RolePath : forall R a F n, 
+   AppsPath R a F n ->
+   exists Rs, RolePath (a_Fam F) Rs.
+Proof.
+  induction 1; eauto. 
+Qed.
+
+
 Lemma BranchTyping_preservation : forall G n R a A F B0 B1 C,
     BranchTyping G n R a A (a_Fam F) nil B0 B1 C ->
     CasePath R a F ->
     AppsPath R a F n ->
-    SatApp F n ->
+    SatApp F n -> 
     Typing G a A ->
     Typing G (a_Fam F) B0 ->
     forall b1, Typing G b1 B1 ->
@@ -921,15 +951,18 @@ Proof.
 Qed.
 
 (* --------------------------------------------------------- *)
+(* --------------------------------------------------------- *)
 
-(*
-(* Need to also say that vars P # C *)
-Definition patternFresh p s :=
-  AtomSetImpl.inter (of_list (vars_Pattern p)) s [<=] empty.
+(* The next part includes the main lemmas for the preservation 
+   lemma for axiom matching 
+
+   We break the reasoning into two parts --- we show that we 
+   can generate a 'MatchTyping' derivation. Then we use this derivation
+   to show that the RHS is well typed.
+
 *)
 
-(*
-Definition sub := list (atom * tm). *)
+
 
 (* MatchTyping describes the relationship between the pattern 
    and the scrutinee during type checking
@@ -1014,24 +1047,6 @@ Proof.
   eapply Ctx_uniq; eauto. 
 Qed.
 
-
-Lemma map_fst_zip : forall A B (a : list A) (b: list B), length a = length b -> (List.map fst (zip a b)) = a.
-Proof.
-  intros A B a. induction a.
-  all: intros b H.
-  all: destruct b; inversion H; simpl in *.
-  auto.
-  f_equal. auto.
-Qed. 
-
-Lemma map_snd_zip : forall A B (a : list A) (b: list B), length a = length b -> (List.map snd (zip a b)) = b.
-Proof.
-  intros A B a. induction a.
-  all: intros b H.
-  all: destruct b; inversion H; simpl in *.
-  auto.
-  f_equal. auto.
-Qed. 
 
 Lemma MatchTyping_wf_sub : 
   `{ MatchTyping Gp p B G a A sub D -> 
@@ -1203,19 +1218,6 @@ Proof.
     eauto 1.
 Qed.
 
-    (* 
-
-   MatchSubst a p b b'
-   is defined outside-in on the pattern p 
-       in conjunction with the path a
-   at each step, if p has type B then 
-       a has type (chain_substiution_args B targs)
-       where sub are the type arguments 
-       corresponding to the earlier arguments
-  
-*)
-
-
 
 Lemma Ctx_app : forall G1,  Ctx G1 -> forall G2, uniq(G1 ++ G2) -> Ctx G2 -> Ctx (G1 ++ G2).
 Proof. 
@@ -1232,6 +1234,11 @@ Proof.
     rewrite! app_nil_r in WK.
     apply WK; eauto 3.
 Qed.
+
+
+(* THis is the main lemma for showing that the result of 
+   MatchSubst is well typed. It takes the MatchTyping derivation 
+   computed above and uses it to show that b' is well typed. *)
 
 Lemma MatchSubstTyping :  `{
   forall a p b b' (ms : MatchSubst a p b b'),
@@ -1482,20 +1489,34 @@ Qed.
 Hint Resolve tm_pattern_agree_cong tm_pattern_agree_tm_tm_agree : nominal.
 Hint Resolve Rename_tm_pattern_agree : nominal.
 
-(* We can freshen the axiom WRT to any context *)
+(* General equivariance lemma. 
+   We can freshen the axiom WRT to any context Γ
+
+   This lemma just takes the preconditions in the preservation proof 
+   for axiom matching and shows that we can rename each piece in 
+   a way that includes variables that do not occur in Γ.
+
+   We cannot ensure this from the typing rules because we don't know
+   in the reduction rule the variables that will be in scope in 
+   the typing judgement. If we only proved preservation for closed 
+   terms, this wouldn't be an issue. But we would like to know that 
+   it holds for open terms too. So we need to swap the names in our
+   derivations to ensure that they are sufficiently fresh.
+ *)
 Lemma Axiom_Freshening : forall s (Γ:list(atom*s)), 
   `{ MatchSubst a p1 b1 b' ->
-  Rename p b p1 b1 D1 D ->
-  PatternContexts Ωp Γp Dp F PiB p B ->
-  Γp ⊨ b : B ->
-  (forall x, In x Dp -> x `notin` fv_tm_tm_tm b) -> 
-  exists p2 b2 B' Dp' Ωp' Γp', 
-  MatchSubst a p2 b2 b' /\
-  Rename p b p2 b2 (dom Γ \u D1) D /\
-  PatternContexts Ωp' Γp' Dp' F PiB p2 B' /\
-  Γp' ⊨ b2 : B' /\
-  disjoint Γp' Γ /\
-  (forall x, In x Dp' -> x `notin` fv_tm_tm_tm b2)}. 
+     Rename p b p1 b1 D1 D ->
+     PatternContexts Ωp Γp Dp F PiB p B ->
+     Γp ⊨ b : B ->
+     (forall x, In x Dp -> x `notin` fv_tm_tm_tm b) -> 
+
+    exists p2 b2 B' Dp' Ωp' Γp', 
+    MatchSubst a p2 b2 b' /\
+    Rename p b p2 b2 (dom Γ \u D1) D /\
+    PatternContexts Ωp' Γp' Dp' F PiB p2 B' /\
+    Γp' ⊨ b2 : B' /\
+    disjoint Γp' Γ /\
+    (forall x, In x Dp' -> x `notin` fv_tm_tm_tm b2)}. 
 Proof.
   intros.
 
@@ -1532,12 +1553,9 @@ Proof.
   move=> ms rn bds tpg_a.
 
   (* Deriving basic facts *)
-  (* move: (Rename_Pattern rn) => [pat_p pat_p1]. *)
   move: (toplevel_inversion bds) => [Ωp] [Γp] [Dp] [B] [patctx_p] 
      [tpg_b] [roleing [rnge [tyB fr]]].
   move: (MatchSubst_match ms) => a_agree_p1.
-  (* move: (Rename_spec rn) => [fv_p1 fv_b1]. *)
-  (* move: (Rename_PatCtx_Typing_exist rn patctx_p tpg_b) => [Ωp1] [Γp1] [B1] [patctx_p1] tpg_b1. *)
   move: (Typing_regularity tpg_a) => tpg_A.
 
 
@@ -1657,9 +1675,47 @@ Proof.
   induction 1; simpl; try rewrite IHPatternContexts; try fsetdec.
 Qed.  
 
+(* ---------------------------------------- *)
+
+(* We need to know that if a variable is not found in a term, it stays that 
+   way during reduction.  This is needed in the preservation case 
+   for irrelevant arguments. They stay irrelevant. *)
 
 
-
+Lemma Beta_fv_preservation : forall x a b R, 
+    Beta a b R -> 
+    x `notin` fv_tm_tm_tm a ->
+    x `notin` fv_tm_tm_tm b.
+Proof.
+  intros.
+  induction H.
+  + simpl in *.
+    move => h. 
+    eapply fv_tm_tm_tm_open_tm_wrt_tm_upper in h.
+    fsetdec.
+  + simpl in *.    
+    move => h.
+    eapply fv_tm_tm_tm_open_tm_wrt_co_upper in h.
+    fsetdec.
+  + move: (Rename_MatchSubst_fv H1 H2) => h3.
+    move: (axiom_body_fv_in_pattern H) => h.
+    intro. move: (AtomSetProperties.in_subset H4 h3) => h1.
+    apply union_iff in h1. inversion h1. apply diff_iff in H5.
+    inversion H5. apply H7. eapply AtomSetProperties.in_subset; eauto.
+    apply H0. auto.
+  + simpl in *.
+    move: H2 H0.
+    generalize a.
+    induction 1.
+    - intros. fsetdec.
+    - simpl in *.
+      fsetdec.
+    - simpl in *.
+      fsetdec.
+    - simpl in *.
+      fsetdec.
+  + simpl in *. fsetdec.
+Qed.
 
 Lemma reduction_in_one_fv_preservation: forall x a b R, 
     reduction_in_one a b R -> 
