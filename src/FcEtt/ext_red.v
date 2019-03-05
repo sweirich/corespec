@@ -430,16 +430,16 @@ Proof.
        move:(Typing_context_fv h)=> ?). split_hyp.
     with (Typing G b1) do ltac:(fun h => 
        replace (cps_tm C1 s) with C1 in h).
-        Focus 2.  move: (fv_tm_tm_tm_open_tm_wrt_co_lower C1 g_Triv) => ?. 
-             move: (fv_co_co_tm_open_tm_wrt_co_lower C1 g_Triv) => ?. 
+        2: { move: (fv_tm_tm_tm_open_tm_wrt_co_lower C1 g_Triv) => ?.
+             move: (fv_co_co_tm_open_tm_wrt_co_lower C1 g_Triv) => ?.
              rewrite cps_tm_fresh_eq.
              eapply wf_sub_domFresh with (G:=G); auto.
              eapply wf_sub_domFresh with (G:=G); auto.
-             auto.
+             auto. }
      eapply E_CApp; eauto 1.
         {
         with (Typing G (apply_pattern_args _ _)) do ltac:(fun h => 
-          move:(Typing_context_fv h) => ?; split_hyp). 
+          move:(Typing_context_fv h) => ?; split_hyp).
         with (fv_tm_tm_tm (apply_pattern_args _ _) [<=] _) do ltac:(fun h =>
           rewrite -> fv_tm_tm_tm_apply_pattern_args in h).
         with (fv_co_co_tm (apply_pattern_args _ _) [<=] _) do ltac:(fun h =>
@@ -502,7 +502,7 @@ Proof.
   all: autofresh. 
   all: have ?: x `notin` dom sub by (unhide Fr; rewrite dom_zip_map_fst; auto).
   all: have ?: x `notin` dom G   by (unhide Fr; fsetdec_fast).
-  all: try match goal with 
+  all: try match goal with
       [ targs1' := ?targs1 ++ [?p (Role ?R) ?a] : _ |- _  ]=> 
       set (G1' := (x, Tm A0) :: G1) in *;
       set (sub' := (x, p_Tm (Role R) a) :: (zip (List.map fst G1) (rev targs1)));
@@ -1139,16 +1139,17 @@ Proof.
  
     rewrite cps_open_tm_wrt_tm.
     { unfold lc_sub. econstructor; eauto. econstructor; eauto. eapply Typing_lc1; eauto. }    
-    erewrite wf_cps_subst_var. Focus 2. 
+    erewrite wf_cps_subst_var.
+    2: {
       econstructor; eauto.
       eapply Typing_lc1; eauto.
       fsetdec.
       move: (Typing_context_fv H0) => h. split_hyp.
-      fsetdec. 
-    
+      fsetdec. }
+
 
     eapply E_Trans; eauto 1. 2: eapply E_Sym; eauto 1.
-    
+
     have EQ2: cps_tm B1 ((x, p_Tm (Rho Rel) a2) :: s) = 
               cps_tm B1 s.
     { rewrite <- cps_tm_cons.
@@ -1171,16 +1172,17 @@ Proof.
     rewrite cps_open_tm_wrt_tm.
     { unfold lc_sub. econstructor; eauto. econstructor; eauto. 
       eapply Typing_lc1; eauto. }    
-    erewrite wf_cps_subst_var. Focus 2.
+    erewrite wf_cps_subst_var.
+    2 : {
       econstructor; eauto.
       eapply Typing_lc1; eauto.
       fsetdec.
       move: (Typing_context_fv H0) => h. split_hyp.
-      fsetdec. 
-    
+      fsetdec. }
+
 
     eapply E_Trans; eauto 1. 2: eapply E_Sym; eauto 1.
-    
+
     have EQ2: cps_tm B1 ((x, p_Tm (Rho Irrel) a2') :: s) = 
               cps_tm B1 s.
     { rewrite <- cps_tm_cons.
@@ -1207,12 +1209,13 @@ Proof.
  
     rewrite cps_open_tm_wrt_co.
     { unfold lc_sub. econstructor; eauto. }
-    erewrite wf_cps_co_subst_var with (G:=G)(x:=c). Focus 2.
+    erewrite wf_cps_co_subst_var with (G:=G)(x:=c).
+    2 : {
       econstructor; eauto.
-      fsetdec.
+      fsetdec. }
 
     eapply E_Trans; eauto 1. 2: eapply E_Sym; eauto 1.
-    
+
     have EQ2: cps_tm B1 ((c, p_Co g_Triv ) :: s) = 
               cps_tm B1 s.
     { rewrite <- cps_co_cons.

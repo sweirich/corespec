@@ -1710,7 +1710,7 @@ Lemma RolePath_inversion : forall a Rs, RolePath a Rs ->
          (exists F p b A R, binds F (Ax p b A R (tm_to_roles a ++ Rs))  toplevel
                                 /\ head_const a = a_Fam F).
 Proof. intros. induction H; simpl; eauto.
-        - right. exists F, p, a, A, R1; eauto.
+        - right. exists T, p, a, A, R1; eauto.
         - inversion IHRolePath as [[F [A [H1 H2]]] | [F [p [a1 [A [R2 [H1 H2]]]]]]].
           left. exists F, A. rewrite <- app_assoc. eauto.
           right. exists F, p, a1, A, R2. rewrite <- app_assoc. eauto.

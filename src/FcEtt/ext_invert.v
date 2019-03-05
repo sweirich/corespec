@@ -26,11 +26,12 @@ Lemma AppsPath_Sat : forall R A F r,
   AppsPath R A F r -> exists r', SatApp F r'.
 Proof.
   intros.
-  induction H.
+  induction H; eauto.
   + destruct (RolesApps Rs) as [r p].
   exists r. eauto.
   + destruct (RolesApps Rs) as [r h0].
   exists r. eauto.
+(*
   + destruct IHAppsPath as [r' sa].
     ++ inversion sa; subst.
        exists r'. auto.
@@ -43,6 +44,7 @@ Proof.
     inversion sa; subst.
        exists r'. auto.
        exists r'. auto.
+*)
 Qed.
 
 Lemma Beta_PatternTrue2 : 

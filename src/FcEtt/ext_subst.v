@@ -1067,12 +1067,12 @@ Proof.
     co_subst_hyp.
   - eapply CON; eauto 2.
     replace nil with (List.map (co_subst_co_pattern_arg g c) nil); auto.
-    replace (a_Fam F) with (co_subst_co_tm g c (a_Fam F)); try auto. 
+    replace (a_Fam F5) with (co_subst_co_tm g c (a_Fam F5)); try auto. 
     eapply BranchTyping_co_subst; eauto 2.
     replace nil with (List.map (co_subst_co_pattern_arg g c) nil); auto.
-    replace (a_Fam F) with (co_subst_co_tm g c (a_Fam F)); try auto. 
+    replace (a_Fam F5) with (co_subst_co_tm g c (a_Fam F5)); try auto. 
     eapply BranchTyping_co_subst; eauto 2.
-    replace (a_Fam F) with (co_subst_co_tm g c (a_Fam F)); try auto. 
+    replace (a_Fam F5) with (co_subst_co_tm g c (a_Fam F5)); try auto. 
     co_subst_hyp.
   - eapply CON; eauto 2.
     eapply (CasePath_subst_co _ c); auto.
@@ -1125,7 +1125,7 @@ Proof.
 Unshelve. 
   all: try eauto 1.
 Qed.
-  
+
 
 
 Lemma DefEq_swap_co : forall x1 x G phi D b1 b2 B R,
