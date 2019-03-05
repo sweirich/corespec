@@ -95,8 +95,8 @@ tm, a, b, p, v, w, A, B, C :: 'a_' ::= {{ com types and kinds }}
    {{ tex \mathsf{case} \hspace{3pt} [[a]] \hspace{3pt} \mathsf{of} \hspace{3pt} [[F]]\ [[Apps]] \rightarrow [[b1]] \| \_ \rightarrow [[b2]] }}
 
 
-  | case a of F @ pattern_args => b1 | _ => b2 :: M :: FakePattern
-   {{ tex \mathsf{case} \hspace{3pt} [[a]] \hspace{3pt} \mathsf{of} \hspace{3pt} [[F]]\ [[pattern_args]] \rightarrow [[b1]] \| \_ \rightarrow [[b2]] }}
+  | case a of p => b1 | _ => b2 :: M :: FakePattern
+   {{ tex \mathsf{case} \hspace{3pt} [[a]] \hspace{3pt} \mathsf{of} \hspace{3pt} [[p]] \rightarrow [[b1]] \| \_ \rightarrow [[b2]] }}
    {{ coq 0 }}
 
   | apply a pattern_args :: M :: ApplyPA
@@ -139,6 +139,8 @@ tm, a, b, p, v, w, A, B, C :: 'a_' ::= {{ com types and kinds }}
   |  | a | R             :: S :: Erase
 
   %% abbreviations for examples
+  | String               :: S :: String
+  | HTML                 :: S :: HTML
   | Int                  :: S :: Int
   | Age                  :: S :: Age
   | Bool                 :: S :: Bool
@@ -157,6 +159,7 @@ tm, a, b, p, v, w, A, B, C :: 'a_' ::= {{ com types and kinds }}
   | \ x . a              :: S :: RelUAbs
   | \ x : A . a          :: S :: RelAbs
   | all x : A -> B       :: S :: RelPi
+    {{ tex \Pi [[x]]\!:\![[A]] . [[B]] }}
   | if phi then a else b :: S :: If
 
 
@@ -298,21 +301,31 @@ theta {{ tex \theta }} :: 'cps_' ::= {{ coq list ( atom * pattern_arg ) }}
    {{ tex [[x]] \mapsto [[pattern_arg]] , [[theta]] }}
    {{ coq ([[x]]~[[pattern_arg]] ++ [[theta]]) }}
 
+atom_list, V {{ tex V }} :: 'atom_list_' ::= {{ com atom list }}
+                                             {{ coq list atom }}
+ | emptylist :: :: Empty {{ coq nil }}
+ | V , x     :: :: Cons {{ coq ([[x]] :: [[V]]) }}
+
 role_context, W {{ tex \Omega }} :: 'rctx_' ::= {{ com role_contexts }}
                                           {{ coq list ( atom * role ) }}
    | empty           ::    :: Empty   {{ coq nil }}
    | x : R           ::    :: Tm      {{ coq ([[x]] ~ [[R]]) }}
    | W , x : R       ::    :: ConsTm  {{ coq (([[x]] ~ [[R]]) ++ [[W]]) }}
+   {{ tex [[W]],[[x]]\!:\![[R]] }}
    | W ++ W'         :: M  :: Append  {{ coq ([[W]] ++ [[W']]) }}
    {{tex [[W]],[[W']]}}
    | var_pat p       :: M  :: Pat {{ coq (var_pat([[p]])) }}
    | ( W )           :: M  :: Paren   {{ coq ([[W]]) }}
    | (# W #)         :: M  :: SecretParen {{ coq [[W]] }} {{ tex [[W]] }}
+   | ctx_nom G       :: M  :: CtxNom {{ coq (ctx_nom [[G]]) }}
+    {{ tex [[G]]_{\mathsf{Nom} } }}
+
 
 roles, Rs {{ tex \overline{R} }}  :: '' ::= {{ coq list role }}
    | nilR       ::   :: nilR {{ coq nil }}
    | R , Rs     ::   :: consR {{ coq ([[R]]::[[Rs]]) }}
    | range W    :: S :: rangeR {{ coq (range([[W]])) }}
+	{{ tex \mathsf{rng}[[W]] }}
    | ( Rs )     :: S :: RolesParen {{ coq ([[Rs]]) }}
    | Rs ++ Rs'  :: S :: appR {{ coq ([[Rs]]++[[Rs']]) }}
 %% Special case lists for nice printing
@@ -332,6 +345,10 @@ sig_sort :: '' ::= {{ com signature classifier }}
    | p ~ a : A / R @ Rs    ::    :: Ax
      {{ tex [[p]] \sim_{[[R]]} [[a]] : [[A]]\ [[@]]\ [[Rs]] }}
 
+   | F ~ a : A / R         ::  M  :: SAx
+     {{ tex  \sim_{[[R]]} [[a]] : [[A]] }}
+     {{ coq (Ax (a_Fam [[F]]) [[a]] [[A]] [[R]] nil) }}
+
 sort :: '' ::= {{ com binding classifier }}
    | Tm A             ::   :: Tm
    | Co phi           ::   :: Co
@@ -341,8 +358,9 @@ context, G {{ tex \Gamma }} :: 'ctx_' ::= {{ com contexts }}
    | empty           ::    :: Empty   {{ coq nil }}
 
    | G , x : A       ::    :: ConsTm  {{ coq (([[x]]~ Tm [[A]]) ++ [[G]]) }}
+    {{ tex [[G]], [[x]]\!:\![[A]] }}
    | G , c : phi     ::    :: ConsCo  {{ coq (([[c]]~ Co [[phi]]) ++ [[G]]) }}
-
+    {{ tex [[G]], [[c]]\!:\![[phi]] }}
    | G { b / x }     :: M  :: SubstA  {{ coq (open_context_wrt_tm [[x G]][[b]] }}
    | G { g / c }     :: M  :: SubstG  {{ coq (open_context_wrt_co [[c G]][[g]]  }}
    | G ++ G'         :: M  :: Append  {{ coq ([[G]] ++ [[G']]) }}
@@ -556,6 +574,8 @@ formula, Fm {{tex \psi}} :: 'formula_' ::=
     {{ tex      }}
   | D # D2                   ::   :: IrrelCheck
     {{ coq (AtomSetImpl.For_all (fun x => x `notin` [[D2]]) [[D]] ) }}
+  | V # D                    ::   :: DisjointListSet
+    {{ coq (forall x, In x [[V]] -> x `notin` [[D]]) }}
 
 %  | Noms Rs  ::   :: Noms
 %    {{ coq Forall (fun r => r = Nom) [[Rs]] }}
@@ -693,38 +713,74 @@ Fixpoint A_snoc (xs : Apps) (x : App)  : Apps :=
   | A_cons y ys => (A_cons y (A_snoc ys x))
   end.
 
-
-(* -------------- A specific signature with Fix ------------ *)
-Definition Fix : atom.
-  pick fresh F.
-  exact F.
-Qed.
-
-Definition FixVar1 : atom.
- pick fresh F.
- exact F.
-Qed.
-
-Definition FixVar2 : atom.
- pick fresh F.
- exact F.
-Qed.
-
-Definition FixPat : tm := a_App (a_App (a_Fam Fix) (Rho Irrel) (a_Var_f FixVar1)) (Rho Rel) (a_Var_f FixVar2).
-
-Definition FixDef : tm := a_App (a_Var_f FixVar2) (Rho Rel) (a_App (a_App (a_Fam Fix) (Rho Irrel) a_Bullet) (Rho Rel) (a_Var_f FixVar2)).
-
-Definition FixTy : tm := a_Var_f FixVar1.
-
-Definition an_toplevel : sig := Fix ~ Ax FixPat FixDef FixTy Rep (Nom :: [Nom]).
-
-Definition toplevel : sig := erase_sig an_toplevel Nom.
-
 Fixpoint range (L : role_context) : roles :=
   match L with
   | nil => nil
   | (x,R) :: L' => range(L') ++ [ R ]
   end.
+
+
+(* -------------- A specific signature with Fix ------------ *)
+
+
+Definition constants :
+  { Star    : atom &
+  { Fix     : atom &
+  { FixVar1 : atom &
+  { FixVar2 : atom &
+      Fix `notin` singleton Star /\
+      FixVar1 `notin` singleton Star  \u (singleton Fix) /\
+      FixVar2 `notin` singleton Star \u singleton Fix  \u singleton FixVar1  } } } }.
+Proof.
+  pick fresh Star.
+  pick fresh Fix.
+  pick fresh FixVar1.
+  pick fresh FixVar2.
+  exists Star.
+  exists Fix.
+  exists FixVar1.
+  exists FixVar2.
+  repeat split; auto.
+Defined.
+
+Definition Star : atom.
+  destruct constants as [s _].
+  exact s.
+Defined.
+
+Definition Fix : atom.
+  destruct constants as [_ [f _] ].
+  exact f.
+Defined.
+
+Lemma noteq : Star <> Fix.
+Proof.
+  unfold Star, Fix.
+  destruct constants as [s [f [f1 [f2 h] ] ] ].
+  destruct h as [g _].
+  fsetdec.
+Qed.
+
+Definition FixVar1 : atom.
+  destruct constants as [_ [_ [f1 _] ] ].
+  exact f1.
+Defined.
+
+Definition FixVar2 : atom.
+  destruct constants as [_ [_ [_ [f2 _] ] ] ].
+  exact f2.
+Defined.
+
+Definition FixPat : tm := a_App (a_App (a_Fam Fix) (Rho Irrel) a_Bullet) (Role Nom) (a_Var_f FixVar2).
+
+Definition FixDef : tm := a_App (a_Var_f FixVar2) (Rho Rel)
+                              (a_App (a_App (a_Fam Fix) (Rho Irrel) a_Bullet) (Rho Rel) (a_Var_f FixVar2)).
+
+Definition FixTy : tm  := a_Pi Irrel a_Star
+                             (a_Pi Rel (a_Pi Rel (a_Var_b 0) (a_Var_b 1)) (a_Var_b 1)).
+
+Definition toplevel : sig := Fix ~ Ax FixPat FixDef FixTy Nom [Nom].
+
 
 }}
 
@@ -762,35 +818,34 @@ defns
    JRolePath :: '' ::=
 
 defn
-RolePath a +> T @ Rs  ::  :: RolePath :: 'RolePath_'
-{{ com Type headed by constant (partial function) }}
-{{ tex \mathsf{RolePath} \ [[a]] [[+>]] [[T]] @ [[Rs]] }}
+RolePath a +> Rs  ::  :: RolePath :: 'RolePath_'
+{{ com Calculate remaining roles for path (partial function) }}
+{{ tex \mathit{Roles}([[a]]) = [[Rs]] }}
 by
 
 T : A @ Rs in toplevel
 --------------------- :: AbsConst
-RolePath T +> T @ Rs
+RolePath T +> Rs
 
 T : p ~ a : A/R1 @ Rs in toplevel
 --------------------------------- :: Const
-RolePath T +> T @ Rs
+RolePath T +> Rs
 
-RolePath a +> T @ R1,Rs
+RolePath a +> R1,Rs
 ---------------------------- :: TApp
-RolePath (a R1 b') +> T @ Rs
+RolePath a R1 b +> Rs
 
-RolePath a +> T @ Rs
+RolePath a +>  Nom, Rs
 ---------------------------- :: App
-RolePath (a + b') +> T @ Rs
+RolePath a + b +> Rs
 
-RolePath a +> T @ Rs
+RolePath a +>  Rs
 ---------------------- :: IApp
-RolePath (a - []) +> T @ Rs
+RolePath a - [] +> Rs
 
-RolePath a +> T @ Rs
+RolePath a +> Rs
 ---------------------- :: CApp
-RolePath (a [o]) +> T @ Rs
-
+RolePath a [o] +> Rs
 
 
 defns
@@ -798,8 +853,8 @@ defns
 
 defn
 AppsPath R a +> F Apps  ::  :: AppsPath :: 'AppsPath_'
-{{ com Type headed by constant (partial function) }}
-{{ tex \mathsf{AppsPath}\;[[a]] [[+>]] [[F]]\;[[Apps]] }}
+{{ com Calculate the application pattern of a, a value at role R (partial function) }}
+{{ tex [[a]] \leftrightarrow_{[[R]]} [[F]]\;[[Apps]] }}
 by
 
 T : A @ Rs in toplevel
@@ -842,7 +897,7 @@ Tm R1 , Apps <-> R1 , Rs
 
 Apps <-> Rs
 ----------------------- :: consApp
-Tm + , Apps <-> Rs
+Tm + , Apps <-> Nom , Rs
 
 Apps <-> Rs
 ----------------------- :: consIApp
@@ -856,7 +911,7 @@ Co , Apps <-> Rs
 defn
  Sat F Apps ::    :: SatApp :: 'Sat_'
  by
-
+% {{ tex \mathit{Const}_\mathsf{Nom} [[F]][[Apps]] }}
 
 T : A @ Rs in toplevel
 Apps <-> Rs
@@ -877,26 +932,26 @@ defns
 JPatCtx :: '' ::=
 
 defn
-W ; G ; D |= T , A ; p : B  :: :: PatternContexts :: 'PatCtx_'
+W ; G ; V |= T , A ; p : B  :: :: PatternContexts :: 'PatCtx_'
 {{ com Contexts generated by a pattern (variables bound by the pattern) }}
-{{ tex [[W]] ; [[G]]; [[D]] [[|=]] [[p]] :_[[T]] [[B]] \Rightarrow [[A]] }}
+{{ tex \mathit{PatCtx}([[p]],[[T]]:[[A]]) = [[G]] ; [[B]] ; [[W]] ; [[V]] }}
+%{{ tex [[W]] ; [[G]]; [[V]] [[|=]] [[p]] :_[[F]] [[B]] \Rightarrow [[A]] }}
 by
 
 ------------------------------ :: Const
-empty ; empty ; emptyD |= T, A;  T : A
+empty ; empty ; emptylist |= T, A;  T : A
 
-W ; G ; D |= T, B; p : all + x : A' -> A
+W ; G ; V |= T, B; p : all + x : A' -> A
 ---------------------------------------- :: PiRel
-W, x : R ; G, x : A' ; D |= T, B; p R x : A
+W, x : R ; G, x : A' ; V |= T, B; p R x : A
 
-W ; G ; D |= T, B; p : all - x : A' -> A
+W ; G ; V |= T, B; p : all - x : A' -> A
 --------------------------------------- :: PiIrr
-W ; G, x : A' ; D , x |= T, B; p - [] : A
+W ; G, x : A' ; V , x |= T, B; p - [] : A
 
-W ; G ; D |= T, B; p : all c : phi. A
+W ; G ; V |= T, B; p : all c : phi. A
 ------------------------------------ :: CPi
-W ; G, c : phi ; D |= T, B; p [o] : A
-
+W ; G, c : phi ; V |= T, B; p [o] : A
 
 defns
 JRename :: '' ::=
@@ -929,7 +984,7 @@ JMatchSubst :: '' ::=
 defn
 match a1 with p -> b1 +> b2 :: :: MatchSubst :: 'MatchSubst_'
 {{ com match and substitute }}
-{{ tex \mathsf{match} \ [[a1]] \ \mathsf{with} \ [[p]] \rightarrow [[b1]] [[+>]] [[b2]] }}
+{{ tex \mathit{MatchSubst}( [[a1]] , [[p]] , [[b1]] ) = [[b2]] }}
 by
 
 ----------------------------------------- :: Const
@@ -1083,7 +1138,7 @@ defns
 defn
 ValuePath a +> F  ::  :: ValuePath :: 'ValuePath_'
 {{ com Path headed by valid constructor }}
-{{ tex \mathsf{ValidPath} \ [[a]] [[+>]] [[F]] }}
+{{ tex \mathit{Head}([[a]]) [[+>]] [[F]] }}
 by
 
 ---------------------- :: Star
@@ -1112,7 +1167,7 @@ defns
 defn
 CasePath R a +> F ::  :: CasePath :: 'CasePath_'
 {{ com Path that is a value }}
-{{ tex \mathsf{ValuePath}_{[[R]]}\ [[a]] [[+>]] [[F]] }}
+{{ tex \mathit{CasePath}_{[[R]]} [[a]] = [[F]] }}
 by
 
 ValuePath a +> T
@@ -1141,8 +1196,9 @@ JApplyArgs :: '' ::=
 
 defn
 apply args a to b +> b' :: :: ApplyArgs :: 'ApplyArgs_'
-{{ com apply arguments of a (headed by a constant) to b }}
-{{ tex \mathsf{apply~args} \ [[a]] \ \mathsf{to} \ [[b]] [[+>]] [[b']] }}
+{{ com Apply arguments of path a to b producing b' }}
+{{ tex \mathit{ApplyArgs}([[a]], [[b]]) = [[b']] }}
+% {{ tex \mathsf{apply~args} \ [[a]] \ \mathsf{to} \ [[b]] [[+>]] [[b']] }}
 by
 
 ---------------------- :: Const
@@ -1340,7 +1396,7 @@ JChk :: '' ::=
 defn
 rho => check x in A ::    :: RhoCheck :: 'Rho_'
 {{ tex ([[rho]] = +) \vee ([[x]]\not\in\mathsf{fv}\; [[A]]) }}
-{{ com irrelevant argument check }}
+{{ com Irrelevant argument check }}
 by
 
 nolc A
@@ -1444,7 +1500,7 @@ W |= b1 => b1' / R0
 W |= b2 => b2' / R0
 AppsPath Nom a' +> F Apps
 apply args a' to b1' +> b
-Sat F Apps'
+[ Sat F Apps' ]
 --------------------------------------------- :: PatternTrue
 W |= (case Nom a of F @ Apps => b1 | _ => b2) => b [o] / R0
 
@@ -1494,9 +1550,9 @@ defn
 {{ tex [[|=]] [[a]] \rightarrow^{\beta}_{[[R]]} [[b]] }}
 by
 
-Value R1 (\rho x. v)
+Value R (\rho x. v)
 ------------------------------------ :: AppAbs
-|= (\rho x.v) rho b > v { b / x } / R1
+|= (\rho x.v) rho b > v { b / x } / R
 
 
 ------------------------------- :: CAppCAbs
@@ -1512,28 +1568,28 @@ R1 <= R
 
 AppsPath Nom a +> F Apps
 apply args a to b1 +> b1'
-Sat F Apps'
+[ Sat F Apps' ]
 ------------------------------------------ :: PatternTrue
-|= case Nom a of F @ Apps => b1 | _ => b2 > b1' [o] / R0
+|= (case Nom a of F @ Apps => b1 | _ => b2) > b1' [o] / R
 
 Value Nom a
 not (AppsPath Nom a +> F Apps)
 ------------------------------------------ :: PatternFalse
-|= case Nom a of F @ Apps => b1 | _ => b2 > b2 / R0
+|= (case Nom a of F @ Apps => b1 | _ => b2) > b2 / R
 
 defn
  |= a ~> b / R ::   :: reduction_in_one :: 'E_'
-{{ com single-step head reduction for implicit language }}
+{{ com Single-step head reduction }}
 {{ tex [[|=]] [[a]] [[~>]]_{[[R]]} [[b]] }}
 by
 
-|= a ~> a' / R1
+|= a ~> a' / R
 -------------------------  :: AbsTerm
-|= \- x.a ~> \- x.a' / R1
+|= \- x.a ~> \- x.a' / R
 
-|= a ~> a' / R1
+|= a ~> a' / R
 -------------------------  :: AppLeft
-|= a nu b ~> a' nu b / R1
+|= a nu b ~> a' nu b / R
 
 |= a  ~> a' / R
 -----------------------------   :: CAppLeft
@@ -1541,7 +1597,7 @@ by
 
 |= a ~> a' / Nom
 ----------------------------------------------------------------------- :: Pattern
-|= case Nom a of F @ Apps => b1 | _ => b2 ~> case Nom a' of F @ Apps => b1 | _ => b2 / R0
+|= (case Nom a of F @ Apps => b1 | _ => b2) ~> (case Nom a' of F @ Apps => b1 | _ => b2) / R
 
 |= a > b / R
 ----------------------------- :: Prim
@@ -1656,7 +1712,7 @@ G |= b + a : B { a / x }
 
 G |= b : all+ x : A -> B
 G |= a : A
-RolePath b +> T @ R, Rs
+RolePath b +> R, Rs
 ------------------------------------- :: TApp
 G |= b R a : B { a / x }
 
@@ -1801,26 +1857,26 @@ G ; D |= a1 + a2 == b1 + b2 : (B { a2 / x })/R'
 %% R <= R1 and R <= R2 ??
 G ; D |= a1 == b1 : (all + x:A -> B)/R'
 G ; D |= a2 == b2 : A/ param R R'
-RolePath a1 +> T @ R, Rs
-RolePath b1 +> T @ R, Rs
+RolePath a1 +> R, Rs
+RolePath b1 +> R, Rs
 G |= b1 R b2 : B { a2 / x }
 ------------------------------------------------ :: TAppCong
 G ; D |= a1 R a2 == b1 R b2 : (B { a2 / x })/R'
 
-G ; D |= a1 == b1 : (all - x:A -> B)/R'
+G ; D |= a1 == b1 : (all - x:A -> B)/R
 G |= a : A
 ---------------------------------------------- :: IAppCong
-G ; D |= a1 - [] == b1 - [] : (B { a / x })/R'
+G ; D |= a1 - [] == b1 - [] : (B { a / x })/R
 
 
 G ; D |= all rho x:A1 -> B1 == all rho x:A2 -> B2 : TYPE/R'
 ----------------------------------------------------------- :: PiFst
 G ; D |=  A1 == A2 : TYPE/ R'
 
-G ; D |= all rho x:A1 -> B1 == all rho x:A2 -> B2 : TYPE/R'
+G ; D |= all rho x:A1 -> B1 == all rho x:A2 -> B2 : TYPE/R
 G ; D |= a1 == a2 : A1/ Nom
 ------------------------------------------------------------ :: PiSnd
-G ; D |=  B1 {a1 /x}  == B2 {a2/x} : TYPE/R'
+G ; D |=  B1 {a1 /x}  == B2 {a2/x} : TYPE/R
 
 %% Rules related to Coercion Abstraction
 
@@ -1899,16 +1955,16 @@ G ; dom G |= B {b/x} == B {b'/x} : TYPE/Rep
 G ; D |= a == a' : all -x: A -> B/R'
 
 
-CasePath R' (a R1 b) +> T
-CasePath R' (a' R1 b') +> T
+CasePath R2 (a R1 b) +> T
+CasePath R2 (a' R1 b') +> T
 G |= a : all +x:A -> B
 G |= b : A
 G |= a' : all +x:A -> B
 G |= b' : A
-G ; D |= a R1 b == a' R1 b' : B { b / x }/R'
+G ; D |= a R1 b == a' R1 b' : B { b / x }/R2
 G ; dom G |= B {b/x} == B {b'/x} : TYPE/Rep
 ----------------------------------------------- :: Right
-G ; D |= b == b' : A/param R1 R'
+G ; D |= b == b' : A/param R1 R2
 
 
 CasePath R' (a [o])  +> T
@@ -1965,9 +2021,9 @@ T notin dom S
 |= S
 T notin dom S
 empty |= A : TYPE
-W ; G ; D |= T, A; p : B
+W ; G ; V |= T, A; p : B
 G |= a : B
-D # fv a
+V # fv a
 W |= a : R
 -------------------------------- :: ConsAx
 |= S, T : p ~ a : A/R @ range W
@@ -2021,199 +2077,7 @@ S1 <= S2
 S1 , T : sig_sort <= S2 , T : sig_sort
 
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%__ Source language semantics __%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-defns
-JSrc :: '' ::=
-
-defn
-G ||=src a : A ::   :: SrcTyping :: 'S_'
-{{ com source typing }}
-by
-
-
-|= G
----------------------  :: Star
-G ||=src TYPE : TYPE
-
-|= G
-x:A in G
-------------------- :: Var
-G ||=src x : A
-
-G ||=src A : TYPE
-G ||=src A ~> A': TYPE
-G, x:A' ||=src B  : TYPE
----------------------------------------------------------- :: Pi
-G ||=src (all rho x:A -> B) : TYPE
-
-G, x:A  ||=src a  : B
----------------------------------- :: Abs
-G ||=src \ x . a : ( all + x:A -> B )
-
-G, x:A ||=src a : B
-%% x notin fv a
----------------------------------- :: IAbs
-G ||=src a : ( all - x:A -> B )
-
-
-G ||=src a : A
-G ; dom G |= A == B : TYPE / Nom
------------------------------------ :: Conv
-G ||=src a : B
-
-G ||=src a : A
-G ; dom G |= A == B : TYPE / Rep
-------------------------------------- :: Coerce
-G ||=src coerce a : B
-
-G ||=src b : all+ x : A -> B
-G ||=src a ~> a' : A
-------------------------------------- :: App
-G ||=src b a : B { a' / x }
-
-
-G ||=src b : all - x : A -> B
-G |= a' : A
-------------------------------------- :: IApp
-G ||=src b : B { a' / x }
-
-
-
-G ||=src phi ~> phi' ok
-G, c : phi' ||=src B : TYPE
------------------------------------------------ :: CPi
-G ||=src all c:phi. B  : TYPE
-
-G, c:phi' ||=src a  : B
-------------------------------------------------- :: CAbs
-G ||=src a : all c:phi. B
-
-G ||=src a1 : all c : (a ~ b : A / R) . B1
-G ; dom G |= a == b : A / R
-------------------------------------------- :: CApp
-G ||=src a1 : B1 { o / c }
-
-|= G
-T : A @ Rs in toplevel
-------------------------- :: Const
-G ||=src T : A
-
-|= G
-%F : Apps ~ a : A / R1 @ Rs in toplevel
----------------------------- :: Fam
-G ||=src F : A
-
-G ||=src a : A
-%F : Apps ~ a0 : A1 / R1 @ Rs in toplevel
-G ||=src b1' : B
-G ||=src b2' : C
-% G |= Apps case R a' : A of F @ none : A1 -> b1' : B | C
-------------------------------------------------------------------------------------------- :: Case
-G ||=src case Nom a of F @ Apps => b1 | _ => b2 : C
-
-
-
-defn
-G ||=src a ~> a' : A ::   :: SrcTrans :: 'ST_'
-{{ com source translation }}
-by
-
-% TODO: This is an instance of Fam atm, should we keep it or not? (depends if Fam's commented premise is meant to come back)
-|= G
----------------------  :: Star
-G ||=src TYPE ~> TYPE : TYPE
-
-|= G
-x:A in G
-------------------- :: Var
-G ||=src x ~> x : A
-
-G ||=src A ~> A': TYPE
-G, x:A' ||=src B ~> B' : TYPE
----------------------------------------------------------- :: Pi
-G ||=src (all rho x:A -> B) ~> (all rho x:A' -> B') : TYPE
-
-G, x:A  ||=src a ~> a' : B
----------------------------------- :: Abs
-G ||=src \ x . a ~> \+x. a' : ( all + x:A -> B )
-
-G, x:A  ||=src a ~> a' : B
-x notin fv a
----------------------------------- :: IAbs
-G ||=src a ~> \-x. a : ( all - x:A -> B )
-
-
-G ||=src b ~> b' : all+ x : A -> B
-G ||=src a ~> a' : A
-------------------------------------- :: App
-G ||=src b a ~> b' + a' : B { a' / x }
-
-G ||=src b ~> b' : all+ x : A -> B
-G ||=src a ~> a' : A
-RolePath b +> T @ R, Rs
-------------------------------------- :: TApp
-G ||=src b a ~> b' R a' : B { a / x }
-
-G ||=src b ~> b' : all - x : A -> B
-G |= a : A
-------------------------------------- :: IApp
-G ||=src b ~> b' - [] : B { a / x }
-
-G ||=src a ~> a' : A
-G ; dom G |= A == B : TYPE / Nom
------------------------------ :: Conv
-G ||=src a ~> a' : B
-
-G ||=src a ~> a' : A
-G ; dom G |= A == B : TYPE / Rep
---------------------------------- :: Coerce
-G ||=src coerce a ~> a' : B
-
-G ||=src phi ~> phi' ok
-G, c : phi' ||=src B ~> B' : TYPE
------------------------------------------------ :: CPi
-G ||=src all c:phi. B ~> all c:phi. B' : TYPE
-
-G, c:phi ||=src a ~> a' : B
-------------------------------------------------- :: CAbs
-G ||=src a ~> /\ c . a' : all c:phi. B
-
-G ||=src a1 ~> a1' : all c : (a ~ b : A / R) . B1
-G ; dom G |= a == b : A / R
-------------------------------------------- :: CApp
-G ||=src a1 ~> a1' [ o ] : B1 { o / c }
-
-|= G
-T: A @ Rs in toplevel
-------------------------- :: Const
-G ||=src T~> T: A
-
-|= G
-%F : Apps ~ a : A / R1 @ Rs in toplevel
----------------------------- :: Fam
-G ||=src F ~> F : A
-
-G ||=src a ~> a' : A
-%F : Apps ~ a0 : A1 / R1 @ Rs in toplevel
-G ||=src b1 ~> b1' : B
-G ||=src b2 ~> b2' : C
-% G |= Apps case R a' : A of F @ none : A1 -> b1' : B | C
-------------------------------------------------------------------------------------------- :: Case
-G ||=src case Nom a of F @ Apps => b1 | _ => b2 ~> case Nom a' of F @ Apps => b1' | _ => b2' : C
-
-
-defn
-G ||=src phi ~> phi' ok ::    :: SrcPropWff :: 'S_'
-{{ com Prop wellformedness }}
-by
-
-G ||=src a ~> a' : A
-G ||=src b ~> b' : A
----------------------------  :: Wff
-G ||=src (a ~ b : A / Nom) ~> (a' ~ b' : A / Nom) ok
 
 
 
@@ -2529,7 +2393,7 @@ defns
 
 defn
 G |- a ~>h b / R ::   :: head_reduction :: 'An_'
-{{ com single-step, weak head reduction to
+{{ com Single-step, weak head reduction to
    values for annotated language }}
 % NOTE: this reduction needs a context for the the
 % two push rules. We need to read the coercion proofs
@@ -2689,6 +2553,7 @@ homs 'a_'
   :: Succ    {{ tex \mathsf{S} }}
   :: True
   :: Fix
+  :: Set
   :: Arrow
   :: CArrow
   :: SrcApp  {{ tex [[a]]\ [[b]]                  }}
@@ -2751,6 +2616,8 @@ homs 'a_'
   :: Erase         {{ coq (erase_tm [[a]][[R]])                    }}
 
   %% abbreviations for examples
+  :: String        {{ coq 0                                        }}
+  :: HTML          {{ coq 0                                        }}
   :: Int           {{ coq 0                                        }}
   :: Age           {{ coq 0                                        }}
   :: Bool          {{ coq 0                                        }}

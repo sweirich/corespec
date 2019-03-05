@@ -98,7 +98,7 @@ Hint Resolve Ctx_uniq.
 (* ------------------------------------------------------------------------ *)
 
 
-Lemma RolePath_lc : forall F a R, RolePath a F R -> lc_tm a.
+Lemma RolePath_lc : forall a R, RolePath a R -> lc_tm a.
 Proof. intros. induction H; eauto.
 Qed.
 

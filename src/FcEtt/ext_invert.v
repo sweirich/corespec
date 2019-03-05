@@ -12,6 +12,53 @@ Require Import FcEtt.notations.
 Require Import FcEtt.param.
 Require Import FcEtt.tactics.
 
+Lemma RolesApps : forall Rs, exists r, AppRoles r Rs.
+Proof.
+  induction Rs.
+  exists A_nil. auto.
+  destruct IHRs as [r h].
+  case: a.
+  exists (A_cons (A_Tm (Rho Rel)) r). eauto.
+  exists (A_cons (A_Tm (Role Rep)) r). eauto.
+Qed.  
+
+Lemma AppsPath_Sat : forall R A F r,
+  AppsPath R A F r -> exists r', SatApp F r'.
+Proof.
+  intros.
+  induction H.
+  + destruct (RolesApps Rs) as [r p].
+  exists r. eauto.
+  + destruct (RolesApps Rs) as [r h0].
+  exists r. eauto.
+  + destruct IHAppsPath as [r' sa].
+    ++ inversion sa; subst.
+       exists r'. auto.
+       exists r'. auto.
+  + destruct IHAppsPath as [r' sa].
+    inversion sa; subst.
+       exists r'. auto.
+       exists r'. auto.
+  + destruct IHAppsPath as [r' sa].
+    inversion sa; subst.
+       exists r'. auto.
+       exists r'. auto.
+Qed.
+
+Lemma Beta_PatternTrue2 : 
+      ∀ (a : tm) (F : const) (Apps5 : Apps) (b1 b2 b1' : tm) 
+         (R0 : role) , lc_tm b2
+                             ⟹ AppsPath Nom a F Apps5
+                             ⟹ ApplyArgs a b1 b1'
+                             ⟹ Beta
+                             (a_Pattern Nom a F Apps5 b1 b2)
+                             (a_CApp b1' g_Triv) R0.
+Proof.
+  intros.
+  destruct (AppsPath_Sat H0).
+  eapply Beta_PatternTrue; eauto.
+Qed.  
+
 Set Bullet Behavior "Strict Subproofs".
 Set Implicit Arguments.
 
@@ -378,16 +425,16 @@ Qed.
 
 Lemma invert_a_App_Role: `{
     Typing G (a_App a (Role R) b) C ->
-    exists A B F Rs, Typing G a (a_Pi Rel A B) /\
+    exists A B Rs, Typing G a (a_Pi Rel A B) /\
            Typing G b A /\
            DefEq G (dom G) C (open_tm_wrt_tm B b) a_Star Rep /\
-           RolePath a  F  (R :: Rs) }.
+           RolePath a (R :: Rs) }.
 Proof.
   intros G a R b C.
   move e : (a_App a (Role R) b) => t1.
   move => h1.
   induction h1; auto; try done.
-  - exists A, B, T, Rs. inversion e; subst.
+  - exists A, B, Rs. inversion e; subst.
     assert (h2 : Typing G (open_tm_wrt_tm B a0) a_Star).
     + (have: Typing G (a_Pi Rel A B) a_Star 
         by apply (Typing_regularity h1_1)) => h3.
@@ -397,8 +444,8 @@ Proof.
       replace a_Star with (tm_subst_tm_tm a0 x a_Star); auto.
       apply Typing_tm_subst with (A := A); eauto using param_sub1.
     + repeat split; auto. 
-  - destruct (IHh1_1 e) as [A0 [B0 [F0 [Rs0 [b0 [h3 [h4 h5]]]]]]].
-    exists A0, B0, F0, Rs0.
+  - destruct (IHh1_1 e) as [A0 [B0 [Rs0 [b0 [h3 [h4 h5]]]]]].
+    exists A0, B0, Rs0.
     repeat split; auto.
     apply (E_Trans _ _ _ _ _ _ A); auto.
 Qed.
@@ -1316,6 +1363,40 @@ Proof.
   intros.
   eapply E_Wff; eauto 2.
   eapply Typing_regularity. eauto.
+Qed.
+
+
+
+Lemma E_PiCong3 :  ∀ x (G : context) D rho (A1 B1 A2 B2 : tm) R',
+    x `notin` dom G \u fv_tm_tm_tm A1 \u fv_tm_tm_tm A2 \u fv_tm_tm_tm B1 
+      \u fv_tm_tm_tm B2 
+    -> DefEq G D A1 A2 a_Star R'
+    → DefEq ([(x, Tm A1)] ++ G) D (open_tm_wrt_tm B1 (a_Var_f x))
+            (open_tm_wrt_tm B2 (a_Var_f x)) a_Star R'
+    → DefEq G D (a_Pi rho A1 B1) (a_Pi rho A2 B2) a_Star R'.
+Proof. 
+  intros. 
+  pick fresh y and apply E_PiCong2; auto.
+   replace a_Star with (open_tm_wrt_tm a_Star (a_Var_f y)); auto.
+  eapply DefEq_swap; auto.
+Qed.
+
+Lemma E_CPiCong3  : ∀ c (G : context) (D : available_props) a0 b0 T0
+                      (A : tm) a1 b1 T1 (B : tm) R R',
+    c `notin` dom G \u D \u fv_co_co_tm A \u fv_co_co_tm B-> 
+    Iso G D (Eq a0 b0 T0 R) (Eq a1 b1 T1 R)
+    → DefEq ([(c, Co (Eq a0 b0 T0 R))] ++ G) D (open_tm_wrt_co A (g_Var_f c))
+            (open_tm_wrt_co B (g_Var_f c)) a_Star R'
+    → DefEq G D (a_CPi (Eq a0 b0 T0 R) A) (a_CPi (Eq a1 b1 T1 R) B) a_Star R'.
+Proof.
+  intros.
+  pick fresh y and apply E_CPiCong2; auto.
+  replace (a_Star) with (open_tm_wrt_co a_Star (g_Var_f y)).
+  eapply (@DefEq_swap_co c y). simpl. 
+  hide Fr. fsetdec.
+  fsetdec.
+  auto.
+  reflexivity.
 Qed.
 
 

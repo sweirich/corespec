@@ -436,7 +436,7 @@ Proof.
   - (* left side is AppLeft, right side is Beta_Axiom *)
     (* Need to show that if Beta_Axiom triggers, then the 
        term is a Value. *)
-    have VF: Value R1 a. eapply BetaAxiom_a_App_only; eauto.
+    have VF: Value R a. eapply BetaAxiom_a_App_only; eauto.
     Value_no_red.
   - inversion H; inversion H1; invert_MatchSubst.
   - (* left side is Beta_Axiom, right side is CApp. *)
