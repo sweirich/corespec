@@ -722,7 +722,8 @@ Proof.
   rewrite (co_subst_co_tm_intro c); auto.
   eapply co_subst_co_tm_lc_tm; auto.
   rewrite (co_subst_co_tm_intro c) in H0.
-  eapply (@co_subst_co_tm_lc_tm_inverse g_Triv c); eauto 2. auto.
+  fsetdec.
+  eapply (@co_subst_co_tm_lc_tm_inverse g_Triv c); eauto 2.
 Qed.
 
 Hint Resolve lc_open_switch_co.

@@ -122,8 +122,7 @@ Proof.
     eapply Value_UAbsIrrel_exists with (x:=y).
     eapply fv_tm_tm_tm_co_subst_co_tm_notin; eauto.
     move: (H y ltac:(eauto) b x H0) => h0.
-    rewrite co_subst_co_tm_open_tm_wrt_tm in h0.
-    simpl in h0. auto. auto.
+    rewrite co_subst_co_tm_open_tm_wrt_tm in h0; done.
   - intros. econstructor. apply co_subst_co_tm_lc_tm; auto.
     eapply Path_subst_co; eauto. eauto.
   - intros. econstructor. eapply Path_subst_co; eauto. eauto.

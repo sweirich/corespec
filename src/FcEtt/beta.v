@@ -59,7 +59,7 @@ Proof.
     apply tm_subst_tm_tm_lc_tm with (a2 := b) (x1:=x) in H; auto.
   - move: (toplevel_closed H) => h.
     simpl.
-    rewrite tm_subst_tm_tm_fresh_eq. eauto.
+    rewrite tm_subst_tm_tm_fresh_eq; last by eauto.
     move: (first context_fv_mutual _ _ _ _ h) => Fr. simpl in Fr.
     fsetdec.
   - 

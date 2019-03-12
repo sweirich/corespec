@@ -10,10 +10,10 @@ Require Export FcEtt.ett_ott.
 
 (* SSReflect *)
 
-Require Export mathcomp.ssreflect.ssreflect.
+
+From Coq Require Export ssreflect ssrfun ssrbool.
 Close Scope boolean_if_scope.
 Global Open Scope general_if_scope.
-(* From mathcomp Require Export ssrfun ssrmatching. *)
 
 
 

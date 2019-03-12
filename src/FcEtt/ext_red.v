@@ -110,8 +110,8 @@ Admitted.
        destruct (invert_a_Conv2 h1) as (B' & h2 & h).
        eapply E_TyCast with (A1 := (open_tm_wrt_tm B2 (a_Conv b R g_Triv))).
        eapply E_App. eapply E_Conv. eapply E_SubRole. eauto 1. eauto 1.
-       eapply E_Sym. 
-Qed.
+       eapply E_Sym.
+Admitted.
 
 
 Check invert_a_Conv.

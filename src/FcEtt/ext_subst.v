@@ -304,7 +304,7 @@ Proof. eapply typing_wff_iso_defeq_mutual;
          have: PropWff G0 (Eq a b A R) by apply (binds_to_PropWff _ _ _ _ c); auto.
          inversion 1; subst.
          repeat rewrite tm_subst_tm_tm_fresh_eq; auto.
-         -- move: (Typing_context_fv H11) => ?. split_hyp. auto.
+         -- move: (Typing_context_fv H9) => ?. split_hyp. auto.
          -- move: (Typing_context_fv H11) => ?. split_hyp. auto.
          -- move: (Typing_context_fv H9) => ?. split_hyp. auto.
   - eapply E_Beta; eauto.
@@ -415,7 +415,7 @@ Proof.
       apply binds_app_1 in b.
       case:b; try solve [move => h0; inversion h0; inversion H0].
       move => h0.
-      rewrite co_subst_co_tm_fresh_eq.
+      rewrite co_subst_co_tm_fresh_eq; last first.
       apply E_Var; auto.
         by apply (H _ D _ _ A1 A2 T R').
       pose K := Ctx_strengthen ([(c0, Co (Eq A1 A2 T R') )] ++ G0) F c.
@@ -441,7 +441,7 @@ Proof.
       move => Hi2.
       inversion Hi2; subst; clear Hi2.
       inversion H5; subst; clear H5.
-      repeat rewrite co_subst_co_tm_fresh_eq; eauto 2.
+      repeat rewrite co_subst_co_tm_fresh_eq; last first; eauto 2.
       ++ rewrite_env (nil ++(map (co_subst_co_sort g_Triv c1) F) ++ G0).
          eapply (fourth weaken_available_mutual).
          pose K := DefEq_weakening.
@@ -457,7 +457,7 @@ Proof.
       inversion h4. subst. clear h4.
       have: c1 `notin` dom G0. inversion h2; auto.
       move => Fr1.
-      repeat rewrite co_subst_co_tm_fresh_eq.
+      repeat rewrite co_subst_co_tm_fresh_eq; last first.
       eapply E_Assn; eauto 1.
       eapply H; eauto 1.
       eapply binds_app_3; eauto 1.

@@ -157,11 +157,10 @@ Qed.
 Lemma subst1 : forall b W W' a a' R1 R2 x, Par W' a a' R1 -> 
                erased_tm (W ++ [(x,R1)] ++ W') b R2 ->
                Par (W ++ W') (tm_subst_tm_tm a x b) (tm_subst_tm_tm a' x b) R2.
-Proof.
+Proof with eauto using Par_lc1, Par_lc2.
   intros b W W' a a' R1 R2 x PAR ET.
   dependent induction ET; intros; simpl; auto.
-   - constructor. constructor. eapply uniq_remove_mid; eauto.
-   - constructor. constructor. eapply uniq_remove_mid; eauto.
+  all: try solve [econstructor; eauto].
    - destruct (x0 == x); auto. 
      + subst. assert (P:R = R1).
        eapply binds_mid_eq; eauto. subst. replace W with (nil ++ W); eauto.
@@ -172,31 +171,22 @@ Proof.
        eapply binds_remove_mid; eauto. auto.
    - eapply Par_Abs with (L := union (singleton x) L).
      intros x0 H1.
-     rewrite tm_subst_tm_tm_open_tm_wrt_tm_var; auto 1.
-     rewrite tm_subst_tm_tm_open_tm_wrt_tm_var; auto 1.
+     rewrite tm_subst_tm_tm_open_tm_wrt_tm_var; auto 1...
+     rewrite tm_subst_tm_tm_open_tm_wrt_tm_var; auto 1...
      rewrite <- app_assoc. eapply H0; eauto.
-     eapply Par_lc2; eauto. eapply Par_lc1; eauto.
-   - econstructor; eauto.
    - eapply Par_Pi with (L := union (singleton x) L); eauto.
      intros x0 H1.
-     rewrite tm_subst_tm_tm_open_tm_wrt_tm_var; auto 1.
-     rewrite tm_subst_tm_tm_open_tm_wrt_tm_var; auto 1.
+     rewrite tm_subst_tm_tm_open_tm_wrt_tm_var; auto 1...
+     rewrite tm_subst_tm_tm_open_tm_wrt_tm_var; auto 1...
      rewrite <- app_assoc. eapply H0; eauto.
-     eapply Par_lc2; eauto. eapply Par_lc1; eauto.
    - eapply Par_CPi with (L := union L (singleton x)); eauto.
      intros c H1.
-     rewrite tm_subst_tm_tm_open_tm_wrt_co_var; auto 1.
-     rewrite tm_subst_tm_tm_open_tm_wrt_co_var; auto 1. eapply H0; eauto.
-     eapply Par_lc2; eauto. eapply Par_lc1; eauto.
+     rewrite tm_subst_tm_tm_open_tm_wrt_co_var; auto 1...
+     rewrite tm_subst_tm_tm_open_tm_wrt_co_var; auto 1...
    - eapply Par_CAbs with (L := union L (singleton x)); eauto.
      intros c H1.
-     rewrite tm_subst_tm_tm_open_tm_wrt_co_var; auto 1.
-     rewrite tm_subst_tm_tm_open_tm_wrt_co_var; auto 1. eapply H0; eauto.
-     eapply Par_lc2; eauto. eapply Par_lc1; eauto.
-   - econstructor; eauto.
-   - econstructor; eauto.
-   - econstructor; eauto.
-   - econstructor; eauto.
+     rewrite tm_subst_tm_tm_open_tm_wrt_co_var; auto 1...
+     rewrite tm_subst_tm_tm_open_tm_wrt_co_var; auto 1...
 Qed.
 
 Lemma open1 : forall b W L a a' R, Par W a a' R
@@ -227,30 +217,36 @@ Proof.
   - econstructor. eapply subst_tm_erased; eauto.
   - eapply Par_Abs with (L := union L (singleton x)).
     intros x0 H1.
-    rewrite tm_subst_tm_tm_open_tm_wrt_tm_var; auto 1.
-    rewrite tm_subst_tm_tm_open_tm_wrt_tm_var; auto 1.
+    rewrite tm_subst_tm_tm_open_tm_wrt_tm_var; auto 1;
+      first by eauto using erased_lc.
+    rewrite tm_subst_tm_tm_open_tm_wrt_tm_var; auto 1;
+      first by eauto using erased_lc.
     rewrite <- app_assoc. eapply H0. auto. simpl_env; auto.
-    auto. eapply erased_lc; eauto. eapply erased_lc; eauto.
+    auto.
   - eapply Par_Pi with (L := union L (singleton x)); eauto.
     intros x0 H2.
-    rewrite tm_subst_tm_tm_open_tm_wrt_tm_var; auto 1.
-    rewrite tm_subst_tm_tm_open_tm_wrt_tm_var; auto 1.
+    rewrite tm_subst_tm_tm_open_tm_wrt_tm_var; auto 1;
+      first by eauto using erased_lc.
+    rewrite tm_subst_tm_tm_open_tm_wrt_tm_var; auto 1;
+      first by eauto using erased_lc.
     rewrite <- app_assoc. eapply H0. auto. simpl_env; auto.
-    auto. eapply erased_lc; eauto. eapply erased_lc; eauto.
+    auto.
   - eapply Par_CAbs with (L := union L (singleton x)).
     intros x0 H1.
-    rewrite tm_subst_tm_tm_open_tm_wrt_co_var; auto 1.
-    rewrite tm_subst_tm_tm_open_tm_wrt_co_var; auto 1.
+    rewrite tm_subst_tm_tm_open_tm_wrt_co_var; auto 1;
+      first by eauto using erased_lc.
+    rewrite tm_subst_tm_tm_open_tm_wrt_co_var; auto 1;
+      first by eauto using erased_lc.
     eapply H0. auto. eauto. auto.
-    eapply erased_lc; eauto. eapply erased_lc; eauto.
   - eapply Par_CPi with (L := union L (singleton x)); eauto.
     intros x0 H4.
-    rewrite tm_subst_tm_tm_open_tm_wrt_co_var; auto 1.
-    rewrite tm_subst_tm_tm_open_tm_wrt_co_var; auto 1.
+    rewrite tm_subst_tm_tm_open_tm_wrt_co_var; auto 1;
+      first by eauto using erased_lc.
+    rewrite tm_subst_tm_tm_open_tm_wrt_co_var; auto 1;
+      first by eauto using erased_lc.
     eapply H0. auto. eauto. auto.
-    eapply erased_lc; eauto. eapply erased_lc; eauto.
-  - eapply Par_Axiom; eauto. 
-    rewrite tm_subst_tm_tm_fresh_eq. eauto.
+  - eapply Par_Axiom; eauto.
+    rewrite tm_subst_tm_tm_fresh_eq; last first. eauto.
     apply toplevel_closed in H.
     apply Typing_context_fv in H.
     split_hyp. simpl in *.
@@ -270,7 +266,7 @@ Lemma subst3 : forall b b' W W' a a' R R1 x,
           Par (W ++ [(x,R1)] ++ W') a a' R -> 
           Par W' b b' R1 ->
           Par (W ++ W') (tm_subst_tm_tm b x a) (tm_subst_tm_tm b' x a') R.
-Proof.
+Proof with eauto using Par_lc1, Par_lc2.
   intros.
   dependent induction H; simpl; eauto 2; erased_inversion; eauto 4.
   all: try solve [ Par_pick_fresh y;
@@ -279,18 +275,17 @@ Proof.
   - eapply subst1; eauto.
   - eapply Par_Abs with (L := union L (singleton x)).
     intros x0 H2.
-    rewrite tm_subst_tm_tm_open_tm_wrt_tm_var; auto 1.
-    rewrite tm_subst_tm_tm_open_tm_wrt_tm_var; auto 1.
+    rewrite tm_subst_tm_tm_open_tm_wrt_tm_var; auto 1...
+    rewrite tm_subst_tm_tm_open_tm_wrt_tm_var; auto 1...
     rewrite <- app_assoc. eapply H0. auto. simpl_env; auto.
-    auto. eapply Par_lc2; eauto. eapply Par_lc1; eauto.
+    auto.
   - eapply Par_Pi with (L := union (singleton x) L); eauto.
     intros x0 H3.
-    rewrite tm_subst_tm_tm_open_tm_wrt_tm_var; auto 1.
-    rewrite tm_subst_tm_tm_open_tm_wrt_tm_var; auto 1.
+    rewrite tm_subst_tm_tm_open_tm_wrt_tm_var; auto 1...
+    rewrite tm_subst_tm_tm_open_tm_wrt_tm_var; auto 1...
     rewrite <- app_assoc. eapply H1; eauto. simpl_env; auto.
-    eapply Par_lc2; eauto. eapply Par_lc1; eauto.
   - eapply Par_Axiom; eauto.
-    rewrite tm_subst_tm_tm_fresh_eq. eauto.
+    rewrite tm_subst_tm_tm_fresh_eq; last by eauto.
     apply toplevel_closed in H.
     apply Typing_context_fv in H.
     split_hyp. simpl in *.
@@ -315,7 +310,7 @@ Proof.
               autorewrite with subst_open_var; eauto 3 with lc ].
   all: try solve [ autorewrite with subst_open; eauto 4 with lc ].
   - apply Par_Refl. eapply subst_co_erased; eauto.
-  - rewrite co_subst_co_tm_fresh_eq. eauto.
+  - rewrite co_subst_co_tm_fresh_eq; last by eauto.
     apply toplevel_closed in H.
     apply Typing_context_fv in H.
     split_hyp. simpl in *.
@@ -525,11 +520,11 @@ Proof.
       * dependent induction H2; eauto 1.
         rewrite close_tm_wrt_co_open_tm_wrt_co; auto.
         constructor. econstructor; eauto 1.
-        intros. rewrite (co_subst_co_tm_intro c).
+        intros. rewrite (co_subst_co_tm_intro c); last first.
         apply subst_co_erased. auto. auto. auto.
         apply mp_step with (b:= (a_CPi (Eq a0 a1 b R) a)); eauto.
         econstructor; eauto 2. intros. constructor.
-        rewrite (co_subst_co_tm_intro c).
+        rewrite (co_subst_co_tm_intro c); last first.
         apply subst_co_erased. auto. auto. auto.
       * eapply mp_step with (b:= (a_CPi (Eq a0 a1 T R) (close_tm_wrt_co c b))); eauto.
         -- apply Par_CPi_exists; auto 2. constructor.
@@ -541,14 +536,14 @@ Proof.
       + eapply mp_step with (b:= (a_CPi (Eq a0 b T R) a)); eauto.
         -- apply (Par_CPi (singleton c)); auto 2.
            constructor. eapply multipar_erased_tm_fst; eauto.
-           intros. constructor. rewrite (co_subst_co_tm_intro c).
+           intros. constructor. rewrite (co_subst_co_tm_intro c); last first.
            apply subst_co_erased. auto. eapply multipar_erased_tm_fst; eauto.
            auto.
   - apply mp_step with (b:= (a_CPi (Eq b B T R) a)); auto.
      apply (Par_CPi (singleton c)); auto.
      constructor. eapply multipar_erased_tm_fst; eauto.
      constructor. eapply multipar_erased_tm_fst; eauto.
-     intros. constructor. rewrite (co_subst_co_tm_intro c).
+     intros. constructor. rewrite (co_subst_co_tm_intro c); last first.
      apply subst_co_erased. auto. eapply multipar_erased_tm_fst; eauto.
      auto. Unshelve. apply (fv_co_co_tm a). apply (fv_co_co_tm a).
 Qed.

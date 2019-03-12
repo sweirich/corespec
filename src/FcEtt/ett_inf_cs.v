@@ -54,25 +54,25 @@ Module Operators.
   Structure type := Pack {stxsort : Type; class_close : Close.class stxsort; class_Erase : Erase.class stxsort; class_Fv : FV.class stxsort}.
 
   Definition close_tm' (e : type) : tmvar -> stxsort e -> stxsort e :=
-    let 'Pack _ (Close.Class (Close.Class1 c _) _) _ _ := e return tmvar -> stxsort e -> stxsort e in c.
+    let 'Pack (Close.Class (Close.Class1 c _) _) _ _ := e return tmvar -> stxsort e -> stxsort e in c.
 
   Definition close_tm_rec' (e : type) : nat -> tmvar -> stxsort e -> stxsort e :=
-    let 'Pack _ (Close.Class (Close.Class1 _ c) _) _ _ := e return nat -> tmvar -> stxsort e -> stxsort e in c.
+    let 'Pack (Close.Class (Close.Class1 _ c) _) _ _ := e return nat -> tmvar -> stxsort e -> stxsort e in c.
 
   Definition close_co' (e : type) : covar -> stxsort e -> stxsort e :=
-    let 'Pack _ (Close.Class _ (Close.Class1 c _)) _ _ := e return covar -> stxsort e -> stxsort e in c.
+    let 'Pack (Close.Class _ (Close.Class1 c _)) _ _ := e return covar -> stxsort e -> stxsort e in c.
 
   Definition close_co_rec' (e : type) : nat -> covar -> stxsort e -> stxsort e :=
-    let 'Pack _ (Close.Class _ (Close.Class1 _ c)) _ _ := e return nat -> covar -> stxsort e -> stxsort e in c.
+    let 'Pack (Close.Class _ (Close.Class1 _ c)) _ _ := e return nat -> covar -> stxsort e -> stxsort e in c.
 
   Definition erase' (e : type) : stxsort e -> role -> stxsort e :=
-    let 'Pack _ _ (Erase.Class c) _ := e in c.
+    let 'Pack _ (Erase.Class c) _ := e in c.
 
   Definition fv_tm' (e : type) : stxsort e -> atoms :=
-    let 'Pack _ _ _ (FV.Class c _) := e in c.
+    let 'Pack _ _ (FV.Class c _) := e in c.
 
   Definition fv_co' (e : type) : stxsort e -> atoms :=
-    let 'Pack _ _ _ (FV.Class _ c) := e in c.
+    let 'Pack _ _ (FV.Class _ c) := e in c.
 
   Arguments close_tm' {e} s v : simpl nomatch.
   Arguments close_tm_rec' {e} k s v : simpl nomatch.

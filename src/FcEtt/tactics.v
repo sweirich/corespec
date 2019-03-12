@@ -26,8 +26,8 @@ Require Import FcEtt.notations.
 (*******************************)
 (**** Basic Building Blocks ****)
 (*******************************)
-Ltac only_one_goal :=
-  let n:= numgoals in guard n=1.
+Ltac check_num_goals_eq g := let n:= numgoals in guard n=g.
+Ltac only_one_goal := check_num_goals_eq 1.
 
 
 (* Shorthands for instantiation/specialization *)

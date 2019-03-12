@@ -147,18 +147,20 @@ Proof.
        eapply binds_remove_mid; eauto. eauto.
   - pick fresh y and apply erased_a_Abs.
      rewrite tm_subst_tm_tm_open_tm_wrt_tm_var; auto 1.
+     by eauto using erased_lc.
      rewrite <- app_assoc. eapply H0; eauto. simpl_env. auto.
-     eapply erased_lc; eauto.
   - pick fresh y and apply erased_a_Pi; eauto.
      rewrite tm_subst_tm_tm_open_tm_wrt_tm_var; auto 1.
+     by eauto using erased_lc.
      rewrite <- app_assoc. eapply H0; eauto. simpl_env. auto.
-     eapply erased_lc; eauto.
   - pick fresh c and apply erased_a_CPi; eauto.
      rewrite tm_subst_tm_tm_open_tm_wrt_co_var; auto 1.
-     eapply H0; eauto. eapply erased_lc; eauto.
+     by eauto using erased_lc.
+     eapply H0; eauto.
   - pick fresh c and apply erased_a_CAbs; eauto.
      rewrite tm_subst_tm_tm_open_tm_wrt_co_var; auto 1.
-     eapply H0; eauto. eapply erased_lc; eauto.
+     by eauto using erased_lc.
+     eapply H0; eauto.
 Qed.
 
 

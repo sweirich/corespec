@@ -1,1 +1,3 @@
 .lia.cache
+CoqSrc.mk.conf
+.coqdeps.d
