@@ -847,6 +847,9 @@ RolePath a +> Rs
 ---------------------- :: CApp
 RolePath a [o] +> Rs
 
+--------------------- :: Star
+RolePath TYPE +> nilR
+
 
 defns
    JAppsPath :: '' ::=

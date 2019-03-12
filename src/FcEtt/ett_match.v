@@ -1708,15 +1708,18 @@ Fixpoint tm_to_roles (a : tm) : roles := match a with
 Lemma RolePath_inversion : forall a Rs, RolePath a Rs ->
          (exists F A,  binds F (Cs A (tm_to_roles a ++ Rs)) toplevel /\ head_const a = a_Fam F) \/
          (exists F p b A R, binds F (Ax p b A R (tm_to_roles a ++ Rs))  toplevel
-                                /\ head_const a = a_Fam F).
+                                /\ head_const a = a_Fam F) \/
+         (head_const a = a_Star /\ Rs = nil).
 Proof. intros. induction H; simpl; eauto.
-        - right. exists T, p, a, A, R1; eauto.
-        - inversion IHRolePath as [[F [A [H1 H2]]] | [F [p [a1 [A [R2 [H1 H2]]]]]]].
-          left. exists F, A. rewrite <- app_assoc. eauto.
-          right. exists F, p, a1, A, R2. rewrite <- app_assoc. eauto.
-        - inversion IHRolePath as [[F [A [H1 H2]]] | [F [p [a1 [A [R2 [H1 H2]]]]]]].
-          left. exists F, A. rewrite <- app_assoc. eauto.
-          right. exists F, p, a1, A, R2. rewrite <- app_assoc. eauto.
+        - right; left. exists T, p, a, A, R1; eauto.
+        - inversion IHRolePath as [[F [A [H1 H2]]] | [[F [p [a1 [A [R2 [H1 H2]]]]]] | [? ?]]].
+          + left. exists F, A. rewrite <- app_assoc. eauto.
+          + right; left. exists F, p, a1, A, R2. rewrite <- app_assoc. eauto.
+          + exfalso. subst. by inv H0.
+        - inversion IHRolePath as [[F [A [H1 H2]]] | [[F [p [a1 [A [R2 [H1 H2]]]]]] | [? ?]]].
+          + left. exists F, A. rewrite <- app_assoc. eauto.
+          + right; left. exists F, p, a1, A, R2. rewrite <- app_assoc. eauto.
+          + exfalso. subst. by invs H0.
 Qed.
 
 Lemma PatternContexts_roles : forall W G D p F B A, PatternContexts W G D F B p A ->
@@ -1742,7 +1745,7 @@ Lemma RolePath_subtm_pattern_agree_contr : forall a F p b A R Rs R0 Rs',
       RolePath a (R0 :: Rs') -> binds F (Ax p b A R Rs) toplevel -> head_const a = a_Fam F ->
       ~(subtm_pattern_agree a p).
 Proof. intros. apply RolePath_inversion in H.
-       inversion H as [[F0 [A1 [h1 h2]]] | [F0 [p1 [b1 [A1 [R1 [h1 h2]]]]]]].
+       inversion H as [[F0 [A1 [h1 h2]]] | [[F0 [p1 [b1 [A1 [R1 [h1 h2]]]]]] | [hs RSn]] ].
        all: match goal with 
               [ H1 : head_const ?a = a_Fam ?F, H2 : head_const ?a = a_Fam ?F0 |- _] => 
               rewrite H1 in H2; inversion H2; clear H2; subst end.

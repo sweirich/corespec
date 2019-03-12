@@ -1075,7 +1075,9 @@ Inductive RolePath : tm -> roles -> Prop :=    (* defn RolePath *)
      RolePath (a_App a (Rho Irrel) a_Bullet) Rs
  | RolePath_CApp : forall (a:tm) (Rs:roles),
      RolePath a Rs ->
-     RolePath (a_CApp a g_Triv) Rs.
+     RolePath (a_CApp a g_Triv) Rs
+ | RolePath_Star : 
+     RolePath  (a_Fam f_Star)   nil .
 
 (* defns JAppsPath *)
 Inductive AppsPath : role -> tm -> F -> Apps -> Prop :=    (* defn AppsPath *)
