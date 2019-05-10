@@ -22,6 +22,7 @@ Require Import FcEtt.ett_rename.
 Require Export FcEtt.ext_red_one.
 
 Require Import FcEtt.chain_subst.
+Require Import FcEtt.axiom_freshen.
 
 
 Set Bullet Behavior "Strict Subproofs".
@@ -1472,7 +1473,7 @@ Proof.
   have f : (∀ x : atom, In x Dp ⟹ x ∉ fv_tm_tm_tm b).
   { eapply H2. }
   specialize (h0 f B nil ltac:(eapply Ctx_uniq; eapply Typing_Ctx; eauto)
-                       ltac:(auto) ).   
+                       ltac:(auto) ).
   simpl in h0.
   eapply E_Conv; eauto 1. eapply h0.
   eapply MatchTyping_correctness2; eauto 1.

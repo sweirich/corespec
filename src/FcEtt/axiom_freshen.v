@@ -216,6 +216,130 @@ Proof. intros. induction H; simpl in *.
           eapply PatCtx_CPi with (L := remove c L). eauto. auto.
 Qed.
 
+Lemma rename_context_tm_uniq : forall G x y, uniq G -> y `notin` dom G ->
+      uniq (rename_context_tm y x G).
+Proof. induction G; intros; simpl; eauto 2.
+       econstructor. eapply IHG. inversion H; subst. auto.
+       destruct a. simpl in H0. fsetdec. destruct a. simpl in *.
+       eapply rename_context_tm_notin. inversion H; subst. auto.
+       fsetdec. fsetdec.
+Qed.
+
+Lemma rename_context_co_uniq : forall G x y, uniq G -> y `notin` dom G ->
+      uniq (rename_context_co y x G).
+Proof. induction G; intros; simpl; eauto 2.
+       econstructor. eapply IHG. inversion H; subst. auto.
+       destruct a. simpl in H0. fsetdec. destruct a. simpl in *.
+       eapply rename_context_co_notin. inversion H; subst. auto.
+       fsetdec. fsetdec.
+Qed.
+
+Lemma BranchTyping_rename_tm :
+      forall G0 n R b B b2 aa B2 B3 C (H : BranchTyping G0 n R b B b2 aa B2 B3 C),
+      forall y x, y `notin` dom G0 -> ~In x (codom G0) ->
+                   BranchTyping (rename_context_tm y x G0) n R
+                           (tm_subst_tm_tm (a_Var_f y) x b)
+                           (tm_subst_tm_tm (a_Var_f y) x B)
+                           (tm_subst_tm_tm (a_Var_f y) x b2)
+                           (List.map (tm_subst_tm_pattern_arg (a_Var_f y) x) aa)
+                           (tm_subst_tm_tm (a_Var_f y) x B2)
+                           (tm_subst_tm_tm (a_Var_f y) x B3)
+                           (tm_subst_tm_tm (a_Var_f y) x C).
+Proof.
+  induction 1; intros; subst; simpl.
+   - autorewrite with subst_open; eauto 3 with lc.
+     rewrite tm_subst_tm_tm_apply_pattern_args.
+     eapply BranchTyping_Base; eauto 4 using tm_subst_tm_tm_lc_tm.
+     eapply rename_context_tm_uniq; auto.
+   - eapply BranchTyping_PiRole with (L := singleton x \u singleton y \u L).
+    intros.
+    assert (Q : tm_subst_tm_tm (a_Var_f y) x (a_Var_f x0) = a_Var_f x0).
+    { rewrite tm_subst_tm_tm_fresh_eq. simpl. auto. auto. }
+    simpl in H0. simpl. move: (H0 x0 ltac:(auto) y x ltac:(auto) H2) => h.
+    rewrite rename_atom_diff_same in h. auto. rewrite map_app in h.
+    rewrite tm_subst_tm_tm_open_tm_wrt_tm in h. eauto.
+    rewrite tm_subst_tm_tm_open_tm_wrt_tm in h. eauto. rewrite Q in h.
+    simpl in h. destruct (x0 == x) eqn: h1. subst. clear - H3. fsetdec.
+    rewrite h1 in h. auto.
+   - eapply BranchTyping_PiRel with (L := singleton x \u singleton y \u L).
+    intros.
+    assert (Q : tm_subst_tm_tm (a_Var_f y) x (a_Var_f x0) = a_Var_f x0).
+    { rewrite tm_subst_tm_tm_fresh_eq. simpl. auto. auto. }
+    simpl in H0. simpl. move: (H0 x0 ltac:(auto) y x ltac:(auto) H2) => h.
+    rewrite rename_atom_diff_same in h. auto. rewrite map_app in h.
+    rewrite tm_subst_tm_tm_open_tm_wrt_tm in h. eauto.
+    rewrite tm_subst_tm_tm_open_tm_wrt_tm in h. eauto. rewrite Q in h.
+    simpl in h. destruct (x0 == x) eqn: h1. subst. clear - H3. fsetdec.
+    rewrite h1 in h. auto.
+   - eapply BranchTyping_PiIrrel with (L := singleton x \u singleton y \u L).
+    intros.
+    assert (Q : tm_subst_tm_tm (a_Var_f y) x (a_Var_f x0) = a_Var_f x0).
+    { rewrite tm_subst_tm_tm_fresh_eq. simpl. auto. auto. }
+    simpl in H0. simpl. move: (H0 x0 ltac:(auto) y x ltac:(auto) H2) => h.
+    rewrite rename_atom_diff_same in h. auto. rewrite map_app in h.
+    rewrite tm_subst_tm_tm_open_tm_wrt_tm in h. eauto.
+    rewrite tm_subst_tm_tm_open_tm_wrt_tm in h. eauto. rewrite Q in h.
+    simpl in h. auto.
+   - eapply BranchTyping_CPi with (L := singleton x \u singleton y \u L). intros.
+    simpl in H0. simpl. move: (H0 c ltac:(auto) y x) => h.
+    rewrite rename_atom_diff_same in h. auto. rewrite map_app in h.
+    rewrite tm_subst_tm_tm_open_tm_wrt_co in h. eauto.
+    rewrite tm_subst_tm_tm_open_tm_wrt_co in h. eauto.
+    simpl in h. eapply h. clear - H1 H3. fsetdec. intro.
+    inversion H4. subst. clear - H3. fsetdec. auto.
+Qed.
+
+Lemma BranchTyping_rename_co :
+      forall G0 n R b B b2 aa B2 B3 C (H : BranchTyping G0 n R b B b2 aa B2 B3 C),
+      forall y x, y `notin` dom G0 -> ~In x (tmdom G0) ->
+                   BranchTyping (rename_context_co y x G0) n R
+                           (co_subst_co_tm (g_Var_f y) x b)
+                           (co_subst_co_tm (g_Var_f y) x B)
+                           (co_subst_co_tm (g_Var_f y) x b2)
+                           (List.map (co_subst_co_pattern_arg (g_Var_f y) x) aa)
+                           (co_subst_co_tm (g_Var_f y) x B2)
+                           (co_subst_co_tm (g_Var_f y) x B3)
+                           (co_subst_co_tm (g_Var_f y) x C).
+Proof.
+  induction 1; intros; subst; simpl.
+   - autorewrite with subst_open; eauto 3 with lc.
+     rewrite co_subst_co_tm_apply_pattern_args.
+     eapply BranchTyping_Base; eauto 4 using co_subst_co_tm_lc_tm.
+     eapply rename_context_co_uniq; auto.
+   - eapply BranchTyping_PiRole with (L := singleton x \u singleton y \u L).
+    intros.
+    simpl in H0. simpl. move: (H0 x0 ltac:(auto) y x ltac:(auto)) => h.
+    rewrite rename_atom_diff_same in h. auto. rewrite map_app in h.
+    rewrite co_subst_co_tm_open_tm_wrt_tm in h. eauto.
+    rewrite co_subst_co_tm_open_tm_wrt_tm in h. eauto.
+    simpl in h. eapply h. intro. inversion H4. subst. clear - H3. fsetdec.
+    contradiction.
+   - eapply BranchTyping_PiRel with (L := singleton x \u singleton y \u L).
+    intros.
+    simpl in H0. simpl. move: (H0 x0 ltac:(auto) y x ltac:(auto)) => h.
+    rewrite rename_atom_diff_same in h. auto. rewrite map_app in h.
+    rewrite co_subst_co_tm_open_tm_wrt_tm in h. eauto.
+    rewrite co_subst_co_tm_open_tm_wrt_tm in h. eauto.
+    simpl in h. eapply h. intro. inversion H4. subst. clear - H3. fsetdec.
+    contradiction.
+   - eapply BranchTyping_PiIrrel with (L := singleton x \u singleton y \u L).
+    intros.
+    simpl in H0. simpl. move: (H0 x0 ltac:(auto) y x ltac:(auto)) => h.
+    rewrite rename_atom_diff_same in h. auto. rewrite map_app in h.
+    rewrite co_subst_co_tm_open_tm_wrt_tm in h. eauto.
+    rewrite co_subst_co_tm_open_tm_wrt_tm in h. eauto.
+    simpl in h. eapply h. intro. inversion H4. subst. clear - H3. fsetdec.
+    contradiction.
+   - eapply BranchTyping_CPi with (L := singleton x \u singleton y \u L). intros.
+    assert (Q : co_subst_co_co (g_Var_f y) x (g_Var_f c) = g_Var_f c).
+    { rewrite co_subst_co_co_fresh_eq. simpl. auto. auto. }
+    simpl in H0. simpl. move: (H0 c ltac:(auto) y x) => h.
+    rewrite rename_atom_diff_same in h. auto. rewrite map_app in h.
+    rewrite co_subst_co_tm_open_tm_wrt_co in h. eauto.
+    rewrite co_subst_co_tm_open_tm_wrt_co in h. eauto. rewrite Q in h.
+    simpl in h. eapply h. clear - H1 H3. fsetdec. apply H2.
+Qed.
+
 Lemma tm_rename_mutual :
    (forall G b B (H : Typing G b B),
       forall x y, y `notin` dom G -> ~In x (codom G) ->
@@ -294,7 +418,11 @@ Proof. ext_induction CON; intros; subst; simpl.
         - simpl in *. eapply E_Fam. eauto.
           rewrite tm_subst_tm_tm_fresh_eq. apply Typing_context_fv in t.
           inversion t. simpl in H3. rewrite H3. all: eauto.
-        - eapply E_Case. eauto. eauto. eauto. admit. eauto. auto.
+        - eapply E_Case. eauto. eauto. eauto.
+          replace (a_Fam F) with (tm_subst_tm_tm (a_Var_f y) x (a_Fam F)).
+          replace nil with (List.map (tm_subst_tm_pattern_arg (a_Var_f y) x) nil).
+          eapply BranchTyping_rename_tm. eapply b. auto. auto. simpl. auto.
+          auto. eauto. auto.
         - eapply E_Wff; eauto.
         - eapply E_PropCong; eauto.
         - eapply E_IsoConv; eauto.
@@ -380,7 +508,15 @@ Proof. ext_induction CON; intros; subst; simpl.
         - eapply E_Cast. eapply H; eauto. simpl in *. eapply H0; eauto.
         - eapply E_EqConv; eauto.
         - eapply E_IsoSnd; eauto.
-        - eapply E_PatCong. eauto. eauto. eauto. admit. admit. all:eauto.
+        - eapply E_PatCong. eauto. eauto. eauto.
+          replace (a_Fam F) with (tm_subst_tm_tm (a_Var_f y) x (a_Fam F)).
+          replace nil with (List.map (tm_subst_tm_pattern_arg (a_Var_f y) x) nil).
+          eapply BranchTyping_rename_tm. eapply b. auto. auto. simpl. auto.
+          auto.
+          replace (a_Fam F) with (tm_subst_tm_tm (a_Var_f y) x (a_Fam F)).
+          replace nil with (List.map (tm_subst_tm_pattern_arg (a_Var_f y) x) nil).
+          eapply BranchTyping_rename_tm. eapply b0. auto. auto. simpl. auto.
+          auto. all:eauto.
         - eapply E_LeftRel.
           move: (CasePath_subst_tm x c (lc_a_Var_f y)) => h.
           eauto. move: (CasePath_subst_tm x c0 (lc_a_Var_f y)) => h0. eauto.
@@ -420,7 +556,7 @@ Proof. ext_induction CON; intros; subst; simpl.
           apply rename_context_tm_notin; auto.
         - simpl in *. eapply E_ConsCo. eauto. eauto.
           apply rename_context_tm_notin; auto.
-Admitted.
+Qed.
 
 Lemma co_rename_mutual :
    (forall G b B (H : Typing G b B),
@@ -500,7 +636,11 @@ Proof. ext_induction CON; intros; subst; simpl.
         - simpl in *. eapply E_Fam. eauto.
           rewrite co_subst_co_tm_fresh_eq. apply Typing_context_fv in t.
           inversion t. inversion H4. rewrite H5. all: eauto.
-        - eapply E_Case. eauto. eauto. eauto. admit. eauto. auto.
+        - eapply E_Case. eauto. eauto. eauto.
+          replace (a_Fam F) with (co_subst_co_tm (g_Var_f y) x (a_Fam F)).
+          replace nil with (List.map (co_subst_co_pattern_arg (g_Var_f y) x) nil).
+          eapply BranchTyping_rename_co. eapply b. auto. auto. simpl. auto.
+          auto. eauto. auto.
         - eapply E_Wff; eauto.
         - eapply E_PropCong; eauto.
         - eapply E_IsoConv; eauto.
@@ -592,7 +732,15 @@ Proof. ext_induction CON; intros; subst; simpl.
         - eapply E_Cast. eapply H; eauto. simpl in *. eapply H0; eauto.
         - eapply E_EqConv; eauto.
         - eapply E_IsoSnd; eauto.
-        - eapply E_PatCong. eauto. eauto. eauto. admit. admit. all:eauto.
+        - eapply E_PatCong. eauto. eauto. eauto.
+          replace (a_Fam F) with (co_subst_co_tm (g_Var_f y) x (a_Fam F)).
+          replace nil with (List.map (co_subst_co_pattern_arg (g_Var_f y) x) nil).
+          eapply BranchTyping_rename_co. eapply b. auto. auto. simpl. auto.
+          auto.
+          replace (a_Fam F) with (co_subst_co_tm (g_Var_f y) x (a_Fam F)).
+          replace nil with (List.map (co_subst_co_pattern_arg (g_Var_f y) x) nil).
+          eapply BranchTyping_rename_co. eapply b0. auto. auto. simpl. auto.
+          auto. all:eauto.
         - eapply E_LeftRel.
           move: (CasePath_subst_co x c (lc_g_Var_f y)) => h.
           eauto. move: (CasePath_subst_co x c0 (lc_g_Var_f y)) => h0. eauto.
@@ -633,7 +781,7 @@ Proof. ext_induction CON; intros; subst; simpl.
         - econstructor. eapply H; eauto. eauto.
           apply rename_context_co_notin; auto.
           Unshelve. all: eauto.
-Admitted.
+Qed.
 
 (** Some useful functions and propositions **)
 
@@ -1099,6 +1247,32 @@ Fixpoint var_var_pairs (px py : tm) : list (var * var) :=
  | (_,_) => []
    end.
 
+Lemma left_list_app : forall A B (l1 : list (A * B)) l2,
+      left_list (l1 ++ l2) = left_list l1 ++ left_list l2.
+Proof. induction l1; intros; eauto.
+       destruct a. simpl. f_equal. eauto.
+Qed.
+
+Lemma right_list_app : forall A B (l1 : list (A * B)) l2,
+      right_list (l1 ++ l2) = right_list l1 ++ right_list l2.
+Proof. induction l1; intros; eauto.
+       destruct a. simpl. f_equal. eauto.
+Qed.
+
+Lemma var_var_pairs_vars_pattern_left : forall p1 p2 b1 b2 D1 D2,
+      Rename p1 b1 p2 b2 D1 D2 ->
+      left_list (var_var_pairs p2 p1) = vars_Pattern p2.
+Proof. intros. induction H; simpl; eauto.
+       rewrite left_list_app. simpl. f_equal. eauto.
+Qed.
+
+Lemma var_var_pairs_vars_pattern_right : forall p1 p2 b1 b2 D1 D2,
+      Rename p1 b1 p2 b2 D1 D2 ->
+      right_list (var_var_pairs p2 p1) = vars_Pattern p1.
+Proof. intros. induction H; simpl; eauto.
+       rewrite right_list_app. simpl. f_equal. eauto.
+Qed.
+
 Fixpoint list_to_pattern (F : const) (l : list atom) :=
   match l with
   | nil => a_Fam F
@@ -1129,7 +1303,7 @@ Proof. intros. induction H; simpl in *; eauto.
        move: (IHPatternContexts H0) => h. inversion h; eauto.
 Qed.
 
-Lemma rename_context_tmdom : forall l G,
+Lemma rename_context_tmdom_tm : forall l G,
       tmdom (list_rename_context_tm l G) =
       List.map (list_rename_atom l) (tmdom G).
 Proof. induction l; intros; simpl in *.
@@ -1142,8 +1316,33 @@ Proof. induction l; intros; simpl in *.
        simpl. auto.
 Qed.
 
-Lemma rename_context_codom : forall l G,
+Lemma rename_context_codom_co : forall l G,
       codom (list_rename_context_co l G) =
+      List.map (list_rename_atom l) (codom G).
+Proof. induction l; intros; simpl in *.
+       unfold list_rename_atom. simpl.
+       induction G; eauto. destruct a. destruct s; simpl in *; eauto.
+       f_equal; auto.
+       destruct a. simpl. rewrite IHl. clear.
+       induction G. unfold list_rename_atom. simpl. auto.
+       destruct a1. destruct s. simpl. auto. simpl. f_equal. auto.
+Qed.
+
+Lemma rename_context_tmdom_co : forall l G,
+      tmdom (list_rename_context_co l G) =
+      List.map (list_rename_atom l) (tmdom G).
+Proof. induction l; intros; simpl in *.
+       unfold list_rename_atom. simpl.
+       induction G; eauto. destruct a. destruct s; simpl in *; eauto.
+       f_equal; auto.
+       destruct a. simpl. rewrite IHl. clear.
+       induction G. unfold list_rename_atom. simpl. auto.
+       destruct a1. destruct s. simpl. f_equal. auto.
+       simpl. auto.
+Qed.
+
+Lemma rename_context_codom_tm : forall l G,
+      codom (list_rename_context_tm l G) =
       List.map (list_rename_atom l) (codom G).
 Proof. induction l; intros; simpl in *.
        unfold list_rename_atom. simpl.
@@ -1203,6 +1402,15 @@ Proof. induction l; intros; eauto. destruct a. simpl in *.
        contradiction. rewrite rename_atom_diff_same. auto. eauto.
 Qed.
 
+Lemma list_rename_atom_list_same : forall l' l,
+      (forall x, In x l' -> ~In x (right_list l)) ->
+      List.map (list_rename_atom l) l' = l'.
+Proof. induction l'; intros; eauto. simpl.
+       rewrite list_rename_atom_same. intro. apply (H a).
+       simpl; auto. auto. f_equal. eapply IHl'.
+       intros. intro. apply (H x). simpl; auto. auto.
+Qed.
+
 Lemma list_rename_atom_inll : forall l a, In a (right_list l) ->
       disj_list_list (left_list l) (right_list l) ->
       In (list_rename_atom l a) (left_list l).
@@ -1219,21 +1427,19 @@ Proof. induction l; intros; eauto.
        intro. apply (H0 x). simpl; auto. simpl; auto.
 Qed.
 
-Lemma tmdom_renamed_context : forall G l,
+Lemma list_rename_atom_nil : forall l, List.map (list_rename_atom l) nil = nil.
+Proof. induction l; eauto.
+Qed.
+
+Lemma list_rename_atom_list_inll : forall l' l,
       disj_list_list (left_list l) (right_list l) ->
-      (forall x, In x (tmdom G) -> In x (right_list l)) ->
-      (forall y, In y (tmdom (list_rename_context_tm l G))
-                                  -> In y (left_list l)).
-Proof. induction G; intros; simpl in *.
-       rewrite list_rename_context_tm_nil in H1. simpl in H1. contradiction.
-       destruct a. rewrite cons_app_one in H1.
-       rewrite list_rename_context_tm_app in H1.
-       rewrite tmdom_app in H1. apply in_app_or in H1.
-       inversion H1. destruct s.
-       assert (y = list_rename_atom l a). admit. subst.
-       apply list_rename_atom_inll. apply (H0 a). simpl; auto. auto.
-       admit. eapply IHG; eauto. destruct s; intros; eauto.
-       apply (H0 x). simpl; auto.   Admitted.
+      (forall x, In x l' -> In x (right_list l)) ->
+      (forall y, In y (List.map (list_rename_atom l) l') -> In y (left_list l)).
+Proof. induction l'; intros; eauto. rewrite list_rename_atom_nil in H1.
+       simpl in H1. contradiction.
+       simpl in *. inversion H1. subst. eapply list_rename_atom_inll.
+       eapply (H0 a). auto. auto. eauto.
+Qed.
 
 Lemma codom_app : forall G1 G2, codom (G1 ++ G2) = codom G1 ++ codom G2.
 Proof. induction G1; intros; eauto.
@@ -1263,43 +1469,257 @@ Proof. induction l. intros. unfold list_rename_context_co. simpl.
        rewrite rename_context_co_app. eauto.
 Qed.
 
-Lemma codom_renamed_context : forall G l,
-      disj_list_list (left_list l) (right_list l) ->
-      (forall x, In x (codom G) -> In x (right_list l)) ->
-      (forall y, In y (codom (list_rename_context_co l G))
-                                  -> In y (left_list l)).
-Proof. induction G; intros; simpl in *.
-       rewrite list_rename_context_co_nil in H1. simpl in H1. contradiction.
-       destruct a. rewrite cons_app_one in H1.
-       rewrite list_rename_context_co_app in H1.
-       rewrite codom_app in H1. apply in_app_or in H1.
-       inversion H1. destruct s. admit.
-       assert (y = list_rename_atom l a). admit. subst.
-       apply list_rename_atom_inll. apply (H0 a). simpl; auto. auto.
-       eapply IHG; eauto. destruct s; intros; eauto.
-       apply (H0 x). simpl; auto.   Admitted.
+Lemma chainsubst_list_rename_tm : forall p p' b b1 b2 D D',
+       Rename p b1 p' b2 D D' ->
+       chain_subst p' p b = list_rename_tm (var_var_pairs p' p) b.
+Proof. intros. generalize dependent b. induction H; intros; simpl; eauto.
+       unfold chain_subst in *. simpl. unfold list_rename_tm in *.
+       rewrite fold_left_app. rewrite fold_left_app. simpl.
+       f_equal. eauto.
+Qed.
 
-Lemma axiom_fresh : forall p b p1 b1 D1 D1' D2 W G V F A B,
-      fv_tm_tm_tm A [<=] empty /\ fv_co_co_tm A [<=] empty ->
+Lemma vars_Pattern_list_to_pattern : forall F V,
+      vars_Pattern (list_to_pattern F V) = rev V.
+Proof. intros. induction V; eauto. simpl. f_equal. auto.
+Qed.
+
+Lemma PatternContexts_irrvar : forall W G D F A p B,
+      PatternContexts W G D F A p B -> (forall x, In x D -> x `in` dom G).
+Proof. intros. induction H; simpl in *; eauto. contradiction.
+       inversion H0. subst. eauto. eauto.
+Qed.
+
+Lemma PatternContexts_irrvar_tmdom : forall W G D F A p B,
+      PatternContexts W G D F A p B -> (forall x, In x D -> In x (tmdom G)).
+Proof. intros. induction H; simpl in *; eauto.
+       inversion H0. subst. eauto. eauto.
+Qed.
+
+Lemma Rename_imp_var : forall p b p1 b1 D D1 x, Rename p b p1 b1 D D1 ->
+       x `in` D -> x `in` fv_tm_tm_tm p1 -> False.
+Proof. intros. assert (x `notin` D1).
+         eapply Rename_inter_empty. eauto. eauto.
+         apply H2. eapply AtomSetProperties.in_subset.
+         eauto. eapply Rename_fv_new_pattern. eauto.
+Qed.
+
+Lemma PatternContexts_pattern_fv_dom : forall W G D F A p B x,
+      PatternContexts W G D F A p B -> x `in` fv_tm_tm_tm p ->
+      x `in` dom G.
+Proof. intros. induction H; simpl in *; eauto.
+       apply union_iff in H0. inversion H0. eauto. eauto.
+       apply union_iff in H0. inversion H0. eauto. fsetdec.
+       apply union_iff in H0. inversion H0. eauto. fsetdec.
+Qed.
+
+Lemma PatternContexts_pattern_fv_tmdom : forall W G D F A p B x,
+      PatternContexts W G D F A p B -> x `in` fv_tm_tm_tm p ->
+      In x (tmdom G).
+Proof. intros. induction H; simpl in *; eauto. fsetdec.
+       apply union_iff in H0. inversion H0. eauto. eauto.
+       apply union_iff in H0. inversion H0. eauto. fsetdec.
+       apply union_iff in H0. inversion H0. eauto. fsetdec.
+Qed.
+
+Lemma PatternContexts_tmdom_vars : forall W G D F A p B x,
+      PatternContexts W G D F A p B -> In x (tmdom G) <->
+      In x (vars_Pattern p) \/ In x (rev D).
+Proof. intros. induction H; simpl in *; split; intros; eauto.
+       inversion H0; contradiction.
+       inversion H1; clear H1. subst. left. apply in_or_app. simpl. eauto.
+       move: (IHPatternContexts.1 H2) => h. inversion h.
+       left. apply in_or_app. eauto. right. auto.
+       inversion H1; clear H1. apply in_app_or in H2.
+       inversion H2; clear H2. right. eapply IHPatternContexts.2. auto.
+       inversion H1; subst; eauto. simpl in H2. contradiction.
+       right. eapply IHPatternContexts.2. auto.
+       inversion H1; clear H0. subst. right. apply in_or_app. simpl. eauto.
+       move: (IHPatternContexts.1 H2) => h. inversion h.
+       left. auto. right. apply in_or_app; auto.
+       inversion H1; clear H1. right. eapply IHPatternContexts.2. auto.
+       apply in_app_or in H2. inversion H2; clear H2.
+       right. eapply IHPatternContexts.2. auto.
+       inversion H1; subst; eauto. simpl in H2. contradiction.
+       eapply IHPatternContexts.1. auto. eapply IHPatternContexts.2. auto.
+Qed.
+
+Lemma PatternContexts_NoDup : forall W G V F A p B,
+      PatternContexts W G V F A p B -> NoDup (tmdom G) ->
+      NoDup (vars_Pattern p) /\ NoDup V.
+Proof. intros. induction H; simpl in *; eauto.
+       split. rewrite <- rev_involutive. apply NoDup_reverse.
+       rewrite rev_app_distr. simpl. apply NoDup_cons.
+       intro. apply in_rev in H2. inversion H0; subst.
+       apply H5. eapply PatternContexts_tmdom_vars. eauto. auto.
+       apply NoDup_reverse. inversion H0; subst.
+       apply IHPatternContexts in H5. inversion H5; auto. 
+       inversion H0; subst.
+       apply IHPatternContexts in H5. inversion H5; auto. split.
+       inversion H0; subst.
+       apply IHPatternContexts in H5. inversion H5; auto.
+        inversion H0; subst. econstructor. intro.
+        apply H4. eapply PatternContexts_tmdom_vars. eauto. right.
+        apply in_rev in H2. auto.
+        apply IHPatternContexts in H5. inversion H5; auto.
+Qed.
+
+Lemma PatternContexts_pattern_irrvar_disj : forall W G V F A p B,
+      PatternContexts W G V F A p B -> NoDup (tmdom G) ->
+      (forall x, x `in` fv_tm_tm_tm p -> ~ In x V).
+Proof. intros. induction H; simpl in *; eauto.
+       - apply union_iff in H1. inversion H1. inversion H0; subst.
+         eauto.
+         intro. apply PatternContexts_irrvar_tmdom with (x := x) in H.
+         apply singleton_iff in H3. subst. inversion H0; subst.
+         contradiction. auto.
+       - intro. inversion H3. subst.
+         apply PatternContexts_pattern_fv_tmdom with (x := x) in H.
+         inversion H0; subst. contradiction. fsetdec.
+         inversion H0; subst. apply IHPatternContexts; auto. fsetdec.
+       - apply IHPatternContexts; auto. fsetdec.
+Qed.
+
+Lemma Context_tmdom_codom_contr : forall G x, Ctx G -> In x (tmdom G) ->
+      In x (codom G) -> False.
+Proof. intros. induction H; simpl in *. contradiction.
+       inversion H0; clear H0. apply H3. apply codom_dom. subst. auto.
+       eauto. inversion H1; clear H1. apply H3. apply tmdom_dom. subst. auto.
+       eauto.
+Qed.
+
+Lemma Context_tmdom_codom_NoDup : forall G, Ctx G -> NoDup (tmdom G) /\
+      NoDup (codom G).
+Proof. intros. induction H; simpl in *; split.
+       eapply NoDup_nil. eapply NoDup_nil.
+       eapply NoDup_cons. intro. apply H1. apply tmdom_dom. auto.
+       all: try (inversion IHCtx; auto).
+       eapply NoDup_cons. intro. apply H1. apply codom_dom. auto. auto.
+Qed.
+
+Lemma NoDup_app : forall l1 l2, NoDup l1 -> NoDup l2 ->
+      disj_list_list l1 l2 -> NoDup (l1 ++ l2).
+Proof. induction l1; intros; eauto. simpl.
+       eapply NoDup_cons. intro. apply in_app_or in H2.
+       inversion H2; clear H2. inversion H; subst; auto.
+       unfold disj_list_list in H1. apply (H1 a). simpl; auto. auto.
+       eapply IHl1. inversion H; auto. auto.
+       unfold disj_list_list in *. intros. intro. apply (H1 x).
+       simpl; auto. auto.
+Qed.
+
+Lemma Rename_Pattern : forall p b p' b' D D', Rename p b p' b' D D' -> Pattern p'.
+Proof. intros. induction H; auto.
+Qed.
+
+Lemma Pattern_fv_co_co_tm_empty : forall p, Pattern p -> fv_co_co_tm p [<=] empty.
+Proof. intros. induction H; simpl; fsetdec.
+Qed.
+
+Lemma matchsubst_app : forall a p nu a1 a2, tm_pattern_agree a p ->
+           matchsubst a p (a_App a1 nu a2) =
+           a_App (matchsubst a p a1) nu (matchsubst a p a2).
+Proof. intros. induction H; simpl; auto. rewrite IHtm_pattern_agree.
+       simpl. auto.
+Qed.
+
+Lemma matchsubst_capp : forall a p a1, tm_pattern_agree a p ->
+      matchsubst a p (a_CApp a1 g_Triv) = a_CApp (matchsubst a p a1) g_Triv.
+Proof. intros. induction H; simpl; auto. rewrite IHtm_pattern_agree.
+       simpl. auto.
+Qed.
+
+Lemma matchsubst_fv : forall a p b, tm_pattern_agree a p -> lc_tm b ->
+      fv_tm_tm_tm (matchsubst a p b) [<=]
+     ((AtomSetImpl.diff (fv_tm_tm_tm b) (fv_tm_tm_tm p)) \u fv_tm_tm_tm a).
+Proof. intros. apply MatchSubst_fv. apply matchsubst_fun_ind; auto.
+Qed.
+
+Lemma Rename_lc_1 : forall p p' b b' D D', Rename p b p' b' D D' -> lc_tm p.
+Proof. intros. induction H; auto.
+Qed.
+
+Lemma Rename_matchsubst_pattern : forall p p' b b' D D',
+      Rename p b p' b' D D' -> uniq_atoms_pattern p ->
+      fv_tm_tm_tm p [<=] D -> p' = matchsubst p' p p.
+Proof. intros. induction H; simpl; eauto.
+       - simpl in H1.
+         unfold uniq_atoms_pattern in *.
+         simpl in H0. apply NoDup_reverse in H0. rewrite rev_app_distr in H0.
+         simpl in H0. inversion H0; subst.
+         apply NoDup_reverse in H6. rewrite rev_involutive in H6.
+         rewrite matchsubst_app.  eapply Rename_tm_pattern_agree.
+         eauto. simpl. f_equal. rewrite tm_subst_tm_tm_fresh_eq.
+         rewrite matchsubst_fv. rewrite AtomSetProperties.diff_subset_equal.
+         apply notin_union_3. clear; fsetdec.
+         intro. eapply Rename_inter_empty with (x := x). eauto.
+         fsetdec. move: (Rename_fv_new_pattern H) => h. fsetdec.
+         auto. eapply Rename_tm_pattern_agree. eauto.
+         eapply Rename_lc_1. eauto. eauto.
+         rewrite matchsubst_chain_subst.
+         eapply Rename_tm_pattern_agree. eauto.
+         erewrite chainsubst_list_rename_tm.
+         rewrite tm_subst_same. erewrite var_var_pairs_vars_pattern_right.
+         intros. simpl. intro. apply singleton_iff in H4. subst.
+         apply H5. apply in_rev. rewrite rev_involutive. auto. eauto.
+         simpl. destruct (x == x); [|contradiction]. auto. eauto.
+       - simpl in H1.
+         unfold uniq_atoms_pattern in *.
+         simpl in H0. rewrite matchsubst_app.
+         eapply Rename_tm_pattern_agree. eauto. f_equal. eauto.
+         symmetry. apply matchsubst_ind_fun.
+         apply tm_pattern_agree_bullet_bullet.
+         eapply Rename_tm_pattern_agree. eauto.
+       - simpl in H1.
+         unfold uniq_atoms_pattern in *.
+         simpl in H0. rewrite matchsubst_capp.
+         eapply Rename_tm_pattern_agree. eauto. f_equal. eauto.
+Qed.
+
+Lemma Rename_chainsubst_pattern : forall p p' b b' D D',
+      Rename p b p' b' D D' -> uniq_atoms_pattern p ->
+      fv_tm_tm_tm p [<=] D -> p' = chain_subst p' p p.
+Proof. intros. eapply transitivity. eapply Rename_matchsubst_pattern; eauto.
+       eapply matchsubst_chain_subst. eapply Rename_tm_pattern_agree. eauto.
+Qed.
+
+Lemma Ctx_NoDup : forall G, Ctx G -> NoDup (tmdom G).
+Proof. intros. induction H; simpl; eauto.
+       econstructor. econstructor. intro. apply tmdom_dom in H2.
+       contradiction. auto.
+Qed.
+
+Lemma Rename_new_body_fv_new_pattern : forall p b p' b' D D',
+      Rename p b p' b' D D' -> fv_tm_tm_tm b [<=] fv_tm_tm_tm p ->
+      fv_tm_tm_tm b' [<=] fv_tm_tm_tm p'.
+Proof. intros. eapply Subset_trans. eapply Rename_fv_body. eauto.
+       fsetdec.
+Qed.
+
+Lemma axiom_fresh : forall p b p1 b1 D1 D1' D2 W G V F A B a b'',
+      fv_tm_tm_tm A [<=] empty /\ fv_co_co_tm A [<=] empty /\
+      fv_tm_tm_tm b [<=] fv_tm_tm_tm p /\
+      uniq_atoms_pattern p /\
+      union (fv_tm_tm_tm a) (union (fv_tm_tm_tm p) (fv_tm_tm_tm b)) [<=] D1 ->
       Rename p b p1 b1 D1 D1' /\
       PatternContexts W G V F A p B /\
-      Typing G b B ->
+      Typing G b B -> MatchSubst a p1 b1 b'' ->
       exists p2 b2 D2' W' G' V' B',
-      Rename p b p2 b2 D2 D2' /\
+      Rename p b p2 b2 D2 D2' /\ MatchSubst a p2 b2 b'' /\
       PatternContexts W' G' V' F A p2 B' /\
-      Typing G' b2 B' /\ disjoint G' G.
-Proof. intros. inversion H0 as [h1 [h2 h3]]; clear H0.
+      Typing G' b2 B' /\ disjoint G' G /\
+      (forall x, In x V' -> x `notin` fv_tm_tm_tm b2).
+Proof. intros. rename H1 into Q. inversion H0 as [h1 [h2 h3]]; clear H0.
        move: (patctx_pattern h2) => h4.
        move: (Typing_lc1 h3) => h5.
-       move: (Rename_exists D2 h4 h5) => h6.
+       move: (Rename_exists (dom G \u (fv_tm_tm_tm p) \u (fv_tm_tm_tm a \u D2)) h4 h5) => h6.
        inversion h6 as [p' [b' [D2' h7]]].
        remember (var_var_pairs p' p) as l1.
        move: (list_to_pattern_Pattern F V) => h8.
-       move: (Rename_exists (D2 \u D2') h8 lc_a_Bullet) => h9.
+       move: (Rename_exists (dom G \u D2 \u D2') h8 lc_a_Bullet) => h9.
        inversion h9 as [px [bx [Dx hx]]].
        remember (var_var_pairs px (list_to_pattern F V)) as l2.
        move: (list_to_pattern_Pattern F (codom G)) => h10.
-       move: (Rename_exists (D2 \u D2' \u Dx) h10 lc_a_Bullet) => h11.
+       move: (Rename_exists (dom G \u D2 \u D2' \u Dx) h10 lc_a_Bullet) => h11.
        inversion h11 as [py [bz [Dy hy]]].
        remember (var_var_pairs py (list_to_pattern F (codom G))) as l3.
        remember (list_rename_co l3 (list_rename_tm l2 (list_rename_tm l1 p))) as p2.
@@ -1318,30 +1738,358 @@ Proof. intros. inversion H0 as [h1 [h2 h3]]; clear H0.
        remember (List.map (list_rename_atom l3)
            (List.map (list_rename_atom (l1 ++ l2)) V)) as V'.
        exists p2, b2, D2', W', G', V', B'.
-       (*assert (P1 : NoDup (left_list l3)).
+       assert (P1 : NoDup (left_list l3)).
+        { subst. erewrite var_var_pairs_vars_pattern_left.
+          eapply uniq_atoms_new_pattern. eauto. eauto. }
        assert (P2 : NoDup (right_list l3)).
-       assert (P3 : disjoint_list_set (left_list l3)
+        { subst. erewrite var_var_pairs_vars_pattern_right.
+          rewrite vars_Pattern_list_to_pattern. apply NoDup_reverse.
+          apply Context_tmdom_codom_NoDup. eapply Typing_Ctx. eauto.
+          eauto. } 
+       assert (P3 : disj_list_list (left_list l3) (right_list l3)).
+         { subst. erewrite var_var_pairs_vars_pattern_right.
+          rewrite vars_Pattern_list_to_pattern.
+           erewrite var_var_pairs_vars_pattern_left.
+           unfold disj_list_list. intros. intro.
+           apply vars_pattern_fv in H1. apply in_rev in H2.
+           apply codom_dom in H2. clear - H1 H2 hy.
+           eapply Rename_imp_var; eauto. eauto. eauto.
+         }
+       assert (P3' : disj_list_list
+  (left_list (var_var_pairs p' p ++ var_var_pairs px (list_to_pattern F V)))
+  (right_list (var_var_pairs p' p ++ var_var_pairs px (list_to_pattern F V)))).
+         {   rewrite left_list_app. rewrite right_list_app.
+             erewrite var_var_pairs_vars_pattern_left.
+             erewrite var_var_pairs_vars_pattern_left.
+             erewrite var_var_pairs_vars_pattern_right.
+             erewrite var_var_pairs_vars_pattern_right.
+             rewrite vars_Pattern_list_to_pattern. 
+             unfold disj_list_list. intros. intro.
+             rename H2 into H4. rename H1 into H2.
+             apply in_app_or in H2. apply in_app_or in H4.
+             inversion H2 as [H5 | H5]; inversion H4 as [H6 | H6]; clear H2 H4.
+             apply vars_pattern_fv in H5. apply vars_pattern_fv in H6.
+             move: (PatternContexts_pattern_fv_dom h2 H6) => k21.
+             clear - H5 k21 h7. eapply Rename_imp_var; eauto.
+             apply in_rev in H6. apply vars_pattern_fv in H5.
+             move: (PatternContexts_irrvar h2 x H6) => k21.
+             clear - H5 k21 h7. eapply Rename_imp_var; eauto.
+             apply vars_pattern_fv in H6. apply vars_pattern_fv in H5.
+             move: (PatternContexts_pattern_fv_dom h2 H6) => k21.
+             clear - H5 k21 hx. eapply Rename_imp_var; eauto. 
+             apply in_rev in H6. apply vars_pattern_fv in H5.
+             move: (PatternContexts_irrvar h2 x H6) => k21.
+             clear - H5 k21 hx. eapply Rename_imp_var; eauto.
+             eauto. eauto. eauto. eauto.
+             }
+   assert (P3'' : disj_list_set
+  (left_list (var_var_pairs p' p ++ var_var_pairs px (list_to_pattern F V)))
+  (dom G)).
+       { unfold disj_list_set. intros. intro.
+         rewrite left_list_app in H1.
+         erewrite var_var_pairs_vars_pattern_left in H1.
+         erewrite var_var_pairs_vars_pattern_left in H1.
+         apply in_app_or in H1.
+          inversion H1; clear H1.
+           apply vars_pattern_fv in H3. clear - H2 H3 h7.
+           eapply Rename_imp_var; eauto.
+           apply vars_pattern_fv in H3. clear - H2 H3 hx.
+           eapply Rename_imp_var; eauto. eauto. eauto. }
+       assert (P4 : disj_list_set (left_list l3) 
                     (dom (list_rename_context_tm (l1 ++ l2) G))).
-       assert (P4 : disjoint_list_list (right_list *)         
-       repeat split.
-       - clear Heql1 Heql2 Heql3. assert (Q1 : p2 = p'). admit.
-         rewrite Q1.
-         assert (Q2 : b2 = b'). admit. rewrite Q2. auto.
-       - clear Heql1 Heql2 Heql3.
+         { subst. erewrite var_var_pairs_vars_pattern_left.
+           unfold disj_list_set. intros. intro.
+           apply var_tmvar_covar in H2. inversion H2; clear H2.
+           - rewrite rename_context_tmdom_tm in H3.
+             apply list_rename_atom_list_inll in H3.
+             rewrite left_list_app in H3.
+             erewrite var_var_pairs_vars_pattern_left in H3.
+             erewrite var_var_pairs_vars_pattern_left in H3.
+             apply in_app_or in H3. inversion H3; clear H3.
+             eapply Rename_imp_var. eapply hy.
+             eapply AtomSetProperties.in_subset.
+             eapply vars_pattern_fv. eapply H2. 
+             eapply Subset_trans. eapply Rename_fv_new_pattern. eauto.
+             clear. fsetdec. eapply vars_pattern_fv. eauto.
+             eapply Rename_imp_var. eapply hy.
+             eapply AtomSetProperties.in_subset.
+             eapply vars_pattern_fv. eapply H2. 
+             eapply Subset_trans. eapply Rename_fv_new_pattern. eauto.
+             clear. fsetdec. eapply vars_pattern_fv. eauto. eauto.
+             eauto. auto.
+             intros. rewrite right_list_app.
+             erewrite var_var_pairs_vars_pattern_right.
+             erewrite var_var_pairs_vars_pattern_right.
+             rewrite vars_Pattern_list_to_pattern.
+             apply in_or_app. eapply PatternContexts_tmdom_vars.
+             eauto. auto. eauto. eauto.
+           - rewrite rename_context_codom_tm in H3.
+             rewrite list_rename_atom_list_same in H3.
+             intros. intro. rewrite right_list_app in H3.
+             erewrite var_var_pairs_vars_pattern_right in H3.
+             erewrite var_var_pairs_vars_pattern_right in H3.
+             rewrite vars_Pattern_list_to_pattern in H3.
+             apply in_app_or in H3. eapply Context_tmdom_codom_contr.
+             eapply Typing_Ctx. eauto. eapply PatternContexts_tmdom_vars.
+             eauto. eauto. auto. eauto. eauto.
+             apply codom_dom in H3. apply vars_pattern_fv in H1.
+             clear - H1 H3 hy. eapply Rename_imp_var; eauto.
+           - eauto.
+           }
+         assert (P5 : disj_list_list (right_list l3) 
+                    (tmdom (list_rename_context_tm (l1 ++ l2) G))).
+         { rewrite rename_context_tmdom_tm.
+           unfold disj_list_list. intros. intro.
+           subst. erewrite var_var_pairs_vars_pattern_right in H1.
+           rewrite vars_Pattern_list_to_pattern in H1.
+           apply in_rev in H1.
+           apply list_rename_atom_list_inll in H2.
+           rewrite left_list_app in H2.
+           erewrite var_var_pairs_vars_pattern_left in H2.
+           erewrite var_var_pairs_vars_pattern_left in H2.
+           apply in_app_or in H2. apply codom_dom in H1. inversion H2; clear H2.
+           apply vars_pattern_fv in H3. clear - H1 H3 h7.
+           eapply Rename_imp_var; eauto.
+           apply vars_pattern_fv in H3. clear - H1 H3 hx.
+           eapply Rename_imp_var; eauto. eauto. eauto. auto.
+             intros. rewrite right_list_app.
+             erewrite var_var_pairs_vars_pattern_right.
+             erewrite var_var_pairs_vars_pattern_right.
+             rewrite vars_Pattern_list_to_pattern.
+             apply in_or_app. eapply PatternContexts_tmdom_vars.
+             eauto. auto. eauto. eauto. eauto. }
+   assert (P6 : disj_list_list
+  (right_list (var_var_pairs p' p ++ var_var_pairs px (list_to_pattern F V)))
+  (codom G)).
+      { unfold disj_list_list. intros. intro. rewrite right_list_app in H1.
+          erewrite var_var_pairs_vars_pattern_right in H1.
+           erewrite var_var_pairs_vars_pattern_right in H1.
+           rewrite vars_Pattern_list_to_pattern in H1.
+           apply in_app_or in H1. eapply Context_tmdom_codom_contr.
+           eapply Typing_Ctx. eauto. eapply PatternContexts_tmdom_vars.
+           eauto. eauto. auto. eauto. eauto. }
+ assert (P7 : NoDup (left_list (l1 ++ l2))).
+  { subst. rewrite left_list_app.
+    erewrite var_var_pairs_vars_pattern_left.
+    erewrite var_var_pairs_vars_pattern_left.
+    apply NoDup_app. eapply uniq_atoms_new_pattern. eauto.
+     eapply uniq_atoms_new_pattern. eauto.
+     unfold disj_list_list. intros. intro.
+     apply vars_pattern_fv in H1. apply vars_pattern_fv in H2.
+     eapply Rename_imp_var. eapply hx.
+     eapply AtomSetProperties.in_subset.
+     eapply H1. eapply Subset_trans. eapply Rename_fv_new_pattern. eauto.
+     clear. fsetdec. eauto. eauto. eauto. }
+ assert (P8 : NoDup (right_list (l1 ++ l2))).
+ { subst. rewrite right_list_app.
+    erewrite var_var_pairs_vars_pattern_right.
+    erewrite var_var_pairs_vars_pattern_right.
+    rewrite vars_Pattern_list_to_pattern.
+     assert (NoDup (tmdom G)). { eapply Context_tmdom_codom_NoDup.
+     eapply Typing_Ctx. eauto. }
+    pose (K := PatternContexts_NoDup h2 H1). inversion K.
+    apply NoDup_app. auto. apply NoDup_reverse. auto.
+    unfold disj_list_list. intros. intro.
+    apply vars_pattern_fv in H4. apply in_rev in H5.
+    eapply PatternContexts_pattern_irrvar_disj; eauto.
+    eapply hx. eauto. }
+    assert (Q1 : p2 = p').
+       { rewrite Heqp2. rewrite Heql1.
+         erewrite <- chainsubst_list_rename_tm.
+         erewrite <- Rename_chainsubst_pattern.
+         rewrite (tm_subst_same l2).
+         intros. rewrite Heql2 in H1.
+         erewrite var_var_pairs_vars_pattern_right in H1.
+         rewrite vars_Pattern_list_to_pattern in H1.
+         apply in_rev in H1.
+         eapply PatternContexts_irrvar with (G := G) in H1. intro.
+         eapply Rename_imp_var with (x := x). eapply h7. auto.
+         eauto. eauto. eauto. rewrite co_subst_same. intros.
+         rewrite Pattern_fv_co_co_tm_empty. fsetdec.
+         eapply Rename_Pattern. eapply h7. auto.
+         eapply h7. split_hyp; auto. clear. fsetdec. eauto.
+       }
+    assert (Q2 : b2 = b').
+       { assert (Q21 : list_rename_tm l1 b = b').
+               { subst. erewrite <- chainsubst_list_rename_tm.
+                 erewrite Rename_chain_subst. eauto. eauto. eauto.
+               }
+          assert (S1 : fv_tm_tm_tm b [<=] fv_tm_tm_tm p).
+          split_hyp; auto.
+          move: (Rename_new_body_fv h7 S1) => k1.
+          rewrite Heqb2. rewrite Q21. rewrite (tm_subst_same l2).
+          intros. rewrite Heql2 in H1.
+          erewrite var_var_pairs_vars_pattern_right in H1.
+          rewrite vars_Pattern_list_to_pattern in H1.
+          apply in_rev in H1.
+          eapply PatternContexts_irrvar with (G := G) in H1.
+          eapply subset_notin. eapply Rename_inter_empty.
+          eapply h7. eauto. eapply Rename_new_body_fv. eapply h7.
+          split_hyp; auto. eauto. eauto.
+          rewrite co_subst_same. intros.
+          erewrite Rename_new_body_fv_co. eauto. eapply h7.
+          eapply Typing_context_fv in h3. split_hyp; auto.
+          auto.
+        }
+      assert (Q' : PatternContexts W' G' V' F A p2 B').
+        {
          subst. rewrite H0. eapply list_co_rename_PatternContexts.
-         admit. admit. admit. admit. admit.
+         all: auto.
          unfold list_rename_tm. rewrite <- fold_left_app.
          rewrite <- fold_left_app. rewrite <- fold_left_app.
          eapply list_tm_rename_PatternContexts.
-         admit. admit. admit. admit. admit. auto.
-       - clear Heql1 Heql2 Heql3. subst.
-         eapply list_co_rename_typing.
-         admit. admit. admit. admit. admit.
+         subst. all:auto.
+        }
+     assert (Q'' : Typing G' b2 B').
+       {
+         subst.
+         eapply list_co_rename_typing. all: auto.
          unfold list_rename_tm. rewrite <- fold_left_app.
          rewrite <- fold_left_app.
          eapply list_tm_rename_typing.
-         admit. admit. admit. admit. admit. auto.
-       - intro. intros. Admitted.
+         all: auto.
+        }
+        repeat split.
+       -  rewrite Q1. rewrite Q2. eapply Rename_narrow. eauto. clear. fsetdec.
+       - assert (Q3 : MatchSubst a p2 b2 (matchsubst a p2 b2)).
+         { apply matchsubst_fun_ind. rewrite Q1.
+           eapply tm_pattern_agree_rename_inv_1.
+           eapply tm_pattern_agree_rename_inv_2. eapply MatchSubst_match.
+           eauto. eauto. eauto. rewrite Q2. eapply Rename_lc4. eauto.
+           auto.
+         }
+         replace b'' with (matchsubst a p2 b2). auto.
+         symmetry. eapply MatchSubst_Rename_preserve.
+         eapply tm_pattern_agree_rename_inv_2.
+         eapply MatchSubst_match. eapply Q. eapply h1. eapply h1.
+         eapply h7. split_hyp; auto. eapply Typing_context_fv in h3.
+         inversion h3 as [Hyp _]. clear - Hyp. fsetdec.
+         split_hyp; auto. auto. rewrite <- Q1. rewrite <- Q2. auto.
+       - auto.
+       - auto.
+       - clear Q''. intro. intros.
+         apply inter_iff in H1. inversion H1; clear H1.
+         subst. apply var_tmvar_covar in H2. inversion H2; clear H2.
+         + rewrite rename_context_tmdom_co in H1.
+           rewrite list_rename_atom_list_same in H1.
+           * intros. intro. erewrite var_var_pairs_vars_pattern_right in H2.
+             rewrite vars_Pattern_list_to_pattern in H2.
+             apply in_rev in H2.
+             rewrite rename_context_tmdom_tm in H1.
+             apply list_rename_atom_list_inll in H1.
+             rewrite left_list_app in H1.
+             erewrite var_var_pairs_vars_pattern_left in H1.
+             erewrite var_var_pairs_vars_pattern_left in H1.
+             apply in_app_or in H1. 
+             inversion H1; clear H1. apply codom_dom in H2.
+             apply vars_pattern_fv in H4. clear - H2 H4 h7.
+             eapply Rename_imp_var; eauto.
+              apply codom_dom in H2.
+             apply vars_pattern_fv in H4. clear - H2 H4 hx.
+             eapply Rename_imp_var; eauto. eauto. eauto.
+             unfold disj_list_list. intros. intro.
+             rewrite left_list_app in H4. rewrite right_list_app in H5.
+             erewrite var_var_pairs_vars_pattern_left in H4.
+             erewrite var_var_pairs_vars_pattern_left in H4.
+             erewrite var_var_pairs_vars_pattern_right in H5.
+             erewrite var_var_pairs_vars_pattern_right in H5.
+             rewrite vars_Pattern_list_to_pattern in H5.
+             apply in_app_or in H4. apply in_app_or in H5.
+             inversion H4; inversion H5.
+             apply vars_pattern_fv in H6. apply vars_pattern_fv in H7.
+             move: (PatternContexts_pattern_fv_dom h2 H7) => k21.
+             clear - H6 k21 h7. eapply Rename_imp_var; eauto.
+             apply in_rev in H7. apply vars_pattern_fv in H6.
+             move: (PatternContexts_irrvar h2 x0 H7) => k21.
+             clear - H6 k21 h7. eapply Rename_imp_var; eauto.
+             apply vars_pattern_fv in H6. apply vars_pattern_fv in H7.
+             move: (PatternContexts_pattern_fv_dom h2 H7) => k21.
+             clear - H6 k21 hx. eapply Rename_imp_var; eauto. 
+             apply in_rev in H7. apply vars_pattern_fv in H6.
+             move: (PatternContexts_irrvar h2 x0 H7) => k21.
+             clear - H6 k21 hx. eapply Rename_imp_var; eauto.
+             eauto. eauto. eauto. eauto.
+             intros. rewrite right_list_app.
+             erewrite var_var_pairs_vars_pattern_right.
+             erewrite var_var_pairs_vars_pattern_right.
+             rewrite vars_Pattern_list_to_pattern.
+             apply in_or_app. eapply PatternContexts_tmdom_vars.
+             eauto. auto. eauto. eauto. eauto.
+           * rewrite rename_context_tmdom_tm in H1.
+             apply list_rename_atom_list_inll in H1.
+             ** rewrite left_list_app in H1.
+                erewrite var_var_pairs_vars_pattern_left in H1.
+                erewrite var_var_pairs_vars_pattern_left in H1.
+                apply in_app_or in H1. inversion H1; clear H1.
+                apply vars_pattern_fv in H2.
+                clear - H3 H2 h7. assert False. eapply Rename_imp_var; eauto.
+                contradiction.
+                apply vars_pattern_fv in H2.
+                clear - H3 H2 hx. assert False. eapply Rename_imp_var; eauto.
+                contradiction.
+                eauto. eauto.
+             ** rewrite left_list_app. rewrite right_list_app.
+                erewrite var_var_pairs_vars_pattern_left.
+                erewrite var_var_pairs_vars_pattern_left.
+                erewrite var_var_pairs_vars_pattern_right.
+                erewrite var_var_pairs_vars_pattern_right.
+                unfold disj_list_list. intros. intro.
+                apply in_app_or in H2. apply in_app_or in H4.
+                inversion H2; inversion H4.
+                apply vars_pattern_fv in H5. apply vars_pattern_fv in H6.
+                move: (PatternContexts_pattern_fv_dom h2 H6) => k21.
+                clear - H5 k21 h7. eapply Rename_imp_var; eauto.
+                apply vars_pattern_fv in H5.
+                rewrite vars_Pattern_list_to_pattern in H6.
+                apply in_rev in H6. move: (PatternContexts_irrvar h2) => k3.
+                apply k3 in H6. clear - H5 H6 h7.
+                eapply Rename_imp_var; eauto.
+                apply vars_pattern_fv in H5. apply vars_pattern_fv in H6.
+                 move: (PatternContexts_pattern_fv_dom h2 H6) => k21.
+                clear - H5 k21 hx. eapply Rename_imp_var; eauto.
+                apply vars_pattern_fv in H5.
+                rewrite vars_Pattern_list_to_pattern in H6.
+                apply in_rev in H6. move: (PatternContexts_irrvar h2) => k3.
+                apply k3 in H6. clear - H5 H6 hx. eapply Rename_imp_var; eauto.
+                eauto. eauto. eauto. eauto.
+             ** intros. rewrite right_list_app.
+                erewrite var_var_pairs_vars_pattern_right.
+                erewrite var_var_pairs_vars_pattern_right.
+                rewrite vars_Pattern_list_to_pattern.
+                apply in_or_app.
+                eapply PatternContexts_tmdom_vars; eauto. eauto. eauto.
+         + rewrite rename_context_codom_co in H1.
+           rewrite rename_context_codom_tm in H1.
+           rewrite (list_rename_atom_list_same (codom G)) in H1.
+            * intros. intro. rewrite right_list_app in H2.
+              erewrite var_var_pairs_vars_pattern_right in H2.
+              erewrite var_var_pairs_vars_pattern_right in H2.
+              rewrite vars_Pattern_list_to_pattern in H2.
+              apply in_app_or in H2. eapply Context_tmdom_codom_contr.
+              eapply Typing_Ctx. eauto. eapply PatternContexts_tmdom_vars.
+              eauto. eauto. auto. eauto. eauto.
+            * apply list_rename_atom_list_inll in H1.
+              erewrite var_var_pairs_vars_pattern_left in H1.
+              apply vars_pattern_fv in H1. clear - H1 H3 hy.
+              assert False. eapply Rename_imp_var; eauto.
+              contradiction. eauto.
+              erewrite var_var_pairs_vars_pattern_left.
+              erewrite var_var_pairs_vars_pattern_right.
+              rewrite vars_Pattern_list_to_pattern.
+              unfold disj_list_list. intros. intro.
+              apply vars_pattern_fv in H2. apply in_rev in H4.
+              apply codom_dom in H4. clear - H2 H4 hy.
+              eapply Rename_imp_var; eauto. eauto. eauto.
+              intros. erewrite var_var_pairs_vars_pattern_right.
+              rewrite vars_Pattern_list_to_pattern.
+              apply in_rev. rewrite rev_involutive. auto. eauto.
+        - intros. intro. eapply PatternContexts_pattern_irrvar_disj.
+          eapply Q'. apply Ctx_NoDup. eapply Typing_Ctx. eauto.
+          eapply Superset_cont_sub. eapply Rename_new_body_fv_new_pattern.
+          rewrite <- Q1 in h7. eauto. split_hyp; auto. rewrite <- Q2.
+          eauto. auto.
+Qed.
+
 (*
 Definition atom_pairs_rename (G : context) (D : atoms) :=
   let tmvars := tmdom G in
