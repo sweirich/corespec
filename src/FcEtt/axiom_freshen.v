@@ -1695,7 +1695,8 @@ Proof. intros. eapply Subset_trans. eapply Rename_fv_body. eauto.
        fsetdec.
 Qed.
 
-Lemma axiom_fresh : forall p b p1 b1 D1 D1' D2 W G V F A B a b'',
+Lemma axiom_fresh : forall s (G0 : list (atom * s))
+      p b p1 b1 D1 D1' D2 W G V F A B a b'',
       fv_tm_tm_tm A [<=] empty /\ fv_co_co_tm A [<=] empty /\
       fv_tm_tm_tm b [<=] fv_tm_tm_tm p /\
       uniq_atoms_pattern p /\
@@ -1706,20 +1707,20 @@ Lemma axiom_fresh : forall p b p1 b1 D1 D1' D2 W G V F A B a b'',
       exists p2 b2 D2' W' G' V' B',
       Rename p b p2 b2 D2 D2' /\ MatchSubst a p2 b2 b'' /\
       PatternContexts W' G' V' F A p2 B' /\
-      Typing G' b2 B' /\ disjoint G' G /\
+      Typing G' b2 B' /\ disjoint G' G0 /\
       (forall x, In x V' -> x `notin` fv_tm_tm_tm b2).
 Proof. intros. rename H1 into Q. inversion H0 as [h1 [h2 h3]]; clear H0.
        move: (patctx_pattern h2) => h4.
        move: (Typing_lc1 h3) => h5.
-       move: (Rename_exists (dom G \u (fv_tm_tm_tm p) \u (fv_tm_tm_tm a \u D2)) h4 h5) => h6.
+       move: (Rename_exists (dom G0 \u dom G \u (fv_tm_tm_tm p) \u (fv_tm_tm_tm a \u D2)) h4 h5) => h6.
        inversion h6 as [p' [b' [D2' h7]]].
        remember (var_var_pairs p' p) as l1.
        move: (list_to_pattern_Pattern F V) => h8.
-       move: (Rename_exists (dom G \u D2 \u D2') h8 lc_a_Bullet) => h9.
+       move: (Rename_exists (dom G0 \u dom G \u D2 \u D2') h8 lc_a_Bullet) => h9.
        inversion h9 as [px [bx [Dx hx]]].
        remember (var_var_pairs px (list_to_pattern F V)) as l2.
        move: (list_to_pattern_Pattern F (codom G)) => h10.
-       move: (Rename_exists (dom G \u D2 \u D2' \u Dx) h10 lc_a_Bullet) => h11.
+       move: (Rename_exists (dom G0 \u dom G \u D2 \u D2' \u Dx) h10 lc_a_Bullet) => h11.
        inversion h11 as [py [bz [Dy hy]]].
        remember (var_var_pairs py (list_to_pattern F (codom G))) as l3.
        remember (list_rename_co l3 (list_rename_tm l2 (list_rename_tm l1 p))) as p2.

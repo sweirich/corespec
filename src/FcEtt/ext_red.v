@@ -551,7 +551,7 @@ Proof.
            split; auto;
            simpl;
            rewrite union_empty_r;
-           eauto using domFresh_empty, domFresh_singleton2).  
+           eauto using domFresh_empty, domFresh_singleton2).
 
   all: have es: sub' = zip (List.map fst G1') (rev targs1') by
       (unfold sub'; unfold G1'; unfold targs1';
@@ -581,7 +581,7 @@ Proof.
        fsetdec ).
 
   all: with BranchTyping do ltac:(fun h =>
-        specialize (IHn G1' G _ _ _ _ _ _ _ _ h); clear h).  
+        specialize (IHn G1' G _ _ _ _ _ _ _ _ h); clear h).
 
   all: specialize (IHn df args1' args2 eq_refl Rs). 
   all: try rewrite apply_pattern_args_tail_Tm in IHn.
@@ -1504,6 +1504,8 @@ Hint Resolve Rename_tm_pattern_agree : nominal.
    it holds for open terms too. So we need to swap the names in our
    derivations to ensure that they are sufficiently fresh.
  *)
+
+(*
 Lemma Axiom_Freshening : forall s (Γ:list(atom*s)), 
   `{ MatchSubst a p1 b1 b' ->
      Rename p b p1 b1 D1 D ->
@@ -1541,7 +1543,7 @@ Proof.
   repeat eexists.
 
 Admitted. (* Freshening lemma for axioms *)
-
+*)
 
 Theorem MatchSubst_preservation2 : `{
   MatchSubst a p1 b1 b' →
@@ -1560,8 +1562,15 @@ Proof.
   move: (Typing_regularity tpg_a) => tpg_A.
 
 
-  edestruct (@Axiom_Freshening _ Γ) as 
-      [p2 [b2 [B' [Dp' [Ωp' [Γp' h]]]]]]; eauto 1.
+  edestruct (@axiom_fresh _ Γ) as
+    [p2 [b2 [D2 [Ωp' [Γp' [Dp' [B' h]]]]]]]; eauto 1. 2:split; eauto.
+  apply Typing_context_fv in tyB. simpl in tyB.
+  split. split_hyp; auto. split. split_hyp; auto.
+  split. eapply axiom_body_fv_in_pattern. eauto.
+  split. eapply uniq_atoms_toplevel. eauto.
+  eapply union_s_m. auto. clear - bds.
+  apply axiom_body_fv_in_pattern in bds. fsetdec.
+      
   split_hyp.
 (*
   have Dp' : atoms. admit.
