@@ -23,6 +23,7 @@ Hint Resolve inleft inright left right.
 
 (* Notations: _ <- _; _ is the notation for destructing a sumor, >--> for destructing a sumbool.
    Notation convention: the arrows are 1 dash longer when the return (type) constructor is different, e.g. destructing a sumbool to return a sumor. *)
+(*
 Notation "x <- e1 ; e2" :=
   (match e1 with
      | inright _ => !!
@@ -72,3 +73,4 @@ Notation "e1 >---> e2" :=
      | left _ => e2
    end)
 (right associativity, at level 60).
+*)

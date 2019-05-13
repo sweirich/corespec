@@ -1,3 +1,4 @@
+
 %% This file uses the Ott tool to specify the grammar, typing and
 %% evaluation rules for the implicit and explicit languages
 
@@ -16,7 +17,7 @@ metavar covar, c ::=
 
 metavar datacon, K ::= {{ coq atom }}
 
-metavar const, T ::= {{ coq atom }}
+metavar const, T ::= {{ coq atom }} 
   {{ lex Alphanum }}
 
 metavar tyfam, F ::= {{ coq atom }}
@@ -595,14 +596,9 @@ Value R a
 ----------------- :: CV
 CoercedValue R a
 
-Value R a
----------------------- :: CC
-CoercedValue R (a |>R1 o)
-
-CoercedValue R (a |>R1 o)
-not (R1 <= R2)
------------------------------------ :: CCV
-CoercedValue R ((a |>R1 o) |>R2 o)
+Value Nom a
+----------------------------- :: CC
+CoercedValue Nom (a |>Rep o)
 
 defn
 Value R A  ::   :: Value    :: 'Value_'
@@ -852,23 +848,29 @@ W |- a1 => a2 / R1
 W |- a1 |> R o => a2 |> R o / R1
 
 
-W |- a1 => (a2 |> R o)  / R1
+W |- a1 => (a2 |> Rep o)  / Nom
 ------------------------------------  :: Combine
-W |- (a1 |> R o) =>  (a2 |> R o) / R1
+W |- (a1 |> Rep o) => (a2 |> Rep o) / Nom
 
-W |- a1 => (a2 |> R o) / R1
-W |- b1 => b2 / R2
+
+W |- a1 => (a2 |> Rep o) / Nom
+W |- b1 => b2 / Nom
 ---------------------------------------------------- :: Push
-W |- a1 R2 b1 => (a2 R2 (b2 |> R o)) |> R o / R1
+W |- a1 Nom b1 => (a2 Nom (b2 |> Rep o)) |> Rep o / Nom
 
-W |- a1 => (a2 |> R o) / R1
-W |- b1 => (b2 |> R o) / R2
+W |- a1 => (a2 |> Rep o) / Nom
+W |- b1 => b2 / Rep
+---------------------------------------------------- :: PushDrop
+W |- a1 Rep b1 => (a2 Rep b2) |> Rep o / Nom
+
+W |- a1 => (a2 |> Rep o) / Nom
+W |- b1 => (b2 |> Rep o) / Nom
 ---------------------------------------------------- :: PushCombine
-W |- a1 R2 b1 => (a2 R2 (b2 |> R o)) |> R o / R1
+W |- a1 Nom b1 => (a2 Nom (b2 |> Rep o)) |> Rep o / Nom
 
-W |- a1 => (a2 |> R o) / R1
+W |- a1 => (a2 |> Rep o) / Nom
 ---------------------------------------------------- :: CPush
-W |- a1 [o] => (a2 [o]) |> R o / R1
+W |- a1 [o] => (a2 [o]) |> Rep o / Nom
 
 
 defn
@@ -921,18 +923,22 @@ F ~ a : A/R in toplevel
 -------------------------------- :: Axiom
 |= F > a / R
 
-CoercedValue R (v |> R1 o)
-R1 <= R2
------------------------------------- :: Combine
-|= (v |> R1 o) |> R2 o > v |> R2 o / R
+R1 <= R
+---------------------- :: Drop
+|= v |> R1 o > v / R
 
-CoercedValue R2 (v1 |> R o)
+CoercedValue Nom (v |> Rep o)
+--------------------------------------------- :: Combine
+|= (v |> Rep o) |> Rep o > v |> Rep o / Nom
+
+CoercedValue Nom (v1 |> Rep o)
 ------------------------------------ :: Push
-|= (v1 |> R o) rho R1 b > (v1 rho R1 (b |> R o)) |> R o / R2
+|= (v1 |> Rep o) rho R1 b > (v1 rho R1 (b |> Rep o)) |> Rep o / Nom
 
-CoercedValue R1 (v1 |> R o)
+
+CoercedValue Nom (v1 |> Rep o)
 ------------------------------------ :: CPush
-|= (v1 |> R o) [o] > (v1 [o]) |> R o / R1
+|= (v1 |> Rep o) [o] > (v1 [o]) |> Rep o / Nom
 
 defn
  |= a ~> b / R ::   :: reduction_in_one :: 'E_'
@@ -1064,7 +1070,7 @@ F ~ a : A / R in toplevel
 G |= F : A / R1
 
 G |= a : A1 / R1
-G ; dom G |= A1 == A2 : TYPE / max R1 R2
+G ; dom G |= A1 == A2 : TYPE / R2
 [ G |= A2 : TYPE / R1 ]
 ------------------------- :: TyCast
 G |= a |> R2 o : A2 / R1
@@ -1212,7 +1218,7 @@ G ; D |= a ~ b : A/R == a' ~ b' : A'/R
 G ; D |= A == A' : TYPE/R
 
 G ; D |= a1 == a2 : A / R1
-G ; dom G |= A == B : TYPE / max R1 R2
+G ; dom G |= A == B : TYPE /R2
 G |= B : TYPE / R1
 ------------------------------------ :: CastCong
 G ; D |= a1 |> R2 o == a2 |> R2 o : B / R1

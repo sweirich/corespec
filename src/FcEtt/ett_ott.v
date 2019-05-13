@@ -882,13 +882,9 @@ Inductive CoercedValue : role -> tm -> Prop :=    (* defn CoercedValue *)
  | CV : forall (R:role) (a:tm),
      Value R a ->
      CoercedValue R a
- | CC : forall (R:role) (a:tm) (R1:role),
-     Value R a ->
-     CoercedValue R  ( (a_Conv a R1 g_Triv) ) 
- | CCV : forall (R:role) (a:tm) (R1 R2:role),
-     CoercedValue R  ( (a_Conv a R1 g_Triv) )  ->
-      not (  ( SubRole R1 R2 )  )  ->
-     CoercedValue R  ( (a_Conv  ( (a_Conv a R1 g_Triv) )  R2 g_Triv) ) 
+ | CC : forall (a:tm),
+     Value Nom a ->
+     CoercedValue Nom  ( (a_Conv a Rep g_Triv) ) 
 with Value : role -> tm -> Prop :=    (* defn Value *)
  | Value_Star : forall (R:role),
      Value R a_Star
@@ -1074,20 +1070,24 @@ Inductive Par : role_context -> tm -> tm -> role -> Prop :=    (* defn Par *)
  | Par_Cong : forall (W:role_context) (a1:tm) (R:role) (a2:tm) (R1:role),
      Par W a1 a2 R1 ->
      Par W (a_Conv a1 R g_Triv) (a_Conv a2 R g_Triv) R1
- | Par_Combine : forall (W:role_context) (a1:tm) (R:role) (a2:tm) (R1:role),
-     Par W a1  ( (a_Conv a2 R g_Triv) )  R1 ->
-     Par W  ( (a_Conv a1 R g_Triv) )   ( (a_Conv a2 R g_Triv) )  R1
- | Par_Push : forall (W:role_context) (a1:tm) (R2:role) (b1 a2 b2:tm) (R R1:role),
-     Par W a1  ( (a_Conv a2 R g_Triv) )  R1 ->
-     Par W b1 b2 R2 ->
-     Par W  (a_App  a1  Rel  R2   b1 )  (a_Conv  (  (a_App  a2  Rel  R2    ( (a_Conv b2 R g_Triv) )  )  )  R g_Triv) R1
- | Par_PushCombine : forall (W:role_context) (a1:tm) (R2:role) (b1 a2 b2:tm) (R R1:role),
-     Par W a1  ( (a_Conv a2 R g_Triv) )  R1 ->
-     Par W b1  ( (a_Conv b2 R g_Triv) )  R2 ->
-     Par W  (a_App  a1  Rel  R2   b1 )  (a_Conv  (  (a_App  a2  Rel  R2    ( (a_Conv b2 R g_Triv) )  )  )  R g_Triv) R1
- | Par_CPush : forall (W:role_context) (a1 a2:tm) (R R1:role),
-     Par W a1  ( (a_Conv a2 R g_Triv) )  R1 ->
-     Par W (a_CApp a1 g_Triv) (a_Conv  ( (a_CApp a2 g_Triv) )  R g_Triv) R1
+ | Par_Combine : forall (W:role_context) (a1 a2:tm),
+     Par W a1  ( (a_Conv a2 Rep g_Triv) )  Nom ->
+     Par W  ( (a_Conv a1 Rep g_Triv) )   ( (a_Conv a2 Rep g_Triv) )  Nom
+ | Par_Push : forall (W:role_context) (a1 b1 a2 b2:tm),
+     Par W a1  ( (a_Conv a2 Rep g_Triv) )  Nom ->
+     Par W b1 b2 Nom ->
+     Par W  (a_App  a1  Rel  Nom   b1 )  (a_Conv  (  (a_App  a2  Rel  Nom    ( (a_Conv b2 Rep g_Triv) )  )  )  Rep g_Triv) Nom
+ | Par_PushDrop : forall (W:role_context) (a1 b1 a2 b2:tm),
+     Par W a1  ( (a_Conv a2 Rep g_Triv) )  Nom ->
+     Par W b1 b2 Rep ->
+     Par W  (a_App  a1  Rel  Rep   b1 )  (a_Conv  (  (a_App  a2  Rel  Rep   b2 )  )  Rep g_Triv) Nom
+ | Par_PushCombine : forall (W:role_context) (a1 b1 a2 b2:tm),
+     Par W a1  ( (a_Conv a2 Rep g_Triv) )  Nom ->
+     Par W b1  ( (a_Conv b2 Rep g_Triv) )  Nom ->
+     Par W  (a_App  a1  Rel  Nom   b1 )  (a_Conv  (  (a_App  a2  Rel  Nom    ( (a_Conv b2 Rep g_Triv) )  )  )  Rep g_Triv) Nom
+ | Par_CPush : forall (W:role_context) (a1 a2:tm),
+     Par W a1  ( (a_Conv a2 Rep g_Triv) )  Nom ->
+     Par W (a_CApp a1 g_Triv) (a_Conv  ( (a_CApp a2 g_Triv) )  Rep g_Triv) Nom
 with MultiPar : role_context -> tm -> tm -> role -> Prop :=    (* defn MultiPar *)
  | MP_Refl : forall (W:role_context) (a:tm) (R:role),
      lc_tm a ->
@@ -1114,17 +1114,20 @@ Inductive Beta : tm -> tm -> role -> Prop :=    (* defn Beta *)
  | Beta_Axiom : forall (F:tyfam) (a:tm) (R:role) (A:tm),
       binds  F  (Ax  a A R )   toplevel   ->
      Beta (a_Fam F) a R
- | Beta_Combine : forall (v:tm) (R1 R2 R:role),
-     CoercedValue R  ( (a_Conv v R1 g_Triv) )  ->
-     SubRole R1 R2 ->
-     Beta (a_Conv  ( (a_Conv v R1 g_Triv) )  R2 g_Triv) (a_Conv v R2 g_Triv) R
- | Beta_Push : forall (v1:tm) (R:role) (rho:relflag) (R1:role) (b:tm) (R2:role),
+ | Beta_Drop : forall (v:tm) (R1 R:role),
+     lc_tm v ->
+     SubRole R1 R ->
+     Beta (a_Conv v R1 g_Triv) v R
+ | Beta_Combine : forall (v:tm),
+     CoercedValue Nom  ( (a_Conv v Rep g_Triv) )  ->
+     Beta (a_Conv  ( (a_Conv v Rep g_Triv) )  Rep g_Triv) (a_Conv v Rep g_Triv) Nom
+ | Beta_PushRep : forall (v1:tm) (rho:relflag) (R1:role) (b:tm),
      lc_tm b ->
-     CoercedValue R2  ( (a_Conv v1 R g_Triv) )  ->
-     Beta (a_App  ( (a_Conv v1 R g_Triv) )  rho R1 b) (a_Conv  ( (a_App v1 rho R1  ( (a_Conv b R g_Triv) ) ) )  R g_Triv) R2
- | Beta_CPush : forall (v1:tm) (R R1:role),
-     CoercedValue R1  ( (a_Conv v1 R g_Triv) )  ->
-     Beta (a_CApp  ( (a_Conv v1 R g_Triv) )  g_Triv) (a_Conv  ( (a_CApp v1 g_Triv) )  R g_Triv) R1
+     CoercedValue Nom  ( (a_Conv v1 Rep g_Triv) )  ->
+     Beta (a_App  ( (a_Conv v1 Rep g_Triv) )  rho R1 b) (a_Conv  ( (a_App v1 rho R1  ( (a_Conv b Rep g_Triv) ) ) )  Rep g_Triv) Nom
+ | Beta_CPush : forall (v1:tm),
+     CoercedValue Nom  ( (a_Conv v1 Rep g_Triv) )  ->
+     Beta (a_CApp  ( (a_Conv v1 Rep g_Triv) )  g_Triv) (a_Conv  ( (a_CApp v1 g_Triv) )  Rep g_Triv) Nom
 with reduction_in_one : tm -> tm -> role -> Prop :=    (* defn reduction_in_one *)
  | E_Prim : forall (a b:tm) (R:role),
      Beta a b R ->
@@ -1211,7 +1214,7 @@ with Typing : context -> tm -> tm -> role -> Prop :=    (* defn Typing *)
      Typing G (a_Fam F) A R1
  | E_TyCast : forall (G:context) (a:tm) (R2:role) (A2:tm) (R1:role) (A1:tm),
      Typing G a A1 R1 ->
-     DefEq G  (dom  G )  A1 A2 a_Star  (max  R1 R2 )  ->
+     DefEq G  (dom  G )  A1 A2 a_Star R2 ->
       ( Typing G A2 a_Star R1 )  ->
      Typing G (a_Conv a R2 g_Triv) A2 R1
 with Iso : context -> available_props -> constraint -> constraint -> Prop :=    (* defn Iso *)
@@ -1314,7 +1317,7 @@ with DefEq : context -> available_props -> tm -> tm -> tm -> role -> Prop :=    
      DefEq G D A A' a_Star R
  | E_CastCong : forall (G:context) (D:available_props) (a1:tm) (R2:role) (a2 B:tm) (R1:role) (A:tm),
      DefEq G D a1 a2 A R1 ->
-     DefEq G  (dom  G )  A B a_Star  (max  R1 R2 )  ->
+     DefEq G  (dom  G )  A B a_Star R2 ->
      Typing G B a_Star R1 ->
      DefEq G D (a_Conv a1 R2 g_Triv) (a_Conv a2 R2 g_Triv) B R1
 with Ctx : context -> Prop :=    (* defn Ctx *)

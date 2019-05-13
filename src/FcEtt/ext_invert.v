@@ -415,7 +415,7 @@ Lemma invert_a_Conv2
      : ∀ (G : context) (a A : tm) (R1 R2 : role),
        Typing G (a_Conv a R1 g_Triv) A R2
        → ∃ (B : tm),
-         Typing G a B R2 ∧ DefEq G (dom G) A B a_Star (max R2 R1).
+         Typing G a B R2 ∧ DefEq G (dom G) A B a_Star R1.
 Proof.
   intros G a A R1 R2 H. dependent induction H.
   - edestruct IHTyping as (B0 & h); eauto. split_hyp.
