@@ -157,8 +157,6 @@ Proof.
   (* Do the cases about the context at the end. *)
   all: try (intros x0 A0 BI).
   all: try solve [intros; autofv].
- (* TODO: finish implementing the "positive" case of autofv so it solves more cases here *)
-  (* TODO: + a good instantiation tactic would help as well *)
   all: try (match goal with |- _ ∧ _ => split end).
 
   all: try (intros y h1; inversion BI; [
@@ -266,7 +264,6 @@ Definition ProfWff_context_fv := second context_fv_mutual.
 Definition Iso_context_fv     := third context_fv_mutual.
 Definition DefEq_context_fv   := fourth context_fv_mutual.
 
-(* TODO (tactics): integrate *)
 Ltac show_fresh :=
   match goal with 
   | [H: Typing _ ?T _ |- ?c `notin` _ ?T ] => 

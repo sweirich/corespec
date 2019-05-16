@@ -571,293 +571,6 @@ Lemma chain_sub_fam : forall l F,
 Proof. intros. induction l. simpl; auto. destruct a; simpl. rewrite IHl.
        auto.
 Qed.
-(*
-Lemma chain_sub_app : forall l nu a1 a2,
-           chain_substitution l (a_App a1 nu a2) =
-           a_App (chain_substitution l a1) nu (chain_substitution l a2).
-Proof. intros. induction l. simpl; auto. destruct a; simpl. rewrite IHl.
-       auto.
-Qed.
-
-Lemma chain_sub_var : forall l x, exists y, 
-                      chain_substitution (map a_Var_f l) (a_Var_f x) = a_Var_f y.
-Proof. intros. induction l. simpl. exists x; auto. destruct a.
-       simpl. inversion IHl as [y P]. rewrite P. destruct (a == y).
-       subst. exists t; simpl. destruct (y == y). auto. contradiction.
-       exists y. simpl. destruct (y == a). symmetry in e. contradiction.
-       auto.
-Qed.
-
-Lemma chain_sub_bullet : forall l, chain_substitution l a_Bullet = a_Bullet.
-Proof. intros. induction l; try destruct a; simpl; try rewrite IHl; eauto.
-Qed.
-
-Lemma chain_sub_capp : forall l a, chain_substitution l (a_CApp a g_Triv) =
-                       a_CApp (chain_substitution l a) g_Triv.
-Proof. intros. induction l. simpl; auto. destruct a0; simpl. rewrite IHl; auto.
-Qed.
-
-Lemma RolePath_pat_rename_consist : forall a p l, RolePath_pat_consist a p ->
-              RolePath_pat_consist a (chain_substitution (map a_Var_f l) p).
-Proof. intros. induction H.
-        - rewrite chain_sub_fam. eauto.
-        - rewrite chain_sub_app. pose (P := chain_sub_var l x).
-          inversion P as [y Q]. rewrite Q. eauto.
-        - rewrite chain_sub_app. rewrite chain_sub_bullet. eauto.
-        - rewrite chain_sub_capp; eauto.
-Qed.
-
-
-Lemma MatchSubst_permutation : forall a p b,
-              chain_substitution (permutation a p) b = matchsubst a p b.
-Proof. intros. generalize dependent p. generalize dependent b.
-       induction a; intros; eauto.
-       all: try destruct g; try destruct nu; eauto.
-       all: try destruct R; try destruct rho; eauto.
-        - destruct p; eauto. destruct nu; eauto. destruct R; eauto.
-          destruct p2; eauto. simpl. rewrite IHa1. auto.
-        - destruct p; eauto. destruct nu; eauto. destruct R; eauto.
-          destruct p2; eauto. simpl. rewrite IHa1. auto.
-        - destruct a2; eauto. destruct p; eauto. destruct nu; eauto.
-          destruct rho; eauto. destruct p2; eauto.
-        - destruct p; eauto. destruct g; eauto.
-        - destruct p; eauto.
-Qed.
-
-Inductive ICApp : tm -> tm -> Prop :=
-   | ICApp_refl : forall a, ICApp a a
-   | ICApp_IApp : forall a1 a2, ICApp a1 a2 -> ICApp a1 (a_App a2 (Rho Irrel) a_Bullet)
-   | ICApp_CApp : forall a1 a2, ICApp a1 a2 -> ICApp a1 (a_CApp a2 g_Triv).
-
-Lemma nonempty_perm : forall a p x l, x :: l = permutation a p ->
-      exists a1 a2 p1 y, (ICApp (a_App a1 (Role Nom) a2) a /\ 
-              ICApp (a_App p1 (Role Nom) (a_Var_f y)) p /\ x = (y, a2)
-              /\ l = permutation a1 p1) \/
-              (ICApp (a_App a1 (Role Rep) a2) a /\ 
-              ICApp (a_App p1 (Role Rep) (a_Var_f y)) p /\ x = (y, a2)
-              /\ l = permutation a1 p1).
-Proof. intros a. induction a; intros p y l H; try (inversion H; fail).
-       destruct nu; try (inversion H; fail).
-       destruct R; try (inversion H; fail).
-       destruct p; try (inversion H; fail).
-       destruct nu; try (inversion H; fail).
-       destruct R; try (inversion H; fail).
-       destruct p2; try (inversion H; fail).
-       inversion H. exists a1, a2, p1, x. left; repeat split.
-       eapply ICApp_refl. eapply ICApp_refl.
-       destruct p; try (inversion H; fail).
-       destruct nu; try (inversion H; fail).
-       destruct R; try (inversion H; fail).
-       destruct p2; try (inversion H; fail).
-       inversion H. exists a1, a2, p1, x. right; repeat split.
-       eapply ICApp_refl. eapply ICApp_refl.
-       destruct rho; try (inversion H; fail).
-       destruct a2; try (inversion H; fail).
-       destruct p; try (inversion H; fail).
-       destruct nu; try (inversion H; fail).
-       destruct rho; try (inversion H; fail).
-       destruct p2; try (inversion H; fail).
-       simpl in H. pose (P := IHa1 p1 y l ltac:(auto)).
-       inversion P as [a2 [a3 [p2 [y0 [Q1 | Q2]]]]]. 
-       exists a2, a3, p2, y0. inversion Q1 as [S1 [S2 [S3 S4]]].
-       left; repeat split.
-       eapply ICApp_IApp; auto.
-       eapply ICApp_IApp; auto. auto. auto.
-       exists a2, a3, p2, y0. inversion Q2 as [T1 [T2 [T3 T4]]]. 
-       right; repeat split.
-       eapply ICApp_IApp; auto.
-       eapply ICApp_IApp; auto. auto. auto.
-       destruct g; try (inversion H; fail).
-       destruct p; try (inversion H; fail).
-       destruct g; try (inversion H; fail).
-       simpl in H. pose (P := IHa p y l ltac:(auto)).
-       inversion P as [a2 [a3 [p2 [y0 [Q1 | Q2]]]]]. 
-       exists a2, a3, p2, y0. inversion Q1 as [S1 [S2 [S3 S4]]].
-       left; repeat split.
-       eapply ICApp_CApp; auto.
-       eapply ICApp_CApp; auto. auto. auto.
-       exists a2, a3, p2, y0. inversion Q2 as [T1 [T2 [T3 T4]]]. 
-       right; repeat split.
-       eapply ICApp_CApp; auto.
-       eapply ICApp_CApp; auto. auto. auto.
-       destruct p; try (inversion H; fail).
-Qed.
-
-Lemma fv_ICApp : forall a1 a2 x, ICApp a1 a2 -> x `in` fv_tm_tm_tm a1 <->
-                  x `in` fv_tm_tm_tm a2.
-Proof. intros. generalize dependent x.
-       induction H; intro.
-         - split; auto.
-         - pose (P := IHICApp x). inversion P as [P1 P2].
-           split; intro; simpl in *; fsetdec.
-         - pose (P := IHICApp x). inversion P as [P1 P2].
-           split; intro; simpl in *; fsetdec.
-Qed.
-
-Lemma fv_perm_1 : forall a p l x a', l = permutation a p -> In (x,a') l ->
-                    x `in` fv_tm_tm_tm p.
-Proof. intros. generalize dependent a. generalize dependent p.
-       dependent induction l; intros. inversion H0.
-       inversion H0. subst. apply nonempty_perm in H.
-       inversion H as [a1 [a2 [p1 [y [Q1 | Q2]]]]].
-       inversion Q1 as [S1 [S2 [S3 S4]]].
-       eapply (fv_ICApp x) in S2. inversion S3; subst. simpl in S2.
-       fsetdec. inversion Q2 as [T1 [T2 [T3 T4]]].
-       eapply (fv_ICApp x) in T2. inversion T3; subst. simpl in T2.
-       fsetdec. apply nonempty_perm in H.
-       inversion H as [a1 [a2 [p1 [y [Q1 | Q2]]]]].
-       inversion Q1 as [S1 [S2 [S3 S4]]].
-       eapply (fv_ICApp x) in S2. apply S2. simpl. apply union_iff.
-       left. eapply IHl; eauto.
-       inversion Q2 as [T1 [T2 [T3 T4]]].
-       eapply (fv_ICApp x) in T2. apply T2. simpl. apply union_iff.
-       left. eapply IHl; eauto.
-Qed.
-
-Lemma fv_perm_2 : forall a p l x a', l = permutation a p -> In (x,a') l ->
-                  forall y, y `in` fv_tm_tm_tm a' -> y `in` fv_tm_tm_tm a.
-Proof. intros. generalize dependent a. generalize dependent p.
-       dependent induction l; intros. inversion H0.
-       inversion H0. subst. apply nonempty_perm in H.
-       inversion H as [a1 [a2 [p1 [z [Q1 | Q2]]]]].
-       inversion Q1 as [S1 [S2 [S3 S4]]].
-       eapply (fv_ICApp y) in S1. inversion S3; subst. simpl in S1.
-       fsetdec. inversion Q2 as [T1 [T2 [T3 T4]]].
-       eapply (fv_ICApp y) in T1. inversion T3; subst. simpl in T1.
-       fsetdec. apply nonempty_perm in H.
-       inversion H as [a1 [a2 [p1 [z [Q1 | Q2]]]]].
-       inversion Q1 as [S1 [S2 [S3 S4]]].
-       eapply (fv_ICApp y) in S1. apply S1. simpl. apply union_iff.
-       left. eapply IHl; eauto.
-       inversion Q2 as [T1 [T2 [T3 T4]]].
-       eapply (fv_ICApp y) in T1. apply T1. simpl. apply union_iff.
-       left. eapply IHl; eauto.
-Qed.
-
-Fixpoint rang (L : list (atom * tm)) : atoms :=
-   match L with
-   | nil => empty
-   | (x, a) :: l => fv_tm_tm_tm a \u rang l
-   end.
-
-Lemma dom_Perm : forall A (L : list (atom * A)) L', Permutation L L' ->
-                                                        dom L [=] dom L'.
-Proof. intros. induction H; eauto. fsetdec. destruct x; simpl. fsetdec.
-       destruct x, y. simpl. fsetdec. eapply transitivity; eauto.
-Qed.
-
-Lemma rang_Perm : forall L L', Permutation L L' -> rang L [=] rang L'.
-Proof. intros. induction H; eauto. fsetdec. destruct x; simpl. fsetdec.
-       destruct x, y. simpl. fsetdec. eapply transitivity; eauto.
-Qed.
-
-Lemma uniq_Perm : forall A (L : list (atom * A)) L', Permutation L L' ->
-                                                      uniq L -> uniq L'.
-Proof. intros. induction H; eauto. destruct x. apply uniq_cons_iff in H0.
-       inversion H0. eapply uniq_cons_3; eauto. apply dom_Perm in H. fsetdec.
-       destruct x, y. solve_uniq.
-Qed.
-
-Lemma Chain_sub_Permutation : forall L L' b,
-        uniq L -> (forall x, x `in` dom L -> x `notin` rang L) ->
-        Permutation L L' -> chain_substitution L b = chain_substitution L' b.
-Proof. intros.
-       dependent induction H1; intros.
-         - auto.
-         - simpl. destruct x. erewrite IHPermutation; eauto 1.
-           solve_uniq. intros. simpl in H0. pose (P := H0 x ltac:(auto)).
-           fsetdec.
-         - destruct x, y. simpl. rewrite tm_subst_tm_tm_tm_subst_tm_tm.
-           rewrite (tm_subst_tm_tm_fresh_eq t). auto. simpl in H0.
-           pose (P := H0 a0 ltac:(auto)). fsetdec. simpl in H0.
-           pose (P := H0 a ltac:(auto)). fsetdec.
-           solve_uniq.
-         - apply transitivity with (y := chain_substitution l' b).
-           eapply IHPermutation1; eauto. eapply IHPermutation2.
-           eapply uniq_Perm; eauto. pose (P := H1_). pose (Q := H1_).
-           apply dom_Perm in P. apply rang_Perm in Q. intros.
-           pose (S := H0 x). fsetdec.
-Qed.
-
-Lemma perm_pat_subst : forall a p x y a' l l1 l2, l = permutation a p ->
-      uniq l -> y `notin` dom l -> l = l1 ++ (x, a') :: l2 ->
-      permutation a (tm_subst_tm_tm (a_Var_f y) x p) = l1 ++ (y, a') :: l2.
-Proof. intros. generalize dependent a. generalize dependent p.
-       generalize dependent l1. generalize dependent l2.
-       dependent induction l; intros. destruct l1; inversion H2.
-       destruct l1; simpl in *. inversion H2; subst.
-       apply nonempty_perm in H. inversion H as [a1 [a2 [p1 [z [P1 | P2]]]]].
-       inversion P1 as [Q1 [Q2 [Q3 Q4]]]. inversion Q3; subst.
-       solve_uniq. fsetdec.
-
-Lemma chain_sub_subst : forall a p b x y,
-    uniq (permutation a p) -> (forall z, z `in` p -> z `notin` fv_tm_tm_tm a) ->
-    x `in` fv_tm_tm_tm p -> y `notin` fv_tm_tm_tm a ->
-    chain_substitution (permutation a (tm_subst_tm_tm (a_Var_f y) x p))
-    tm_subst_tm_tm (a_Var_f y) x b) = chain_substitution (permutation a p) b.
-Proof. intros. rewrite MatchSubst_permutation. rewrite MatchSubst_permutation.
-
-Lemma rename_chain_sub : forall a l p b,
- chain_substitution (permutation a (chain_substitution (map a_Var_f l) p))
- (chain_substitution (map a_Var_f l) b) = chain_substitution (permutation a p) b.
-Proof. intros. generalize dependent p; generalize dependent b.
-       induction l; intros. simpl. auto.
-       destruct a0. rewrite map_cons.
-       rewrite (Chain_sub_Permutation (L := [(a0, a_Var_f t)] ++ map a_Var_f l)
-       (L' := map a_Var_f l ++ ([(a0, a_Var_f t)]))).
-       rewrite chain_sub_append.
-       rewrite (Chain_sub_Permutation (L := [(a0, a_Var_f t)] ++ map a_Var_f l)
-       (L' := map a_Var_f l ++ ([(a0, a_Var_f t)]))).
-       rewrite chain_sub_append. simpl. rewrite IHl.
-
-Definition Nice a p := RolePath_pat_consist a p /\
-              (forall x, x `in` fv_tm_tm_tm p -> x `notin` fv_tm_tm_tm a) /\
-               uniq (permutation a p).
-
-Fixpoint matchsubst2 a p b : tm := match (a,p) with
-  | (a_Fam F, a_Fam F') => if F == F' then b else a_Bullet
-  | (a_App a1 (Role Nom) a2, a_App p1 (Role Nom) (a_Var_f x)) =>
-         tm_subst_tm_tm a2 x (matchsubst a1 p1 b)
-  | (a_App a1 (Role Rep) a2, a_App p1 (Role Rep) (a_Var_f x)) =>
-         tm_subst_tm_tm a2 x (matchsubst a1 p1 b)
-  | (a_App a1 (Rho Irrel) a_Bullet, a_App p1 (Rho Irrel) a_Bullet) =>
-         matchsubst a1 p1 b
-  | (a_CApp a1 g_Triv, a_CApp p1 g_Triv) => matchsubst a1 p1 b
-  | (_,_) => a_Bullet
-  end.
-
-Lemma matchsubst_subst : forall a p b x y, x `notin` fv_tm_tm_tm a ->
-      y `notin` fv_tm_tm_tm a -> matchsubst2 a p b =
-    matchsubst2 a (tm_subst_tm_tm (a_Var_f y) x p) (tm_subst_tm_tm (a_Var_f y) x b).
-Proof. intros. generalize dependent p. generalize dependent b.
-       induction a; intros; eauto.
-         - destruct nu; eauto. destruct R; eauto.
-           destruct p; eauto. simpl. destruct (x0 == x); auto.
-           destruct nu; eauto. destruct R; eauto. destruct p2; eauto.
-           simpl. destruct (x0 == x); auto.
-
-Fixpoint matchsubst2 a p b : tm := match (a,p) with
-  | (a_Fam F, a_Fam F') => if F == F' then b else a_Bullet
-  | (a_App a1 (Role Nom) a2, a_App p1 (Role Nom) (a_Var_f x)) =>
-         matchsubst2 a1 p1 (tm_subst_tm_tm a2 x b)
-  | (a_App a1 (Role Rep) a2, a_App p1 (Role Rep) (a_Var_f x)) =>
-         matchsubst2 a1 p1 (tm_subst_tm_tm a2 x b)
-  | (a_App a1 (Rho Irrel) a_Bullet, a_App p1 (Rho Irrel) a_Bullet) =>
-         matchsubst a1 p1 b
-  | (a_CApp a1 g_Triv, a_CApp p1 g_Triv) => matchsubst a1 p1 b
-  | (_,_) => a_Bullet
-  end.
-
-Lemma matchsubst_matchsubst2 : forall a p b,
-      (forall x, x `in` fv_tm_tm_tm a -> x `notin` fv_tm_tm_tm p) ->
-       matchsubst a p b = matchsubst2 a p b.
-Proof. intros. generalize dependent p. generalize dependent b.
-       induction a; intros; eauto. destruct p; eauto.
-       destruct p2; eauto. destruct nu; eauto.
-       destruct nu0; eauto. destruct R, R0; eauto; simpl.
-
-*)
-
 
 Lemma tm_subpattern_agree_const_same : forall a p, tm_subpattern_agree a p ->
  head_const a = head_const p.
@@ -1481,13 +1194,7 @@ Lemma multipar_CasePath_join_head : forall F1 F2 W a1 a2 c R,
 Proof. intros. eapply multipar_CasePath in H; eauto.
        eapply multipar_CasePath in H0; eauto. eapply uniq_CasePath; eauto.
 Qed.
-(*
-Lemma app_roleing_nom : forall W a rho b R, roleing W (a_App a (Rho rho) b) R ->
-                               roleing W b Nom.
-Proof. intros. dependent induction H; eauto. eapply role_a_Bullet.
-       eapply rctx_uniq; eauto.
-Qed.
-*)
+
 Lemma CasePath_ax_par_contr : forall R a F F' p b A R1 Rs p' b' D D' a',
        CasePath R a F -> binds F' (Ax p b A R1 Rs) toplevel ->
        Rename p b p' b' D D' -> MatchSubst a p' b' a' -> SubRole R1 R -> False.
@@ -1670,7 +1377,6 @@ Lemma tm_subst_tm_tm_back_forth : forall x y b, y `notin` fv_tm_tm_tm b ->
       tm_subst_tm_tm (a_Var_f x) y (tm_subst_tm_tm (a_Var_f y) x b) = b.
 Proof. eapply tm_subst_tm_tm_back_forth_mutual; eauto.
 Qed.
-
 
 Lemma MatchSubst_subst : forall a p x y b b',
    tm_pattern_agree a p -> lc_tm b -> x `notin` fv_tm_tm_tm p ->
@@ -2058,7 +1764,7 @@ Proof.
  intros.
   inversion H; subst; simpl in *; try solve [inversion H1].
   eapply AppsPath_unsubst_co; 
-    eauto using ValuePath_Pattern_like_tm,  CasePath_ValuePath.
+  eauto using ValuePath_Pattern_like_tm,  CasePath_ValuePath.
 Qed.
 
 
@@ -2089,27 +1795,27 @@ Qed.
 Lemma snoc_injective2 : forall a1 n1 a2 n2, 
     A_snoc a1 n1 = A_snoc a2 n2 -> n1 = n2.
 Proof.
-intro a1. induction a1; intros; simpl in *.
-destruct a2. simpl in *. inversion H. auto.
-simpl in *. inversion H. symmetry in H2. eapply not_snoc_nil in H2. contradiction.
-destruct a2. simpl in *. inversion H.
-eapply not_snoc_nil in H2. contradiction.
-simpl in *.
-inversion H.
-eapply IHa1. eauto.
+  intro a1. induction a1; intros; simpl in *.
+  destruct a2. simpl in *. inversion H. auto.
+  simpl in *. inversion H. symmetry in H2. eapply not_snoc_nil in H2. contradiction.
+  destruct a2. simpl in *. inversion H.
+  eapply not_snoc_nil in H2. contradiction.
+  simpl in *.
+  inversion H.
+  eapply IHa1. eauto.
 Qed.
 
 Lemma snoc_injective1 : forall a1 n1 a2 n2, 
     A_snoc a1 n1 = A_snoc a2 n2 -> a1 = a2.
 Proof.
-intro a1. induction a1; intros; simpl in *.
-destruct a2. simpl in *. inversion H. auto.
-simpl in *. inversion H. symmetry in H2. eapply not_snoc_nil in H2. contradiction.
-destruct a2. simpl in *. inversion H.
-eapply not_snoc_nil in H2. contradiction.
-simpl in *.
-inversion H.
-f_equal. eauto.
+  intro a1. induction a1; intros; simpl in *.
+  destruct a2. simpl in *. inversion H. auto.
+  simpl in *. inversion H. symmetry in H2. eapply not_snoc_nil in H2. contradiction.
+  destruct a2. simpl in *. inversion H.
+  eapply not_snoc_nil in H2. contradiction.
+  simpl in *.
+  inversion H.
+  f_equal. eauto.
 Qed.
 
 Lemma decide_AppsPath : forall W a R, roleing W a R -> 

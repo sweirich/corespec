@@ -166,7 +166,6 @@ Qed.
 
 
 (* -------------------------------
-   Find a better place for these tactics
 *)
 Ltac expand sub_tm tm :=
   match tm with
@@ -256,7 +255,6 @@ Proof.
   intros G phi D H.
   inversion H.
   assert (Ctx G). eauto.
-(*   assert (Typing G A a_Star R). { eapply Typing_regularity; eauto. } *)
   apply E_PropCong; eauto.
 Qed.
 
@@ -293,10 +291,6 @@ Proof.
   move => h0.
   induction h0; auto; try done.
   inversion e; subst.
-(*  - destruct (IHh0 eq_refl) as (A1 & B1 & h1 & h2 & h3).
-    exists A1, B1. repeat split; eauto 2. inversion h2 as [L h2'].
-    exists L. intros. destruct (h2' x H1). split_hyp. 
-    repeat split; try eapply E_SubRole; eauto. *)
   - exists A, B.
     split.
     + inversion e; subst.
@@ -335,15 +329,7 @@ Proof.
   move e: (a_UCAbs b0) => t1.
   move => h0.
   induction h0; auto; try done.
-  - (* destruct (IHh0 e) as (a' & b' & T' & R' & B2 & hh). split_hyp.
-    exists a', b', T', R', B2.
-    split; auto. 
-    repeat split. auto.
-    inversion H2 as [L P]. exists L.
-    intros. split. eapply E_SubRole. eauto.
-    eapply P. auto. eapply E_SubRole. eauto.
-    eapply P. auto. *)
-    destruct IHh0_1 as
+  - destruct IHh0_1 as
     [a' [b' [T [R' [B2 [R'' [h3 [L h5]]]]]]]]; auto.
     exists a', b', T, R', B2.
     split; auto.
@@ -376,10 +362,7 @@ Proof.
   move e : (a_App a (Rho Rel) b) => t1.
   move => h1.
   induction h1; auto;  try done.
-  - (* destruct (IHh1 e) as [A0 [B [R3 [h0 h2]]]].
-    exists A0, B. repeat split; eauto 3 using param_covariant. 
-  - *) 
-    inversion e; subst.
+  - inversion e; subst.
     exists A, B. 
     assert (h2 : Typing G (open_tm_wrt_tm B a0) a_Star).
     + (have: Typing G (a_Pi Rel A B) a_Star by 
@@ -660,7 +643,6 @@ Lemma context_DefEq_mutual:
   (forall G1 ,       Ctx G1 -> forall G2 D x A, Ctx G2 -> context_DefEq D G1 G2
                                    -> binds x (Tm A) G1 -> Typing G2 A a_Star).
 Proof.
-  (* apply typing_wff_iso_defeq_mutual; *)
   ext_induction con; 
   eauto 3; try done.
   - intros G1 x A c H b D G2 H0 H1.
@@ -991,8 +973,8 @@ Proof.
   - intros.
     split_hyp.
     split.
-    eapply E_CApp; eauto 3. (* eapply E_Sub. eauto. eapply param_sub1. *)
-    eapply E_CApp; eauto 3. (* eapply E_Sub. eauto. eapply param_sub1. *)
+    eapply E_CApp; eauto 3.
+    eapply E_CApp; eauto 3.
   - intros G D B1 B2 R0 a1 a2 A R a1' a2' A' R' d H d0 H0 d1 H1.
     split_hyp.
     (have: Ctx G by eauto 2) => CTX.
@@ -1212,20 +1194,6 @@ Proof.
   eapply E_CPiCong; eauto 1.
 Qed.
 
-(*
-(* Could also be an exists form *)
-Lemma E_Pi2 : forall L G rho A B R R',
-    (∀ x : atom, x `notin` L → Typing ([(x, Tm A R)] ++ G) (open_tm_wrt_tm B (a_Var_f x)) a_Star R') ->
-    Typing G (a_Pi rho A R B) a_Star R'.
-Proof.
-  intros.
-  eapply E_Pi; eauto.
-  pick fresh x.
-  move: (H x ltac:(auto)) => h0.
-  have h1: Ctx (x ~ Tm A R ++ G) by eauto.
-  inversion h1. auto.
-Qed. *)
-
 Lemma E_Abs2 : ∀ (L : atoms) (G : context) (rho : relflag) (a A B : tm),
     (∀ x : atom,
         x `notin` L → Typing ([(x, Tm A)] ++ G) (open_tm_wrt_tm a (a_Var_f x)) (open_tm_wrt_tm B (a_Var_f x)))
@@ -1373,51 +1341,19 @@ Qed.
 
 Ltac reg H :=
   match type of H with
-  (*
-    | AnnTyping _ ?a ?A =>
-      first
-        [ let tpgA := fresh "tpg" A in move: (AnnTyping_regularity H) => tpgA
-        | let tpgA := fresh "tpg"   in move: (AnnTyping_regularity H) => tpgA]
-    | AnnDefEq _ _ ?g ?A ?B =>
-      let KA := fresh "K" A in
-      let KB := fresh "K" B in
-      let g' := fresh "g" in
-      let tpgA := fresh "tpg" A in
-      let tpgB := fresh "tpg" B in
-      (* let deqg' := fresh "deq" g' in *)
-      move: (AnnDefEq_regularity H) => [KA [KB [g' [tpgA [tpgB (* deqg' *) _]]]]]
-    (* FIXME: this is the same case than above, with less informative fresh names.
-       This is needed because fresh can fail (like, seriously?)
-       TODO: failproof version of fresh (will it be solved in ltac2?) *)
-    | AnnDefEq _ _ ?g ?A ?B =>
-      let KA   := fresh "K"   in
-      let KB   := fresh "K"   in
-      let g'   := fresh "g"   in
-      let tpgA := fresh "tpg" in
-      let tpgB := fresh "tpg" in
-      (* let deqg' := fresh "deq" g' in *)
-      move: (AnnDefEq_regularity H) => [KA [KB [g' [tpgA [tpgB (* deqg' *) _]]]]]
-    | AnnIso _ _ ?g ?phi1 ?phi2 =>
-      let pwfp1 := fresh "pwf" phi1 in
-      let pwfp2 := fresh "pwf" phi2 in
-      move: (AnnIso_regularity H) => [pwfp1 pwfp2]
-      *)
     | Typing _ _ a_Star =>
       move: (Typing_Ctx H) => ?;
-      TacticsInternals.wrap_hyp H (* FIXME: hack (inconsistent (can't just fail here)) *)
-
+      TacticsInternals.wrap_hyp H
     | Typing _ _ _ =>
       move: (Typing_regularity H) => ?;
       move: (Typing_Ctx H) => ?
 
-    | DefEq _ _ _ _ _ _ => (* TODO: do we want to name arguments? (like above) *)
+    | DefEq _ _ _ _ _ _ => 
       move: (PropWff_regularity (DefEq_regularity H)) => [? ?]
-
-
   end. 
 
 
-(* TODO: extend (for now, it assumes that we only need regularity on defeq hyps - there are other use cases in other files) *)
+
 Ltac autoreg :=
   repeat match goal with
     | [ H: AnnDefEq _ _ _ _ _ |- _ ] =>
@@ -1451,9 +1387,6 @@ Ltac autoinv :=
          autofwd
     | [H : _ ⊨ a_Pi _ _ _        : _ |- _] => eapply invert_a_Pi in H; destruct H; autofwd
     | [H : _ ⊨ a_CPi _ _        : _ |- _] => eapply invert_a_CPi in H; destruct H; autofwd
-
-(*    | [H : _ ⊨ a_Conv _ _ _      : _ / _ |- _] => eapply invert_a_Conv in H; pcess_hyps *)
-  (* TODO *)
   end.
 
    

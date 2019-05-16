@@ -3,7 +3,6 @@ Require Export Coq.Unicode.Utf8.
 Require Export FcEtt.ett_ott.
 Require Export Metalib.Metatheory.
 
-(* TODO: Modularize, so we can import on demand *)
 (* Typing *)
 Notation "Γ ⊨ a : A"                := (Typing Γ a A)      (at level 72, a at level 35, A at level 35)  : type_scope.
 Notation "Γ ∥ Δ ⊨ a₁ ∼ a₂ : A / R" := (DefEq Γ Δ a₁ a₂ A R) (at level 72, Δ at level 35, a₁ at level 35, a₂ at level 35, A at level 35, R at level 35) : type_scope.
@@ -45,8 +44,3 @@ Notation "∅" := nil.
 Notation "x ⟹ y" := (x -> y)
   (at level 99, y at level 200, right associativity): type_scope.
 
-(* TODO: add the missing ones *)
-
-(* FIXME: Wrong priorities. For instance, the following formula shouldn't be printed with parens:
-  (G ⊨ A : T / R) ∧ G ⊨ B : T / R
-*)

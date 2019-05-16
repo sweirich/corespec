@@ -76,7 +76,6 @@ Inductive roleing_sort (W : role_context) : sort -> Prop :=
 | roleing_Tm : forall a R, roleing W a R -> roleing_sort W (Tm a)
 | roleing_Co : forall a b A R, roleing W a R -> roleing W b R -> roleing W A R -> roleing_sort W (Co (Eq a b A R)).
 
-(* Check Forall_forall FIXME:?? *)
 
 Inductive roleing_context : role_context -> context -> Prop :=
  | nil_roleing_ctx : roleing_context nil nil

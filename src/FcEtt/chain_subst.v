@@ -84,10 +84,6 @@ Definition cps_pattern_arg pa s :=
 Definition lc_sub (sub:list(atom*pattern_arg)) :=
   Forall (fun '(x,p) => lc_pattern_arg p) sub.
 
-(*
-Definition rngFresh x (sub:list(atom*pattern_arg)) :=
-  Forall (fun '(y,t) => x `notin` singleton y `union` (fv_tm_tm_pattern_arg t)) sub.
-*)
 
 (* cps properties --- homemorphic over term forms *)
 

@@ -225,8 +225,6 @@ Proof. intros. generalize dependent p1. generalize dependent b1.
            rewrite matchsubst_chain_subst. auto.
            rewrite matchsubst_chain_subst. auto.
            move: (Rename_chain_subst H16) => P3.
-(* How to find properties about sets of atoms. *)
-(* SearchAbout atoms AtomSetImpl.Subset. *)
            pose (P4 := Rename_chain_subst H27). rewrite P3. rewrite P4.
            pick fresh z.
            assert 

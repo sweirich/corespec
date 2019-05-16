@@ -314,24 +314,6 @@ Combined Scheme typing_wff_iso_defeq_mutual
        defeq_ind',
        ctx_ind'.
 
-(*
-Scheme ann_typing_ind' := Induction for AnnTyping Sort Prop
-   with ann_wff_ind'   := Induction for AnnPropWff Sort Prop
-   with ann_iso_ind'   := Induction for AnnIso Sort Prop
-   with ann_defeq_ind' := Induction for AnnDefEq Sort Prop
-   with ann_ctx_ind'   := Induction for AnnCtx Sort Prop.
-
-(* FIXME: somehow this doesn't work (seems to be a bug)
-Combined Scheme ann_typing_wff_iso_defeq_mutual
-  from ann_typing_ind',
-       ann_wff_ind',
-       ann_iso_ind',
-       ann_defeq_ind',
-       ann_ctx_ind'.
-*)
-Definition ann_typing_wff_iso_defeq_mutual := I. (* FIXME *)
-*)
-
 (* --------------------------------------------------- *)
 
 (* Apply the mutual induction hypothesis and add a marker to the
@@ -385,48 +367,6 @@ Ltac ext_induction CON :=
       pose CON :=  E_Empty      |
       pose CON :=  E_ConsTm     |
       pose CON :=  E_ConsCo     ].
-
-(*
-Ltac ann_induction CON :=
-    apply ann_typing_wff_iso_defeq_mutual;
-    [ pose CON :=  An_SubRole    |
-      pose CON :=  An_Star       |
-      pose CON :=  An_Var        |
-      pose CON :=  An_Pi         |
-      pose CON :=  An_Abs        |
-      pose CON :=  An_App        |
-      pose CON :=  An_Conv       |
-      pose CON :=  An_CPi        |
-      pose CON :=  An_CAbs       |
-      pose CON :=  An_CApp       |
-      pose CON :=  An_Fam        |
-      pose CON :=  An_Wff        |
-      pose CON :=  An_PropCong   |
-      pose CON :=  An_CPiFst     |
-      pose CON :=  An_IsoSym     |
-      pose CON :=  An_IsoConv    |
-      pose CON :=  An_Assn       |
-      pose CON :=  An_Refl       |
-      pose CON :=  An_EraseEq    |
-      pose CON :=  An_Sym        |
-      pose CON :=  An_Trans      |
-      pose CON :=  An_Sub        |
-      pose CON :=  An_Beta       |
-      pose CON :=  An_PiCong     |
-      pose CON :=  An_AbsCong    |
-      pose CON :=  An_AppCong    |
-      pose CON :=  An_PiFst      |
-      pose CON :=  An_PiSnd      |
-      pose CON :=  An_CPiCong    |
-      pose CON :=  An_CAbsCong   |
-      pose CON :=  An_CAppCong   |
-      pose CON :=  An_CPiSnd     |
-      pose CON :=  An_Cast       |
-      pose CON :=  An_IsoSnd     |
-      pose CON :=  An_Empty      |
-      pose CON :=  An_ConsTm     |
-      pose CON :=  An_ConsCo     ].
-*)
 
 Ltac ensure_case C :=
   match goal with [ CON := C : ?A |- _ ] => idtac end.
@@ -520,97 +460,6 @@ Hint Resolve lc_a_Pi_exists
 Hint Resolve lc_body_tm_wrt_tm lc_body_tm_wrt_co. (* binds_cons_1 *)
 
 
-
-
-(* ---------------------------------------- *)
-
-(* TODO: fix or remove the following? *)
-
-(*
-
-Lemma fv_tm_tm_tm_open_wrt_tm_mutual:
-  (forall a1 a2 x n, x `in` fv_tm_tm_tm a1 ->
-      x `in` fv_tm_tm_tm (open_tm_wrt_tm_rec n a2 a1)) /\
-  (forall brs a2 x n, x `in` fv_tm_tm_brs brs ->
-      x `in` fv_tm_tm_brs (open_brs_wrt_tm_rec n a2 brs)) /\
-  (forall g a2 x n, x `in` fv_tm_tm_co g ->
-      x `in` fv_tm_tm_co (open_co_wrt_tm_rec n a2 g)) /\
-  (forall phi1 a2 x n, x `in` fv_tm_tm_constraint phi1 ->
-      x `in` fv_tm_tm_constraint (open_constraint_wrt_tm_rec n a2 phi1)).
-Proof.
-  apply tm_brs_co_constraint_mutind; simpl; try fsetdec; intros; eauto.
-  all: try solve [apply AtomSetFacts.union_iff in H1; case: H1 => H1; eauto].
-  all: try solve [apply AtomSetFacts.union_iff in H2; case: H2 => H2;
-    eauto; apply AtomSetFacts.union_iff in H2; case: H2 => H2; eauto].
-Qed.
-
-Lemma fv_tm_tm_tm_open_wrt_co_mutual:
-  (forall a1 a2 x n, x `in` fv_tm_tm_tm a1 ->
-     x `in` fv_tm_tm_tm (open_tm_wrt_co_rec n a2 a1)) /\
-  (forall brs a2 x n, x `in` fv_tm_tm_brs brs ->
-     x `in` fv_tm_tm_brs (open_brs_wrt_co_rec n a2 brs)) /\
-  (forall g a2 x n, x `in` fv_tm_tm_co g ->
-     x `in` fv_tm_tm_co (open_co_wrt_co_rec n a2 g)) /\
-  (forall phi1 a2 x n, x `in` fv_tm_tm_constraint phi1 ->
-     x `in` fv_tm_tm_constraint (open_constraint_wrt_co_rec n a2 phi1)).
-Proof.
-  apply tm_brs_co_constraint_mutind; simpl; try fsetdec; intros; eauto.
-  all: try solve [apply AtomSetFacts.union_iff in H1; case: H1 => H1; eauto].
-  all: try solve [apply AtomSetFacts.union_iff in H2; case: H2 => H2; eauto; apply AtomSetFacts.union_iff in H2; case: H2 => H2; eauto].
-Qed.
-
-Lemma fv_tm_tm_tm_open_tm_wrt_tm:
-  forall a1 a2 x, x `in` fv_tm_tm_tm a1 ->
-               x `in` fv_tm_tm_tm (open_tm_wrt_tm a1 a2).
-Proof.
-  intros.
-  apply fv_tm_tm_tm_open_tm_wrt_tm_lower.
-  auto.
-Qed.
-
-Lemma fv_tm_tm_tm_open_tm_wrt_co:
-  forall a1 a2 x, x `in` fv_tm_tm_tm a1 ->
-               x `in` fv_tm_tm_tm (open_tm_wrt_co a1 a2).
-Proof.
-  intros.
-  apply fv_tm_tm_tm_open_tm_wrt_co_lower.
-  auto.
-Qed.
-
-*)
-
-(* ----------------------------------------------------------------------- *)
-
-(* TODO: These tactics may be a little loose when filtering the cases (to determine whether or not
-         they should kick in). If the automation is too slow, this is something to keep an eye on *)
-(* TODO: it may be possible to improve these tactics by matching on the production (return type) of
-         the hyp in the context *)
-(*
-Ltac oh_c'mon :=
-    let x := fresh in
-    pick fresh x;
-    multimatch goal with
-      | [ H : forall _ : atom, _ |- _ ] => solve [destruct (H x); basic_solve]
-    end.
-
-Ltac invert_open_wrt :=
-  subst;
-  multimatch goal with
-    | [ H : context [?A] |- _ ?A      ] => solve [inversion H; clear H; subst; basic_solve]
-    | [ H : context [?A] |- lc_tm (_ ?A _)] => solve [inversion H; clear H; try solve_by_inv_hyp_about A; basic_solve]
-  end.
-*)
-(*
-Ltac des_bind_cons :=
-  multimatch goal with
-    (* So far, this hole ---↓ was only filled with lc_sort. *)
-    | [ H : binds _ ?s _ |- _ ?s] => solve [destruct (binds_cons_1 _ _ _ _ _ _ H); basic_solve]
-  end.
-*)
-
-
-
-
 (* ----------------------------- *)
 
 Lemma rho_swap : forall rho x x0 a,
@@ -621,7 +470,7 @@ Lemma rho_swap : forall rho x x0 a,
 Proof.
   intros rho x x0 a F1 F2 H0.
   inversion H0; subst; constructor.
-  +  auto. (* eapply lc_swap with (x0 := x0) (x:= x); auto. *)
+  +  auto.
   +  eapply fv_swap with (x:=x); eauto.
 Qed.
 
@@ -638,32 +487,6 @@ Proof.
   destruct eq_dec. auto. done.
 Qed.
 
-
-
-(* ---------------------------------- *)
-
-(*
-Lemma close_tm_fresh :
-  forall x a, x `notin` fv_tm_tm_tm (close_tm_wrt_tm x a).
-Proof.
-  intros.
-  autorewrite with lngen.
-  auto.
-Qed.
-
-Lemma close_co_fresh :
-  forall x a, x `notin` fv_tm_tm_co (close_co_wrt_tm x a).
-Proof.
-  intros. autorewrite with lngen. auto.
-Qed.
-
-Lemma close_co_fresh_co :
-  forall x a, x `notin` fv_co_co_co (close_co_wrt_co x a).
-Proof.
-  intros. autorewrite with lngen. auto.
-Qed.
- *)
-
 (* ----------------------------------------------------- *)
 
 (* Tactics for working with context in weakening proof *)
@@ -676,12 +499,6 @@ Ltac auto_rew_env :=
 
 
 (* -------------- Pick fresh and apply for judgements with binding ----- *)
-
-(* TODO: this tactic is not so "automated" (e.g. has to link a_Pi to E_Pi),
-         but it is hard to make it more "searchy" without trying extensively
-         all the lemmas. We could probably work something out, though.
-         Could it be generated maybe?
-*)
 
 Ltac E_pick_fresh x :=
   match goal with
@@ -735,25 +552,6 @@ Ltac Par_pick_fresh x :=
   end.
 
 
-(*
-Ltac An_pick_fresh x :=
-  let shape := match goal with
-                 | [ |- AnnTyping _   ?shape _ _   ] => shape
-                 | [ |- AnnDefEq  _ _ ?shape _  _  _] => shape
-               end in
-  let ctor  := match shape with
-    | a_Pi     _ _ _ _ => An_Pi
-    | a_Abs    _ _ _ _ => An_Abs
-    | a_CPi      _ _ => An_CPi
-    | a_CAbs     _ _ => An_CAbs
-    | g_PiCong _ _ _ _ => An_PiCong
-    | g_AbsCong _ _ _ _ => An_AbsCong
-    | g_CPiCong  _ _   => An_CPiCong
-    | g_CAbsCong _ _ _ => An_CAbsCong
-               end in
-  pick fresh x and apply ctor.
-*)
-
 (* --------------------------------------------------------- *)
 
 Ltac RhoCheck_inversion y :=
@@ -780,8 +578,6 @@ Proof.
 Qed.
 
 Hint Resolve lc_open_switch_co.
-
-(* Putting this here because it's annoying to move elsewhere. *)
 
 Lemma tm_subst_cast : forall a x R g,
     tm_subst_tm_tm a x (a_Conv (a_Var_f x) R g) = a_Conv a R (tm_subst_tm_co a x g).

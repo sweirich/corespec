@@ -23,9 +23,7 @@ Lemma respects_atoms_eq_mutual :
 Proof.
   ext_induction CON; intros; subst; eauto 2.
   all: try solve [eapply CON; eauto 2; try fsetdec].
-  (* eapply E_LeftRel with (b:=b)(b':=b'); eauto 2. *)
   eapply E_LeftIrrel with (b:=b)(b':=b'); eauto 2.
-  (* eapply E_Right with (a:=a)(a':=a'); eauto 2. *)
 Qed.
 
 Definition Iso_respects_atoms_eq   := third  respects_atoms_eq_mutual.
@@ -115,9 +113,7 @@ Proof.
   ext_induction CON.
   all: try done.
   all: intros; try solve [eapply CON; eauto 2].
-  (* - eapply E_LeftRel   with (b := b) (b' := b'); eauto 2. *)
   - eapply E_LeftIrrel with (b:=b) (b' := b'); eauto 2.
-  (* - eapply E_Right     with (a:=a)(a':=a'); eauto 2. *)
 Qed.
 
 Lemma remove_available_mutual:
@@ -247,50 +243,4 @@ Definition Typing_weakening  := first  typing_weakening_mutual.
 Definition PropWff_weakening := second typing_weakening_mutual.
 Definition Iso_weakening     := third  typing_weakening_mutual.
 Definition DefEq_weakening   := fourth typing_weakening_mutual.
-Definition Ctx_weakening     := fifth  typing_weakening_mutual. 
-
-
-(*
-Lemma Typing_weakening : ∀ (E F G : context) (a A : tm),  Typing (F ++ G) a A →  Ctx (F ++ E ++ G) ->
-                                                          Typing (F ++ E ++ G) a A.
-Proof. intros. apply (first typing_weakening_mutual) with (G0 := F ++ G)(F:=F)(E:=E)(G:=G); auto. Qed.
-
-
-Lemma PropWff_weakening : forall (E F G : context) phi, PropWff (F ++ G) phi -> Ctx (F ++ E ++ G) → PropWff (F ++ E ++ G) phi.
-Proof. intros. apply (second typing_weakening_mutual) with (G0 := F ++ G)(F:=F)(E:=E)(G:=G); auto. Qed.
-
-Lemma Iso_weakening : ∀ (E F G : context) (D : available_props) (p1 p2 : constraint),
-       Iso (F ++ G) D p1 p2 -> Ctx (F ++ E ++ G) → Iso (F ++ E ++ G) D p1 p2.
-Proof. intros. apply (third typing_weakening_mutual) with (G0 := F ++ G)(F:=F)(E:=E)(G:=G); auto. Qed.
-
-Lemma DefEq_weakening : ∀ (E F G : context) (D : available_props) (A B T : tm),
-    DefEq (F ++ G) D A B T → Ctx (F ++ E ++ G) → DefEq (F ++ E ++ G) D A B T.
-Proof. intros. apply (fourth typing_weakening_mutual) with (G0 := F ++ G)(F:=F)(E:=E)(G:=G); auto. Qed.
-
-Lemma Ctx_weakening : ∀ (E F G: context),
-       Ctx (F ++ G) → Ctx (F ++ E ++ G) → Ctx (F ++ E ++ G).
-Proof. intros. apply (fifth typing_weakening_mutual) with (G0 := F ++ G)(F:=F)(E:=E)(G:=G); auto. Qed.
-
-
-Lemma Iso_weakening_dom :
-   ∀ (E F G : context) (D : available_props) (p1 p2 : constraint),
-       Iso (F ++ G) (dom (F ++ G)) p1 p2 -> Ctx (F ++ E ++ G) → Iso (F ++ E ++ G) (dom(F ++ E ++ G)) p1 p2.
-Proof.
-  intros.
-  eapply Iso_weaken_available.
-  eapply Iso_weakening.
-  eassumption.
-  auto.
-Qed.
-
-Lemma DefEq_weakening_dom : ∀ (E F G : context) (D : available_props) (A B T : tm),
-    DefEq (F ++ G) (dom (F ++ G)) A B T → Ctx (F ++ E ++ G) → DefEq (F ++ E ++ G) (dom (F ++ E ++ G)) A B T.
-Proof.
-  intros.
-  eapply DefEq_weaken_available.
-  eapply DefEq_weakening.
-  eassumption.
-  auto.
-Qed.
-*)
-
+Definition Ctx_weakening     := fifth  typing_weakening_mutual.

@@ -170,7 +170,8 @@ Proof.
   eapply p3.
 Qed.
 
-Lemma Sig_toplevel: Sig toplevel. Proof. 
+Lemma Sig_toplevel: Sig toplevel.
+Proof.
   unfold toplevel.
   simpl_env.
   replace [Nom] with (range FixRolCtx).

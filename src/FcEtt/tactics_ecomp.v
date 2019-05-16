@@ -24,7 +24,6 @@ Require Import FcEtt.notations.
 
 Require Export FcEtt.utils_fun.
 
-(* FIXME: temporary *)
 Generalizable All Variables.
 
 
@@ -62,6 +61,3 @@ Lemma union_empty_r : `{
 Proof. fsetdec. Qed.
 
 Hint Rewrite @union_empty_r.
-
-
-(* TODO: extend the db *)

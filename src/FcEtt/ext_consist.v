@@ -359,9 +359,6 @@ Proof.
   inversion P1; inversion P2; subst.
   all: try solve [invert_equality].
 
-  (* 63 subgoals *)
-  (* TODO: there may be a way to check the number of subgoals (and guard against a innvalid number) *)
-
   all: try_Refl_left.
   all: try_Refl_right.
   all: try invert_syntactic_equality.
@@ -1133,8 +1130,6 @@ Ltac multipar_step :=
   | [ SIDE : multipar _ (a_CPi ?phi _) _ _ |- _ ] =>
     try (destruct phi); destruct (multipar_CPi SIDE eq_refl)
       as (B1' & B2' & C1' & C2' &  EQ); clear SIDE; subst
-(*  | [ SIDE : multipar _ (a_Const ?T) _ _ |- _ ] =>
-    apply multipar_Const in SIDE; auto; rename SIDE into EQ *)
   end.
 
 Lemma join_consistent : forall W a b R, joins W a b R -> consistent a b R.

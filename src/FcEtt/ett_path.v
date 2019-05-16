@@ -10,11 +10,7 @@ Require Import FcEtt.toplevel.
 Require Import FcEtt.ett_roleing.
 Require Import FcEtt.ext_wf.
 
-(* Lemmas about the various Path judgements and MatchSubst. 
-
-TODO: it's not clear to me what belongs here and what belongs in ett_match 
-
- *)
+(* Lemmas about the various Path judgements and MatchSubst. *)
 
 
 (* ------ substitution lemmas ------- *)

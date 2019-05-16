@@ -760,7 +760,6 @@ Proof.
     move: (CasePath_subst_co c1 c H7) => h. eauto.
     move: (CasePath_subst_co c1 c0 H7) => h. eauto.
     autorewrite with open_subst; eauto 2 with lc.
-    (* eapply H3; eauto. *)
     autorewrite with open_subst; eauto 2 with lc.
     eapply DefEq_weaken_available; eauto 2.
 

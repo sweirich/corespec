@@ -27,7 +27,6 @@ Require Import FcEtt.axiom_freshen.
 Set Bullet Behavior "Strict Subproofs".
 Set Implicit Arguments.
 
-(* FIXME: temporary *)
 Generalizable All Variables.
 
 
@@ -305,20 +304,6 @@ Proof.
   inversion IHargs.
   auto.
 Qed.
-
-(*
-Lemma tm_subst_tm_tm_apply_pattern_args : forall args a0 x a,
-   tm_subst_tm_tm a0 x (apply_pattern_args a args) = 
-   apply_pattern_args (tm_subst_tm_tm a0 x a) 
-                      (List.map (tm_subst_tm_pattern_arg a0 x) args).
-Proof. 
-  induction args; intros; simpl.
-  auto.
-  destruct a; simpl.
-  rewrite IHargs; auto.
-  rewrite IHargs; auto.
-Qed.
-*)
 
 (* ----------------------------------------------------- *)
 
@@ -1486,64 +1471,8 @@ Proof.
   eapply MatchTyping_correctness2; eauto 1.
 Qed.
 
-(* TODO: move this to ett_match *)
 Hint Resolve tm_pattern_agree_cong tm_pattern_agree_tm_tm_agree : nominal.
 Hint Resolve Rename_tm_pattern_agree : nominal.
-
-(* General equivariance lemma. 
-   We can freshen the axiom WRT to any context Γ
-
-   This lemma just takes the preconditions in the preservation proof 
-   for axiom matching and shows that we can rename each piece in 
-   a way that includes variables that do not occur in Γ.
-
-   We cannot ensure this from the typing rules because we don't know
-   in the reduction rule the variables that will be in scope in 
-   the typing judgement. If we only proved preservation for closed 
-   terms, this wouldn't be an issue. But we would like to know that 
-   it holds for open terms too. So we need to swap the names in our
-   derivations to ensure that they are sufficiently fresh.
- *)
-
-(*
-Lemma Axiom_Freshening : forall s (Γ:list(atom*s)), 
-  `{ MatchSubst a p1 b1 b' ->
-     Rename p b p1 b1 D1 D ->
-     PatternContexts Ωp Γp Dp F PiB p B ->
-     Γp ⊨ b : B ->
-     (forall x, In x Dp -> x `notin` fv_tm_tm_tm b) -> 
-
-    exists p2 b2 B' Dp' Ωp' Γp', 
-    MatchSubst a p2 b2 b' /\
-    Rename p b p2 b2 (dom Γ \u D1) D /\
-    PatternContexts Ωp' Γp' Dp' F PiB p2 B' /\
-    Γp' ⊨ b2 : B' /\
-    disjoint Γp' Γ /\
-    (forall x, In x Dp' -> x `notin` fv_tm_tm_tm b2)}. 
-Proof.
-  intros.
-
-  move: (MatchSubst_match H) => a_agree_p1.
-  (* Rename the pattern, avoiding dom G *)
-  have Lcb: lc_tm b. eapply Typing_lc1. eauto.  
-  have Pp: Pattern p. eapply patctx_pattern. eauto.
-
-  destruct (rename p b (dom Γ \u (fv_tm_tm_tm a) \u (fv_tm_tm_tm p))) 
-    as [[p3 b3] D3] eqn:EQN.
-  move: (rename_Rename ((dom Γ \u (fv_tm_tm_tm a) \u (fv_tm_tm_tm p)))  Pp Lcb) => RN.
-  rewrite EQN in RN. simpl in RN. clear EQN.
-
-  have a_agree_p: tm_pattern_agree a p.
-  eapply tm_pattern_agree_rename_inv_2; eauto. 
-
-  move: (Rename_chain_subst RN) => eq.
-  move: (Rename_chain_subst H0) => eq2.
-  rewrite <- matchsubst_chain_subst in eq; eauto with nominal.
-  rewrite <- matchsubst_chain_subst in eq2; eauto with nominal.
-  repeat eexists.
-
-Admitted. (* Freshening lemma for axioms *)
-*)
 
 Theorem MatchSubst_preservation2 : `{
   MatchSubst a p1 b1 b' →
@@ -1572,16 +1501,6 @@ Proof.
   apply axiom_body_fv_in_pattern in bds. fsetdec.
       
   split_hyp.
-(*
-  have Dp' : atoms. admit.
-  have Ωp' : role_context. admit.
-  have Γp' : context. admit.
-  have ms2: MatchSubst a p2 b2 b'. admit.
-  have PC2: PatternContexts Ωp' Γp' Dp' F PiB p2 B'. admit.
-  have Tb2:  Γp' ⊨ b2 : B'. admit. 
-  have u: uniq (Γp' ++ Γ). admit.
-  have ff: AtomSetImpl.For_all (λ x : atom, x ∉ fv_tm_tm_tm b2) Dp'. admit.
-*)
   clear ms rn patctx_p a_agree_p1.
 
   (* new stuff *)

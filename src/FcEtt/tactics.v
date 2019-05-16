@@ -1,11 +1,9 @@
 Require Import FcEtt.imports.
 
-(* FIXME; instead of importing inf, import only the right metalib module *)
 Require Import FcEtt.ett_inf.
 
 Require Import FcEtt.fset_facts.
 
-(* TODO: sort the import, remove unnecessary ones *)
 Import AtomSetFacts AtomSetProperties.
 
 Require Import FcEtt.notations.
@@ -16,14 +14,6 @@ Require Export FcEtt.tactics_ecomp.
 Require Import Coq.Strings.String.
 
 (**** Tactics for the project ****)
-
-
-(* TODO
-   - automated f_equal (etc)
-   - split forall ands
-   - automatic regularity application (example use sites: fc_dec_fun, ext_red)
-   - the organization (in different tactics, etc) is probably perfectible
-*)
 
 
 (* Hints & databases *)
@@ -73,7 +63,6 @@ Import TacticsTypes.
 
 Ltac nl := idtac " ".
 
-(* TODO: reorganize properly so we don't duplicate (see bottom of the file) *)
 Local Tactic Notation "ret" tactic(tac) := let answer := tac in exact answer.
 
 (* Shorthands for instantiation/specialization *)
@@ -97,7 +86,6 @@ Ltac align_type_hyp_vs t t_H H :=
     unify t t_H; idtac "Done - heads are unifiable:"; idtac t; idtac t_H
   |
     match t with
-      (* TODO: extend: detect if different number of arguments + make sure heads are unifiable (otherwise we're probably using the wrong hyp) *)
       | ?t1 ?t2 =>
         match t_H with
           | ?t_H1 ?t_H2 =>
@@ -167,10 +155,8 @@ Ltac unify_info' disp1 disp2 t1 t2 :=
             idtac "Trying recursively:";
             unify_info' disp1 disp2 t12 t22;
             fail "Unification failure"
-        (* TODO: refine this case *)
         | _ => fail "Can't decompose" disp2 t2 "further"
       end
-    (* TODO: refine this case - if t2 can't be decomposed either, need to print both *)
     | _ => fail "Can't decompose" disp1 t1 "further"
   end.
 
@@ -311,14 +297,13 @@ Ltac find_hyp_and_perform_optim cs tac :=
     let cs' := type_term cs in
     idtac "Switching to fast mode"
   then
-    (* FIXME: we're duplicating the typing of cs *)
     let cs' := type_term cs in
     find_hyp_and_perform has_head cs' tac
   else
     find_hyp_and_perform has_head_uconstr cs tac.
 
 
-(* TODO: This is subsumed by pcess_hyps down there. Make sure we never need to use *specifically* this tactic, then remove it *)
+
 Ltac split_hyp :=
   repeat (
       match goal with
@@ -339,7 +324,6 @@ Ltac try_rewrite_and_clear_f eq :=
 
 (* Integrate these in the big match below? *)
 (* Find an generalized equality, rewrite it, and clear it *)
-(* TODO: need much more parameters *)
 Ltac find_eq_rew_clear :=
   match goal with
     | [ eq : forall t1,                _ = _ |- _ ] => rewrite_and_clear eq
@@ -357,7 +341,7 @@ Ltac clearall :=
   end.
 
 (* Tactic equivalent to subst, but which also tries to rewrite universally quantified equalities *)
-(* FIXME: better name *)
+
 Ltac subst_forall :=
   repeat find_eq_rew_clear.
 
@@ -461,7 +445,6 @@ Ltac revert_except H :=
     | [ H' : _ |- _ ] => tryif constr_eq H H' then fail else revert H'
   end.
 
-(* TODO: use match instead to respect names *)
 Ltac intro_all_with t :=
   repeat
     (let x := fresh in intro x; try (t x)).
@@ -499,8 +482,6 @@ Ltac unwrap_all := repeat match goal with
     | [ H : _ * True  |- _      ] => destruct H as [H _]
   end.
 
-
-(* FIXME: copying this here, temporarily *)
 Lemma AnnCtx_uniq G : AnnCtx G -> uniq G.
 Proof. by elim=> * //=; apply uniq_cons. Qed.
 
@@ -520,16 +501,14 @@ Ltac prove_this stmt name :=
 
 (* This tactic finds "invertible" hyps (that is, the one that, once inverted, add information without generating multiple subgoals) and invert them. They are wrapped up afterwards to
    avoid inverting them again. *)
-Ltac find_invertible_hyps := (* FIXME: finish + make sure it's uniform *)
+Ltac find_invertible_hyps :=
   repeat (
   match goal with
-    (* TODO: should we keep this hyp around? -> wrap *)
     | [ H : AnnIso _ _ (g_EqCong _ _ _) _ _ |- _ ] => invert_and_clear H
-    (* FIXME: actually, we may just want to do the general case - check if this indeed working well, and if so delete previous line *)
+ 
     | [ H : AnnIso _ _ (_ _) _ _ |- _ ] => inversion H; wrap_hyp H
 
     (* Key step: invert typing hyps *)
-    (* TODO: do we want to keep the original hyp - wrap - or clear it? *)
     | [ H : AnnTyping _ (_ _) _ _ |- _ ] => inversion H; wrap_hyp H
 
 
@@ -537,12 +516,9 @@ Ltac find_invertible_hyps := (* FIXME: finish + make sure it's uniform *)
     | [H : PropWff _ (Eq _ _ _ _) |- _] => safe_invert_and_clear H
     | [H : RhoCheck _ _ _ |- _] => safe_invert_and_clear H
 
-  (* TODO: rhochecks, deq as well *)
-  (* TODO *)
   end).
 
 
-(* TODO: if we still apply the thm here, find another name *)
 Ltac pair_coupled_hyps :=
   repeat match goal with
     | [ H1 : binds ?T _ ?G, H2 : binds ?T _ ?G |- _ ] =>
@@ -643,10 +619,8 @@ Ltac prove_eq_same_head :=
 Tactic Notation "pick" "fresh" := let x := fresh "x" in pick fresh x.
 
 (** Ad-hoc version of fsetdec, hopefully faster **)
-(* TODO: handle the subset-union cases (see fc_dec.v) *)
 Ltac break_union :=
   repeat match goal with
-  (* TODO: see if there are other common cases we could solve here *)
     | [ H : ¬ ?x `in` union _ _ |- _ ] =>
         move: (notin_union_1 _ _ _ H) (notin_union_2 _ _ _ H) => ??; clear H
   end.
@@ -700,10 +674,7 @@ Ltac autofresh_param tac hidefresh :=
   hide_fresh_hyps x hidefresh.
 
 (* Yet another version, that tries to find a suitable variable in the context *)
-(* TODO: could be more robust:
-         - reject cases with 2 fresh variables
-         - what else?
-*)
+
 Ltac autofresh_find_param tac :=
   match goal with
     x : atom, _ : ?x `notin` _ |- _ => autofresh_fixed_param' tac x
@@ -724,7 +695,6 @@ Tactic Notation "tactic-not-avail" ident(name) :=
 Ltac contra_solve := 
   try discriminate
 
-  (* TODO: other cases *)
 
 (*   repeat match goal with
   end *) .
@@ -739,17 +709,13 @@ Ltac autocontra :=
 Ltac autofwd :=
   pcess_hyps;
   try fwd;
-  try contra_solve
-  (* TODO: what else? *).
+  try contra_solve.
 
 
 
-(* TODO: rely on autoreg, autoinv, etc *)
 Ltac autotype :=
   pcess_hyps;
 
-(* TODO: can use exactly once for inversions *)
-(* TODO: integrate the relevant ad-hoc tactics declared in different files *)
   repeat match goal with
     | [ |- _ ∧ _ ] => split
 
@@ -782,8 +748,6 @@ Ltac autotype :=
     | [ |- ex _ ] => eexists
 
 
-    (* FIXME: need to backtrack if that doesn't work *)
-    (* FIXME: have a "pre" or so *)
     | [ |- AnnTyping _   (_ _) _ _  ] => econstructor; pcess_hyps
     | [ |- AnnDefEq  _ _ (_ _) _ _ _ ] => econstructor; pcess_hyps
     | [ |- AnnIso    _ _ (_ _) _ _ ] => econstructor; pcess_hyps
@@ -792,12 +756,6 @@ Ltac autotype :=
 
 
 (** Bulldozing away these pesky free variables conditions **)
-(* TODO: autotype should call autofv when needed *)
-
-(* TODO:
-  - not complete, many cases are not covered (co vars in particular)
-  - right now, the following mostly implements proofs of non-inclusion. Implement inclusions
-*)
 
 (* Guard predicate: Does T 'talk about' variables? *)
 Ltac guard_about_vars T :=
@@ -807,7 +765,7 @@ Ltac guard_about_vars T :=
   end.
 
 Ltac fresh_fireworks := (* ... a firework of freshness conditions *)
-  repeat (fwd (* FIXME: should be *some* fwd reasoning, but not pcess_hyps (no unwrap) *);
+  repeat (fwd;
     match goal with
       | [ H : _ ∉ (_ ∪ _) |- _ ] =>
           let h := fresh H in
@@ -823,7 +781,6 @@ Ltac fresh_fireworks := (* ... a firework of freshness conditions *)
           let h := fresh H in
           move: (subset_notin H (fv_tm_tm_tm_open_tm_wrt_co_lower _ _)) => h;
           wrap_hyp H
-      (* TODO: other cases (fv_co_co_co (open_co_wrt_co _ _)), etc *)
     end);
   (* unwrap_all -> Performed by autofv_solve, to avoid processing the same hyps several times *)
   idtac.
@@ -831,7 +788,6 @@ Ltac fresh_fireworks := (* ... a firework of freshness conditions *)
 Ltac autofv_solve :=
   unwrap_all;
   repeat match goal with
-    (* TODO (long-term): The following should be generated by lngen *)
     | [ |- _ ∉ fv_tm_tm_tm (open_tm_wrt_tm _ _) ] => solve [rewrite fv_tm_tm_tm_open_tm_wrt_tm_upper; cbn; autofv_solve | fail ]
     | [ |- _ ∉ fv_tm_tm_tm (open_tm_wrt_co _ _) ] => solve [rewrite fv_tm_tm_tm_open_tm_wrt_co_upper; cbn; autofv_solve | fail ]
     | [ |- _ ∉ fv_co_co_co (open_co_wrt_co _ _) ] => solve [rewrite fv_co_co_co_open_co_wrt_co_upper; cbn; autofv_solve | fail ]
@@ -843,7 +799,6 @@ Ltac autofv_solve :=
 
     | [ |- _ ∉ (_ ∪ _) ] => eapply not_in_union
 
-(*    | x : atom, H : ∀ ?y : atom, *)
 
   end;
   solve [fsetdec_fast | fsetdec | eauto].
@@ -866,7 +821,6 @@ Ltac autofv_fwd :=
       subst;
       clear H
     | H : binds _ _ _ |- _ =>
-      (* FIXME: as a new hyp maybe? *)
       apply binds_In in H
   end).
 
@@ -881,7 +835,6 @@ End TacticsInternals.
 
 
 (**** High-level tactics (made for users) ****)
-(* TODO: when tactics are fully implemented, we might want to put this in a different file *)
 
 (* Add pointers to canonical examples *)
 
@@ -908,7 +861,6 @@ Tactic Notation "happly" uconstr(arg) := TacticsInternals.apply_eq arg.
 Ltac ha                               := TacticsInternals.apply_eq. (* Shorter version, can be passed as argument. Wrap arg in uconstr:() if needed *)
 
 
-(* TODO Tries to solve free variable obligations *)
 Ltac autofv       := TacticsInternals.autofv.
 Ltac fsetdec_fast := TacticsInternals.fsetdec_fast.
 
@@ -945,8 +897,7 @@ Tactic Notation "get" uconstr(hd) "as" ident(name) := TacticsInternals.find_hyp_
 Tactic Notation "get" uconstr(hd) "excl" constr(excl) "as" ident(name) :=
   TacticsInternals.find_hyp_and_perform_optim hd ltac:(fun h => TacticsInternals.avoid_unify_list h excl; rename h into name).
 
-(* For convenience, here are inlined version of the "excl" forms with just a few arguments.
-   TODO: understand how to interact with the list_hyp() for of ltac, so we can use this one instead *)
+(* For convenience, here are inlined version of the "excl" forms with just a few arguments.*)
 Tactic Notation "with" uconstr(hd) "excl" ident(e1) "do" tactic(tac) :=
   TacticsInternals.find_hyp_and_perform_optim hd ltac:(fun h => TacticsInternals.avoid_unify_list h (![e1]!); tac h).
 Tactic Notation "with" uconstr(hd) "excl" ident(e1) "," ident(e2) "do" tactic(tac) :=
@@ -999,7 +950,6 @@ Ltac especialize := TacticsInternals.especialize.
 Ltac print := fun h => idtac h.
 
 
-(* FIXME: rely on internals *)
 Tactic Notation "basic_nosolve_n" int_or_var(n) := intuition (subst; eauto n).
 Tactic Notation "basic_solve_n" int_or_var(n) := try solve [basic_nosolve_n n].
 
@@ -1020,21 +970,4 @@ Tactic Notation "debug" "unify" "top"             "vs" "goal"            := let 
 Tactic Notation "debug" "unify" "etop"            "vs" "goal"            := let top := fresh "top" in move=> top; especialize top; let g := get_goal in debugunif_dispatch etop goal ltac:(ret type of top) g.
 Tactic Notation "debug" "unify" "term" constr(t1) "vs" "term" constr(t2) := debugunif_dispatch tm1 tm2 t1 t2.
 Tactic Notation "debug" "unify" "term" constr(t1) "vs" "goal"            := let g := get_goal in debugunif_dispatch term goal t1 g.
-
-(**** Example ****)
-(*
-Goal id True.
-  assert (Hf : id False) by admit.
-  assert (Ht : id True) by admit.
-
-  (* In a real situation, just remove the assert_fails (since the tactic is meant to fail in those cases) *)
-  assert_fails debug unify hyp Ht vs term (id False).
-  assert_fails debug unify hyp Hf vs goal.
-  assert_fails debug unify hyp Ht vs hyp Hf.
-  assert_fails debug unify term (id True) vs term (id False).
-  assert_fails debug unify term (id False) vs goal.
-
-  debug unify hyp Ht vs goal. (* Succeeds if the terms are unifiable *)
-Abort.
-*)
 

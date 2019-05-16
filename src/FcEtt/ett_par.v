@@ -20,9 +20,6 @@ Require Import FcEtt.param.
 
 Import ext_wf.
 
-
-(* Require Import FcEtt.erase_syntax. *)
-
 Require Export FcEtt.toplevel.
 
 Require Export FcEtt.ett_value.
@@ -224,11 +221,8 @@ Proof. intros W1 W2 W3 a a' R U H. generalize dependent W2.
         - econstructor; eauto. apply par_app_rctx; auto.
 Qed.
 
-(* TODO: why do we have joins here and in the ett.ott file??? *)
 Definition joins W a b R := exists c, multipar W a c R /\ multipar W b c R.
 
-(* FIXME: find a good place for this tactic. *)
-(* cannot move this to ett_ind.v because need Toplevel_lc ??? *)
 Ltac lc_toplevel_inversion :=
   match goal with
   | [ b : binds ?F _ toplevel |- _ ] =>
