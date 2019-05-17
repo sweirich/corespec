@@ -9,10 +9,12 @@ not proofs. (All of the proofs are "Admitted"). The full version with proofs
 is in `ett_inf_full.v`. It takes about an hour to compile.
 
 The submitted (anonymous) version of the paper includes references to the files
-and names of each lemma statement mentioned in the paper. These proofs are about the language
-summarized in Section 4, not the simplified version of the language that appears 
-in Section 3.  Our submitted version of the paper also mentions an axiom about 
-renaming. We have since proved this result. 
+and names of each lemma statement mentioned in the paper. Note that footnote
+22 should read "ett_par.v:Par_roleing_tm_fst, ett_par.v:Par_roleing_tm_snd"
+These proofs are about the language summarized in Section 4, not the 
+simplified version of the language that appears in Section 3.  Our submitted 
+version of the paper also mentions an axiom about renaming. We have since 
+proved this result. 
 
 Our Coq development requires no axioms.
 
