@@ -9,14 +9,15 @@ not proofs. (All of the proofs are "Admitted"). The full version with proofs
 is in `ett_inf_full.v`. It takes about an hour to compile.
 
 The submitted (anonymous) version of the paper includes references to the files
-and names of each lemma statement in the paper. These proofs are about the language
+and names of each lemma statement mentioned in the paper. These proofs are about the language
 summarized in Section 4, not the simplified version of the language that appears 
 in Section 3.  Our submitted version of the paper also mentions an axiom about 
 renaming. We have since proved this result. 
 
-Our Coq develpment requires no axioms.
+Our Coq development requires no axioms.
 
-Development overview.
+Development overview
+--------------------
 
 Libraries (not language specific)
 * dep_prog.v       - support for dependently-typed programming in Coq
@@ -32,7 +33,8 @@ Libraries (not language specific)
 Syntactic definitions
 * ett.ott        - source definitions in OTT
 * ett_ott.v      - Coq definitions from OTT  [generated]
-* ett_inf.v      - Coq definitions & lemmas from lngen [generated]
+* ett_inf.v      - Coq definitions & lemmas from lngen, proof admitted [generated]
+* ett_inf_full.v - Coq definitions & lemmas from lngen, full proofs [generated]
 * ett_inf_cs.v   - ett_inf plus canonical structures
 * ett_ind.v      - induction scheme, gather_atoms
                    more syntactic infrastructure results
@@ -46,18 +48,22 @@ Properties about type-agnostic functions and relations:
 
 * beta.v         - lc / subst for beta reduction relation
 * ett_par.v      - facts about parallel reduction
-* ett_value.v    - Value
+* ett_value.v    - facts about Value judgement
 
 
 Files for reasoning about roles and pattern matching
 
-* ett_path.v     - terms headed by a constructor (F)
-* ett_rename.v   - nominal treatment of axioms
-* ett_roleling.v - metatheory of roleling judgement
-* param.v        - reasoning about "param" Role operator, i.e. min
+* ett_path.v      - terms headed by a constructor (F)
+* ett_rename.v    - nominal treatment of axioms
+* ett_roleing.v   - metatheory of roleing judgement
+* param.v         - reasoning about "param" Role operator, i.e. min
+* chain_subst.v   - "Chain" or iterated substitution 
+* axiom_freshen.v - Renaming lemma (not axiom) about freshening in pattern matching
+* ett_match.v     - Properties of the MatchSubst judgement
 
 
 Metatheory of Curry-style Language
+
 * ext_wf.v       - well-formedness of judgements, i.e. local closure, ctx wff
 * ext_context_fv.v - free variables contained in the context
 * ext_weak.v     - weakening lemma
