@@ -849,7 +849,6 @@ Definition min (r1 : role) (r2 : role) : role :=
   | Rep, Rep => Rep
   end.
 
-Parameter str : bool.
 Definition param (r1 : role) (r2 : role) := min r1 r2.
 
 Definition app_role (rr : appflag) (r1 : role) : role :=
