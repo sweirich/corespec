@@ -83,7 +83,7 @@ Ltac especialize H :=
 (* Aux *)
 Ltac align_type_hyp_vs t t_H H :=
   first [
-    unify t t_H; idtac "Done - heads are unifiable:"; idtac t; idtac t_H
+    unify t t_H (* ; idtac "Done - heads are unifiable:"; idtac t; idtac t_H *)
   |
     match t with
       | ?t1 ?t2 =>
@@ -289,13 +289,14 @@ Ltac spot_arg_with_head pi hd nth :=
    generality trade-off *)
 Ltac find_hyp_and_perform head_check cs tac :=
     match goal with
-      H : ?t |- _ => head_check t cs; idtac "Matching hyp:" H; tac H end.
+      H : ?t |- _ => head_check t cs; (* idtac "Matching hyp:" H; *) tac H end.
 
 (* Optimization (of the previous one): first tries to use the typed version if possible, otherwise falls back to the slow, general one *)
 Ltac find_hyp_and_perform_optim cs tac :=
   tryif
     let cs' := type_term cs in
-    idtac "Switching to fast mode"
+    (* idtac "Switching to fast mode" *)
+    idtac (* Silent *)
   then
     let cs' := type_term cs in
     find_hyp_and_perform has_head cs' tac

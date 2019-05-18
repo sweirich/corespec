@@ -369,7 +369,7 @@ Ltac ext_induction CON :=
       pose CON :=  E_ConsCo     ].
 
 Ltac ensure_case C :=
-  match goal with [ CON := C : ?A |- _ ] => idtac end.
+  match goal with [ CON := C |- _ ] => idtac end.
 
 
 (* --------------------------------------------------- *)
