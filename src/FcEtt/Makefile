@@ -75,6 +75,6 @@ METALIB.FIX_%:
 	sed '1d' $*.v > __TMP__; mv __TMP__ $*.v
 
 coqclean:
-	rm -if *.v.d *.vo *.vio *.glob $(VOFILES) $(COQMKFILENAME)
+	rm -if *.v.d *.vo *.vio *.glob $(COQMKFILENAME)
 
 clean: coqclean
