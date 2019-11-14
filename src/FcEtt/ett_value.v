@@ -210,6 +210,7 @@ Qed.
 
 (* ------------------------------------------ *)
 
+(*
 Lemma decide_Value_mutual : forall a,
     lc_tm a ->
     (Value a \/ not (Value a)) /\ (CoercedValue a \/ (not (CoercedValue a))).
@@ -254,7 +255,7 @@ Proof.
   intros a.
   eapply decide_Value_mutual.
 Qed.
-
+*)
 
   (* ------------------------------------------ *)
 (*
