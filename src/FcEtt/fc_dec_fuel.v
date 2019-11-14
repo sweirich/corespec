@@ -43,8 +43,8 @@ Inductive fuel_tpg : tm -> Type :=
     fuel_tpg b ->
     fuel_deq g ->
     fuel_tpg (a_CApp b g)
- | FT_Const : ∀ (T:atom),
-    fuel_tpg (a_Const T)
+| FT_Const : ∀ (T:atom),
+    fuel_tpg (a_Const T) 
  | FT_Fam : forall (F:tyfam),
     fuel_tpg (a_Fam F)
 

@@ -193,7 +193,7 @@ Proof.
   inversion C; subst; auto.
 Qed.
 
-
+(*
 Lemma Paths_are_DataTy : forall T a,
     Path T a -> Value a -> forall G A, AnnTyping G a A -> DataTy A a_Star.
 Proof.
@@ -220,7 +220,7 @@ Lemma Paths_have_value_types : forall T a,
 Proof. intros.
        eapply DataTy_value_type; eauto.
        eapply Paths_are_DataTy; eauto.
-Qed.
+Qed. *)
 
 Lemma values_have_value_types :
   forall G D a A, AnnGood G D ->  AnnTyping G a A -> Value a -> value_type A.
@@ -233,12 +233,12 @@ Proof.
   | [H : AnnTyping ?G ?b ?A |- value_type ?b] =>
     apply AnnTyping_lc in H; split_hyp; lc_inversion c;  eauto
        end.
-  + inversion V.
+(*  + inversion V.
     eapply (@Paths_have_value_types T (a_App b rho a0)); eauto.
   + inversion V.
     eapply (@Paths_have_value_types T (a_CApp a1 g)); eauto.
   + eapply DataTy_value_type.
-    eapply (binds_to_type _ _ AnnSig_an_toplevel); eauto.
+    eapply (binds_to_type _ _ AnnSig_an_toplevel); eauto. *)
 Qed.
 
 
@@ -247,23 +247,21 @@ Qed.
 Lemma canonical_forms_a_Pi :
   forall G D a rho A B, AnnGood G D ->
                    AnnTyping G a (a_Pi rho A B) -> Value a ->
-                   (exists a', a = a_Abs rho A a') \/ (exists T, Path T a).
+                   (exists a', a = a_Abs rho A a') (* \/ (exists T, Path T a) *).
 Proof.
   intros G D a rho A B AN H V.
   inversion V; subst; inversion H; subst; try solve [inversion H0].
-  all: try solve [left; exists a0; auto].
-  all: try solve [right; exists T; auto].
+  all: try solve [exists a0; auto].
 Qed.
 
 Lemma canonical_forms_a_CPi :
   forall G D a phi B, AnnGood G D ->
                  AnnTyping G a (a_CPi phi B) -> Value a ->
-                 (exists a', a = a_CAbs phi a') \/ (exists T, Path T a).
+                 (exists a', a = a_CAbs phi a') (* \/ (exists T, Path T a) *).
 Proof.
   intros G D a phi B AN H V.
   inversion V; subst; inversion H; subst; try solve [inversion H0].
-  all: try solve [left; exists a0; auto].
-  all: try solve [right; exists T; auto].
+  all: try solve [exists a0; auto].
 Qed.
 
 Lemma consistent_a_Pi :
@@ -279,7 +277,6 @@ Proof.
   - subst. exists C1. exists C2. auto.
   - inversion VT.
   - inversion VT.
-  - inversion H0.
   - assert False.
     apply AnnDefEq_lc in DE. split_hyp.
     match goal with
@@ -304,7 +301,6 @@ Proof.
   destruct C; try destruct rho; simpl in H; inversion H;
   try solve [inversion VT; inversion H1].
   - subst. exists phi0. exists C.  auto.
-  - inversion H0.
   - assert False.
     apply AnnDefEq_lc in DE. split_hyp.
     apply H0. econstructor.
@@ -375,7 +371,7 @@ Proof.
         H: CoercedValue b |- _ => inversion H
       end.
       -- (* application of a value *)
-        edestruct canonical_forms_a_Pi as [[ a1 EQ] | [T P]] ; eauto; subst.
+        edestruct canonical_forms_a_Pi as [ a1 EQ]  ; eauto; subst.
         (* path case solved automatically *)
         ++ right. (* a lambda, do a beta reduction *)
            exists (open_tm_wrt_tm a1 a). eapply An_AppAbs; eauto.
@@ -385,7 +381,7 @@ Proof.
          subst.
          have VT: value_type A1. eapply values_have_value_types; eauto.
          edestruct consistent_a_Pi as (A' & B' & EQ); eauto. subst.
-         edestruct canonical_forms_a_Pi as [[ a0' EQ] | [T P]]; eauto; subst.
+         edestruct canonical_forms_a_Pi as [ a0' EQ]; eauto; subst.
     + subst.
       match goal with H : exists a' : tm, head_reduction G b a' |- _ => destruct H end.
       right. eexists. eapply An_AppLeft; eauto.
@@ -404,15 +400,14 @@ Proof.
       match goal with
         H : CoercedValue ?a1 |- _ => inversion H
       end.
-      -- edestruct canonical_forms_a_CPi as [[a2 EQ]|[T p]]; eauto; subst.
+      -- edestruct canonical_forms_a_CPi as [a2 EQ]; eauto; subst.
          right. exists (open_tm_wrt_co a2 g). eapply An_CAppCAbs; eauto.
          destruct (AnnTyping_lc H) as [h0 h1]. inversion h0; auto.
       -- subst.  inversion H. subst.
          have VT: value_type A. eapply values_have_value_types; eauto.
         edestruct consistent_a_CPi as (A' & a2 & EQ); eauto. subst.
-        edestruct canonical_forms_a_CPi as [[a0' EQ]|[T p]]; eauto; subst.
+        edestruct canonical_forms_a_CPi as [a0' EQ]; eauto; subst.
     + destruct H5. right. eexists. eapply An_CAppLeft. eauto. eauto.
-  - left. eauto.
   - right. exists a. eauto.
 Qed.
 
@@ -616,7 +611,7 @@ Proof.
   + destruct rho; simpl in V; inversion V; subst;
     move: (IHAnnTyping1 GG (erase b) eq_refl ltac:(auto)) => [av [MS [CV EE]]];
     inversion CV; subst.
-    ++ exists (a_App av Rel a).
+(*    ++ exists (a_App av Rel a).
        repeat split. eapply multi_An_AppLeft; eauto_lc.
        repeat econstructor; eauto_lc.
        eapply Path_to_Path; eauto_lc.
@@ -657,7 +652,7 @@ Proof.
        eapply CC; econstructor; eauto_lc.
        econstructor; eauto_lc.
        eapply Path_to_Path; eauto_lc.
-       simpl in EE. simpl. congruence.
+       simpl in EE. simpl. congruence. *)
 
   + move: (IHAnnTyping1 GG _ eq_refl V) => [av [MS [CV EE]]].
     inversion CV.
@@ -689,7 +684,7 @@ Proof.
     repeat split; try eapply multi_refl; eauto using Value_lc;
       simpl; auto.
     econstructor; eauto using AnnTyping_lc1, AnnPropWff_lc.
-  + (* CApp case (for paths) *)
+(*  + (* CApp case (for paths) *)
     simpl in V; inversion V; subst;
     move: (IHAnnTyping GG (erase a1) eq_refl ltac:(auto)) => [av [MS [CV EE]]];
     inversion CV; subst.
@@ -714,7 +709,7 @@ Proof.
        split.
        eapply CC; econstructor; eauto_lc.
        eapply Path_to_Path; eauto_lc.
-       simpl in EE. simpl. congruence.
+       simpl in EE. simpl. congruence. *)
 Qed.
 
 
@@ -730,6 +725,7 @@ Ltac solve_irrelevant y AA b0 h0 :=
 
 
 (* paths are not (erased) abstractions. *)
+(*
 Lemma paths_arent_abs :
   forall a T, Path T a -> forall rho b, a = a_UAbs rho b -> False.
 Proof.
@@ -744,7 +740,7 @@ Ltac no_paths:=
     destruct rho; simpl in EE;
     match goal with
       [ FF : ?a = a_UAbs _ ?b |- _ ] =>
-      have P: (Path T a); by eauto using lc_tm_erase end end.
+      have P: (Path T a); by eauto using lc_tm_erase end end. *)
 
 (* Each of the subcases are by induction on a0 to account for top-level coercions on the term.
    This tactic handles all of the inductive cases. *)
@@ -881,7 +877,7 @@ Proof.
            eapply tm_subst_tm_tm_lc_tm; eauto using AnnTyping_lc1. }
          rewrite open_tm_erase_tm. auto.
          (* prove that paths don't erase to abstractions. *)
-         no_paths.
+(*         no_paths. *)
       ++ (* av = (a |> g) *)
          have LC: lc_tm a0_1 by eauto using AnnTyping_lc1.
          (* Push rule *)
@@ -928,10 +924,10 @@ Proof.
          (* erasure property *)
          simpl_erase. auto.
 
-         destruct rho.
+(*         destruct rho.
          +++ have P: Path T (a_App (erase v) Rel (erase a0)); by eauto
                                                                     using lc_tm_erase.
-         +++ have P: Path T (a_App (erase v) Irrel a_Bullet); by eauto using lc_tm_erase.
+         +++ have P: Path T (a_App (erase v) Irrel a_Bullet); by eauto using lc_tm_erase. *)
     + (* induction step for top-level coercions (Rel) *)
       induction_a0.
   - (* E_AppAbs Irrel*)
@@ -981,7 +977,6 @@ Proof.
            apply fv_tm_erase_tm; auto.
          }
 
-         no_paths.
       ++ (* av = (a |> g) *)
          have LC: lc_tm a0_1 by eauto using AnnTyping_lc1.
          (* Push rule *)
@@ -1049,10 +1044,6 @@ Proof.
            apply fv_tm_erase_tm; auto.
          }
 
-         destruct rho.
-         +++ have P: Path T (a_App (erase v) Rel (erase a0)); by eauto
-                                                                    using lc_tm_erase.
-         +++ have P: Path T (a_App (erase v) Irrel a_Bullet); by eauto using lc_tm_erase.
     + (* induction step for top-level coercions (irrel) *)
       induction_a0.
   - (* E_CAbsCApp *)

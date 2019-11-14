@@ -44,9 +44,9 @@ Axiom Ctx_uniq : forall G, Ctx G -> uniq G.
 
 Axiom Toplevel_lc : forall c s, binds c s toplevel -> lc_sig_sort s.
 
-Axiom Path_lc : forall T a, Path T a -> lc_tm a.
+(* Axiom Path_lc : forall T a, Path T a -> lc_tm a.
 
-Axiom DataTy_lc : forall A, DataTy A a_Star -> lc_tm A.
+Axiom DataTy_lc : forall A, DataTy A a_Star -> lc_tm A. *)
 
 Axiom Value_lc : forall A, Value A -> lc_tm A.
 
@@ -240,11 +240,11 @@ Module Type ext_invert_sig.
 
 Axiom binds_to_Typing: forall G T A, Ctx G -> binds T (Tm A) G -> Typing G A a_Star.
 
-Axiom invert_a_Const : forall G T A,
+(*Axiom invert_a_Const : forall G T A,
     Typing G (a_Const T) A ->
     exists B, DataTy B a_Star /\ DefEq G (dom G) A B  a_Star
          /\ binds T (Cs B) toplevel.
-
+*)
 Axiom invert_a_Pi: forall G rho A0 A B0,
     Typing G (a_Pi rho A0 B0) A ->
     DefEq G (dom G) A a_Star a_Star /\ (exists L, forall x, x `notin` L -> Typing ([(x, Tm A0)] ++ G) (open_tm_wrt_tm B0 (a_Var_f x)) a_Star) /\ Typing G A0 a_Star.

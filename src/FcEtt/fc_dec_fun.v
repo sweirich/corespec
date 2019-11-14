@@ -278,10 +278,10 @@ Program Fixpoint AnnTyping_dec (G : context) (t : tm) (fuel : fuel_tpg t) (H : A
         | _ => !!
       end
 
-    | FT_Const T =>
+(*    | FT_Const T =>
       K <- binds_dec_cs T an_toplevel;
       (@DataTy_Star_dec K) _ >--->
-      << K >>
+      << K >> *)
 
     | FT_CPi phi B fB fphi =>
       AnnPropWff_dec G phi fphi _ >--->
@@ -297,6 +297,7 @@ Program Fixpoint AnnTyping_dec (G : context) (t : tm) (fuel : fuel_tpg t) (H : A
       << a_CPi phi (close_tm_wrt_co c Bc) >>
 
     (* Erased language side: not typable in the annotated *)
+    | FT_Const T => !!
     | FT_UAbs _ _ => !!
     | FT_UCAbs _  => !!
     | FT_Bullet   => !!
@@ -2158,7 +2159,7 @@ Defined.
 
 Solve All Obligations with discr_pat_match.
 
-
+(*
 (* An_Const *)
 Next Obligation.
   hacky.
@@ -2179,7 +2180,7 @@ Next Obligation.
   subst.
   apply: An_Const; eauto.
   eapply an_toplevel_to_const; eauto.
-Defined.
+Defined. *)
 
 
 (* An_CPi *)

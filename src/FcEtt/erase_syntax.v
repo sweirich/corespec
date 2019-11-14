@@ -586,11 +586,12 @@ Qed.
 
 (* value_type *)
 
+(*
 Lemma path_erase : forall T p, Path T p -> Path T (erase p).
 Proof.
   intros. induction H; simpl; eauto.
   - destruct rho; simpl; autorewcs; eauto with lc.
-Qed.
+Qed. *)
 
 Lemma CoercedValueValue_erase:
   (forall v,  CoercedValue v -> Value (erase v)) /\
@@ -600,7 +601,7 @@ Proof. apply CoercedValue_Value_mutual; eauto.
   all: try destruct rho.
   all: try match goal with [H : lc_tm (?a ?b) |- _ ] =>
                            apply lc_tm_erase in H; simpl in * end.
-  all: simpl; autorewcs; eauto using path_erase, lc_tm_erase, lc_constraint_erase.
+  all: simpl; autorewcs; eauto using lc_tm_erase, lc_constraint_erase.
 
   all: try solve [econstructor; intros x Fr;
   replace (a_Var_f x) with (erase (a_Var_f x)); auto;
@@ -619,10 +620,6 @@ Proof.
   induction H2; simpl in *; lc_inversion c; subst; eauto with lc.
   econstructor; eauto with lc.
   econstructor; eauto with lc.
-  destruct rho; simpl; eauto using path_erase, lc_tm_erase.
-  eauto using path_erase, lc_tm_erase, Value_erase.
-  eauto using path_erase, lc_tm_erase, Value_erase.
-  eauto using path_erase, lc_tm_erase, Value_erase.
 Qed.
 
 (* ---------------------------------- *)

@@ -222,7 +222,7 @@ Proof.
     eapply DefEq_weaken_available in d.
     eauto.
     eapply (Typing_lc H2).
-  - intros. simpl. subst G.
+(*  - intros. simpl. subst G.
 (*    move: (toplevel_to_const _ _ b) => h0.
     have CNil: Ctx [(x, Tm A)]. econstructor; auto.
     rewrite (tm_subst_fresh_2 _ h0 CNil). clear CNil. *)
@@ -230,7 +230,7 @@ Proof.
     eapply E_Refl.
     eapply E_Const; eauto 2.
     eapply (fifth tm_substitution_mutual); eauto.
-    eapply t. simpl. econstructor; eauto.
+    eapply t. simpl. econstructor; eauto. *)
   - intros. simpl. subst G.
     move: (toplevel_closed b) => h0.
     move: (Typing_regularity h0) => h1.

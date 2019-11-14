@@ -205,7 +205,7 @@ Ltac eapply_E_subst :=
           eapply E_App      |
           eapply E_IApp     |
           eapply E_CApp     |
-          eapply E_Const    |
+(*          eapply E_Const    | *)
           eapply E_IsoConv  |
           eapply E_AppCong  |
           eapply E_IAppCong |
@@ -244,7 +244,7 @@ Lemma tm_substitution_mutual :
                  forall F x, G0 = (F ++ (x ~ Tm A) ++ G) ->
                         Ctx (map (tm_subst_tm_sort a x) F ++ G)).
   eapply typing_wff_iso_defeq_mutual;
-    intros; subst; simpl. Focus 23. destruct rho. Unfocus.
+    intros; subst; simpl. Focus 22. destruct rho. Unfocus.
   all: try first [ E_pick_fresh y; autorewrite with subst_open_var; eauto 2 with lc;
                    try rewrite_subst_context; eauto 3 |
                    autorewrite with subst_open; eauto 2 with lc ].
@@ -281,11 +281,11 @@ Lemma tm_substitution_mutual :
       eauto.
   - (* conversion *)
     econstructor; try eapply DefEq_weaken_available; eauto.
-  - have h0: Typing nil A a_Star by eauto using toplevel_closed.
+(*  - have h0: Typing nil A a_Star by eauto using toplevel_closed.
     eapply tm_subst_fresh_2 with (x:=x )in h0; eauto.
     erewrite h0. auto.
   - have h0: Typing nil A a_Star.  eapply toplevel_to_const; eauto.
-    erewrite tm_subst_fresh_2; eauto.
+    erewrite tm_subst_fresh_2; eauto. *)
   -
     have h0: Typing nil a A by eauto using toplevel_closed.
     eapply E_Fam with (a:= tm_subst_tm_tm a0 x a); eauto.
@@ -441,7 +441,7 @@ Lemma co_substitution_mutual :
           -> Ctx (map (co_subst_co_sort g_Triv c) F ++ G)).
 Proof.
   apply typing_wff_iso_defeq_mutual; auto; intros; subst; simpl.
-  Focus 23. destruct rho. Unfocus. 
+  Focus 22. destruct rho. Unfocus. 
    all: try first [ E_pick_fresh y; autorewrite with subst_open_var; eauto 2 with lc;
                     try rewrite_subst_context; eauto 3
                   | autorewrite with subst_open; eauto 2 with lc ].
@@ -471,12 +471,12 @@ Proof.
   - eapply E_Conv; eauto 3.
     eapply DefEq_weaken_available; eauto 1.
     eapply_first_hyp; eauto 2.
-  - have h0: Typing nil A a_Star by eauto using toplevel_closed.
+(*  - have h0: Typing nil A a_Star by eauto using toplevel_closed.
     rewrite co_subst_co_tm_fresh_eq; auto.
     move: (Typing_context_fv h0) => hyp. split_hyp. fsetdec.
   - have h0: Typing nil A a_Star.  eapply toplevel_to_const; eauto.
     rewrite co_subst_co_tm_fresh_eq; auto.
-    move: (Typing_context_fv h0) => hyp. split_hyp. fsetdec.
+    move: (Typing_context_fv h0) => hyp. split_hyp. fsetdec. *)
   -  have h0: Typing nil a A by eapply toplevel_closed; eauto.
     erewrite (tm_subst_co_fresh_1 _ h0); eauto.
   - apply (E_Wff _ _ _  (co_subst_co_tm g_Triv c A)); eauto 3.

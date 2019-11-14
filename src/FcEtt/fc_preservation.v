@@ -270,8 +270,8 @@ Proof.
       inversion H2. inversion H7. subst. destruct phi1.
       eapply An_Conv; eauto.
       eapply AnnTyping_co_subst_nondep; eauto.
-  - move=> a' hr.
-    inversion hr.
+(*  - move=> a' hr.
+    inversion hr. *)
   - move=> a' hr.
     inversion hr. subst.
 

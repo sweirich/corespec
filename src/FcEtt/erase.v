@@ -31,13 +31,13 @@ Import invert unique.
 Set Implicit Arguments.
 Set Bullet Behavior "Strict Subproofs".
 
-
+(*
 Lemma Path_erase : forall T a, Path T a -> Path T (erase a).
 Proof. induction 1; try destruct rho; simpl; auto.
        autorewcs.
        eauto with lc.
 Qed.
-
+*)
 
 Hint Constructors Typing PropWff Iso DefEq Ctx.
 
@@ -129,10 +129,10 @@ Proof.
     eapply E_CApp. simpl in H. eauto.
     rewrite <- erase_dom.
     eapply H0; eauto.
-  - simpl. eapply E_Const; eauto.
+(*  - simpl. eapply E_Const; eauto.
     unfold toplevel.
     unfold erase_sig.
-    replace (Cs (erase_tm A)) with (erase_csort (Cs A)). eapply binds_map. auto. auto.
+    replace (Cs (erase_tm A)) with (erase_csort (Cs A)). eapply binds_map. auto. auto. *)
   - simpl. eapply E_Fam; eauto.
     unfold toplevel.
     unfold erase_sig.
@@ -776,7 +776,7 @@ Lemma AnnDefEq_invert_a_Star : forall G0 D g1 A1' A2' S,
   Qed.
 
 
-
+(*
 Lemma Path_to_Path : forall  a0, lc_tm a0 -> forall T a,
       Path T a -> erase a0 = a -> Path T a0.
 Proof.
@@ -787,7 +787,7 @@ Proof.
   all: lc_inversion c.
   all: invert_syntactic_equality.
   all: econstructor; eauto.
-Qed.
+Qed. *)
 
 
   (*  ----------------------------------------------------------- *)
@@ -1092,7 +1092,7 @@ Proof.
   rewrite no_co_in_erased_tm.
   repeat split. autorewcs. congruence.
   eauto.
-- exists (a_Const T).
+(*- exists (a_Const T).
   destruct (H0 nil eq_refl) as (a0 & A0 & E1 & E2 & Ty). auto. clear H0.
   unfold toplevel in b. unfold erase_sig in b.
   destruct (@binds_map_3 _ _ erase_csort T (Cs A) an_toplevel).
@@ -1103,7 +1103,7 @@ Proof.
   split; eauto.
   split; eauto.
   econstructor; eauto.
-  eapply an_toplevel_to_const; eauto.
+  eapply an_toplevel_to_const; eauto. *)
 - destruct (H0 nil eq_refl) as (a0 & A0 & E1 & E2 & Ty). auto.
   unfold toplevel in b. unfold erase_sig in b.
   destruct (@binds_map_3 _ _ erase_csort F (Ax a A) an_toplevel). eauto.

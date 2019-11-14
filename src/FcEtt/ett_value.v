@@ -22,6 +22,7 @@ Require Export FcEtt.toplevel.
 
 (* Paths *)
 
+(*
 Lemma Path_tm_subst_tm_tm : forall T a x b, Path T a -> lc_tm b -> Path T (tm_subst_tm_tm b x a).
 Proof. induction 1; try destruct rho; simpl; eauto with lngen.
 Qed.
@@ -64,9 +65,9 @@ Proof.
 Qed.
 
 Hint Resolve DataTy_tm_subst_tm_tm DataTy_co_subst_co_tm : lngen.
-
+*)
 (* ------------------------------------------- *)
-
+(*
 Definition decide_Path : forall a, lc_tm a -> (exists T, Path T a) \/ (forall T, not (Path T a)).
 Proof.
   induction a; intro lc.
@@ -86,7 +87,7 @@ Proof.
     left. exists T. auto.
     right. intros T h; inversion h; subst; unfold not in n; eauto.
 Qed.
-
+*)
 (* ------------------------------------------- *)
 
 (* Values and CoercedValues *)
@@ -100,8 +101,7 @@ Proof.
   all: try solve [intros;
                   eauto using tm_subst_tm_tm_lc_tm,
                   tm_subst_tm_constraint_lc_constraint,
-                  tm_subst_tm_co_lc_co,
-                  Path_tm_subst_tm_tm].
+                  tm_subst_tm_co_lc_co].
   all: try solve [intros;
     constructor; eauto using tm_subst_tm_tm_lc_tm,  tm_subst_tm_constraint_lc_constraint;
     match goal with [H: lc_tm (?a1 ?a2), K : lc_tm ?b |- _ ] =>
@@ -170,8 +170,7 @@ Proof.
   all: try solve [intros;
                   eauto using co_subst_co_tm_lc_tm,
                   co_subst_co_constraint_lc_constraint,
-                  co_subst_co_co_lc_co,
-                  Path_co_subst_co_tm].
+                  co_subst_co_co_lc_co].
   all: try solve [intros;
     constructor; eauto using co_subst_co_tm_lc_tm,
                               co_subst_co_constraint_lc_constraint;
@@ -236,26 +235,7 @@ Proof.
       pick fresh y;
       rewrite (tm_subst_tm_tm_intro y); eauto;
         eapply Value_tm_subst_tm_tm; eauto.
-  - destruct (IHlc_tm1) as [[V|NV][CV|NCV]];
-      destruct (decide_Path H) as [[T P]|NP].
-    all: split.
-    all: try solve [left; eauto].
-    all: try solve [right; intro h; inversion h; try inversion H1; eapply NP; eauto].
-    all: try solve [right; intro h; inversion h; try inversion H1; done].
-  - destruct (IHlc_tm1) as [[V|NV][CV|NCV]];
-      destruct (decide_Path H) as [[T P]|NP].
-    all: split.
-    all: try solve [left; eauto].
-    all: try solve [right; intro h; inversion h; try inversion H1; eapply NP; eauto].
-    all: try solve [right; intro h; inversion h; try inversion H1; done].
   - destruct (IHlc_tm) as [[V|NV][CV|NCV]].
-    all: split.
-    all: try solve [left; eauto].
-    all: try solve [right; intro h; inversion h].
-    right. intro h; inversion h. inversion H1. done.
-    right. intro h; inversion h. inversion H1. done.
-  - destruct (IHlc_tm) as [[V|NV][CV|NCV]];
-      destruct (decide_Path H) as [[T P]|NP].
     all: split.
     all: try solve [left; eauto].
     all: try solve [right; intro h; inversion h; try inversion H1; eapply NP; eauto].
@@ -277,9 +257,9 @@ Qed.
 
 
   (* ------------------------------------------ *)
-
+(*
 Lemma DataTy_value_type : forall A, DataTy A a_Star -> value_type A.
 Proof.
   intros A H.
   dependent induction H; eauto with lc.
-Qed.
+Qed. *)

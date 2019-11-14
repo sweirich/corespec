@@ -68,7 +68,7 @@ Proof.
   repeat split; eauto using Typing_Ctx.
 Qed.
 
-
+(*
 Lemma invert_a_Const : forall G T A,
     Typing G (a_Const T) A ->
     exists B, DataTy B a_Star /\ DefEq G (dom G) A B  a_Star
@@ -89,7 +89,7 @@ Proof.
     + eapply E_Refl.
       move: (Typing_weakening H1 G nil nil ltac:(auto)) => h0.
       simpl_env in h0. auto.
-Qed.
+Qed. *)
 
 
 Lemma invert_a_Fam : forall G F A,
@@ -206,8 +206,8 @@ Proof.
     eapply Typing_co_subst; eauto.
   - eapply Typing_weakening with (F:=nil)(G := nil) in H1.
     simpl_env in H1. eauto. auto. simpl_env. auto.
-  - eapply Typing_weakening with (F:=nil)(G := nil) in H1.
-    simpl_env in H1. eauto. auto. simpl_env. auto.
+(*  - eapply Typing_weakening with (F:=nil)(G := nil) in H1.
+    simpl_env in H1. eauto. auto. simpl_env. auto. *)
 Qed.
 
 (* --------------------------------------------------- *)

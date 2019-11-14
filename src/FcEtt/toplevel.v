@@ -30,12 +30,11 @@ Proof.
   have st: Sig toplevel by apply Sig_toplevel.
   induction st.
   - intros. inversion H.
-  - intros. inversion H2. inversion H3. eauto.
   - intros. inversion H2. inversion H3. subst. auto.
     eauto.
 Qed.
 
-
+(*
 Lemma toplevel_to_const : forall T A, binds T (Cs A) toplevel -> Typing nil A a_Star.
 Proof.
   have st: Sig toplevel by apply Sig_toplevel.
@@ -45,7 +44,7 @@ Proof.
     eapply IHst. eauto.
   - intros. inversion H2. inversion H3.
     eauto.
-Qed.
+Qed. *)
 
 
 Lemma an_toplevel_closed : forall F a A, binds F (Ax a A) an_toplevel ->
@@ -54,10 +53,10 @@ Proof.
   have st: AnnSig an_toplevel by apply AnnSig_an_toplevel.
   induction st.
   - intros. inversion H.
-  - intros. inversion H2. inversion H3. eauto.
   - intros. inversion H2. inversion H3. subst. eauto. eauto.
 Qed.
 
+(*
 Lemma an_toplevel_to_const : forall T A, binds T (Cs A) an_toplevel -> AnnTyping nil A a_Star.
 Proof.
   have st: AnnSig an_toplevel by apply AnnSig_an_toplevel.
@@ -75,4 +74,4 @@ Proof. induction 1. intros. inversion H.
        intros. destruct H3. inversion H3. subst. auto.
        eauto.
        intros. destruct H3. inversion H3. eauto.
-Qed.
+Qed. *)

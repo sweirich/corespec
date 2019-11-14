@@ -297,6 +297,7 @@ Proof.
     }
 Qed.
 
+(*
 Lemma Path_dec : forall a, lc_tm a -> { T | Path T a } + { (forall T, not (Path T a)) }.
 Proof.
   induction a; intros LC.
@@ -318,7 +319,7 @@ Proof.
     apply inleft. exists T.
     { inversion LC. eauto. }
     apply inright. intros T h; inversion h; subst; unfold not in n; eauto.
-Qed.
+Qed. *)
 
 Lemma Value_AbsIrrel_inversion : forall A a,
     Value (a_Abs Irrel A a)
@@ -394,6 +395,7 @@ Proof.
   auto.
 Qed.
 
+(*
 Lemma DataTy_Star_dec : forall A, lc_set_tm A -> { DataTy A a_Star } + { not (DataTy A a_Star) }.
 Proof.
   intros A LC.
@@ -421,6 +423,7 @@ Proof.
       rewrite (co_subst_co_tm_intro y); auto.
       eapply DataTy_co_subst_co_tm; eauto_lc.
 Qed.
+*)
 
 Lemma binds_dec_ax : forall x G, {A, B | binds x (Ax A B) G} + {(forall A B, ¬ binds x (Ax A B) G)}.
 Proof.

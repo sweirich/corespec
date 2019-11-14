@@ -1111,6 +1111,7 @@ Inductive Path_consistent : const -> tm -> tm -> Prop :=
     Path_consistent T (a_CApp a1 g_Triv) (a_CApp b1 g_Triv).
 Hint Constructors Path_consistent. *)
 
+(*
 Inductive Path_consistent : const -> tm -> tm -> Prop :=
   PC_Const : forall T, Path_consistent T (a_Const T) (a_Const T)
 | PC_App   : forall T a1 a2 b1 b2,
@@ -1124,6 +1125,7 @@ Inductive Path_consistent : const -> tm -> tm -> Prop :=
     Path_consistent T a1 b1 ->
     Path_consistent T (a_CApp a1 g_Triv) (a_CApp b1 g_Triv).
 Hint Constructors Path_consistent.
+
 
 Lemma Path_consistent_Path1 : forall T a b, Path_consistent T a b -> Path T a.
 Proof. induction 1; eauto using erased_lc. Qed.
@@ -1332,7 +1334,7 @@ Qed.
         auto.
     Qed.
 
-
+*)
 
 
 Ltac binds_notbinds :=
@@ -1345,6 +1347,7 @@ Ltac binds_notbinds :=
       apply H5 in B; contradiction
       end.
 
+(*
 
 Lemma Par_Const : forall S D T b,
     Par S D (a_Const T) b -> b = a_Const T.
@@ -1358,7 +1361,7 @@ Lemma multipar_Const : forall S D T b,
 Proof.
   intros S D T b H. dependent induction H; eauto using Par_Const.
 Qed.
-
+*)
 
 Lemma multipar_Pi : forall S D rho A B, multipar S D A B -> forall A1 A2,
       A = a_Pi rho A1 A2 -> exists B1 B2, B = (a_Pi rho B1 B2).
@@ -1425,6 +1428,7 @@ Qed.
 
 (* --------------------------------------------------- *)
 
+(*
 Definition decide_Path : forall a, lc_tm a -> (exists T, Path T a) \/ (forall T, not (Path T a)).
 Proof.
   induction a; intro lc.
@@ -1443,7 +1447,7 @@ Proof.
     auto.
     left. exists T. auto.
     right. intros T h; inversion h; subst; unfold not in n; eauto.
-Qed.
+Qed. *)
 
 (* --------------------------------------------------- *)
 
@@ -1465,10 +1469,10 @@ Ltac multipar_step SIDE EQ :=
   | [ SIDE : multipar _ _ (a_CPi ?phi _) _ |- _ ] =>
     try (destruct phi); destruct (multipar_CPi SIDE eq_refl)
       as (B1' & B2' & C1' & C2' &  EQ)
-  | [ SIDE : multipar _ _ (a_Const ?T) _ |- _ ] =>
+(*  | [ SIDE : multipar _ _ (a_Const ?T) _ |- _ ] =>
     apply multipar_Const in SIDE; auto; rename SIDE into EQ
   | [ SIDE : Path_consistent _ _ _ |- _ ] =>
-    rename SIDE into EQ
+    rename SIDE into EQ *)
   end.
 
 
@@ -1508,13 +1512,13 @@ Proof.
   all: try solve [eapply consistent_a_Step_R; [auto | intros h0; inversion h0; unfold not in NP; eauto]].
   all: try solve [eapply consistent_a_Step_L; [auto | intros h0; inversion h0; unfold not in NP; eauto]].
 
-  all: try match goal with
+(*  all: try match goal with
              [ H1: Path_consistent ?T1 ?a ?c, H2: Path_consistent ?T2 ?b ?c |- _ ] =>
              move: (Path_consistent_Path2 H1) => h0;
              move: (Path_consistent_Path2 H2) => h1;
     have EQ3: (T1 = T2); eauto using Path_unique; subst; eauto
-  end.
-  - rewrite EQ1 in EQ2; inversion EQ2. eauto.
+  end. *)
+(*  - rewrite EQ1 in EQ2; inversion EQ2. eauto. *)
 
   - destruct (multipar_Pi MSL eq_refl) as (B1 & B2 & EQ).
     destruct (multipar_Pi MSR eq_refl) as (B1' & B2' & EQ').
@@ -2484,14 +2488,14 @@ Ltac impossible_defeq A B :=
     apply consistent_defeq in h0; eauto;
     apply join_consistent in h0;
  *)
-
+(*
 Ltac impossible_Path :=
   match goal with
      [H : Path ?T (a_Pi _ _ _) |- _] => inversion H
    | [H : Path ?T a_Star |- _] => inversion H
    | [H : Path ?T (a_CPi _ _) |- _] => inversion H
   end.
-
+*)
 
 (* When we have a defeq in the context between two value types, show that it
    can't happen. *)
@@ -2507,7 +2511,7 @@ Ltac impossible_defeq :=
      destruct (DefEq_lc H) as (l0 & l1 & l2); inversion l0; inversion l1; subst;
      have VT: value_type A; eauto;
      have VT2 : value_type B; eauto;
-     inversion h0; subst; try impossible_Path;
+     inversion h0; subst; (* try impossible_Path; *)
      eauto; try done | eapply irrelevant_Good; eauto]
   end.
 
@@ -2528,8 +2532,6 @@ Proof.
   - subst. apply invert_a_UCAbs in H; eauto.
     destruct H as [a0 [b [T [B1 [_ [H _]]]]]].
     impossible_defeq.
-  - eauto.
-  - eauto.
 Qed.
 
 
@@ -2540,12 +2542,11 @@ Proof.
   apply consistent_defeq in H; eauto.
   apply join_consistent in H.
   inversion H;  eauto; subst; try done.
-  impossible_Path.
 Qed.
 
 Lemma canonical_forms_Pi : forall G rho a A B, irrelevant G (dom G) a ->
     Typing G a (a_Pi rho A B) -> Value a ->
-    (exists a1, a = a_UAbs rho a1) \/ (exists T, Path T a).
+    (exists a1, a = a_UAbs rho a1). (* \/ (exists T, Path T a). *)
 Proof.
   intros G rho a A B IR H H0.
   inversion H0; subst; eauto.
@@ -2573,7 +2574,7 @@ Qed.
 
 Lemma canonical_forms_CPi : forall G a phi B, irrelevant G (dom G) a ->
     Typing G a (a_CPi phi B) -> Value a ->
-    (exists a1, a = a_UCAbs a1) \/ (exists T, Path T a).
+    (exists a1, a = a_UCAbs a1) (* \/ (exists T, Path T a). *).
 Proof.
   intros G a phi B IR H H0.
   inversion H0; subst; eauto.
@@ -2673,13 +2674,12 @@ Lemma progress : forall G a A, Typing G a A ->
   - destruct IHTyping1 as [V | [b' h0]].
     + show_irrelevant IR.
     + apply canonical_forms_Pi in H; auto.
-      destruct H as [[a1 e1]|[T P]]; subst.
+      destruct H as [a1 e1]; subst.
       ++ right.
          exists (open_tm_wrt_tm a1 a); eauto.
          apply E_AppAbs; eauto.
          eauto using Value_lc.
          apply (Typing_lc H0); eauto.
-      ++ left. eauto with lc.
       ++ show_irrelevant IR.
     + right.
       exists (a_App b' Rel a); eauto.
@@ -2689,10 +2689,9 @@ Lemma progress : forall G a A, Typing G a A ->
     + show_irrelevant IR.
     + move => h1.
       apply canonical_forms_Pi in H; auto.
-      destruct H as [[a1 e1]|[T P]]; subst.
+      destruct H as [a1 e1]; subst.
       ++ right.
       exists (open_tm_wrt_tm a1 a_Bullet); eauto.
-      ++ left. eauto with lc.
       ++ show_irrelevant IR.
     + move => h1.
       destruct h1 as [b' h0].
@@ -2716,12 +2715,11 @@ Lemma progress : forall G a A, Typing G a A ->
     + show_irrelevant IR.
     + move => h1.
       apply canonical_forms_CPi in H; auto.
-      destruct H as [[a2 e1]|[T P]]; subst.
+      destruct H as [a2 e1]; subst.
       ++
         right. exists (open_tm_wrt_co a2 g_Triv); eauto.
         eapply E_CAppCAbs; eauto.
         eauto using Value_lc.
-      ++ left. eauto with lc.
       ++ show_irrelevant IR.
     + intros H1.
       destruct H1 as [a' h0].

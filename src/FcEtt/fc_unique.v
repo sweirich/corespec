@@ -107,8 +107,8 @@ Proof.
     eapply open_tm_wrt_co_inj; autotype.
   - apply_ind a1. done.
   - move: (binds_unique _ _ _ _ _ b H4 uniq_an_toplevel) => E. inversion E. auto.
-  - have E: (Ax a A = Ax a2 A2). eapply binds_unique; eauto using uniq_an_toplevel.
-    inversion E. auto.
+(*  - have E: (Ax a A = Ax a2 A2). eapply binds_unique; eauto using uniq_an_toplevel.
+    inversion E. auto. *)
   - autotype; apply_ind g1; apply_ind g2; autotype.
   - autotype; apply_ind g; autotype.
   - ann_invert_clear. apply_ind g. auto.

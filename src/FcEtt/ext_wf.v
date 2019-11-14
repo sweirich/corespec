@@ -18,6 +18,7 @@ Require Import FcEtt.toplevel.
    -- all components are locally closed in any judgement
   *)
 
+(*
 Lemma Path_lc : forall T a, Path T a -> lc_tm a.
 Proof. induction 1; eauto. Qed.
 
@@ -29,11 +30,12 @@ Proof.
   intros. induction H; lc_solve.
 Qed.
 Hint Resolve DataTy_lc : lc.
+*)
 
 Lemma CoercedValue_Value_lc_mutual: (forall A, CoercedValue A -> lc_tm A) /\
                                     (forall A, Value A -> lc_tm A).
 Proof.
-  apply CoercedValue_Value_mutual; eauto with lc.
+  apply CoercedValue_Value_mutual; eauto.
 Qed.
 
 Lemma Value_lc : forall A, Value A -> lc_tm A.
@@ -142,7 +144,5 @@ Proof. induction Sig_toplevel.
        intros. destruct H2. inversion H2. subst.
        simpl in H0. eauto. eauto with lc.
        eauto.
-       intros. destruct H2. inversion H2. subst.
-       eauto with lc.
-       eauto.
+
 Qed.

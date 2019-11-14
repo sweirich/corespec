@@ -45,8 +45,6 @@ Proof.
     auto.
     simpl_env.
     auto.
-  - eapply AnnTyping_weakening with (F:=nil)(G:=nil) in H1;
-      simpl_env in H1; simpl_env; eauto.
 Qed.
 
 Lemma AnnPropWff_regularity :
@@ -526,29 +524,6 @@ Qed.
 
 
 (* ---------------------------------------------- *)
-
-
-Lemma erase_a_Const : forall G0 a0 A0 A1 T,
-       erase a0 = a_Const T ->
-       binds T (Cs A1) an_toplevel ->
-       AnnTyping G0 a0 A0   ->
-       exists g, AnnDefEq G0 (dom G0) g A0 A1.
-   Proof.
-     intros. dependent induction H1.
-     all: try destruct rho; simpl in H; try done.
-     + move: (IHAnnTyping1 H) => [? ?].
-       eexists. eapply An_Trans2 with (a1 := A).
-       eapply An_Sym2. eassumption.
-       eassumption.
-     + inversion H. subst.
-       move: (binds_unique _ _ _ _ _ H0 H2 uniq_an_toplevel) => EQ. inversion EQ.
-       subst.
-       eexists. eapply An_Refl.
-       move: (AnnTyping_weakening H3 G nil nil eq_refl) => h0.
-       simpl_env in h0.
-       eauto.
-   Qed.
-
 
 Lemma erase_capp :
   forall AB0 C G, AnnTyping G AB0 C -> forall A, erase AB0 = (a_CApp A g_Triv) ->
