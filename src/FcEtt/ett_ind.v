@@ -106,6 +106,7 @@ Ltac apply_lc_exists x :=
   || apply lc_g_AbsCong_exists  with (x1 := x)
   || apply lc_g_CPiCong_exists  with (c1 := x)
   || apply lc_g_CAbsCong_exists with (c1 := x)
+  || apply lc_g_SigmaCong_exists   with (x1 := x)
   || fail "invalid case for apply_lc_exists" );
   eauto 2.
 
@@ -162,6 +163,17 @@ Ltac lc_inversion c :=
     inversion H; clear H
   | [ H : lc_tm (a_Case _ _) |- _ ] =>
     inversion H; clear H
+  | [ H : lc_tm (a_UPair _ _ _) |- _ ] =>
+    inversion H; clear H
+  | [ H : lc_tm (a_Pair _ _ _ _) |- _ ] =>
+    inversion H; clear H
+  | [ H : lc_tm (a_Sigma _ _ _) |- _ ] =>
+    inversion H; clear H
+  | [ H : lc_tm (a_Fst _ ) |- _ ] =>
+    inversion H; clear H
+  | [ H : lc_tm (a_Snd _ ) |- _ ] =>
+    inversion H; clear H
+
  end.
 
 Ltac apply_lc_body :=
@@ -219,7 +231,7 @@ Proof.
       eapply (H1 xc); autorewrite with subst_open; auto
     end.
   all: try rewrite co_subst_co_co_var_neq; auto.
-Qed.
+Admitted.
 
 
 (* --------------------------------------------------------- *)
@@ -251,6 +263,16 @@ Ltac invert_syntactic_equality :=
   | [ H : a_CPi _ _ = a_CPi _ _ |- _ ] =>
     inversion H; subst; clear H
   | [ H : Eq _ _ _ = Eq _ _ _ |- _ ] =>
+    inversion H; subst; clear H
+  | [ H : a_Sigma _ _ _ = a_Sigma _ _ _ |- _ ] =>
+    inversion H; subst; clear H
+  | [ H : a_UPair _ _ _ = a_UPair _ _ _ |- _ ] =>
+    inversion H; subst; clear H
+  | [ H : a_Pair _ _ _ _ = a_Pair _ _ _ _ |- _ ] =>
+    inversion H; subst; clear H
+  | [ H : a_Fst _ = a_Fst _ |- _ ] =>
+    inversion H; subst; clear H
+  | [ H : a_Snd _ = a_Snd _ |- _ ] =>
     inversion H; subst; clear H
   end.
 
@@ -341,6 +363,11 @@ Ltac ext_induction CON :=
       pose CON :=  E_CApp       |
 (*      pose CON :=  E_Const      | *)
       pose CON :=  E_Fam        |
+      pose CON :=  E_Sigma      |
+      pose CON :=  E_Pair       |
+      pose CON :=  E_PairIrrel  |
+      pose CON :=  E_Fst        |
+      pose CON :=  E_Snd        |
       pose CON :=  E_Wff        |
       pose CON :=  E_PropCong   |
       pose CON :=  E_IsoConv    |
@@ -370,6 +397,10 @@ Ltac ext_induction CON :=
       pose CON :=  E_LeftIrrel  |
       pose CON :=  E_Right      |
       pose CON :=  E_CLeft      | *)
+      pose CON :=  E_SigmaCong  |
+      pose CON :=  E_PairCong  |
+      pose CON :=  E_FstCong  |
+      pose CON :=  E_SndCong  |
       pose CON :=  E_Empty      |
       pose CON :=  E_ConsTm     |
       pose CON :=  E_ConsCo     ].
@@ -388,6 +419,10 @@ Ltac ann_induction CON :=
       pose CON :=  An_CApp       |
 (*      pose CON :=  An_Const      | *)
       pose CON :=  An_Fam        |
+      pose CON :=  An_Sigma        |
+      pose CON :=  An_Pair        |
+      pose CON :=  An_Fst        |
+      pose CON :=  An_Snd        |
       pose CON :=  An_Wff        |
       pose CON :=  An_PropCong   |
       pose CON :=  An_CPiFst     |
@@ -415,6 +450,12 @@ Ltac ann_induction CON :=
 (*      pose CON :=  An_Left       |
       pose CON :=  An_Right      |
       pose CON :=  An_CLeft      | *)
+      pose CON :=  An_SigmaCong       |
+      pose CON :=  An_PairCong        |
+      pose CON :=  An_FstCong        |
+      pose CON :=  An_SndCong        |
+      pose CON :=  An_SigmaFst        |
+      pose CON :=  An_SigmaSnd        |
       pose CON :=  An_Empty      |
       pose CON :=  An_ConsTm     |
       pose CON :=  An_ConsCo     ].
@@ -496,9 +537,9 @@ Ltac lc_solve :=
 
 (* without these two lines, ext_consist.v fails. *)
 Hint Resolve lc_a_Pi_exists
-     lc_a_CPi_exists lc_a_Abs_exists lc_a_CAbs_exists lc_a_UAbs_exists.
+     lc_a_CPi_exists lc_a_Abs_exists lc_a_CAbs_exists lc_a_UAbs_exists : core.
 (* This hint is restricted to lngen in ett_inf. *)
-Hint Resolve lc_body_tm_wrt_tm lc_body_tm_wrt_co. (* binds_cons_1 *)
+Hint Resolve lc_body_tm_wrt_tm lc_body_tm_wrt_co : core . (* binds_cons_1 *)
 
 
 
@@ -681,18 +722,20 @@ Ltac auto_rew_env :=
 
 Ltac E_pick_fresh x :=
   match goal with
-    | [ |- Typing _ ?shape _ ] =>
+    | [ |- Typing _ _ ?shape _ ] =>
       let v := match shape with
             | a_Pi _ _ _ => E_Pi
             | a_UAbs _ _ => E_Abs
             | a_CPi _ _  => E_CPi
             | a_CAbs _ _ => E_CAbs
             | a_UCAbs _  => E_CAbs
+            | a_Sigma _ _ _ => E_Sigma
            end
       in pick fresh x and apply v
-    | [ |- DefEq _ _ ?shape ?s2 _ ] =>
+    | [ |- DefEq _ _ _ ?shape ?s2 _ ] =>
       let v := match shape with
                | a_Pi _ _ _ => E_PiCong
+               | a_Sigma _ _ _ => E_SigmaCong
                | a_UAbs Rel _ => match s2 with
                                 | a_UAbs _ _ => E_AbsCong
                                 | _ => E_EtaRel
@@ -716,6 +759,7 @@ Ltac Par_pick_fresh x :=
     | [ |- Par _ _ ?shape ?s2 ] =>
       let v := match shape with
             | a_Pi _ _ _ => Par_Pi
+            | a_Sigma _ _ _ => Par_Sigma
             | a_UAbs Rel _ =>  match s2 with
                                 | a_UAbs _ _ => Par_Abs
                                 | _ => Par_Eta
@@ -752,6 +796,8 @@ Ltac An_pick_fresh x :=
     | g_CPiCong  _ _   => An_CPiCong
     | g_CAbsCong _ _ _ => An_CAbsCong
     | g_Eta _          => An_Eta
+    | a_Sigma _ _ _ => An_Sigma
+    | g_SigmaCong _ _ => An_SigmaCong
                end in
   pick fresh x and apply ctor.
 
@@ -781,7 +827,7 @@ Proof.
   eapply (@co_subst_co_tm_lc_tm_inverse g_Triv c); eauto 2. auto.
 Qed.
 
-Hint Resolve lc_open_switch_co.
+Hint Resolve lc_open_switch_co : core.
 
 (* Putting this here because it's annoying to move elsewhere. *)
 
@@ -793,4 +839,4 @@ Proof.
   done.
 Qed.
 
-Hint Rewrite tm_subst_cast.
+Hint Rewrite tm_subst_cast : core.

@@ -1,7 +1,9 @@
-*See:*
 
-This version extends the ICFP 17 system with eta-equivalence rules. The pure
-icfp17 system is available at tag icfp17.
+This experimental branch (`sigma`) extends the ICFP 17 system with Sigma types. 
+The pure icfp17 system is available at tag icfp17. The version of the 
+system with eta-equivalence rules is on the branch `stable`.
+
+*See:*
 
 - [src](src/FcEtt) for Coq development.
 

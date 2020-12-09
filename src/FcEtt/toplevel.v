@@ -25,7 +25,7 @@ Qed.
 
 (* ------------------------------------------ *)
 Lemma toplevel_closed : forall F a A, binds F (Ax a A) toplevel ->
-                                 Typing nil a A.
+                                 Typing nil Rel a A.
 Proof.
   have st: Sig toplevel by apply Sig_toplevel.
   induction st.

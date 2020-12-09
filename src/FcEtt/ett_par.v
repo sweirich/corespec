@@ -125,6 +125,7 @@ Ltac erased_pick_fresh x :=
              | a_Pi _ _ _  => erased_a_Pi
              | a_CPi _ _   => erased_a_CPi
              | a_UCAbs _   => erased_a_CAbs
+             | a_Sigma _ _ _ => erased_a_Sigma
              end
     in pick fresh x and apply v
   end.
@@ -194,7 +195,7 @@ Hint Resolve erased_tm_erase : erased. *)
 
 
 Inductive erased_sort : sort -> Prop :=
-| erased_Tm : forall a, erased_tm a -> erased_sort (Tm a)
+| erased_Tm : forall a r, erased_tm a -> erased_sort (Tm r a)
 | erased_Co : forall a b A, erased_tm a -> erased_tm b -> erased_tm A -> erased_sort (Co (Eq a b A)).
 
 (* Check Forall_forall *)
@@ -299,10 +300,8 @@ end.
 Lemma Par_lc2 : forall G D a a' , Par G D a a' -> lc_tm a'.
 Proof.
   intros.  induction H; auto.
-  - lc_solve.
-  - lc_solve.
-  - lc_solve.
-  - lc_toplevel_inversion.
+  all: try solve [  lc_toplevel_inversion].
+  all: try solve [lc_solve].
 Qed.
 
 Hint Resolve Par_lc1 Par_lc2 : lc.

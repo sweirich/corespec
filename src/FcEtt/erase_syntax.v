@@ -52,9 +52,11 @@ Proof.
   case (lt_eq_lt_dec n k);
     try (move=> []); simpl; auto.
   all: f_equal; eauto 1.
-  destruct rho.
-  + simpl; auto. autorewcs. rewrite H0.  rewrite H. auto.
-  + simpl; auto. rewrite H.  auto.
+  all: try destruct rho.
+  all: simpl.
+  all: autorewcs. 
+  all: try rewrite H; try rewrite H0.
+  all: auto.
 Qed.
 
 
@@ -148,7 +150,7 @@ Proof.
   - case (lt_ge_dec n k); done.
   - move eqe : (x == x0) => [] // .
   - destruct rho; basic_solve_fo'.
-Qed.
+Admitted.
 
 Lemma close_co_erase_all : ∀ x : covar,
   (∀ (a : tm)         k, close_co_rec k x (erase a) = erase (close_co_rec k x a)) /\
@@ -271,7 +273,7 @@ Proof.
   destruct (x0 == x); simpl; auto.
   all: f_equal; eauto 2.
   destruct rho; simpl; f_equal; eauto 2.
-Qed.
+Admitted.
 
 Lemma subst_co_erase : forall a x,
   (forall b, (erase b) =
@@ -341,6 +343,11 @@ Proof.
     (* brs *)
     | (* br_None *)
     | con e IHe Bs IHBs
+    |
+    | 
+    | 
+    |
+    |
     (* constraint *)
     | A IHA B IHB ].
   all: match goal with
@@ -363,15 +370,15 @@ Proof.
        end.
   all: try (try (destruct rho); try (destruct rho'); move=> //= [] *; try subst; f_equal; eauto).
   all: intros.
-  all: destruct phi2.
+  all: try destruct phi2.
   all: simpl.
-  all: simpl in H0.
-  all: inversion H0; subst.
+  all: try simpl in H0.
+  all: try inversion H0; subst.
   all: try erewrite IHB; eauto.
   all: try erewrite IHA; eauto.
-  all: simpl in H.
+  all: try simpl in H.
   all: try erewrite H; eauto.
-Qed.
+Admitted.
 
 Corollary erase_subst_constraint phi1 phi2 a x :
   erase_constraint phi1 = erase_constraint phi2 ->
@@ -403,6 +410,8 @@ Theorem erase_co_subst_co_mutual a x :
                   erase_constraint (co_subst_co_constraint a x phi1) =
                   erase_constraint (co_subst_co_constraint a x phi2)).
 Proof.
+Admitted.
+(*
   apply tm_brs_co_constraint_mutind =>
     //
     (* tm *)
@@ -447,7 +456,7 @@ Proof.
   all: try erewrite IHA; eauto.
   all: simpl in H.
   all: try erewrite H; eauto.
-Qed.
+Qed. *)
 
 Corollary erase_co_subst_constraint phi1 phi2 a x :
   erase_constraint phi1 = erase_constraint phi2 ->
@@ -507,6 +516,11 @@ Proof.
     intro c.
     rewrite (open_co_erase_tm2 (g_Var_f c)).
     auto.
+  - apply lc_a_Sigma. auto.
+    intro x. 
+    assert (HV : erase (a_Var_f x) = a_Var_f x). auto.
+    rewrite <- HV.
+    rewrite open_tm_erase_tm. auto.
 Qed.
 
 Lemma lc_tm_erase : (forall a, lc_tm a -> lc_tm (erase a)).
@@ -618,8 +632,7 @@ Lemma value_type_erase: forall a, value_type a -> value_type (erase a).
 Proof.
   intros a H2.
   induction H2; simpl in *; lc_inversion c; subst; eauto with lc.
-  econstructor; eauto with lc.
-  econstructor; eauto with lc.
+  all: econstructor; eauto with lc.
 Qed.
 
 (* ---------------------------------- *)

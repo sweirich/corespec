@@ -25,7 +25,7 @@ Qed.
 
 Lemma binds_to_PropWff: forall G0 A B T c,
     Ctx G0 ->
-    binds c (Co (Eq A B T)) G0 -> PropWff G0 (Eq A B T).
+    binds c (Co (Eq A B T)) G0 -> PropWff G0 Irrel (Eq A B T).
 Proof.
   induction G0; auto; try done.
   intros A B T c H H0.
@@ -34,10 +34,10 @@ Proof.
   - case H0; try done.
     move => h0.
     inversion H; subst.
-    have:   PropWff ( G0) (Eq A B T).
+    have:   PropWff ( G0) Irrel (Eq A B T).
     apply (IHG0 _ _ _ c H4); eauto.
     move => h1.
-    rewrite_env (nil ++ [(a, Tm A0)] ++ G0).
+    rewrite_env (nil ++ [(a, Tm rho A0)] ++ G0).
     eapply PropWff_weakening; eauto.
   - destruct H0; subst.
     inversion H0; subst.
@@ -52,10 +52,10 @@ Proof.
 Qed.
 
 Lemma tm_subst_fresh_1 :
-forall G a A a0 x s,
-  Typing G a A -> Ctx ((x ~ s) ++ G) -> tm_subst_tm_tm a0 x A = A.
+forall G r a A a0 x s,
+  Typing G r a A -> Ctx ((x ~ s) ++ G) -> tm_subst_tm_tm a0 x A = A.
 Proof.
-  intros G a A a0 x s H H0.
+  intros G r a A a0 x s H H0.
   destruct s.
   - apply tm_subst_tm_tm_fresh_eq.
     inversion H0; subst; clear H0.
@@ -70,10 +70,10 @@ Proof.
 Qed.
 
 Lemma tm_subst_co_fresh_1 :
-forall G a A a0 c s,
-  Typing G a A -> Ctx ((c ~ s) ++ G) -> co_subst_co_tm a0 c A = A.
+forall G r a A a0 c s,
+  Typing G r a A -> Ctx ((c ~ s) ++ G) -> co_subst_co_tm a0 c A = A.
 Proof.
-  intros G a A a0 x s H H0.
+  intros G r a A a0 x s H H0.
   destruct s.
   - apply co_subst_co_tm_fresh_eq.
     inversion H0; subst; clear H0.
@@ -88,20 +88,20 @@ Proof.
 Qed.
 
 Lemma tm_subst_fresh_2 :
-forall G a A a0 x s,
-  Typing G a A -> Ctx ((x ~ s) ++ G) -> tm_subst_tm_tm a0 x a = a.
+forall G r a A a0 x s,
+  Typing G r a A -> Ctx ((x ~ s) ++ G) -> tm_subst_tm_tm a0 x a = a.
 Proof.
-  intros G a A a0 x s H H0.
+  intros G r a A a0 x s H H0.
   apply tm_subst_tm_tm_fresh_eq.
   move: (Typing_context_fv H) => ?. split_hyp.
   inversion H0; subst; auto.
 Qed.
 
 Lemma co_subst_fresh :
-forall G phi a0 x s,
-  PropWff G phi -> Ctx ((x ~ s) ++ G) -> tm_subst_tm_constraint a0 x phi = phi.
+forall G r phi a0 x s,
+  PropWff G r phi -> Ctx ((x ~ s) ++ G) -> tm_subst_tm_constraint a0 x phi = phi.
 Proof.
-  intros G phi a0 x s H H0.
+  intros G r phi a0 x s H H0.
   apply tm_subst_tm_constraint_fresh_eq.
   move: (ProfWff_context_fv H) => ?. split_hyp.
   inversion H0; subst; auto.
@@ -130,9 +130,9 @@ Qed.
 
 
 
-Lemma binds_map_4: forall x A F c0,
-    binds x (Tm A) F ->
-    binds x (Tm (co_subst_co_tm g_Triv c0 A)) (map (co_subst_co_sort g_Triv c0) F).
+Lemma binds_map_4: forall x r A F c0,
+    binds x (Tm r A) F ->
+    binds x (Tm r (co_subst_co_tm g_Triv c0 A)) (map (co_subst_co_sort g_Triv c0) F).
 Proof.
   induction F; try done.
   intros c0 H.
@@ -169,8 +169,8 @@ Proof.
   rewrite IHF; auto.
 Qed.
 
-Lemma subst_rho: forall L G a A x y b rho
-    (T : Typing G a A)
+Lemma subst_rho: forall L G r a A x y b rho
+    (T : Typing G r a A)
     (Neq: x <> y)
     (Fr: y `notin` fv_tm_tm_tm a)
     (Fr2: y `notin` L)
@@ -200,75 +200,155 @@ Ltac rewrite_subst_context :=
  below.
 *)
 
+Lemma Typing_Rel_Irrel_mutual :
+  (forall G r a A, Typing G r a A -> Typing G Irrel a A) /\
+  (forall G r phi (H : PropWff G r phi),
+      PropWff G Irrel phi) /\
+  (forall G D r p1 p2 (H : Iso G D r p1 p2),
+      Iso G D Irrel p1 p2) /\
+  (forall G D r A B T (H : DefEq G D r A B T),
+      DefEq G D Irrel A B T) /\
+  (forall G (H : Ctx G), True).
+Proof. 
+  eapply typing_wff_iso_defeq_mutual;
+    intros; subst; simpl.
+  all: try solve [econstructor; eauto 2].
+  admit.
+  pick fresh x and apply E_Pi; eauto.
+Abort. 
+
 Ltac eapply_E_subst :=
   first [ eapply E_Star     |
           eapply E_App      |
           eapply E_IApp     |
           eapply E_CApp     |
 (*          eapply E_Const    | *)
+          eapply E_Pair      |
+          eapply E_PairIrrel |
+          eapply E_Fst       |
+          eapply E_FstIrrel  |
+          eapply E_Snd       |
           eapply E_IsoConv  |
           eapply E_AppCong  |
           eapply E_IAppCong |
           eapply E_CAppCong |
           eapply E_PiSnd    |
-          eapply E_CPiSnd].
+          eapply E_CPiSnd   |
+          eapply E_PairCong |
+          eapply E_PairCongIrrel |
+          eapply E_FstCong  |
+          eapply E_FstCongIrrel |
+          eapply E_SndCong
+].
 
+Ltac E_pick_fresh x :=
+  match goal with
+    | [ |- Typing _ _ ?shape _ ] =>
+      let v := match shape with
+            | a_Pi _ _ _ => E_Pi
+            | a_UAbs _ _ => E_Abs
+            | a_CPi _ _  => E_CPi
+            | a_CAbs _ _ => E_CAbs
+            | a_UCAbs _  => E_CAbs
+            | a_Sigma _ _ _ => E_Sigma
+           end
+      in pick fresh x and apply v
+    | [ |- DefEq _ _ _ ?shape ?s2 _ ] =>
+      let v := match shape with
+               | a_Pi _ _ _ => E_PiCong
+               | a_Sigma _ _ _ => E_SigmaCong
+               | a_UAbs Rel _ => match s2 with
+                                | a_UAbs _ _ => E_AbsCong
+                                | _ => E_EtaRel
+                                end
+               | a_UAbs Irrel _ => match s2 with 
+                                | a_UAbs _ _ =>  E_AbsCong
+                                | _ => E_EtaIrrel
+                                end
+               | a_CPi _ _  => E_CPiCong
+               | a_CAbs _ _ => E_CAbsCong
+               | a_UCAbs _  => match s2 with 
+                                | a_UCAbs _ =>  E_CAbsCong
+                                | _ => E_EtaC
+                                end
+               end
+      in pick fresh x and apply v
+  end.
 
-
-Lemma tm_substitution_mutual :
-  (forall G0 b B (H : Typing G0 b B),
-      forall G a A, Typing G a A ->
-               forall F x, G0 = (F ++ (x ~ Tm A) ++ G) ->
-                      Typing (map (tm_subst_tm_sort a x) F ++ G)
+Lemma tm_substitution_mutual : 
+  (forall G0 r b B (H : Typing G0 r b B),
+      forall G r1 a A, Typing G r1 a A ->
+               forall F x, G0 = (F ++ (x ~ Tm r1 A) ++ G) ->
+                      Typing (map (tm_subst_tm_sort a x) F ++ G) r
                              (tm_subst_tm_tm a x b)
                              (tm_subst_tm_tm a x B)) /\
-    (forall G0 phi (H : PropWff G0 phi),
-        forall G a A, Typing G a A ->
-                 forall F x, G0 = (F ++ (x ~ Tm A) ++ G) ->
-                        PropWff (map (tm_subst_tm_sort a x) F ++ G)
+    (forall G0 r phi (H : PropWff G0 r phi),
+        forall G r1 a A, Typing G r1 a A ->
+                 forall F x, G0 = (F ++ (x ~ Tm r1 A) ++ G) ->
+                        PropWff (map (tm_subst_tm_sort a x) F ++ G) r
                                 (tm_subst_tm_constraint a x phi)) /\
-    (forall G0 D p1 p2 (H : Iso G0 D p1 p2),
-        forall G a A, Typing G a A ->
-                 forall F x, G0 = (F ++ (x ~ Tm A) ++ G) ->
-                Iso (map (tm_subst_tm_sort a x) F ++ G) D
+    (forall G0 D r p1 p2 (H : Iso G0 D r p1 p2),
+        forall G r1 a A, Typing G r1 a A ->
+                 forall F x, G0 = (F ++ (x ~ Tm r1 A) ++ G) ->
+                Iso (map (tm_subst_tm_sort a x) F ++ G) D r
                     (tm_subst_tm_constraint a x p1)
                     (tm_subst_tm_constraint a x p2)) /\
-    (forall G0 D A B T (H : DefEq G0 D A B T),
-       forall G a A0, Typing G a A0 ->
-                 forall F x, G0 = (F ++ (x ~ Tm A0) ++ G) ->
-                        DefEq (map (tm_subst_tm_sort a x) F ++ G) D
+    (forall G0 D r A B T (H : DefEq G0 D r A B T),
+       forall G r1 a A0, Typing G r1 a A0 ->
+                 forall F x, G0 = (F ++ (x ~ Tm r1 A0) ++ G) ->
+                        DefEq (map (tm_subst_tm_sort a x) F ++ G) D r
                               (tm_subst_tm_tm a x A)
                               (tm_subst_tm_tm a x B) (tm_subst_tm_tm a x T)) /\
     (forall G0 (H : Ctx G0),
-        forall G a A, Typing G a A ->
-                 forall F x, G0 = (F ++ (x ~ Tm A) ++ G) ->
+        forall G r a A, Typing G r a A ->
+                 forall F x, G0 = (F ++ (x ~ Tm r A) ++ G) ->
                         Ctx (map (tm_subst_tm_sort a x) F ++ G)).
+Proof.
   eapply typing_wff_iso_defeq_mutual;
-    intros; subst; simpl. Focus 22. destruct rho. Unfocus.
-  all: try first [ E_pick_fresh y; autorewrite with subst_open_var; eauto 2 with lc;
-                   try rewrite_subst_context; eauto 3 |
-                   autorewrite with subst_open; eauto 2 with lc ].
-  all: try solve [econstructor; simpl in *; eauto 2].
-  all: try eapply_E_subst.
-  all: try solve [eapply subst_rho; eauto 2].
-  all: try solve [eapply_first_hyp; eauto].
-  all: try solve [eapply DefEq_weaken_available; eauto].
-  - destruct (x == x0).
+    intros; subst; simpl.
+  all: try match goal with 
+     [ |- DefEq ?G ?D ?r (a_UAbs ?rho _) (a_UAbs _ _) ?A ] => destruct rho
+  end.
+  (* 52 subgoals *)
+  all: try solve [eapply_E_subst; eapply_first_hyp; try eauto 1].
+  all: try solve [ eapply E_Pair; eauto 2; 
+                   autorewrite with open_subst; eauto 2 with lc].
+  all: try solve [ eapply E_PairIrrel; eauto 2;
+                   autorewrite with open_subst; eauto 2 with lc].
+  all: try solve [ eapply E_Beta; eauto 2;
+                   eapply Beta_tm_subst; eauto with lc ].
+
+  (* 45 *) 
+  all: (* Eta rule *)
+    try solve [E_pick_fresh y; autorewrite with subst_open_var; eauto 2 with lc;
+    (have h0: (y <> x) by eauto);
+    rewrite e; eauto;  simpl; destruct eq_dec; try done].
+  (* 42 *)
+  all: try solve [E_pick_fresh y; autorewrite with subst_open_var; eauto 2 with lc;
+     try rewrite_subst_context; eauto 3; try eapply subst_rho; eauto 2].
+  (* 32 *)
+  all: try solve [autorewrite with subst_open; eauto 2 with lc;
+                  econstructor; 
+                    try eapply_first_hyp; 
+                    try eapply DefEq_weaken_available; eauto 2].
+  (* 9 *)
+  - (* E_Var *)
+    destruct (x == x0).
     + subst.
-      assert (HA: Tm A = Tm A0). eapply binds_mid_eq; eauto.
+      assert (HA: Tm rho A = Tm r1 A0). eapply binds_mid_eq; eauto 2.
       inversion HA. subst.
       assert (S : tm_subst_tm_tm a x0 A0 = A0). eapply tm_subst_fresh_1. eauto.
       apply Ctx_strengthen with (G2 := F). eauto.
       rewrite S.
       rewrite_env (nil ++ map (tm_subst_tm_sort a x0) F ++ G0).
       eapply Typing_weakening; eauto 2. simpl_env.
-      apply (H _ _ A0); auto.
+      eauto 2.
     + apply binds_remove_mid in b; auto.
       destruct (binds_app_1 _ _ _ _ _ b).
       (* after x *)
       eapply E_Var; eauto.
       eapply binds_app_2.
-      assert (EQ : tm_subst_tm_sort a x0 (Tm A) = Tm (tm_subst_tm_tm a x0 A)). auto.
+      assert (EQ : tm_subst_tm_sort a x0 (Tm rho A) = Tm rho (tm_subst_tm_tm a x0 A)). auto.
       rewrite <- EQ.
       eapply binds_map_2. auto.
       (* before x *)
@@ -279,45 +359,34 @@ Lemma tm_substitution_mutual :
       eapply Ctx_strengthen. eauto. eauto. eauto.
       rewrite EQ.
       eauto.
-  - (* conversion *)
-    econstructor; try eapply DefEq_weaken_available; eauto.
-(*  - have h0: Typing nil A a_Star by eauto using toplevel_closed.
-    eapply tm_subst_fresh_2 with (x:=x )in h0; eauto.
-    erewrite h0. auto.
-  - have h0: Typing nil A a_Star.  eapply toplevel_to_const; eauto.
-    erewrite tm_subst_fresh_2; eauto. *)
-  -
-    have h0: Typing nil a A by eauto using toplevel_closed.
+  - (* E_Fam *)
+    have h0: Typing nil Rel a A by eauto using toplevel_closed.
     eapply E_Fam with (a:= tm_subst_tm_tm a0 x a); eauto.
     erewrite (tm_subst_fresh_2 _ h0); auto.
     erewrite (tm_subst_fresh_1 _ h0); auto.
     erewrite (tm_subst_fresh_1 _ h0); auto.
-  - destruct (c == x).
+  - (* E_Assn *) destruct (c == x).
     + subst.
       apply binds_mid_eq in b0; auto; try done.
     + apply binds_remove_mid in b0; auto.
       destruct (binds_app_1 _ _ _ _ _ b0).
-      * apply (E_Assn _ D _ _ _ c); auto.
-           by apply (H _ _ A0).
+      * apply (E_Assn _ D _ _ _ _ c); auto.
+           by eapply (H _ _ _ A0); eauto.
            have:  binds c (Co (Eq (tm_subst_tm_tm a0 x a) (tm_subst_tm_tm a0 x b) (tm_subst_tm_tm a0 x A))) (map (tm_subst_tm_sort a0 x) F); auto.
            apply bind_map_tm_subst_tm_sort; auto.
-       * apply (E_Assn _ D _ _ _ c); auto.
-           by apply (H _ _ A0).
-         have: Ctx ([(x, Tm A0)] ++ G0) by apply (Ctx_strengthen _ F); auto.
+       * apply (E_Assn _ D _ _ _ _ c); auto.
+           by eapply (H _ _ _ A0); eauto.
+         have: Ctx ([(x, Tm r1 A0)] ++ G0) by apply (Ctx_strengthen _ F); auto.
          inversion 1; subst.
-         have: PropWff G0 (Eq a b A) by apply (binds_to_PropWff _ _ _ c); auto.
+         have: PropWff G0 Irrel (Eq a b A) by apply (binds_to_PropWff _ _ _ c); auto.
          inversion 1; subst.
          repeat rewrite tm_subst_tm_tm_fresh_eq; auto.
          -- move: (Typing_context_fv H10) => ?. split_hyp. auto.
+         -- move: (Typing_context_fv H11) => ?. split_hyp. auto.
          -- move: (Typing_context_fv H10) => ?. split_hyp. auto.
-         -- move: (Typing_context_fv H9) => ?. split_hyp. auto.
-  - eapply E_Beta; eauto.
-    eapply Beta_tm_subst; eauto with lc.
-  - eapply E_EqConv; eauto 2.
-    eapply DefEq_weaken_available; eauto.
-  - have h0: (y <> x) by eauto.
-    rewrite e; eauto.
-    simpl; destruct eq_dec; try done.
+
+  (* - eapply E_EqConv; eauto 2. 
+    eapply DefEq_weaken_available; eauto. *)
   (* Left/Right.  Do not remove
   - eapply E_LeftRel with (b := tm_subst_tm_tm a0 x b)
                           (b':= tm_subst_tm_tm a0 x b'); eauto 2. eapply Path_tm_subst_tm_tm; eauto 2 with lc.
@@ -353,26 +422,20 @@ Lemma tm_substitution_mutual :
     auto.
 
   *)
-  - have h0: (y <> x) by eauto.
-    rewrite e; eauto.
-  - have h0: (y <> x) by eauto.
-    rewrite e; eauto.
+  - (* E_PairCong Rel *)
+    eapply_E_subst; eauto 2; 
+    autorewrite with open_subst; eauto 2 with lc.
+  - eapply_E_subst; eauto 2; 
+    autorewrite with open_subst; eauto 2 with lc.
   - destruct  F; try done.
-  - induction F; try done.
+  - induction F as [| [y s]].
     simpl; simpl in H2.
     inversion H2; subst; auto.
-    destruct a0.
-    destruct s.
-    + simpl.
+    inversion H2; subst; clear H2.
+    + simpl_env.
       apply E_ConsTm; auto.
-      * simpl in H2.
-        inversion H2.
-        apply (H _ _ _ H1); auto.
-      * simpl in H0.
-        inversion H2; subst; clear H2.
-        apply (H0 _ _ _ H1); auto.
-      * inversion H2; subst; clear H2; auto.
-    + inversion H2.
+      * eapply H; eauto.
+      * eapply H0; eauto.  
   - inversion H2; subst; clear H2.
     induction F; try done.
     destruct a0.
@@ -381,20 +444,22 @@ Lemma tm_substitution_mutual :
       inversion H4.
     + simpl; subst.
       apply E_ConsCo; auto.
-      * apply (H _ _ _ H1); auto.
+      * eapply (H _ _ _ _ H1); eauto.
          inversion H4; auto.
       * inversion H4; subst; clear H4.
-        apply (H0 _ _ A); auto.
+        eapply (H0 _ _ _ A); eauto.
       * inversion H4; subst; clear H4.
         auto.
+Unshelve.
+all : exact Rel.
 Qed.
 
-Lemma Typing_tm_subst : forall G x A b B (H : Typing ((x ~ Tm A) ++ G) b B),
-  forall a, Typing G a A ->
-       Typing G (tm_subst_tm_tm a x b) (tm_subst_tm_tm a x B).
+Lemma Typing_tm_subst : forall G x r A r1 b B (H : Typing ((x ~ Tm r A) ++ G) r1 b B),
+  forall a, Typing G r a A ->
+       Typing G r1 (tm_subst_tm_tm a x b) (tm_subst_tm_tm a x B).
 Proof.
-  intros G x A b B H a H0.
-  pose K := @first _ _ _ _ _ tm_substitution_mutual _ b B H G a A H0 nil x.
+  intros G x r A r1 b B H a H0.
+  pose K := @first _ _ _ _ _ tm_substitution_mutual _ r1 b B H G r a A H0 nil x.
   clearbody K. simpl in K.
   apply K. auto.
 Qed.
@@ -410,45 +475,48 @@ Proof.
 Qed.
 
 Lemma co_substitution_mutual :
-    (forall G0 b B (H : Typing G0 b B),
-        forall G D A1 A2 T F c ,
+    (forall G0 r b B (H : Typing G0 r b B),
+        forall G D r A1 A2 T F c ,
           G0 = (F ++ (c ~ Co (Eq A1 A2 T) ) ++ G)
-          -> DefEq G D A1 A2 T
-          -> Typing (map (co_subst_co_sort g_Triv c) F ++ G) (co_subst_co_tm g_Triv c b) (co_subst_co_tm g_Triv c B)) /\
-    (forall G0 phi (H : PropWff G0 phi),
+          -> DefEq G D r A1 A2 T
+          -> Typing (map (co_subst_co_sort g_Triv c) F ++ G) r (co_subst_co_tm g_Triv c b) (co_subst_co_tm g_Triv c B)) /\
+    (forall G0 r phi (H : PropWff G0 r phi),
         forall G D A1 A2 T F c,
           G0 = (F ++ (c ~ Co (Eq A1 A2 T) ) ++ G)
-          -> DefEq G D A1 A2 T
-          -> PropWff (map (co_subst_co_sort g_Triv c) F ++ G) (co_subst_co_constraint g_Triv c phi)) /\
-    (forall G0 D0 p1 p2 (H : Iso G0 D0 p1 p2),
-          forall G D A1 A2 T F c,
+          -> DefEq G D r A1 A2 T
+          -> PropWff (map (co_subst_co_sort g_Triv c) F ++ G) r (co_subst_co_constraint g_Triv c phi)) /\
+    (forall G0 D0 r p1 p2 (H : Iso G0 D0 r p1 p2),
+          forall G D r A1 A2 T F c,
             G0 = (F ++ (c ~ Co (Eq A1 A2 T) ) ++ G)
-            -> DefEq G D A1 A2 T
-            -> Iso (map (co_subst_co_sort g_Triv c) F ++ G) (union D (remove c D0))
+            -> DefEq G D r A1 A2 T
+            -> Iso (map (co_subst_co_sort g_Triv c) F ++ G) (union D (remove c D0)) r
                     (co_subst_co_constraint g_Triv c p1)
                     (co_subst_co_constraint g_Triv c p2)) /\
-    (forall G0 D0 A B T (H : DefEq G0 D0 A B T),
-        forall G D F c A1 A2 T1,
+    (forall G0 D0 r A B T (H : DefEq G0 D0 r A B T),
+        forall G D r F c A1 A2 T1,
           G0 = (F ++ (c ~ Co (Eq A1 A2 T1) ) ++ G)
-          -> DefEq G D A1 A2 T1
-          -> DefEq (map (co_subst_co_sort g_Triv c) F ++ G) (union D (remove c D0))
+          -> DefEq G D r A1 A2 T1
+          -> DefEq (map (co_subst_co_sort g_Triv c) F ++ G) (union D (remove c D0)) r
                   (co_subst_co_tm g_Triv c A) (co_subst_co_tm g_Triv c B)
                   (co_subst_co_tm g_Triv c T)) /\
     (forall G0 (H : Ctx G0),
-        forall G D F c A1 A2 T,
+        forall G D r F c A1 A2 T,
           G0 = (F ++ (c ~ Co (Eq A1 A2 T) ) ++ G)
-          -> DefEq G D A1 A2 T
+          -> DefEq G D r A1 A2 T
           -> Ctx (map (co_subst_co_sort g_Triv c) F ++ G)).
 Proof.
   apply typing_wff_iso_defeq_mutual; auto; intros; subst; simpl.
-  Focus 22. destruct rho. Unfocus. 
-   all: try first [ E_pick_fresh y; autorewrite with subst_open_var; eauto 2 with lc;
+  all: try 
+         match goal with [ |-  DefEq ?G ?D ?r (a_UAbs ?rho _) (a_UAbs _ _) _ ] => destruct rho end.
+  all: try first [ E_pick_fresh y; autorewrite with subst_open_var; eauto 2 with lc;
                     try rewrite_subst_context; eauto 3
                   | autorewrite with subst_open; eauto 2 with lc ].
   all: try eapply_E_subst; eauto 2.
   all: try solve [eapply co_subst_rho; eauto 2].
-  all: try solve [eapply_first_hyp; eauto; auto].
-  all: try solve [eapply DefEq_weaken_available; eauto].
+  all: try solve [eapply_first_hyp; eauto 3; auto].
+  all: try solve [eapply DefEq_weaken_available; eauto 3].
+Admitted. 
+(*
   - apply binds_app_1 in b.
     case:b; try done.
     + move => h0.
@@ -594,12 +662,12 @@ Proof.
       * apply (H _ D _ _ A1 A2 T); auto.
       * inversion H4; subst; clear H4.
          apply (H0 G0 D A1 A2 T F c1); auto.
-Qed.
+Qed. *)
 
 Lemma Typing_co_subst:
-   forall G D c a1 a2 A b B (H : Typing (c ~ (Co (Eq a1 a2 A)) ++ G) b B),
-     DefEq G D a1 a2 A ->
-     Typing G (co_subst_co_tm g_Triv c b) (co_subst_co_tm g_Triv c B).
+ forall G D r c a1 a2 A b B (H : Typing (c ~ (Co (Eq a1 a2 A)) ++ G) r b B),
+     DefEq G D r a1 a2 A ->
+     Typing G r (co_subst_co_tm g_Triv c b) (co_subst_co_tm g_Triv c B).
 Proof.
   intros.
   move: (first co_substitution_mutual) => ho.
@@ -610,24 +678,24 @@ Qed.
 (* -------------------- *)
 
 
-Lemma Typing_swap : forall x1 x G a A B,
+Lemma Typing_swap : forall x1 x r r1 G a A B,
       x1 `notin` fv_tm_tm_tm a \u fv_tm_tm_tm B
     -> x `notin` dom G \u {{ x1 }}
-    -> Typing ([(x1, Tm A)] ++ G) (open_tm_wrt_tm a (a_Var_f x1))
+    -> Typing ([(x1, Tm r1 A)] ++ G) r (open_tm_wrt_tm a (a_Var_f x1))
              (open_tm_wrt_tm B (a_Var_f x1))
-    -> Typing ([(x, Tm A)] ++ G) (open_tm_wrt_tm a (a_Var_f x))
+    -> Typing ([(x, Tm r1 A)] ++ G) r (open_tm_wrt_tm a (a_Var_f x))
              (open_tm_wrt_tm B (a_Var_f x)).
 Proof.
   intros.
-  assert (AC: Ctx ((x1 ~ Tm A) ++ G)). eauto.
+  assert (AC: Ctx ((x1 ~ Tm r1 A) ++ G)). eauto.
   inversion AC; subst.
-  assert (TV : Typing ([(x,Tm A)] ++ G) (a_Var_f x) A); eauto.
-  assert (CTX : Ctx ([(x1,Tm A)] ++ [(x, Tm A)] ++ G)).
+  assert (TV : Typing ([(x,Tm r1 A)] ++ G) r1 (a_Var_f x) A); eauto.
+  assert (CTX : Ctx ([(x1, Tm r1 A)] ++ [(x, Tm r1 A)] ++ G)).
   econstructor; auto.
-  pose M1 := (Typing_weakening H6 [(x,Tm A)] nil G).
+  pose M1 := (Typing_weakening H7 [(x,Tm r1 A)] nil G).
   simpl_env in M1; eapply M1; eauto.
 
-  pose K1 := Typing_weakening H1 [(x,Tm A)] [(x1, Tm A)] G eq_refl CTX;
+  pose K1 := Typing_weakening H1 [(x,Tm r1 A)] [(x1, Tm r1 A)] G eq_refl CTX;
                clearbody K1.
   pose K2 := Typing_tm_subst K1 TV.
   clearbody K2.
@@ -639,41 +707,43 @@ Proof.
   eauto.
 Qed.
 
-Lemma DefEq_swap : forall x1 x G A1 D b1 b2 B,
+Lemma DefEq_swap : forall x1 x G r1 A1 D r b1 b2 B,
    x1 `notin` fv_tm_tm_tm b1 \u fv_tm_tm_tm b2 \u fv_tm_tm_tm B
   -> x `notin` dom G \u {{ x1 }}
-  -> DefEq ([(x1, Tm A1)] ++ G) D
+  -> DefEq ([(x1, Tm r1 A1)] ++ G) D r
           (open_tm_wrt_tm b1 (a_Var_f x1)) (open_tm_wrt_tm b2 (a_Var_f x1))
           (open_tm_wrt_tm B (a_Var_f x1))
-  -> DefEq ([(x, Tm A1)] ++ G) D
+  -> DefEq ([(x, Tm r1 A1)] ++ G) D r
           (open_tm_wrt_tm b1 (a_Var_f x)) (open_tm_wrt_tm b2 (a_Var_f x))
           (open_tm_wrt_tm B (a_Var_f x)).
 Proof.
   intros.
-  assert (AC: Ctx ((x1 ~ Tm A1) ++ G)). eauto.
+  assert (AC: Ctx ((x1 ~ Tm r1 A1) ++ G)). eauto.
   inversion AC; subst.
-  assert (TV : Typing ([(x,Tm A1)] ++ G) (a_Var_f x) A1).
+  assert (TV : Typing ([(x,Tm r1 A1)] ++ G) r1 (a_Var_f x) A1).
   { econstructor; eauto. }
-  assert (CTX : Ctx ([(x1,Tm A1)] ++ [(x, Tm A1)] ++ G)).
+  assert (CTX : Ctx ([(x1,Tm r1 A1)] ++ [(x, Tm r1 A1)] ++ G)).
   { econstructor; auto.
-  pose M1 := (Typing_weakening H6 [(x,Tm A1)] nil G).
+  pose M1 := (Typing_weakening H7 [(x,Tm r1 A1)] nil G).
   simpl_env in M1; eapply M1; eauto. }
 
-  move: (DefEq_weakening H1 [(x,Tm A1)] [(x1, Tm A1)] G eq_refl CTX) => K1.
-  move: (fourth tm_substitution_mutual _ _ _ _ _ K1 _ _ _ TV nil _ eq_refl) => K2.
+  move: (DefEq_weakening H1 [(x,Tm r1 A1)] [(x1, Tm r1 A1)] G eq_refl CTX) => K1.
+  move: (fourth tm_substitution_mutual _ _ _ _ _ _ K1 _ _ _ _ TV nil _ eq_refl) => K2.
   simpl_env in K2.
   rewrite -tm_subst_tm_tm_intro in K2; auto.
   rewrite -tm_subst_tm_tm_intro in K2; auto.
   rewrite -tm_subst_tm_tm_intro in K2; auto.
+Unshelve.
+exact Rel.
 Qed.
 
 (* -------------------- *)
 
 
-Lemma E_Pi_exists : forall x (G : context) (rho : relflag) (A B : tm),
+Lemma E_Pi_exists : forall x (G : context) r (rho : relflag) (A B : tm),
       x `notin` dom G \u fv_tm_tm_tm B
-      -> Typing ([(x, Tm A)] ++ G) (open_tm_wrt_tm B (a_Var_f x)) a_Star
-      -> Typing G A a_Star -> Typing G (a_Pi rho A B) a_Star.
+      -> Typing ([(x, Tm r A)] ++ G) r (open_tm_wrt_tm B (a_Var_f x)) a_Star
+      -> Typing G r A a_Star -> Typing G r (a_Pi rho A B) a_Star.
 Proof.
   intros.
   pick fresh y and apply E_Pi.
@@ -683,12 +753,12 @@ Proof.
 Qed.
 
 
-Lemma E_Abs_exists :  forall x (G : context) (rho : relflag) (a A B : tm),
+Lemma E_Abs_exists :  forall x (G : context) r (rho : relflag) (a A B : tm),
     x `notin` fv_tm_tm_tm a \u fv_tm_tm_tm B
-    -> Typing ([(x, Tm A)] ++ G) (open_tm_wrt_tm a (a_Var_f x)) (open_tm_wrt_tm B (a_Var_f x))
-    -> Typing G A a_Star
+    -> Typing ([(x, Tm rho A)] ++ G) r (open_tm_wrt_tm a (a_Var_f x)) (open_tm_wrt_tm B (a_Var_f x))
+    -> Typing G Irrel A a_Star
     -> RhoCheck rho x (open_tm_wrt_tm a (a_Var_f x))
-    -> Typing G (a_UAbs rho a) (a_Pi rho A B).
+    -> Typing G r (a_UAbs rho a) (a_Pi rho A B).
 Proof.
   intros.
   pick fresh y and apply E_Abs; auto.

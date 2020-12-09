@@ -43,6 +43,7 @@ Lemma Beta_tm_subst : forall a a' b x, Beta a a' -> lc_tm b -> Beta (tm_subst_tm
 Proof.
   intros.
   destruct H.
+  all: try solve [simpl; econstructor; eauto using tm_subst_tm_tm_lc_tm]. 
   - simpl.
     rewrite tm_subst_tm_tm_open_tm_wrt_tm; eauto 2.
     econstructor; eauto using tm_subst_tm_tm_lc_tm.
@@ -59,7 +60,7 @@ Proof.
   - move: (toplevel_closed H) => h.
     simpl.
     rewrite tm_subst_tm_tm_fresh_eq. eauto.
-    move: (first context_fv_mutual _ _ _ h) => Fr. simpl in Fr.
+    move: (first context_fv_mutual _ _ _ _ h) => Fr. simpl in Fr.
     fsetdec.
 Qed.
 
@@ -67,6 +68,8 @@ Lemma Beta_co_subst : forall a a' b x, Beta a a' -> lc_co b -> Beta (co_subst_co
 Proof.
   intros.
   destruct H.
+  all: try solve [simpl; econstructor; eauto using co_subst_co_tm_lc_tm]. 
+
   - simpl.
     rewrite co_subst_co_tm_open_tm_wrt_tm; eauto 2.
     econstructor; eauto using co_subst_co_tm_lc_tm.
@@ -83,6 +86,6 @@ Proof.
   - move: (toplevel_closed H) => h.
     simpl.
     rewrite co_subst_co_tm_fresh_eq. eauto.
-    move: (first context_fv_mutual _ _ _ h) => Fr. simpl in Fr.
+    move: (first context_fv_mutual _ _ _ _ h) => Fr. simpl in Fr.
     fsetdec.
 Qed.

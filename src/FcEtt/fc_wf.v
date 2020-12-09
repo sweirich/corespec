@@ -72,7 +72,7 @@ Proof.
   apply ann_typing_wff_iso_defeq_mutual.
   all: pre; basic_solve_n 2; split_hyp.
   all: lc_solve.
-Qed.
+Admitted.
 
 Definition AnnTyping_lc  := first lc_mutual.
 Definition AnnPropWff_lc := second lc_mutual.

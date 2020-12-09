@@ -48,13 +48,13 @@ coq: $(COQMKFILENAME)
 
 
 %_ott.v: $(OTT_LOC)/%.ott Makefile
-	ott -i $(OTT_LOC)/$*.ott -o $*_ott.v -coq_lngen true
-	make METALIB.FIX_$*_ott
+	ott -i $(OTT_LOC)/$*.ott -o $*_ott.v -coq_lngen true -coq_expand_list_types true
+#	make METALIB.FIX_$*_ott
 
 
 %_inf.v: $(OTT_LOC)/%.ott Makefile
 	$(LNGEN) --coq-no-proofs --coq $*_inf.v --coq-ott $*_ott $(OTT_LOC)/$*.ott
-	make METALIB.FIX_$*_inf
+#	make METALIB.FIX_$*_inf
 
 $(COQMKFILENAME): Makefile $(shell ls *.v | grep -v _ott.v | grep -v _inf.v)
 	{ echo "-R . $(LIBNAME) " ; ls *.v ; } > _CoqProject && coq_makefile -arg '-w -variable-collision,-meta-collision,-require-in-module' -f _CoqProject -o $(COQMKFILENAME)
