@@ -9,12 +9,12 @@ Proof. fsetdec. Qed.
 Lemma dom_app_mid {C} (E F G : list (atom * C)) :
   dom (E ++ F ++ G) [=] union (dom F) (dom (E ++ G)).
 Proof. repeat rewrite dom_app; fsetdec. Qed.
-Hint Resolve dom_app_mid.
+Hint Resolve dom_app_mid : core.
 
 Lemma dom_app_mid' {C} (E F G : list (atom * C)) :
   union (dom F) (dom (E ++ G)) [=] dom (E ++ F ++ G).
 Proof. by symmetry. Qed.
-Hint Resolve dom_app_mid'.
+Hint Resolve dom_app_mid' : core.
 
 Lemma singleton_add_subset (a : atom) (s : atoms) :
   singleton a [<=] add a s.

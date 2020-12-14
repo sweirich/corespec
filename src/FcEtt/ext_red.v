@@ -25,11 +25,11 @@ Export red_one.
 Set Bullet Behavior "Strict Subproofs".
 Set Implicit Arguments.
 
-Lemma Beta_preservation : forall a b, Beta a b -> forall G A, Typing G a A -> Typing G b A.
+Lemma Beta_preservation : forall a b, Beta a b -> forall G A, Typing G Rel a A -> Typing G Rel b A.
 Proof.
   intros a b B. destruct B; intros G A0 TH.
   - have CT: Ctx G by eauto.
-    have RA: Typing G A0 a_Star by eauto using Typing_regularity.
+    have RA: Typing G Irrel A0 a_Star by eauto using Typing_regularity.
 
      destruct (invert_a_App_Rel TH) as (A & B & TB & Tb & DE).
       destruct (invert_a_UAbs TB) as (A1 & B1 & DE2 & [L TB1] & TA1).
@@ -40,9 +40,11 @@ Proof.
       rewrite (tm_subst_tm_tm_intro x B1); eauto.
       eapply Typing_tm_subst with (A:=A1); eauto 2.
       eapply E_Conv with (A := A); eauto 2 using E_PiFst.
-      eapply E_Trans with (a1:= open_tm_wrt_tm B b); eauto using E_PiSnd, E_Refl, E_Sym.
+      eapply E_Trans with (a1:= open_tm_wrt_tm B b); eauto 3 using E_PiSnd, E_Refl, E_Sym.
+      eapply E_Sym; eauto 2.
+      eapply E_PiSnd; eauto 2.
   - have CT: Ctx G by eauto.
-    have RA: Typing G A0 a_Star by eauto using Typing_regularity.
+    have RA: Typing G Irrel A0 a_Star by eauto using Typing_regularity.
     destruct (invert_a_App_Irrel TH) as (A & B & b0 & Tb & Tb2 & DE).
       destruct (invert_a_UAbs Tb) as (A1 & B1 & DE2 & [L TB1] & TA1).
       eapply E_Conv with (A := (open_tm_wrt_tm B1 b0)); eauto 2.
@@ -59,21 +61,25 @@ Proof.
       eapply E_Trans with (a1 := open_tm_wrt_tm B b0). auto.
       eapply E_PiSnd; eauto using E_Refl.
    - have CT: Ctx G by eauto.
-     have RA: Typing G A0 a_Star by eauto using Typing_regularity.
+     have RA: Typing G Irrel A0 a_Star by eauto using Typing_regularity.
      destruct (invert_a_CApp TH) as (eq & a1 & b1 & A1 & B1 & h0 & h1 & h2).
      destruct (invert_a_UCAbs h0) as (a2 & b2 & A2 & B2 & h3 & h4 & [L h5]).
      pick fresh c.
      move: (h5 c ltac:(auto)) => [T1 T2].
-     have? : DefEq G (dom G) a2 b2 A2. eauto using E_CPiFst, E_Cast.
-
+     have? : DefEq G (dom G) Irrel a2 b2 A2.  
+     {  eapply E_Cast.
+        2: { eapply E_CPiFst; eauto 3. }
+        eapply DefEq_SubRho; eauto 2. }
      eapply E_Conv with (A:= (open_tm_wrt_co B2 g_Triv)); eauto 2.
      rewrite (co_subst_co_tm_intro c a'); eauto.
      rewrite (co_subst_co_tm_intro c B2); eauto.
-     eapply Typing_co_subst; eauto.
+     eapply Typing_co_subst; eauto 2.
      eapply E_Sym.
      eapply E_Trans with (a1 := open_tm_wrt_co B1 g_Triv). auto.
      eapply E_CPiSnd; eauto 2.
-   - destruct (invert_a_Fam TH) as (b & B & h0 & h1 & h2).
+     eapply E_Cast; eauto 2.
+     eapply E_CPiFst; eauto 2.
+   - destruct (invert_a_Const TH) as (b & B & h0 & h1 & h2).
      assert (Ax a A = Ax b B). eapply binds_unique; eauto using uniq_toplevel.
      inversion H0. subst.
      eapply E_Conv with (A := B).
@@ -86,7 +92,9 @@ Proof.
      move: (DefEq_regularity h0) => h3.
      inversion h3.
      auto.
-Qed.
+   - have CT: Ctx G by eauto.
+
+
 
 Lemma E_Beta2 :  ∀ (G : context) (D : available_props) (a1 a2 B : tm),
        Typing G a1 B → Beta a1 a2 → DefEq G D a1 a2 B.

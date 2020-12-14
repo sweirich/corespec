@@ -33,7 +33,7 @@ INCFLAGS = $(foreach i, $(INCDIRS), -I $(i))
 
 METALIBFILES= $(METALIBLOCATION)/*.v  $(METALIBLOCATION)/Makefile  $(METALIBLOCATION)/README.txt
 
-all: coq
+all: ext_consist.vo
 
 quick:  $(COQMKFILENAME)
 	@$(MAKE) -f CoqSrc.mk quick

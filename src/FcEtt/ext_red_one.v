@@ -160,6 +160,10 @@ Proof.
   - inversion H5.
   - have: (Ax a A = Ax a2 A0). eapply binds_unique; eauto using uniq_toplevel.
     move => h; inversion h; done.
+  - inversion H2.
+  - inversion H2.
+  - inversion H.
+  - inversion H.
 Qed.
 
 

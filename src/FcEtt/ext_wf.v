@@ -18,20 +18,6 @@ Require Import FcEtt.toplevel.
    -- all components are locally closed in any judgement
   *)
 
-(*
-Lemma Path_lc : forall T a, Path T a -> lc_tm a.
-Proof. induction 1; eauto. Qed.
-
-Hint Resolve Path_lc : lc.
-
-
-Lemma DataTy_lc : forall A, DataTy A a_Star -> lc_tm A.
-Proof.
-  intros. induction H; lc_solve.
-Qed.
-Hint Resolve DataTy_lc : lc.
-*)
-
 Lemma CoercedValue_Value_lc_mutual: (forall A, CoercedValue A -> lc_tm A) /\
                                     (forall A, Value A -> lc_tm A).
 Proof.
@@ -50,6 +36,33 @@ Hint Resolve Value_lc CoercedValue_lc : lc.
 
 (* -------------------------------- *)
 
+Lemma SubRho_trans : forall r2 r1 r3, SubRho r1 r2 -> SubRho r2 r3 -> SubRho r1 r3.
+Proof.
+  intros.
+  destruct r2. inversion H0; subst; auto.
+  inversion H; subst; auto.
+Qed.
+
+Lemma dom_SubG : forall G1 G2, SubG G1 G2 -> dom G1 [=] dom G2.
+Proof. induction 1; simpl; fsetdec. Qed.
+
+Lemma binds_SubG : forall G G2 x rho1 A, SubG G G2  -> binds x (Tm rho1 A) G -> 
+                                  exists rho2, SubRho rho1 rho2 /\ binds x (Tm rho2 A) G2.
+Proof.
+  induction 1; intros.
+  - inversion H.
+  -
+    destruct (binds_cons_1 _ _ _ _ _ _ H2). 
+    + move: H3 => [e1 e2]. inversion e2. subst.
+      exists rho2. split; eauto.
+    + destruct IHSubG as [rho3 [SR BB]]; eauto.
+  - destruct (binds_cons_1 _ _ _ _ _ _ H1). 
+    move: H2 => [e1 e2]. inversion e2. 
+    destruct IHSubG as [rho3 [SR BB]]; eauto.
+Qed.
+
+  
+
 Lemma ctx_wff_mutual :
   (forall G0 r a A, Typing G0 r a A -> Ctx G0) /\
   (forall G0 r phi,   PropWff G0 r phi -> Ctx G0) /\
@@ -65,15 +78,14 @@ Definition PropWff_Ctx := second ctx_wff_mutual.
 Definition Iso_Ctx     := third  ctx_wff_mutual.
 Definition DefEq_Ctx   := fourth ctx_wff_mutual.
 
-(* TODO: put these hints in a database? *)
-Hint Resolve Typing_Ctx PropWff_Ctx Iso_Ctx DefEq_Ctx.
+Hint Resolve Typing_Ctx PropWff_Ctx Iso_Ctx DefEq_Ctx : core.
 
 Lemma Ctx_uniq : forall G, Ctx G -> uniq G.
   induction G; try auto.
   inversion 1; subst; solve_uniq.
 Qed.
 
-Hint Resolve Ctx_uniq.
+Hint Resolve Ctx_uniq : core.
 
 
 Lemma lc_mutual :
@@ -146,3 +158,6 @@ Proof. induction Sig_toplevel.
        eauto.
 
 Qed.
+
+
+

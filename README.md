@@ -1,6 +1,6 @@
 This experimental branch (`sigma`) extends the ICFP 17 system with Sigma types. 
 The pure icfp17 system is available at tag icfp17. The version of the 
-system with eta-equivalence rules is on the branch `stable`.
+system with roles is on the branch `stable`.
 
 *See:*
 

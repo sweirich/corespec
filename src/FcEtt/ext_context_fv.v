@@ -51,8 +51,8 @@ Proof.
   done.
 Qed.
 
-Hint Unfold AtomSetImpl.Subset.
-Hint Resolve binds_In AtomSetImpl.singleton_1 in_singleton_subset.
+Hint Unfold AtomSetImpl.Subset : core.
+Hint Resolve binds_In AtomSetImpl.singleton_1 in_singleton_subset : core.
 
 
 (*

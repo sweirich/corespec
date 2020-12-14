@@ -200,22 +200,6 @@ Ltac rewrite_subst_context :=
  below.
 *)
 
-Lemma Typing_Rel_Irrel_mutual :
-  (forall G r a A, Typing G r a A -> Typing G Irrel a A) /\
-  (forall G r phi (H : PropWff G r phi),
-      PropWff G Irrel phi) /\
-  (forall G D r p1 p2 (H : Iso G D r p1 p2),
-      Iso G D Irrel p1 p2) /\
-  (forall G D r A B T (H : DefEq G D r A B T),
-      DefEq G D Irrel A B T) /\
-  (forall G (H : Ctx G), True).
-Proof. 
-  eapply typing_wff_iso_defeq_mutual;
-    intros; subst; simpl.
-  all: try solve [econstructor; eauto 2].
-  admit.
-  pick fresh x and apply E_Pi; eauto.
-Abort. 
 
 Ltac eapply_E_subst :=
   first [ eapply E_Star     |
@@ -335,20 +319,22 @@ Proof.
   - (* E_Var *)
     destruct (x == x0).
     + subst.
-      assert (HA: Tm rho A = Tm r1 A0). eapply binds_mid_eq; eauto 2.
+      assert (HA: Tm rho1 A = Tm r1 A0). eapply binds_mid_eq; eauto 2.
       inversion HA. subst.
       assert (S : tm_subst_tm_tm a x0 A0 = A0). eapply tm_subst_fresh_1. eauto.
       apply Ctx_strengthen with (G2 := F). eauto.
       rewrite S.
       rewrite_env (nil ++ map (tm_subst_tm_sort a x0) F ++ G0).
       eapply Typing_weakening; eauto 2. simpl_env.
+      eapply Typing_SubRho; eauto 2.
+      simpl_env.
       eauto 2.
     + apply binds_remove_mid in b; auto.
       destruct (binds_app_1 _ _ _ _ _ b).
       (* after x *)
       eapply E_Var; eauto.
       eapply binds_app_2.
-      assert (EQ : tm_subst_tm_sort a x0 (Tm rho A) = Tm rho (tm_subst_tm_tm a x0 A)). auto.
+      assert (EQ : tm_subst_tm_sort a x0 (Tm rho1 A) = Tm rho1 (tm_subst_tm_tm a x0 A)). auto.
       rewrite <- EQ.
       eapply binds_map_2. auto.
       (* before x *)
@@ -356,7 +342,7 @@ Proof.
       apply Ctx_strengthen in c.
       assert (EQ: tm_subst_tm_tm a x0 A = A). eapply tm_subst_fresh_1.
       eapply E_Var.
-      eapply Ctx_strengthen. eauto. eauto. eauto.
+      eapply Ctx_strengthen; eauto. eauto. eauto. eauto.
       rewrite EQ.
       eauto.
   - (* E_Fam *)
@@ -666,7 +652,7 @@ Qed. *)
 
 Lemma Typing_co_subst:
  forall G D r c a1 a2 A b B (H : Typing (c ~ (Co (Eq a1 a2 A)) ++ G) r b B),
-     DefEq G D r a1 a2 A ->
+     DefEq G D Irrel a1 a2 A ->
      Typing G r (co_subst_co_tm g_Triv c b) (co_subst_co_tm g_Triv c B).
 Proof.
   intros.
@@ -739,11 +725,11 @@ Qed.
 
 (* -------------------- *)
 
-
-Lemma E_Pi_exists : forall x (G : context) r (rho : relflag) (A B : tm),
+Lemma E_Pi_exists : forall x (G : context) r1 (rho : relflag) (A B : tm),
       x `notin` dom G \u fv_tm_tm_tm B
-      -> Typing ([(x, Tm r A)] ++ G) r (open_tm_wrt_tm B (a_Var_f x)) a_Star
-      -> Typing G r A a_Star -> Typing G r (a_Pi rho A B) a_Star.
+      -> Typing ([(x, Tm Irrel A)] ++ G) r1 (open_tm_wrt_tm B (a_Var_f x)) a_Star
+      -> Typing G r1 A a_Star
+      -> Typing G r1 (a_Pi rho A B) a_Star.
 Proof.
   intros.
   pick fresh y and apply E_Pi.
@@ -752,11 +738,26 @@ Proof.
   auto.
 Qed.
 
+Lemma E_Sigma_exists : forall x (G : context) r1 (rho : relflag) (A B : tm),
+      x `notin` dom G \u fv_tm_tm_tm B
+      -> Typing ([(x, Tm Irrel A)] ++ G) r1 (open_tm_wrt_tm B (a_Var_f x)) a_Star
+      -> Typing G r1 A a_Star
+      -> Typing G r1 (a_Sigma rho A B) a_Star.
+Proof.
+  intros.
+  pick fresh y and apply E_Sigma.
+  replace a_Star with (open_tm_wrt_tm a_Star (a_Var_f y)); auto.
+  eapply Typing_swap; eauto.
+  auto.
+Qed.
+
+
 
 Lemma E_Abs_exists :  forall x (G : context) r (rho : relflag) (a A B : tm),
     x `notin` fv_tm_tm_tm a \u fv_tm_tm_tm B
     -> Typing ([(x, Tm rho A)] ++ G) r (open_tm_wrt_tm a (a_Var_f x)) (open_tm_wrt_tm B (a_Var_f x))
     -> Typing G Irrel A a_Star
+    -> Typing G Irrel (a_Pi rho A B) a_Star
     -> RhoCheck rho x (open_tm_wrt_tm a (a_Var_f x))
     -> Typing G r (a_UAbs rho a) (a_Pi rho A B).
 Proof.

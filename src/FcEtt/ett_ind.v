@@ -161,8 +161,6 @@ Ltac lc_inversion c :=
     inversion H; clear H
   | [ H : lc_tm (a_CApp _ _) |- _ ] =>
     inversion H; clear H
-  | [ H : lc_tm (a_Case _ _) |- _ ] =>
-    inversion H; clear H
   | [ H : lc_tm (a_UPair _ _ _) |- _ ] =>
     inversion H; clear H
   | [ H : lc_tm (a_Pair _ _ _ _) |- _ ] =>
@@ -206,9 +204,6 @@ Lemma co_subst_co_tm_lc_tm_inverse
       (forall A,
           lc_tm A -> forall XX, A = (co_subst_co_tm g1 c1 XX) -> lc_tm XX)
       /\
-      (forall b1,
-          lc_brs b1 -> forall XX, b1 = (co_subst_co_brs g1 c1 XX) -> lc_brs XX)
-      /\
       (forall co,
           lc_co co -> forall XX, co = (co_subst_co_co g1 c1 XX) -> lc_co XX)
       /\
@@ -217,7 +212,7 @@ Lemma co_subst_co_tm_lc_tm_inverse
           lc_constraint XX).
 Proof.
   intros. 
-  apply lc_tm_lc_brs_lc_co_lc_constraint_mutind.
+  apply lc_tm_lc_co_lc_constraint_mutind.
   all: intros.
   (* simple destruct and inversion. *)
   all: match goal with
@@ -247,8 +242,6 @@ Ltac invert_syntactic_equality :=
   | [ H : a_Pi _ _ _ = a_Pi _ _ _ |- _ ] =>
     inversion H; subst; clear H
   | [ H : a_App _ _ _ = a_App _ _ _ |- _ ] =>
-    inversion H; subst; clear H
-  | [ H : a_Fam _  = a_Fam _ |- _ ] =>
     inversion H; subst; clear H
   | [ H : a_Const _  = a_Const _ |- _ ] =>
     inversion H; subst; clear H
@@ -348,9 +341,8 @@ Combined Scheme CoercedValue_Value_mutual from CoercedValue_ind', Value_ind'.
 (* Apply the mutual induction hypothesis and add a marker to the
    context indicating the current case (and also making the associated
    data constructor for that case available) as the name 'CON'. *)
-
-Ltac ext_induction CON :=
-    apply typing_wff_iso_defeq_mutual;
+Ltac ext_induction CON := 
+   apply typing_wff_iso_defeq_mutual;
     [ pose CON :=  E_Star       |
       pose CON :=  E_Var        |
       pose CON :=  E_Pi         |
@@ -361,12 +353,12 @@ Ltac ext_induction CON :=
       pose CON :=  E_CPi        |
       pose CON :=  E_CAbs       |
       pose CON :=  E_CApp       |
-(*      pose CON :=  E_Const      | *)
-      pose CON :=  E_Fam        |
+      pose CON :=  E_Fam        | 
       pose CON :=  E_Sigma      |
       pose CON :=  E_Pair       |
       pose CON :=  E_PairIrrel  |
       pose CON :=  E_Fst        |
+      pose CON :=  E_FstIrrel   |
       pose CON :=  E_Snd        |
       pose CON :=  E_Wff        |
       pose CON :=  E_PropCong   |
@@ -393,14 +385,12 @@ Ltac ext_induction CON :=
       pose CON :=  E_EtaRel     |
       pose CON :=  E_EtaIrrel   |
       pose CON :=  E_EtaC       |
-(*      pose CON :=  E_LeftRel    |
-      pose CON :=  E_LeftIrrel  |
-      pose CON :=  E_Right      |
-      pose CON :=  E_CLeft      | *)
       pose CON :=  E_SigmaCong  |
-      pose CON :=  E_PairCong  |
-      pose CON :=  E_FstCong  |
-      pose CON :=  E_SndCong  |
+      pose CON :=  E_PairCong   |
+      pose CON :=  E_PairCongIrrel |
+      pose CON :=  E_FstCong    |
+      pose CON :=  E_FstCongIrrel  |
+      pose CON :=  E_SndCong    |
       pose CON :=  E_Empty      |
       pose CON :=  E_ConsTm     |
       pose CON :=  E_ConsCo     ].
@@ -417,8 +407,7 @@ Ltac ann_induction CON :=
       pose CON :=  An_CPi        |
       pose CON :=  An_CAbs       |
       pose CON :=  An_CApp       |
-(*      pose CON :=  An_Const      | *)
-      pose CON :=  An_Fam        |
+      pose CON :=  An_Const      | 
       pose CON :=  An_Sigma        |
       pose CON :=  An_Pair        |
       pose CON :=  An_Fst        |
@@ -461,8 +450,8 @@ Ltac ann_induction CON :=
       pose CON :=  An_ConsCo     ].
 
 
-Ltac ensure_case C :=
-  match goal with [ CON := C : ?A |- _ ] => idtac end.
+Ltac ensure_case C := idtac.
+(*   match goal with [ CON := C : ?A |- _ ] => idtac end. *)
 
 
 (* --------------------------------------------------- *)
@@ -478,13 +467,11 @@ Ltac gather_atoms ::=
   let D2 := gather_atoms_with (fun x => fv_tm_tm_co x) in
   let D3 := gather_atoms_with (fun x => fv_tm_tm_constraint x) in
   let D4 := gather_atoms_with (fun x => fv_tm_tm_sort x) in
-  let D5 := gather_atoms_with (fun x => fv_tm_tm_brs x) in
   let D6 := gather_atoms_with (fun x => fv_co_co_tm x) in
   let D7 := gather_atoms_with (fun x => fv_co_co_co x) in
   let D8 := gather_atoms_with (fun x => fv_co_co_constraint x) in
   let D9 := gather_atoms_with (fun x => fv_co_co_sort x) in
-  let D10 := gather_atoms_with (fun x => fv_co_co_brs x) in
-  constr:(A \u B \u C1 \u D1 \u D2 \u D3 \u D4 \u D5 \u D6 \u D7 \u D8 \u D9 \u D10).
+  constr:(A \u B \u C1 \u D1 \u D2 \u D3 \u D4  \u D6 \u D7 \u D8 \u D9).
 
 
 (* ----------------------------------------------------- *)
@@ -546,89 +533,6 @@ Hint Resolve lc_body_tm_wrt_tm lc_body_tm_wrt_co : core . (* binds_cons_1 *)
 
 (* ---------------------------------------- *)
 
-(*
-
-Lemma fv_tm_tm_tm_open_wrt_tm_mutual:
-  (forall a1 a2 x n, x `in` fv_tm_tm_tm a1 ->
-      x `in` fv_tm_tm_tm (open_tm_wrt_tm_rec n a2 a1)) /\
-  (forall brs a2 x n, x `in` fv_tm_tm_brs brs ->
-      x `in` fv_tm_tm_brs (open_brs_wrt_tm_rec n a2 brs)) /\
-  (forall g a2 x n, x `in` fv_tm_tm_co g ->
-      x `in` fv_tm_tm_co (open_co_wrt_tm_rec n a2 g)) /\
-  (forall phi1 a2 x n, x `in` fv_tm_tm_constraint phi1 ->
-      x `in` fv_tm_tm_constraint (open_constraint_wrt_tm_rec n a2 phi1)).
-Proof.
-  apply tm_brs_co_constraint_mutind; simpl; try fsetdec; intros; eauto.
-  all: try solve [apply AtomSetFacts.union_iff in H1; case: H1 => H1; eauto].
-  all: try solve [apply AtomSetFacts.union_iff in H2; case: H2 => H2;
-    eauto; apply AtomSetFacts.union_iff in H2; case: H2 => H2; eauto].
-Qed.
-
-Lemma fv_tm_tm_tm_open_wrt_co_mutual:
-  (forall a1 a2 x n, x `in` fv_tm_tm_tm a1 ->
-     x `in` fv_tm_tm_tm (open_tm_wrt_co_rec n a2 a1)) /\
-  (forall brs a2 x n, x `in` fv_tm_tm_brs brs ->
-     x `in` fv_tm_tm_brs (open_brs_wrt_co_rec n a2 brs)) /\
-  (forall g a2 x n, x `in` fv_tm_tm_co g ->
-     x `in` fv_tm_tm_co (open_co_wrt_co_rec n a2 g)) /\
-  (forall phi1 a2 x n, x `in` fv_tm_tm_constraint phi1 ->
-     x `in` fv_tm_tm_constraint (open_constraint_wrt_co_rec n a2 phi1)).
-Proof.
-  apply tm_brs_co_constraint_mutind; simpl; try fsetdec; intros; eauto.
-  all: try solve [apply AtomSetFacts.union_iff in H1; case: H1 => H1; eauto].
-  all: try solve [apply AtomSetFacts.union_iff in H2; case: H2 => H2; eauto; apply AtomSetFacts.union_iff in H2; case: H2 => H2; eauto].
-Qed.
-
-Lemma fv_tm_tm_tm_open_tm_wrt_tm:
-  forall a1 a2 x, x `in` fv_tm_tm_tm a1 ->
-               x `in` fv_tm_tm_tm (open_tm_wrt_tm a1 a2).
-Proof.
-  intros.
-  apply fv_tm_tm_tm_open_tm_wrt_tm_lower.
-  auto.
-Qed.
-
-Lemma fv_tm_tm_tm_open_tm_wrt_co:
-  forall a1 a2 x, x `in` fv_tm_tm_tm a1 ->
-               x `in` fv_tm_tm_tm (open_tm_wrt_co a1 a2).
-Proof.
-  intros.
-  apply fv_tm_tm_tm_open_tm_wrt_co_lower.
-  auto.
-Qed.
-
-*)
-
-(* ----------------------------------------------------------------------- *)
-
-(* TODO: These tactics may be a little loose when filtering the cases (to determine whether or not
-         they should kick in). If the automation is too slow, this is something to keep an eye on *)
-(* TODO: it may be possible to improve these tactics by matching on the production (return type) of
-         the hyp in the context *)
-(*
-Ltac oh_c'mon :=
-    let x := fresh in
-    pick fresh x;
-    multimatch goal with
-      | [ H : forall _ : atom, _ |- _ ] => solve [destruct (H x); basic_solve]
-    end.
-
-Ltac invert_open_wrt :=
-  subst;
-  multimatch goal with
-    | [ H : context [?A] |- _ ?A      ] => solve [inversion H; clear H; subst; basic_solve]
-    | [ H : context [?A] |- lc_tm (_ ?A _)] => solve [inversion H; clear H; try solve_by_inv_hyp_about A; basic_solve]
-  end.
-*)
-(*
-Ltac des_bind_cons :=
-  multimatch goal with
-    (* So far, this hole ---↓ was only filled with lc_sort. *)
-    | [ H : binds _ ?s _ |- _ ?s] => solve [destruct (binds_cons_1 _ _ _ _ _ _ H); basic_solve]
-  end.
-*)
-
-
 
 
 (* ----------------------------- *)
@@ -682,31 +586,6 @@ Proof.
   rewrite co_subst_co_tm_fresh_eq; auto.
 Qed.
 
-
-
-(* ---------------------------------- *)
-
-(*
-Lemma close_tm_fresh :
-  forall x a, x `notin` fv_tm_tm_tm (close_tm_wrt_tm x a).
-Proof.
-  intros.
-  autorewrite with lngen.
-  auto.
-Qed.
-
-Lemma close_co_fresh :
-  forall x a, x `notin` fv_tm_tm_co (close_co_wrt_tm x a).
-Proof.
-  intros. autorewrite with lngen. auto.
-Qed.
-
-Lemma close_co_fresh_co :
-  forall x a, x `notin` fv_co_co_co (close_co_wrt_co x a).
-Proof.
-  intros. autorewrite with lngen. auto.
-Qed.
- *)
 
 (* ----------------------------------------------------- *)
 
@@ -840,3 +719,48 @@ Proof.
 Qed.
 
 Hint Rewrite tm_subst_cast : core.
+
+(* -------------------------------
+   Find a better place for these tactics
+*)
+Ltac expand sub_tm tm :=
+  match tm with
+  | (a_Abs ?rho (_ ?A1) (_ ?b)) =>
+    replace (a_Abs rho (sub_tm A1) (sub_tm b)) with (sub_tm (a_Abs rho A1 b)); auto
+  | (a_Pi ?rho (_ ?A1) (_ ?B1)) =>
+    replace (a_Pi rho (sub_tm A1) (sub_tm B1)) with (sub_tm (a_Pi rho A1 B1)); auto
+  | (a_CAbs (?sc ?phi) (_ ?B)) =>
+    replace (a_CAbs (sc phi) (sub_tm B)) with (sub_tm (a_CAbs phi B)); auto
+  | (a_CPi (?sc ?phi) (_ ?B)) =>
+    replace (a_CPi (sc phi) (sub_tm B)) with (sub_tm (a_CPi phi B)); auto
+  | (a_Sigma ?rho (_ ?A1) (_ ?B1)) =>
+    replace (a_Sigma rho (sub_tm A1) (sub_tm B1)) with (sub_tm (a_Sigma rho A1 B1)); auto
+
+  | a_Star => replace a_Star with (sub_tm a_Star); auto
+
+  | _ => idtac
+  end.
+
+Ltac expand_constraint sub_tm sub_constraint constraint :=
+  match constraint with
+  | (Eq (_ _ _ ?a) (_ _ _  ?b) (_ _ _ ?A)) =>
+    replace (Eq (sub_tm a) (sub_tm b) (sub_tm A)) with
+    (sub_constraint (Eq a b A)); auto
+  | _ => idtac
+  end.
+
+Ltac un_subst_tm :=
+   match goal with
+   | [ |- context [tm_subst_tm_tm ?g ?c _] ] =>
+     match goal with
+     | [ |- Typing _ _ ?a ?A ] => expand (tm_subst_tm_tm g c) a; expand (tm_subst_tm_tm g c) A
+     | [ |- DefEq _ _ _ ?a ?b ] => expand (tm_subst_tm_tm g c) a; expand (tm_subst_tm_tm g c) b
+     | [ |- PropWff _ ?phi ] => expand_constraint (tm_subst_tm_tm g c) (tm_subst_tm_constraint g c) phi
+     end
+   | [ |- context [co_subst_co_tm ?g ?c _] ] =>
+     match goal with
+     | [ |- Typing _ _ ?a ?A ] => expand (co_subst_co_tm g c) a; expand (co_subst_co_tm g c) A
+     | [ |- DefEq _ _ _ ?a ?b ] => expand (co_subst_co_tm g c) a; expand (co_subst_co_tm g c) b
+     | [ |- PropWff _ ?phi ] => expand_constraint (co_subst_co_tm g c) (co_subst_co_constraint g c) phi
+     end
+   end.

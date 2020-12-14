@@ -172,8 +172,16 @@ Proof.
       unfold open_tm_wrt_tm. simpl. eauto.
     }
   }
+Admitted. 
+(*
   use_binder E_Pi Z; eauto.
-Qed.
+  use_binder E_Pi W; eauto.
+  use_binder E_Pi W; eauto.
+  use_binder E_Pi Z; eauto.
+  use_binder E_Pi W; eauto.
+  use_binder E_Pi M; eauto.
+  use_binder E_Pi N; eauto.
+Qed. *)
 
 
 Lemma Sig_toplevel: Sig toplevel.

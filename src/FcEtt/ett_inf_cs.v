@@ -101,7 +101,6 @@ Export Operators.Theory.
 
 Definition tm_Closecl         : Operators.Close.class tm         := Operators.Close.Class (Operators.Close.Class1 close_tm_wrt_tm close_tm_wrt_tm_rec)                 (Operators.Close.Class1 close_tm_wrt_co close_tm_wrt_co_rec).
 Definition co_Closecl         : Operators.Close.class co         := Operators.Close.Class (Operators.Close.Class1 close_co_wrt_tm close_co_wrt_tm_rec)                 (Operators.Close.Class1 close_co_wrt_co close_co_wrt_co_rec).
-Definition brs_Closecl        : Operators.Close.class brs        := Operators.Close.Class (Operators.Close.Class1 close_brs_wrt_tm close_brs_wrt_tm_rec)               (Operators.Close.Class1 close_brs_wrt_co close_brs_wrt_co_rec).
 Definition constraint_Closecl : Operators.Close.class constraint := Operators.Close.Class (Operators.Close.Class1 close_constraint_wrt_tm close_constraint_wrt_tm_rec) (Operators.Close.Class1 close_constraint_wrt_co close_constraint_wrt_co_rec).
 
 
@@ -110,17 +109,14 @@ Definition erase_co (_ : co) := g_Triv.
 
 Definition tm_Erasecl         : Operators.Erase.class tm         := Operators.Erase.Class erase_tm.
 Definition co_Erasecl         : Operators.Erase.class co         := Operators.Erase.Class erase_co.
-Definition brs_Erasecl        : Operators.Erase.class brs        := Operators.Erase.Class erase_brs.
 Definition constraint_Erasecl : Operators.Erase.class constraint := Operators.Erase.Class erase_constraint.
 
 Definition tm_FVcl         : Operators.FV.class tm         := Operators.FV.Class fv_tm_tm_tm         fv_co_co_tm.
 Definition co_FVcl         : Operators.FV.class co         := Operators.FV.Class fv_tm_tm_co         fv_co_co_co.
-Definition brs_FVcl        : Operators.FV.class brs        := Operators.FV.Class fv_tm_tm_brs        fv_co_co_brs.
 Definition constraint_FVcl : Operators.FV.class constraint := Operators.FV.Class fv_tm_tm_constraint fv_co_co_constraint.
 
 Canonical Structure tm_OpsTy         : Operators.type := Operators.Pack tm_Closecl         tm_Erasecl         tm_FVcl.
 Canonical Structure co_OpsTy         : Operators.type := Operators.Pack co_Closecl         co_Erasecl         co_FVcl.
-Canonical Structure brs_OpsTy        : Operators.type := Operators.Pack brs_Closecl        brs_Erasecl        brs_FVcl.
 Canonical Structure constraint_OpsTy : Operators.type := Operators.Pack constraint_Closecl constraint_Erasecl constraint_FVcl.
 
 
@@ -146,56 +142,47 @@ End Test.
 Module Rew.
   Definition r_erase_tm         : forall x, erase_tm x = erase x         := fun _ => eq_refl.
   Definition r_erase_co         : forall x, erase_co x = erase x         := fun _ => eq_refl.
-  Definition r_erase_brs        : forall x, erase_brs x = erase x        := fun _ => eq_refl.
   Definition r_erase_constraint : forall x, erase_constraint x = erase x := fun _ => eq_refl.
 
   Definition r_close_tm_tm         : forall x t, close_tm_wrt_tm x t = close_tm x t         := fun _ _ => eq_refl.
   Definition r_close_tm_co         : forall x t, close_co_wrt_tm x t = close_tm x t         := fun _ _ => eq_refl.
-  Definition r_close_tm_brs        : forall x t, close_brs_wrt_tm x t = close_tm x t        := fun _ _ => eq_refl.
   Definition r_close_tm_constraint : forall x t, close_constraint_wrt_tm x t = close_tm x t := fun _ _ => eq_refl.
 
   Definition r_close_co_tm         : forall x t, close_tm_wrt_co x t = close_co x t         := fun _ _ => eq_refl.
   Definition r_close_co_co         : forall x t, close_co_wrt_co x t = close_co x t         := fun _ _ => eq_refl.
-  Definition r_close_co_brs        : forall x t, close_brs_wrt_co x t = close_co x t        := fun _ _ => eq_refl.
   Definition r_close_co_constraint : forall x t, close_constraint_wrt_co x t = close_co x t := fun _ _ => eq_refl.
 
 
   (* Proper/canonical name for this module? *)
   Module Exprt.
-    Hint Rewrite -> r_erase_tm r_erase_co r_erase_brs r_erase_constraint : rewdb_cs.
+    Hint Rewrite -> r_erase_tm r_erase_co r_erase_constraint : rewdb_cs.
 
     (* Ugly but autorewrite fails weirdly with the facts above *)
     Ltac autorewcs :=
       rewrite ? r_erase_tm;
       rewrite ? r_erase_co;
-      rewrite ? r_erase_brs;
       rewrite ? r_erase_constraint;
 
       rewrite ? r_close_tm_tm;
       rewrite ? r_close_tm_co;
-      rewrite ? r_close_tm_brs;
       rewrite ? r_close_tm_constraint;
 
       rewrite ? r_close_co_tm;
       rewrite ? r_close_co_co;
-      rewrite ? r_close_co_brs;
       rewrite ? r_close_co_constraint.
 
     (* Ugly but autorewrite fails weirdly with the facts above *)
     Ltac autorewcshyp H :=
       rewrite ? r_erase_tm in H;
       rewrite ? r_erase_co in H;
-      rewrite ? r_erase_brs in H;
       rewrite ? r_erase_constraint in H;
 
       rewrite ? r_close_tm_tm in H;
       rewrite ? r_close_tm_co in H;
-      rewrite ? r_close_tm_brs in H;
       rewrite ? r_close_tm_constraint in H;
 
       rewrite ? r_close_co_tm in H;
       rewrite ? r_close_co_co in H;
-      rewrite ? r_close_co_brs in H;
       rewrite ? r_close_co_constraint in H.
   End Exprt.
 End Rew.

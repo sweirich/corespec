@@ -37,7 +37,7 @@ Inductive multipar S D ( a : tm) : tm -> Prop :=
 | mp_refl : multipar S D a a
 | mp_step : forall b c, Par S D a b -> multipar S D b c -> multipar S D a c.
 
-Hint Constructors multipar.
+Hint Constructors multipar : core.
 
 (*
 Inductive consistent : tm -> tm -> Prop :=
@@ -144,6 +144,14 @@ Ltac erased_inversion :=
     inversion H; subst; clear H
   | [H : erased_tm (a_CApp _ _)|- _ ] =>
     inversion H; subst; clear H
+  | [H : erased_tm (a_Sigma _ _ _ ) |- _ ] =>
+    inversion H; subst; clear H
+  | [H : erased_tm (a_UPair _ _ _) |- _ ] =>
+    inversion H; subst; clear H    
+  | [H : erased_tm (a_Fst _ ) |- _ ] =>
+    inversion H; subst; clear H    
+  | [H : erased_tm (a_Snd _ ) |- _ ] =>
+    inversion H; subst; clear H    
 end.
 
 Ltac erased_case :=
@@ -156,43 +164,6 @@ Ltac erased_case :=
   | [ H : ∀ c, erased_tm (erase (open_tm_wrt_co ?b (g_Var_f c))) |- _ ] =>
     move: (H x) => h0; rewrite <- open_co_erase_tm2 with (g := (g_Var_f x)) in h0; auto
   end.
-(*
-
-Lemma erased_tm_erase_mutual :
-  (forall a, lc_tm a -> erased_tm (erase a))
-  /\ (forall a, lc_brs a -> True)
-  /\ (forall a, lc_co a -> True)
-  /\ (forall phi, lc_constraint phi -> forall a b A, phi = (Eq a b A) ->
-                                         erased_tm (erase a) /\ erased_tm (erase b)
-                                         /\ erased_tm (erase A)).
-
-Proof.
-  apply lc_tm_lc_brs_lc_co_lc_constraint_mutind; intros; simpl; eauto.
-  all: try solve [ try (destruct rho); simpl; eauto].
-  all: try solve [erased_case].
-  - destruct rho; eauto. pick fresh x and apply erased_a_Abs. 
-    replace (a_Var_f x) with (erase (a_Var_f x)); eauto.
-    rewrite open_tm_erase_tm; eauto.
-    eauto.
-    (*irrel*)
-    pick fresh x and apply erased_a_Abs.
-    replace (a_Var_f x) with (erase (a_Var_f x)); eauto.
-    rewrite open_tm_erase_tm; eauto. econstructor. admit.
-  - destruct phi. destruct (H _ _ _ eq_refl) as (h0 & h1 & h2). simpl.
-    erased_case.
-  - inversion H2. subst. tauto.
-Qed. *)
-
-(*
-Lemma erased_tm_erase : forall a, lc_tm a -> erased_tm (erase a).
-Proof.
-  intros.
-  destruct erased_tm_erase_mutual.
-  eauto.
-Qed.
-
-Hint Resolve erased_tm_erase : erased. *)
-
 
 Inductive erased_sort : sort -> Prop :=
 | erased_Tm : forall a r, erased_tm a -> erased_sort (Tm r a)
@@ -307,11 +278,11 @@ Qed.
 Hint Resolve Par_lc1 Par_lc2 : lc.
 
 Lemma typing_erased_mutual:
-    (forall G b A, Typing G b A -> erased_tm b) /\
-    (forall G0 phi (H : PropWff G0 phi),
+    (forall G r b A, Typing G r b A -> erased_tm b) /\
+    (forall G0 r phi (H : PropWff G0 r phi),
         forall A B T, phi = Eq A B T -> erased_tm A /\ erased_tm B /\ erased_tm T) /\
-     (forall G0 D p1 p2 (H : Iso G0 D p1 p2), True ) /\
-     (forall G0 D A B T (H : DefEq G0 D A B T), True) /\
+     (forall G0 D r p1 p2 (H : Iso G0 D r p1 p2), True ) /\
+     (forall G0 D r A B T (H : DefEq G0 D r A B T), True) /\
      (forall G0 (H : Ctx G0), True).
 Proof.
   apply typing_wff_iso_defeq_mutual; intros; repeat split; split_hyp; subst; simpl; auto.
@@ -322,7 +293,7 @@ Proof.
 Qed.
 
 
-Lemma Typing_erased: forall G b A, Typing G b A -> erased_tm b.
+Lemma Typing_erased: forall G r b A, Typing G r b A -> erased_tm b.
 Proof.
   apply typing_erased_mutual.
 Qed.
@@ -330,16 +301,16 @@ Qed.
 Hint Resolve Typing_erased : erased.
 
 Lemma typing_erased_type_mutual:
-    (forall G b A, Typing G b A -> erased_tm A) /\
-    (forall G0 phi (H : PropWff G0 phi), True) /\
-     (forall G0 D p1 p2 (H : Iso G0 D p1 p2), True ) /\
-     (forall G0 D A B T (H : DefEq G0 D A B T), True) /\
+    (forall G r b A, Typing G r b A -> erased_tm A) /\
+    (forall G0 r phi (H : PropWff G0 r phi), True) /\
+     (forall G0 D r p1 p2 (H : Iso G0 D r p1 p2), True ) /\
+     (forall G0 D r A B T (H : DefEq G0 D r A B T), True) /\
      (forall G0 (H : Ctx G0), erased_context G0).
 Proof.
   apply typing_wff_iso_defeq_mutual; intros; repeat split; split_hyp; subst; simpl; auto.
   all: unfold erased_context in *.
   all: eauto using Typing_erased.
-    all: try solve [inversion H; pick fresh x;
+  all: try solve [inversion H; pick fresh x;
       rewrite (tm_subst_tm_tm_intro x); auto;
         eapply subst_tm_erased;
         eauto using Typing_erased].
@@ -349,6 +320,8 @@ Proof.
       rewrite (co_subst_co_tm_intro x); auto.
         eapply subst_co_erased;
         eauto using Typing_erased.
+  - inversion H. auto.
+  - inversion H. auto.
   - apply Forall_forall.
     intros s h0. destruct s.
     destruct h0. inversion H1. econstructor.
@@ -360,7 +333,7 @@ Proof.
     eapply Forall_forall in H; eauto. simpl in H. auto.
 Qed.
 
-Lemma Typing_erased_type : forall G b A, Typing G b A -> erased_tm A.
+Lemma Typing_erased_type : forall G r b A, Typing G r b A -> erased_tm A.
 Proof. apply typing_erased_type_mutual. Qed.
 
 Hint Resolve Typing_erased_type : erased.
@@ -520,6 +493,18 @@ Proof.
     destruct H0. 
     apply AtomSetProperties.empty_union_1 in h3.
     auto. done.
+  - eapply notin_union; eauto.
+    pick fresh y.
+    specialize (H2 y ltac:(auto)).
+    rewrite -> fv_tm_tm_tm_open_tm_wrt_tm_upper in H2.
+    rewrite <- fv_tm_tm_tm_open_tm_wrt_tm_lower in H2.
+    eauto.
+  - apply IHPar in H0.
+    simpl in H0.
+    fsetdec.
+  - apply IHPar in H0.
+    simpl in H0.
+    fsetdec.
 Qed.
 
 Lemma Par_fv_co_preservation: forall G D x a b, Par G D a b ->
@@ -634,7 +619,10 @@ Proof.
     apply h2 in h3.
     simpl in h3. destruct (AtomSetImpl.union_1 h3).
     assert (x `notin` singleton y). auto. fsetdec. fsetdec.
-Qed.
+  - admit. 
+  - admit.
+  - admit.
+Admitted.
 
 Lemma Par_erased_tm : forall G D a a', Par G D a a' -> erased_tm a -> erased_tm a'.
 Proof.
@@ -677,6 +665,9 @@ Proof.
     erased_body x Eaa.
     rewrite H in Eaa.
     inversion Eaa; auto. fsetdec.
+  - move: (IHEp H0) => P.
+    inversion P; auto.
+  - move: (IHEp H0) => P. inversion P; auto.
 Qed.
 
 Hint Resolve Par_erased_tm : erased. 
@@ -691,7 +682,7 @@ Proof.
                   autorewrite with subst_open_var; eauto with lc].
   destruct (x0 == x). Unshelve.
   all: eauto.
-Qed.
+Admitted.
 
 Lemma open1 : forall b S D a a' L, Par S D a a'
   -> (forall x, x `notin` L -> erased_tm (open_tm_wrt_tm b (a_Var_f x)))

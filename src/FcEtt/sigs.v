@@ -52,6 +52,13 @@ Axiom Value_lc : forall A, Value A -> lc_tm A.
 
 Axiom CoercedValue_lc : forall A, CoercedValue A -> lc_tm A.
 
+Axiom SubRho_trans : forall r2 r1 r3, SubRho r1 r2 -> SubRho r2 r3 -> SubRho r1 r3.
+
+Axiom dom_SubG : forall G1 G2, SubG G1 G2 -> dom G1 [=] dom G2.
+
+Axiom binds_SubG : forall G G2 x rho1 A, SubG G G2  -> binds x (Tm rho1 A) G -> 
+                                  exists rho2, SubRho rho1 rho2 /\ binds x (Tm rho2 A) G2.
+
 End ext_wf_sig.
 
 (**************** EXT Weak ****************)
@@ -106,6 +113,34 @@ Definition Typing_weakening  := first  typing_weakening_mutual.
 Definition PropWff_weakening := second typing_weakening_mutual.
 Definition Iso_weakening     := third  typing_weakening_mutual.
 Definition DefEq_weakening   := fourth typing_weakening_mutual.
+
+Axiom SubG_mutual :
+  (forall G0 r a A, Typing G0 r a A -> forall G2, SubG G0 G2 -> Typing G2 r a A) /\
+  (forall G0 r phi,   PropWff G0 r phi -> forall G2, SubG G0 G2 -> PropWff G2 r phi) /\
+  (forall G0 D r p1 p2, Iso G0 D r p1 p2 -> forall G2, SubG G0 G2 -> Iso G2 D r p1 p2) /\
+  (forall G0 D r A B T,   DefEq G0 D r A B T -> forall G2, SubG G0 G2 -> DefEq G2 D r A B T) /\
+  (forall G0, Ctx G0 -> forall G2, SubG G0 G2 -> Ctx G2).
+
+Definition Typing_SubG := first SubG_mutual.
+Definition PropWff_SubG := second SubG_mutual.
+Definition Iso_SubG := third SubG_mutual.
+Definition DefEq_SubG := fourth SubG_mutual.
+
+
+Axiom SubRho_mutual :
+  (forall G r a A, Typing G r a A -> forall r2, SubRho r2 r -> Typing G r2 a A) /\
+  (forall G r phi,   PropWff G r phi -> forall r2, SubRho r2 r -> PropWff G r2 phi) /\
+  (forall G D r p1 p2, Iso G D r p1 p2 -> forall r2, SubRho r2 r -> Iso G D r2 p1 p2) /\
+  (forall G D r A B T,   DefEq G D r A B T -> forall r2, SubRho r2 r -> DefEq G D r2 A B T) /\
+  (forall G, Ctx G -> True).
+
+Definition Typing_SubRho := first SubRho_mutual.
+Definition PropWff_SubRho := second SubRho_mutual.
+Definition Iso_SubRho := third SubRho_mutual.
+Definition DefEq_SubRho := fourth SubRho_mutual.
+
+Axiom Typing_Irrel : forall G r a A, Typing G r a A -> Typing G Irrel a A.
+Axiom PropWff_Irrel : forall G r phi, PropWff G r phi -> PropWff G Irrel phi.
 
 End ext_weak_sig.
 
@@ -205,7 +240,7 @@ Axiom co_substitution_mutual :
 
 Axiom Typing_co_subst:
    forall G D r c a1 a2 A b B (H : Typing (c ~ (Co (Eq a1 a2 A)) ++ G) r b B),
-     DefEq G D r a1 a2 A ->
+     DefEq G D Irrel a1 a2 A ->
      Typing G r (co_subst_co_tm g_Triv c b) (co_subst_co_tm g_Triv c B).
 
 
@@ -218,10 +253,17 @@ Axiom Typing_swap : forall x1 x r r1 G a A B,
              (open_tm_wrt_tm B (a_Var_f x)).
 
 
-Axiom E_Pi_exists : forall x (G : context) r (rho : relflag) (A B : tm),
+Axiom E_Pi_exists : forall x (G : context) r1 (rho : relflag) (A B : tm),
       x `notin` dom G \u fv_tm_tm_tm B
-      -> Typing ([(x, Tm r A)] ++ G) r (open_tm_wrt_tm B (a_Var_f x)) a_Star
-      -> Typing G r A a_Star -> Typing G r (a_Pi rho A B) a_Star.
+      -> Typing ([(x, Tm Irrel A)] ++ G) r1 (open_tm_wrt_tm B (a_Var_f x)) a_Star
+      -> Typing G r1 A a_Star
+      -> Typing G r1 (a_Pi rho A B) a_Star.
+
+Axiom E_Sigma_exists : forall x (G : context) r1 (rho : relflag) (A B : tm),
+      x `notin` dom G \u fv_tm_tm_tm B
+      -> Typing ([(x, Tm Irrel A)] ++ G) r1 (open_tm_wrt_tm B (a_Var_f x)) a_Star
+      -> Typing G r1 A a_Star
+      -> Typing G r1 (a_Sigma rho A B) a_Star.
 
 Axiom E_Abs_exists :  forall x (G : context) r (rho : relflag) (a A B : tm),
     x `notin` fv_tm_tm_tm a \u fv_tm_tm_tm B
@@ -246,9 +288,14 @@ Axiom binds_to_Typing: forall G r T A, Ctx G -> binds T (Tm r A) G -> Typing G I
     exists B, DataTy B a_Star /\ DefEq G (dom G) A B  a_Star
          /\ binds T (Cs B) toplevel.
 *)
-Axiom invert_a_Pi: forall G r rho A0 A B0,
-    Typing G r (a_Pi rho A0 B0) A ->
-    DefEq G (dom G) Irrel A a_Star a_Star /\ (exists L, forall x, x `notin` L -> Typing ([(x, Tm r A0)] ++ G) r (open_tm_wrt_tm B0 (a_Var_f x)) a_Star) /\ Typing G r A0 a_Star.
+Axiom invert_a_Pi:
+  forall G r1 rho A0 A B0,
+    Typing G r1 (a_Pi rho A0 B0) A
+    -> DefEq G (dom G) Irrel A a_Star a_Star
+      /\ (exists L, forall x,
+              x `notin` L
+              -> Typing ([(x, Tm Irrel A0)] ++ G) r1 (open_tm_wrt_tm B0 (a_Var_f x)) a_Star)
+      /\ Typing G r1 A0 a_Star.
 
 Axiom invert_a_CPi: forall G r phi A B0,
     Typing G r (a_CPi phi B0) A ->
@@ -298,14 +345,15 @@ Axiom invert_a_UCAbs: forall G r A b0,
                                   (open_tm_wrt_co B1 (g_Var_f c)) a_Star).
 
 Axiom invert_a_Var :
-  forall G r x A, Typing G r (a_Var_f x) A -> exists A', binds x (Tm r A') G /\ DefEq G (dom G) Irrel A A' a_Star.
+  forall G r x A, Typing G r (a_Var_f x) A -> exists A', exists r1, binds x (Tm r1 A') G /\ DefEq G (dom G) Irrel A A' a_Star /\ SubRho r r1.
 
 Axiom invert_a_Star: forall r A G, Typing G r a_Star A -> DefEq G (dom G) Irrel A a_Star a_Star.
 
-Axiom invert_a_Fam : forall G r F A,
-    Typing G r (a_Fam F) A ->
+Axiom invert_a_Const : forall G r F A,
+    Typing G r (a_Const F) A ->
     exists a B, DefEq G (dom G) Irrel A B a_Star /\
            binds F (Ax a B) toplevel /\ Typing nil Irrel B a_Star.
+
 
 (* ---------- context conversion -------------- *)
 (* Terms still type check even after varying the context *)

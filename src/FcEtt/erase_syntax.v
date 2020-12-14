@@ -39,14 +39,12 @@ Set Bullet Behavior "Strict Subproofs".
 Lemma open_tm_erase_rec : forall a,
   (forall b k, open_tm_wrt_tm_rec k (erase a) (erase b) =
                  erase (open_tm_wrt_tm_rec k a b)) /\
-  (forall b k, open_brs_wrt_tm_rec k (erase a) (erase b) =
-                 erase (open_brs_wrt_tm_rec k a b)) /\
   (forall g:co, True) /\
   (forall b k, open_constraint_wrt_tm_rec k (erase a) (erase b) =
                  erase (open_constraint_wrt_tm_rec k a b)).
 Proof.
   move=> a.
-  eapply tm_brs_co_constraint_mutind;
+  eapply tm_co_constraint_mutind;
   intros; simpl; auto;
   try (rewrite H; try rewrite H0; auto).
   case (lt_eq_lt_dec n k);
@@ -75,14 +73,12 @@ Qed.
 Lemma open_co_erase_rec : forall a,
   (forall b k, (erase b) =
                  erase (open_tm_wrt_co_rec k a b)) /\
-  (forall b k, (erase b) =
-                 erase (open_brs_wrt_co_rec k a b)) /\
   (forall g:co, True) /\
   (forall b k, (erase b) =
                  erase (open_constraint_wrt_co_rec k a b)).
 Proof.
   move=> a.
-  eapply tm_brs_co_constraint_mutind;
+  eapply tm_co_constraint_mutind;
   intros; unfold Operators.erase'; simpl; auto; (* FIXME: not sure having to do <unfold erase'> is right *)
     try (rewrite <- H; try rewrite <- H0; auto).
   all: f_equal; eauto 2.
@@ -101,14 +97,12 @@ Qed.
 Lemma open_co_erase2_rec : forall a,
   (forall b k g, (open_tm_wrt_co_rec k g (erase b)) =
                  erase (open_tm_wrt_co_rec k a b)) /\
-  (forall b k g, (open_brs_wrt_co_rec k g (erase b)) =
-                 erase (open_brs_wrt_co_rec k a b)) /\
   (forall g:co, True) /\
   (forall b k g, (open_constraint_wrt_co_rec k g (erase b)) =
                  erase (open_constraint_wrt_co_rec k a b)).
 Proof.
   move=> a.
-  eapply tm_brs_co_constraint_mutind;
+  eapply tm_co_constraint_mutind;
   intros; try (destruct rho); unfold Operators.erase'; simpl; auto;
   f_equal; auto;
     try (autorewcs; rewrite <- H; try rewrite <- H0; auto).
@@ -140,12 +134,11 @@ Qed.
 
 Lemma close_tm_erase_all : ∀ x : tmvar,
   (∀ (a : tm)         k, close_tm_rec k x (erase a) = erase (close_tm_rec k x a)) /\
-  (∀ (b : brs)        k, close_tm_rec k x (erase b) = erase (close_tm_rec k x b)) /\
   (∀ _ : co, True) /\
   (∀ (c : constraint) k, close_tm_rec k x (erase c) = erase (close_tm_rec k x c)).
 Proof.
   move => x; simpl;
-  apply tm_brs_co_constraint_mutind;
+  apply tm_co_constraint_mutind;
   basic_nosolve_fo'.
   - case (lt_ge_dec n k); done.
   - move eqe : (x == x0) => [] // .
@@ -154,12 +147,11 @@ Admitted.
 
 Lemma close_co_erase_all : ∀ x : covar,
   (∀ (a : tm)         k, close_co_rec k x (erase a) = erase (close_co_rec k x a)) /\
-  (∀ (b : brs)        k, close_co_rec k x (erase b) = erase (close_co_rec k x b)) /\
   (∀ _ : co, True) /\
   (∀ (c : constraint) k, close_co_rec k x (erase c) = erase (close_co_rec k x c)).
 Proof.
   move => x; simpl;
-  apply tm_brs_co_constraint_mutind;
+  apply tm_co_constraint_mutind;
   basic_nosolve_fo';
   solve [case (lt_ge_dec n k); done | move eqe : (x == x0) => [] // | destruct rho; basic_solve_fo'].
 Qed.
@@ -184,12 +176,11 @@ Qed.
 (* TODO: with an approriate mutual induction tactic, could be proved only with a : tm + brs + co + constraint *)
 Lemma close_tmco_erase_all : ∀ (x : tmvar + covar),
   (∀ (a : tm)         k, close_wrt k x (erase a) = erase (close_wrt k x a)) /\
-  (∀ (b : brs)        k, close_wrt k x (erase b) = erase (close_wrt k x b)) /\
   (∀ _ : co, True) /\
   (∀ (c : constraint) k, close_wrt k x (erase c) = erase (close_wrt k x c)).
 Proof.
   move => [] x; simpl;
-  apply tm_brs_co_constraint_mutind;
+  apply tm_co_constraint_mutind;
   basic_nosolve_fo';
   solve [case (lt_ge_dec n k); done | move eqe : (x == x0) => [] // | basic_solve_fo'].
 Qed.
@@ -205,12 +196,11 @@ Definition close_co_erase_tm := fun x => proj1 (close_co_erase_all x).
 
 Lemma close_co_erase_rec : ∀ x : covar,
   (∀ (a : tm)         k, close_co_rec k x (erase a) = erase a) /\
-  (∀ (b : brs)        k, close_co_rec k x (erase b) = erase b) /\
   (∀ _ : co, True) /\
   (∀ (c : constraint) k, close_co_rec k x (erase c) = erase c).
 Proof.
   move => x; simpl;
-  apply tm_brs_co_constraint_mutind;
+  apply tm_co_constraint_mutind;
   basic_nosolve_fo';
   solve [case (lt_ge_dec n k); done | move eqe : (x == x0) => [] // | destruct rho; basic_solve_fo'].
 Qed.
@@ -233,11 +223,10 @@ Proof.
   move=> x.
   (* Todo: should be done automatically (mutual inducation tactic *)
   cut ((∀ a : tm, x `notin` fv_tm a -> x `notin` fv_tm (erase a)) /\
-       (∀ a : brs, x `notin` fv_tm a -> x `notin` fv_tm (erase a)) /\
        (∀ a : co, x `notin` fv_tm a -> x `notin` fv_tm (erase a)) /\
        (∀ a : constraint, x `notin` fv_tm a -> x `notin` fv_tm (erase a))).
     by move=> [a _].
-    eapply tm_brs_co_constraint_mutind; try (destruct rho); basic_solve_fo'.
+    eapply tm_co_constraint_mutind; try (destruct rho); basic_solve_fo'.
 Qed.
 
 
@@ -247,11 +236,10 @@ Proof.
   move=> x.
   (* Todo: should be done automatically (mutual inducation tactic *)
   cut ((∀ a : tm, x `notin` fv_co a -> x `notin` fv_co (erase a)) /\
-       (∀ a : brs, x `notin` fv_co a -> x `notin` fv_co (erase a)) /\
        (∀ a : co, x `notin` fv_co a -> x `notin` fv_co (erase a)) /\
        (∀ a : constraint, x `notin` fv_co a -> x `notin` fv_co (erase a))).
     by move=> [a _].
-    eapply tm_brs_co_constraint_mutind; try (destruct rho); basic_solve_fo'.
+    eapply tm_co_constraint_mutind; try (destruct rho); basic_solve_fo'.
 Qed.
 
 
@@ -260,14 +248,12 @@ Qed.
 Lemma subst_tm_erase : forall a x,
   (forall b, tm_subst_tm_tm (erase a) x (erase b) =
               erase (tm_subst_tm_tm a x b)) /\
-  (forall b, tm_subst_tm_brs (erase a) x (erase b) =
-              erase (tm_subst_tm_brs a x b)) /\
   (forall g:co, True) /\
   (forall p, tm_subst_tm_constraint (erase a) x (erase p) =
               erase (tm_subst_tm_constraint a x p)).
 Proof.
   move=> a x.
-  eapply tm_brs_co_constraint_mutind;
+  eapply tm_co_constraint_mutind;
   intros; simpl; auto;
   try (rewrite H; try rewrite H0; auto).
   destruct (x0 == x); simpl; auto.
@@ -278,14 +264,12 @@ Admitted.
 Lemma subst_co_erase : forall a x,
   (forall b, (erase b) =
               erase (co_subst_co_tm a x b)) /\
-  (forall b, (erase b) =
-              erase (co_subst_co_brs a x b)) /\
   (forall g:co, True) /\
   (forall p, (erase p) =
               erase (co_subst_co_constraint a x p)).
 Proof.
   intros a x.
-  eapply tm_brs_co_constraint_mutind;
+  eapply tm_co_constraint_mutind;
   intros;  unfold Operators.erase'; simpl; autorewcs; auto;
     try (rewrite <- H; try rewrite <- H0; auto).
   all: f_equal; eauto 2.
@@ -318,18 +302,14 @@ Theorem erase_subst_mutual a x :
   (∀ A B,       erase_tm A = erase_tm B ->
                   erase_tm (tm_subst_tm_tm a x A) = erase_tm (tm_subst_tm_tm a x B))
   ∧
-  (∀ Bs1 Bs2,   erase_brs Bs1 = erase_brs Bs2 ->
-                  erase_brs (tm_subst_tm_brs a x Bs1) =
-                  erase_brs (tm_subst_tm_brs a x Bs2))
-  ∧
   (∀ g1 g2 : co, True)
   ∧
   (∀ phi1 phi2, erase_constraint phi1 = erase_constraint phi2 ->
                   erase_constraint (tm_subst_tm_constraint a x phi1) =
                   erase_constraint (tm_subst_tm_constraint a x phi2)).
 Proof.
-  apply tm_brs_co_constraint_mutind  =>
-    //
+  eapply tm_co_constraint_mutind; intros.
+(*    //
     (* tm *)
     [ (* star *)
     | i | y
@@ -340,11 +320,6 @@ Proof.
     | g IHg A IHA | g IHg e IHe | e IH | e IHe g IHg
     | (* bullet *)
     | con | e IH Bs IHBs
-    (* brs *)
-    | (* br_None *)
-    | con e IHe Bs IHBs
-    |
-    | 
     | 
     |
     |
@@ -364,19 +339,16 @@ Proof.
                  | (* bullet *)
                  | con' | e' IH' Bs'
                  ]
-       | |- brs        → _ =>
-         case => [ | con' e' Bs' ]
        | |- _ => idtac
-       end.
+       end. *)
   all: try (try (destruct rho); try (destruct rho'); move=> //= [] *; try subst; f_equal; eauto).
-  all: intros.
   all: try destruct phi2.
   all: simpl.
   all: try simpl in H0.
+  all: try simpl in H.
   all: try inversion H0; subst.
   all: try erewrite IHB; eauto.
   all: try erewrite IHA; eauto.
-  all: try simpl in H.
   all: try erewrite H; eauto.
 Admitted.
 
@@ -391,18 +363,9 @@ Corollary erase_subst_tm A B a x :
   erase_tm (tm_subst_tm_tm a x A) = erase_tm (tm_subst_tm_tm a x B).
 Proof. move: (erase_subst_mutual a x) => ?; split_hyp; auto. Qed.
 
-Corollary erase_subst_brs Bs1 Bs2 a x :
-  erase_brs Bs1 = erase_brs Bs2 ->
-  erase_brs (tm_subst_tm_brs a x Bs1) = erase_brs (tm_subst_tm_brs a x Bs2).
-Proof. move: (erase_subst_mutual a x) => ?; split_hyp; auto. Qed.
-
 Theorem erase_co_subst_co_mutual a x :
   (∀ A B,       erase_tm A = erase_tm B ->
                   erase_tm (co_subst_co_tm a x A) = erase_tm (co_subst_co_tm a x B))
-  ∧
-  (∀ Bs1 Bs2,   erase_brs Bs1 = erase_brs Bs2 ->
-                  erase_brs (co_subst_co_brs a x Bs1) =
-                  erase_brs (co_subst_co_brs a x Bs2))
   ∧
   (∀ g1 g2 : co, True)
   ∧
@@ -412,7 +375,7 @@ Theorem erase_co_subst_co_mutual a x :
 Proof.
 Admitted.
 (*
-  apply tm_brs_co_constraint_mutind =>
+  apply tm_co_constraint_mutind =>
     //
     (* tm *)
     [ (* star *)
@@ -424,9 +387,6 @@ Admitted.
     | g IHg A IHA | g IHg e IHe | e IH | e IHe g IHg
     | (* bullet *)
     | con | e IH Bs IHBs
-    (* brs *)
-    | (* br_None *)
-    | con e IHe Bs IHBs
     (* constraint *)
     | A IHA B IHB ].
   all: match goal with
@@ -443,8 +403,6 @@ Admitted.
                  | (* bullet *)
                  | con' | e' IH' Bs'
                  ]
-       | |- brs        → _ =>
-         case => [ | con' e' Bs' ]
        end.
   all: try solve [try destruct rho; try destruct rho'; move=> //= [] *; try subst; f_equal; eauto].
   all: intros.
@@ -469,24 +427,15 @@ Corollary erase_co_subst_tm A B a x :
   erase_tm (co_subst_co_tm a x A) = erase_tm (co_subst_co_tm a x B).
 Proof. move: (erase_co_subst_co_mutual a x) => ?; split_hyp; auto. Qed.
 
-Corollary erase_co_subst_brs Bs1 Bs2 a x :
-  erase_brs Bs1 = erase_brs Bs2 ->
-  erase_brs (co_subst_co_brs a x Bs1) = erase_brs (co_subst_co_brs a x Bs2).
-Proof. move: (erase_co_subst_co_mutual a x) => ?; split_hyp; auto. Qed.
-
-
-
-
 
 (* ----- local closure ---------- *)
 
 Lemma lc_erase :
   (forall a, lc_tm a -> lc_tm (erase a)) /\
-  (forall b, lc_brs b -> lc_brs (erase b)) /\
   (forall (g:co) (l:lc_co g), True) /\
   (forall b, lc_constraint b -> lc_constraint (erase b)).
 Proof.
-  eapply lc_tm_lc_brs_lc_co_lc_constraint_mutind.
+  eapply lc_tm_lc_co_lc_constraint_mutind.
   all: intros.
   all: try solve [try destruct rho; simpl; eauto].
   - apply lc_a_UAbs. auto.
@@ -526,13 +475,10 @@ Qed.
 Lemma lc_tm_erase : (forall a, lc_tm a -> lc_tm (erase a)).
 intros. eapply lc_erase. auto. Qed.
 
-Lemma lc_brs_erase : (forall b, lc_brs b -> lc_brs (erase b)).
-intros. eapply lc_erase. auto. Qed.
-
 Lemma lc_constraint_erase : (forall b, lc_constraint b -> lc_constraint (erase b)).
 intros. eapply lc_erase. auto. Qed.
 
-Hint Resolve lc_tm_erase lc_brs_erase lc_constraint_erase : lc.
+Hint Resolve lc_tm_erase lc_constraint_erase : lc.
 
 Lemma lc_tm_open_tm_wrt_tm_erase_tm : forall a,
     (∀ x, lc_tm (open_tm_wrt_tm a (a_Var_f x))) ->
@@ -561,7 +507,7 @@ Hint Resolve lc_tm_open_tm_wrt_tm_erase_tm lc_tm_open_tm_wrt_co_erase_tm : lc.
 
 (* TODO *)
 Hint Rewrite open_co_erase_tm open_co_erase_tm2 open_tm_erase_tm : TODO.
-Hint Resolve lc_erase binds_map_2.
+Hint Resolve lc_erase binds_map_2 : core .
 
 
 

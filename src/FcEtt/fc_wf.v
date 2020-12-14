@@ -56,7 +56,7 @@ Ltac sort_inversion :=
 Lemma AnnCtx_uniq G : AnnCtx G -> uniq G.
 Proof. by elim=> * //=; apply uniq_cons. Qed.
 
-Hint Resolve AnnCtx_uniq.
+Hint Resolve AnnCtx_uniq : core.
 
 (* ---------------------------------------------------- *)
 
