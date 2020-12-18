@@ -309,4 +309,28 @@ Definition Iso_weakening     := third  typing_weakening_mutual.
 Definition DefEq_weakening   := fourth typing_weakening_mutual.
 Definition Ctx_weakening     := fifth  typing_weakening_mutual.
 
+Fixpoint Irrel := map
+  (fun b => match b with 
+         | (Tm _ A) => Tm Irrel A
+         | _ => b 
+         end)
+
+Lemma plus_irrelevance_mutual : 
+  (forall G r a A, Typing G r a A -> r = Irrel -> Typing G r2 a A) /\
+  (forall G r phi,   PropWff G r phi -> forall r2, SubRho r2 r -> PropWff G r2 phi) /\
+  (forall G D r p1 p2, Iso G D r p1 p2 -> forall r2, SubRho r2 r -> Iso G D r2 p1 p2) /\
+  (forall G D r A B T,   DefEq G D r A B T -> forall r2, SubRho r2 r -> DefEq G D r2 A B T) /\
+  (forall G, Ctx G -> True).
+Proof. 
+  ext_induction CON.
+  all: intros.
+  all: auto.
+  all: try match goal with [ H : SubRho ?r Irrel |- _ ] => inversion H; subst; clear H end.
+  all: try solve [eapply CON; eauto 2].
+  all: try solve [eapply E_Var; eauto using SubRho_trans]. 
+  
+  all: try solve [pick fresh x and apply CON; autofresh_fixed x;
+                  eauto 3 using SubRho_trans].
+Qed.
+
 End ext_weak.

@@ -778,27 +778,28 @@ Lemma DefEqIso_regularity :
   (forall G D r p1 p2, Iso G D r p1 p2 ->
                  PropWff G r p1 /\ PropWff G r p2) /\
   (forall G D r A B T,   DefEq G D r A B T ->
-                  Typing G Irrel A T /\ Typing G Irrel B T) /\
+                  Typing G r A T /\ Typing G r B T) /\
   (forall G0, Ctx G0 -> True).
 Proof.
   apply typing_wff_iso_defeq_mutual; eauto; try done.
   - intros G D r A1 B1 A A2 B2 d H d0 H0.
     split_hyp.
-    split; eapply E_Wff; eauto. solve [auto | eapply Typing_regularity; eauto].
-  - intros G D phi1 phi2 B1 B2 d H.
+    split; eapply E_Wff; eauto. 
+    all: eapply Typing_regularity; eauto.
+  - intros G D r phi1 phi2 B1 B2 d H.
     split_hyp.
     have CTX: Ctx G by eauto.
-    split; solve [eapply invert_a_CPi; eauto].
-  - intros G D a0 b0 A c c0 H b i.
+    split; eapply invert_a_CPi; eauto.
+  - intros G D r a0 b0 A c c0 H b i.
     apply binds_to_PropWff in b; auto.
     inversion b; subst.
     split; auto.
-  -  intros G D a b A d H.
+  -  intros G D r a b A d H.
     split_hyp; auto.
   - intros G D a b A a1 H1 H hi0 hi1.
     destruct H as [h0 h1]; auto.
     split_hyp; auto.
-  - intros L G D rho b1 b2 A2 B d H0 t H1 r1 r2 .
+  - intros L G D r rho b1 b2 A2 B d H0 t H1 r1 r2 .
     split_hyp.
     repeat split; auto.
     + apply (E_Abs (L \u (dom G))); eauto.
@@ -833,7 +834,7 @@ Proof.
          intros x H4.
          eapply Typing_regularity; eauto 2.
          apply H0; eauto.
-  - intros G D a1 a2 b1 b2 B A d H d0 H0.
+  - intros G D r a1 a2 b1 b2 B A d H d0 H0.
     split_hyp.
     (have: Ctx G by eauto) => CTX.
     split; eauto.
@@ -855,18 +856,18 @@ Proof.
     simpl in K.
     destruct eq_dec; try congruence.
     rewrite tm_subst_tm_tm_fresh_eq in K; auto.
-  - intros G D A1 A2 B1 B2 d H h0 h1 _.
+  - intros G D r A1 A2 B1 B2 d H h0 h1 _.
     split_hyp.
     (have: Ctx G by eauto) => CTX.
     split; eauto.
-  - intros G D A1 A2 rho B1 B2 d H.
+  - intros G D r A1 A2 rho B1 B2 d H.
     split_hyp.
     (have: Ctx G by eauto) => CTX.
     apply invert_a_Pi in H; eauto.
     apply invert_a_Pi in H0; eauto.
     split_hyp.
     split; eauto.
-  - intros G D B1 a1 B2 a2 rho A1 A2 d H d0 H0.
+  - intros G D r B1 a1 B2 a2 rho A1 A2 d H d0 H0.
     split_hyp.
     (have: Ctx G by eauto) => CTX.
     repeat split.
@@ -893,7 +894,7 @@ Proof.
       rewrite tm_subst_tm_tm_fresh_eq in K; auto.
       apply E_PiFst in d; auto.
       eapply DefEq_weaken_available; eauto.
-  - intros L G D a b phi1 B d H p H0.
+  - intros L G D r a b phi1 B d H p H0.
     split_hyp.
     have CTX: Ctx G by eauto.
     repeat split; eauto.
