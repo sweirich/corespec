@@ -224,12 +224,12 @@ Ltac pcess_hyps :=
 Ltac pre :=
   repeat (intros; try split);
   (*split_hyp;*)
-  unfold "~" in *.
+  unfold "~"%type in *.
 
 Ltac pre' :=
   repeat (intros; try split);
   pcess_hyps;
-  unfold "~" in *.
+  unfold "~"%type in *.
 
 
 Ltac prove_eq_same_head :=
