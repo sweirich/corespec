@@ -261,8 +261,9 @@ Lemma tm_substitution_mutual :
       apply Ctx_strengthen with (G2 := F). eauto.
       rewrite S.
       rewrite_env (nil ++ map (tm_subst_tm_sort a x0) F ++ G0).
-      eapply Typing_weakening; eauto 2. simpl_env.
-      apply (H _ _ A0); auto.
+      eapply Typing_weakening; eauto 2.
+      (* simpl_env. *)
+      (* apply (H _ _ A0); auto. *)
     + apply binds_remove_mid in b; auto.
       destruct (binds_app_1 _ _ _ _ _ b).
       (* after x *)
@@ -482,7 +483,7 @@ Proof.
   - apply (E_Wff _ _ _  (co_subst_co_tm g_Triv c A)); eauto 3.
   - apply E_PropCong; eauto 3.
   - eapply E_CPiFst; eauto 3.
-    eapply H; eauto.
+    (* eapply H; eauto. *)
   -  destruct (binds_cases G0 F c _ c1 _ (Ctx_uniq c0) b0) as [ (bf & NE & Fr) | [(E1 & E2) | (bg & NE & Fr)]].
     + eapply E_Assn; eauto 3.
       apply binds_app_2.
@@ -498,7 +499,9 @@ Proof.
          eapply (fourth weaken_available_mutual).
          pose K := DefEq_weakening.
          apply (K _ _ _ _ _ H1); eauto 2.
-         eapply H; eauto 2. auto.
+         (* eapply H;  *)
+         (* eauto 2. *)
+         auto.
       ++ move : (Typing_context_fv H8) => ?. split_hyp. auto.
       ++ move : (Typing_context_fv H9) => ?. split_hyp. auto.
       ++ move: (Typing_context_fv H8) => ?. split_hyp. auto.

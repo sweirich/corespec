@@ -13,6 +13,7 @@ Require Import FcEtt.ett_par.
 Require Import FcEtt.toplevel.
 Require Import FcEtt.fc_context_fv.
 
+Import FcEtt.ett_ind.
 
 Module erase (wf : fc_wf_sig) (weak : fc_weak_sig) (subst : fc_subst_sig)
              (e_invert : ext_invert_sig).

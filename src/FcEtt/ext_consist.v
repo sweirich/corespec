@@ -1,7 +1,7 @@
 
 Require Import FcEtt.sigs.
 
-Require Import Omega.
+Require Import Lia.
 
 Require Export FcEtt.imports.
 Require Import FcEtt.utils.
@@ -15,6 +15,7 @@ Require Import FcEtt.ext_red_one.
 Require Import FcEtt.ext_red.
 
 Require Import FcEtt.ext_wf.
+Import FcEtt.ett_par.
 
 Module ext_consist (invert : ext_invert_sig)(fc_wf: fc_wf_sig).
 Import invert.
@@ -315,7 +316,7 @@ Ltac invert_lc :=
         H3 : erased_tm a,
         H : Par ?G ?D a ?b0,
         H4 : Par ?G ?D a ?b1 |- _ ] =>
-      move: (@IH (size_tm a) ltac:(omega) a ltac:(auto) _ _ _ H2 H3 H _ H4) => [ ac [Par1 Par2]]
+      move: (@IH (size_tm a) ltac:(lia) a ltac:(auto) _ _ _ H2 H3 H _ H4) => [ ac [Par1 Par2]]
   end.
 
 
@@ -672,7 +673,7 @@ Proof.
       rewrite h2; auto.
       simpl in h3.
       rewrite size_tm_open_tm_wrt_tm_var in h3.
-      assert (size_tm b <= size_tm a0). omega.
+      assert (size_tm b <= size_tm a0). lia.
       move: (H2 x ltac:(auto)) => h4. rewrite h2 in h4. inversion h4.
       use_size_induction b bb Par1 Par2.
       exists bb. eauto.
@@ -689,7 +690,7 @@ Proof.
       rewrite h2; auto.
       simpl in h4.
       rewrite size_tm_open_tm_wrt_tm_var in h4.
-      assert (size_tm b <= size_tm a0). omega.
+      assert (size_tm b <= size_tm a0). lia.
       use_size_induction b bb Par1 Par2.
       move: (@Par_fv_preservation _ _ x _ _ H10 ltac:(eauto)) => h5.
       exists bb.
@@ -725,7 +726,7 @@ Proof.
       rewrite h2; auto.
       simpl in h3.
       rewrite size_tm_open_tm_wrt_tm_var in h3.
-      assert (size_tm b <= size_tm a0). omega.
+      assert (size_tm b <= size_tm a0). lia.
       move: (H2 x ltac:(auto)) => h4. rewrite h2 in h4. inversion h4.
       use_size_induction b bb Par1 Par2.
       exists bb. split; eauto. auto.
@@ -743,7 +744,7 @@ Proof.
       rewrite h2; auto.
       simpl in h4.
       rewrite size_tm_open_tm_wrt_tm_var in h4.
-      assert (size_tm b <= size_tm a0). omega.
+      assert (size_tm b <= size_tm a0). lia.
       use_size_induction b bb Par1 Par2.
       move: (@Par_fv_preservation _ _ x _ _ h1 ltac:(eauto)) => h6.
       exists bb.
@@ -784,7 +785,7 @@ Proof.
       rewrite h2; auto.
       simpl in h3.
       rewrite size_tm_open_tm_wrt_co_var in h3.
-      assert (size_tm b <= size_tm a0). omega.
+      assert (size_tm b <= size_tm a0). lia.
       move: (H1 x ltac:(auto)) => h4. rewrite h2 in h4. inversion h4.
       use_size_induction b bb Par1 Par2.
       exists bb. 
@@ -807,7 +808,7 @@ Proof.
       rewrite h2; auto.
       simpl in h4.
       rewrite size_tm_open_tm_wrt_co_var in h4.
-      assert (size_tm b <= size_tm a0). omega.
+      assert (size_tm b <= size_tm a0). lia.
       use_size_induction b bb Par1 Par2.
       move: (@Par_fv_preservation _ _ x _ _ H8 ltac:(eauto)) => h5.
       exists bb.
@@ -866,7 +867,7 @@ Proof.
       rewrite h0; auto.
       simpl in h3.
       rewrite size_tm_open_tm_wrt_tm_var in h3.
-      assert (size_tm b <= size_tm a0). omega.
+      assert (size_tm b <= size_tm a0). lia.
       let h4 := fresh in
       match goal with
         [ H2 :  ∀ x : atom, x `notin` ?L1 → erased_tm (open_tm_wrt_tm ?a0 (a_Var_f x)) |- _ ] =>
@@ -886,7 +887,7 @@ Proof.
       rewrite h2; auto.
       simpl in h4.
       rewrite size_tm_open_tm_wrt_tm_var in h4.
-      assert (size_tm b <= size_tm a0). omega.
+      assert (size_tm b <= size_tm a0). lia.
       use_size_induction b bb Par1 Par2.
       move: (@Par_fv_preservation _ _ x _ _ H10 ltac:(eauto)) => h5.
       exists bb.
@@ -933,7 +934,7 @@ Proof.
               = size_tm (a_App b Irrel a_Bullet)). rewrite h0; auto.
       rewrite size_tm_open_tm_wrt_tm_var in h3.
       simpl in h3.
-      assert (size_tm b <= size_tm a0). omega.
+      assert (size_tm b <= size_tm a0). lia.
       let h4 := fresh in
       match goal with
         [ H2 :  ∀ x : atom, x `notin` ?L1 → erased_tm (open_tm_wrt_tm ?a0 (a_Var_f x)) |- _ ] =>
@@ -962,7 +963,7 @@ Proof.
       rewrite h2; auto.
       simpl in h4.
       rewrite size_tm_open_tm_wrt_tm_var in h4.
-      assert (size_tm b <= size_tm a0). omega.
+      assert (size_tm b <= size_tm a0). lia.
       use_size_induction b bb Par1 Par2.
       exists bb.
       split.
@@ -1013,7 +1014,7 @@ Proof.
       rewrite h0; auto.
       simpl in h3.
       rewrite size_tm_open_tm_wrt_co_var in h3.
-      assert (size_tm b <= size_tm a0). omega.
+      assert (size_tm b <= size_tm a0). lia.
       move: (H0 x ltac:(auto)) => h4. rewrite h4 in h2. inversion h2.
       use_size_induction b bb Par1 Par2.
       exists bb. 
@@ -1036,7 +1037,7 @@ Proof.
       rewrite h3; auto.
       simpl in h4.
       rewrite size_tm_open_tm_wrt_co_var in h4.
-      assert (size_tm b <= size_tm a0). omega.
+      assert (size_tm b <= size_tm a0). lia.
       use_size_induction b bb Par1 Par2.
       exists bb.
       split; eauto.
@@ -1074,7 +1075,7 @@ Ltac use_size_induction b ac Par1 Par2 :=
         H3 : erased_tm b,
         H : Par S D b ?b0,
         H4 : Par S D b ?b1 |- _ ] =>
-      move: (@IH (size_tm b) ltac:(omega) b ltac:(auto) _ _ _ H2 H3 H _ H4) => [ ac [Par1 Par2]]
+      move: (@IH (size_tm b) ltac:(lia) b ltac:(auto) _ _ _ H2 H3 H _ H4) => [ ac [Par1 Par2]]
   end.
 *)
 

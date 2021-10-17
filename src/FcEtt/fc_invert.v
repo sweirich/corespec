@@ -14,7 +14,6 @@ Require Import FcEtt.ett_ind.
 Require Import FcEtt.erase_syntax.
 Require Export Metalib.CoqEqDec.
 Require Import Coq.Logic.Decidable.
-Require Import Metalib.Metatheory.
 Require Import FcEtt.fc_unique.
 
 Require Import FcEtt.fc_wf.
@@ -29,6 +28,9 @@ Import unique.
 
 Set Bullet Behavior "Strict Subproofs".
 Set Implicit Arguments.
+
+(* gather_atoms will not be overwritten without this Require *)
+Import FcEtt.ett_ind.
 
 (* ------------------------------------------------------------- *)
 

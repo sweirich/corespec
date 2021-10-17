@@ -157,7 +157,8 @@ Proof.
     subst. simpl.
     rewrite tm_subst_tm_tm_open_tm_wrt_tm.
     eapply E_AppCong; eauto 2.
-    eapply K1; eauto 2.
+
+    (* eapply K1; eauto 2. *)
     eapply (Typing_lc H2).
   - (* app irrel case *)
     intros G b B a A K0 K1 K2 K3 G1 G2 x A1 a1 a2 D H2 H3 H4. subst.
