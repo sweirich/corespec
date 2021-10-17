@@ -19,6 +19,7 @@ Require Export FcEtt.fc_wf.
 Require Export FcEtt.fc_context_fv.
 
 Import FcEtt.ett_ott.
+Import FcEtt.ett_ind.
 
 Module fc_subst (wf : fc_wf_sig) (weak : fc_weak_sig) <: fc_subst_sig.
 
