@@ -43,6 +43,13 @@ constraint, phi {{ tex \phi }} :: '' ::= {{ com props }}
      {{ coq (open_constraint_wrt_tm [[x b]] [[phi]]) }}
    | | phi |          :: S :: Erase
      {{ coq (erase_constraint [[phi]]) }}
+% proof and prop in the same syntactic category?
+% L stands for logic
+   | LAll x : A . phi2 :: :: LPi
+
+   | phi1 ==> phi2 :: :: Impl
+
+
 %% TODO: think about adding this constraint
 %% | phi1 ~ phi2       ::   :: CoIso
 
@@ -182,6 +189,12 @@ co, g {{ tex \gamma }} :: 'g_' ::= {{ com explicit coercions }}
      {{ coq [[g]] }} {{ tex [[g]] }}
    | g { a / x }          :: S :: TSubst
      {{ coq open_co_wrt_tm [[x g]] [[a]] }}
+   | ind g1 g2        ::  :: Ind
+   | labs x : A . g   ::  :: LAbs (+ bind x in g +)
+   | lapp g a       ::  :: LApp
+   | iabs c : phi . g ::  :: Impl (+ bind c in g +)
+   | iapp g1 g2         ::  :: IApp
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -1567,6 +1580,23 @@ a = b [c]
 --------------------------------------------------- :: EtaC
 G ; D |- eta b : (/\ c:phi. a) ~ b
 
+
+
+G ; D |- A : TYPE
+G, x : A ; D |- g : phi
+--------------------------------------------------- :: LAbs
+G ; D |- labs x : A . g  : phi
+
+
+G ; D |- g1 : phi1 ==> phi2
+G ; D |- g2 : phi1
+--------------------------------------------------- :: IApp
+G ; D |- iapp g1 g2 : phi2
+
+
+G, c : phi1 ; D |- g : phi2
+--------------------------------------------------- :: IAbs
+G ; D |- iabs c : phi1 . g  : phi1 ==> phi2
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
