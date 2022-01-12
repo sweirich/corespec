@@ -1424,6 +1424,7 @@ G |- a1' ~ a2' : B ok
 G ; D |- conv (a1 ~ a2 : A) (a1' ~ a2' : B) g : (a1 ~ a2 : A) == (a1' ~ a2' : B)
 
 
+% generalize to phi? but then there would be annotations
 defn
 G ; D |- g : A ~ B ::  :: AnnDefEq :: 'An_'
 {{ com coercion between types }}
@@ -1582,8 +1583,8 @@ G ; D |- eta b : (/\ c:phi. a) ~ b
 
 
 
-G ; D |- A : TYPE
-G, x : A ; D |- g : phi
+G |- A : TYPE
+G , x : A ; D |- g : phi
 --------------------------------------------------- :: LAbs
 G ; D |- labs x : A . g  : phi
 
@@ -1594,7 +1595,7 @@ G ; D |- g2 : phi1
 G ; D |- iapp g1 g2 : phi2
 
 
-G, c : phi1 ; D |- g : phi2
+G , c : phi1 ; D |- g : phi2
 --------------------------------------------------- :: IAbs
 G ; D |- iabs c : phi1 . g  : phi1 ==> phi2
 
