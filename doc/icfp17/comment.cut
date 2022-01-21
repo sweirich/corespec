@@ -4,7 +4,8 @@
   %% \grantnum[<url>]{<sponsorID>}{<number>} should be used to
   %% acknowledge financial support and will be used by metadata
   %% extraction tools.
-  Thanks to Simon Peyton Jones, Adam Gundry and Iavor Diatchki for feedback
+  Thanks to Simon Peyton Jones, Adam Gundry, Iavor Diatchki and Pritam
+  Choudhury for feedback
   and suggestions.
   This material is based upon work supported by the
   \grantsponsor{GS100000001}{National Science

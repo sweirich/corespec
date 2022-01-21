@@ -37,6 +37,8 @@ relflag, rho {{ tex \rho }} :: '' ::= {{ com relevance flag }}
 constraint, phi {{ tex \phi }} :: '' ::= {{ com props }}
    | a ~ b : A        ::   :: Eq
      {{ tex [[a]] [[~]]_{[[A]]} [[b]] }}
+   | a ~ b            ::   :: EqNoAnn
+     {{ tex [[a]] [[~]] [[b]] }}
    | ( phi )          :: S :: Paren
      {{ coq ([[phi]]) }}
    | phi { b / x }    :: S :: Subst
@@ -80,7 +82,7 @@ tm, a, b, v, w, A, B :: 'a_' ::= {{ com types and kinds }}
 
    %% currently unused but ready for extension
    | K                ::   :: DataCon
-   | match a with brs ::   :: Case
+   % | match a with brs ::   :: Case
 
 
    %% standard substitution, using open
@@ -113,10 +115,10 @@ tm, a, b, v, w, A, B :: 'a_' ::= {{ com types and kinds }}
    %% abbreviations for examples
    | Int              :: S :: Int    {{ coq 0 }}
    | Bool             :: S :: Bool   {{ coq 0 }}
-   | Nat              :: S :: Nat    {{ coq 0 }}
+   % | Nat              :: S :: Nat    {{ coq 0 }}
    | Vec              :: S :: Vec    {{ coq 0 }}
-   | 0                :: S :: Zero   {{ coq 0 }}
-   | Succ             :: S :: Succ   {{ coq 0 }} {{ tex \mathsf{S} }}
+   % | 0                :: S :: Zero   {{ coq 0 }}
+   % | Succ             :: S :: Succ   {{ coq 0 }} {{ tex \mathsf{S} }}
    | True             :: S :: True   {{ coq 0 }}
    | Fix              :: S :: Fix    {{ coq 0 }}
    | a -> b           :: S :: Arrow  {{ coq (a_Pi [[a]] [[b]]) }}
@@ -131,6 +133,11 @@ tm, a, b, v, w, A, B :: 'a_' ::= {{ com types and kinds }}
      {{ tex \lambda [[x]]\!:\![[A]].[[a]] }}
    | all x : A -> B   :: S :: RelPi
      {{ coq (a_Pi  Rel [[A]] [[B]]) }}
+   | Nat              ::   :: Nat    {{ tex \mathbb{N} }}
+   | 0                ::   :: Zero   
+   | Succ a           ::   :: Succ   {{ tex \mathsf{S} }}
+   % what about typing b2 as a function?
+   | Case a b1 ( x . b2 )     ::   :: Case (+ bind x in b2 +)
 
 %% Currently unused
 brs :: 'br_' ::=    {{ com case branches }}
@@ -193,7 +200,9 @@ co, g {{ tex \gamma }} :: 'g_' ::= {{ com explicit coercions }}
    | labs x : A . g   ::  :: LAbs (+ bind x in g +)
    | lapp g a       ::  :: LApp
    | iabs c : phi . g ::  :: Impl (+ bind c in g +)
-   | iapp g1 g2         ::  :: IApp
+   | implapp g1 g2         ::  :: ImplApp
+   | succ g               ::   :: SuccCong
+   | Case g g1 ( x . g2 )   ::   :: CaseCong (+ bind x in g2 +)
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -347,6 +356,7 @@ terminals :: 'terminals_' ::=
   | |-=               ::   :: turneq     {{ tex \vdash_{=} }}
   | refl2             ::   :: refl2      {{ tex \mathbf{refl_2}  }}
   | ++                ::   :: concat     {{ tex \mathop{++} }}
+  | ==>               ::   :: impl       {{ tex \implies }}
 
 formula :: 'formula_' ::=
   | judgement                ::   :: judgement
@@ -412,6 +422,7 @@ formula :: 'formula_' ::=
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Coq Definitions necessary to specify the semantics
 
+% FIX: Case now refers to something different
 embed {{ coq
 Fixpoint erase_tm (a : tm) : tm :=
    match a with
@@ -578,6 +589,14 @@ Value a
 --------------------- :: CApp
 Value (a [g])
 
+
+--------------------- :: Zero
+Value 0
+
+
+Value a
+--------------------- :: Succ
+Value Succ a
 
 defn
 ValueType A ::   :: value_type :: 'value_type_'
@@ -883,6 +902,17 @@ F ~ a : A in toplevel
 |= F > a
 
 
+
+-------------------------------- :: CaseZero
+|= Case 0 b1 (x . b2) > b1
+
+
+Value (Succ a)
+-------------------------------- :: CaseSucc
+|= Case (Succ a) b1 (x . b2) > b2 { a / x }
+
+
+
 defn
  |= a ~> b ::   :: reduction_in_one :: 'E_'
 {{ com single-step head reduction for implicit language }}
@@ -919,6 +949,13 @@ F ~ a : A in toplevel
 -------------------- :: Axiom
 |= F ~> a
 
+|= a ~> a'
+-------------------- :: Succ
+|= Succ a ~> Succ a'
+
+|= a ~> a'
+-------------------- :: Case
+|= Case a b1 (x . b2) ~> Case a' b1 (x . b2)
 
 defn
 
@@ -1331,6 +1368,19 @@ G |- b : B
 ------------------------- :: Wff
 G |- a ~ b : A  ok
 
+
+
+% there must be an additional case
+% for erasure to handle this
+G |- a : A
+G |- b : B
+|A| = |B|
+------------------------- :: WffNoAnn
+G |- a ~ b  ok
+
+
+
+
 defn
 G |- a : A ::  :: AnnTyping :: 'An_'
 {{ com typing }}
@@ -1394,6 +1444,21 @@ F ~ a : A in an_toplevel
 ----------------------- :: Fam
 G |- F : A
 
+
+|- G
+----------------------- :: Zero
+G |- 0 : Nat
+
+G |- a : Nat
+----------------------- :: Succ
+G |- Succ a : Nat
+
+G |- a : Nat
+G |- b1 : A { 0 / x }
+G , x : Nat |- b2 : A { Succ x / x }
+----------------------- :: Case
+G |- Case a b1 ( x . b2 ) : A { a / x }
+
 defn
 G ; D |- g : phi1 == phi2 ::  :: AnnIso :: 'An_'
 {{ tex [[G]];[[D]][[|-]] [[g]] : [[phi1]] \sim [[phi2]] }}
@@ -1426,7 +1491,7 @@ G ; D |- conv (a1 ~ a2 : A) (a1' ~ a2' : B) g : (a1 ~ a2 : A) == (a1' ~ a2' : B)
 
 % generalize to phi? but then there would be annotations
 defn
-G ; D |- g : A ~ B ::  :: AnnDefEq :: 'An_'
+G ; D |- g : phi ::  :: AnnDefEq :: 'An_'
 {{ com coercion between types }}
 by
 
@@ -1583,21 +1648,50 @@ G ; D |- eta b : (/\ c:phi. a) ~ b
 
 
 
+G ; D |- g : LAll x : A . phi
+G |- a : A
+--------------------------------------------------- :: LApp
+G ; D |- lapp g a  : phi { a / x }
+
 G |- A : TYPE
 G , x : A ; D |- g : phi
 --------------------------------------------------- :: LAbs
-G ; D |- labs x : A . g  : phi
+G ; D |- labs x : A . g  : LAll x : A . phi
 
 
+% This is terribly named: Fix it
 G ; D |- g1 : phi1 ==> phi2
 G ; D |- g2 : phi1
---------------------------------------------------- :: IApp
-G ; D |- iapp g1 g2 : phi2
+--------------------------------------------------- :: ImplApp
+G ; D |- implapp g1 g2 : phi2
 
 
 G , c : phi1 ; D |- g : phi2
 --------------------------------------------------- :: IAbs
 G ; D |- iabs c : phi1 . g  : phi1 ==> phi2
+
+
+G ; D |- g1 : phi { 0 / x }
+G ; D |- g2 : LAll x : Nat . ( phi ==> ( phi { Succ x / x } ) )
+--------------------------------------------------- :: Ind
+G ; D |- ind g1 g2 : LAll x : Nat . phi
+
+
+G |- a1 : Nat
+G ; D |- g : a1 ~ a2
+-------------------------------------- :: SuccCong
+G ; D |- succ g : Succ a1 ~ Succ a2
+
+
+G ; D |- g1 : a1 ~ a2
+G ; D |- g2 : b1 ~ b2
+G , x : Nat ; D |- g3 : b3 ~ b4
+G |- Case a1 b1 ( x . b3 ) : A
+G |- Case a2 b2 ( x . b4 ) : B
+[ G ; dom G |- g4 : A ~ B ]
+---------------------------------------------------------------- :: CaseCong
+G ; D |- Case g1 g2 ( x . g3 ) : Case a1 b1 ( x . b3 ) ~ Case a2 b2 ( x . b4 )
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 

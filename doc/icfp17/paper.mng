@@ -1366,7 +1366,7 @@ satisfied. All other rules of the typing judgment are the same as \fimp.
 %%   combines E_AppCong & E_IAppCong together, drops EqConv
 %%   adds EraseEq, IsoSym
 \begin{figure}
-\begin{drulepar}[An]{$[[G;D|- g : a ~ b]]$}{Type equality}
+\begin{drulepar}[An]{$[[G;D|- g : phi]]$}{Type equality}
 \drule{Refl}
 \drule{Sym}
 \drule{Trans}
@@ -1382,8 +1382,13 @@ satisfied. All other rules of the typing judgment are the same as \fimp.
 \label{fig:fc-defeq}
 \end{figure}
 \begin{figure}[t]
-\begin{drulepar}[An]{$[[G;D|- g : a ~ b]]$}{Type equality (cont'd)}
+\begin{drulepar}[An]{$[[G;D|- g : phi]]$}{Type equality (cont'd)}
 \drule{PiFst}
+\drule[width=\textwidth]{LApp}
+\drule[width=\textwidth]{LAbs}
+\drule[width=\textwidth]{IApp}
+\drule[width=\textwidth]{IAbs}
+\drule[width=\textwidth]{Ind}
 \drule[width=0.45\textwidth]{PiSnd}\drule{CPiFst}
 \drule[width=0.55\textwidth]{CPiSnd}
 \drule{Cast}\drule{IsoSnd}\drule{EraseEq}
