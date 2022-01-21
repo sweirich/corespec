@@ -199,7 +199,7 @@ co, g {{ tex \gamma }} :: 'g_' ::= {{ com explicit coercions }}
    | ind g1 g2        ::  :: Ind
    | labs x : A . g   ::  :: LAbs (+ bind x in g +)
    | lapp g a       ::  :: LApp
-   | iabs c : phi . g ::  :: Impl (+ bind c in g +)
+   | implabs c : phi . g ::  :: ImplAbs (+ bind c in g +)
    | implapp g1 g2         ::  :: ImplApp
    | succ g               ::   :: SuccCong
    | Case g g1 ( x . g2 )   ::   :: CaseCong (+ bind x in g2 +)
@@ -1667,8 +1667,8 @@ G ; D |- implapp g1 g2 : phi2
 
 
 G , c : phi1 ; D |- g : phi2
---------------------------------------------------- :: IAbs
-G ; D |- iabs c : phi1 . g  : phi1 ==> phi2
+--------------------------------------------------- :: ImplAbs
+G ; D |- implabs c : phi1 . g  : phi1 ==> phi2
 
 
 G ; D |- g1 : phi { 0 / x }
