@@ -1,0 +1,108 @@
+\documentclass{article}
+\usepackage{amsmath}
+\usepackage{mathpartir}
+\usepackage[utf8]{inputenc}
+\begin{document}
+\section{Additional forms}
+This section summarizes the changes I made to the specification from
+icfp17. 
+
+\subsection{Constraints}
+The coercion language is extended with universal quantification over
+terms ($\texttt{LAll}\;x : A . \phi$) and implications ($\phi_1 \implies
+\phi_2$).
+
+The judgment $\Gamma ; \Delta \vdash g : a \sim b$ is now extended to
+a more general form $\Gamma ; \Delta \vdash g : \phi$.
+
+Apart from the introduction/elimination rules of universal
+quantification and implication, rules have been added for reasoning
+about natural numbers (discussed in the next
+subsection). Note that the elimination form for universal
+quantification over terms does not restrict the instantiating term to
+be a value.
+
+\textsc{SuccCong} and \textsc{CaseCong} are the congruence rules for
+the successor constructor and the case eliminator, respectively.
+
+\textsc{Ind} is the induction principle for natural numbers. The DC
+proof object is of the form $ind\;g_1\;g_2$ where $ind\;g_1\;g_2$ is a
+proof of $\texttt{LAll}\;x : Nat . \phi$, $g_1$ is a proof of
+the base case $\phi\{0/x\}$, $g_2$ is a proof of the inductive case
+$\texttt{LAll}\;x : Nat . (\phi \implies (\phi \{Succ\;x / x\}))$
+
+\subsection{Strict Natural numbers}
+The programming language is extended with type: $Nat$; two
+constructors: $Succ$ and $Zero$; one eliminator $Case$.
+
+The natural number is strict (so is $Case$. Not sure if that matters,
+though).
+
+
+\section{Interpretation of logical formulas}
+The inductively defined function $I$ maps from logical
+formulas/constraints to propositions. The function is parameterized
+over a well-formed context $\Gamma$.
+For now, I'm restricting the logical formulas to be first order.
+\begin{equation*}
+  \begin{split}
+    I(a \sim_A b) &= consistent(a,b) \\
+    I(\texttt{LAll}\;x : A . \phi) &= \forall a, \Gamma;\emptyset
+    \vdash a : A \rightarrow  I(\phi\{a / x\}) \\
+    I(\phi_1 \implies \phi_2) &= I(\phi_1) \rightarrow I(\phi_2)
+  \end{split}
+\end{equation*}
+The substitution in the \texttt{LAll} case is well-founded because
+there is one less \texttt{LAll} in $I(\phi\{a / x\})$ (not counting
+the possible \texttt{LAll}s in the annotation of $t$).
+
+
+
+\section{Definition of $consistent$}
+Even though we extended our logic with implication and universal
+quantification, I'm still struggling to find a way to reuse the
+joinability proof. The base case $a \sim_A b$ is still troublesome.
+
+Equations of the form $\lambda x. x = \lambda x. x + 0$ can be derived
+even though the two expressions are not joinable.
+
+
+\section{$\bot - \bot = 0$}
+This is still derivable in the system. $\bot$ is a top-level
+definition:
+\[\bot := \bot\]
+and so is $-$:
+\[pred := \lambda n. Case\;n\;Zero\;(x . x)\]
+\[(-) := \lambda n .\lambda m. Case\;m\;n\;(m' . pred (n - m'))\]
+
+By using the induction principle for natural numbers, one can derive:
+\[\texttt{LAll}\;x : Nat. (x - x = Zero)\]
+The elimination rule for forall quantification (\textsc{LApp})
+currently does not restrict what the body of the forall can be
+instantiated to. This will give us:
+\[\bot - \bot = Zero\]
+
+
+There are several workarounds I have in mind:
+\subsection{Restricting the instantiation rule to values}
+Since we are in a call-by-name language, restricting the instantiation
+rule to values (concrete numbers such as $0,1,2,\ldots$) would give us
+an extremely weak induction rule that is admissible. However, what if
+our language distinguishes between a variable that represents a
+computation and a variable that represents a return value?
+
+I'm not sure if full-fledged CBPV is the right answer, but I think
+that's one direction that we can explore.
+
+\subsection{Defining the natural numbers as part of the coercion language }
+This was brought up in a previous meeting, but I'm not a big fan of
+this idea. One of the motivations dependent haskell is to unify type-level
+computation and term-level computation so the programmer doesn't have
+to use hacks such as singletons. If we allow coercions to appear as
+terms in types (e.g. $Vec\;n$ where $n$ is a coercion natural number),
+then the programmer still have to do type-level programming in a
+different language. I'm not sure if that's what we want eventually.
+
+
+
+\end{document}
