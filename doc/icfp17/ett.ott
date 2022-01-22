@@ -135,7 +135,7 @@ tm, a, b, v, w, A, B :: 'a_' ::= {{ com types and kinds }}
      {{ coq (a_Pi  Rel [[A]] [[B]]) }}
    | Nat              ::   :: Nat    {{ tex \mathbb{N} }}
    | 0                ::   :: Zero   
-   | Succ a           ::   :: Succ   {{ tex \mathsf{S} }}
+   | Succ a           ::   :: Succ   {{ tex \mathsf{S} \; [[a]] }}
    % what about typing b2 as a function?
    | Case a b1 ( x . b2 )     ::   :: Case (+ bind x in b2 +)
 
@@ -903,6 +903,7 @@ F ~ a : A in toplevel
 
 
 
+% duplicate in a ~> b?
 -------------------------------- :: CaseZero
 |= Case 0 b1 (x . b2) > b1
 
@@ -956,6 +957,15 @@ F ~ a : A in toplevel
 |= a ~> a'
 -------------------- :: Case
 |= Case a b1 (x . b2) ~> Case a' b1 (x . b2)
+
+-------------------------------- :: CaseZero
+|= Case 0 b1 (x . b2) ~> b1
+
+
+Value (Succ a)
+-------------------------------- :: CaseSucc
+|= Case (Succ a) b1 (x . b2) ~> b2 { a / x }
+
 
 defn
 

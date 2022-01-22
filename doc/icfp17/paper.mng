@@ -784,8 +784,10 @@ definitions.
   \ottdruleEXXAxiom{} \\  \\
   \ottdruleEXXAbsTerm{} \qquad
   \ottdruleEXXAppLeft{} \qquad
-  \ottdruleEXXCAppLeft{} \\  \\
-
+  \ottdruleEXXCAppLeft{} \qquad
+  \ottdruleEXXSucc{}  \\ \\
+  \ottdruleEXXCaseZero{} \qquad
+  \ottdruleEXXCaseSucc{} \\ \\
 \end{array}
 \]
 
@@ -1312,6 +1314,9 @@ $[[|A0|]] = [[A]]$.
 \drule{Fam}
 \drule{CPi}
 \drule{CAbs}
+\drule{Zero}
+\drule{Succ}
+\drule{Case}
 \drule[width=3in]{CApp}
 \end{drulepar}
 \caption{Typing rules for DC}
@@ -1386,9 +1391,11 @@ satisfied. All other rules of the typing judgment are the same as \fimp.
 \drule{PiFst}
 \drule[width=\textwidth]{LApp}
 \drule[width=\textwidth]{LAbs}
-\drule[width=\textwidth]{IApp}
-\drule[width=\textwidth]{IAbs}
+\drule[width=\textwidth]{ImplApp}
+\drule[width=\textwidth]{ImplAbs}
 \drule[width=\textwidth]{Ind}
+\drule[width=\textwidth]{SuccCong}
+\drule[width=\textwidth]{CaseCong}
 \drule[width=0.45\textwidth]{PiSnd}\drule{CPiFst}
 \drule[width=0.55\textwidth]{CPiSnd}
 \drule{Cast}\drule{IsoSnd}\drule{EraseEq}
