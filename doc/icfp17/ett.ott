@@ -55,7 +55,6 @@ constraint, phi {{ tex \phi }} :: '' ::= {{ com props }}
 %% TODO: think about adding this constraint
 %% | phi1 ~ phi2       ::   :: CoIso
 
-
 tm, a, b, v, w, A, B :: 'a_' ::= {{ com types and kinds }}
    | TYPE               ::   :: Star
      {{ tex \star }}
@@ -201,6 +200,7 @@ co, g {{ tex \gamma }} :: 'g_' ::= {{ com explicit coercions }}
    | lapp g a       ::  :: LApp
    | implabs c : phi . g ::  :: ImplAbs (+ bind c in g +)
    | implapp g1 g2         ::  :: ImplApp
+   | implCong g1 g2       ::   :: ImplCong
    | succ g               ::   :: SuccCong
    | Case g g1 ( x . g2 )   ::   :: CaseCong (+ bind x in g2 +)
 
@@ -1092,6 +1092,12 @@ G ; D |= all c:phi1. B1 == all c:phi2. B2 : TYPE
 G ; D |=  phi1 == phi2
 
 
+G ; D |- g1 : phi1 == phi2
+G ; D |- g2 : phi3 == phi4
+-------------------------------------- :: ImplCong
+G ; D |- implCong g1 g2 : phi1 ==> phi3 == phi2 ==> phi4 
+
+
 defn
 
 G ; D |= a == b : A ::     :: DefEq :: 'E_'
@@ -1676,7 +1682,7 @@ G ; D |- g2 : phi1
 G ; D |- implapp g1 g2 : phi2
 
 
-G , c : phi1 ; D |- g : phi2
+G , c : phi1 ; D , c |- g : phi2
 --------------------------------------------------- :: ImplAbs
 G ; D |- implabs c : phi1 . g  : phi1 ==> phi2
 
