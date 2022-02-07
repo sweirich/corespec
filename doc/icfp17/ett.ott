@@ -1092,11 +1092,6 @@ G ; D |= all c:phi1. B1 == all c:phi2. B2 : TYPE
 G ; D |=  phi1 == phi2
 
 
-G ; D |- g1 : phi1 == phi2
-G ; D |- g2 : phi3 == phi4
--------------------------------------- :: ImplCong
-G ; D |- implCong g1 g2 : phi1 ==> phi3 == phi2 ==> phi4 
-
 
 defn
 
@@ -1503,6 +1498,13 @@ G |- a1' ~ a2' : B ok
 |a2| = |a2'|
 -------------------------------------- :: IsoConv
 G ; D |- conv (a1 ~ a2 : A) (a1' ~ a2' : B) g : (a1 ~ a2 : A) == (a1' ~ a2' : B)
+
+
+G ; D |- g1 : phi1 == phi2
+G ; D |- g2 : phi3 == phi4
+-------------------------------------- :: ImplCong
+G ; D |- implCong g1 g2 : phi1 ==> phi3 == phi2 ==> phi4 
+
 
 
 % generalize to phi? but then there would be annotations
