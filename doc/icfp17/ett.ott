@@ -769,6 +769,23 @@ x notin fv A
 defns
   Jpar :: '' ::=
 
+defn
+G ; D |- phi1 => phi2 :: :: ParProp :: 'ParProp_'
+{{ tex \vDash [[phi1]] [[=>]] [[phi2]] }}
+{{ com parallel reduction for props (implicit language) }}
+by
+
+G ; D |- a => a'
+G ; D |- b => b'
+G ; D |- A => A'
+----------------------- :: Eq
+G ; D |- a ~ b : A => a' ~ b' : A'
+
+G ; D |- phi1 => phi1'
+G ; D |- phi2 => phi2'
+----------------------- :: Impl
+G ; D |- phi1 ==> phi1' => phi2 ==> phi2'
+
 
 defn
 G ; D |- a => b ::  :: Par :: 'Par_'
@@ -819,12 +836,10 @@ G ; D |- a => a'
 --------------------------- :: CAbs
 G ; D |- /\c . a => /\c . a'
 
-G ; D |- A => A'
-G ; D |- B => B'
 G ; D |- a => a'
-G ; D |- A1 => A1'
+G ; D |- phi => phi'
 ----------------------------------------- :: CPi
-G ; D |- all c:A~B:A1. a => all c:A'~B':A1'. a'
+G ; D |- all c:phi. a => all c:phi'. a'
 
 % NOTE: toplevel is assumed to be locally closed
 F ~ a : A in toplevel
