@@ -44,7 +44,7 @@ G,c:phi |= a : B
 G |== a : all c:phi. B
 
 G |= a : all c:(a ~ b : A). B
-G; dom G |= a == b : A
+G; dom G |= a ~ b : A
 ----------------------- :: CApp
 G |== a : B { o / c }
 

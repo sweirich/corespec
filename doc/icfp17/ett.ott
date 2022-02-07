@@ -996,8 +996,14 @@ by
 G |= a : A
 G |= b : A
 [ G |= A : TYPE ]
----------------------------  :: Wff
+---------------------------  :: WffEq
 G |= a ~ b : A  ok
+
+G |= phi1 ok
+G |= phi2 ok
+---------------------------  :: WffImpl
+G |= phi1 ==> phi2 ok
+
 
 defn
 
@@ -1038,7 +1044,7 @@ G |= b - [] : B { a / x }
 
 
 G |= a : A
-G ; dom G |= A == B : TYPE
+G ; dom G |= A ~ B : TYPE
 [ G |= B : TYPE ]
 ----------------------------- :: Conv
 G |= a : B
@@ -1053,8 +1059,8 @@ G, c:phi |= a : B
 ------------------------------------------------- :: CAbs
 G |= /\ c . a : all c:phi. B
 
-G |= a1 : all c : (a ~ b : A) . B1
-G ; dom G |= a == b : A
+G |= a1 : all c : phi . B1
+G ; dom G |= phi
 ------------------------------------------- :: CApp
 G |= a1 [ o ] : B1 { o / c }
 
@@ -1076,154 +1082,169 @@ G ; D |= phi1 == phi2  ::    :: Iso :: 'E_'
 {{ com prop equality }}
 by
 
-G ; D |= A1 == A2 : A
-G ; D |= B1 == B2 : A
+G ; D |= A1 ~ A2 : A
+G ; D |= B1 ~ B2 : A
 ---------------------------------------- :: PropCong
 G ; D |= A1 ~ B1 : A == A2 ~ B2 : A
 
-G ; D |= A == B : TYPE
+G ; D |= A ~ B : TYPE
 G |= A1 ~ A2 : A ok
 G |= A1 ~ A2 : B ok
 ----------------------------------------- :: IsoConv
 G ; D |= A1 ~ A2 : A == A1 ~ A2 : B
 
-G ; D |= all c:phi1. B1 == all c:phi2. B2 : TYPE
+G ; D |= all c:phi1. B1 ~ all c:phi2. B2 : TYPE
 ------------------------------------------------- :: CPiFst
 G ; D |=  phi1 == phi2
 
 
+G ; D |= phi1 == phi2
+G ; D |= phi3 == phi4
+-------------------------------------- :: ImplCong
+G ; D |= phi1 ==> phi3 == phi2 ==> phi4 
+
 
 defn
 
-G ; D |= a == b : A ::     :: DefEq :: 'E_'
-{{ com definitional equality }}
+G ; D |= phi ::     :: DefEq :: 'E_'
+{{ com definitional equality }} 
 by
 
 |= G
-c: (a ~ b : A) in G
+c: phi in G
 c in D
 -------------------- :: Assn
-G ; D |= a == b : A
+G ; D |= phi
 
 G |= a : A
 -------------------- :: Refl
-G ; D |= a == a : A
+G ; D |= a ~ a : A
 
-G ; D |= b == a : A
+G ; D |= b ~ a : A
 -------------------- :: Sym
-G ; D |= a == b : A
+G ; D |= a ~ b : A
 
-G ; D |= a == a1 : A
-G ; D |= a1 == b : A
+G ; D |= a ~ a1 : A
+G ; D |= a1 ~ b : A
 ------------------------------------- :: Trans
-G ; D |= a == b : A
+G ; D |= a ~ b : A
 
 
 G |= a1 : B
 [G |= a2 : B]
 |= a1 > a2
 --------------------------------  :: Beta
-G ; D |= a1 == a2 : B
+G ; D |= a1 ~ a2 : B
 
 %% Rules related to functions
 
-G ; D |=  A1 == A2 : TYPE
-G, x:A1; D |= B1 == B2 : TYPE
+G ; D |=  A1 ~ A2 : TYPE
+G, x:A1; D |= B1 ~ B2 : TYPE
 %% this needed by weakening IH
 [G |= A1 : TYPE]
 %% these two needed by regularity
 [G |= all rho x:A1 -> B1 : TYPE]
 [G |= all rho x:A2 -> B2 : TYPE]
 ---------------------------------------------------------- :: PiCong
-G ; D |= (all rho x:A1 -> B1) == (all rho x:A2 -> B2) : TYPE
+G ; D |= (all rho x:A1 -> B1) ~ (all rho x:A2 -> B2) : TYPE
 
 
-G, x:A1 ; D |= b1 == b2 : B
+G, x:A1 ; D |= b1 ~ b2 : B
 [ G |= A1 : TYPE ]
 rho => check x in b1
 rho => check x in b2
 -------------------------------------------------------------- :: AbsCong
-G ; D |=  (\ rho x. b1) == (\ rho x. b2) : all rho x:A1 -> B
+G ; D |=  (\ rho x. b1) ~ (\ rho x. b2) : all rho x:A1 -> B
 
-G ; D |= a1 == b1 : all + x:A -> B
-G ; D |= a2 == b2 : A
+G ; D |= a1 ~ b1 : all + x:A -> B
+G ; D |= a2 ~ b2 : A
 -------------------------------------- :: AppCong
-G ; D |= a1 + a2 == b1 + b2 : B { a2 / x }
+G ; D |= a1 + a2 ~ b1 + b2 : ( B { a2 / x } )
 
 
-G ; D |= a1 == b1 : all - x:A -> B
+G ; D |= a1 ~ b1 : all - x:A -> B
 G |= a : A
 ------------------------------------------ :: IAppCong
-G ; D |= a1 - [] == b1 - [] : B { a / x }
+G ; D |= a1 - [] ~ b1 - [] : ( B { a / x } )
 
 
-G ; D |= all rho x:A1 -> B1 == all rho x:A2 -> B2 : TYPE
+G ; D |= all rho x:A1 -> B1 ~ all rho x:A2 -> B2 : TYPE
 ------------------------------------------------- :: PiFst
-G ; D |=  A1 == A2 : TYPE
+G ; D |=  A1 ~ A2 : TYPE
 
-G ; D |= all rho x:A1 -> B1 == all rho x:A2 -> B2 : TYPE
-G ; D |= a1 == a2 : A1
+G ; D |= all rho x:A1 -> B1 ~ all rho x:A2 -> B2 : TYPE
+G ; D |= a1 ~ a2 : A1
 ------------------------------------------- :: PiSnd
-G ; D |=  B1 {a1 /x}  == B2 {a2/x} : TYPE
+G ; D |=  B1 {a1 /x}  ~ B2 {a2/x} : TYPE
 
 %% Rules related to Coercion Abstraction
 
 G ; D |= phi1 == phi2
-G, c: phi1 ; D |= A == B : TYPE
+G, c: phi1 ; D |= A ~ B : TYPE
 [G |= phi1 ok]
 [G |= all c:phi1. A : TYPE]
 [G |= all c:phi2. B : TYPE]
 --------------------------------------------------------- :: CPiCong
-G ; D |= all c:phi1. A  == all c:phi2. B : TYPE
+G ; D |= all c:phi1. A  ~ all c:phi2. B : TYPE
 
-G, c: phi1 ; D |= a == b : B
+G, c: phi1 ; D |= a ~ b : B
 [ G |= phi1 ok ]
 ------------------------------------------------------------ :: CAbsCong
-G ; D |=  (/\c . a) == (/\ c . b) : all c:phi1. B
+G ; D |=  (/\c . a) ~ (/\ c . b) : all c:phi1. B
 
-G ; D |= a1 == b1 : all c:(a ~ b : A). B
-G ; dom G |= a == b : A
+G ; D |= a1 ~ b1 : all c:phi. B
+G ; dom G |= phi
 -------------------------------------- :: CAppCong
-G ; D |= a1 [o] == b1 [o] : B { o / c }
+G ; D |= a1 [o] ~ b1 [o] : B { o / c }
 
-G ; D |= all c:(a1 ~ a2 : A). B1 == all c:(a1'~ a2' : A'). B2 : TYPE
-G ; dom G |= a1 == a2 : A
-G ; dom G |= a1' == a2' : A'
+G ; D |= all c:phi1. B1 ~ all c:phi2. B2 : TYPE
+G ; dom G |= phi1
+G ; dom G |= phi2
 ---------------------------------------------- :: CPiSnd
-G ; D |=  B1 { o / c} == B2 { o / c } : TYPE
+G ; D |=  B1 { o / c} ~ B2 { o / c } : TYPE
 
 %% Other rules
 
-G ; D |= a == b : A
-G ; D |= a ~ b : A == a' ~ b' : A'
+G ; D |= phi1
+G ; D |= phi1 == phi2
 -------------------------------------- :: Cast
-G ; D |= a' == b' : A'
+G ; D |= phi2
 
-G ; D |= a == b : A
-G ; dom G |= A == B : TYPE
+G ; D |= a ~ b : A
+G ; dom G |= A ~ B : TYPE
 -------------------------------------- :: EqConv
-G ; D |= a == b : B
+G ; D |= a ~ b : B
 
 G ; D |= a ~ b : A == a' ~ b' : A'
 -------------------------------------- :: IsoSnd
-G ; D |= A == A' : TYPE
+G ; D |= A ~ A' : TYPE
 
 G |= b : all + x:A -> B
 a = b + x
 ------------------------------------------ :: EtaRel
-G ; D |= \+ x. a == b : all + x:A -> B
+G ; D |= \+ x. a ~ b : all + x:A -> B
 
 %% TODO: Future extensions, more Eta rules
 
 G |= b : all - x:A -> B
 a = b - []
 ------------------------------------------ :: EtaIrrel
-G ; D |= \- x. a == b : all - x:A -> B
+G ; D |= \- x. a ~ b : all - x:A -> B
 
 G |= b : all c:phi. B
 a = b [o]
 ------------------------------------------ :: EtaC
-G ; D |= /\c. a == b : all c:phi. B
+G ; D |= /\c. a ~ b : all c:phi. B
+
+G ; D |= phi1 ==> phi2
+G ; D |= phi1
+--------------------------------------------------- :: ImplApp
+G ; D |= phi2
+
+
+G , c : phi1 ; D , c |= phi2
+--------------------------------------------------- :: ImplAbs
+G ; D |= phi1 ==> phi2
 
 
 
