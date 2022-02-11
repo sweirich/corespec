@@ -431,6 +431,7 @@ with erase_brs (x : brs) : brs :=
 with erase_constraint (phi : constraint) : constraint :=
    match phi with
    | Eq A B A1 => Eq (erase_tm A) (erase_tm B) (erase_tm A1)
+   | Impl phi1 phi2 => Impl (erase_constraint phi1) (erase_constraint phi2)
    end.
 
 Definition erase_sort s :=
@@ -941,7 +942,7 @@ G, c:phi |= a : B
 G |= /\ c . a : all c:phi. B
 
 G |= a1 : all c : phi . B1
-G ; dom G |= phi : A
+G ; dom G |= phi
 ------------------------------------------- :: CApp
 G |= a1 [ o ] : B1 { o / c }
 
@@ -983,7 +984,7 @@ by
 c: phi in G
 c in D
 -------------------- :: Assn
-G ; D |= phi : A
+G ; D |= phi
 
 G |= a : A
 -------------------- :: Refl
@@ -1070,7 +1071,7 @@ G ; D |= all c:phi1. B1 ~ all c:phi2. B2 : TYPE
 G ; dom G |= phi1
 G ; dom G |= phi2
 ---------------------------------------------- :: CPiSnd
-G ; D |=  B1 { o / c} == B2 { o / c } : TYPE
+G ; D |=  B1 { o / c} ~ B2 { o / c } : TYPE
 
 %% Other rules
 
