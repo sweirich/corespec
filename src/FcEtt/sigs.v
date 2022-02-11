@@ -13,20 +13,20 @@ Axiom ctx_wff_mutual :
   (forall G0 a A, Typing G0 a A -> Ctx G0) /\
   (forall G0 phi,   PropWff G0 phi -> Ctx G0) /\
   (forall G0 D p1 p2, Iso G0 D p1 p2 -> Ctx G0) /\
-  (forall G0 D A B T,   DefEq G0 D A B T -> Ctx G0) /\
+  (forall G0 D phi,   DefEq G0 D phi -> Ctx G0) /\
   (forall G0, Ctx G0 -> True).
 
 Axiom lc_mutual :
   (forall G0 a A, Typing G0 a A -> lc_tm a /\ lc_tm A) /\
   (forall G0 phi,   PropWff G0 phi -> lc_constraint phi) /\
   (forall G0 D p1 p2, Iso G0 D p1 p2 -> lc_constraint p1 /\ lc_constraint p2) /\
-  (forall G0 D A B T,   DefEq G0 D A B T -> lc_tm A /\ lc_tm B /\ lc_tm T) /\
+  (forall G0 D phi,   DefEq G0 D phi -> lc_constraint phi) /\
   (forall G0, Ctx G0 -> forall x s , binds x s G0 -> lc_sort s).
 
 Axiom Typing_lc  : forall G0 a A, Typing G0 a A -> lc_tm a /\ lc_tm A.
 Axiom PropWff_lc : forall G0 phi,   PropWff G0 phi -> lc_constraint phi.
 Axiom Iso_lc : forall G0 D p1 p2, Iso G0 D p1 p2 -> lc_constraint p1 /\ lc_constraint p2.
-Axiom DefEq_lc : forall G0 D A B T,   DefEq G0 D A B T -> lc_tm A /\ lc_tm B /\ lc_tm T.
+Axiom DefEq_lc : forall G0 D phi,   DefEq G0 D phi -> lc_constraint phi.
 
 Axiom Typing_lc1 : forall G0 a A, Typing G0 a A -> lc_tm a.
 Axiom Typing_lc2 : forall G0 a A, Typing G0 a A -> lc_tm A.
@@ -34,9 +34,9 @@ Axiom Typing_lc2 : forall G0 a A, Typing G0 a A -> lc_tm A.
 Axiom Iso_lc1 : forall G0 D p1 p2, Iso G0 D p1 p2 -> lc_constraint p1.
 Axiom Iso_lc2 : forall G0 D p1 p2, Iso G0 D p1 p2 -> lc_constraint p2.
 
-Axiom DefEq_lc1 : forall G0 D A B T,   DefEq G0 D A B T -> lc_tm A.
-Axiom DefEq_lc2 : forall G0 D A B T,   DefEq G0 D A B T -> lc_tm B.
-Axiom DefEq_lc3 : forall G0 D A B T,   DefEq G0 D A B T -> lc_tm T.
+Axiom DefEq_lc1 : forall G0 D A B T,   DefEq G0 D (Eq A B T) -> lc_tm A.
+Axiom DefEq_lc2 : forall G0 D A B T,   DefEq G0 D (Eq A B T) -> lc_tm B.
+Axiom DefEq_lc3 : forall G0 D A B T,   DefEq G0 D (Eq A B T) -> lc_tm T.
 
 Axiom Ctx_lc : forall G0, Ctx G0 -> forall x s , binds x s G0 -> lc_sort s.
 
@@ -64,14 +64,14 @@ Axiom weaken_available_mutual:
   (forall G1  a A,   Typing G1 a A -> True) /\
   (forall G1  phi,   PropWff G1 phi -> True) /\
   (forall G1 D p1 p2, Iso G1 D p1 p2 -> forall D', D [<=] D' -> Iso G1 D' p1 p2) /\
-  (forall G1 D A B T,   DefEq G1 D A B T -> forall D', D [<=] D' -> DefEq G1 D' A B T) /\
+  (forall G1 D phi,   DefEq G1 D phi -> forall D', D [<=] D' -> DefEq G1 D' phi) /\
   (forall G1 ,       Ctx G1 -> True).
 
 Axiom respects_atoms_eq_mutual :
   (forall G a A,     Typing  G a A       -> True) /\
   (forall G phi,     PropWff G phi       -> True) /\
   (forall G D p1 p2, Iso G D p1 p2 -> forall D', D [=] D' -> Iso G D' p1 p2) /\
-  (forall G D A B T,   DefEq G D A B T  -> forall D', D [=] D' -> DefEq G D' A B T) /\
+  (forall G D phi,   DefEq G D phi  -> forall D', D [=] D' -> DefEq G D' phi) /\
   (forall G,           Ctx G           -> True).
 
 Axiom remove_available_mutual:
@@ -79,12 +79,12 @@ Axiom remove_available_mutual:
   (forall G1  phi,   PropWff G1 phi -> True) /\
   (forall G1 D p1 p2, Iso G1 D p1 p2 ->
                    Iso G1 (AtomSetImpl.inter D (dom G1)) p1 p2) /\
-  (forall G1 D A B T,   DefEq G1 D A B T ->
-                   DefEq G1 (AtomSetImpl.inter D (dom G1)) A B T) /\
+  (forall G1 D phi,   DefEq G1 D phi ->
+                   DefEq G1 (AtomSetImpl.inter D (dom G1)) phi) /\
   (forall G1 ,       Ctx G1 -> True).
 
 Axiom DefEq_weaken_available :
-  forall G D A B T, DefEq G D A B T -> DefEq G (dom G) A B T.
+  forall G D phi, DefEq G D phi -> DefEq G (dom G) phi.
 
 Axiom Iso_weaken_available :
   forall G D A B, Iso G D A B -> Iso G (dom G) A B.
@@ -96,8 +96,8 @@ Axiom typing_weakening_mutual:
      forall E F G, (G0 = F ++ G) -> Ctx (F ++ E ++ G) -> PropWff (F ++ E ++ G) phi) /\
   (forall G0 D p1 p2, Iso G0 D p1 p2 ->
      forall E F G, (G0 = F ++ G) -> Ctx (F ++ E ++ G) -> Iso (F ++ E ++ G) D p1 p2) /\
-  (forall G0 D A B T,   DefEq G0 D A B T ->
-     forall E F G, (G0 = F ++ G) -> Ctx (F ++ E ++ G) -> DefEq (F ++ E ++ G) D A B T) /\
+  (forall G0 D phi,   DefEq G0 D phi ->
+     forall E F G, (G0 = F ++ G) -> Ctx (F ++ E ++ G) -> DefEq (F ++ E ++ G) D phi) /\
   (forall G0,       Ctx G0 ->
      forall E F G, (G0 = F ++ G) -> Ctx (F ++ E ++ G) -> Ctx (F ++ E ++ G)).
 
@@ -154,12 +154,11 @@ Axiom tm_substitution_mutual :  (forall G0 b B (H : Typing G0 b B),
                 Iso (map (tm_subst_tm_sort a x) F ++ G) D
                     (tm_subst_tm_constraint a x p1)
                     (tm_subst_tm_constraint a x p2)) /\
-    (forall G0 D A B T (H : DefEq G0 D A B T),
+    (forall G0 D phi (H : DefEq G0 D phi),
        forall G a A0, Typing G a A0 ->
                  forall F x, G0 = (F ++ (x ~ Tm A0) ++ G) ->
                         DefEq (map (tm_subst_tm_sort a x) F ++ G) D
-                              (tm_subst_tm_tm a x A)
-                              (tm_subst_tm_tm a x B) (tm_subst_tm_tm a x T)) /\
+                              (tm_subst_tm_constraint a x phi)) /\
     (forall G0 (H : Ctx G0),
         forall G a A, Typing G a A ->
                  forall F x, G0 = (F ++ (x ~ Tm A) ++ G) ->
@@ -172,25 +171,25 @@ Axiom Typing_tm_subst : forall G x A b B (H : Typing ((x ~ Tm A) ++ G) b B),
 
 Axiom co_substitution_mutual :
     (forall G0 b B (H : Typing G0 b B),
-        forall G D A1 A2 T F c ,
-          G0 = (F ++ (c ~ Co (Eq A1 A2 T) ) ++ G)
-          -> DefEq G D A1 A2 T
+        forall G D phi F c ,
+          G0 = (F ++ (c ~ Co phi ) ++ G)
+          -> DefEq G D phi
           -> Typing (map (co_subst_co_sort g_Triv c) F ++ G) (co_subst_co_tm g_Triv c b) (co_subst_co_tm g_Triv c B)) /\
     (forall G0 phi (H : PropWff G0 phi),
-        forall G D A1 A2 T F c,
-          G0 = (F ++ (c ~ Co (Eq A1 A2 T) ) ++ G)
-          -> DefEq G D A1 A2 T
+        forall G D phi' F c,
+          G0 = (F ++ (c ~ Co phi' ) ++ G)
+          -> DefEq G D phi'
           -> PropWff (map (co_subst_co_sort g_Triv c) F ++ G) (co_subst_co_constraint g_Triv c phi)) /\
     (forall G0 D0 p1 p2 (H : Iso G0 D0 p1 p2),
-          forall G D A1 A2 T F c,
-            G0 = (F ++ (c ~ Co (Eq A1 A2 T) ) ++ G)
-            -> DefEq G D A1 A2 T
+          forall G D phi F c,
+            G0 = (F ++ (c ~ Co phi ) ++ G)
+            -> DefEq G D phi
             -> Iso (map (co_subst_co_sort g_Triv c) F ++ G) (union D (remove c D0))
                     (co_subst_co_constraint g_Triv c p1)
                     (co_subst_co_constraint g_Triv c p2)) /\
-    (forall G0 D0 A B T (H : DefEq G0 D0 A B T),
+    (forall G0 D0 phi (H : DefEq G0 D0 phi),
         forall G D F c A1 A2 T1,
-          G0 = (F ++ (c ~ Co (Eq A1 A2 T1) ) ++ G)
+          G0 = (F ++ (c ~ Co phi ) ++ G)
           -> DefEq G D A1 A2 T1
           -> DefEq (map (co_subst_co_sort g_Triv c) F ++ G) (union D (remove c D0))
                   (co_subst_co_tm g_Triv c A) (co_subst_co_tm g_Triv c B)

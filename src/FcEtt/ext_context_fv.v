@@ -70,10 +70,8 @@ Theorem context_fv_mutual :
       fv_tm_tm_constraint p1 [<=] dom G /\ fv_co_co_constraint p1 [<=] dom G /\
       fv_tm_tm_constraint p2 [<=] dom G /\ fv_co_co_constraint p2 [<=] dom G)
   /\
-  (forall G D A B T (H : DefEq G D A B T),
-      (fv_tm_tm_tm A [<=] dom G /\ fv_co_co_tm A [<=] dom G /\
-      fv_tm_tm_tm B [<=] dom G /\ fv_co_co_tm B [<=] dom G /\
-      fv_tm_tm_tm T [<=] dom G /\ fv_co_co_tm T [<=] dom G))
+  (forall G D phi (H : DefEq G D phi),
+      fv_tm_tm_constraint phi [<=] dom G /\ fv_co_co_constraint phi [<=] dom G)
 
   /\
   (forall G (H : Ctx G),
