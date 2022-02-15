@@ -188,22 +188,21 @@ Axiom co_substitution_mutual :
                     (co_subst_co_constraint g_Triv c p1)
                     (co_subst_co_constraint g_Triv c p2)) /\
     (forall G0 D0 phi (H : DefEq G0 D0 phi),
-        forall G D F c A1 A2 T1,
+        forall G D F c phi',
           G0 = (F ++ (c ~ Co phi ) ++ G)
-          -> DefEq G D A1 A2 T1
+          -> DefEq G D phi'
           -> DefEq (map (co_subst_co_sort g_Triv c) F ++ G) (union D (remove c D0))
-                  (co_subst_co_tm g_Triv c A) (co_subst_co_tm g_Triv c B)
-                  (co_subst_co_tm g_Triv c T)) /\
+                  (co_subst_co_constraint g_Triv c phi)) /\
     (forall G0 (H : Ctx G0),
-        forall G D F c A1 A2 T,
-          G0 = (F ++ (c ~ Co (Eq A1 A2 T) ) ++ G)
-          -> DefEq G D A1 A2 T
+        forall G D F c phi,
+          G0 = (F ++ (c ~ Co phi ) ++ G)
+          -> DefEq G D phi
           -> Ctx (map (co_subst_co_sort g_Triv c) F ++ G)).
 
 
 Axiom Typing_co_subst:
-   forall G D c a1 a2 A b B (H : Typing (c ~ (Co (Eq a1 a2 A)) ++ G) b B),
-     DefEq G D a1 a2 A ->
+   forall G D c phi b B (H : Typing (c ~ (Co phi) ++ G) b B),
+     DefEq G D phi ->
      Typing G (co_subst_co_tm g_Triv c b) (co_subst_co_tm g_Triv c B).
 
 
