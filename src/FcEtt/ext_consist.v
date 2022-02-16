@@ -58,7 +58,6 @@ Lemma open2 :
     Par S D b b' ->
     Par S D (open_tm_wrt_tm a b) (open_tm_wrt_tm a' b').
 Proof.
-  intros x b b'. intros.
   rewrite (tm_subst_tm_tm_intro x); auto.
   rewrite [(_ _ b')] (tm_subst_tm_tm_intro x); auto.
   apply subst3; auto.
@@ -1955,7 +1954,7 @@ Lemma consistent_mutual:
   (forall S a A,   Typing S a A -> True) /\
   (forall S phi,   PropWff S phi -> True) /\
   (forall S D p1 p2, Iso S D p1 p2 -> Good S D -> (forall A1 B1 T1 A2 B2 T2, p1 = Eq A1 B1 T1 -> p2 = Eq A2 B2 T2-> (joins S D A1 A2 /\ joins S D B1 B2 /\ joins S D T1 T2))) /\
-  (forall S D A B T,   DefEq S D A B T -> Good S D -> joins S D A B) /\
+  (forall S D phi,   DefEq S D phi -> Good S D -> interp_constraint S D phi) /\
   (forall S,       Ctx S -> True).
 Proof.
   apply typing_wff_iso_defeq_mutual; eauto; try done.

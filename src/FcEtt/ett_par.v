@@ -33,11 +33,14 @@ Require Export FcEtt.ett_value.
 
 (* TODO: move these definitions to the OTT file. *)
 
-Inductive multipar S D ( a : tm) : tm -> Prop :=
-| mp_refl : multipar S D a a
-| mp_step : forall b c, Par S D a b -> multipar S D b c -> multipar S D a c.
+(* Inductive multipar S D ( a : tm) : tm -> Prop := *)
+(* | mp_refl : multipar S D a a *)
+(* | mp_step : forall b c, Par S D a b -> multipar S D b c -> multipar S D a c. *)
+
+(* Hint Constructors multipar. *)
 
 Hint Constructors multipar.
+Hint Constructors multipar_prop.
 
 (*
 Inductive consistent : tm -> tm -> Prop :=
@@ -195,7 +198,8 @@ Hint Resolve erased_tm_erase : erased. *)
 
 Inductive erased_sort : sort -> Prop :=
 | erased_Tm : forall a, erased_tm a -> erased_sort (Tm a)
-| erased_Co : forall a b A, erased_tm a -> erased_tm b -> erased_tm A -> erased_sort (Co (Eq a b A)).
+| erased_Co : forall phi, erased_constraint phi -> erased_sort (Co phi).
+
 
 (* Check Forall_forall *)
 
@@ -205,35 +209,49 @@ Definition erased_context : context -> Prop :=
 Definition joins S D a b := exists c, erased_context S /\ erased_tm a /\ erased_tm b /\
                                multipar S D a c /\ multipar S D b c.
 
+Definition joins_constraint S D phi1 phi2 := exists phi3, erased_context S /\
+                                                     erased_constraint phi1 /\
+                                                     erased_constraint phi2 /\
+                                                     multipar_prop S D phi1 phi3 /\ multipar_prop S D phi2 phi3.
 
-Lemma erased_lc : forall a, erased_tm a -> lc_tm a.
-intros; induction H; auto.
+Scheme erased_tm_ind' := Induction for erased_tm Sort Prop
+   with erased_constraint_ind' := Induction for erased_constraint Sort Prop.
+
+Combined Scheme erased_tm_constraint_mutual from erased_tm_ind', erased_constraint_ind'.
+
+Lemma erased_lc : (forall a, erased_tm a -> lc_tm a) /\ (forall phi, erased_constraint phi -> lc_constraint phi).
+  eapply erased_tm_constraint_mutual; intros; auto.
 Qed.
 
-Hint Resolve erased_lc : lc.
+Hint Resolve (proj1 erased_lc) : lc.
+Hint Resolve (proj2 erased_lc) : lc.
 
-Lemma subst_tm_erased : forall x b, erased_tm b -> forall a , erased_tm a -> erased_tm (tm_subst_tm_tm b x a).
+Lemma subst_tm_erased : (forall a , erased_tm a -> forall x b, erased_tm b -> erased_tm (tm_subst_tm_tm b x a)) /\
+                        (forall phi, erased_constraint phi -> forall x b, erased_tm b -> erased_constraint (tm_subst_tm_constraint b x phi)).
 Proof.
-  intros x b Eb a Ea. induction Ea; simpl; intros; eauto 2.
-  all: try solve [erased_pick_fresh x0; autorewrite with subst_open_var; eauto using erased_lc].
+  eapply erased_tm_constraint_mutual; intros; simpl; eauto with lc.
+  all: try solve [erased_pick_fresh x0; autorewrite with subst_open_var; eauto with lc].
   - destruct eq_dec; eauto.
   - destruct rho.
     + pick fresh y and apply erased_a_Abs; eauto.
-    assert (W: y `notin` L). fsetdec. apply H0 in W.
-    rewrite tm_subst_tm_tm_open_tm_wrt_tm in W. simpl in W.
-    assert (Q: (if y == x then b else a_Var_f y) = (a_Var_f y)).
-    destruct (y == x). fsetdec. eauto. rewrite Q in W. eauto.
-    apply erased_lc; eauto. 
+      assert (W: y `notin` L). fsetdec. apply H  with (x := y) (x0 := x) (b := b) in W.
+      rewrite tm_subst_tm_tm_open_tm_wrt_tm in W. simpl in W.
+      assert (Q: (if y == x then b else a_Var_f y) = (a_Var_f y)).
+      destruct (y == x). fsetdec. eauto. rewrite Q in W. eauto.
+      apply erased_lc; eauto.
+      assumption.
     + pick fresh y and apply erased_a_Abs; eauto.
-    assert (W: y `notin` L). fsetdec. apply H0 in W.
-    rewrite tm_subst_tm_tm_open_tm_wrt_tm in W. simpl in W.
-    assert (Q: (if y == x then b else a_Var_f y) = (a_Var_f y)).
-    destruct (y == x). fsetdec. eauto. rewrite Q in W. eauto.
-    apply erased_lc; eauto. assert (W: y `notin` L). fsetdec. apply H1 in W.
-    apply Rho_IrrRel. inversion W; subst.
-    rewrite tm_subst_tm_tm_open_tm_wrt_tm_var; eauto. apply fv_tm_tm_tm_tm_subst_tm_tm_notin.
-    auto. fsetdec. apply erased_lc; auto.
+      assert (W: y `notin` L). fsetdec. apply H with (x := y) (x0 := x) (b := b) in W.
+      rewrite tm_subst_tm_tm_open_tm_wrt_tm in W. simpl in W.
+      assert (Q: (if y == x then b else a_Var_f y) = (a_Var_f y)).
+      destruct (y == x). fsetdec. eauto. rewrite Q in W. eauto.
+      apply erased_lc; eauto. assumption.
+      assert (W: y `notin` L). fsetdec. apply r in W.
+      apply Rho_IrrRel. inversion W; subst.
+      rewrite tm_subst_tm_tm_open_tm_wrt_tm_var; eauto. apply fv_tm_tm_tm_tm_subst_tm_tm_notin.
+      auto. fsetdec. apply erased_lc; auto.
 Qed.
+
 
 Lemma erased_a_Abs_exists : ∀  (rho : relflag) (a : tm) x,
                 x `notin` fv_tm_tm_tm a

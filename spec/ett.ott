@@ -594,6 +594,22 @@ defns
   Jerased :: '' ::=
 
 defn
+  erased_constraint phi ::  :: erased_constraint :: 'erased_c_'
+by
+
+erased_tm a
+erased_tm b
+erased_tm A
+--------- :: Eq
+erased_constraint a ~ b : A
+
+
+erased_constraint phi1
+erased_constraint phi2
+------------------------ :: Impl
+erased_constraint phi1 ==> phi2
+
+defn
   erased_tm a ::  :: erased_tm :: 'erased_a_'
 by
 
@@ -626,12 +642,10 @@ erased_tm B
 ------------------------- :: Pi
 erased_tm (all rho x:A -> B)
 
-erased_tm a
-erased_tm b
-erased_tm A
+erased_constraint phi
 erased_tm B
 ---------------------------------- :: CPi
-erased_tm (all c:a ~ b : A. B)
+erased_tm (all c:phi . B)
 
 erased_tm b
 --------------- :: CAbs
@@ -758,30 +772,67 @@ a = b [o]
 G ; D |- /\c. a => b'
 
 
+defns
+  Jmultipar :: '' ::=
+
 defn
-G ; D |- a =>* b ::   :: MultiPar :: 'MP_'
+G ; D |- a =>* b ::   :: multipar :: 'mp_'
 {{ tex [[|-]] [[a]] [[=>*]] [[b]] }}
 {{ com multistep parallel reduction }}
 by
 
------------------- :: Refl
+------------------ :: refl
 G ; D |- a =>* a
 
 G ; D |- a => b
 G ; D |- b =>* a'
---------------------- :: Step
+--------------------- :: step
 G ; D |- a =>* a'
 
 defn
-G ; D |- a <=> b ::   :: joins :: ''
-{{ tex [[|-]] [[a]] [[<=>]] [[b]] }}
-{{ com parallel reduction to a common term }}
+G ; D |- phi =>* phi' ::   :: multipar_prop :: 'mpprop_'
+{{ tex [[|-]] [[phi]] [[=>*]] [[phi']] }}
+{{ com multistep parallel reduction for constraints }}
 by
 
-G ; D |- a1 =>* b
-G ; D |- a2 =>* b
------------------------- :: join
-G ; D |- a1 <=> a2
+------------------ :: refl
+G ; D |- phi =>* phi
+
+G ; D |- phi1 => phi2
+G ; D |- phi2 =>* phi3
+--------------------- :: step
+G ; D |- phi1 =>* phi3
+
+
+% defns
+%   Jjoins :: '' ::=
+
+% defn
+% G ; D |- a <=> b ::   :: joins :: ''
+% {{ tex [[|-]] [[a]] [[<=>]] [[b]] }}
+% {{ com parallel reduction to a common term }}
+% by
+
+% erased_tm a1
+% erased_tm a2
+% erased_tm b
+% G ; D |- a1 =>* b
+% G ; D |- a2 =>* b
+% ------------------------ :: join
+% G ; D |- a1 <=> a2
+
+% defn
+% G ; D |- phi1 <=> phi2 ::   :: joinsProp :: 'Prop_'
+% {{ tex [[|-]] [[phi1]] [[<=>]] [[phi2]] }}
+% {{ com parallel reduction to a common constraint }}
+% by
+
+% G ; D |- phi1 =>* phi
+% G ; D |- phi2 =>* phi
+% ------------------------ :: join
+% G ; D |- phi1 <=> phi2
+
+
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
