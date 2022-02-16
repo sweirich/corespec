@@ -68,8 +68,10 @@ $(COQMKFILENAME): Makefile $(shell ls *.v | grep -v _ott.v | grep -v _inf.v)
 # Target to be called with some filename appended to it
 # It is a quick hack to fix the imports to metalib
 METALIB.FIX_%:
-	sed -i -e 's/Metatheory/Metalib.Metatheory/g' $*.v
-	sed -i -e 's/LibLNgen/Metalib.LibLNgen/g' $*.v
+	# sed -i -e 's/Metatheory/Metalib.Metatheory/g' $*.v
+	# sed -i -e 's/LibLNgen/Metalib.LibLNgen/g' $*.v
+	sed -i -e '/ott_list_core/d' $*.v
+	sed -i -e '/Require Import List/d' $*.v
 	sed '1d' $*.v > __TMP__; mv __TMP__ $*.v
 
 coqclean:
