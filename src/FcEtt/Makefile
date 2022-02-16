@@ -38,10 +38,16 @@ all: coq
 quick:  $(COQMKFILENAME)
 	@$(MAKE) -f CoqSrc.mk quick
 
+# quick has been deprecated
+# use vos to compile without checking proofs
+vos: $(COQMKFILENAME)
+	@$(MAKE) -f CoqSrc.mk vos
 
 coq: $(COQMKFILENAME)
 	@$(MAKE) -f CoqSrc.mk
 
+%.vos: %.v
+	@$(MAKE) -f CoqSrc.mk $*.vos
 
 %.vo: %.v
 	@$(MAKE) -f CoqSrc.mk $*.vo

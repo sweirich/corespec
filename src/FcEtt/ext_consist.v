@@ -31,12 +31,21 @@ Set Implicit Arguments.
 Set Bullet Behavior "Strict Subproofs".
 
 
+Fixpoint interp_constraint (G : context) (D : available_props) (phi : constraint) : Prop :=
+  match phi with
+  | Eq A B1 T1 => exists C, Par G D A C /\ Par G D B1 C
+  | Impl phi1 phi2 => interp_constraint G D phi1 -> interp_constraint G D phi2
+  end.
+
 Definition Good (G : context) (D : available_props):=
   erased_context G /\
-  forall c1 A B1 T1,
-    binds c1 (Co (Eq A B1 T1)) G
+  forall c1 phi,
+    binds c1 (Co phi) G
     -> c1 `in` D
-    -> exists C, Par G D A C /\ Par G D B1 C.
+    -> interp_constraint G D phi.
+
+
+
 
 (* ---------------------------------------- *)
 
