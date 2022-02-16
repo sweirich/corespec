@@ -245,35 +245,35 @@ Axiom binds_to_Typing: forall G T A, Ctx G -> binds T (Tm A) G -> Typing G A a_S
 *)
 Axiom invert_a_Pi: forall G rho A0 A B0,
     Typing G (a_Pi rho A0 B0) A ->
-    DefEq G (dom G) A a_Star a_Star /\ (exists L, forall x, x `notin` L -> Typing ([(x, Tm A0)] ++ G) (open_tm_wrt_tm B0 (a_Var_f x)) a_Star) /\ Typing G A0 a_Star.
+    DefEq G (dom G) (Eq A a_Star a_Star) /\ (exists L, forall x, x `notin` L -> Typing ([(x, Tm A0)] ++ G) (open_tm_wrt_tm B0 (a_Var_f x)) a_Star) /\ Typing G A0 a_Star.
 
 Axiom invert_a_CPi: forall G phi A B0,
     Typing G (a_CPi phi B0) A ->
-      DefEq G (dom G) A a_Star a_Star /\ (exists L, forall c, c `notin` L -> Typing ([(c, Co phi)] ++ G) (open_tm_wrt_co B0 (g_Var_f c) ) a_Star) /\ PropWff G phi.
+      DefEq G (dom G) (Eq A a_Star a_Star) /\ (exists L, forall c, c `notin` L -> Typing ([(c, Co phi)] ++ G) (open_tm_wrt_co B0 (g_Var_f c) ) a_Star) /\ PropWff G phi.
 
 Axiom invert_a_App_Rel : forall G a b C,
     Typing G (a_App a Rel b) C ->
     exists A B, Typing G a (a_Pi Rel A B) /\
            Typing G b A /\
-           DefEq G (dom G) C (open_tm_wrt_tm B b) a_Star.
+           DefEq G (dom G) (Eq C (open_tm_wrt_tm B b) a_Star).
 
 Axiom invert_a_App_Irrel : forall G a b C,
     Typing G (a_App a Irrel b) C ->
     exists A B b0, Typing G a (a_Pi Irrel A B) /\
               Typing G b0 A /\
-              DefEq G (dom G) C (open_tm_wrt_tm B b0) a_Star.
+              DefEq G (dom G) (Eq C (open_tm_wrt_tm B b0) a_Star).
 
 Axiom invert_a_CApp : forall G a g A,
     Typing G (a_CApp a g) A ->
     g = g_Triv /\
-    exists a1 b1 A1 B, Typing G a (a_CPi (Eq a1 b1 A1) B) /\
-             DefEq G (dom G) a1 b1 A1 /\
-             DefEq G (dom G) A (open_tm_wrt_co B g_Triv) a_Star.
+    exists phi B, Typing G a (a_CPi phi B) /\
+             DefEq G (dom G) phi /\
+             DefEq G (dom G) (Eq A (open_tm_wrt_co B g_Triv) a_Star).
 
 Axiom invert_a_UAbs:
   forall G rho A b0,
     Typing G (a_UAbs rho b0) A
-    -> exists A1 B1, DefEq G (dom G) A (a_Pi rho A1 B1) a_Star
+    -> exists A1 B1, DefEq G (dom G) (Eq A (a_Pi rho A1 B1) a_Star)
                /\ (exists L, forall x, x `notin` L ->
                             Typing ([(x, Tm A1)] ++ G)
                                    (open_tm_wrt_tm b0 (a_Var_f x))
@@ -286,7 +286,7 @@ Axiom invert_a_UAbs:
 Axiom invert_a_UCAbs: forall G A b0,
     Typing G (a_UCAbs b0) A ->
     exists a b T B1, PropWff G (Eq a b T)
-                /\ DefEq G (dom G) A (a_CPi (Eq a b T) B1) a_Star /\
+                /\ DefEq G (dom G) (Eq A (a_CPi (Eq a b T) B1) a_Star) /\
                 (exists L, forall c, c `notin` L ->
                            Typing ([(c, Co (Eq a b T))] ++ G)
                                   (open_tm_wrt_co b0 (g_Var_f c))
@@ -295,13 +295,13 @@ Axiom invert_a_UCAbs: forall G A b0,
                                   (open_tm_wrt_co B1 (g_Var_f c)) a_Star).
 
 Axiom invert_a_Var :
-  forall G x A, Typing G (a_Var_f x) A -> exists A', binds x (Tm A') G /\ DefEq G (dom G) A A' a_Star.
+  forall G x A, Typing G (a_Var_f x) A -> exists A', binds x (Tm A') G /\ DefEq G (dom G) (Eq A A' a_Star).
 
-Axiom invert_a_Star: forall A G, Typing G a_Star A -> DefEq G (dom G) A a_Star a_Star.
+Axiom invert_a_Star: forall A G, Typing G a_Star A -> DefEq G (dom G) (Eq A a_Star a_Star).
 
 Axiom invert_a_Fam : forall G F A,
     Typing G (a_Fam F) A ->
-    exists a B, DefEq G (dom G) A B a_Star /\
+    exists a B, DefEq G (dom G) (Eq A B a_Star) /\
            binds F (Ax a B) toplevel /\ Typing nil B a_Star.
 
 (* ---------- context conversion -------------- *)
@@ -312,8 +312,8 @@ Inductive context_DefEq : available_props -> context -> context -> Prop :=
 | Nul_Eqcontext: forall D, context_DefEq D nil nil
 | Factor_Eqcontext_tm: forall G1 G2 D A A' x,
     context_DefEq D G1 G2 ->
-    DefEq G1 D A A' a_Star ->
-    DefEq G2 D A A' a_Star ->
+    DefEq G1 D (Eq A A' a_Star) ->
+    DefEq G2 D (Eq A A' a_Star) ->
     context_DefEq D ([(x, Tm A)] ++ G1) ([(x, Tm A')] ++ G2)
 | Factor_Eqcontext_co: forall D G1 G2 Phi1 Phi2 c,
     context_DefEq D G1 G2 ->
@@ -334,7 +334,7 @@ Axiom context_DefEq_typing:
 Axiom Typing_regularity: forall e A G, Typing G e A -> Typing G A a_Star.
 
 Axiom DefEq_regularity :
-  forall G D A B T, DefEq G D A B T -> PropWff G (Eq A B T).
+  forall G D phi, DefEq G D phi -> PropWff G phi.
 
 Axiom Iso_regularity :
   forall G D phi1 phi2, Iso G D phi1 phi2 -> PropWff G phi1 /\ PropWff G phi2.
@@ -345,7 +345,7 @@ Axiom PropWff_regularity :
 
 (* ------- smart constructors --------- *)
 
-Axiom DefEq_conv : forall G D a b A B, DefEq G D a b A -> DefEq G (dom G) A B a_Star -> DefEq G D a b B.
+Axiom DefEq_conv : forall G D a b A B, DefEq G D (Eq a b A) -> DefEq G (dom G) (Eq A B a_Star) -> DefEq G D (Eq a b B).
 
 Axiom refl_iso: forall G D phi, PropWff G phi -> Iso G D phi phi.
 
@@ -353,18 +353,18 @@ Axiom sym_iso: forall G D phi1 phi2, Iso G D phi1 phi2 -> Iso G D phi2 phi1.
 
 Axiom trans_iso : forall G D phi1 phi2 phi3, Iso G D phi1 phi2 -> Iso G D phi2 phi3 -> Iso G D phi1 phi3.
 
-Axiom iso_cong : forall G D A A' B B' T T', DefEq G D A A' T -> DefEq G D B B' T -> DefEq G D T T' a_Star ->
+Axiom iso_cong : forall G D A A' B B' T T', DefEq G D (Eq A A' T) -> DefEq G D (Eq B B' T) -> DefEq G D (Eq T T' a_Star) ->
                      Iso G D (Eq A B T) (Eq A' B' T').
 
 
 
 Axiom E_PiCong2 :  ∀ (L : atoms) (G : context) (D : available_props) rho (A1 B1 A2 B2 : tm),
-    DefEq G D A1 A2 a_Star
+    DefEq G D (Eq A1 A2 a_Star)
     → (∀ x : atom,
           x `notin` L
-          → DefEq ([(x, Tm A1)] ++ G) D (open_tm_wrt_tm B1 (a_Var_f x))
-                  (open_tm_wrt_tm B2 (a_Var_f x)) a_Star)
-    → DefEq G D (a_Pi rho A1 B1) (a_Pi rho A2 B2) a_Star.
+          → DefEq ([(x, Tm A1)] ++ G) D (Eq (open_tm_wrt_tm B1 (a_Var_f x))
+                  (open_tm_wrt_tm B2 (a_Var_f x)) a_Star))
+    → DefEq G D (Eq (a_Pi rho A1 B1) (a_Pi rho A2 B2) a_Star).
 
 
 Axiom E_CPiCong2  : ∀ (L : atoms) (G : context) (D : available_props) (phi1 : constraint)
@@ -372,9 +372,9 @@ Axiom E_CPiCong2  : ∀ (L : atoms) (G : context) (D : available_props) (phi1 : 
     Iso G D phi1 phi2
     → (∀ c : atom,
           c `notin` L
-              → DefEq ([(c, Co phi1)] ++ G) D (open_tm_wrt_co A (g_Var_f c))
-                      (open_tm_wrt_co B (g_Var_f c)) a_Star)
-    → DefEq G D (a_CPi phi1 A) (a_CPi phi2 B) a_Star.
+              → DefEq ([(c, Co phi1)] ++ G) D (Eq (open_tm_wrt_co A (g_Var_f c))
+                      (open_tm_wrt_co B (g_Var_f c)) a_Star))
+    → DefEq G D (Eq (a_CPi phi1 A) (a_CPi phi2 B) a_Star).
 
 Axiom E_Pi2 : forall L G rho A B,
     (∀ x : atom, x `notin` L → Typing ([(x, Tm A)] ++ G) (open_tm_wrt_tm B (a_Var_f x)) a_Star) ->
@@ -387,7 +387,7 @@ Axiom E_Abs2 : ∀ (L : atoms) (G : context) (rho : relflag) (a A B : tm),
     → Typing G (a_UAbs rho a) (a_Pi rho A B).
 
 Axiom E_Conv2 : ∀ (G : context) (a B A : tm),
-    Typing G a A → DefEq G (dom G) A B a_Star →
+    Typing G a A → DefEq G (dom G) (Eq A B a_Star) →
     Typing G a B.
 
 Axiom E_CPi2 :  ∀ (L : atoms) (G : context) (phi : constraint) (B : tm),
@@ -403,19 +403,19 @@ Axiom E_AbsCong2
      : ∀ (L : atoms) (G : context) (D : available_props) (rho : relflag) (b1 b2 A1 B : tm),
        (∀ x : atom,
         x `notin` L
-        → DefEq ([(x, Tm A1)] ++ G) D (open_tm_wrt_tm b1 (a_Var_f x)) (open_tm_wrt_tm b2 (a_Var_f x))
-            (open_tm_wrt_tm B (a_Var_f x)))
+        → DefEq ([(x, Tm A1)] ++ G) D (Eq (open_tm_wrt_tm b1 (a_Var_f x)) (open_tm_wrt_tm b2 (a_Var_f x))
+            (open_tm_wrt_tm B (a_Var_f x))))
        → (∀ x : atom, x `notin` L → RhoCheck rho x (open_tm_wrt_tm b1 (a_Var_f x)))
        → (∀ x : atom, x `notin` L → RhoCheck rho x (open_tm_wrt_tm b2 (a_Var_f x)))
-       → DefEq G D (a_UAbs rho b1) (a_UAbs rho b2) (a_Pi rho A1 B).
+       → DefEq G D (Eq (a_UAbs rho b1) (a_UAbs rho b2) (a_Pi rho A1 B)).
 
 Axiom E_CAbsCong2
      : ∀ (L : atoms) (G : context) (D : available_props) (a b : tm) (phi1 : constraint)
        (B : tm),
        (∀ c : atom,
         c `notin` L
-        → DefEq ([(c, Co phi1)] ++ G) D (open_tm_wrt_co a (g_Var_f c)) (open_tm_wrt_co b (g_Var_f c))
-                (open_tm_wrt_co B (g_Var_f c))) → DefEq G D (a_UCAbs a) (a_UCAbs b) (a_CPi phi1 B).
+        → DefEq ([(c, Co phi1)] ++ G) D (Eq (open_tm_wrt_co a (g_Var_f c)) (open_tm_wrt_co b (g_Var_f c))
+                (open_tm_wrt_co B (g_Var_f c)))) → DefEq G D (Eq (a_UCAbs a) (a_UCAbs b) (a_CPi phi1 B)).
 
 End ext_invert_sig.
 
