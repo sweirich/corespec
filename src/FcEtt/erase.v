@@ -75,7 +75,7 @@ Lemma erase_mutual :
   (forall G D g a b,
       AnnDefEq G D g a b ->
       forall A, AnnTyping G a A ->
-             DefEq (erase_context G) D (erase a) (erase b) (erase A)) /\
+             DefEq (erase_context G) D (Eq (erase a) (erase b) (erase A))) /\
   (forall G, AnnCtx G -> Ctx (erase_context G) /\
     forall c t, binds c t G -> binds c (erase_sort t) (erase_context G)).
 Proof.
@@ -647,7 +647,7 @@ Definition AnnDefEq_erase :
   (forall G D g a b,
       AnnDefEq G D g a b ->
       forall A, AnnTyping G a A ->
-           DefEq (erase_context G) D (erase a) (erase b) (erase A)) := fourth erase_mutual.
+           DefEq (erase_context G) D (Eq (erase a) (erase b) (erase A))) := fourth erase_mutual.
 Definition AnnCtx_erase :
   (forall G, AnnCtx G -> Ctx (erase_context G) /\
     forall c t, binds c t G -> binds c (erase_sort t) (erase_context G)) := fifth erase_mutual.
@@ -811,7 +811,7 @@ Lemma annotation_mutual :
        (erase_constraint p1') = p1 /\
        (erase_constraint p2') = p2 /\
        AnnIso G0 D g0 p1' p2') /\
-  (forall G D a b A, DefEq G D a b A ->
+  (forall G D a b A, DefEq G D (Eq a b A) ->
      forall G0, erase_context G0 = G -> AnnCtx G0 ->
      exists g a0 b0 A0,
        (erase a0) = a /\

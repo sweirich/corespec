@@ -89,7 +89,7 @@ Proof.
 Qed.
 
 Lemma E_Beta2 :  ∀ (G : context) (D : available_props) (a1 a2 B : tm),
-       Typing G a1 B → Beta a1 a2 → DefEq G D a1 a2 B.
+       Typing G a1 B → Beta a1 a2 → DefEq G D (Eq a1 a2 B).
 Proof.
   intros; eapply E_Beta; eauto.
   eapply Beta_preservation; eauto.

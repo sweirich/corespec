@@ -312,7 +312,7 @@ Lemma typing_erased_mutual:
     (forall G0 phi (H : PropWff G0 phi),
         forall A B T, phi = Eq A B T -> erased_tm A /\ erased_tm B /\ erased_tm T) /\
      (forall G0 D p1 p2 (H : Iso G0 D p1 p2), True ) /\
-     (forall G0 D A B T (H : DefEq G0 D A B T), True) /\
+     (forall G0 D phi (H : DefEq G0 D phi), True) /\
      (forall G0 (H : Ctx G0), True).
 Proof.
   apply typing_wff_iso_defeq_mutual; intros; repeat split; split_hyp; subst; simpl; auto.
@@ -334,7 +334,7 @@ Lemma typing_erased_type_mutual:
     (forall G b A, Typing G b A -> erased_tm A) /\
     (forall G0 phi (H : PropWff G0 phi), True) /\
      (forall G0 D p1 p2 (H : Iso G0 D p1 p2), True ) /\
-     (forall G0 D A B T (H : DefEq G0 D A B T), True) /\
+     (forall G0 D phi (H : DefEq G0 D phi), True) /\
      (forall G0 (H : Ctx G0), erased_context G0).
 Proof.
   apply typing_wff_iso_defeq_mutual; intros; repeat split; split_hyp; subst; simpl; auto.

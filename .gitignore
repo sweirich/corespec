@@ -40,3 +40,5 @@ nra.cache
 *-rules.tex
 #*
 .#*
+*.vok
+*.vos

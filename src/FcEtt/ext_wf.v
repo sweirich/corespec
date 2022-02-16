@@ -54,10 +54,13 @@ Lemma ctx_wff_mutual :
   (forall G0 a A, Typing G0 a A -> Ctx G0) /\
   (forall G0 phi,   PropWff G0 phi -> Ctx G0) /\
   (forall G0 D p1 p2, Iso G0 D p1 p2 -> Ctx G0) /\
-  (forall G0 D A B T,   DefEq G0 D A B T -> Ctx G0) /\
+  (forall G0 D phi,   DefEq G0 D phi -> Ctx G0) /\
   (forall G0, Ctx G0 -> True).
 Proof.
   eapply typing_wff_iso_defeq_mutual; auto.
+  (* TODO: the following proof should be done by auto? *)
+  (* DefEq *)
+  intros; inversion H; subst; auto.
 Qed.
 
 Definition Typing_Ctx  := first  ctx_wff_mutual.
@@ -80,7 +83,7 @@ Lemma lc_mutual :
   (forall G0 a A, Typing G0 a A -> lc_tm a /\ lc_tm A) /\
   (forall G0 phi, PropWff G0 phi -> lc_constraint phi) /\
   (forall G0 D p1 p2, Iso G0 D p1 p2 -> lc_constraint p1 /\ lc_constraint p2) /\
-  (forall G0 D A B T, DefEq G0 D A B T -> lc_tm A /\ lc_tm B /\ lc_tm T) /\
+  (forall G0 D phi, DefEq G0 D phi -> lc_constraint phi) /\
   (forall G0, Ctx G0 -> forall x s , binds x s G0 -> lc_sort s).
 Proof.
   eapply typing_wff_iso_defeq_mutual.
@@ -122,16 +125,16 @@ Lemma Iso_lc2 : forall G0 D p1 p2, Iso G0 D p1 p2 -> lc_constraint p2.
 Proof.
   intros. apply (third lc_mutual) in H. destruct H. auto.
 Qed.
-Lemma DefEq_lc1 : forall G0 D A B T,   DefEq G0 D A B T -> lc_tm A.
+Lemma DefEq_lc1 : forall G0 D A B T,   DefEq G0 D (Eq A B T) -> lc_tm A.
 Proof.
   intros. apply (fourth lc_mutual) in H. destruct H. auto.
 Qed.
 
-Lemma DefEq_lc2 : forall G0 D A B T,   DefEq G0 D A B T -> lc_tm B.
+Lemma DefEq_lc2 : forall G0 D A B T,   DefEq G0 D (Eq A B T) -> lc_tm B.
 Proof.
   intros. apply (fourth lc_mutual) in H. split_hyp. auto.
 Qed.
-Lemma DefEq_lc3 : forall G0 D A B T,   DefEq G0 D A B T -> lc_tm T.
+Lemma DefEq_lc3 : forall G0 D A B T,   DefEq G0 D (Eq A B T) -> lc_tm T.
 Proof.
   intros. apply (fourth lc_mutual) in H. split_hyp. auto.
 Qed.
