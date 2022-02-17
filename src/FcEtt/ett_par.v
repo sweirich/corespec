@@ -568,13 +568,16 @@ Proof.
     auto. done.
 Qed.
 
-Lemma Par_fv_co_preservation: forall G D x a b, Par G D a b ->
+Lemma Par_fv_co_preservation: forall x, (forall G D a b, Par G D a b ->
                                         x `notin` fv_co_co_tm a ->
-                                        x `notin` fv_co_co_tm b.
+                                        x `notin` fv_co_co_tm b) /\
+                                   (forall G D phi1 phi2, ParProp G D phi1 phi2 ->
+                                        x `notin` fv_co_co_constraint phi1 ->
+                                        x `notin` fv_co_co_constraint phi2).
 Proof.
-  intros.
-  induction H; eauto 2; simpl.
-  all: simpl in H0.
+  move => x.
+  apply Par_tm_constraint_mutual; intros; eauto 2; simpl.
+  all: simpl in *.
   all: try solve [move => h0; apply AtomSetFacts.union_iff in h0; case: h0 => h0; eauto; apply IHreduction_in_one; auto].
   all: try auto.
   - simpl in *.
@@ -593,7 +596,8 @@ Proof.
     case:h0; eauto => h0.
     fsetdec.
     auto.
-  - pick fresh x0.
+  - move : H => H1.
+    pick fresh x0.
     assert (Fl : x0 `notin` L). auto.
     assert (Fa : x `notin` fv_co_co_tm (open_tm_wrt_tm a (a_Var_f x0))).
     rewrite fv_co_co_tm_open_tm_wrt_tm_upper. auto.
@@ -607,7 +611,8 @@ Proof.
     have nb': x `notin` fv_co_co_tm B'.
     rewrite fv_co_co_tm_open_tm_wrt_tm_lower. eauto.
     eauto.
-  - pick_fresh c0.
+  - move : H => H1.
+    pick_fresh c0.
     have: x `notin` fv_co_co_tm (open_tm_wrt_co a (g_Var_f c0)) => h0.
     apply fv_co_co_tm_open_tm_wrt_co_upper in h0.
     apply AtomSetFacts.union_iff in h0.
@@ -630,7 +635,7 @@ Proof.
     have h4: x `notin` fv_co_co_tm a'. fsetdec.
     move => h1.
     apply AtomSetFacts.union_iff in h1.
-    case: h1 => h1; eauto.
+    case: h1 => h1; eauto. (* loops forever. fsetdec. *)
     apply AtomSetFacts.union_iff in h1.
     case: h1 => h1; eauto. clear Fr.
     fsetdec. clear Fr.
