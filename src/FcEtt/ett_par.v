@@ -744,10 +744,14 @@ Hint Resolve Par_erased_tm Par_erased_constraint : erased.
 
 (* ------------------------------------------------------------- *)
 
-Lemma subst1 : forall b S D a a' x, Par S D a a' -> erased_tm b ->
-                           Par S D (tm_subst_tm_tm a x b) (tm_subst_tm_tm a' x b).
+
+Lemma subst1 : forall S D a a' x, Par S D a a' -> 
+                             (forall b, erased_tm b ->
+                               Par S D (tm_subst_tm_tm a x b) (tm_subst_tm_tm a' x b)) /\
+                             (forall phi, erased_constraint phi ->
+                               ParProp S D (tm_subst_tm_constraint a x phi) (tm_subst_tm_constraint a' x phi)).
 Proof.
-  intros b S D a a' x PAR ET. induction ET; intros; simpl; auto.
+  move => S D a a' x PAR; apply erased_tm_constraint_mutual; intros; simpl; auto.
   all: try destruct rho; try solve [Par_pick_fresh y;
                   autorewrite with subst_open_var; eauto with lc].
   destruct (x0 == x). Unshelve.
@@ -764,6 +768,20 @@ Proof.
   rewrite [(_ _ a')] (tm_subst_tm_tm_intro x); auto.
   apply subst1; auto.
 Qed.
+
+Lemma open_constraint1 : forall phi S D a a' L, Par S D a a'
+  -> (forall x, x `notin` L -> erased_constraint (open_constraint_wrt_tm phi (a_Var_f x)))
+  -> ParProp S D (open_constraint_wrt_tm phi a) (open_constraint_wrt_tm phi a').
+Proof.
+  intros.
+  pick fresh x.
+  rewrite (tm_subst_tm_constraint_intro x); auto.
+  rewrite [(_ _ a')] (tm_subst_tm_constraint_intro x); auto.
+  apply subst1; auto.
+Qed.
+
+(* Lemma subst2 : forall S D b x, lc_tm b -> *)
+(*   forall a a', Par S D a a' -> Par S D (tm_subst_tm_tm b x a) (tm_subst_tm_tm b x a'). *)
 
 
 Lemma subst2 : forall S D b x, lc_tm b ->
