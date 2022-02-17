@@ -783,12 +783,14 @@ Qed.
 (* Lemma subst2 : forall S D b x, lc_tm b -> *)
 (*   forall a a', Par S D a a' -> Par S D (tm_subst_tm_tm b x a) (tm_subst_tm_tm b x a'). *)
 
-
-Lemma subst2 : forall S D b x, lc_tm b ->
-  forall a a', Par S D a a' -> Par S D (tm_subst_tm_tm b x a) (tm_subst_tm_tm b x a').
+Lemma subst2 : forall b x, lc_tm b ->
+  (forall S D a a', Par S D a a' -> Par S D (tm_subst_tm_tm b x a) (tm_subst_tm_tm b x a')) /\ 
+  (forall S D phi phi', ParProp S D phi phi' -> ParProp S D (tm_subst_tm_constraint b x phi) (tm_subst_tm_constraint b x phi')).
 Proof.
-  intros S D b x EB a a' PAR.
-  induction PAR; simpl.
+  intros b x EB.
+  apply Par_tm_constraint_mutual; intros; simpl.
+  (* intros S D b x EB a a' PAR. *)
+  (* induction PAR; simpl. *)
   all: eauto using tm_subst_tm_tm_lc_tm.
   all: autorewrite with subst_open; auto.
   all: try solve [Par_pick_fresh y; autorewrite with subst_open_var; eauto].
@@ -803,33 +805,34 @@ Proof.
     fsetdec.
   - Par_pick_fresh y; eauto.
     have h1: y <> x by auto.
-    move: (H y ltac:(auto)) => h0.
+    move: (e y ltac:(auto)) => h0.
     apply (fun_cong (tm_subst_tm_tm b x)) in h0.
     rewrite tm_subst_tm_tm_open_tm_wrt_tm in h0; auto.
     simpl in h0.
     destruct (@eq_dec tmvar _ y x); subst; try done.
   - Par_pick_fresh y; eauto.
     have h1: y <> x by auto.
-    move: (H y ltac:(auto)) => h0.
+    move: (e y ltac:(auto)) => h0.
     apply (fun_cong (tm_subst_tm_tm b x)) in h0.
     rewrite tm_subst_tm_tm_open_tm_wrt_tm in h0; auto.
     simpl in h0.
     destruct (@eq_dec tmvar _ y x); subst; try done.
   - Par_pick_fresh y; eauto.
     have h1: y <> x by auto.
-    move: (H y ltac:(auto)) => h0.
+    move: (e y ltac:(auto)) => h0.
     apply (fun_cong (tm_subst_tm_tm b x)) in h0.
     rewrite tm_subst_tm_tm_open_tm_wrt_co in h0; auto.
 Qed.
 
 
-Lemma subst3 : forall S D b b' x,
-    Par S D b b' ->
-    forall a a', erased_tm a -> Par S D a a' ->
-    Par S D (tm_subst_tm_tm b x a) (tm_subst_tm_tm b' x a').
+Lemma subst3 : forall b b' x,
+    (forall S D a a',  Par S D a a' -> Par S D b b' -> erased_tm a ->
+    Par S D (tm_subst_tm_tm b x a) (tm_subst_tm_tm b' x a')) /\
+    (forall S D phi phi', ParProp S D phi phi' -> Par S D b b' -> erased_constraint phi ->
+    ParProp S D (tm_subst_tm_constraint b x phi) (tm_subst_tm_constraint b' x phi')).
 Proof.
-  intros.
-  dependent induction H1; simpl; eauto 2; erased_inversion; eauto 4.
+  intros b b' x.
+  apply Par_tm_constraint_mutual; intros; simpl; eauto; erased_inversion; eauto.
   all: try solve [ Par_pick_fresh y;
               autorewrite with subst_open_var; eauto 3 with lc ].
   all: try solve [ autorewrite with subst_open; eauto 4 with lc ].
@@ -842,8 +845,9 @@ Proof.
     end.
      move: (Typing_context_fv h0) => ?. split_hyp.
      fsetdec. 
-  - pick fresh y.
-    move: (H5 y ltac:(auto)) => h0.
+  - move : e => H2.
+    pick fresh y.
+    move: (H4 y ltac:(auto)) => h0.
     move: (H2 y ltac:(auto)) => h1.
     rewrite h1 in h0. inversion h0. subst.
     eapply (Par_Eta (L \u singleton x)). eauto.
@@ -855,8 +859,9 @@ Proof.
     destruct (@eq_dec tmvar _ z x); try done.
     clear Fr. fsetdec.
     eapply Par_lc1. eauto.
-  - pick fresh y.
-    move: (H5 y ltac:(auto)) => h0.
+  - move : e => H2.
+    pick fresh y.
+    move: (H4 y ltac:(auto)) => h0.
     move: (H2 y ltac:(auto)) => h1.
     rewrite h1 in h0. inversion h0. subst.
     eapply (Par_EtaIrrel (L \u singleton x)). eauto.
@@ -868,8 +873,9 @@ Proof.
     destruct (@eq_dec tmvar _ z x); try done.
     clear Fr. fsetdec.
     eapply Par_lc1. eauto. 
-  - pick fresh y.
-    move: (H4 y ltac:(auto)) => h0.
+  - move : e => H2.
+    pick fresh y.
+    move: (H3 y ltac:(auto)) => h0.
     move: (H2 y ltac:(auto)) => h1.
     rewrite h1 in h0. inversion h0. subst.
     eapply (Par_EtaC (L \u singleton x)). eauto.
@@ -881,6 +887,10 @@ Proof.
     destruct (@eq_dec tmvar _ z x); try done.
     clear Fr.
     eapply Par_lc1. eauto.
+  (* ParProp Eq *)
+  - inversion H3; eauto.
+  (* ParProp Impl *)
+  - inversion H2; eauto.
 Qed.
 
 
