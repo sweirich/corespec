@@ -354,18 +354,13 @@ Hint Resolve (proj1 Par_lc1) (proj1 Par_lc2) (proj2 Par_lc1) (proj2 Par_lc2) : l
 Lemma typing_erased_mutual:
     (forall G b A, Typing G b A -> erased_tm b) /\
     (forall G0 phi (H : PropWff G0 phi), erased_constraint phi) /\
-     (forall G0 D p1 p2 (H : Iso G0 D p1 p2), erased_constraint p1 /\ erased_constraint p2 ) /\
-     (forall G0 D phi (H : DefEq G0 D phi), erased_constraint phi) /\
+     (forall G0 D p1 p2 (H : Iso G0 D p1 p2), True ) /\
+     (forall G0 D phi (H : DefEq G0 D phi), True) /\
      (forall G0 (H : Ctx G0), True).
 Proof.
   apply typing_wff_iso_defeq_mutual; intros; repeat split; split_hyp; subst; simpl; auto.
   all : try solve [inversion H2; subst; auto].
   all : try solve [econstructor; eauto].
-  all : try solve [inversion H; inversion H0; auto].
-  - inversion H; subst; inversion H3; auto.
-  - inversion H; subst. inversion H4; auto.
-  - 
-    
 Qed.
 
 Lemma Typing_erased_tm: forall G b A, Typing G b A -> erased_tm b.
@@ -382,37 +377,35 @@ Hint Resolve Typing_erased_tm Typing_erased_constraint : erased.
 
 Lemma typing_erased_type_mutual:
     (forall G b A, Typing G b A -> erased_tm A) /\
-    (forall G0 phi (H : PropWff G0 phi), True) /\
+    (forall G0 phi (H : PropWff G0 phi), erased_constraint phi) /\
      (forall G0 D p1 p2 (H : Iso G0 D p1 p2), True ) /\
-     (forall G0 D phi (H : DefEq G0 D phi), erased_constraint phi) /\
+     (forall G0 D phi (H : DefEq G0 D phi), True) /\
      (forall G0 (H : Ctx G0), erased_context G0).
 Proof.
   apply typing_wff_iso_defeq_mutual; intros; repeat split; split_hyp; subst; simpl; auto.
   all: unfold erased_context in *.
-  all: eauto using Typing_erased_tm.
+  all: eauto with erased.
     all: try solve [inversion H; pick fresh x;
       rewrite (tm_subst_tm_tm_intro x); auto;
         eapply subst_tm_erased;
-        eauto using Typing_erased].
+        eauto with erased].
   - eapply Forall_forall in H; eauto. simpl in H. inversion H. auto.
- (*  - induction p. *)
- (*    + econstructor; eauto using Typing_erased. *)
- (*    + eauto using typing_erased_mutual. *)
-
- (* inversion p. econstructor; eauto using Typing_erased. *)
   - inversion H; pick fresh x;
       rewrite (co_subst_co_tm_intro x); auto.
-        eapply subst_co_erased;
-        eauto using Typing_erased.
+        eauto with erased.
   - apply Forall_forall.
     intros s h0. destruct s.
     destruct h0. inversion H1. econstructor.
-    eauto using Typing_erased.
+    eauto with erased.
     eapply Forall_forall in H; eauto. simpl in H. auto.
   - apply Forall_forall.
-    intros s h0. destruct s. inversion p. subst.
-    destruct h0. inversion H4. econstructor;  eauto using Typing_erased.
-    eapply Forall_forall in H; eauto. simpl in H. auto.
+    intros s h0. destruct s.
+    induction p.
+    + subst.
+      destruct h0. inversion H4. econstructor;  eauto with erased.
+      eapply Forall_forall in H; eauto. simpl in H. auto.
+    + destruct h0. inversion H1; subst. constructor. assumption.
+      apply IHp1; eauto. inversion H0; eauto. right. assumption.
 Qed.
 
 Lemma Typing_erased_type : forall G b A, Typing G b A -> erased_tm A.
@@ -457,13 +450,17 @@ end.
 
 
 
-Lemma Par_fv_preservation: forall G D x a b, Par G D a b ->
-                                        x `notin` fv_tm_tm_tm a ->
-                                        x `notin` fv_tm_tm_tm b.
+Lemma Par_fv_preservation: forall x, 
+  (forall G D a b, Par G D a b ->
+             x `notin` fv_tm_tm_tm a ->
+             x `notin` fv_tm_tm_tm b) /\
+  (forall G D phi1 phi2, ParProp G D phi1 phi2 ->
+             x `notin` fv_tm_tm_constraint phi1 ->
+             x `notin` fv_tm_tm_constraint phi2).
 Proof.
-  intros.
-  induction H; eauto 2; simpl.
-  all: simpl in H0.
+  move => x.
+  apply Par_tm_constraint_mutual; intros; eauto 2; simpl in *.
+  all: simpl in H.
   all: try solve [move => h0; apply AtomSetFacts.union_iff in h0; case: h0 => h0; eauto; apply IHreduction_in_one; auto].
   all: try auto.
   - simpl in *.
@@ -486,7 +483,7 @@ Proof.
     assert (Fl : x0 `notin` L). auto.
     assert (Fa : x `notin` fv_tm_tm_tm (open_tm_wrt_tm a (a_Var_f x0))).
     rewrite fv_tm_tm_tm_open_tm_wrt_tm_upper. auto.
-    move: (H1 x0 Fl Fa) => h0.
+    move: (H x0 Fl Fa) => h0.
     rewrite fv_tm_tm_tm_open_tm_wrt_tm_lower. eauto. 
   - pick fresh x0.
     have na': x `notin` fv_tm_tm_tm A'. eauto.
@@ -503,7 +500,7 @@ Proof.
     case:h0; eauto => h0.
     simpl in h0.
     fsetdec.
-    have K:= H1 c0 ltac:(auto) h0.
+    have K:= H c0 ltac:(auto) h0.
     move => h1.
     apply K. auto.
     apply fv_tm_tm_tm_open_tm_wrt_co_lower; auto.
@@ -515,21 +512,13 @@ Proof.
     simpl in h0.
     fsetdec.
     have h2: x `notin` fv_tm_tm_tm (open_tm_wrt_co a' (g_Var_f c0)). eauto.
-    move: (fv_tm_tm_tm_open_tm_wrt_co_lower a' (g_Var_f c0)) => h3.
-    have h4: x `notin` fv_tm_tm_tm a'. fsetdec.
-
-    move => h1.
-    apply AtomSetFacts.union_iff in h1.
-    case: h1 => h1; eauto.
-    apply AtomSetFacts.union_iff in h1.
-    case: h1 => h1; eauto.
-    fsetdec.
-    fsetdec.
-  - apply toplevel_closed in H.
+    move: (fv_tm_tm_tm_open_tm_wrt_co_lower a' (g_Var_f c0)) => h3. fsetdec.
+  - move : b H => H.
+    apply toplevel_closed in H.
     move: (Typing_context_fv H) => ?. split_hyp.
     simpl in *.
     fsetdec.
-  -
+  - move : H e => IHPar H1.
     apply IHPar.
     pick fresh y.
     move: (H1 y ltac:(auto)) => h0.
@@ -545,7 +534,8 @@ Proof.
     destruct (AtomSetImpl.union_1 h3).
     assert (x `notin` singleton y). auto. done.
     done.
-  - apply IHPar.
+  - move : H e => IHPar H1.
+    apply IHPar.
     pick fresh y.
     move: (H1 y ltac:(auto)) => h0.
     apply (fun_cong fv_tm_tm_tm) in h0.
@@ -560,7 +550,8 @@ Proof.
     destruct (AtomSetImpl.union_1 h3).
     assert (x `notin` singleton y). auto. done.
     done.
-  - apply IHPar.
+  - move : H e => IHPar H1.
+    apply IHPar.
     pick fresh y.
     move: (H1 y ltac:(auto)) => h0.
     apply (fun_cong fv_tm_tm_tm) in h0.

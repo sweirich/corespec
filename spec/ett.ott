@@ -693,7 +693,7 @@ G ; D |- a ~ b : A => a' ~ b' : A'
 G ; D |- phi1 => phi1'
 G ; D |- phi2 => phi2'
 ----------------------- :: Impl
-G ; D |- phi1 ==> phi12 => phi1' ==> phi2'
+G ; D |- phi1 ==> phi2 => phi1' ==> phi2'
 
 
 defn

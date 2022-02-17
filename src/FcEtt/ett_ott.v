@@ -943,11 +943,10 @@ Inductive ParProp : context -> available_props -> constraint -> constraint -> Pr
      Par G D b b' ->
      Par G D A A' ->
      ParProp G D (Eq a b A) (Eq a' b' A')
- | ParProp_Impl : forall (G:context) (D:available_props) (phi1 phi12 phi1' phi2' phi2:constraint),
-     lc_constraint phi12 ->
+ | ParProp_Impl : forall (G:context) (D:available_props) (phi1 phi2 phi1' phi2':constraint),
      ParProp G D phi1 phi1' ->
      ParProp G D phi2 phi2' ->
-     ParProp G D (Impl phi1 phi12) (Impl phi1' phi2')
+     ParProp G D (Impl phi1 phi2) (Impl phi1' phi2')
 with Par : context -> available_props -> tm -> tm -> Prop :=    (* defn Par *)
  | Par_Refl : forall (G:context) (D:available_props) (a:tm),
      lc_tm a ->
