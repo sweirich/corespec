@@ -1045,14 +1045,15 @@ Qed.
 
 
 Lemma multipar_CPi_exists:  ∀ c (G : context) D (phi phi' : constraint) (a a' : tm),
-       lc_tm (a_CPi phi a) -> c `notin` fv_co_co_tm a -> ParProp G D phi phi'
+       lc_tm (a_CPi phi a) -> c `notin` fv_co_co_tm a -> multipar_prop G D phi phi'
          → multipar G D (open_tm_wrt_co a (g_Var_f c)) a'
          → multipar G D (a_CPi phi a) (a_CPi phi' (close_tm_wrt_co c a')).
 Proof.
   intros c G D phi phi' a a' lc e H H0.
   dependent induction H.
-  - 
-
+  - dependent induction H0.
+    + rewrite close_tm_wrt_co_open_tm_wrt_co; auto.
+    + apply mp_step with (b := )
 
   dependent induction H; eauto 1.
   - dependent induction H0; eauto 1.
