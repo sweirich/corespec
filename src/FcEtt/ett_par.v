@@ -33,88 +33,10 @@ Require Export FcEtt.ett_value.
 
 (* TODO: move these definitions to the OTT file. *)
 
-(* Inductive multipar S D ( a : tm) : tm -> Prop := *)
-(* | mp_refl : multipar S D a a *)
-(* | mp_step : forall b c, Par S D a b -> multipar S D b c -> multipar S D a c. *)
-
 (* Hint Constructors multipar. *)
 
 Hint Constructors multipar.
 Hint Constructors multipar_prop.
-
-(*
-Inductive consistent : tm -> tm -> Prop :=
-| consistent_a_Star   : consistent a_Star a_Star
-| consistent_a_Pi     : forall rho A1 B1 A2 B2,
-    lc_tm A1 ->
-    lc_tm (a_Pi rho A1 B1) ->
-    lc_tm A2 ->
-    lc_tm (a_Pi rho A2 B2) ->
-    consistent (a_Pi rho A1 B1) (a_Pi rho A2 B2)
-| consistent_a_CPi    : forall phi1 A1 phi2 A2,
-    lc_constraint phi1 ->
-    lc_tm (a_CPi phi1 A1) ->
-    lc_constraint phi2 ->
-    lc_tm (a_CPi phi2 A2) ->
-    consistent (a_CPi phi1 A1) (a_CPi phi2 A2)
-| consistent_Path     : forall T p1 p2,
-    Path T p1 -> Path T p2 ->
-    consistent p1 p2
-| consistent_a_Const  : forall T, consistent (a_Const T)(a_Const T)
-| consistent_a_App    : forall p1 p2 b1 b2 rho,
-    lc_tm b1 -> lc_tm b2 ->
-    consistent p1 p2 ->
-    consistent (a_App p1 rho b1) (a_App p2 rho b2)
-| consistent_a_CApp    : forall p1 p2 b1 b2,
-    lc_co b1 -> lc_co b2 ->
-    consistent p1 p2 ->
-    consistent (a_CApp p1 b1) (a_CApp p2 b2)
-| consistent_a_Step_R : forall a b,
-    lc_tm a ->
-    not (value_type b) -> consistent a b
-| consistent_a_Step_L : forall a b,
-    lc_tm a ->
-    not (value_type b) -> consistent b a.
-Hint Constructors consistent.
-*)
-
-(*
-Inductive erased_tm : tm -> Prop :=
-| erased_a_Bullet :
-    (erased_tm a_Bullet)
- | erased_a_Star :
-     (erased_tm a_Star)
- | erased_a_Var_f : forall (x:tmvar),
-     (erased_tm (a_Var_f x))
- | erased_a_Abs : forall L rho (b:tm),
-     ( forall x , x `notin` L -> erased_tm  ( open_tm_wrt_tm b (a_Var_f x) )  )  ->
-     (erased_tm (a_UAbs rho b))
- | erased_a_App : forall rho (a b:tm),
-     (erased_tm a) ->
-     (erased_tm b) ->
-     (erased_tm (a_App a rho b))
- | erased_a_Pi : forall L rho (A B:tm),
-     (erased_tm A) ->
-      ( forall x , x `notin` L -> erased_tm  ( open_tm_wrt_tm B (a_Var_f x) )  )  ->
-     (erased_tm (a_Pi rho A B))
- | erased_a_CPi : forall L (A A1 A2: tm) (B:tm),
-     (erased_tm A1) ->  (erased_tm A2) -> (erased_tm A) ->
-      ( forall c , c `notin` L -> erased_tm  ( open_tm_wrt_co B (g_Var_f c) )  )  ->
-     (erased_tm (a_CPi (Eq A1 A2 A) B))
- | erased_a_CAbs : forall L (A A1 A2:tm) (b:tm),
-      (forall c , c `notin` L -> erased_tm  ( open_tm_wrt_co b (g_Var_f c) )  )  ->
-     (erased_tm (a_UCAbs b))
- | erased_a_CApp : forall (a:tm),
-     (erased_tm a) ->
-     (erased_tm (a_CApp a g_Triv))
- | erased_a_Const : forall T,
-     erased_tm (a_Const T)
- | erased_a_Fam : forall F,
-     erased_tm (a_Fam F)
-.
-
-Hint Constructors erased_tm.
-*)
 
 (* NOTE: we have a database 'erased' for proving that terms are erased. *)
 
@@ -158,50 +80,10 @@ Ltac erased_case :=
   | [ H : ∀ c, erased_tm (erase (open_tm_wrt_co ?b (g_Var_f c))) |- _ ] =>
     move: (H x) => h0; rewrite <- open_co_erase_tm2 with (g := (g_Var_f x)) in h0; auto
   end.
-(*
-
-Lemma erased_tm_erase_mutual :
-  (forall a, lc_tm a -> erased_tm (erase a))
-  /\ (forall a, lc_brs a -> True)
-  /\ (forall a, lc_co a -> True)
-  /\ (forall phi, lc_constraint phi -> forall a b A, phi = (Eq a b A) ->
-                                         erased_tm (erase a) /\ erased_tm (erase b)
-                                         /\ erased_tm (erase A)).
-
-Proof.
-  apply lc_tm_lc_brs_lc_co_lc_constraint_mutind; intros; simpl; eauto.
-  all: try solve [ try (destruct rho); simpl; eauto].
-  all: try solve [erased_case].
-  - destruct rho; eauto. pick fresh x and apply erased_a_Abs. 
-    replace (a_Var_f x) with (erase (a_Var_f x)); eauto.
-    rewrite open_tm_erase_tm; eauto.
-    eauto.
-    (*irrel*)
-    pick fresh x and apply erased_a_Abs.
-    replace (a_Var_f x) with (erase (a_Var_f x)); eauto.
-    rewrite open_tm_erase_tm; eauto. econstructor. admit.
-  - destruct phi. destruct (H _ _ _ eq_refl) as (h0 & h1 & h2). simpl.
-    erased_case.
-  - inversion H2. subst. tauto.
-Qed. *)
-
-(*
-Lemma erased_tm_erase : forall a, lc_tm a -> erased_tm (erase a).
-Proof.
-  intros.
-  destruct erased_tm_erase_mutual.
-  eauto.
-Qed.
-
-Hint Resolve erased_tm_erase : erased. *)
-
 
 Inductive erased_sort : sort -> Prop :=
 | erased_Tm : forall a, erased_tm a -> erased_sort (Tm a)
 | erased_Co : forall phi, erased_constraint phi -> erased_sort (Co phi).
-
-
-(* Check Forall_forall *)
 
 Definition erased_context : context -> Prop :=
   Forall (fun p => match p with (a,s) => erased_sort s end).
@@ -223,8 +105,18 @@ Lemma erased_lc : (forall a, erased_tm a -> lc_tm a) /\ (forall phi, erased_cons
   eapply erased_tm_constraint_mutual; intros; auto.
 Qed.
 
-Hint Resolve (proj1 erased_lc) : lc.
-Hint Resolve (proj2 erased_lc) : lc.
+Lemma erased_lc_tm : forall a, erased_tm a -> lc_tm a.
+Proof.
+  apply erased_lc.
+Qed.
+
+Lemma erased_lc_constraint : forall phi, erased_constraint phi -> lc_constraint phi.
+Proof.
+  apply erased_lc.
+Qed.
+
+Hint Resolve erased_lc_tm : lc.
+Hint Resolve erased_lc_constraint : lc.
 
 Lemma subst_tm_erased : (forall a , erased_tm a -> forall x b, erased_tm b -> erased_tm (tm_subst_tm_tm b x a)) /\
                         (forall phi, erased_constraint phi -> forall x b, erased_tm b -> erased_constraint (tm_subst_tm_constraint b x phi)).
@@ -894,12 +786,16 @@ Proof.
 Qed.
 
 
-Lemma subst4 : forall S D b x, lc_co b ->
-    forall a a', Par S D a a' ->
-    Par S D (co_subst_co_tm b x a) (co_subst_co_tm b x a').
+Lemma subst4 : forall b x, lc_co b ->
+    (forall S D a a', Par S D a a' ->
+    Par S D (co_subst_co_tm b x a) (co_subst_co_tm b x a')) /\
+    (forall S D phi phi', ParProp S D phi phi' ->
+    ParProp S D (co_subst_co_constraint b x phi) (co_subst_co_constraint b x phi')).
 Proof.
-  intros S D b x EB a a' PAR.
-  induction PAR; simpl; auto.
+  intros b x EB.
+  apply Par_tm_constraint_mutual; intros; simpl; auto.
+  (* intros S D b x EB a a' PAR. *)
+  (* induction PAR; simpl; auto. *)
   all: try solve [ Par_pick_fresh y;
               autorewrite with subst_open_var; eauto 3 with lc ].
   all: try solve [ autorewrite with subst_open; eauto 4 with lc ].
@@ -913,17 +809,17 @@ Proof.
     simpl in *.
     fsetdec.
   - pick fresh y and apply Par_Eta; eauto.
-    move: (H y ltac:(auto)) => h1.
+    move: (e y ltac:(auto)) => h1.
     apply (fun_cong (co_subst_co_tm b x)) in h1.
     rewrite co_subst_co_tm_open_tm_wrt_tm in h1.
     simpl in h1. auto. auto.
   - pick fresh y and apply Par_EtaIrrel; eauto.
-    move: (H y ltac:(auto)) => h1.
+    move: (e y ltac:(auto)) => h1.
     apply (fun_cong (co_subst_co_tm b x)) in h1.
     rewrite co_subst_co_tm_open_tm_wrt_tm in h1.
     simpl in h1. auto. auto.
   - pick fresh y and apply Par_EtaC; eauto.
-    move: (H y ltac:(auto)) => h1.
+    move: (e y ltac:(auto)) => h1.
     apply (fun_cong (co_subst_co_tm b x)) in h1.
     rewrite co_subst_co_tm_open_tm_wrt_co in h1.
     rewrite co_subst_co_co_var_neq in h1.
@@ -935,27 +831,25 @@ Lemma multipar_subst3 : forall S D b b' x, erased_tm b ->
     forall a a', erased_tm a -> multipar S D a a' ->
     multipar S D (tm_subst_tm_tm b x a) (tm_subst_tm_tm b' x a').
 Proof.
-  intros S D b b' x lc H.
-  dependent induction H; auto.
-  - intros a0 a' lc2 H.
-    dependent induction H; auto.
-    apply (@mp_step _ _ _ ((tm_subst_tm_tm a x b))); auto.
-    apply subst3; auto.
-    apply Par_Refl; eapply erased_lc; eauto.
-    apply IHmultipar.
-    eapply Par_erased_tm; eauto.
-  - intros a0 a' lc2 H1.
-    dependent induction H1; auto.
-    apply (@mp_step _ _ _ (tm_subst_tm_tm b x a0)); auto.
-    apply subst3; auto.
-    apply Par_Refl; eapply erased_lc; eauto.
-    apply IHmultipar; auto.
-    eapply Par_erased_tm; eauto.
-    apply (@mp_step _ _ _ ((tm_subst_tm_tm a x b0))); auto.
-    apply subst2; auto.
-    eapply Par_lc1; eauto.
-    apply IHmultipar0; auto.
-    eapply Par_erased_tm; eauto.
+    intros S D b b' x ea H.
+    dependent induction H; auto; move : H => lca.
+  - move => a' a'' ea' H.
+    dependent induction H; auto with lngen.
+    apply mp_step with (b := (tm_subst_tm_tm a x b)); auto.
+    apply subst3; auto. apply IHmultipar.
+    eauto with erased.
+  - rename a' into a''.
+    rename b into a'.
+    intros b b'' eb H1.
+    dependent induction H1.
+    + rename a0 into b.
+      apply mp_step with (b := tm_subst_tm_tm a' x b); auto.
+      apply subst3; auto. eauto with erased.
+    + rename a'0 into b''.
+      rename b into b'.
+      rename a0 into b.
+      apply mp_step with (b := tm_subst_tm_tm a x b'); eauto with erased.
+      apply subst3; auto with lc.
 Qed.
 
 Lemma multipar_subst4 : forall S D b x, lc_co b ->
@@ -963,19 +857,26 @@ Lemma multipar_subst4 : forall S D b x, lc_co b ->
     multipar S D (co_subst_co_tm b x a) (co_subst_co_tm b x a').
 Proof.
   intros S D b x H a a' H0.
-  dependent induction H0; eauto.
-  apply (@mp_step _ _ _ (co_subst_co_tm b x b0)); auto.
+  dependent induction H0; eauto with lngen.
+  apply mp_step with (b := co_subst_co_tm b x b0); auto.
   apply subst4; auto.
 Qed.
 
 Lemma erased_tm_open_tm_wrt_tm: forall a x, erased_tm a -> erased_tm (open_tm_wrt_tm a (a_Var_f x)).
 Proof.
   intros a x H.
-  pose K := erased_lc H.
+  pose K := erased_lc_tm H.
   rewrite open_tm_wrt_tm_lc_tm; eauto.
 Qed.
 
-Hint Resolve erased_tm_open_tm_wrt_tm : erased.
+Lemma erased_tm_open_tm_wrt_constraint: forall phi x, erased_constraint phi -> erased_constraint (open_constraint_wrt_tm phi (a_Var_f x)).
+Proof.
+  intros a x H.
+  pose K := erased_lc_constraint H.
+  rewrite open_constraint_wrt_tm_lc_constraint; eauto.
+Qed.
+
+Hint Resolve erased_tm_open_tm_wrt_tm erased_tm_open_tm_wrt_constraint : erased.
 
 
 Lemma Par_Pi_exists: ∀ x (G : context) D rho (A B A' B' : tm),
@@ -1088,10 +989,10 @@ Proof.
   dependent induction H; eauto.
   - dependent induction H0; eauto.
       by rewrite close_tm_wrt_tm_open_tm_wrt_tm; auto.
-    apply (@mp_step _ _ _ (a_Pi rho a (close_tm_wrt_tm x b))); auto.
+    apply mp_step with (b := a_Pi rho a (close_tm_wrt_tm x b)); auto.
     + inversion lc; subst; clear lc.
       apply (Par_Pi (singleton x)); auto.
-      intros x0 H1.
+      intros x0 H2.
       rewrite -tm_subst_tm_tm_spec.
       rewrite (tm_subst_tm_tm_intro x B (a_Var_f x0)); auto.
       apply subst2; auto.
@@ -1101,11 +1002,11 @@ Proof.
         intros x0.
         rewrite -tm_subst_tm_tm_spec.
         apply tm_subst_tm_tm_lc_tm; auto.
-        apply Par_lc2 in H; auto.
+        eapply Par_lc2; eauto.
       * rewrite fv_tm_tm_tm_close_tm_wrt_tm_rec.
         fsetdec.
       * rewrite open_tm_wrt_tm_close_tm_wrt_tm; auto.
-  - apply (@mp_step _ _ _ (a_Pi rho b B)); auto.
+  - apply mp_step with (b := a_Pi rho b B); auto.
      + apply (Par_Pi (singleton x)); auto.
        intros x0 H2.
        inversion lc; subst; clear lc; auto.
@@ -1123,7 +1024,7 @@ Proof.
   dependent induction h1; eauto.
   inversion H; subst.
   eapply IHh1; eauto.
-  apply (@mp_step _ _ _ A'0); auto.
+  apply mp_step with (b := A'0); auto.
   eapply IHh1; eauto.
   eapply Par_lc2; eauto 1.
 Qed.
@@ -1133,7 +1034,7 @@ Lemma multipar_Pi_B_proj: ∀ (G : context) D rho (A B A' B' : tm),
     → (exists L, forall x, x `notin` L -> multipar G D (open_tm_wrt_tm B (a_Var_f x)) (open_tm_wrt_tm B' (a_Var_f x))).
 Proof.
   intros G D rho A B A' B' h1.
-  dependent induction h1; eauto.
+  dependent induction h1; eauto with lngen.
   Unshelve.
   inversion H; subst.
   eapply IHh1; eauto.
@@ -1143,13 +1044,16 @@ Proof.
 Qed.
 
 
-Lemma multipar_CPi_exists:  ∀ c (G : context) D (A B a T A' B' a' T': tm),
-       lc_tm (a_CPi (Eq A B T) a) -> c `notin` fv_co_co_tm a -> multipar G D A A'
-       → multipar G D B B' -> multipar G D T T'
+Lemma multipar_CPi_exists:  ∀ c (G : context) D (phi phi' : constraint) (a a' : tm),
+       lc_tm (a_CPi phi a) -> c `notin` fv_co_co_tm a -> ParProp G D phi phi'
          → multipar G D (open_tm_wrt_co a (g_Var_f c)) a'
-         → multipar G D (a_CPi (Eq A B T) a) (a_CPi (Eq A' B' T') (close_tm_wrt_co c a')).
+         → multipar G D (a_CPi phi a) (a_CPi phi' (close_tm_wrt_co c a')).
 Proof.
-  intros c G D A B a T A' B' a' T' lc e H H0 H2 H1.
+  intros c G D phi phi' a a' lc e H H0.
+  dependent induction H.
+  - 
+
+
   dependent induction H; eauto 1.
   - dependent induction H0; eauto 1.
     + dependent induction H1; eauto 1.
