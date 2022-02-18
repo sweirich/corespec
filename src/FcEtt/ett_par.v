@@ -101,6 +101,16 @@ Scheme erased_tm_ind' := Induction for erased_tm Sort Prop
 
 Combined Scheme erased_tm_constraint_mutual from erased_tm_ind', erased_constraint_ind'.
 
+
+Lemma ParProp_refl : forall G D phi, lc_constraint phi -> ParProp G D phi phi.
+Proof.
+  induction phi; inversion 1;auto.
+Qed.
+
+(* YL: Should I add refl rule to ParProp? *)
+Hint Resolve ParProp_refl.
+
+
 Lemma erased_lc : (forall a, erased_tm a -> lc_tm a) /\ (forall phi, erased_constraint phi -> lc_constraint phi).
   eapply erased_tm_constraint_mutual; intros; auto.
 Qed.
@@ -892,20 +902,18 @@ Proof.
   apply subst2; auto.
 Qed.
 
-Lemma Par_CPi_exists:  ∀ c (G : context) D (A B a A' B' a' T T': tm),
-       c `notin` fv_co_co_tm a -> Par G D A A'
-       → Par G D B B' -> Par G D T T'
+Lemma Par_CPi_exists:  ∀ c (G : context) D (phi phi' : constraint) (a a' : tm),
+       c `notin` fv_co_co_tm a -> ParProp G D phi phi'
          → Par G D (open_tm_wrt_co a (g_Var_f c)) (a')
-         → Par G D (a_CPi (Eq A B T) a) (a_CPi (Eq A' B' T') (close_tm_wrt_co c a')).
+         → Par G D (a_CPi phi a) (a_CPi phi' (close_tm_wrt_co c a')).
 Proof.
-  intros c G D A B a A' B' a' T T' H H0 H1 h0 H2.
+  intros c G D phi phi' a H H0 H1 H2.
   apply (Par_CPi (singleton c)); auto.
-  intros c0 H3.
+  intros c0 H4.
   rewrite -co_subst_co_tm_spec.
   rewrite (co_subst_co_tm_intro c  a (g_Var_f c0));  auto.
   apply subst4; auto.
 Qed.
-
 
 Lemma Par_Abs_exists: ∀ x (G : context) D rho (a a' : tm),
     x `notin` fv_tm_tm_tm a
@@ -1053,61 +1061,85 @@ Proof.
   dependent induction H.
   - dependent induction H0.
     + rewrite close_tm_wrt_co_open_tm_wrt_co; auto.
-    + apply mp_step with (b := )
+    + apply mp_step with (b := a_CPi phi (close_tm_wrt_co c b)).
+      apply Par_CPi_exists with (phi := phi) (phi' := phi) in H1; auto.
+      inversion lc; subst.
+      move : (H5 c) => h1.
+      apply IHmultipar; auto with lngen.
+      apply lc_a_CPi_exists with c. assumption.
+      rewrite open_tm_wrt_co_close_tm_wrt_co.
+      eauto with lc.
+      autorewrite with lngen.
+      auto.
+  - dependent induction H1.
+    + apply mp_step with (b := (a_CPi phi2 (close_tm_wrt_co c (open_tm_wrt_co a (g_Var_f c))))).
+      apply Par_CPi_exists; auto.
+      autorewrite with lngen in IHmultipar_prop.
+      autorewrite with lngen.
+      apply IHmultipar_prop; auto.
+      inversion lc; subst.
+      constructor; auto with lngen.
+      eapply Par_lc2; eauto.
+    + apply mp_step with (b := 
 
-  dependent induction H; eauto 1.
-  - dependent induction H0; eauto 1.
-    + dependent induction H1; eauto 1.
-      * dependent induction H2; eauto 1.
-        rewrite close_tm_wrt_co_open_tm_wrt_co; auto.
-        inversion lc; subst.
-        inversion H3; subst.
-        apply mp_step with (b:= (a_CPi (Eq a0 a1 b) a)); eauto.
-        apply IHmultipar; auto.
-        apply (lc_a_CPi_exists c); auto.
-        constructor; eauto.
-        eapply Par_lc2; eauto.
-      * eapply mp_step with (b:= (a_CPi (Eq a0 a1 T) (close_tm_wrt_co c b))); eauto.
-        -- inversion lc; subst; clear lc.
-           inversion H4; subst; clear H4.
-           apply (Par_CPi (singleton c)); auto.
-           intros c1 H0.
-           rewrite -co_subst_co_tm_spec.
-           rewrite (co_subst_co_tm_intro c a (g_Var_f c1)); auto.
-           apply subst4; auto.
-        -- apply IHmultipar; eauto.
-           ++ inversion lc; subst; clear lc.
-              constructor; eauto 1.
-              intros c1.
-              rewrite -co_subst_co_tm_spec.
-              apply co_subst_co_tm_lc_tm; auto.
-              apply Par_lc2 in H; auto.
-           ++ rewrite fv_co_co_tm_close_tm_wrt_co_rec.
-              fsetdec.
-           ++ rewrite open_tm_wrt_co_close_tm_wrt_co; auto.
-      + eapply mp_step with (b:= (a_CPi (Eq a0 b T) a)); eauto.
-        -- inversion lc; subst; clear lc.
-           inversion H5; subst; clear H5.
-           apply (Par_CPi (singleton c)); auto.
-        -- apply IHmultipar; eauto.
-           inversion lc; subst.
-           apply lc_a_CPi; eauto.
-           inversion H5; subst.
-           constructor; eauto.
-           eapply Par_lc2; eauto.
-  - apply mp_step with (b:= (a_CPi (Eq b B T) a)); auto.
-    inversion lc; subst.
-    inversion H6; subst.
-      by apply (Par_CPi (singleton c)); auto.
-     apply IHmultipar; auto.
-     inversion lc; subst; clear lc.
-     constructor; auto.
-     constructor; auto.
-     apply Par_lc2 in H; auto.
-     inversion H6; auto.
-     inversion H6; auto.
-     Unshelve. apply (fv_co_co_tm a).
-Qed.
+
+        
+
+(* apply mp_step with (b := ) *)
+
+(*   dependent induction H; eauto 1. *)
+(*   - dependent induction H0; eauto 1. *)
+(*     + dependent induction H1; eauto 1. *)
+(*       * dependent induction H2; eauto 1. *)
+(*         rewrite close_tm_wrt_co_open_tm_wrt_co; auto. *)
+(*         inversion lc; subst. *)
+(*         inversion H3; subst. *)
+(*         apply mp_step with (b:= (a_CPi (Eq a0 a1 b) a)); eauto. *)
+(*         apply IHmultipar; auto. *)
+(*         apply (lc_a_CPi_exists c); auto. *)
+(*         constructor; eauto. *)
+(*         eapply Par_lc2; eauto. *)
+(*       * eapply mp_step with (b:= (a_CPi (Eq a0 a1 T) (close_tm_wrt_co c b))); eauto. *)
+(*         -- inversion lc; subst; clear lc. *)
+(*            inversion H4; subst; clear H4. *)
+(*            apply (Par_CPi (singleton c)); auto. *)
+(*            intros c1 H0. *)
+(*            rewrite -co_subst_co_tm_spec. *)
+(*            rewrite (co_subst_co_tm_intro c a (g_Var_f c1)); auto. *)
+(*            apply subst4; auto. *)
+(*         -- apply IHmultipar; eauto. *)
+(*            ++ inversion lc; subst; clear lc. *)
+(*               constructor; eauto 1. *)
+(*               intros c1. *)
+(*               rewrite -co_subst_co_tm_spec. *)
+(*               apply co_subst_co_tm_lc_tm; auto. *)
+(*               apply Par_lc2 in H; auto. *)
+(*            ++ rewrite fv_co_co_tm_close_tm_wrt_co_rec. *)
+(*               fsetdec. *)
+(*            ++ rewrite open_tm_wrt_co_close_tm_wrt_co; auto. *)
+(*       + eapply mp_step with (b:= (a_CPi (Eq a0 b T) a)); eauto. *)
+(*         -- inversion lc; subst; clear lc. *)
+(*            inversion H5; subst; clear H5. *)
+(*            apply (Par_CPi (singleton c)); auto. *)
+(*         -- apply IHmultipar; eauto. *)
+(*            inversion lc; subst. *)
+(*            apply lc_a_CPi; eauto. *)
+(*            inversion H5; subst. *)
+(*            constructor; eauto. *)
+(*            eapply Par_lc2; eauto. *)
+(*   - apply mp_step with (b:= (a_CPi (Eq b B T) a)); auto. *)
+(*     inversion lc; subst. *)
+(*     inversion H6; subst. *)
+(*       by apply (Par_CPi (singleton c)); auto. *)
+(*      apply IHmultipar; auto. *)
+(*      inversion lc; subst; clear lc. *)
+(*      constructor; auto. *)
+(*      constructor; auto. *)
+(*      apply Par_lc2 in H; auto. *)
+(*      inversion H6; auto. *)
+(*      inversion H6; auto. *)
+(*      Unshelve. apply (fv_co_co_tm a). *)
+(* Qed. *)
 
 Lemma multipar_CPi_B_proj:  ∀ (G : context) D (A B a A' B' a' T T': tm),
     multipar G D (a_CPi (Eq A B T) a) (a_CPi (Eq A' B' T') a')
