@@ -44,9 +44,6 @@ Definition Good (G : context) (D : available_props):=
     -> c1 `in` D
     -> interp_constraint G D phi.
 
-
-
-
 (* ---------------------------------------- *)
 
 Lemma open2 :
@@ -58,8 +55,24 @@ Lemma open2 :
     Par S D b b' ->
     Par S D (open_tm_wrt_tm a b) (open_tm_wrt_tm a' b').
 Proof.
+  intros x b b'. intros.
   rewrite (tm_subst_tm_tm_intro x); auto.
   rewrite [(_ _ b')] (tm_subst_tm_tm_intro x); auto.
+  apply subst3; auto.
+Qed.
+
+Lemma open2_constraint :
+  forall x b b' S D phi phi',
+    x `notin` fv_tm_tm_constraint phi' \u fv_tm_tm_constraint phi ->
+    erased_tm b ->
+    erased_constraint (open_constraint_wrt_tm phi (a_Var_f x)) ->
+    ParProp S D (open_constraint_wrt_tm phi (a_Var_f x)) (open_constraint_wrt_tm phi' (a_Var_f x)) ->
+    Par S D b b' ->
+    ParProp S D (open_constraint_wrt_tm phi b) (open_constraint_wrt_tm phi' b').
+Proof.
+  intros x b b'. intros.
+  rewrite (tm_subst_tm_constraint_intro x); auto.
+  rewrite [(_ _ b')] (tm_subst_tm_constraint_intro x); auto.
   apply subst3; auto.
 Qed.
 
