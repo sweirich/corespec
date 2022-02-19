@@ -1071,107 +1071,35 @@ Proof.
       eauto with lc.
       autorewrite with lngen.
       auto.
-  - dependent induction H1.
-    + apply mp_step with (b := (a_CPi phi2 (close_tm_wrt_co c (open_tm_wrt_co a (g_Var_f c))))).
-      apply Par_CPi_exists; auto.
-      autorewrite with lngen in IHmultipar_prop.
-      autorewrite with lngen.
-      apply IHmultipar_prop; auto.
-      inversion lc; subst.
-      constructor; auto with lngen.
-      eapply Par_lc2; eauto.
-    + apply mp_step with (b := 
+  - inversion lc; subst.
+    apply mp_step with (b := (a_CPi phi2 a)).
+    apply Par_CPi with (L := {}); auto.
+    apply IHmultipar_prop; auto.
+    apply Par_lc2 in H; auto.
+Qed.
 
-
-        
-
-(* apply mp_step with (b := ) *)
-
-(*   dependent induction H; eauto 1. *)
-(*   - dependent induction H0; eauto 1. *)
-(*     + dependent induction H1; eauto 1. *)
-(*       * dependent induction H2; eauto 1. *)
-(*         rewrite close_tm_wrt_co_open_tm_wrt_co; auto. *)
-(*         inversion lc; subst. *)
-(*         inversion H3; subst. *)
-(*         apply mp_step with (b:= (a_CPi (Eq a0 a1 b) a)); eauto. *)
-(*         apply IHmultipar; auto. *)
-(*         apply (lc_a_CPi_exists c); auto. *)
-(*         constructor; eauto. *)
-(*         eapply Par_lc2; eauto. *)
-(*       * eapply mp_step with (b:= (a_CPi (Eq a0 a1 T) (close_tm_wrt_co c b))); eauto. *)
-(*         -- inversion lc; subst; clear lc. *)
-(*            inversion H4; subst; clear H4. *)
-(*            apply (Par_CPi (singleton c)); auto. *)
-(*            intros c1 H0. *)
-(*            rewrite -co_subst_co_tm_spec. *)
-(*            rewrite (co_subst_co_tm_intro c a (g_Var_f c1)); auto. *)
-(*            apply subst4; auto. *)
-(*         -- apply IHmultipar; eauto. *)
-(*            ++ inversion lc; subst; clear lc. *)
-(*               constructor; eauto 1. *)
-(*               intros c1. *)
-(*               rewrite -co_subst_co_tm_spec. *)
-(*               apply co_subst_co_tm_lc_tm; auto. *)
-(*               apply Par_lc2 in H; auto. *)
-(*            ++ rewrite fv_co_co_tm_close_tm_wrt_co_rec. *)
-(*               fsetdec. *)
-(*            ++ rewrite open_tm_wrt_co_close_tm_wrt_co; auto. *)
-(*       + eapply mp_step with (b:= (a_CPi (Eq a0 b T) a)); eauto. *)
-(*         -- inversion lc; subst; clear lc. *)
-(*            inversion H5; subst; clear H5. *)
-(*            apply (Par_CPi (singleton c)); auto. *)
-(*         -- apply IHmultipar; eauto. *)
-(*            inversion lc; subst. *)
-(*            apply lc_a_CPi; eauto. *)
-(*            inversion H5; subst. *)
-(*            constructor; eauto. *)
-(*            eapply Par_lc2; eauto. *)
-(*   - apply mp_step with (b:= (a_CPi (Eq b B T) a)); auto. *)
-(*     inversion lc; subst. *)
-(*     inversion H6; subst. *)
-(*       by apply (Par_CPi (singleton c)); auto. *)
-(*      apply IHmultipar; auto. *)
-(*      inversion lc; subst; clear lc. *)
-(*      constructor; auto. *)
-(*      constructor; auto. *)
-(*      apply Par_lc2 in H; auto. *)
-(*      inversion H6; auto. *)
-(*      inversion H6; auto. *)
-(*      Unshelve. apply (fv_co_co_tm a). *)
-(* Qed. *)
-
-Lemma multipar_CPi_B_proj:  ∀ (G : context) D (A B a A' B' a' T T': tm),
-    multipar G D (a_CPi (Eq A B T) a) (a_CPi (Eq A' B' T') a')
+Lemma multipar_CPi_B_proj:  ∀ (G : context) D (phi phi' : constraint) (a a': tm),
+    multipar G D (a_CPi phi a) (a_CPi phi' a')
   → (exists L, forall c, c `notin` L -> multipar G D (open_tm_wrt_co a (g_Var_f c)) (open_tm_wrt_co a' (g_Var_f c))).
 Proof.
-  intros G D A B a A' B' a' T T' h1.
-  dependent induction h1; eauto.
+  intros G D phi phi' a a' h1.
+  dependent induction h1; eauto with lngen.
   Unshelve.
   inversion H; subst.
   eapply IHh1; eauto.
-  destruct (IHh1 A'0 B'0 a'0 A' B' a' A1' T') as [L0 h0]; auto.
+  destruct (IHh1 phi'0 phi' a'0 a') as [L0 h0]; auto.
   exists (L \u L0); eauto.
-  apply (fv_tm_tm_tm A').
+  apply (fv_tm_tm_constraint phi').
 Qed.
 
-Lemma multipar_CPi_phi_proj:  ∀ (G : context) D (A B a A' B' a' T T': tm),
-    multipar G D (a_CPi (Eq A B T) a) (a_CPi (Eq A' B' T') a')
-    -> (multipar G D A A'/\ multipar G D B B' /\ multipar G D T T').
+Lemma multipar_CPi_phi_proj:  ∀ (G : context) D (phi phi' : constraint) (a a': tm),
+    multipar G D (a_CPi phi a) (a_CPi phi' a')
+    -> multipar_prop G D phi phi'.
 Proof.
-  intros G D A B a A' B' a' T T' H.
+  intros G D phi phi' a a' H.
   dependent induction H; eauto.
-  inversion H; subst.
-  eapply IHmultipar; eauto.
-  repeat split; eauto.
-  apply mp_step with (b := A'0); auto.
-  destruct (IHmultipar A'0 B'0 a'0 A' B' a' A1' T'); auto.
-  destruct (IHmultipar A'0 B'0 a'0 A' B' a' A1' T'); auto.
-  apply mp_step with (b:= B'0); auto.
-  apply H2.
-  destruct (IHmultipar A'0 B'0 a'0 A' B' a' A1' T'); auto.
-  apply mp_step with (b:= A1'); auto.
-  apply H2.
+  inversion H; subst; auto.
+  inversion H; subst; eauto.
 Qed.
 
 Lemma multipar_Abs_exists: ∀ x (G : context) D rho (a a' : tm),
@@ -1185,7 +1113,7 @@ Proof.
   - assert (Par G D (a_UAbs rho B) (a_UAbs rho (close_tm_wrt_tm x b))).
     eapply (Par_Abs_exists); auto.
     assert (multipar G D (a_UAbs rho (close_tm_wrt_tm x b))
-                       (a_UAbs rho (close_tm_wrt_tm x c))).
+                       (a_UAbs rho (close_tm_wrt_tm x a'))).
     { apply IHmultipar; auto.
     * inversion lc; subst; clear lc.
         constructor; eauto.
@@ -1247,18 +1175,26 @@ Proof.
   eauto.
 Qed.
 
-Lemma context_Par_irrelevance: forall G1 G2 D1 D2 a a',
-                                             Par G1 D1 a a' -> Par G2 D2 a a'.
+Lemma context_Par_irrelevance: (forall G1 D1 a a',
+                                             Par G1 D1 a a' -> forall G2 D2, Par G2 D2 a a') /\
+                               (forall G1 D1 phi phi',
+                                             ParProp G1 D1 phi phi' -> forall G2 D2, ParProp G2 D2 phi phi').
 Proof.
-  intros G1 G2 D1 D2 a a' H.
-  induction H; eauto.
+  apply Par_tm_constraint_mutual; intros; eauto.
 Qed.
 
 
 Lemma multipar_context_independent: forall G1 G2 D A B,  multipar G1 D A B -> multipar G2 D A B.
 Proof.
   induction 1; eauto.
-  apply (@context_Par_irrelevance _ G2 D D) in H; eauto.
+  eapply context_Par_irrelevance in H; eauto.
+Qed.
+
+
+Lemma multipar_prop_context_independent: forall G1 G2 D phi1 phi2,  multipar_prop G1 D phi1 phi2 -> multipar_prop G2 D phi1 phi2.
+Proof.
+  induction 1; eauto.
+  eapply context_Par_irrelevance in H; eauto.
 Qed.
 
 
