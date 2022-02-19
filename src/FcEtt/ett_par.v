@@ -1201,37 +1201,37 @@ Qed.
 (* -------------------- weakening stuff for Par ---------------------- *)
 
 Lemma Par_weaken_available :
-  forall G D a b, Par G D a b -> forall D', D [<=] D' -> Par G D' a b.
+  (forall G D a b, Par G D a b -> forall D', D [<=] D' -> Par G D' a b) /\
+  (forall G D phi1 phi2, ParProp G D phi1 phi2 -> forall D', D [<=] D' -> ParProp G D' phi1 phi2).
 Proof.
-  intros. induction H; eauto 4; try done.
-  - econstructor; eauto 2.
+  apply Par_tm_constraint_mutual; eauto.
 Qed.
 
 Lemma Par_respects_atoms:
-  forall G D a b, Par G D a b -> forall D', D [=] D' -> Par G D' a b.
+  (forall G D a b, Par G D a b -> forall D', D [=] D' -> Par G D' a b) /\
+  (forall G D phi phi', ParProp G D phi phi' -> forall D', D [=] D' -> ParProp G D' phi phi').
 Proof.
-  intros; induction H.
-  all: pre; subst; eauto 5.
-  - econstructor; eauto 2.
+  apply Par_tm_constraint_mutual; eauto.
 Qed.
 
 Lemma Par_availability_independence: forall G D1 D2 a b, Par G D1 a b -> Par G D2 a b.
 Proof.
-  induction 1; eauto.
+  intros. eapply context_Par_irrelevance; eauto.
 Qed.
 
 
 Lemma Par_remove_available:
-  forall G D a b, Par G D a b -> Par G (AtomSetImpl.inter D (dom G)) a b.
+  (forall G D a b, Par G D a b -> Par G (AtomSetImpl.inter D (dom G)) a b) /\
+  (forall G D phi phi', ParProp G D phi phi' -> ParProp G (AtomSetImpl.inter D (dom G)) phi phi').
 Proof.
-  induction 1; eauto 4; try done.
+  apply Par_tm_constraint_mutual; eauto.
 Qed.
 
 Lemma Par_weakening :
-  forall G0 D a b, Par G0 D a b ->
-  forall E F G, (G0 = F ++ G) -> Ctx (F ++ E ++ G) ->  Par (F ++ E ++ G) D a b.
+  (forall G0 D a b, Par G0 D a b ->
+              forall E F G, (G0 = F ++ G) -> Ctx (F ++ E ++ G) ->  Par (F ++ E ++ G) D a b) /\
+  (forall G0 D phi phi', ParProp G0 D phi phi' ->
+              forall E F G, (G0 = F ++ G) -> Ctx (F ++ E ++ G) ->  ParProp (F ++ E ++ G) D phi phi').
 Proof.
-  intros; induction H; pre; subst; try done; eauto 4.
-  all: first [Par_pick_fresh c;
-       try auto_rew_env; apply_first_hyp; try simpl_env | idtac]; eauto 3.
+  apply Par_tm_constraint_mutual; eauto.
 Qed.
