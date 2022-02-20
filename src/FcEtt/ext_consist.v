@@ -1739,6 +1739,18 @@ Proof.
 Qed.
 
 
+Lemma interp_constraint_irrel : forall G D G' D' phi, interp_constraint G D phi <-> interp_constraint G' D' phi.
+Proof.
+  move => G D G' D'; elim; intros.
+  - simpl.
+    split;
+     destruct 1 as [C [Par1 Par2]];
+      exists C; split; eauto using (proj1 context_Par_irrelevance).
+  - simpl.
+    split; move : H0 H => h0 h1; tauto.
+Qed.
+  
+
 Lemma Good_NoAssn: forall c G D phi, erased_sort (Co phi) -> Good G D -> c `notin` D -> Good ((c, Co phi) :: G) D.
 Proof.
   intros c G D phi E H Fr.
@@ -1749,21 +1761,14 @@ Proof.
     apply Forall_forall.
     intros x0 IN. destruct x0 as (y, s).
     inversion IN.
-    -                           (* DON'T DESTRUCT *)
- destruct phi. inversion H. subst. auto.
+    - inversion H; subst. auto.
     - eapply Forall_forall in H; eauto.
       simpl in H. auto.
   + intros c1 c2. intros.
     assert (c <> c1). fsetdec.
     apply binds_cons_1 in H.
     destruct H as [[EQ _] | BI1]. fsetdec.
-    edestruct (M c1) as (C & P1 & P2); eauto.
-    exists C.
-    repeat split;
-      apply context_Par_irrelevance with (G1 := G)(D1 := D)(D2 := D); auto; try fsetdec;
-        unfold sub_Axiom;
-        intros;
-        apply binds_cons; auto.
+    rewrite -interp_constraint_irrel. eauto.
 Qed.
 
 Hint Resolve Good_NoAssn.
@@ -1784,16 +1789,12 @@ Proof.
     - split_hyp.
       eapply Forall_forall in H; eauto.
       simpl in H. auto.
-  + intros c1 A1 B1 T1 BI1 I1.
-  destruct H as (Es & M).
-  apply binds_cons_1 in BI1.
-  destruct BI1 as [[_ EQ] | BI1]. inversion EQ.
-  edestruct (M c1) as (C & P1 & P2); eauto.
-  exists C. repeat split;
-    apply context_Par_irrelevance with (G1 := G)(D1 := D); auto; try fsetdec;
-    unfold sub_Axiom;
-    intros;
-    apply binds_cons; auto.
+  + intros.
+    move : H => [eG H].
+    rewrite -interp_constraint_irrel.
+    move : (H c1) => h0.
+    inversion H0; subst; auto.
+    invert_equality.
 Qed.
 
 Lemma Good_add_tm_2: forall G D x A, x `notin` dom G -> erased_tm A -> Good G D -> Good ((x, Tm A)::G ) (add x D).
@@ -1809,19 +1810,15 @@ Proof.
     - split_hyp.
       eapply Forall_forall in H; eauto.
       simpl in H. auto.
-  + intros c1 A1 B1 T1 BI1 I1.
-  destruct H as (Es & M).
-  apply binds_cons_1 in BI1.
-  destruct BI1 as [[_ EQ] | BI1]. inversion EQ.
-  edestruct (M c1) as (C & P1 & P2); eauto.
-  move: (binds_In _ c1 _ _ BI1) => b0. fsetdec.
-  exists C. repeat split;
-    apply context_Par_irrelevance with (G1 := G)(D1 := D); auto; try fsetdec;
-    unfold sub_Axiom;
-    intros;
-    apply binds_cons; auto.
+  + intros c1 phi BI1 I1.
+    destruct H as (Es & M).
+    apply binds_cons_1 in BI1.
+    destruct BI1 as [[_ EQ] | BI1]. inversion EQ.
+    move: (binds_In _ c1 _ _ BI1) => b0.
+    rewrite -interp_constraint_irrel.
+    apply (M c1); auto.
+    fsetdec.
 Qed.
-
 
 Lemma multipar_app_left_Rel:
   forall a a' c' S D, lc_tm a -> multipar S D a' c' -> multipar S D (a_App a Rel a') (a_App a Rel c').
@@ -1850,10 +1847,9 @@ Qed.
 Lemma multipar_app_lr_Rel: forall a a' c c' S D, lc_tm a -> lc_tm a' -> multipar S D a c -> multipar S D a' c' -> multipar S D (a_App a Rel a') (a_App c Rel c').
 Proof.
   induction 3; eauto; try done.
-  intros H1.
-  apply multipar_app_left_Rel; auto.
-  intros H3.
-  apply (@mp_step S D _ (a_App b Rel a')); eauto.
+  - apply multipar_app_left_Rel; auto.
+  - intros H3.
+    apply (@mp_step G D _ _ (a_App b Rel a')); eauto.
   (have: lc_tm b by eapply Par_lc2; eauto); eauto.
   Unshelve. auto. auto.
 Qed.
@@ -1861,10 +1857,9 @@ Qed.
 Lemma multipar_app_lr_Irrel: forall a c S D, lc_tm a -> multipar S D a c -> multipar S D (a_App a Irrel a_Bullet) (a_App c Irrel a_Bullet).
 Proof.
   induction 2; eauto; try done.
-  apply (@mp_step S D _ (a_App b Irrel a_Bullet)); eauto.
+  apply (@mp_step G D _ _ (a_App b Irrel a_Bullet)); eauto.
   (have: lc_tm b by eapply Par_lc2; eauto); eauto.
 Qed.
-
 
 Lemma join_app_Rel: forall a a' b b' S D, joins S D a b -> joins S D a' b' -> joins S D (a_App a Rel a') (a_App b Rel b').
 Proof.
@@ -1915,11 +1910,11 @@ Lemma multipar_UAbs_exists :  ∀ (x : atom) (G : context) (D : available_props)
 Proof.
   intros.
   dependent induction H0.
-  autorewrite with lngen. auto.
+  autorewrite with lngen. eauto with lngen.
   eapply mp_step.
   eapply Par_Abs_exists with (x:=x); eauto.
   eapply IHmultipar; eauto. autorewrite with lngen. auto.
-  autorewrite with lngen. auto.
+  autorewrite with lngen. reflexivity.
 Qed.
 
 Lemma multipar_iapp : forall G D a c y L,
@@ -1979,32 +1974,42 @@ Lemma multipar_App_destruct_Rel : forall S D a1 a2 c,
         multipar S D a2 a2').
 Proof.
   intros. dependent induction H.
-  right.
-  exists a1, a2. split; auto.
-  inversion H.
-  + subst. eauto.
-  + subst. left.
-    exists a', b'. split; auto.
-    assert (lc_tm a1). eapply Par_lc1. eauto.
-    assert (lc_tm a2). eapply Par_lc1. eauto.
-    eapply multipar_app_lr_Rel; eauto.
-    split.
-    eapply mp_step; eauto.
-    split; eauto.
-  +
-    assert (lc_tm a1). eapply Par_lc1. eauto.
-    assert (lc_tm a2). eapply Par_lc1. eauto.
-    subst. destruct (IHmultipar a' b') as [[a1' [a2' [P1 [P2 [P3 P4]]]]] |
-                                                [a1' [a2' [P1 [P2 P3]]]]] ; auto.
+  + right.
+    exists a1, a2. split; auto.
+    inversion H; eauto.
+  + inversion H; auto; subst.
+    assert (lc_tm a1). eapply Par_lc1_tm. eauto.
+    assert (lc_tm a2). eapply Par_lc1_tm. eauto.
+    subst.
+    left.
+    exists a'0, b'; repeat split; auto.
+    apply multipar_app_lr_Rel; eauto.
+    eapply mp_step.
+    apply H5.
+    apply mp_refl.
+    eauto using Par_lc2_tm.
+    eapply mp_step.
+    apply H7.
+    constructor.
+    eauto with lc.
+    eapply mp_step.
+    apply H5.
+    apply mp_refl.
+    eauto using Par_lc2_tm.
+    eapply mp_step.
+    apply H7.
+    apply mp_refl.
+    eauto using Par_lc2_tm.
+    destruct (IHmultipar a'0 b') as [[a1' [a2' [P1 [P2 [P3 P4]]]]] |
+                                      [a1' [a2' [P1 [P2 P3]]]]] ; auto.
     ++ clear IHmultipar. left.
        exists a1', a2'.
        repeat split; eauto.
     ++ clear IHmultipar. right.
-
        exists a1', a2'.
        repeat split; eauto.
-Unshelve.
-all: exact S.
+       Unshelve.
+       all: exact G.
 Qed.
 
 Lemma multipar_App_destruct_Irrel : forall S D a1 c,
@@ -2017,28 +2022,27 @@ Lemma multipar_App_destruct_Irrel : forall S D a1 c,
         multipar S D a1 a1').
 Proof.
   intros. dependent induction H.
-  right.
-  exists a1. split; auto.
-  inversion H.
-  + subst. eauto.
-  + subst. left.
-    exists a'. split; auto.
-    assert (lc_tm a1). eapply Par_lc1. eauto.
-    eapply multipar_app_lr_Irrel; eauto.
-    split.
-    eapply mp_step; eauto.
-    eauto.
-  +
-    assert (lc_tm a1). eapply Par_lc1. eauto.
-    subst. edestruct (IHmultipar a'); auto.
-    ++ clear IHmultipar. left. destruct H1 as [a1' K].
-       exists a1'. inversion K. clear K. inversion H2. clear H2.
-       repeat split; eauto.
-    ++ clear IHmultipar. right. destruct H1 as [a1' K].
+  - right.
+    exists a1. split; auto.
+    inversion H.
+    subst. eauto.
+  - inversion H; subst; eauto.
+    + subst. left.
+      exists a'0. split; auto.
+      assert (lc_tm a1). eapply Par_lc1. eauto.
+      eapply multipar_app_lr_Irrel; eauto.
+      all : try split.
+      all : solve [eapply mp_step; eauto;  eauto using Par_lc2_tm].
+  + assert (lc_tm a1). eapply Par_lc1. eauto.
+    subst. edestruct (IHmultipar a'0); auto.
+    ++ clear IHmultipar. left. destruct H2 as [a1' K].
+       exists a1'. inversion K. inversion H3.  subst.
+       repeat split; eauto using Par_lc2_tm with lc.
+    ++ clear IHmultipar. right. destruct H2 as [a1' K].
        exists a1'. inversion K. clear K.
        repeat split; eauto.
 Unshelve.
-all: exact S.
+all: exact G.
 Qed.
 
 Lemma consistent_mutual:
