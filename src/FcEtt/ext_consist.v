@@ -1574,7 +1574,7 @@ Ltac multipar_step SIDE EQ :=
     destruct (multipar_Pi SIDE eq_refl) as [b1' [b2' EQ]]
   | [ SIDE : multipar _ _ (a_CPi ?phi _) _ |- _ ] =>
     try (destruct phi); destruct (multipar_CPi SIDE eq_refl)
-      as (B1' & B2' & C1' & C2' &  EQ)
+      as (phi' & C2' &  EQ)
 (*  | [ SIDE : multipar _ _ (a_Const ?T) _ |- _ ] =>
     apply multipar_Const in SIDE; auto; rename SIDE into EQ
   | [ SIDE : Path_consistent _ _ _ |- _ ] =>
@@ -1611,21 +1611,13 @@ Proof.
          end.
   all: try solve [inversion Ea].
   all: try solve [inversion Eb].
+  all: try solve [inversion Eb; inversion Ea; eauto].
 
   all: try multipar_step MSL EQ1.
   all: try multipar_step MSR EQ2.
-  all: try solve [rewrite EQ1 in EQ2; inversion EQ2; try inversion H; auto].
-  all: try solve [eapply consistent_a_Step_R; [auto | intros h0; inversion h0; unfold not in NP; eauto]].
-  all: try solve [eapply consistent_a_Step_L; [auto | intros h0; inversion h0; unfold not in NP; eauto]].
-
-(*  all: try match goal with
-             [ H1: Path_consistent ?T1 ?a ?c, H2: Path_consistent ?T2 ?b ?c |- _ ] =>
-             move: (Path_consistent_Path2 H1) => h0;
-             move: (Path_consistent_Path2 H2) => h1;
-    have EQ3: (T1 = T2); eauto using Path_unique; subst; eauto
-  end. *)
-(*  - rewrite EQ1 in EQ2; inversion EQ2. eauto. *)
-
+  all: try solve [rewrite EQ1 in EQ2; inversion EQ2; try inversion H; auto using Par_lc_1_tm].
+  all: try solve [eapply consistent_a_Step_R; [auto | intros h0; inversion h0; unfold not in NP; eauto using Par_lc1_tm]].
+  all: try solve [eapply consistent_a_Step_L; [auto with lc | intros h0; inversion h0; unfold not in NP; eauto with lc]].
   - destruct (multipar_Pi MSL eq_refl) as (B1 & B2 & EQ).
     destruct (multipar_Pi MSR eq_refl) as (B1' & B2' & EQ').
     subst.
@@ -1633,15 +1625,14 @@ Proof.
     subst. econstructor; eauto.
     inversion lc_a. auto.
     inversion lc_b. auto.
-  - destruct phi.
-    destruct (multipar_CPi MSL eq_refl) as (B1 & B2 & EQ).
+  - destruct (multipar_CPi MSL eq_refl) as (B1 & B2 & EQ).
     destruct (multipar_CPi MSR eq_refl) as (B1'' & B2'' & EQ').
     subst.
     inversion EQ. inversion EQ'.
     subst. econstructor; eauto.
     inversion lc_a. auto.
     inversion lc_b. auto.
-
+  - inversion Ea; inversion Eb; subst; constructor; auto with lc.
 Qed.
 
 (*
@@ -1656,11 +1647,11 @@ Lemma multipar_confluence_helper : forall S D a a1, Good S D -> erased_tm a -> m
 -> forall a2, Par S D a a2 -> exists e, Par S D a1 e /\ multipar S D a2 e.
 Proof.
   intros S D a a1 Es E H. induction H.
-  - intros. exists a2. split; eauto.
+  - intros. exists a2. split; eauto with lc erased.
   - intros. destruct (confluence Es E H H1) as [d [L R]].
       inversion Es.
       assert (erased_tm b). eapply Par_erased_tm; eauto.
-      destruct (IHmultipar H4 d) as [e [LL RR]]; auto.
+      destruct (IHmultipar Es H4 d L) as [e [LL RR]]; auto.
       exists e. split; eauto.
 Qed.
 
@@ -1674,17 +1665,24 @@ a2 --> d -->* e
 
 *)
 
+Lemma multipar_lc2: forall G D a1 a2, lc_tm a1 -> multipar G D a1 a2 -> lc_tm a2.
+  induction 2; eauto.
+  apply IHmultipar.
+  eapply Par_lc2; apply H0.
+Qed.
+
+
 Lemma multipar_confluence : forall S D a a1, Good S D -> erased_tm a -> multipar S D a a1
 -> forall a2, multipar S D a a2 -> exists b, multipar S D a1 b /\ multipar S D a2 b.
 Proof.
   intros S D a a1 Es Ea MP. induction MP.
 intros.
- - exists a2. split. eauto. eauto.
+ - exists a2. split; eauto using multipar_lc2.
  - intros.
    destruct (multipar_confluence_helper Es Ea H0 H) as [d [L R]].
    inversion Es.
    assert (Eb : erased_tm b). eapply Par_erased_tm; eauto.
-   destruct (IHMP Eb d) as [e [LL RR]]; auto.
+   destruct (IHMP Es Eb d) as [e [LL RR]]; auto.
    exists e. split; eauto.
 Qed.
 
@@ -1725,11 +1723,6 @@ Qed.
 
 Definition extends (G G2 : context) := exists G1, G = G1 ++ G2.
 
-Lemma multipar_lc2: forall G D a1 a2, lc_tm a1 -> multipar G D a1 a2 -> lc_tm a2.
-  induction 2; eauto.
-  apply IHmultipar.
-  eapply Par_lc2; apply H0.
-Qed.
 
 
 Hint Resolve multipar_context_independent : DB.
@@ -1756,7 +1749,8 @@ Proof.
     apply Forall_forall.
     intros x0 IN. destruct x0 as (y, s).
     inversion IN.
-    - destruct phi. inversion H. subst. auto.
+    -                           (* DON'T DESTRUCT *)
+ destruct phi. inversion H. subst. auto.
     - eapply Forall_forall in H; eauto.
       simpl in H. auto.
   + intros c1 c2. intros.
