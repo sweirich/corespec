@@ -1024,6 +1024,11 @@ G ; D |= all c:phi1. B1 ~ all c:phi2. B2 : TYPE
 ------------------------------------------------- :: CPiFst
 G ; D |=  phi1 == phi2
 
+G ; D |= phi1 == phi2
+G ; D |= phi3 == phi4
+-------------------------------------- :: ImplCong
+G ; D |= phi1 ==> phi3 == phi2 ==> phi4
+
 
 defn
 

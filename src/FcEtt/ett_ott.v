@@ -1141,6 +1141,10 @@ with Iso : context -> available_props -> constraint -> constraint -> Prop :=    
  | E_CPiFst : forall (G:context) (D:available_props) (phi1 phi2:constraint) (B1 B2:tm),
      DefEq G D (Eq (a_CPi phi1 B1) (a_CPi phi2 B2) a_Star) ->
      Iso G D phi1 phi2
+ | E_ImplCong : forall (G:context) (D:available_props) (phi1 phi3 phi2 phi4:constraint),
+     Iso G D phi1 phi2 ->
+     Iso G D phi3 phi4 ->
+     Iso G D (Impl phi1 phi3) (Impl phi2 phi4)
 with DefEq : context -> available_props -> constraint -> Prop :=    (* defn DefEq *)
  | E_Assn : forall (G:context) (D:available_props) (phi:constraint) (c:covar),
      Ctx G ->
