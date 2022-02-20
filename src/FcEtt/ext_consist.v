@@ -1149,8 +1149,21 @@ Proof.
     end. 
     use_size_induction b ac Par1 Par2.
     exists ac. auto.
+  (* ParProp *)
   - intros.
-    
+    (* invert_equality removes the obviously conflicting cases *)
+    inversion H2; inversion H3; subst; invert_equality; subst.
+    + inversion H1; subst.
+      simpl in H.
+      use_size_induction a ac Par1 Par2.
+      use_size_induction A AC Par3 Par4.
+      use_size_induction b bc Par5 Par6.
+      eauto.
+    + simpl in H.
+      inversion H1; subst.
+      use_size_induction phi0 phi0c Par1 Par2.
+      use_size_induction phi3 phi3c Par3 Par4.
+      eauto.
 Qed.
 
 
@@ -1460,13 +1473,13 @@ inversion H; subst; destruct (IHmultipar _ _ eq_refl) as [B1 [B2 EQ]]; auto;
 exists B1, B2; auto.
 Qed.
 
-Lemma multipar_CPi : forall S D A C, multipar S D A C -> forall A1 A2 A3 B, A = a_CPi (Eq A1 A2 A3) B -> exists B1 B2 B3 C2,
-        C = (a_CPi (Eq B1 B2 B3) C2).
+Lemma multipar_CPi : forall S D A C, multipar S D A C -> forall phi B, A = a_CPi phi B -> exists phi' C2,
+        C = (a_CPi phi' C2).
 Proof.
   intros S D A C H. induction H; intros; subst.
-  exists A1, A2, A3, B. auto.
-  inversion H; subst; destruct (IHmultipar _ _ _ _ eq_refl) as [B1 [B2 [C2 EQ]]];
-    auto; exists B1, B2, C2; auto.
+  exists phi. eauto.
+  inversion H; subst; destruct (IHmultipar _ _ eq_refl) as [phi'' [C2 EQ]];
+    eauto.
 Qed.
 
 
@@ -1479,13 +1492,15 @@ Lemma multipar_UAbs_Rel : forall S D a b x,
 Proof.
     intros S D a b x Fr H. dependent induction H.
     - left. exists a. auto.
-    - destruct (Par_Abs_inversion_Rel H); subst.
+    - rename b into c.
+      rename a' into b.
+      destruct (Par_Abs_inversion_Rel H); subst.
       + destruct H1 as [ a' [K W]]. rewrite K in H.
       assert (h0 : x `notin` fv_tm_tm_tm (a_UAbs Rel a')). eapply Par_fv_preservation; eauto.
       simpl in h0.
       destruct (IHmultipar a' ltac:(eauto)) as [ [b2 EQ2] | [a1 [a2 [mp1 F2]]] ]; subst; clear IHmultipar.
       auto. left. exists b2. auto. right. exists a1, a2. split. eauto. auto.
-      + destruct H1 as [ a' [K W]]. right. exists a, a'. split; eauto.
+      + destruct H1 as [ a' [K W]]. right. exists a, a'. split; eauto using Par_lc1_tm.
 Qed.
 
 Lemma multipar_UAbs_Irrel : forall S D a b x,
@@ -1497,22 +1512,24 @@ Lemma multipar_UAbs_Irrel : forall S D a b x,
 Proof.
     intros S D a b x Fr H. dependent induction H.
     - left. exists a. auto.
-    - destruct (Par_Abs_inversion_Irrel H); subst.
+    - rename b into c.
+      rename a' into b.
+      destruct (Par_Abs_inversion_Irrel H); subst.
       + destruct H1 as [ a' [K W]]. rewrite K in H.
       assert (h0 : x `notin` fv_tm_tm_tm (a_UAbs Rel a')). eapply Par_fv_preservation; eauto.
       simpl in h0.
       destruct (IHmultipar a' ltac:(eauto)) as [ [b2 EQ2] | [a1 [a2 [mp1 F2]]] ]; subst; clear IHmultipar.
       auto. left. exists b2. auto. right. exists a1, a2. split. eauto. auto.
-      + destruct H1 as [ a' [K W]]. right. exists a, a'. split; eauto.
+      + destruct H1 as [ a' [K W]]. right. exists a, a'. split; eauto using Par_lc1_tm.
 Qed.
 
-Lemma multipar_CAbs : forall S D A C, multipar S D A C -> forall A1 A2 A3 B, A = a_CAbs (Eq A1 A2 A3) B -> exists B1 B2 B3 C2,
-        C = (a_CAbs (Eq B1 B2 B3) C2).
+Lemma multipar_CAbs : forall S D A C, multipar S D A C -> forall phi B, A = a_CAbs phi B -> exists phi' C2,
+        C = (a_CAbs phi' C2).
 Proof.
   intros S D A C H. induction H; intros; subst.
-  exists A1, A2, A3, B. auto.
-  inversion H; subst; destruct (IHmultipar _ _ _ _ eq_refl) as [B1 [B2 [C2 EQ]]];
-    auto; exists B1, B2, C2; auto.
+  exists phi, B. auto.
+  inversion H; subst; destruct (IHmultipar _ _ eq_refl) as [phi'' [C2 EQ]];
+    eauto.
 Qed.
 
 (* --------------------------------------------------- *)
@@ -1570,8 +1587,8 @@ Lemma join_consistent : forall S D a b, joins S D a b -> consistent a b.
 Proof.
   intros.
   all: destruct H as (TT & Es & Ea & Eb & MSL & MSR).
-  all: move: (erased_lc Ea) => lc_a.
-  all: move: (erased_lc Eb) => lc_b.
+  all: move: (erased_lc_tm Ea) => lc_a.
+  all: move: (erased_lc_tm Eb) => lc_b.
   destruct a; try step_right; destruct b; try step_left; auto.
   (* 35 subgoals *)
   all: repeat
