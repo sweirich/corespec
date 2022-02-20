@@ -212,12 +212,30 @@ Proof.
   apply subst4; auto.
 Qed.
 
+Lemma copen2_constraint :
+  forall c (b: co) S D phi phi',
+    lc_co b ->
+    c `notin` fv_co_co_constraint phi' \u fv_co_co_constraint phi ->
+    ParProp S D (open_constraint_wrt_co phi (g_Var_f c)) (open_constraint_wrt_co phi' (g_Var_f c)) ->
+    ParProp S D (open_constraint_wrt_co phi b) (open_constraint_wrt_co phi' b).
+Proof.
+  intros x b b'. intros.
+  rewrite (co_subst_co_constraint_intro x); auto.
+  rewrite [(_ _ b)] (co_subst_co_constraint_intro x); auto.
+  apply subst4; auto.
+Qed.
+
+
 (* -------------------------------------------------------------------------------- *)
 
 Ltac try_refl :=
   try match goal with
       | [ P2 : Par _ _ _ ?b |- _ ] =>
         exists b; assert (lc_tm b); try eapply Par_lc2; eauto; try split; eauto; fail
+      (* I don't know what the tactic does exactly, but here's the
+      ParProp case that I think makes sense *)
+      | [ P2 : ParProp _ _ _ ?phi |- _ ] =>
+        exists phi; assert (lc_constraint phi); try eapply Par_lc2; eauto; try split; eauto; fail
       end.
 
 (*
@@ -249,16 +267,21 @@ Ltac invert_equality :=
   try match goal with
       | [ P2 : Par _ _ ?b ?b |- exists cc:tm, Par ?S ?D ?b cc /\ Par ?S ?D ?a2 cc ] =>
         exists a2; assert (lc_tm a2); try eapply Par_lc2; eauto; try split; eauto; fail
+      | [ P2 : ParProp _ _ ?phi ?phi |- exists cc:constraint, ParProp ?S ?D ?phi cc /\ Par ?S ?D ?phi' cc ] =>
+        exists phi'; assert (lc_constraint phi'); try eapply Par_lc2; eauto; try split; eauto; fail
       end.
   Ltac try_refl_right :=
   try match goal with
       | [ P2 : Par _ _ ?b ?b |- exists cc:tm, Par ?S ?D ?a2 cc /\ Par ?S ?D ?b cc ] =>
-        exists a2; assert (lc_tm a2); try eapply Par_lc2; eauto; try split; eauto; fail
+        exists a2; assert (lc_tm a2); try eapply Par_lc2; try eapply Par_lc1_tm; eauto; try split; eauto; fail
+      | [ P2 : ParProp _ _ ?b ?b |- exists cc:constraint, ParProp ?S ?D ?a2 cc /\ ParProp ?S ?D ?b cc ] =>
+        exists a2; assert (lc_constraint a2); try eapply Par_lc2; try eapply Par_lc2_tm; eauto; try split; eauto; fail
       end.
 
   Ltac invert_erased :=
     match goal with
     | [ H : erased_tm ?a |- _ ] => inversion H; subst; clear H
+    | [ H : erased_constraint ?a |- _ ] => inversion H; subst; clear H
     end.
 
   (* Find prove that the result of Par is erased, and then invert that *)
@@ -328,6 +351,7 @@ Ltac invert_equality :=
 Ltac invert_lc :=
   match goal with
     | [ H : lc_tm ?a |- _ ] => inversion H; subst; clear H
+    | [ H : lc_constraint ?a |- _ ] => inversion H; subst; clear H
   end.
 
   Ltac use_size_induction a ac Par1 Par2 :=
@@ -399,33 +423,33 @@ Ltac par_erased_open x J Par4 :=
     pose K:= H13 x h0; clearbody K; clear h0;
     have: x `notin` L1; auto => h0;
     pose KK := H4 x h0; clearbody KK;
-    pose J := subst3 x Par4 KK K;
+    pose J := subst3_tm x Par4 KK K;
     clearbody J;
     repeat rewrite tm_subst_tm_tm_open_tm_wrt_tm in J; [auto;
     simpl in J;
     destruct eq_dec; try congruence;
     repeat rewrite tm_subst_tm_tm_fresh_eq in J; auto
-    | try apply (Par_lc2 Par4); auto
-    | apply (Par_lc1 Par4); auto]
+    | try apply (Par_lc2_tm Par4); auto
+    | apply (Par_lc1_tm Par4); auto]
   end.
 
-      Ltac finish_open_co a'0 :=
-        let K := fresh in
-        let J := fresh in
-        let h0 := fresh in
-      match goal with
-      | H12 : forall c, c `notin` ?L -> Par ?G ?D (open_tm_wrt_co a'0 (g_Var_f c)) (open_tm_wrt_co ?b (g_Var_f c)) |- _ =>
-        pick_fresh c;
-        have: c `notin` L; auto => h0;
-        pose K := H12 c h0; clearbody K;
-        pose J := subst4 c lc_g_Triv K;
-        clearbody J;
-        repeat rewrite co_subst_co_tm_open_tm_wrt_co in J; eauto;
-        simpl in J;
-        destruct eq_dec; try congruence;
-        repeat rewrite co_subst_co_tm_fresh_eq in J; eauto with lc
+Ltac finish_open_co a'0 :=
+  let K := fresh in
+  let J := fresh in
+  let h0 := fresh in
+  match goal with
+  | H12 : forall c, c `notin` ?L -> Par ?G ?D (open_tm_wrt_co a'0 (g_Var_f c)) (open_tm_wrt_co ?b (g_Var_f c)) |- _ =>
+      pick_fresh c;
+      have: c `notin` L; auto => h0;
+                                pose K := H12 c h0; clearbody K;
+                                          pose J := subst4 c lc_g_Triv K;
+                                                    clearbody J;
+                                                    repeat rewrite co_subst_co_tm_open_tm_wrt_co in J; eauto;
+                                                    simpl in J;
+                                                    destruct eq_dec; try congruence;
+                                                    repeat rewrite co_subst_co_tm_fresh_eq in J; eauto with lc
 
-      end.
+  end.
 
 
 Lemma open_tm_wrt_tm_bullet_var_eq: forall a x, 
@@ -475,74 +499,110 @@ Proof.
   rewrite fv_co_co_tm_open_tm_wrt_co_lower. eauto.
 Qed.
 
-Lemma erased_fv_co: forall a x, erased_tm a -> x `notin` fv_co_co_tm a.
-Proof. 
-  intros. induction H. all: simpl. all: try fsetdec.
-  - pick fresh y. move: (H0 y ltac:(auto)) =>  h1.
+Lemma erased_fv_co: forall x, (forall a, erased_tm a -> x `notin` fv_co_co_tm a) /\
+                           (forall phi, erased_constraint phi -> x `notin` fv_co_co_constraint phi).
+Proof.
+  intros x.
+  apply erased_tm_constraint_mutual; intros. all: simpl. all: try fsetdec.
+  - pick fresh y. move: (H y ltac:(auto)) =>  h1.
     rewrite fv_co_co_tm_open_tm_wrt_tm_lower. eauto.
-  - pick fresh y. move: (H1 y ltac:(auto)) => h1.
+  - pick fresh y. move: (H0 y ltac:(auto)) => h1.
     apply union_notin_iff. split; eauto.
     rewrite fv_co_co_tm_open_tm_wrt_tm_lower. eauto.
-  - pick fresh y. move: (H3 y ltac:(auto)) => h1.
+  - pick fresh y. move: (H0 y ltac:(auto)) => h1.
     apply union_notin_iff. split. clear Fr. fsetdec.
     rewrite fv_co_co_tm_open_tm_wrt_co_lower. eauto.
-  - pick fresh y. move: (H0 y ltac:(auto)) =>  h1.
+  - pick fresh y. move: (H y ltac:(auto)) =>  h1.
     rewrite fv_co_co_tm_open_tm_wrt_co_lower. eauto.
 Qed.
 
-Lemma confluence_size : forall n a, size_tm a <= n ->  forall S D a1, Good S D -> erased_tm a -> Par S D a a1 -> forall a2, Par S D a a2 -> exists b, Par S D a1 b /\ Par S D a2 b.
+(* Lemma confluence_size : forall n a, size_tm a <= n ->  forall S D a1, Good S D -> erased_tm a -> Par S D a a1 -> forall a2, Par S D a a2 -> exists b, Par S D a1 b /\ Par S D a2 b. *)
+(* Proof. *)
+(*   pose confluence_size_def n := *)
+(*       forall a, size_tm a <= n ->  forall S D a1, Good S D -> erased_tm a -> Par S D a a1 -> forall a2, Par S D a a2 -> exists b, Par S D a1 b /\ Par S D a2 b. *)
+
+Lemma confluence_size : forall n,
+  ((forall a, size_tm a <= n ->  forall S D a1, Good S D -> erased_tm a -> Par S D a a1 -> forall a2, Par S D a a2 -> exists b, Par S D a1 b /\ Par S D a2 b) /\ 
+    (forall phi, size_constraint phi <= n -> forall S D phi1, erased_constraint phi -> ParProp S D phi phi1 ->
+      forall phi2, ParProp S D phi phi2 -> exists phi3, ParProp S D phi1 phi3 /\ ParProp S D phi2 phi3)).
 Proof.
   pose confluence_size_def n :=
-      forall a, size_tm a <= n ->  forall S D a1, Good S D -> erased_tm a -> Par S D a a1 -> forall a2, Par S D a a2 -> exists b, Par S D a1 b /\ Par S D a2 b.
+    ((forall a, size_tm a <= n ->  forall S D a1, Good S D -> erased_tm a -> Par S D a a1 -> forall a2, Par S D a a2 -> exists b, Par S D a1 b /\ Par S D a2 b) /\ 
+       (forall phi, size_constraint phi <= n -> forall S D phi1, erased_constraint phi -> ParProp S D phi phi1 ->
+                                                     forall phi2, ParProp S D phi phi2 -> exists phi3, ParProp S D phi1 phi3 /\ ParProp S D phi2 phi3)).
   intro n. fold (confluence_size_def n).  eapply (well_founded_induction_type lt_wf).
   clear n. intros n IH. unfold confluence_size_def in *. clear confluence_size_def.
+  split.
   intros a SZ S D a1 Gs Ea P1 a2 P2.
-  inversion P1; inversion P2; subst.
+  assert (∀ y : nat,
+         y < n
+         → (∀ a : tm,
+              size_tm a ≤ y
+              → ∀ (S : context) (D : available_props) (a1 : tm),
+                  Good S D
+                  → erased_tm a
+                    → Par S D a a1
+                      → ∀ a2 : tm,
+                          Par S D a a2
+                          → ∃ b : tm, Par S D a1 b ∧ Par S D a2 b)) as IHtm.
+  apply IH.
+  intros.
+  assert (∀ y : nat,
+         y < n
+         → (∀ phi : constraint,
+                size_constraint phi ≤ y
+                → ∀ (S : context) (D : available_props) (phi1 : constraint),
+                    erased_constraint phi
+                    → ParProp S D phi phi1
+                      → ∀ phi2 : constraint,
+                          ParProp S D phi phi2
+                          → ∃ phi3 : constraint,
+                              ParProp S D phi1 phi3 ∧ ParProp S D phi2 phi3)) as IHconstraint.
+  apply IH.
+  - inversion P1; inversion P2; subst.
   all: try solve [invert_equality].
   (* 37 subgoals *)
-
   all: try_refl_left.
   all: try_refl_right.
   all: try invert_syntactic_equality.
   all: simpl in SZ; destruct n; try solve [ inversion SZ ].
   all: invert_erased; inversion Gs.
-
-  - (* two rel betas *)
-    use_size_induction a0 ac Par1 Par2.
-    use_size_induction b bc Par3 Par4.
-    destruct (Par_Abs_inversion_Rel Par1) as [[a'' [EQ h0]] | [X1]]; subst;
-    destruct (Par_Abs_inversion_Rel Par2) as [[a''' [EQ2 h1]]| [Y1]]; subst.
-    -- inversion EQ2. subst.
+    -- (* two rel betas *)
+      use_size_induction a0 ac Par1 Par2.
+      use_size_induction b bc Par3 Par4.
+      destruct (Par_Abs_inversion_Rel Par1) as [[a'' [EQ h0]] | [X1]]; subst;
+        destruct (Par_Abs_inversion_Rel Par2) as [[a''' [EQ2 h1]]| [Y1]]; subst.
+    --- inversion EQ2. subst.
        exists (open_tm_wrt_tm a''' bc).
        split. pick fresh x; eapply open2; eauto using Par_erased_tm.
        pick fresh x; eapply open2; eauto using Par_erased_tm.
-    -- exists (open_tm_wrt_tm a'' bc).
+    --- exists (open_tm_wrt_tm a'' bc).
        split. pick fresh x; eapply open2; eauto using Par_erased_tm.
        inversion H7.
        eta_expand x.
-    -- exists (open_tm_wrt_tm a''' bc).
+    --- exists (open_tm_wrt_tm a''' bc).
        split. inversion H7. eta_expand x. 
        pick fresh x; eapply open2; eauto using Par_erased_tm.
-    -- exists (a_App ac Rel bc).
+    --- exists (a_App ac Rel bc).
        split. inversion H7. eta_expand x0.
        inversion H8. eta_expand x0.
-  - (* rel app beta / app cong *)
-    use_size_induction a0 ac Par1 Par2.
-    use_size_induction b bc Par3 Par4.
-    invert_erased_tm (a_UAbs Rel a').
-    inversion Par1; subst; clear Par1.
-    -- exists (open_tm_wrt_tm a' bc); auto.
-      split; eauto.
-      apply open1 with (L:=L); eauto.
-    -- exists (open_tm_wrt_tm a'1 bc); auto.
-      split; eauto.
-      pick_fresh x.
-      par_erased_open x J Par3.
-    -- exists (a_App ac Rel bc).
-      split.
-      eta_expand x. 
-      eauto.
-  - (* two irrel betas *)
+    -- (* rel app beta / app cong *)
+      use_size_induction a0 ac Par1 Par2.
+      use_size_induction b bc Par3 Par4.
+      invert_erased_tm (a_UAbs Rel a').
+      inversion Par1; subst; clear Par1.
+      --- exists (open_tm_wrt_tm a' bc); auto.
+          split; eauto.
+          apply open1 with (L:=L); eauto.
+      --- exists (open_tm_wrt_tm a'1 bc); auto.
+          split; eauto.
+          pick_fresh x.
+          par_erased_open x J Par3.
+      --- exists (a_App ac Rel bc).
+          split.
+          eta_expand x. 
+          eauto.
+  -- (* two irrel betas *)
     use_size_induction a0 ac Par1 Par2.
     invert_erased_tm (a_UAbs Irrel a');
     invert_erased_tm (a_UAbs Irrel a'0).
@@ -568,80 +628,80 @@ Proof.
       eta_expand x. destruct W' as [z [Par5 K]].
       eta_expand x.
   (* Irrel app beta / app cong *)
-   - use_size_induction a0 ac Par1 Par2.
+   -- use_size_induction a0 ac Par1 Par2.
     invert_erased_tm (a_UAbs Irrel a').
     inversion Par1; subst; clear Par1.
-    -- exists (open_tm_wrt_tm a' a_Bullet); auto.
+    --- exists (open_tm_wrt_tm a' a_Bullet); auto.
       split; eauto.
       apply open1 with (L:=L); eauto.
-    -- exists (open_tm_wrt_tm a'1 a_Bullet); auto.
+    --- exists (open_tm_wrt_tm a'1 a_Bullet); auto.
       split; eauto.
       pick_fresh x; eapply open2; eauto.
-    -- exists (a_App ac Irrel a_Bullet).
+    --- exists (a_App ac Irrel a_Bullet).
       split. eta_expand x. 
       eauto.
    (* rel app cong / app beta *)
-  - use_size_induction a0 ac Par1 Par2.
+  -- use_size_induction a0 ac Par1 Par2.
     use_size_induction b bc Par3 Par4.
     invert_erased_tm (a_UAbs Rel a'0).
     inversion Par2; subst; clear Par2.
-    -- exists (open_tm_wrt_tm a'0 bc); auto.
+    --- exists (open_tm_wrt_tm a'0 bc); auto.
       split; eauto.
       apply open1 with (L:=L); eauto.
-    -- exists (open_tm_wrt_tm a'1 bc); auto.
+    --- exists (open_tm_wrt_tm a'1 bc); auto.
       split; eauto.
       pick_fresh x.
       par_erased_open x J Par4.
-    -- exists (a_App ac Rel bc).
+    --- exists (a_App ac Rel bc).
       split. eauto.
       eta_expand x.
-  - (* rel app cong / app cong *)
+  -- (* rel app cong / app cong *)
     use_size_induction a0 ac Par1 Par2.
     use_size_induction b bc Par3 Par4.
     exists (a_App ac Rel bc).
     split. eauto. eauto.
-  - (* Irrel app cong / app beta *)
+  -- (* Irrel app cong / app beta *)
     use_size_induction a0 ac Par1 Par2.
     invert_erased_tm (a_UAbs Irrel a'0).
     inversion Par2; subst; clear Par2.
-    -- exists (open_tm_wrt_tm a'0 a_Bullet); auto.
+    --- exists (open_tm_wrt_tm a'0 a_Bullet); auto.
       split; eauto.
       apply open1 with (L:=L); eauto.
-    -- exists (open_tm_wrt_tm a'1 a_Bullet); auto.
+    --- exists (open_tm_wrt_tm a'1 a_Bullet); auto.
       split; eauto. pick_fresh x; eapply open2; eauto.
-    -- exists (a_App ac Irrel a_Bullet).
+    --- exists (a_App ac Irrel a_Bullet).
       split. eauto.
       eta_expand x.
-  - (* Irrel app cong / app cong *)
+  -- (* Irrel app cong / app cong *)
     use_size_induction a0 ac Par1 Par2.
     exists (a_App ac Irrel a_Bullet).
     split. eauto. eauto.
-  - (* two cbetas *)
+  -- (* two cbetas *)
     use_size_induction a0 ac Par1 Par2.
     invert_erased_tm (a_UCAbs a').
     invert_erased_tm (a_UCAbs a'0).
     destruct (Par_CAbs_inversion Par1) as [ [a'' [EQ X]] | W ];
     destruct (Par_CAbs_inversion Par2) as [ [a''' [EQ' X']] | W']. 
-    -- subst.
+    --- subst.
       exists (open_tm_wrt_co a''' g_Triv).
       split; eauto. pick fresh x; eapply copen2; eauto.
       inversion EQ'; subst.
       apply X. fsetdec.
       pick fresh x; eapply copen2; eauto.
-    -- subst. 
+    --- subst. 
       exists (open_tm_wrt_co a'' g_Triv). 
       split. pick fresh x; eapply copen2; eauto.
       destruct W' as [ax [Par5 K]].
       eta_expand c.
-    -- exists (open_tm_wrt_co a''' g_Triv). split. 
+    --- exists (open_tm_wrt_co a''' g_Triv). split. 
       destruct W as [ax [Par5 K]]. 
       inversion EQ'; subst. eta_expand c. 
       pick fresh x; eapply copen2; eauto.
-    -- exists (a_CApp ac g_Triv). split.
+    --- exists (a_CApp ac g_Triv). split.
       destruct W as [ax [Par5 K]].
       eta_expand c. destruct W' as [z [Par5 K]].
       eta_expand c.
-  - (* cbeta / capp cong *)
+  -- (* cbeta / capp cong *)
     use_size_induction a0 ac Par1 Par2.
     destruct (Par_CAbs_inversion Par1) as [ [a'' [EQ X]] | W ].
     inversion P2; subst; clear P2.
@@ -654,7 +714,7 @@ Proof.
       split; eauto. pick fresh x; eapply copen2; eauto.
     + exists (a_CApp ac g_Triv). split; eauto.
       destruct W as [ax [Par5 K]]. eta_expand c.
-  - (* capp cong / cbeta *)
+  -- (* capp cong / cbeta *)
     use_size_induction a0 ac Par1 Par2.
     destruct (Par_CAbs_inversion Par2) as [ [a'' [EQ X]] | W ].
     inversion P2; subst; eauto; clear P2.
@@ -666,15 +726,15 @@ Proof.
       split; eauto. rewrite H7. pick fresh x; eapply copen2; eauto.
     + exists (a_CApp ac g_Triv). split; eauto.
       destruct W as [ax [Par5 K]]. eta_expand c.
-  - (* capp cong / capp cong *)
+  -- (* capp cong / capp cong *)
     use_size_induction a0 ac Par1 Par2.
     exists (a_CApp ac g_Triv). auto.
-  - (* abs cong / abs cong *)
+  -- (* abs cong / abs cong *)
     pick fresh x.
     use_size_induction_open a0 x ac Par1 Par2.
     exists (a_UAbs rho (close_tm_wrt_tm x ac)).
     split; eauto; try solve [apply (@Par_Abs_exists x); eauto].
-  - (* abs cong rel / eta rel *)
+  -- (* abs cong rel / eta rel *)
     pick fresh x.
     move: (H x ltac:(auto)) => h1. clear H. rewrite H5 in h1.
     (* h1 : b x => a' *)
@@ -683,7 +743,7 @@ Proof.
       exists a2. split.
             pick fresh y and apply Par_Eta; eauto.
       apply eta_swap with (x:=x); eauto.
-      eauto using Par_lc2.
+      eauto using Par_lc2_tm.
     + subst. (* b x => a' ^ x  where b => \a' *)
       inversion H11. subst.
       apply open_tm_wrt_tm_inj in H9; auto. subst. 
@@ -713,14 +773,14 @@ Proof.
       rewrite size_tm_open_tm_wrt_tm_var in h4.
       assert (size_tm b <= size_tm a0). lia.
       use_size_induction b bb Par1 Par2.
-      move: (@Par_fv_preservation _ _ x _ _ H10 ltac:(eauto)) => h5.
+      move: (proj1 (Par_fv_preservation x) _ _ _ _ H10 ltac:(eauto)) => h5.
       exists bb.
       split.
       pick fresh y and apply Par_Eta. eapply Par2.
       eapply eta_swap with (x:=x); eauto.
       eauto.
     + eauto.
-  - (* abs cong irrel / eta irrel *)
+  -- (* abs cong irrel / eta irrel *)
     pick fresh x. move: (H3 x ltac:(auto)) => h5. inversion h5; subst.
     move: (H x ltac:(auto)) => h1. rewrite H5 in h1.
     (* h1 : b x => a' *)
@@ -729,7 +789,7 @@ Proof.
       exists a2. split.
             pick fresh y and apply Par_EtaIrrel; eauto.
       apply eta_swap_irrel with (x:=x); eauto.
-      eauto using Par_lc2.
+      eauto using Par_lc2_tm.
     + subst.
       move: (H2 x ltac:(auto)) => k1.
       rewrite H5 in k1.
@@ -751,8 +811,8 @@ Proof.
       move: (H2 x ltac:(auto)) => h4. rewrite h2 in h4. inversion h4.
       use_size_induction b bb Par1 Par2.
       exists bb. split; eauto. auto.
-      move: (@Par_fv_preservation _ _ x _ _ h1 ltac:(eauto)) => h6. eauto.
-      move: (@Par_fv_preservation _ _ _ _ _ H11 ltac:(eauto)) => h7. eauto.
+      move: (proj1 (Par_fv_preservation x) _ _ _ _ h1 ltac:(eauto)) => h6. eauto.
+      move: (proj1 (Par_fv_preservation x) _ _ _ _ H11 ltac:(eauto)) => h7. eauto.
       (*helping fsetdec a bit*) apply union_notin_iff in Fr. fsetdec.
     + subst. (* b x => a'0 x where b => a'0 *)
       rewrite -H10 in h1.
@@ -767,7 +827,7 @@ Proof.
       rewrite size_tm_open_tm_wrt_tm_var in h4.
       assert (size_tm b <= size_tm a0). lia.
       use_size_induction b bb Par1 Par2.
-      move: (@Par_fv_preservation _ _ x _ _ h1 ltac:(eauto)) => h6.
+      move: (proj1 (Par_fv_preservation x) _ _ _ _ h1 ltac:(eauto)) => h6.
       exists bb.
       split. 
       pick fresh y and apply Par_EtaIrrel. eapply Par2.
@@ -777,18 +837,18 @@ Proof.
       inversion Fr. clear Fr.  clear Fr0. fsetdec.
       eauto.
     + eauto.
-  - (* pi cong / pi cong *)
+  -- (* pi cong / pi cong *)
     pick fresh x.
     use_size_induction A ac Par1 Par2.
     use_size_induction_open B x bc Par3 Par4.
     exists (a_Pi rho ac (close_tm_wrt_tm x bc)).
     split; eauto; try solve [apply (@Par_Pi_exists x); eauto].
-  - (* cabs cong / cabs cong *)
+  -- (* cabs cong / cabs cong *)
     pick fresh c.
     use_size_induction_open a0 c ac Par1 Par2.
     exists (a_UCAbs (close_tm_wrt_co c ac)).
     split; eauto; try solve [apply (@Par_CAbs_exists c); eauto].
-  - (* cabs / eta c *)
+  -- (* cabs / eta c *)
     pick fresh x.
     move: (H x ltac:(auto)) => h1. clear H. rewrite H5 in h1.
     (* h1 : b x => a' *)
@@ -797,7 +857,7 @@ Proof.
       exists a2. split.
             pick fresh y and apply Par_EtaC; eauto.
       apply eta_swap_c with (x:=x); eauto.
-      eauto using Par_lc2.
+      eauto using Par_lc2_tm.
     + subst.
       move: (H5 x ltac:(auto)) => h2.
       match goal with
@@ -812,10 +872,10 @@ Proof.
       exists bb. 
       split; eauto.
       eapply open_tm_wrt_co_inj in H7. subst; auto.
-      Focus 2. move: (@Par_fv_co_preservation _ _ x _ _ h1 ltac:(eauto)) => h5. eauto.
+      Focus 2. move: (proj1 (Par_fv_co_preservation x) _ _ _ _ h1 ltac:(eauto)) => h5. eauto.
       apply erased_fv_co. eapply erased_a_CAbs_inversion.
       move: (@Par_erased_tm _ _ _ _ H8 ltac:(eauto)) => h6; eauto.
-      move: (@Par_fv_co_preservation _ _ x _ _ H8 ltac:(eauto)) => h5. 
+      move: (proj1 (Par_fv_co_preservation x) _ _ _ _ H8 ltac:(eauto)) => h5. 
       simpl in h5; eauto.
     + subst. (* b x => a'0 x where b => a'0 *)
       rewrite -H7 in h1.
@@ -831,17 +891,17 @@ Proof.
       rewrite size_tm_open_tm_wrt_co_var in h4.
       assert (size_tm b <= size_tm a0). lia.
       use_size_induction b bb Par1 Par2.
-      move: (@Par_fv_preservation _ _ x _ _ H8 ltac:(eauto)) => h5.
+      move: (proj1 (Par_fv_preservation x) _ _ _ _ H8 ltac:(eauto)) => h5.
       exists bb.
       split; eauto.
       pick fresh y and apply Par_EtaC; eauto.
       eapply eta_swap_c with (x:=x); eauto. clear Fr0.
-      move: (@Par_fv_co_preservation _ _ x _ _ h1 ltac:(eauto)) => h6.
+      move: (proj1 (Par_fv_co_preservation x) _ _ _ _ h1 ltac:(eauto)) => h6.
       simpl in h6. rewrite union_notin_iff. split. 
       apply union_notin_iff in Fr. inversion Fr. clear Fr. fsetdec.
       clear Fr. fsetdec.
     + eauto.
-  - (* cpi cong / cpi cong *)
+  -- (* cpi cong / cpi cong *)
     use_size_induction A AC Par1 Par2.
     use_size_induction B BC Par3 Par4.
     use_size_induction A1 AC1 Par5 Par6.

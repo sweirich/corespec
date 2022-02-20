@@ -251,6 +251,15 @@ Proof.
   - lc_toplevel_inversion.
 Qed.
 
+Lemma Par_lc1_tm : forall G D a a' , Par G D a a' -> lc_tm a.
+  apply Par_lc1.
+Qed.
+
+Lemma Par_lc2_tm : forall G D a a' , Par G D a a' -> lc_tm a'.
+  apply Par_lc2.
+Qed.
+
+
 Hint Resolve (proj1 Par_lc1) (proj1 Par_lc2) (proj2 Par_lc1) (proj2 Par_lc2) : lc.
 
 Lemma typing_erased_mutual:
@@ -795,6 +804,14 @@ Proof.
   - inversion H2; eauto.
 Qed.
 
+Lemma subst3_tm : forall S D b b' x,
+    Par S D b b' ->
+    forall a a', erased_tm a -> Par S D a a' ->
+    Par S D (tm_subst_tm_tm b x a) (tm_subst_tm_tm b' x a').
+Proof.
+  intros.
+  apply subst3; auto.
+Qed.
 
 Lemma subst4 : forall b x, lc_co b ->
     (forall S D a a', Par S D a a' ->
