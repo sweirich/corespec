@@ -888,10 +888,6 @@ Proof.
     destruct (@eq_dec tmvar _ z x); try done.
     clear Fr.
     eapply Par_lc1. eauto.
-  (* ParProp Eq *)
-  - inversion H3; eauto.
-  (* ParProp Impl *)
-  - inversion H2; eauto.
 Qed.
 
 Lemma subst3_tm : forall S D b b' x,
@@ -1050,7 +1046,7 @@ Qed.
 
 Lemma Par_EtaRel_exists : forall (G: context) D a b b' x,
    x `notin` union (fv_tm_tm_tm a) (fv_tm_tm_tm b) ->
-   Par G D b b' ->
+ Par G D b b' ->
    (open_tm_wrt_tm a (a_Var_f x)) = a_App b Rel (a_Var_f x) ->
    Par G D (a_UAbs Rel a) b'.
 Proof.
