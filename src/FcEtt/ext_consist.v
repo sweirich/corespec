@@ -1832,6 +1832,21 @@ Proof.
   Unshelve. auto.
 Qed.
 
+Lemma multipar_prop_impl_left:
+  forall phi1 phi2 phi3 S D, lc_constraint phi1 -> multipar_prop S D phi2 phi3 ->
+                        multipar_prop S D (Impl phi1 phi2) (Impl phi1 phi3).
+Proof.
+  induction 2; eauto; try done.
+Qed.
+
+Lemma multipar_prop_impl_right:
+  forall phi1 phi2 phi3 S D, lc_constraint phi1 -> multipar_prop S D phi2 phi3 ->
+                        multipar_prop S D (Impl phi2 phi1) (Impl phi3 phi1).
+Proof.
+  induction 2; eauto; try done.
+Qed.
+
+
 Lemma join_capp: forall a a' S D, joins S D a a' -> joins S D (a_CApp a g_Triv) (a_CApp a' g_Triv).
 Proof.
   unfold joins.
@@ -2053,6 +2068,100 @@ Lemma consistent_mutual:
   (forall S,       Ctx S -> True).
 Proof.
   apply typing_wff_iso_defeq_mutual; eauto; try done.
+  (* new cases for constraints *)
+  - move => G D A1 B1 A A2 B2 d1 IH1 d2 IH2 G_Ok.
+    unfold joins_constraint.
+    simpl in *.
+    move : (IH1 ltac:(auto)) (IH2 ltac:(auto)) => [A3 ParA] [B3 ParB].
+    move : ParA ParB (IH1 G_Ok) (IH2 G_Ok) => [Par1 Par2] [Par3 Par4] [C1 [Par5 Par6]] [C2 [Par7 Par8]].
+    exists (Eq A3 B3 A); repeat split; try apply typing_erased_type_mutual; eauto;
+      apply typing_erased_type_mutual in d1;
+      apply typing_erased_type_mutual in d2;
+      erased_inversion; eauto.
+    + apply mpprop_step with (phi2 := (Eq A3 B3 A)).
+      constructor; eauto with erased lc.
+      apply mpprop_refl.
+      apply Par_lc2_tm in Par1.
+      apply Par_lc2_tm in Par3.
+      auto with lc erased.
+    + apply mpprop_step with (phi2 := (Eq A3 B3 A)).
+      constructor; eauto with erased lc.
+      apply mpprop_refl.
+      apply Par_lc2_tm in Par1.
+      apply Par_lc2_tm in Par3.
+      auto with lc erased.
+  - move => G D A1 A2 A B d1 IH Eq1Wff _ Eq2Wff _ G_Ok.
+    rewrite /joins_constraint.
+    rewrite /interp_constraint in IH.
+    move : (IH G_Ok) => [C [Par1 Par2]].
+    exists (Eq A1 A2 C); repeat split; eauto with erased lc.
+    + apply ctx_wff_mutual in d1.
+      apply typing_erased_type_mutual in d1.
+      assumption.
+    + apply typing_erased_type_mutual in Eq1Wff.
+      apply typing_erased_type_mutual in Eq2Wff.
+      apply mpprop_step with (phi2 := (Eq A1 A2 C)).
+      constructor; eauto;
+        constructor;
+        erased_inversion; auto with lc.
+      erased_inversion; apply mpprop_refl; constructor; auto with lc erased.
+      apply Par_lc2_tm in Par1. assumption.
+    + apply typing_erased_type_mutual in Eq1Wff.
+      apply typing_erased_type_mutual in Eq2Wff.
+      apply mpprop_step with (phi2 := (Eq A1 A2 C)).
+      constructor; eauto;
+        constructor;
+        erased_inversion; auto with lc.
+      erased_inversion; apply mpprop_refl; constructor; auto with lc erased.
+      apply Par_lc2_tm in Par1. assumption.
+  - move => G D phi1 phi2 B1 B2 d1 IH G_Ok.
+    move : (IH G_Ok) => h1.
+    rewrite /interp_constraint in h1.
+    move : h1 => [C [Par1 Par2]].
+    rewrite /joins_constraint.
+    inversion Par1; subst; auto.
+    (* How do I combine these two cases? *)
+    (* just use a match? *)
+    + exists phi1; repeat split; eauto with lc erased.
+      apply ctx_wff_mutual in d1.
+      apply typing_erased_type_mutual in d1.
+      assumption.
+      1,2 : apply typing_erased_type_mutual in d1; erased_inversion; auto.
+      inversion Par2; subst; auto.
+      * apply mpprop_refl.
+        apply typing_erased_type_mutual in d1; erased_inversion; auto with lc.
+      * apply mpprop_step with (phi2 := phi1).
+        assumption.
+        apply mpprop_refl.
+        apply typing_erased_type_mutual in d1; erased_inversion; auto with lc.
+
+    + exists phi'; repeat split; eauto with lc erased.
+      apply ctx_wff_mutual in d1.
+      apply typing_erased_type_mutual in d1.
+      assumption.
+      1,2 : apply typing_erased_type_mutual in d1; erased_inversion; auto.
+      inversion Par2; subst; auto.
+      * apply mpprop_refl.
+        apply typing_erased_type_mutual in d1; erased_inversion; auto with lc.
+      * apply mpprop_step with (phi2 := phi').
+        assumption.
+        apply mpprop_refl.
+        apply typing_erased_type_mutual in d1; erased_inversion; auto with lc.
+        eapply Par_lc2.
+        eassumption.
+
+  - move => G D phi1 phi3 phi2 phi4 eqPhi1Phi2 IH12 eqPhi3Phi4 IH34 G_Ok.
+    move : (IH12 ltac:(auto)) (IH34 ltac:(auto)) => [phi5 [erasedG [erasedPhi1 [erasedPhi2 [Par1 Par2]]]]]
+                                                     [phi6 [_ [_ [_ [Par3 Par4]]]]].
+    exists (Impl phi5 phi6); repeat split; auto with erased lc.
+    + constructor; auto.
+      apply typing_erased_type_mutual in eqPhi3Phi4. tauto.
+    + constructor; auto.
+      apply typing_erased_type_mutual in eqPhi3Phi4. tauto.
+    + 
+    
+    
+      
   - intros G D A1 B1 A A2 B2 d H d0 H0 H1 A0 B0 T1 A3 B3 T2 H2 H3.
     inversion H2; subst; clear H2.
     inversion H3; subst; clear H3.
