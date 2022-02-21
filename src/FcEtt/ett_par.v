@@ -369,7 +369,7 @@ Proof.
     apply typing_erased_mutual in t; auto.
     econstructor.
     Unshelve.
-    3 : { exact (L \u L0). }.
+    3 : { exact (L \u L0). }
     intros.
     rewrite e; eauto.
     fsetdec.
@@ -377,7 +377,7 @@ Proof.
     econstructor.
     intros.
     Unshelve.
-    4 : {exact (L \u fv_tm_tm_tm b).}.
+    4 : {exact (L \u fv_tm_tm_tm b). }
     rewrite e; eauto;
     apply typing_erased_mutual in t; auto.
     intros. rewrite e; eauto.
