@@ -56,6 +56,10 @@ Ltac erased_pick_fresh x :=
 
 Ltac erased_inversion :=
   repeat match goal with
+  | [H : erased_constraint (Eq _ _ _) |- _] =>
+    inversion H; subst; clear H
+  | [H : erased_constraint (Impl _ _) |- _] =>
+    inversion H; subst; clear H
   | [H : erased_tm (a_UAbs _ _)|- _ ] =>
     inversion H; subst; clear H
   | [H : erased_tm (a_App _ _ _)|- _ ] =>
@@ -286,7 +290,9 @@ Qed.
 
 Hint Resolve Typing_erased_tm Typing_erased_constraint : erased.
 
-Lemma typing_erased_type_mutual:
+(* Conv rule goes through because it requires B (the type that the
+term is converted to) to be well-typed *)
+Lemma typing_erased_type_mutual':
     (forall G b A, Typing G b A -> erased_tm A) /\
     (forall G0 phi (H : PropWff G0 phi), erased_constraint phi) /\
      (forall G0 D p1 p2 (H : Iso G0 D p1 p2), True ) /\
@@ -296,10 +302,10 @@ Proof.
   apply typing_wff_iso_defeq_mutual; intros; repeat split; split_hyp; subst; simpl; auto.
   all: unfold erased_context in *.
   all: eauto with erased.
-    all: try solve [inversion H; pick fresh x;
+    all: try solve [erased_inversion; pick fresh x;
       rewrite (tm_subst_tm_tm_intro x); auto;
         eapply subst_tm_erased;
-        eauto with erased].
+                    eauto with erased].
   - eapply Forall_forall in H; eauto. simpl in H. inversion H. auto.
   - inversion H; pick fresh x;
       rewrite (co_subst_co_tm_intro x); auto.
@@ -318,6 +324,157 @@ Proof.
     + destruct h0. inversion H1; subst. constructor. assumption.
       apply IHp1; eauto. inversion H0; eauto. right. assumption.
 Qed.
+
+Lemma typing_erased_type_mutual  :
+    (forall G b A, Typing G b A -> erased_tm A) /\
+    (forall G0 phi (H : PropWff G0 phi), erased_constraint phi) /\
+     (forall G0 D p1 p2 (H : Iso G0 D p1 p2), erased_constraint p1 /\ erased_constraint p2) /\
+     (forall G0 D phi (H : DefEq G0 D phi), erased_constraint phi) /\
+     (forall G0 (H : Ctx G0), erased_context G0).
+Proof.
+  apply typing_wff_iso_defeq_mutual; intros; repeat split; split_hyp; subst; simpl; auto.
+  all: unfold erased_context in *.
+  all: eauto with erased.
+    all: try solve [erased_inversion; pick fresh x;
+      rewrite (tm_subst_tm_tm_intro x); auto;
+        eapply subst_tm_erased;
+        eauto with erased].
+  all : try solve [erased_inversion; eauto].
+  all: try solve [try inversion H0; try inversion H; subst; auto].
+  all : try solve [erased_inversion;
+    pick fresh x; rewrite (tm_subst_tm_tm_intro x);auto; econstructor; try (eauto with erased; 
+                   match goal with [ |- _ `notin` _] => fsetdec end)].
+  all : try solve [constructor;
+                   try solve [econstructor; eauto with erased; intros;
+                                   move: (H _ H1) => h1;
+                                                    inversion h1; auto with erased]].
+  - eapply Forall_forall in H; eauto. simpl in H. inversion H. auto.
+  - inversion H; pick fresh x;
+      rewrite (co_subst_co_tm_intro x); auto.
+        eauto with erased.
+  - unfold binds in b.
+    erewrite Forall_forall in H.
+    apply H in b.
+    inversion b; auto.
+  (* only handles one case? *)
+  - erased_inversion; pick fresh x; econstructor; eauto; rewrite (tm_subst_tm_tm_intro x);
+      eauto;eapply subst_tm_erased; eauto with erased lc lngen.
+
+  -  erased_inversion; pick fresh x; econstructor; eauto; try (rewrite (co_subst_co_tm_intro x);
+      eauto; eapply subst_co_erased_tm; eauto with erased lc lngen).
+
+  - erased_inversion; pick fresh x; econstructor; eauto; try (rewrite (co_subst_co_tm_intro x);
+      try eapply subst_co_erased_tm; try eapply subst_tm_erased; eauto with erased lc lngen).
+  - erased_inversion; econstructor; eauto;
+    apply typing_erased_mutual in t; auto.
+    econstructor.
+    Unshelve.
+    3 : { exact (L \u L0). }.
+    intros.
+    rewrite e; eauto.
+    fsetdec.
+  - econstructor; eauto.
+    econstructor.
+    intros.
+    Unshelve.
+    4 : {exact (L \u fv_tm_tm_tm b).}.
+    rewrite e; eauto;
+    apply typing_erased_mutual in t; auto.
+    intros. rewrite e; eauto.
+    apply typing_erased_mutual in t. auto.
+  - econstructor; eauto; apply typing_erased_mutual in t; auto.
+    econstructor.
+    intros.
+    rewrite e; auto.
+  - apply ctx_wff_mutual in d.
+    eapply typing_erased_type_mutual' in d.
+    unfold erased_context in d.
+    simpl in d.
+    inversion d.
+    inversion H2.
+    auto.
+
+  - apply Forall_forall.
+    intros s h0. destruct s.
+    destruct h0. inversion H1. econstructor.
+    eauto with erased.
+    eapply Forall_forall in H; eauto. simpl in H. auto.
+  - apply Forall_forall.
+    intros s h0. destruct s.
+    induction p.
+    + subst.
+      destruct h0. inversion H4. econstructor;  eauto with erased.
+      eapply Forall_forall in H; eauto. simpl in H. auto.
+    + destruct h0. inversion H1; subst. constructor. assumption.
+      apply IHp1; eauto. inversion H0; eauto. right. assumption.
+Qed.
+
+
+Proof.
+  apply typing_wff_iso_defeq_mutual;
+    intros; repeat split; split_hyp; subst; simpl; auto.
+  all: unfold erased_context in *.
+  all: eauto with erased.
+    all: try solve [erased_inversion; pick fresh x;
+      rewrite (tm_subst_tm_tm_intro x); auto;
+        eapply subst_tm_erased;
+        eauto with erased].
+  all : try solve [erased_inversion; eauto].
+  all: try solve [try inversion H0; try inversion H; subst; auto].
+  all : try solve [erased_inversion;
+    pick fresh x; rewrite (tm_subst_tm_tm_intro x);auto; econstructor; try (eauto with erased;
+                   match goal with [ |- _ `notin` _] => fsetdec end)].
+  all : try solve [constructor;
+                   try solve [econstructor; eauto with erased; intros;
+                                   move: (H _ H1) => h1;
+                                                    inversion h1; auto with erased]].
+  - unfold binds in b.
+    apply typing_erased_type_mutual' in c0.
+    unfold erased_context in c0.
+    erewrite Forall_forall in c0.
+    apply c0 in b.
+    inversion b; auto.
+  (* only handles one case? *)
+  - econstructor;
+    try (eapply typing_erased_mutual in t;
+         assumption).
+    eapply typing_erased_type_mutual'; eassumption.
+  - econstructor;
+      try (eapply typing_erased_mutual in t;
+           eapply typing_erased_mutual in t0;
+         assumption).
+    eapply typing_erased_type_mutual'; eassumption.
+  - erased_inversion; pick fresh x; econstructor; eauto; rewrite (tm_subst_tm_tm_intro x);
+      eauto;eapply subst_tm_erased; eauto with erased lc lngen.
+  -  erased_inversion; pick fresh x; econstructor; eauto; try (rewrite (co_subst_co_tm_intro x);
+      eauto; eapply subst_co_erased_tm; eauto with erased lc lngen).
+
+  - erased_inversion; pick fresh x; econstructor; eauto; try (rewrite (co_subst_co_tm_intro x);
+      try eapply subst_co_erased_tm; try eapply subst_tm_erased; eauto with erased lc lngen).
+  - econstructor.
+
+    erased_inversion; econstructor; eauto;
+    apply typing_erased_mutual in t; auto.
+    econstructor.
+    Unshelve.
+    3 : { exact (L \u L0). }.
+    intros.
+    rewrite e; eauto.
+    fsetdec.
+  - econstructor; eauto.
+    econstructor.
+    intros.
+    Unshelve.
+    4 : {exact (L \u fv_tm_tm_tm b).}.
+    rewrite e; eauto;
+    apply typing_erased_mutual in t; auto.
+    intros. rewrite e; eauto.
+    apply typing_erased_mutual in t. auto.
+  - econstructor; eauto; apply typing_erased_mutual in t; auto.
+    econstructor.
+    intros.
+    rewrite e; auto.
+  - Check ctx_wff_mutual.
 
 Lemma Typing_erased_type : forall G b A, Typing G b A -> erased_tm A.
 Proof. apply typing_erased_type_mutual. Qed.
