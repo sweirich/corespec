@@ -2168,6 +2168,177 @@ Proof.
   eauto with lc.
 Qed.
 
+Lemma multipar_prop_eq : forall S D a b A phi2, multipar_prop S D (Eq a b A) phi2 -> exists a' b' A', phi2 = (Eq a' b' A').
+Proof.
+  intros S D a b A phi2 H.
+  dependent induction H; intros; subst; eauto.
+  inversion H; eauto.
+Qed.
+
+Lemma multipar_prop_eq_rev : forall S D a b A phi2, multipar_prop S D phi2 (Eq a b A) -> exists a' b' A', phi2 = (Eq a' b' A').
+Proof.
+  intros S D a b A phi2 H.
+  dependent induction H; intros; subst; eauto.
+  inversion H; subst; eauto.
+  contradict IHmultipar_prop.
+  move => h1.
+  by move : (h1 _ _ _ eq_refl) => [a' [b' [A' EQ]]].
+Qed.
+
+Lemma multipar_prop_eq_proj1 : forall S D a b A a' b' A',
+    multipar_prop S D (Eq a b A) (Eq a' b' A') -> multipar S D a a'.
+Proof.
+  intros.
+  dependent induction H.
+  - inversion H; repeat split; eauto.
+  - inversion H; repeat split; subst; eauto.
+    Unshelve.
+    eauto.
+Qed.
+
+Lemma multipar_prop_eq_proj2 : forall S D a b A a' b' A',
+    multipar_prop S D (Eq a b A) (Eq a' b' A') -> multipar S D b b'.
+Proof.
+  intros.
+  dependent induction H.
+  - inversion H; repeat split; eauto.
+  - inversion H; repeat split; subst; eauto.
+    Unshelve.
+    eauto.
+Qed.
+
+Lemma multipar_prop_eq_proj3 : forall S D a b A a' b' A',
+    multipar_prop S D (Eq a b A) (Eq a' b' A') -> multipar S D A A'.
+Proof.
+  intros.
+  dependent induction H.
+  - inversion H; repeat split; eauto.
+  - inversion H; repeat split; subst; eauto.
+    Unshelve.
+    eauto.
+Qed.
+
+Lemma multipar_prop_impl : forall S D phi1 phi2 phi3, multipar_prop S D (Impl phi1 phi2) phi3 -> exists phi4 phi5, phi3 = (Impl phi4 phi5).
+Proof.
+  intros S D phi1 phi2 phi3 H.
+  dependent induction H; intros; subst; eauto.
+  inversion H; eauto.
+Qed.
+
+Lemma multipar_prop_impl_rev : forall S D phi1 phi2 phi3, multipar_prop S D phi3 (Impl phi1 phi2) -> exists phi4 phi5, phi3 = (Impl phi4 phi5).
+Proof.
+  intros S D phi1 phi2 phi3 H.
+  dependent induction H; intros; subst; eauto.
+  inversion H; eauto; subst.
+  contradict IHmultipar_prop.
+  move => h1.
+  by move : (h1 _ _ eq_refl) => [phi5 [phi6 EQ]].
+Qed.
+
+Lemma multipar_prop_impl_proj1 : forall S D phi1 phi2 phi3 phi4,
+    multipar_prop S D (Impl phi1 phi2) (Impl phi3 phi4) -> multipar_prop S D phi1 phi3.
+Proof.
+  intros.
+  dependent induction H.
+  - inversion H; repeat split; eauto.
+  - inversion H; repeat split; subst; eauto.
+Qed.
+
+Lemma multipar_prop_impl_proj2 : forall S D phi1 phi2 phi3 phi4,
+    multipar_prop S D (Impl phi1 phi2) (Impl phi3 phi4) -> multipar_prop S D phi2 phi4.
+Proof.
+  intros.
+  dependent induction H.
+  - inversion H; repeat split; eauto.
+  - inversion H; repeat split; subst; eauto.
+Qed.
+
+Lemma joins_constraint_iff : forall G D, Good G D ->  forall phi1 phi2,
+    joins_constraint G D phi1 phi2 -> (interp_constraint G D phi1 <-> interp_constraint G D phi2).
+Proof.
+  move => G D G_Ok; elim.
+  - intros.
+    move : H => [phi3 h].
+    split_hyp.
+    split; intros.
+    (* how do I shrink this *)
+    + move : (multipar_prop_eq H2) => [a' [b' [A' EQ]]]; subst.
+      move : (multipar_prop_eq_rev H3) => [a'' [b'' [A'' EQ]]]; subst.
+      move : (multipar_prop_eq_proj1 H2)
+               (multipar_prop_eq_proj2 H2)
+               (multipar_prop_eq_proj1 H3)
+               (multipar_prop_eq_proj2 H3)
+           => h0 h1 h3 h4.
+      erased_inversion.
+      have K0 : joins G D a b.
+      simpl in *.
+      unfold joins.
+      destruct H4.
+      split_hyp.
+      exists x; split_hyp; auto.
+
+      have K1 : joins G D a a''.
+      exists a'; split_hyp; auto.
+
+      have K2 : joins G D b b''.
+      exists b'; split_hyp; auto.
+
+      apply join_symmetry in K1.
+
+      have : joins G D a'' b''.
+      have : joins G D a'' b.
+      eauto using join_transitive.
+      eauto using join_transitive.
+      simpl.
+      unfold joins.
+      intros.
+      destruct x; split_hyp.
+      exists x; tauto.
+    + move : (multipar_prop_eq H2) => [a' [b' [A' EQ]]]; subst.
+      move : (multipar_prop_eq_rev H3) => [a'' [b'' [A'' EQ]]]; subst.
+      move : (multipar_prop_eq_proj1 H2)
+               (multipar_prop_eq_proj2 H2)
+               (multipar_prop_eq_proj1 H3)
+               (multipar_prop_eq_proj2 H3)
+           => h0 h1 h3 h4.
+      erased_inversion.
+      have K0 : joins G D a b.
+      simpl in *.
+      destruct H4.
+      split_hyp.
+      apply join_transitive with (b := a''); auto.
+      exists a'; repeat split; auto.
+
+      apply join_transitive with (b := b''); auto.
+      exists x; repeat split; auto.
+      exists b'; repeat split;  auto.
+
+      destruct K0.
+      exists x.
+      tauto.
+  - intros.
+    move : H1 => [phi3 h]; split_hyp.
+    move : (multipar_prop_impl H4) => [phi4 [phi5 EQ]]; subst.
+    move : (multipar_prop_impl_rev H5) => [phi6 [phi7 EQ]]; subst.
+    erased_inversion.
+    simpl in *.
+    move : (multipar_prop_impl_proj1 H4) (multipar_prop_impl_proj2 H4)
+           (multipar_prop_impl_proj1 H5) (multipar_prop_impl_proj2 H5)
+         => h0 h1 h2 h3.
+    simpl.
+
+    have : joins_constraint G D phi1 phi6.
+    exists phi4; repeat split; tauto.
+    have : joins_constraint G D phi2 phi7.
+    exists phi5; repeat split; tauto.
+    move => P2 P1.
+    move : (H _ P1) (H0 _ P2).
+    tauto.
+Qed.    
+    
+
+  
+
 
 Lemma consistent_mutual:
   (forall S a A,   Typing S a A -> True) /\
@@ -2582,26 +2753,14 @@ Ltac multipar_subst_open x :=
     destruct IHDefEq as [Ac h0]; eauto.
     split_hyp.
     move : (multipar_CPi H eq_refl) => [phi3 [C2 EQ]]; subst.
-
+    apply multipar_CPi_B_proj in H.
+    apply multipar_CPi_B_proj in H1.
+    move : H1 H => [L1 H3] [L2 H4].
     inversion GOOD.
     pick_fresh c.
+    exists (open_tm_wrt_co C2 g_Triv).
     simpl in *.
-    (* have: c `notin` L; auto => h. *)
-    (* have: c `notin` L0; auto => h0. *)
     repeat split; eauto 1.
-    + Ltac erased_open_tm_wrt_co c B1 :=
-        let K:= fresh in
-        match goal with
-        [ h : c `notin` ?L, H11 :  ∀ c : atom, c `notin` ?L → erased_tm (open_tm_wrt_co B1 (g_Var_f c)) |- _ ] =>
-        pose K := subst_co_erased c lc_g_Triv (H11 c h);
-        clearbody K;
-        repeat rewrite co_subst_co_tm_open_tm_wrt_co in K; auto;
-        simpl in K;
-        destruct eq_dec; try congruence;
-        rewrite co_subst_co_tm_fresh_eq in K; auto
-        end.
-      erased_open_tm_wrt_co c B1.
-    + erased_open_tm_wrt_co c B2.
     + Ltac multipar_open_tm_wrt_co c B1 :=
         let K:= fresh in
         let h1:= fresh in
@@ -2619,16 +2778,13 @@ Ltac multipar_subst_open x :=
         end.
       multipar_open_tm_wrt_co c B1.
     + multipar_open_tm_wrt_co c B2.
-  - intros G D A' B' a' A B a d H i H0 H1.
-    destruct (H0 H1 A B a A' B' a'); auto.
+  - move => G D phi2 phi1 d H i H0 H1.
+    move: (H0 H1) => h1.
     move: (H H1) => h0.
     split_hyp.
-    have h1 : joins G D A' B; eauto.
-    apply join_transitive with (b := A); eauto.
-    apply join_symmetry; auto.
-    apply join_transitive with (b := B); eauto.
+    apply joins_constraint_iff in h1; auto.
   - intros G D A A' a b a' b' i H H0.
-    destruct (H H0 a b A a' b' A'); auto.
+    destruct (H H0); split_hyp; auto.
     destruct H2; auto.
     Unshelve. all: auto.
   - intros.
