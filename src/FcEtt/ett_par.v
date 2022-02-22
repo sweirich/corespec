@@ -1286,6 +1286,21 @@ Proof.
   apply Par_tm_constraint_mutual; intros; eauto.
 Qed.
 
+Lemma context_Par_irrelevance_tm: forall G1 D1 a a',
+                                             Par G1 D1 a a' -> forall G2 D2, Par G2 D2 a a'.
+Proof.
+  apply context_Par_irrelevance.
+Qed.
+
+
+Lemma context_multipar_irrelevance: forall G1 D1 a a', multipar G1 D1 a a' -> forall G2 D2, multipar G2 D2 a a'.
+Proof.
+  induction 1; eauto.
+  intros.
+  apply mp_step with (b := b); auto.
+  eapply context_Par_irrelevance; eauto.
+Qed.
+
 
 Lemma multipar_context_independent: forall G1 G2 D A B,  multipar G1 D A B -> multipar G2 D A B.
 Proof.
