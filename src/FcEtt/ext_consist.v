@@ -2847,9 +2847,25 @@ Ltac multipar_subst_open x :=
 Qed.
 
 
-Lemma consistent_defeq: forall S D A B T,   DefEq S D A B T -> Good S D -> joins S D A B.
+Lemma consistent_defeq_phi: forall S D phi,   DefEq S D phi -> Good S D -> interp_constraint S D phi.
 Proof.
   apply consistent_mutual.
+Qed.
+
+Lemma consistent_defeq: forall S D A B T,   DefEq S D (Eq A B T) -> Good S D -> joins S D A B.
+Proof.
+  intros.
+  move : (consistent_defeq_phi H) => h1.
+  destruct h1; split_hyp; auto.
+  exists x.
+  have : erased_context S.
+  apply ctx_wff_mutual in H.
+  apply typing_erased_type_mutual.
+  auto.
+  have : erased_tm A /\ erased_tm B.
+  apply typing_erased_type_mutual in H.
+  erased_inversion; auto.
+  tauto.
 Qed.
 
 (* ------------------------------------------------------- *)
