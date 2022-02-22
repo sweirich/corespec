@@ -2783,105 +2783,67 @@ Ltac multipar_subst_open x :=
     move: (H H1) => h0.
     split_hyp.
     apply joins_constraint_iff in h1; auto.
+    tauto.
   - intros G D A A' a b a' b' i H H0.
     destruct (H H0); split_hyp; auto.
-    destruct H2; auto.
     Unshelve. all: auto.
+    move : (multipar_prop_eq H4) => [a'0 [b'0 [A'0 EQ]]]; subst.
+    apply multipar_prop_eq_proj3 in H5.
+    apply multipar_prop_eq_proj3 in H4.
+    exists A'0; repeat split; auto.
   - intros.
     inversion H0.
     unfold joins.
     have: Par G D b b. eauto using Typing_lc1. move => Pb.
-    exists b. repeat split; eauto 2 using Typing_erased.
-    + pick fresh x and apply erased_a_Abs.
-      rewrite e; auto. eauto 3 using Typing_erased. eauto.
-    + eapply mp_step with (b := b); eauto.
+    exists b. repeat split; eauto 2 using Typing_erased_tm.
+    eapply mp_step with (b := b); eauto with lc.
+    apply typing_erased_mutual in t; erased_inversion; eauto with lc.
   - intros.
     inversion H0.
     unfold joins.
     have: Par G D b b. eauto using Typing_lc1. move => Pb.
-    exists b. repeat split; eauto 2 using Typing_erased.
-    + pick fresh x and apply erased_a_Abs.
-      rewrite e; auto. eauto 3 using Typing_erased. erewrite e.
-      constructor. simpl. fsetdec. fsetdec.
-    + eapply mp_step with (b := b); eauto.
+    exists b. repeat split; eauto 2 using Typing_erased_tm.
+    eapply mp_step with (b := b); eauto;
+      apply typing_erased_mutual in t; erased_inversion; eauto with lc.
+    apply typing_erased_mutual in t; erased_inversion; eauto with lc.
   - intros.
     inversion H0.
     unfold joins.
     have: Par G D b b. eauto using Typing_lc1. move => Pb.
-    exists b. repeat split; eauto 2 using Typing_erased.
-    + pick fresh x and apply erased_a_CAbs.
-      rewrite e; auto. eauto 3 using Typing_erased.
-    + eapply mp_step with (b := b); eauto.
-
-(* Left/Right
+    exists b. repeat split; eauto 2 using Typing_erased_tm.
+    eapply mp_step with (b := b); eauto.
+    all : apply typing_erased_mutual in t; erased_inversion; eauto with lc.
+  - move => G D phi2 phi1 d1 IH1 d2 IH2 G_Ok.
+    simpl in *.
+    tauto.
   - intros.
-    move: (H3 ltac:(auto)) => [ c hyp ]. split_hyp.
-    match goal with
-      [ H9 : multipar G D (a_App a Rel b) c |- _ ] =>
-      have P : Path T (a_App a Rel b); eauto using Typing_lc1;
-      move: (multipar_Path_consistent H9 P ltac:(eauto with erased)) => Pc;
-      inversion Pc; subst;
-      move: (multipar_Path_consistent_App H9 Pc) => P1 end.
-    match goal with
-      [ H10 : multipar G D (a_App a' Rel b') ?c |- _ ] =>
-      have P' : Path T (a_App a' Rel b'); eauto using Typing_lc1;
-      move: (multipar_Path_consistent H10 P' ltac:(eauto with erased)) => Pc';
-      inversion Pc'; subst;
-        move: (multipar_Path_consistent_App H10 Pc') => P2
-    end.
-    unfold joins.
-    exists b1. repeat split; eauto 2 with erased.
-  - intros.
-    move: (H3 ltac:(auto)) => [ c hyp ]. split_hyp.
-    match goal with
-      [ H9 : multipar G D (a_App a ?r ?b) c |- _ ] =>
-      have P : Path T (a_App a r b); eauto using Typing_lc1;
-      move: (multipar_Path_consistent H9 P ltac:(eauto with erased)) => Pc;
-      inversion Pc; subst;
-      move: (multipar_Path_consistent_App H9 Pc) => P1 end.
-    match goal with
-      [ H10 : multipar G D (a_App a' ?r ?b') ?c |- _ ] =>
-      have P' : Path T (a_App a' r b'); eauto using Typing_lc1;
-      move: (multipar_Path_consistent H10 P' ltac:(eauto with erased)) => Pc';
-      inversion Pc'; subst;
-        move: (multipar_Path_consistent_App H10 Pc') => P2
-    end.
-    unfold joins.
-    exists b1. repeat split; eauto 2 with erased.
-  - intros.
-    move: (H3 ltac:(auto)) => [ c hyp ]. split_hyp.
-    match goal with
-      [ H9 : multipar G D (a_App a ?r ?b) c |- _ ] =>
-      have P : Path T (a_App a r b); eauto using Typing_lc1;
-      move: (multipar_Path_consistent H9 P ltac:(eauto with erased)) => Pc;
-      inversion Pc; subst;
-      move: (multipar_Path_consistent_App2 H9 Pc) => P1 end.
-    match goal with
-      [ H10 : multipar G D (a_App a' ?r ?b') ?c |- _ ] =>
-      have P' : Path T (a_App a' r b'); eauto using Typing_lc1;
-      move: (multipar_Path_consistent H10 P' ltac:(eauto with erased)) => Pc';
-      inversion Pc'; subst;
-        move: (multipar_Path_consistent_App2 H10 Pc') => P2
-    end.
-    unfold joins.
-    exists b2. repeat split; eauto 2 with erased.
-  - intros.
-    move: (H2 ltac:(auto)) => [ c hyp ]. split_hyp.
-    match goal with
-      [ H9 : multipar G D (a_CApp a ?b) c |- _ ] =>
-      have P : Path T (a_CApp a b); eauto using Typing_lc1;
-      move: (multipar_Path_consistent H9 P ltac:(eauto with erased)) => Pc;
-      inversion Pc; subst;
-      move: (multipar_Path_consistent_CApp H9 Pc) => P1 end.
-    match goal with
-      [ H10 : multipar G D (a_CApp a' ?b') ?c |- _ ] =>
-      have P' : Path T (a_CApp a' b'); eauto using Typing_lc1;
-      move: (multipar_Path_consistent H10 P' ltac:(eauto with erased)) => Pc';
-      inversion Pc'; subst;
-        move: (multipar_Path_consistent_CApp H10 Pc') => P2
-    end.
-    unfold joins.
-    exists b1. repeat split; eauto 2 with erased.  *)
+    simpl in *.
+    intros.
+    rewrite interp_constraint_irrel.
+    apply H.
+    unfold Good in *.
+    split_hyp.
+    split.
+    + apply ctx_wff_mutual in d.
+      by apply typing_erased_type_mutual in d.
+    + intros.
+      have : c `notin` dom G.
+      apply ctx_wff_mutual in d.
+      apply Ctx_uniq in d.
+      inversion d; subst.
+      auto.
+      apply binds_cons_1 in H3.
+      destruct H3; split_hyp; subst.
+      * inversion H5; subst.
+        rewrite interp_constraint_irrel.
+        intros; apply H1.
+      * intros.
+        rewrite interp_constraint_irrel.
+        apply (H2 c1); auto.
+        destruct (c1 == c); subst; auto.
+        apply binds_In in H3.
+        fsetdec.
+        fsetdec.
 Qed.
 
 
