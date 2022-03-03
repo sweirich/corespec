@@ -2932,17 +2932,16 @@ Ltac impossible_defeq :=
   let VT := fresh in
   let VT2 := fresh in
   match goal with
-  | [ H : DefEq ?G (dom ?G) ?B ?A ?C |- _ ] =>
+  | [ H : DefEq ?G (dom ?G) (Eq ?B ?A ?C) |- _ ] =>
     pose h0:= H; clearbody h0;
     apply consistent_defeq in h0; eauto;
     [apply join_consistent in h0;
-     destruct (DefEq_lc H) as (l0 & l1 & l2); inversion l0; inversion l1; subst;
+     move : (DefEq_lc H) => h1; lc_inversion 1 ; subst;
      have VT: value_type A; eauto;
      have VT2 : value_type B; eauto;
      inversion h0; subst; (* try impossible_Path; *)
      eauto; try done | eapply irrelevant_Good; eauto]
   end.
-
 
 Lemma canonical_forms_Star : forall G a, irrelevant G (dom G) a ->
     Typing G a a_Star -> Value a -> value_type a.
@@ -2964,7 +2963,7 @@ Qed.
 
 
 
-Lemma DefEq_Star: forall A G D, Good G D -> value_type A -> DefEq G D A a_Star a_Star -> A = a_Star.
+Lemma DefEq_Star: forall A G D, Good G D -> value_type A -> DefEq G D (Eq A a_Star a_Star) -> A = a_Star.
 Proof.
   intros A G D Good H0 H.
   apply consistent_defeq in H; eauto.
@@ -3091,7 +3090,7 @@ Lemma progress : forall G a A, Typing G a A ->
          simpl.
          fsetdec.
       ++ eauto.
-      ++ simpl. eapply Good_add_tm_2; eauto using Typing_erased. }
+      ++ simpl. eapply Good_add_tm_2; eauto using Typing_erased_tm. }
       -- left.
          eapply Value_UAbsIrrel_exists with (x := x); eauto.
       -- right. exists (a_UAbs Irrel (close_tm_wrt_tm x a')).
@@ -3153,6 +3152,8 @@ Lemma progress : forall G a A, Typing G a A ->
       destruct H1 as [a' h0].
       right.
       exists (a_CApp a' g_Triv); eauto.
+      (* what is this? *)
+      Unshelve. eauto.
 Qed.
 
 
