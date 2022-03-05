@@ -30,6 +30,20 @@ indexvar index, i ::=
 
 grammar
 
+grade, psi {{ tex \ell }} :: 'q_' ::=   {{ coq grade }}
+  | RTime                         :: M :: R  {{ tex { \color{black}{R} } }} {{ coq q_R }}
+  | CTime                         :: M :: C  {{ tex { \color{black}{C} } }} {{ coq q_C }}
+  | High                          :: M :: H  {{ tex { \color{black}{H} } }} {{ coq q_H }}
+  | Middle                        :: M :: M  {{ tex { \color{black}{M} } }} {{ coq q_M }}
+  | Low                           :: M :: L  {{ tex { \color{black}{L} } }} {{ coq q_L }}
+  | top                           :: M :: Top {{ tex { \color{black}{\top} } }} {{ coq q_Top }}
+  | bot                           :: M :: Bot {{ tex { \color{black}{\bot} } }} {{ coq q_Bot }}
+  | psi1 \/ psi2                  :: M :: Join {{ tex [[psi1]] \vee [[psi2]] }} {{ coq (q_join [[psi1]] [[psi2]]) }}
+  | psi1 /\ psi2                  :: M :: Meet {{ tex [[psi1]] \wedge [[psi2]] }} {{ coq (q_meet [[psi1]] [[psi2]]) }}
+  | ( psi )                       :: M :: paren {{ tex [[ psi ]] }} 
+                                                {{ coq ([[psi]]) }}
+
+
 relflag, rho {{ tex \rho }} :: '' ::= {{ com relevance flag }}
    | +             ::   :: Rel
    | -             ::   :: Irrel
