@@ -357,8 +357,8 @@ formula :: 'formula_' ::=
   | x : psi A in G               ::   :: inG
     {{ coq binds [[x]] ([[psi]], (Tm [[A]])) [[G]] }}
 
-  | c : phi  in G         ::   :: inGP
-    {{ coq binds [[c]] ([[phi]], (Co [[phi]])) [[G]] }}
+  | c : psi phi  in G         ::   :: inGP
+    {{ coq binds [[c]] ([[psi]], (Co [[phi]])) [[G]] }}
 
   | T : A in S             ::   :: inGF
     {{ coq binds [[T]] (Cs [[A]]) [[S]] }}
@@ -1028,7 +1028,8 @@ G, c: psi0 \/ psi phi |= psi a : B
 ------------------------------------------------- :: CAbs
 G |= psi /\ psi0 c . a : all c:psi0 phi. B
 
-G |= psi a1 : all c : psi0 phi . B1
+% YL: by default, we have [o] as T
+G |= psi a1 : all c : top phi . B1
 CTime /\ G |= CTime phi
 ------------------------------------------- :: CApp
 G |= psi a1 [ o ] : B1 { o / c }
@@ -1067,19 +1068,22 @@ G |= psi phi1 ==> phi3 == phi2 ==> phi4
 
 
 defn
- P |- psi phi a == b :: :: CDefEq :: 'CDefEq_' {{ com UnTyped Definitional Equality }}
- {{ tex [[ P ]] \vdash [[ a ]] \equiv_{[[ psi ]]} [[ b ]]  }}
-
+ G |= psi psi0 a ~ b : A :: :: CDefEq :: 'CDefEq_' {{ com Definitional Equality }}
+ {{ tex [[ G ]] \vdash [[ a ]] \equiv_{[[ psi ]]} [[ b ]]  }}
 by
-   phi0 <= phi
-   P |- phi a == b 
+   psi0 <= psi
+   G |= psi a ~ b : A
   --------------------- :: Leq 
-   P |- phi phi0 a == b
+   G |= psi psi0 a ~ b : A
 
-   not (phi0 <= phi)
-   uniq P
+
+   not (psi0 <= psi)
+   |= G
+   % YL: would reject phantom x ~C,+ phantom 0 if no resurrection
+   CTime /\ G |= CTime a : A
+   CTime /\ G |= CTime b : A
   --------------------- :: Nleq 
-   P |- phi phi0 a == b
+   G |= psi psi0 a ~ b : A
 
 
 
@@ -1089,9 +1093,10 @@ G |= psi phi ::     :: DefEq :: 'E_'
 {{ com definitional equality }}
 by
 
-|= psi G
+% labeled well-formedness judgment?
+|= G
 psi0 <= psi
-c: psi0 phi in G
+c : psi0 phi in G
 -------------------- :: Assn
 G |= psi phi
 
@@ -1119,112 +1124,116 @@ G |= psi a1 ~ a2 : B
 %% Rules related to functions
 
 G |=  psi A1 ~ A2 : TYPE
-G, x: psi0 A1 |= B1 ~ B2 : TYPE
+G, x: psi A1 |= psi B1 ~ B2 : TYPE
 %% this needed by weakening IH
-[G |= psi A1 : TYPE]
+[CTime /\ G |= CTime A1 : TYPE]
 %% these two needed by regularity
-[G |= psi all x: psi0 A1 -> B1 : TYPE]
-[G |= psi all x: psi0 A2 -> B2 : TYPE]
+[CTime /\ G |= CTime all x: psi0 A1 -> B1 : TYPE]
+[CTime /\ G |= CTime all x: psi0 A2 -> B2 : TYPE]
 ---------------------------------------------------------- :: PiCong
 G |= psi (all x: psi0 A1 -> B1) ~ (all x: psi0 A2 -> B2) : TYPE
 
 
-G, x: psi0 A1 |= b1 ~ b2 : B
+G, x: psi0 \/ psi A1 |= psi b1 ~ b2 : B
 % YL: ok?
 [ CTime /\ G |= CTime A1 : TYPE ]
 % rho => check x in b1
 % rho => check x in b2
 -------------------------------------------------------------- :: AbsCong
-G |=  (\psi0 x. b1) ~ (\psi0 x. b2) : all x: psi0 A1 -> B
+G |= psi (\psi0 x. b1) ~ (\psi0 x. b2) : all x: psi0 A1 -> B
 
-G |= psi a1 ~ b1 : all + x:A -> B
-% YL: FIX THIS
-G |= psi a2 ~ b2 : A
+G |= psi a1 ~ b1 : all x: psi0 A -> B
+G |= psi psi0 a2 ~ b2 : A
 -------------------------------------- :: AppCong
 G |= psi a1 psi0 a2 ~ b1 psi0 b2 : ( B { a2 / x } )
 
 
-G |= a1 ~ b1 : all - x:A -> B
-G |= a : A
------------------------------------------- :: IAppCong
-G |= a1 - [] ~ b1 - [] : ( B { a / x } )
+% G |= a1 ~ b1 : all - x:A -> B
+% G |= a : A
+% ------------------------------------------ :: IAppCong
+% G |= a1 - [] ~ b1 - [] : ( B { a / x } )
 
 
-G |= all rho x:A1 -> B1 ~ all rho x:A2 -> B2 : TYPE
+G |= psi all x: psi0 A1 -> B1 ~ all x: psi0 A2 -> B2 : TYPE
 ------------------------------------------------- :: PiFst
-G |=  A1 ~ A2 : TYPE
+G |=  psi A1 ~ A2 : TYPE
 
-G |= all rho x:A1 -> B1 ~ all rho x:A2 -> B2 : TYPE
-G |= a1 ~ a2 : A1
+G |= psi all x: psi0 A1 -> B1 ~ all x: psi0 A2 -> B2 : TYPE
+G |= psi a1 ~ a2 : A1
 ------------------------------------------- :: PiSnd
-G |=  B1 {a1 /x}  ~ B2 {a2/x} : TYPE
+G |=  psi B1 {a1 /x}  ~ B2 {a2/x} : TYPE
 
 %% Rules related to Coercion Abstraction
 
-G |= phi1 == phi2
-G, c: top phi1 |= A ~ B : TYPE
-[G |= phi1 ok]
-[G |= all c:phi1. A : TYPE]
-[G |= all c:phi2. B : TYPE]
+% YL: I think it's okay to use psi instead of CTime
+% joinability still covers propositions
+G |= psi phi1 == phi2
+% not a typo! 
+G, c: psi phi1 |= psi A ~ B : TYPE
+[CTime /\ G |= CTime phi1 ok]
+[CTime /\ G |= CTime all c:psi0 phi1. A : TYPE]
+[CTime /\ G |= CTime all c:psi0 phi2. B : TYPE]
 --------------------------------------------------------- :: CPiCong
-G |= all c:phi1. A  ~ all c:phi2. B : TYPE
+G |= psi all c:psi0 phi1. A  ~ all c:psi0 phi2. B : TYPE
 
-G, c: top phi1 |= a ~ b : B
-[ G |= phi1 ok ]
+G, c: psi0 \/ psi phi1 |= psi a ~ b : B
+[ CTime /\ G |= CTime phi1 ok ]
 ------------------------------------------------------------ :: CAbsCong
-G |=  (/\c . a) ~ (/\ c . b) : all c:phi1. B
+G |= psi (/\psi0 c . a) ~ (/\ psi0 c . b) : all c:psi0 phi1. B
 
-G |= a1 ~ b1 : all c:phi. B
-CTime /\ G |= phi
+% YL: hardwired psi0 to top
+G |= psi a1 ~ b1 : all c: top phi. B
+CTime /\ G |= CTime phi
 -------------------------------------- :: CAppCong
-G |= a1 [o] ~ b1 [o] : B { o / c }
+G |= psi a1 [o] ~ b1 [o] : B { o / c }
 
-G |= all c:phi1. B1 ~ all c:phi2. B2 : TYPE
-CTime /\ G |= phi1
-CTime /\ G |= phi2
+G |= psi all c: psi0 phi1. B1 ~ all c:psi0 phi2. B2 : TYPE
+CTime /\ G |= CTime phi1
+CTime /\ G |= CTime phi2
 ---------------------------------------------- :: CPiSnd
-G |=  B1 { o / c} ~ B2 { o / c } : TYPE
+G |=  psi B1 { o / c} ~ B2 { o / c } : TYPE
 
 %% Other rules
 
-G |= phi1
-G |= phi1 == phi2
+G |= psi phi1
+% YL: have to use psi so joinability still works?
+G |= psi phi1 == phi2
 -------------------------------------- :: Cast
-G |= phi2
+G |= psi phi2
 
-G |= a ~ b : A
-CTime /\ G |= A ~ B : TYPE
+G |= psi a ~ b : A
+CTime /\ G |= psi A ~ B : TYPE
 -------------------------------------- :: EqConv
-G |= a ~ b : B
+G |= psi a ~ b : B
 
-G |= a ~ b : A == a' ~ b' : A'
+G |= psi a ~ b : A == a' ~ b' : A'
 -------------------------------------- :: IsoSnd
-G |= A ~ A' : TYPE
+G |= psi A ~ A' : TYPE
 
-G |= b : all + x:A -> B
-a = b + x
+G |= psi b : all x:psi0 A -> B
+a = b psi x
 ------------------------------------------ :: EtaRel
-G |= \+ x. a ~ b : all + x:A -> B
+G |= psi \psi0 x. a ~ b : all x: psi0 A -> B
 
-G |= b : all - x:A -> B
-a = b - []
------------------------------------------- :: EtaIrrel
-G |= \- x. a ~ b : all - x:A -> B
+% G |= b : all - x:A -> B
+% a = b - []
+% ------------------------------------------ :: EtaIrrel
+% G |= \- x. a ~ b : all - x:A -> B
 
-G |= b : all c:phi. B
+G |= psi b : all c:psi0 phi. B
 a = b [o]
 ------------------------------------------ :: EtaC
-G |= /\c. a ~ b : all c:phi. B
+G |= psi /\psi0 c. a ~ b : all c:psi0 phi. B
 
-G |= phi1 ==> phi2
-G |= phi1
+G |= psi phi1 ==> phi2
+G |= psi phi1
 --------------------------------------------------- :: ImplApp
-G |= phi2
+G |= psi phi2
 
 
-G , c : phi1 ; D , c |= phi2
+G , c : CTime phi1 |= psi phi2
 --------------------------------------------------- :: ImplAbs
-G |= phi1 ==> phi2
+G |= psi phi1 ==> phi2
 
 
 
@@ -1255,6 +1264,9 @@ G |= phi1 ==> phi2
 % G ; D |= a1 == b1 : all c:a ~ b : A. B
 
 
+% YL: should I generalize this to |= psi G?
+% and use |= top G in all leaf derivations?
+% not sure what that would buy us
 defn
 |= G ::    :: Ctx  :: 'E_'
 {{ com context wellformedness }}
@@ -1264,16 +1276,16 @@ by
 |= empty
 
 |= G
-G |= A : TYPE
+G |= top A : TYPE
 x notin dom G
 --------------------- :: ConsTm
-|= G, x : A
+|= G, x : psi A
 
 |= G
-G |= phi ok
+G |= top phi ok
 c notin dom G
 -------------------- :: ConsCo
-|= G, c: phi
+|= G, c: psi phi
 
 defns
 
@@ -1287,9 +1299,10 @@ by
 ------------ :: Empty
 |= emptyS
 
+% is CTime the right level?
 |= S
-empty |= A : TYPE
-empty |= a : A
+empty |= CTime A : TYPE
+empty |= CTime a : A
 F notin dom S
 ---------------- :: ConsAx
 |= S, F ~ a : A
