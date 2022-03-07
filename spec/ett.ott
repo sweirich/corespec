@@ -974,6 +974,7 @@ G |= psi phi1 ==> phi2 ok
 defn
 
 G |= psi a : A ::   :: Typing :: 'E_'
+{{ tex [[G]] \vDash [[a]]:^{[[psi]]} [[A]] }}
 {{ com typing }}
 by
 
