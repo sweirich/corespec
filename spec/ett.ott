@@ -78,13 +78,13 @@ tm, a, b, v, w, A, B :: 'a_' ::= {{ com types and kinds }}
      {{ tex \mathrm{\Pi}[[x]]\!:^{[[psi]]}\![[A]][[->]][[B]] }}
    | a |> g             ::   :: Conv
    | all c : psi phi . B    ::   :: CPi (+ bind c in B +)
-     {{ tex [[all]][[c]]\!:^{[[psi]]}\!.[[B]] }}
+     {{ tex [[all]][[c]]\!:^{[[psi]]}\![[phi]].[[B]] }}
    | /\ psi c : phi . b     ::   :: CAbs (+ bind c in b +)
      {{ tex [[/\]][[c]]^{[[psi]]}\!:\!.[[b]] }}
    | /\ psi c  . b          ::   :: UCAbs (+ bind c in b +)
      {{ tex [[/\]][[c]]^{[[psi]]}.[[b]] }}
    | a [ g ]            ::   :: CApp
-   | []                 ::   :: Bullet
+   % | []                 ::   :: Bullet
 
    %% currently unused but ready for extension
    | K                ::   :: DataCon
@@ -649,8 +649,8 @@ defn
   erased_tm a ::  :: erased_tm :: 'erased_a_'
 by
 
---------- :: Bullet
-erased_tm []
+% --------- :: Bullet
+% erased_tm []
 
 ------------  :: Star
 erased_tm TYPE

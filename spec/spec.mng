@@ -25,7 +25,14 @@
 This document is created directly from the definitions in the file
 {\texttt{ett.ott}}.
 
-\section{System Specification}
+\section{Syntax}
+\ottgrammartabular{
+\otttm\ottinterrule
+\ottcontext\ottafterlastrule
+}
+Note that the bullet constructor (erased irrelevant terms) is no longer needed!
+
+\section{Typing}
 \begin{itemize}
 \item Don't forget the implicit/hidden preconditions!
 \end{itemize}
