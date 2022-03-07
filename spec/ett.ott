@@ -1060,8 +1060,8 @@ G |= psi B1 ~ B2 : A
 G |= psi A1 ~ B1 : A == A2 ~ B2 : A
 
 G |= psi A ~ B : TYPE
-G |= psi A1 ~ A2 : A ok
-G |= psi A1 ~ A2 : B ok
+CTime /\ G |= CTime A1 ~ A2 : A ok
+CTime /\ G |= CTime A1 ~ A2 : B ok
 ----------------------------------------- :: IsoConv
 G |= psi A1 ~ A2 : A == A1 ~ A2 : B
 

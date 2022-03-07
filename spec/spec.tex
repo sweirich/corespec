@@ -38,6 +38,12 @@ Note that the bullet constructor (erased irrelevant terms) is no longer needed!
 \end{itemize}
 \drules[E]{$ \Gamma  \vDash  \ottnt{a} :^{ \ell }  \ottnt{A} $}{Typing}{Star, Var, Pi, Abs, App, Conv, Fam, CPi, CAbs, CApp}
 \drules[E]{$ \Gamma  \vDash  \phi_{{\mathrm{1}}}  \equiv ^{ \ell }  \phi_{{\mathrm{2}}} $}{Prop Equality}{PropCong, IsoConv, CPiFst, ImplCong}
+\begin{itemize}
+\item Should we resurrect the context for prop well-formedness (the ok
+  preconditions)? I think we should, because in the Conv rule of the
+  DDC paper, when converting using the equation $A \sim_C B$, the
+  well-formedness of B ($\vDash B : s$) is done under $\top$.
+\end{itemize}
 \drules[E]{$ \Gamma  \vDash  \phi \texttt{ is}^{ \ell }\texttt{ true} $}{Definitional Equality}{Assn, Refl, Sym, Trans, Beta, PiCong, AbsCong, AppCong, PiFst, PiSnd, CPiCong, CAbsCong, CAppCong, CPiSnd, Cast, EqConv, IsoSnd, EtaRel, EtaC, ImplApp, ImplAbs}
 \begin{itemize}
 \item Should we remove a\_Bullet (irrelevant term) but keep g\_Triv (irrelevant coercion)?
