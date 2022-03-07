@@ -43,7 +43,7 @@ METALIBFILES= $(METALIBLOCATION)/*.v  $(METALIBLOCATION)/Makefile  $(METALIBLOCA
 all: coq
 
 
-spec.pdf: $(OTT_LOC)/$(OTT_SOURCE).ott $(SPEC) $(SPECFILE)
+spec.pdf: $(OTT_LOC)/$(OTT_SOURCE).ott $(SPEC) $(SPECFILE) $(RULESFILE)
 	ott $(OTTIFLAGS) \
 	    -tex_wrap false -tex_show_meta false -tex_filter $(SPEC) $(SPECFILE)
 	(cd $(OTT_LOC); pdflatex -interaction nonstopmode spec.tex)

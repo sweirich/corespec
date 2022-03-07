@@ -31,9 +31,8 @@ This document is created directly from the definitions in the file
 
 \subsection{Definitional equality}
 
-
 \subsection{Type System}
-
+\drules[E]{$[[G |= psi a : A]]$}{Typing}{Star, Var}
 
 
 
