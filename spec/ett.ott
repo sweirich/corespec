@@ -67,22 +67,22 @@ tm, a, b, v, w, A, B :: 'a_' ::= {{ com types and kinds }}
      {{ tex \star }}
    | x                  ::   :: Var
    | \ psi x : A . b    ::   :: Abs (+ bind x in b +)
-     {{ tex \mathrm{\lambda}[[x]]\!:^[[psi]]\![[A]].[[b]] }}
+     {{ tex \mathrm{\lambda}[[x]]\!:^{[[psi]]}\![[A]].[[b]] }}
    | \ psi x . b        ::   :: UAbs (+ bind x in b +)
-     {{ tex \mathrm{\lambda}[[x]]^[[psi]].[[b]] }}
+     {{ tex \mathrm{\lambda}[[x]]^{[[psi]]}.[[b]] }}
    | a psi b            ::   :: App
      {{ tex [[a]]\ [[b]]^{[[psi]]}  }}
    | F                  ::   :: Fam
    | T                  ::   :: Const
    | all x : psi A -> B ::   :: Pi (+ bind x in B +)
-     {{ tex \mathrm{\Pi}[[x]]\!:^[[psi]]\![[A]][[->]][[B]] }}
+     {{ tex \mathrm{\Pi}[[x]]\!:^{[[psi]]}\![[A]][[->]][[B]] }}
    | a |> g             ::   :: Conv
    | all c : psi phi . B    ::   :: CPi (+ bind c in B +)
-     {{ tex [[all]][[c]]\!:\![[psi]].[[B]] }}
+     {{ tex [[all]][[c]]\!:^{[[psi]]}\!.[[B]] }}
    | /\ psi c : phi . b     ::   :: CAbs (+ bind c in b +)
-     {{ tex [[/\]][[c]]^[[psi]]\!:\!.[[b]] }}
+     {{ tex [[/\]][[c]]^{[[psi]]}\!:\!.[[b]] }}
    | /\ psi c  . b          ::   :: UCAbs (+ bind c in b +)
-     {{ tex [[/\]][[c]]^[[psi]].[[b]] }}
+     {{ tex [[/\]][[c]]^{[[psi]]}.[[b]] }}
    | a [ g ]            ::   :: CApp
    | []                 ::   :: Bullet
 
@@ -270,6 +270,7 @@ context, G {{ tex \Gamma }} :: 'ctx_' ::= {{ com contexts }}
    | ( G )           :: M  :: Paren   {{ coq ([[G]]) }}
    | (# G #)         :: M  :: SecretParen {{ coq [[G]] }} {{ tex [[G]] }}
    | psi /\ G        :: M  :: Meet_l      {{ coq (meet_ctx_l [[psi]] [[G]]) }}
+                                          {{ tex [[psi]] \wedge [[G]] }}
 
 % available_props, D {{ tex \Delta }} :: 'D_' ::= {{ coq atoms }} {{ coq-universe Type }}
 %    | emptyD          ::    :: Empty   {{ coq AtomSetImpl.empty }} {{ tex \varnothing }}
@@ -320,7 +321,7 @@ terminals :: 'terminals_' ::=
   | all               ::   :: forall     {{ tex \forall }}
   | in                ::   :: in         {{ tex \in }}
   | notin             ::   :: notin      {{ tex \not\in }}
-  | <=                ::   :: check      {{ tex \Leftarrow }}
+  | <=                ::   :: leq      {{ tex \leq }}
   | =>                ::   :: infer      {{ tex \Rightarrow }}
   | =>*               ::   :: minfer      {{ tex \Rightarrow^{\ast} }}
   | ->                ::   :: arrow      {{ tex \to }}
@@ -1095,6 +1096,7 @@ by
 defn
 
 G |= psi phi ::     :: DefEq :: 'E_'
+{{ tex [[G]] \vDash [[phi]]\texttt{ is}^{[[psi]]}\texttt{ true} }}
 {{ com definitional equality }}
 by
 
