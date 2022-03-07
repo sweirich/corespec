@@ -28,12 +28,32 @@ COQMKFILENAME=CoqSrc.mk
 VFILES   = $(foreach i, $(FILES), $(i).v)
 VOFILES  = $(foreach i, $(FILES), $(i).vo)
 INCFLAGS = $(foreach i, $(INCDIRS), -I $(i))
+SPEC = $(OTT_LOC)/spec.mng
+SPECFILE = $(OTT_LOC)/spec.tex
+OTTFILES   = $(foreach i, $(OTT_SOURCE), $(OTT_LOC)/$(i).ott)
+OTTIFLAGS  = $(foreach i, $(OTT_SOURCE), -i $(OTT_LOC)/$(i).ott) -merge true
+RULESFILE = $(OTT_LOC)/ett-rules.tex 
+
+
 
 .SECONDARY: $(VFILES)
 
 METALIBFILES= $(METALIBLOCATION)/*.v  $(METALIBLOCATION)/Makefile  $(METALIBLOCATION)/README.txt
 
 all: coq
+
+
+spec.pdf: $(OTT_LOC)/$(OTT_SOURCE).ott $(SPEC) $(SPECFILE)
+	ott $(OTTIFLAGS) \
+	    -tex_wrap false -tex_show_meta false -tex_filter $(SPEC) $(SPECFILE)
+	(cd $(OTT_LOC); pdflatex -interaction nonstopmode spec.tex)
+
+
+$(RULESFILE) : $(OTTFILES)
+	ott $(OTTIFLAGS) -o $(RULESFILE) \
+	          -tex_wrap false \
+		  -tex_show_meta false
+
 
 quick:  $(COQMKFILENAME)
 	@$(MAKE) -f CoqSrc.mk quick
