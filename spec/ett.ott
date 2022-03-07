@@ -258,8 +258,10 @@ context, G {{ tex \Gamma }} :: 'ctx_' ::= {{ com contexts }}
                                           {{ coq list ( atom * (grade * sort) ) }}
    | empty           ::    :: Empty   {{ coq nil }}
 
-   | G , x : psi A   ::    :: ConsTm  {{ coq (([[x]]~ ([[psi]], Tm [[A]])) ++ [[G]]) }}
+   | G , x : psi A   ::    :: ConsTm  {{ coq (([[x]]~ ([[psi]], Tm [[A]])) ++ [[G]]) }} 
+                                      {{ tex [[x]]\! :^{[[psi]]}\![[A]] }}
    | G , c : psi phi ::    :: ConsCo  {{ coq (([[c]]~ ([[psi]], Co [[phi]])) ++ [[G]]) }}
+                                      {{ tex [[c]]\! :^{[[psi]]}\![[phi]] }}
    | G { b / x }     :: M  :: SubstA  {{ coq (open_context_wrt_tm [[x G]][[b]] }}
    | G { g / c }     :: M  :: SubstG  {{ coq (open_context_wrt_co [[c G]][[g]]  }}
    | G ++ G'         :: M  :: Append  {{ coq ([[G]] ++ [[G']]) }}
@@ -356,9 +358,11 @@ formula :: 'formula_' ::=
   | judgement                ::   :: judgement
   | x : psi A in G               ::   :: inG
     {{ coq binds [[x]] ([[psi]], (Tm [[A]])) [[G]] }}
+    {{ tex [[x]]\! :^{[[psi]]}\![[A]] \in [[G]] }}
 
   | c : psi phi  in G         ::   :: inGP
     {{ coq binds [[c]] ([[psi]], (Co [[phi]])) [[G]] }}
+    {{ tex [[c]]\! :^{[[psi]]}\![[phi]] \in [[G]] }}
 
   | T : A in S             ::   :: inGF
     {{ coq binds [[T]] (Cs [[A]]) [[S]] }}
