@@ -48,6 +48,7 @@ Note that the bullet constructor (erased irrelevant terms) is no longer needed!
 \begin{itemize}
 \item Should we remove a\_Bullet (irrelevant term) but keep g\_Triv (irrelevant coercion)?
 \item Should we keep a single Eta rule?
+\item Is the label of the Abs rule correct? I find the Abs equality rule from the DDC spec a little counterintuitive.
 \end{itemize}
 \drules[E]{$[[|= G]]$}{Context Wellformedness}{Empty, ConsTm, ConsCo}
 \begin{itemize}
