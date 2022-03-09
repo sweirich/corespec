@@ -275,6 +275,8 @@ context, G {{ tex \Gamma }} :: 'ctx_' ::= {{ com contexts }}
 econtext, P {{ tex \Phi }} :: 'ectx_' ::= {{ com erased contexts }}
                                           {{ coq list ( atom * grade ) }}
   | empty             ::  M   :: Empty    {{ coq nil }}
+  | G |               ::  M   :: Erased   {{ tex | [[ G ]] | }}
+                                          {{ coq (labels [[G]]) }}
   | x : psi           ::  M   :: OneTm    {{ tex [[x]] \! : [[ psi ]] }}
                                           {{ coq ([[x]]~[[psi]])}}
   | c : psi           ::  M   :: OneCo    {{ tex [[c]] \! : [[ psi ]] }}
@@ -450,6 +452,9 @@ formula :: 'formula_' ::=
 %% Coq Definitions necessary to specify the semantics
 
 embed {{ coq
+Definition labels : context -> econtext :=
+  map (fun '(u , s) => u).
+
 Definition join_ctx_l (psi : grade) : context -> context :=    
   map (fun '(g, A) => (psi * g, A)).
 
@@ -738,46 +743,81 @@ defns
 
 
 defn
-G |- phi1 => phi2 :: :: ParProp :: 'ParProp_'
-{{ tex \vDash [[phi1]] [[=>]] [[phi2]] }}
-{{ com parallel reduction for props (implicit language) }}
+P |- psi psi0 phi1 => phi2 :: :: CParProp :: 'CParProp_'
+{{ tex [[P]] \vDash_{[[psi]]}^{[[psi0]]} [[phi1]] [[=>]] [[phi2]] }}
+{{ com guarded parallel reduction for props (implicit language) }}
 by
 
-G |- a => a'
-G |- b => b'
-G |- A => A'
------------------------ :: Eq
-G |- a ~ b : A => a' ~ b' : A'
+psi0 <= psi
+P |- psi phi1 => phi2
+----------------------- :: Leq
+P |- psi psi0 phi1 => phi2
 
-G |- phi1 => phi1'
-G |- phi2 => phi2'
------------------------ :: Impl
-G |- phi1 ==> phi2 => phi1' ==> phi2'
+not (psi0 <= psi)
+uniq P
+-------------------------------- :: Nleq
+P |- psi psi0 phi1 => phi2
 
 
 defn
-G |- a => b ::  :: Par :: 'Par_'
-{{ tex \vDash [[a]] [[=>]] [[b]] }}
+P |- psi psi0 a => b :: :: CPar :: 'CPar_'
+{{ tex [[P]] \vDash_{[[psi]]}^{[[psi0]]} [[a]] [[=>]] [[b]] }}
+{{ com guarded parallel reduction (implicit language) }}
+by
+
+psi0 <= psi
+P |- psi a1 => a2
+----------------------- :: Leq
+P |- psi psi0 a1 => a2
+
+not (psi0 <= psi)
+uniq P
+-------------------------------- :: Nleq
+P |- psi psi0 a1 => a2
+
+
+defn
+P |- psi phi1 => phi2 :: :: ParProp :: 'ParProp_'
+{{ tex [[P]] \vDash_{[[psi]]} [[phi1]] [[=>]] [[phi2]] }}
+{{ com parallel reduction for props (implicit language) }}
+by
+
+P |- psi a => a'
+P |- psi b => b'
+P |- psi A => A'
+----------------------- :: Eq
+P |- psi a ~ b : A => a' ~ b' : A'
+
+P |- psi phi1 => phi1'
+P |- psi phi2 => phi2'
+----------------------- :: Impl
+P |- psi phi1 ==> phi2 => phi1' ==> phi2'
+
+
+defn
+P |- psi a => b ::  :: Par :: 'Par_'
+{{ tex [[P]] \vDash_{[[psi]]} [[a]] [[=>]] [[b]] }}
 {{ com parallel reduction (implicit language) }}
 by
 
+P |= psi a
 ----------------------- :: Refl
-G |- a => a
+P |- psi a => a
 
 
-G |- a => (\psi x.a')
-G |- b => b'
+P |- psi a => (\psi x.a')
+P |- psi psi0 b => b'
 ---------------------------- :: Beta
-G |- a psi b => a' { b' / x }
+P |- psi a psi0 b => a' { b' / x }
 
 % G |- a => (\- x.a')
 % ---------------------------- :: BetaIrrel
 % G |- a - [] => a' { [] / x }
 
-G |- a => a'
-G |- b => b'
+P |- psi a => a'
+P |- psi psi0 b => b'
 -------------------------- :: App
-G |- a psi b => a' psi b'
+P |- psi a psi0 b => a' psi0 b'
 
 % YL: Do we need to keep this?
 % G |- a => a'
@@ -786,41 +826,41 @@ G |- a psi b => a' psi b'
 
 
 % What to do with the psi here?
-G |- a => (/\psi c .a')
+P |- psi a => (/\psi0 c .a')
 ----------------------- :: CBeta
-G |- a [o] => a' { o / c }
+P |- psi a [o] => a' { o / c }
 
-G |- a => a'
+P |- psi a => a'
 ----------------------- :: CApp
-G |- a [o] => a' [o]
+P |- psi a [o] => a' [o]
 
-G |- a => a'
+P |- psi a => a'
 -------------------------------- :: Abs
-G |- \ psi x. a => \ psi x. a'
+P |- psi \ psi0 x. a => \ psi0 x. a'
 
-G |- A => A'
-G |- B => B'
+P |- psi A => A'
+P , x:psi |- psi B => B'
 -------------------------------------------- :: Pi
-G |- all x: psi A -> B => all x:psi A' -> B'
+P |- psi all x: psi0 A -> B => all x:psi0 A' -> B'
 
-G |- a => a'
+P |- psi a => a'
 --------------------------- :: CAbs
-G |- /\ psi c . a => /\ psi c . a'
+P |- psi /\ psi0 c . a => /\ psi0 c . a'
 
-G |- a => a'
-G |- phi => phi'
+P |- psi a => a'
+P, c:psi |- psi phi => phi'
 ----------------------------------------- :: CPi
-G |- all c: psi phi. a => all c: psi phi'. a'
+P |- psi all c: psi0 phi. a => all c: psi0 phi'. a'
 
 % NOTE: toplevel is assumed to be locally closed
 F ~ a : A in toplevel
 -------------------------------- :: Axiom
-G |- F => a
+P |- psi F => a
 
-G |- b => b'
-a = b psi x
+P |- psi b => b'
+a = b psi0 x
 ----------------------------- :: Eta
-G |- \psi x. a => b'
+P |- psi \psi0 x. a => b'
 
 
 % G |- b => b'
@@ -828,42 +868,42 @@ G |- \psi x. a => b'
 % ----------------------------- :: EtaIrrel
 % G |- \- x. a => b'
 
-G |- b => b'
+P |- psi b => b'
 a = b [o]
 ----------------------------- :: EtaC
-G |- /\psi c. a => b'
+P |- psi /\top c. a => b'
 
 
 defns
   Jmultipar :: '' ::=
 
 defn
-G |- a =>* b ::   :: multipar :: 'mp_'
-{{ tex [[|-]] [[a]] [[=>*]] [[b]] }}
+P |- psi a =>* b ::   :: multipar :: 'mp_'
+{{ tex [[P]] [[|-]]_{[[psi]]} [[a]] [[=>*]] [[b]] }}
 {{ com multistep parallel reduction }}
 by
 
 ------------------ :: refl
-G |- a =>* a
+P |- psi a =>* a
 
-G |- a => b
-G |- b =>* a'
+P |- psi a => b
+P |- psi b =>* a'
 --------------------- :: step
-G |- a =>* a'
+P |- psi a =>* a'
 
 defn
-G |- phi =>* phi' ::   :: multipar_prop :: 'mpprop_'
-{{ tex [[|-]] [[phi]] [[=>*]] [[phi']] }}
+P |- psi phi =>* phi' ::   :: multipar_prop :: 'mpprop_'
+{{ tex [[P]] [[|-]]_{[[psi]]} [[phi]] [[=>*]] [[phi']] }}
 {{ com multistep parallel reduction for constraints }}
 by
 
 ------------------ :: refl
-G |- phi =>* phi
+P |- psi phi =>* phi
 
-G |- phi1 => phi2
-G |- phi2 =>* phi3
+P |- psi phi1 => phi2
+P |- psi phi2 =>* phi3
 --------------------- :: step
-G |- phi1 =>* phi3
+P |- psi phi1 =>* phi3
 
 
 % defns
@@ -985,7 +1025,7 @@ Jett :: '' ::=
 
 defn
 G |= psi phi ok ::    :: PropWff :: 'E_'
-{{ tex [[G]] \vDash [[phi]] \texttt{ is}^{[[psi]]} \texttt{ ok} }}
+{{ tex [[G]] \vDash_{[[psi]]} [[phi]] ok }}
 {{ com Prop wellformedness }}
 by
 
@@ -1034,10 +1074,19 @@ G |= psi \ psi0 x . a : all x:psi0 A -> B
 % Split into 2
 G |= psi b : all x : psi0 A -> B
 G |= psi0 \/ psi a : A
+psi0 <= CTime
 ------------------------------------- :: App
 G |= psi b psi0 a : B { a / x }
 
-% YL: Keep this rule or not?
+G |= psi b : all x : psi0 A -> B
+CTime /\ G |= CTime a : A
+CTime < psi0
+% not psi0 <= CTime
+------------------------------------- :: AppIrrel
+G |= psi b psi0 a : B { a / x }
+
+
+% YL: replaced by AppIrrel?
 % G |= b : all x : psi A -> B
 % G |= a : A
 % ------------------------------------- :: IApp
@@ -1113,18 +1162,27 @@ by
 
    not (psi0 <= psi)
    |= G
-   % YL: would reject phantom x ~C,+ phantom 0 if no resurrection
-   CTime /\ G |= CTime a : A
-   CTime /\ G |= CTime b : A
+   psi0 <= CTime
+   G |= psi0 \/ psi a : A
+   G |= psi0 \/ psi b : A
   --------------------- :: Nleq 
    G |= psi psi0 a ~ b : A
+
+   not (psi0 <= psi)
+   |= G
+   CTime < psi0
+   CTime /\ G |= CTime a : A
+   CTime /\ G |= CTime b : A
+  --------------------- :: NleqIrrel
+   G |= psi psi0 a ~ b : A
+
 
 
 
 defn
 
 G |= psi phi ::     :: DefEq :: 'E_'
-{{ tex [[G]] \vDash [[phi]]\texttt{ is}^{[[psi]]}\texttt{ true} }}
+{{ tex [[G]] \vDash_{[[psi]]} [[phi]] }}
 {{ com definitional equality }}
 by
 
@@ -1177,16 +1235,11 @@ G, x: psi0 \/ psi A1 |= psi b1 ~ b2 : B
 -------------------------------------------------------------- :: AbsCong
 G |= psi (\psi0 x. b1) ~ (\psi0 x. b2) : all x: psi0 A1 -> B
 
+% YL: AppIrrel is handled in the guarded version of defeq
 G |= psi a1 ~ b1 : all x: psi0 A -> B
 G |= psi psi0 a2 ~ b2 : A
 -------------------------------------- :: AppCong
 G |= psi a1 psi0 a2 ~ b1 psi0 b2 : ( B { a2 / x } )
-
-
-% G |= a1 ~ b1 : all - x:A -> B
-% G |= a : A
-% ------------------------------------------ :: IAppCong
-% G |= a1 - [] ~ b1 - [] : ( B { a / x } )
 
 
 G |= psi all x: psi0 A1 -> B1 ~ all x: psi0 A2 -> B2 : TYPE
@@ -1231,7 +1284,6 @@ G |=  psi B1 { o / c} ~ B2 { o / c } : TYPE
 %% Other rules
 
 G |= psi phi1
-% YL: have to use psi so joinability still works?
 G |= psi phi1 == phi2
 -------------------------------------- :: Cast
 G |= psi phi2
@@ -1246,7 +1298,7 @@ G |= psi a ~ b : A == a' ~ b' : A'
 G |= psi A ~ A' : TYPE
 
 G |= psi b : all x:psi0 A -> B
-a = b psi x
+a = b psi0 x
 ------------------------------------------ :: EtaRel
 G |= psi \psi0 x. a ~ b : all x: psi0 A -> B
 
@@ -1255,10 +1307,10 @@ G |= psi \psi0 x. a ~ b : all x: psi0 A -> B
 % ------------------------------------------ :: EtaIrrel
 % G |= \- x. a ~ b : all - x:A -> B
 
-G |= psi b : all c:psi0 phi. B
+G |= psi b : all c:top phi. B
 a = b [o]
 ------------------------------------------ :: EtaC
-G |= psi /\psi0 c. a ~ b : all c:psi0 phi. B
+G |= psi /\top c. a ~ b : all c:top phi. B
 
 G |= psi phi1 ==> phi2
 G |= psi phi1

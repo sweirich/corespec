@@ -32,11 +32,16 @@ This document is created directly from the definitions in the file
 }
 Note that the bullet constructor (erased irrelevant terms) is no longer needed!
 
+\section{Grade}
+\drules[CoGEq]{$ \Phi  \vDash  \phi_{{\mathrm{1}}}  \sim_{ \ell }  \phi_{{\mathrm{2}}} $}{Graded Equality for Coercions}{Eq, Impl}
+\drules[CEq]{$ \Phi  \vDash^{ \ell_{{\mathrm{0}}} }_{ \ell }  \ottnt{a}  \sim  \ottnt{b} $}{Guarded Graded Equality}{Leq, Nleq}
+\drules[GEq]{$ \Phi  \vDash  \ottnt{a}  \sim_{ \ell }  \ottnt{b} $}{Graded Equality}{Var, Type, Pi, Abs, App, CPi, CAbs, CApp}
+
 \section{Typing}
 \begin{itemize}
 \item Don't forget the implicit/hidden preconditions!
 \end{itemize}
-\drules[E]{$ \Gamma  \vDash  \ottnt{a} :^{ \ell }  \ottnt{A} $}{Typing}{Star, Var, Pi, Abs, App, Conv, Fam, CPi, CAbs, CApp}
+\drules[E]{$ \Gamma  \vDash  \ottnt{a} :^{ \ell }  \ottnt{A} $}{Typing}{Star, Var, Pi, Abs, App, AppIrrel, Conv, Fam, CPi, CAbs, CApp}
 \drules[E]{$ \Gamma  \vDash  \phi_{{\mathrm{1}}}  \equiv ^{ \ell }  \phi_{{\mathrm{2}}} $}{Prop Equality}{PropCong, IsoConv, CPiFst, ImplCong}
 \begin{itemize}
 \item Should we resurrect the context for prop well-formedness (the ok
@@ -44,7 +49,8 @@ Note that the bullet constructor (erased irrelevant terms) is no longer needed!
   DDC paper, when converting using the equation $A \sim_C B$, the
   well-formedness of B ($\vDash B : s$) is done under $\top$.
 \end{itemize}
-\drules[E]{$ \Gamma  \vDash  \phi \texttt{ is}^{ \ell }\texttt{ true} $}{Definitional Equality}{Assn, Refl, Sym, Trans, Beta, PiCong, AbsCong, AppCong, PiFst, PiSnd, CPiCong, CAbsCong, CAppCong, CPiSnd, Cast, EqConv, IsoSnd, EtaRel, EtaC, ImplApp, ImplAbs}
+\drules[CDefEq]{$ \Gamma  \vdash  \ottnt{a}  \equiv_{ \ell }  \ottnt{b} $}{Guarded Definitional Equality}{Leq, Nleq, NleqIrrel}
+\drules[E]{$ \Gamma  \vDash_{ \ell }  \phi $}{Definitional Equality}{Assn, Refl, Sym, Trans, Beta, PiCong, AbsCong, AppCong, PiFst, PiSnd, CPiCong, CAbsCong, CAppCong, CPiSnd, Cast, EqConv, IsoSnd, EtaRel, EtaC, ImplApp, ImplAbs}
 \begin{itemize}
 \item Should we remove a\_Bullet (irrelevant term) but keep g\_Triv (irrelevant coercion)?
 \item Should we keep a single Eta rule?
@@ -54,7 +60,7 @@ Note that the bullet constructor (erased irrelevant terms) is no longer needed!
 \begin{itemize}
 \item Should the well-formedness judgment be parameterized by grades?
 \end{itemize}
-\drules[E]{$ \Gamma  \vDash  \phi  \texttt{ is}^{ \ell } \texttt{ ok} $}{Prop Wellformedness}{WffEq,WffImpl}
+\drules[E]{$ \Gamma  \vDash_{ \ell }  \phi  ok $}{Prop Wellformedness}{WffEq,WffImpl}
 
 
 \end{document}
