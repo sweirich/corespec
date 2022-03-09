@@ -1375,6 +1375,25 @@ defns
    JGrade :: '' ::= 
 
 defn
+ P |= psi phi :: :: CoGrade :: 'CoG_' {{ com Guarded Grade for coercions }}
+ {{ tex [[ P ]] \vDash_{[[psi]]} [[ phi ]]   }}
+by
+
+P |= psi a
+P |= psi b
+P |= psi A
+--------------------- :: Eq
+P |= psi a ~ b : A
+
+
+P |= psi phi1
+P |= psi phi2
+--------------------- :: Impl
+P |= psi phi1 ==> phi2
+
+
+
+defn
  P |= psi psi0 a :: :: CGrade :: 'CG_' {{ com Guarded Grade }}
  {{ tex [[ P ]] \vdash_{[[ psi ]]}^{[[psi0]]} [[ a ]]  }}
 
@@ -1399,23 +1418,21 @@ defn
 by
 
 uniq P
------------------ :: Type
-P |= psi TYPE
-
-uniq P
-psi0 <= psi
 x : psi0 in P
+psi0 <= psi
 ------------------ :: Var
 P |= psi x
 
+uniq P
+----------------- :: Type
+P |= psi TYPE
 
+P |= psi A
 P, x:psi |= psi B
-[ P |= psi A]
 ------------------ :: Pi
 P |= psi all x : psi0 A -> B
 
 P, x :psi0 |= psi b
-% P |= psi top A
 ------------------------------------------ :: Abs
 P |= psi \ psi0 x . b 
 
@@ -1423,6 +1440,19 @@ P |= psi b
 P |= psi psi0 a 
 ------------------------------------------- :: App
 P |= psi b psi0 a 
+
+P |= psi phi
+P , c : psi |= psi B
+------------------------------------------------- :: CPi
+P |= psi all c :psi0 phi . B
+
+P , c : psi0 |= psi b
+------------------------------------- :: CAbs
+P |= psi /\ psi0 c . b
+
+P |= psi b
+-------------------------------- :: CApp
+P |= psi b [ o ]
 
 
 % TODO: figure out how GEq is defined
@@ -1433,6 +1463,26 @@ P |= psi b psi0 a
 
 defns
    JGEq :: '' ::=
+
+% TODO: add CoCEq in the future
+
+defn
+ P |= psi phi1 ~~ phi2 :: :: CoGEq :: 'CoGEq_' {{ com Syntactic Graded Equality for coercions }}
+ {{ tex [[ P ]] \vDash [[ phi1 ]] \sim_{[[ psi ]]} [[ phi2 ]]  }}
+by
+
+P |= psi a ~~ a'
+P |= psi b ~~ b'
+P |= psi A ~~ A'
+--------------------- :: Eq
+P |= psi a ~ b : A ~~ a' ~ b' : A'
+
+
+P |= psi phi1 ~~ phi2
+P |= psi phi3 ~~ phi4
+--------------------- :: Impl
+P |= psi phi1 ==> phi3 ~~ phi2 ==> phi4
+
 
 defn 
 P |= psi psi0 a ~~ b ::  :: CEq :: 'CEq_' {{ com Syntactic equality at [[psi]] is guarded by [[psi0]] }}
@@ -1471,7 +1521,6 @@ P , x : psi |= psi B1 ~~ B2
 P |= psi all x :psi0 A1 -> B1 ~~ all x :psi0 A2 -> B2
 
 P , x : psi0 |= psi b1 ~~ b2
-P |= psi top A1 ~~ A2
 ------------------------------------- :: Abs
 P |= psi \ psi0 x  . b1 ~~ \ psi0 x . b2
 
@@ -1485,6 +1534,17 @@ P |= psi phi1 ~~ phi2
 P , c : psi |= psi B1 ~~ B2
 ------------------------------------------------- :: CPi
 P |= psi all c :psi0 phi1 . B1 ~~ all c :psi0 phi2 . B2
+
+P , c : psi0 |= psi b1 ~~ b2
+------------------------------------- :: CAbs
+P |= psi /\ psi0 c . b1 ~~ /\ psi0 c . b2
+
+P |= psi b1 ~~ b2
+-------------------------------- :: CApp
+P |= psi b1 [ o ] ~~ b2 [ o ]
+
+
+
 
 defns
 
