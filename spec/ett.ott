@@ -272,6 +272,20 @@ context, G {{ tex \Gamma }} :: 'ctx_' ::= {{ com contexts }}
    | psi /\ G        :: M  :: Meet_l      {{ coq (meet_ctx_l [[psi]] [[G]]) }}
                                           {{ tex [[psi]] \wedge [[G]] }}
 
+econtext, P {{ tex \Phi }} :: 'ectx_' ::= {{ com erased contexts }}
+                                          {{ coq list ( atom * grade ) }}
+  | empty             ::  M   :: Empty    {{ coq nil }}
+  | x : psi           ::  M   :: OneTm    {{ tex [[x]] \! : [[ psi ]] }}
+                                          {{ coq ([[x]]~[[psi]])}}
+  | c : psi           ::  M   :: OneCo    {{ tex [[c]] \! : [[ psi ]] }}
+                                          {{ coq ([[c]]~[[psi]])}}
+  | P , x : psi       ::  M   :: ConsTm   {{ coq ([[x]]~ [[psi]]) ++ [[P]] }}
+  | P , c : psi       ::  M   :: ConsCo   {{ coq ([[c]]~ [[psi]]) ++ [[P]] }}
+  | P ++ P'           ::  M   :: Append   {{ tex [[P]] , [[P']] }} {{ coq ([[P']]++[[P]]) }}
+  | (# P #)           ::  M   :: SecretParen {{ tex [[ P ]] }} {{ coq [[P]] }}
+  | ( P )             ::  M   :: Paren {{ tex ([[ P ]]) }} {{ coq ([[P]]) }}
+
+
 % available_props, D {{ tex \Delta }} :: 'D_' ::= {{ coq atoms }} {{ coq-universe Type }}
 %    | emptyD          ::    :: Empty   {{ coq AtomSetImpl.empty }} {{ tex \varnothing }}
 %    | D , c           ::    :: ConsCo  {{ coq (singleton [[c]] \u [[D]]) }}
@@ -357,6 +371,9 @@ terminals :: 'terminals_' ::=
 
 formula :: 'formula_' ::=
   | judgement                ::   :: judgement
+  | x : psi in P               ::   :: inP
+    {{ coq binds [[x]] [[psi]] [[P]] }}
+
   | x : psi A in G               ::   :: inG
     {{ coq binds [[x]] ([[psi]], (Tm [[A]])) [[G]] }}
     {{ tex [[x]]\! :^{[[psi]]}\![[A]] \in [[G]] }}
@@ -386,6 +403,10 @@ formula :: 'formula_' ::=
     {{ coq ~ AtomSetImpl.In [[x]] (dom [[G]]) }}
   | c notin dom G            ::   :: notInGc
     {{ coq ~ AtomSetImpl.In [[c]] (dom [[G]]) }}
+  | x notin dom P            ::   :: notInPx
+    {{ coq ~ AtomSetImpl.In [[x]] (dom [[P]]) }}
+  | c notin dom P            ::   :: notInPc
+    {{ coq ~ AtomSetImpl.In [[c]] (dom [[P]]) }}
   | T notin dom S            ::   :: notInST
     {{ coq ~ AtomSetImpl.In [[T]] (dom [[S]]) }}
   | F notin dom S            ::   :: notInSF
@@ -421,6 +442,9 @@ formula :: 'formula_' ::=
     {{ coq ([[psi1]] <= [[psi2]]) }}
   | psi1 < psi2               ::   :: ltrho
     {{ coq ([[psi1]] < [[psi2]]) }}
+  | uniq P                   ::   :: uniqP
+    {{ coq uniq [[P]] }} {{ tex }}
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Coq Definitions necessary to specify the semantics
@@ -1006,6 +1030,8 @@ G, x:psi0 \/ psi A |= psi a : B
 ---------------------------------- :: Abs
 G |= psi \ psi0 x . a : all x:psi0 A -> B
 
+
+% Split into 2
 G |= psi b : all x : psi0 A -> B
 G |= psi0 \/ psi a : A
 ------------------------------------- :: App
@@ -1295,6 +1321,170 @@ G |= top phi ok
 c notin dom G
 -------------------- :: ConsCo
 |= G, c: psi phi
+
+
+
+defns 
+  Jsub :: '' ::=
+
+defn 
+  P1 <= P2  ::   :: P_sub :: 'P_' {{ com Context sub }}
+by
+
+----------------- :: Empty
+  empty <= empty
+
+  psi1 <= psi2
+  P1 <= P2
+  x notin dom P1
+  x notin dom P2
+---------------------------------- :: Cons
+  P1 , x : psi1 <= P2 , x : psi2
+        
+
+defns 
+  Wsub :: '' ::=
+
+defn 
+  G1 <= G2  ::   :: ctx_sub :: 'CS_' {{ com Context sub }}
+by
+
+----------------- :: Empty
+  empty <= empty
+
+  psi1 <= psi2
+  G1 <= G2
+  x notin dom G1
+  x notin dom G2
+  % why do we need nolc here?
+  nolc A
+------------------------------------ :: ConsTm
+  G1 , x:psi1 A <= G2 , x:psi2 A
+
+  psi1 <= psi2
+  G1 <= G2
+  c notin dom G1
+  c notin dom G2
+  % YL:why do we need nolc here?
+  % nolc A
+------------------------------------ :: ConsCo
+  G1 , c:psi1 phi <= G2 , c:psi2 phi
+
+
+defns 
+   JGrade :: '' ::= 
+
+defn
+ P |= psi psi0 a :: :: CGrade :: 'CG_' {{ com Guarded Grade }}
+ {{ tex [[ P ]] \vdash_{[[ psi ]]}^{[[psi0]]} [[ a ]]  }}
+
+by
+   psi0 <= psi
+   P |= psi a
+  --------------------- :: Leq 
+   P |= psi psi0 a
+
+   not (psi0 <= psi)
+   uniq P
+  --------------------- :: Nleq 
+   P |= psi psi0 a
+
+
+
+
+defn 
+  P |= psi a ::   :: Grade :: 'G_' {{ com Observable variables are bounded by their grades }}
+{{ tex [[P]] \vdash_{[[psi]]} [[a]] }}
+
+by
+
+uniq P
+----------------- :: Type
+P |= psi TYPE
+
+uniq P
+psi0 <= psi
+x : psi0 in P
+------------------ :: Var
+P |= psi x
+
+
+P, x:psi |= psi B
+[ P |= psi A]
+------------------ :: Pi
+P |= psi all x : psi0 A -> B
+
+P, x :psi0 |= psi b
+% P |= psi top A
+------------------------------------------ :: Abs
+P |= psi \ psi0 x . b 
+
+P |= psi b 
+P |= psi psi0 a 
+------------------------------------------- :: App
+P |= psi b psi0 a 
+
+
+% TODO: figure out how GEq is defined
+% [ G |= psi phi ok ]
+% P, c : psi |= psi B : TYPE
+% -------------------------------- :: CPi
+% G |= psi all c:psi0 phi. B : TYPE
+
+defns
+   JGEq :: '' ::=
+
+defn 
+P |= psi psi0 a ~~ b ::  :: CEq :: 'CEq_' {{ com Syntactic equality at [[psi]] is guarded by [[psi0]] }}
+ {{ tex [[ P ]] \vDash^{[[psi0]]}_{[[psi]]} [[ a ]] \sim [[ b ]]  }}
+
+by
+
+psi0 <= psi
+P |= psi a1 ~~ a2
+---------------------- :: Leq
+P |= psi psi0 a1 ~~ a2
+
+not (psi0 <= psi)
+uniq P
+-------------------------------- :: Nleq
+P |= psi psi0 a1 ~~ a2
+
+defn
+ P |= psi a ~~ b :: :: GEq :: 'GEq_' {{ com Syntactic Graded Equality }}
+ {{ tex [[ P ]] \vDash [[ a ]] \sim_{[[ psi ]]} [[ b ]]  }}
+
+by
+uniq P
+x : psi0 in P 
+psi0 <= psi
+------------------------------------------ :: Var
+P |= psi x ~~ x
+
+uniq P
+---------------------------- :: Type
+P |= psi TYPE ~~ TYPE
+
+P |= psi A1 ~~ A2
+P , x : psi |= psi B1 ~~ B2
+------------------------------------------------- :: Pi
+P |= psi all x :psi0 A1 -> B1 ~~ all x :psi0 A2 -> B2
+
+P , x : psi0 |= psi b1 ~~ b2
+P |= psi top A1 ~~ A2
+------------------------------------- :: Abs
+P |= psi \ psi0 x  . b1 ~~ \ psi0 x . b2
+
+
+P |= psi b1 ~~ b2
+P |= psi psi0 a1 ~~ a2
+-------------------------------- :: App
+P |= psi b1 psi0 a1 ~~ b2 psi0 a2
+
+P |= psi phi1 ~~ phi2
+P , c : psi |= psi B1 ~~ B2
+------------------------------------------------- :: CPi
+P |= psi all c :psi0 phi1 . B1 ~~ all c :psi0 phi2 . B2
 
 defns
 
