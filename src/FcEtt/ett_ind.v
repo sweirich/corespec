@@ -317,9 +317,9 @@ Combined Scheme ann_typing_wff_iso_defeq_mutual
 from ann_typing_ind', ann_wff_ind', ann_iso_ind',
      ann_defeq_ind', ann_ctx_ind'.
 
-Scheme CoercedValue_ind' := Induction for CoercedValue Sort Prop
-                            with Value_ind' := Induction for Value Sort Prop.
-Combined Scheme CoercedValue_Value_mutual from CoercedValue_ind', Value_ind'.
+(* Scheme CoercedValue_ind' := Induction for CoercedValue Sort Prop *)
+(*                             with Value_ind' := Induction for Value Sort Prop. *)
+(* Combined Scheme CoercedValue_Value_mutual from CoercedValue_ind', Value_ind'. *)
 
 (* --------------------------------------------------- *)
 
@@ -467,12 +467,12 @@ Ltac rewrite_body :=
     rewrite e; auto
   | [ e : ∀ x : atom, (x `in` ?L → False) →  _ _ (a_Var_f x) = _ _ _ (a_Var_f x) |- _ ] =>
     rewrite e; auto
-  | [ e : ∀ x : atom, (x `in` ?L → False) →  _ _ (a_Var_f x) = _ _ _ (a_Bullet) |- _ ] =>
-    rewrite e; auto
+  (* | [ e : ∀ x : atom, (x `in` ?L → False) →  _ _ (a_Var_f x) = _ _ _ (a_Bullet) |- _ ] => *)
+  (*   rewrite e; auto *)
   | [ e : ∀ x : atom, (x `notin` ?L) →  _ _ (a_Var_f x) = _ _ _ (a_Var_f x) |- _ ] =>
     rewrite e; auto
-  | [ e : ∀ x : atom, (x `notin` ?L) →  _ _ (a_Var_f x) = _ _ _ (a_Bullet) |- _ ] =>
-    rewrite e; auto
+  (* | [ e : ∀ x : atom, (x `notin` ?L) →  _ _ (a_Var_f x) = _ _ _ (a_Bullet) |- _ ] => *)
+  (*   rewrite e; auto *)
   | [ e: ∀ c : atom,
     (c `in` ?L → False) → _ _ (g_Var_f c) = a_CApp _ _ |- _ ] =>
     rewrite e; auto
@@ -592,42 +592,44 @@ Ltac des_bind_cons :=
 
 (* ----------------------------- *)
 
-Lemma rho_swap : forall rho x x0 a,
-    x `notin` fv_tm_tm_tm a ->
-    x0 `notin` fv_tm_tm_tm a ->
-    RhoCheck rho x (open_tm_wrt_tm a (a_Var_f x)) ->
-    RhoCheck rho x0 (open_tm_wrt_tm a (a_Var_f x0)).
-Proof.
-  intros rho x x0 a F1 F2 H0.
-  inversion H0; subst; constructor.
-  +  auto. (* eapply lc_swap with (x0 := x0) (x:= x); auto. *)
-  +  eapply fv_swap with (x:=x); eauto.
-Qed.
+(* TODO: this should now be a property about the well-gradedness *)
+(* Lemma rho_swap : forall rho x x0 a, *)
+(*     x `notin` fv_tm_tm_tm a -> *)
+(*     x0 `notin` fv_tm_tm_tm a -> *)
+(*     RhoCheck rho x (open_tm_wrt_tm a (a_Var_f x)) -> *)
+(*     RhoCheck rho x0 (open_tm_wrt_tm a (a_Var_f x0)). *)
+(* Proof. *)
+(*   intros rho x x0 a F1 F2 H0. *)
+(*   inversion H0; subst; constructor. *)
+(*   +  auto. (* eapply lc_swap with (x0 := x0) (x:= x); auto. *) *)
+(*   +  eapply fv_swap with (x:=x); eauto. *)
+(* Qed. *)
 
-Lemma eta_swap: forall x y a' b rho,
+Lemma eta_swap: forall x y a' b psi0,
     x `notin` fv_tm_tm_tm a' \u fv_tm_tm_tm b ->
-    open_tm_wrt_tm a' (a_Var_f x) = a_App b rho (a_Var_f x) ->
-    open_tm_wrt_tm a' (a_Var_f y) = a_App b rho (a_Var_f y).
+    open_tm_wrt_tm a' (a_Var_f x) = a_App b psi0 (a_Var_f x) ->
+    open_tm_wrt_tm a' (a_Var_f y) = a_App b psi0 (a_Var_f y).
 Proof.
   intros.
   rewrite (tm_subst_tm_tm_intro x); auto.
   rewrite H0.
   simpl.
   rewrite tm_subst_tm_tm_fresh_eq; auto.
-  destruct eq_dec. auto. done.
+  (* Why can't I use destruct (x == x)? *)
+  rewrite eq_dec_refl. reflexivity.
 Qed.
 
-Lemma eta_swap_irrel: forall x y a' b,
-    x `notin` fv_tm_tm_tm a' \u fv_tm_tm_tm b ->
-    open_tm_wrt_tm a' (a_Var_f x) = a_App b Irrel a_Bullet ->
-    open_tm_wrt_tm a' (a_Var_f y) = a_App b Irrel a_Bullet.
-Proof.
-  intros.
-  rewrite (tm_subst_tm_tm_intro x); auto.
-  rewrite H0.
-  simpl.
-  rewrite tm_subst_tm_tm_fresh_eq; auto.
-Qed.
+(* Lemma eta_swap_irrel: forall x y a' b, *)
+(*     x `notin` fv_tm_tm_tm a' \u fv_tm_tm_tm b -> *)
+(*     open_tm_wrt_tm a' (a_Var_f x) = a_App b Irrel a_Bullet -> *)
+(*     open_tm_wrt_tm a' (a_Var_f y) = a_App b Irrel a_Bullet. *)
+(* Proof. *)
+(*   intros. *)
+(*   rewrite (tm_subst_tm_tm_intro x); auto. *)
+(*   rewrite H0. *)
+(*   simpl. *)
+(*   rewrite tm_subst_tm_tm_fresh_eq; auto. *)
+(* Qed. *)
 
 Lemma eta_swap_c: forall x y a' b,
     x `notin` fv_co_co_tm a' \u fv_co_co_tm b ->
@@ -678,37 +680,38 @@ Ltac auto_rew_env :=
 
 
 (* -------------- Pick fresh and apply for judgements with binding ----- *)
-
 Ltac E_pick_fresh x :=
   match goal with
     | [ |- Typing _ ?shape _ ] =>
       let v := match shape with
             | a_Pi _ _ _ => E_Pi
             | a_UAbs _ _ => E_Abs
-            | a_CPi _ _  => E_CPi
-            | a_CAbs _ _ => E_CAbs
-            | a_UCAbs _  => E_CAbs
+            | a_CPi _ _ _  => E_CPi
+            | a_CAbs _ _ _ => E_CAbs
+            | a_UCAbs _ _  => E_CAbs
            end
       in pick fresh x and apply v
-    | [ |- DefEq _ _ ?shape ?s2 _ ] =>
+    | [ |- DefEq _ _ (Eq ?shape ?s2 _)] =>
       let v := match shape with
                | a_Pi _ _ _ => E_PiCong
-               | a_UAbs Rel _ => match s2 with
+               | a_UAbs _ _ => match s2 with
                                 | a_UAbs _ _ => E_AbsCong
                                 | _ => E_EtaRel
                                 end
-               | a_UAbs Irrel _ => match s2 with 
-                                | a_UAbs _ _ =>  E_AbsCong
-                                | _ => E_EtaIrrel
-                                end
-               | a_CPi _ _  => E_CPiCong
-               | a_CAbs _ _ => E_CAbsCong
-               | a_UCAbs _  => match s2 with 
-                                | a_UCAbs _ =>  E_CAbsCong
+               (* | a_UAbs Irrel _ => match s2 with  *)
+               (*                  | a_UAbs _ _ =>  E_AbsCong *)
+               (*                  | _ => E_EtaIrrel *)
+               (*                  end *)
+               | a_CPi _ _ _  => E_CPiCong
+               | a_CAbs _ _ _ => E_CAbsCong
+               | a_UCAbs _ _  => match s2 with 
+                                | a_UCAbs _ _ =>  E_CAbsCong
                                 | _ => E_EtaC
                                 end
                end
       in pick fresh x and apply v
+  | [ |- DefEq _ _ (Impl ?phi1 ?phi2)] =>
+      pick fresh x and apply E_ImplAbs
   end.
 
 Ltac Par_pick_fresh x :=
@@ -716,14 +719,14 @@ Ltac Par_pick_fresh x :=
     | [ |- Par _ _ ?shape ?s2 ] =>
       let v := match shape with
             | a_Pi _ _ _ => Par_Pi
-            | a_UAbs Rel _ =>  match s2 with
+            | a_UAbs _ _ =>  match s2 with
                                 | a_UAbs _ _ => Par_Abs
                                 | _ => Par_Eta
                                 end
-            | a_UAbs Irrel _ =>  match s2 with
-                                | a_UAbs _ _ => Par_Abs
-                                | _ => Par_EtaIrrel
-                                end
+            (* | a_UAbs Irrel _ =>  match s2 with *)
+            (*                     | a_UAbs _ _ => Par_Abs *)
+            (*                     | _ => Par_EtaIrrel *)
+            (*                     end *)
             | a_UAbs _ _ =>  Par_Abs
             | a_CPi _ _  => Par_CPi
             | a_CAbs _ _ => Par_CAbs
@@ -758,13 +761,14 @@ Ltac An_pick_fresh x :=
 
 (* --------------------------------------------------------- *)
 
-Ltac RhoCheck_inversion y :=
-  match goal with
-  | [ K : ∀ x : atom, x `notin` ?L → RhoCheck ?rho x ?b |- _ ] =>
-    move: (K y ltac:(auto)); inversion 1; subst; clear K
-  | [ K : ∀ x : atom, (x `in` ?L -> False) → RhoCheck ?rho x ?b |- _ ] =>
-    move: (K y ltac:(auto)); inversion 1; subst; clear K
-  end.
+(* TODO: rhochecks are now replaced by grades *)
+(* Ltac RhoCheck_inversion y := *)
+(*   match goal with *)
+(*   | [ K : ∀ x : atom, x `notin` ?L → RhoCheck ?rho x ?b |- _ ] => *)
+(*     move: (K y ltac:(auto)); inversion 1; subst; clear K *)
+(*   | [ K : ∀ x : atom, (x `in` ?L -> False) → RhoCheck ?rho x ?b |- _ ] => *)
+(*     move: (K y ltac:(auto)); inversion 1; subst; clear K *)
+(*   end. *)
 
 (* --------------------------------------------------------- *)
 

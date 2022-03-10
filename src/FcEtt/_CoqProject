@@ -34,9 +34,9 @@ fc_weak.v
 fc_wf.v
 fix_typing.v
 fset_facts.v
+grade_sig.v
 imports.v
 main.v
-sigs.v
 tactics.v
 toplevel.v
 utils.v

@@ -33,7 +33,7 @@ Definition fifth :=
 
 (* ------------------------------------- *)
 
-Lemma dom_subst_inv: forall (G: context) (f: sort -> sort), dom G = dom (map f G).
+Lemma dom_subst_inv: forall (G: context) (f: (grade * sort) -> sort), dom G = dom (map f G).
 Proof.
   induction G; eauto.
   intros f.

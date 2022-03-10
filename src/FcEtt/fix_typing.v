@@ -52,9 +52,9 @@ Ltac an_use_binder f x :=
   end.
 
 Lemma An_App_intro :
-  forall (G : context) (b : tm) (rho : relflag) (a B A C : tm),
-       AnnTyping G b (a_Pi rho A B) -> (open_tm_wrt_tm B a) = C ->
-       AnnTyping G a A -> AnnTyping G (a_App b rho a) C.
+  forall (G : context) (b : tm) (psi psi0 : grade) (a B A C : tm),
+       AnnTyping G psi b (a_Pi psi0 A B) -> (open_tm_wrt_tm B a) = C ->
+       AnnTyping G psi a A -> AnnTyping G psi (a_App b psi0 a) C.
 Proof.
   intros. subst. eapply An_App; eauto.
 Qed.

@@ -62,15 +62,13 @@ with co : Set :=  (*r explicit coercions *)
  | g_Left (g:co) (g':co)
  | g_Right (g:co) (g':co).
 
-Definition econtext : Set := list ( atom * grade ).
-
 Inductive sort : Set :=  (*r binding classifier *)
  | Tm (A:tm)
  | Co (phi:constraint).
 
+Definition econtext : Set := list ( atom * grade ).
 
 Definition context : Set := list ( atom * (grade * sort) ).
-
 
 Inductive sig_sort : Set :=  (*r signature classifier *)
  | Cs (A:tm)
@@ -728,6 +726,9 @@ Local Open Scope grade_scope.
 Definition labels : context -> econtext :=
   map (fun '(u , s) => u).
 
+Definition subst_ctx (a : tm) (x:var) : context -> context :=
+  map (fun '(g, A) => (g, (tm_subst_tm_sort a x A))).
+
 Definition join_ctx_l (psi : grade) : context -> context :=    
   map (fun '(g, A) => (psi * g, A)).
 
@@ -946,11 +947,11 @@ Inductive ctx_sub : context -> context -> Prop :=    (* defn ctx_sub *)
       True  ->
      ctx_sub  (( x ~ ( psi1 , Tm  A )) ++  G1 )   (( x ~ ( psi2 , Tm  A )) ++  G2 ) 
  | CS_ConsCo : forall (G1:context) (c:covar) (psi1:grade) (phi:constraint) (G2:context) (psi2:grade),
-     lc_constraint phi ->
       ( psi1  <=  psi2 )  ->
      ctx_sub G1 G2 ->
       ~ AtomSetImpl.In  c  (dom  G1 )  ->
       ~ AtomSetImpl.In  c  (dom  G2 )  ->
+      True  ->
      ctx_sub  (( c ~ ( psi1 , Co  phi )) ++  G1 )   (( c ~ ( psi2 , Co  phi )) ++  G2 ) .
 
 (* defns JGrade *)
