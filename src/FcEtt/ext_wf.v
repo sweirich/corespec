@@ -149,3 +149,17 @@ Proof. induction Sig_toplevel.
        eauto.
 
 Qed.
+
+
+(* prove these in ext_wf? *)
+Lemma DefEq_uniq : (forall G psi phi,
+  DefEq G psi phi -> uniq G).
+Proof.
+  induction 1.
+  all: intros; eauto 3 using Grade_uniq.
+  all: try pick fresh x; spec x; solve_uniq.
+Qed.
+
+
+Lemma Typing_uniq : forall W psi a A, Typing W psi a A -> uniq W.
+Proof. induction 1; unfold join_ctx_l in *; eauto using uniq_map_1. Qed.

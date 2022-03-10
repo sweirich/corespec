@@ -1082,6 +1082,7 @@ P |- psi all c: psi0 phi. a => all c: psi0 phi'. a'
 
 % NOTE: toplevel is assumed to be locally closed
 F ~ a : A in toplevel
+uniq P
 -------------------------------- :: Axiom
 P |- psi F => a
 
@@ -1111,6 +1112,7 @@ P |- psi a =>* b ::   :: multipar :: 'mp_'
 {{ com multistep parallel reduction }}
 by
 
+uniq P
 ------------------ :: refl
 P |- psi a =>* a
 
@@ -1125,6 +1127,7 @@ P |- psi phi =>* phi' ::   :: multipar_prop :: 'mpprop_'
 {{ com multistep parallel reduction for constraints }}
 by
 
+uniq P
 ------------------ :: refl
 P |- psi phi =>* phi
 

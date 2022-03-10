@@ -228,11 +228,6 @@ Proof.
   rewrite (@co_subst_co_tm_intro y); eauto. apply subst_co_erased_tm; eauto.
 Qed.
 
-Scheme Par_ind' := Induction for Par Sort Prop
-   with ParProp_ind' := Induction for ParProp Sort Prop.
-
-Combined Scheme Par_tm_constraint_mutual from Par_ind', ParProp_ind'.
-
 Lemma Par_lc1 : (forall G D a a' , Par G D a a' -> lc_tm a) /\ (forall G D phi phi' , ParProp G D phi phi' -> lc_constraint phi).
   apply Par_tm_constraint_mutual; intros; auto.
   all: lc_solve.

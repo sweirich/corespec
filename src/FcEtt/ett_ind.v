@@ -317,6 +317,15 @@ Combined Scheme ann_typing_wff_iso_defeq_mutual
 from ann_typing_ind', ann_wff_ind', ann_iso_ind',
      ann_defeq_ind', ann_ctx_ind'.
 
+Scheme Par_ind' := Induction for Par Sort Prop
+    with ParProp_ind' := Induction for ParProp Sort Prop
+    with CPar_ind' := Induction for CPar Sort Prop
+    with CParProp_ind' := Induction for CParProp Sort Prop.
+
+
+Combined Scheme Par_tm_constraint_mutual from Par_ind', ParProp_ind', CPar_ind', CParProp_ind'.
+
+
 (* Scheme CoercedValue_ind' := Induction for CoercedValue Sort Prop *)
 (*                             with Value_ind' := Induction for Value Sort Prop. *)
 (* Combined Scheme CoercedValue_Value_mutual from CoercedValue_ind', Value_ind'. *)

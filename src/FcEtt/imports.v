@@ -8,6 +8,8 @@ Require Export Metalib.LibLNgen.
 
 Require Export FcEtt.ett_ott.
 
+From Hammer Require Export Tactics.
+
 (* SSR *)
 
 Require Export mathcomp.ssreflect.ssreflect.

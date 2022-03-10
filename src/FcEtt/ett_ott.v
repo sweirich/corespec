@@ -62,19 +62,21 @@ with co : Set :=  (*r explicit coercions *)
  | g_Left (g:co) (g':co)
  | g_Right (g:co) (g':co).
 
+
 Inductive sort : Set :=  (*r binding classifier *)
  | Tm (A:tm)
  | Co (phi:constraint).
-
-Definition econtext : Set := list ( atom * grade ).
-
-Definition context : Set := list ( atom * (grade * sort) ).
 
 Inductive sig_sort : Set :=  (*r signature classifier *)
  | Cs (A:tm)
  | Ax (a:tm) (A:tm).
 
 Definition sig : Set := list (atom * sig_sort).
+
+Definition econtext : Set := list ( atom * grade ).
+
+Definition context : Set := list ( atom * (grade * sort) ).
+
 
 
 (* EXPERIMENTAL *)
@@ -1126,6 +1128,7 @@ with Par : econtext -> grade -> tm -> tm -> Prop :=    (* defn Par *)
      Par P psi (a_CPi psi0 phi a) (a_CPi psi0 phi' a')
  | Par_Axiom : forall (P:econtext) (psi:grade) (F:tyfam) (a A:tm),
       binds  F  (Ax  a A )   toplevel   ->
+      uniq  P  ->
      Par P psi (a_Fam F) a
  | Par_Eta : forall (L:vars) (P:econtext) (psi psi0:grade) (a b' b:tm),
      Par P psi b b' ->
@@ -1140,6 +1143,7 @@ with Par : econtext -> grade -> tm -> tm -> Prop :=    (* defn Par *)
 Inductive multipar : econtext -> grade -> tm -> tm -> Prop :=    (* defn multipar *)
  | mp_refl : forall (P:econtext) (psi:grade) (a:tm),
      lc_tm a ->
+      uniq  P  ->
      multipar P psi a a
  | mp_step : forall (P:econtext) (psi:grade) (a a' b:tm),
      Par P psi a b ->
@@ -1148,6 +1152,7 @@ Inductive multipar : econtext -> grade -> tm -> tm -> Prop :=    (* defn multipa
 with multipar_prop : econtext -> grade -> constraint -> constraint -> Prop :=    (* defn multipar_prop *)
  | mpprop_refl : forall (P:econtext) (psi:grade) (phi:constraint),
      lc_constraint phi ->
+      uniq  P  ->
      multipar_prop P psi phi phi
  | mpprop_step : forall (P:econtext) (psi:grade) (phi1 phi3 phi2:constraint),
      ParProp P psi phi1 phi2 ->
