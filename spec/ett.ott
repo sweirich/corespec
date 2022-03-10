@@ -4,6 +4,11 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% METAVARIABLES
 
+embed
+{{ coq-preamble
+Require Export FcEtt.grade_sig.
+}}
+
 metavar tmvar, x, y, f, m, n ::=
   {{ repr-locally-nameless }}
   {{ com variables }}
@@ -281,18 +286,11 @@ econtext, P {{ tex \Phi }} :: 'ectx_' ::= {{ com erased contexts }}
                                           {{ coq ([[x]]~[[psi]])}}
   | c : psi           ::  M   :: OneCo    {{ tex [[c]] \! : [[ psi ]] }}
                                           {{ coq ([[c]]~[[psi]])}}
-  | P , x : psi       ::  M   :: ConsTm   {{ coq ([[x]]~ [[psi]]) ++ [[P]] }}
-  | P , c : psi       ::  M   :: ConsCo   {{ coq ([[c]]~ [[psi]]) ++ [[P]] }}
+  | P , x : psi       ::  M   :: ConsTm   {{ coq (([[x]]~ [[psi]]) ++ [[P]]) }}
+  | P , c : psi       ::  M   :: ConsCo   {{ coq (([[c]]~ [[psi]]) ++ [[P]]) }}
   | P ++ P'           ::  M   :: Append   {{ tex [[P]] , [[P']] }} {{ coq ([[P']]++[[P]]) }}
   | (# P #)           ::  M   :: SecretParen {{ tex [[ P ]] }} {{ coq [[P]] }}
   | ( P )             ::  M   :: Paren {{ tex ([[ P ]]) }} {{ coq ([[P]]) }}
-
-
-% available_props, D {{ tex \Delta }} :: 'D_' ::= {{ coq atoms }} {{ coq-universe Type }}
-%    | emptyD          ::    :: Empty   {{ coq AtomSetImpl.empty }} {{ tex \varnothing }}
-%    | D , c           ::    :: ConsCo  {{ coq (singleton [[c]] \u [[D]]) }}
-%    | dom G           :: M  :: DomG    {{ coq (dom [[G]]) }} {{ tex \widetilde {[[G]]} }}
-%    | ( D )           :: M  :: Paren   {{ coq ([[D]]) }}
 
 sig, S {{ tex \Sigma }} :: 'sig_' ::= {{ com signatures }} {{ coq list (atom * sig_sort) }}
    | emptyS         ::    :: Empty       {{ coq nil }}
@@ -452,6 +450,8 @@ formula :: 'formula_' ::=
 %% Coq Definitions necessary to specify the semantics
 
 embed {{ coq
+Local Open Scope grade_scope.
+
 Definition labels : context -> econtext :=
   map (fun '(u , s) => u).
 
@@ -474,19 +474,17 @@ Fixpoint erase_tm (a : tm) : tm :=
    | a_Var_f x => a_Var_f x
    | a_Abs rho A b => a_UAbs rho (erase_tm b)
    | a_UAbs rho b => a_UAbs rho (erase_tm b)
-   | a_App a Rel b => a_App (erase_tm a) Rel (erase_tm b)
-   | a_App a Irrel b => a_App (erase_tm a) Irrel a_Bullet
+   | a_App a psi0 b => a_App (erase_tm a) psi0 (erase_tm b)
    | a_Const T => a_Const T
    | a_Fam F => a_Fam F
    | a_Pi rho A B => a_Pi rho (erase_tm A) (erase_tm B)
    | a_Conv a _ => erase_tm a
-   | a_CPi phi B => a_CPi (erase_constraint phi) (erase_tm B)
-   | a_CAbs phi b => a_UCAbs (erase_tm b)
-   | a_UCAbs b => a_UCAbs (erase_tm b)
+   | a_CPi psi0 phi B => a_CPi psi0 (erase_constraint phi) (erase_tm B)
+   | a_CAbs psi0 phi b => a_UCAbs psi0 (erase_tm b)
+   | a_UCAbs psi0 b => a_UCAbs psi0 (erase_tm b)
    | a_CApp a g => a_CApp (erase_tm a) g_Triv
    | a_DataCon K => a_Star  (* a_DataCon K *)
    | a_Case a brs => a_Star (* a_Case (erase_tm a) (erase_brs brs) *)
-   | a_Bullet => a_Bullet
    end
 with erase_brs (x : brs) : brs :=
    match x with
@@ -512,7 +510,7 @@ Definition erase_csort s :=
  | Ax a A => Ax (erase_tm a) (erase_tm A)
 end.
 
-Definition erase_context G := map (fun (psi, s) => (psi, erase_sort s)) G.
+Definition erase_context (G : context) := map (fun '(psi, s) => (psi, erase_sort s)) G.
 Definition erase_sig S := map erase_csort S.
 
 (* -------------- A specific signature with Fix ------------ *)
@@ -522,14 +520,14 @@ Definition Fix : atom.
 Qed.
 
 Definition FixDef : tm :=
-  (a_Abs Irrel a_Star
-         (a_Abs Rel (a_Pi Rel (a_Var_b 0) (a_Var_b 1))
-                (a_App (a_Var_b 0) Rel
-                       (a_App (a_App (a_Fam Fix) Irrel (a_Var_b 1)) Rel (a_Var_b 0))))).
+  (a_Abs q_C a_Star
+         (a_Abs q_R (a_Pi q_R (a_Var_b 0) (a_Var_b 1))
+                (a_App (a_Var_b 0) q_R
+                       (a_App (a_App (a_Fam Fix) q_C (a_Var_b 1)) q_R (a_Var_b 0))))).
 
 Definition FixTy : tm :=
-  a_Pi Irrel a_Star
-       (a_Pi Rel (a_Pi Rel (a_Var_b 0) (a_Var_b 1))
+  a_Pi q_C a_Star
+       (a_Pi q_R (a_Pi q_R (a_Var_b 0) (a_Var_b 1))
              (a_Var_b 1)).
 
 
@@ -738,6 +736,227 @@ erased_tm F
 % - => eta x in []
 
 
+defns 
+  Jsub :: '' ::=
+
+defn 
+  P1 <= P2  ::   :: P_sub :: 'P_' {{ com Context sub }}
+by
+
+----------------- :: Empty
+  empty <= empty
+
+  psi1 <= psi2
+  P1 <= P2
+  x notin dom P1
+  x notin dom P2
+---------------------------------- :: Cons
+  P1 , x : psi1 <= P2 , x : psi2
+        
+
+defns 
+  Wsub :: '' ::=
+
+defn 
+  G1 <= G2  ::   :: ctx_sub :: 'CS_' {{ com Context sub }}
+by
+
+----------------- :: Empty
+  empty <= empty
+
+  psi1 <= psi2
+  G1 <= G2
+  x notin dom G1
+  x notin dom G2
+  % why do we need nolc here?
+  nolc A
+------------------------------------ :: ConsTm
+  G1 , x:psi1 A <= G2 , x:psi2 A
+
+  psi1 <= psi2
+  G1 <= G2
+  c notin dom G1
+  c notin dom G2
+  % YL:why do we need nolc here?
+  % nolc A
+------------------------------------ :: ConsCo
+  G1 , c:psi1 phi <= G2 , c:psi2 phi
+
+
+defns 
+   JGrade :: '' ::= 
+
+defn
+ P |= psi phi :: :: CoGrade :: 'CoG_' {{ com Guarded Grade for coercions }}
+ {{ tex [[ P ]] \vDash_{[[psi]]} [[ phi ]]   }}
+by
+
+P |= psi a
+P |= psi b
+P |= psi A
+--------------------- :: Eq
+P |= psi a ~ b : A
+
+
+P |= psi phi1
+P |= psi phi2
+--------------------- :: Impl
+P |= psi phi1 ==> phi2
+
+
+
+defn
+ P |= psi psi0 a :: :: CGrade :: 'CG_' {{ com Guarded Grade }}
+ {{ tex [[ P ]] \vdash_{[[ psi ]]}^{[[psi0]]} [[ a ]]  }}
+
+by
+   psi0 <= psi
+   P |= psi a
+  --------------------- :: Leq 
+   P |= psi psi0 a
+
+   not (psi0 <= psi)
+   uniq P
+  --------------------- :: Nleq 
+   P |= psi psi0 a
+
+
+
+
+defn 
+  P |= psi a ::   :: Grade :: 'G_' {{ com Observable variables are bounded by their grades }}
+{{ tex [[P]] \vdash_{[[psi]]} [[a]] }}
+
+by
+
+uniq P
+x : psi0 in P
+psi0 <= psi
+------------------ :: Var
+P |= psi x
+
+uniq P
+----------------- :: Type
+P |= psi TYPE
+
+P |= psi A
+P, x:psi |= psi B
+------------------ :: Pi
+P |= psi all x : psi0 A -> B
+
+P, x :psi0 |= psi b
+------------------------------------------ :: Abs
+P |= psi \ psi0 x . b 
+
+P |= psi b 
+P |= psi psi0 a 
+------------------------------------------- :: App
+P |= psi b psi0 a 
+
+P |= psi phi
+P , c : psi |= psi B
+------------------------------------------------- :: CPi
+P |= psi all c :psi0 phi . B
+
+P , c : psi0 |= psi b
+------------------------------------- :: CAbs
+P |= psi /\ psi0 c . b
+
+P |= psi b
+-------------------------------- :: CApp
+P |= psi b [ o ]
+
+
+% TODO: figure out how GEq is defined
+% [ G |= psi phi ok ]
+% P, c : psi |= psi B : TYPE
+% -------------------------------- :: CPi
+% G |= psi all c:psi0 phi. B : TYPE
+
+defns
+   JGEq :: '' ::=
+
+% TODO: add CoCEq in the future
+
+defn
+ P |= psi phi1 ~~ phi2 :: :: CoGEq :: 'CoGEq_' {{ com Syntactic Graded Equality for coercions }}
+ {{ tex [[ P ]] \vDash [[ phi1 ]] \sim_{[[ psi ]]} [[ phi2 ]]  }}
+by
+
+P |= psi a ~~ a'
+P |= psi b ~~ b'
+P |= psi A ~~ A'
+--------------------- :: Eq
+P |= psi a ~ b : A ~~ a' ~ b' : A'
+
+
+P |= psi phi1 ~~ phi2
+P |= psi phi3 ~~ phi4
+--------------------- :: Impl
+P |= psi phi1 ==> phi3 ~~ phi2 ==> phi4
+
+
+defn 
+P |= psi psi0 a ~~ b ::  :: CEq :: 'CEq_' {{ com Syntactic equality at [[psi]] is guarded by [[psi0]] }}
+ {{ tex [[ P ]] \vDash^{[[psi0]]}_{[[psi]]} [[ a ]] \sim [[ b ]]  }}
+
+by
+
+psi0 <= psi
+P |= psi a1 ~~ a2
+---------------------- :: Leq
+P |= psi psi0 a1 ~~ a2
+
+not (psi0 <= psi)
+uniq P
+-------------------------------- :: Nleq
+P |= psi psi0 a1 ~~ a2
+
+defn
+ P |= psi a ~~ b :: :: GEq :: 'GEq_' {{ com Syntactic Graded Equality }}
+ {{ tex [[ P ]] \vDash [[ a ]] \sim_{[[ psi ]]} [[ b ]]  }}
+
+by
+uniq P
+x : psi0 in P 
+psi0 <= psi
+------------------------------------------ :: Var
+P |= psi x ~~ x
+
+uniq P
+---------------------------- :: Type
+P |= psi TYPE ~~ TYPE
+
+P |= psi A1 ~~ A2
+P , x : psi |= psi B1 ~~ B2
+------------------------------------------------- :: Pi
+P |= psi all x :psi0 A1 -> B1 ~~ all x :psi0 A2 -> B2
+
+P , x : psi0 |= psi b1 ~~ b2
+------------------------------------- :: Abs
+P |= psi \ psi0 x  . b1 ~~ \ psi0 x . b2
+
+
+P |= psi b1 ~~ b2
+P |= psi psi0 a1 ~~ a2
+-------------------------------- :: App
+P |= psi b1 psi0 a1 ~~ b2 psi0 a2
+
+P |= psi phi1 ~~ phi2
+P , c : psi |= psi B1 ~~ B2
+------------------------------------------------- :: CPi
+P |= psi all c :psi0 phi1 . B1 ~~ all c :psi0 phi2 . B2
+
+P , c : psi0 |= psi b1 ~~ b2
+------------------------------------- :: CAbs
+P |= psi /\ psi0 c . b1 ~~ /\ psi0 c . b2
+
+P |= psi b1 ~~ b2
+-------------------------------- :: CApp
+P |= psi b1 [ o ] ~~ b2 [ o ]
+
+
+
 defns
   Jpar :: '' ::=
 
@@ -847,8 +1066,9 @@ P |- psi a => a'
 --------------------------- :: CAbs
 P |- psi /\ psi0 c . a => /\ psi0 c . a'
 
-P |- psi a => a'
-P, c:psi |- psi phi => phi'
+
+P , c:psi |- psi a => a'
+P |- psi phi => phi'
 ----------------------------------------- :: CPi
 P |- psi all c: psi0 phi. a => all c: psi0 phi'. a'
 
@@ -1378,227 +1598,6 @@ CTime /\ G |= CTime phi ok
 c notin dom G
 -------------------- :: ConsCo
 |= G, c: psi phi
-
-
-
-defns 
-  Jsub :: '' ::=
-
-defn 
-  P1 <= P2  ::   :: P_sub :: 'P_' {{ com Context sub }}
-by
-
------------------ :: Empty
-  empty <= empty
-
-  psi1 <= psi2
-  P1 <= P2
-  x notin dom P1
-  x notin dom P2
----------------------------------- :: Cons
-  P1 , x : psi1 <= P2 , x : psi2
-        
-
-defns 
-  Wsub :: '' ::=
-
-defn 
-  G1 <= G2  ::   :: ctx_sub :: 'CS_' {{ com Context sub }}
-by
-
------------------ :: Empty
-  empty <= empty
-
-  psi1 <= psi2
-  G1 <= G2
-  x notin dom G1
-  x notin dom G2
-  % why do we need nolc here?
-  nolc A
------------------------------------- :: ConsTm
-  G1 , x:psi1 A <= G2 , x:psi2 A
-
-  psi1 <= psi2
-  G1 <= G2
-  c notin dom G1
-  c notin dom G2
-  % YL:why do we need nolc here?
-  % nolc A
------------------------------------- :: ConsCo
-  G1 , c:psi1 phi <= G2 , c:psi2 phi
-
-
-defns 
-   JGrade :: '' ::= 
-
-defn
- P |= psi phi :: :: CoGrade :: 'CoG_' {{ com Guarded Grade for coercions }}
- {{ tex [[ P ]] \vDash_{[[psi]]} [[ phi ]]   }}
-by
-
-P |= psi a
-P |= psi b
-P |= psi A
---------------------- :: Eq
-P |= psi a ~ b : A
-
-
-P |= psi phi1
-P |= psi phi2
---------------------- :: Impl
-P |= psi phi1 ==> phi2
-
-
-
-defn
- P |= psi psi0 a :: :: CGrade :: 'CG_' {{ com Guarded Grade }}
- {{ tex [[ P ]] \vdash_{[[ psi ]]}^{[[psi0]]} [[ a ]]  }}
-
-by
-   psi0 <= psi
-   P |= psi a
-  --------------------- :: Leq 
-   P |= psi psi0 a
-
-   not (psi0 <= psi)
-   uniq P
-  --------------------- :: Nleq 
-   P |= psi psi0 a
-
-
-
-
-defn 
-  P |= psi a ::   :: Grade :: 'G_' {{ com Observable variables are bounded by their grades }}
-{{ tex [[P]] \vdash_{[[psi]]} [[a]] }}
-
-by
-
-uniq P
-x : psi0 in P
-psi0 <= psi
------------------- :: Var
-P |= psi x
-
-uniq P
------------------ :: Type
-P |= psi TYPE
-
-P |= psi A
-P, x:psi |= psi B
------------------- :: Pi
-P |= psi all x : psi0 A -> B
-
-P, x :psi0 |= psi b
------------------------------------------- :: Abs
-P |= psi \ psi0 x . b 
-
-P |= psi b 
-P |= psi psi0 a 
-------------------------------------------- :: App
-P |= psi b psi0 a 
-
-P |= psi phi
-P , c : psi |= psi B
-------------------------------------------------- :: CPi
-P |= psi all c :psi0 phi . B
-
-P , c : psi0 |= psi b
-------------------------------------- :: CAbs
-P |= psi /\ psi0 c . b
-
-P |= psi b
--------------------------------- :: CApp
-P |= psi b [ o ]
-
-
-% TODO: figure out how GEq is defined
-% [ G |= psi phi ok ]
-% P, c : psi |= psi B : TYPE
-% -------------------------------- :: CPi
-% G |= psi all c:psi0 phi. B : TYPE
-
-defns
-   JGEq :: '' ::=
-
-% TODO: add CoCEq in the future
-
-defn
- P |= psi phi1 ~~ phi2 :: :: CoGEq :: 'CoGEq_' {{ com Syntactic Graded Equality for coercions }}
- {{ tex [[ P ]] \vDash [[ phi1 ]] \sim_{[[ psi ]]} [[ phi2 ]]  }}
-by
-
-P |= psi a ~~ a'
-P |= psi b ~~ b'
-P |= psi A ~~ A'
---------------------- :: Eq
-P |= psi a ~ b : A ~~ a' ~ b' : A'
-
-
-P |= psi phi1 ~~ phi2
-P |= psi phi3 ~~ phi4
---------------------- :: Impl
-P |= psi phi1 ==> phi3 ~~ phi2 ==> phi4
-
-
-defn 
-P |= psi psi0 a ~~ b ::  :: CEq :: 'CEq_' {{ com Syntactic equality at [[psi]] is guarded by [[psi0]] }}
- {{ tex [[ P ]] \vDash^{[[psi0]]}_{[[psi]]} [[ a ]] \sim [[ b ]]  }}
-
-by
-
-psi0 <= psi
-P |= psi a1 ~~ a2
----------------------- :: Leq
-P |= psi psi0 a1 ~~ a2
-
-not (psi0 <= psi)
-uniq P
--------------------------------- :: Nleq
-P |= psi psi0 a1 ~~ a2
-
-defn
- P |= psi a ~~ b :: :: GEq :: 'GEq_' {{ com Syntactic Graded Equality }}
- {{ tex [[ P ]] \vDash [[ a ]] \sim_{[[ psi ]]} [[ b ]]  }}
-
-by
-uniq P
-x : psi0 in P 
-psi0 <= psi
------------------------------------------- :: Var
-P |= psi x ~~ x
-
-uniq P
----------------------------- :: Type
-P |= psi TYPE ~~ TYPE
-
-P |= psi A1 ~~ A2
-P , x : psi |= psi B1 ~~ B2
-------------------------------------------------- :: Pi
-P |= psi all x :psi0 A1 -> B1 ~~ all x :psi0 A2 -> B2
-
-P , x : psi0 |= psi b1 ~~ b2
-------------------------------------- :: Abs
-P |= psi \ psi0 x  . b1 ~~ \ psi0 x . b2
-
-
-P |= psi b1 ~~ b2
-P |= psi psi0 a1 ~~ a2
--------------------------------- :: App
-P |= psi b1 psi0 a1 ~~ b2 psi0 a2
-
-P |= psi phi1 ~~ phi2
-P , c : psi |= psi B1 ~~ B2
-------------------------------------------------- :: CPi
-P |= psi all c :psi0 phi1 . B1 ~~ all c :psi0 phi2 . B2
-
-P , c : psi0 |= psi b1 ~~ b2
-------------------------------------- :: CAbs
-P |= psi /\ psi0 c . b1 ~~ /\ psi0 c . b2
-
-P |= psi b1 ~~ b2
--------------------------------- :: CApp
-P |= psi b1 [ o ] ~~ b2 [ o ]
 
 
 
