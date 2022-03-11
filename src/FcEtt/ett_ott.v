@@ -847,8 +847,8 @@ with Value : tm -> Prop :=    (* defn Value *)
      Value (a_CAbs psi phi a)
  | Value_UCAbs : forall (psi:grade) (a:tm),
      lc_tm (a_UCAbs psi a) ->
-     Value (a_UCAbs psi a)
-with value_type : tm -> Prop :=    (* defn value_type *)
+     Value (a_UCAbs psi a).
+Inductive value_type : tm -> Prop :=    (* defn value_type *)
  | value_type_Star : 
      value_type a_Star
  | value_type_Pi : forall (psi:grade) (A B:tm),

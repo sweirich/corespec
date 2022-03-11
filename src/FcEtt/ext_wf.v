@@ -32,17 +32,19 @@ Qed.
 Hint Resolve DataTy_lc : lc.
 *)
 
-Lemma CoercedValue_Value_lc_mutual: (forall A, CoercedValue A -> lc_tm A) /\
-                                    (forall A, Value A -> lc_tm A).
-Proof.
-  apply CoercedValue_Value_mutual; eauto.
-Qed.
+(* We don't need this scheme. *)
+(* Scheme erased_tm_ind' := Induction for erased_tm Sort Prop *)
+(*    with erased_constraint_ind' := Induction for erased_constraint Sort Prop. *)
+
+(* Combined Scheme erased_tm_constraint_mutual from erased_tm_ind', erased_constraint_ind'. *)
 
 Lemma Value_lc : forall A, Value A -> lc_tm A.
-  destruct (CoercedValue_Value_lc_mutual); auto.
+Proof.
+  induction 1; eauto.
 Qed.
+
 Lemma CoercedValue_lc : forall A, CoercedValue A -> lc_tm A.
-  destruct (CoercedValue_Value_lc_mutual); auto.
+  induction 1; sfirstorder ctrs: CoercedValue use: Value_lc.
 Qed.
 
 Hint Resolve Value_lc CoercedValue_lc : lc.
@@ -51,15 +53,16 @@ Hint Resolve Value_lc CoercedValue_lc : lc.
 (* -------------------------------- *)
 
 Lemma ctx_wff_mutual :
-  (forall G0 a A, Typing G0 a A -> Ctx G0) /\
-  (forall G0 phi,   PropWff G0 phi -> Ctx G0) /\
-  (forall G0 D p1 p2, Iso G0 D p1 p2 -> Ctx G0) /\
-  (forall G0 D phi,   DefEq G0 D phi -> Ctx G0) /\
-  (forall G0, Ctx G0 -> True).
+  (forall G0 psi a A, Typing G0 psi a A -> Ctx G0) /\
+  (forall G0 psi phi,   PropWff G0 psi phi -> Ctx G0) /\
+  (forall G0 psi p1 p2, Iso G0 psi p1 p2 -> Ctx G0) /\
+  (forall G0 psi phi,   DefEq G0 psi phi -> Ctx G0) /\
+  (forall G0, Ctx G0 -> True) /\
+  (forall G0 psi psi0 a b A,CDefEq G0 psi psi0 a b A -> Ctx G0).
 Proof.
-  eapply typing_wff_iso_defeq_mutual; auto.
-  (* TODO: the following proof should be done by auto? *)
-  (* DefEq *)
+  apply typing_wff_iso_defeq_mutual; auto; intros.
+  
+
   intros; inversion H; subst; auto.
 Qed.
 
