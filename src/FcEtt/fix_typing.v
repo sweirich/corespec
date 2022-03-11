@@ -151,7 +151,7 @@ Proof.
      (* Var *)
      apply An_Var with (psi0 := q_R).
      assumption.
-     2 :{solve_lattice.}
+     2 : solve_lattice.
      all : autorewrite with l1_lattice in *; eauto.
     { autorewrite with l1_lattice.
       eapply An_App_intro; simpl in *; autorewrite with l1_lattice in *; try solve_lattice.
@@ -229,12 +229,12 @@ Proof.
   use_binder E_Abs X.
   use_binder E_Abs x.
   { use_binder E_Pi Z.
-    all : try solve [best ctrs:Ctx , Typing db: l1_lattice, lattice_props].}
+    all : try solve [best ctrs:Ctx , Typing db: l1_lattice, lattice_props]. }
   { eapply E_App_intro. 
     qauto l: on ctrs: Ctx, Typing db: l1_lattice, lattice_props.
     sfirstorder ctrs: Ctx, Typing db: l1_lattice, lattice_props.
     { eapply E_App_intro; simpl.
-      3 : {qauto l: on ctrs: Ctx, Typing db: l1_lattice, lattice_props.}.
+      3 : qauto l: on ctrs: Ctx, Typing db: l1_lattice, lattice_props.
       { eapply E_IApp_intro with (a := (a_Var_f X)); simpl; eauto.
         Check E_Fam.
         autorewrite with l1_lattice in *.
