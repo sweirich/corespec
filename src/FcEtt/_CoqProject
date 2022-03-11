@@ -36,7 +36,9 @@ fix_typing.v
 fset_facts.v
 grade_sig.v
 imports.v
+labels.v
 main.v
 tactics.v
 toplevel.v
+uniq.v
 utils.v

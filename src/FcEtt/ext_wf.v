@@ -9,7 +9,7 @@ Require Import FcEtt.tactics.
 
 Require Import FcEtt.utils.
 
-Require Import FcEtt.sigs.
+(* Require Import FcEtt.sigs. *)
 Require Import FcEtt.toplevel.
 
 (* This file contains these results:

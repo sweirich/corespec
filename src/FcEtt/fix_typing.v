@@ -38,7 +38,7 @@ Definition FixTy : tm :=
              (a_Var_b 1)).
  *)
 
-Lemma AxFix : binds Fix (Ax FixDef FixTy) an_toplevel.
+Lemma AxFix : binds Fix (q_R, (Ax FixDef FixTy)) an_toplevel.
   unfold an_toplevel.
   eauto.
 Qed.
@@ -60,7 +60,7 @@ Proof.
 Qed.
 
 Lemma FixTy_Star :
-  AnnTyping nil FixTy a_Star.
+  AnnTyping nil q_C FixTy a_Star.
 Proof.
   an_use_binder An_Pi X.
   an_use_binder An_Pi Z.
@@ -72,7 +72,7 @@ Proof.
 Qed.
 
 Lemma FixDef_FixTy :
-  AnnTyping nil FixDef FixTy.
+  AnnTyping nil q_R FixDef FixTy.
 Proof.
   an_use_binder An_Abs X.
   an_use_binder An_Abs x.

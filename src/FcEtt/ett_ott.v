@@ -62,7 +62,6 @@ with co : Set :=  (*r explicit coercions *)
  | g_Left (g:co) (g':co)
  | g_Right (g:co) (g':co).
 
-
 Inductive sort : Set :=  (*r binding classifier *)
  | Tm (A:tm)
  | Co (phi:constraint).
@@ -71,7 +70,7 @@ Inductive sig_sort : Set :=  (*r signature classifier *)
  | Cs (A:tm)
  | Ax (a:tm) (A:tm).
 
-Definition sig : Set := list (atom * sig_sort).
+Definition sig : Set := list (atom * (grade * sig_sort)).
 
 Definition econtext : Set := list ( atom * grade ).
 
@@ -787,7 +786,7 @@ Definition erase_csort s :=
 end.
 
 Definition erase_context (G : context) := map (fun '(psi, s) => (psi, erase_sort s)) G.
-Definition erase_sig S := map erase_csort S.
+Definition erase_sig (S : sig) := map (fun '(psi, s) => (psi, erase_csort s)) S.
 
 (* -------------- A specific signature with Fix ------------ *)
 Definition Fix : atom.
@@ -807,7 +806,7 @@ Definition FixTy : tm :=
              (a_Var_b 1)).
 
 
-Definition an_toplevel : sig := Fix ~ Ax FixDef FixTy.
+Definition an_toplevel : sig := Fix ~ (q_R, Ax FixDef FixTy).
 
 Definition toplevel : sig := erase_sig an_toplevel.
 
@@ -1126,8 +1125,9 @@ with Par : econtext -> grade -> tm -> tm -> Prop :=    (* defn Par *)
       ( forall c , c \notin  L  -> Par  (( c ~  psi ) ++  P )  psi  ( open_tm_wrt_co a (g_Var_f c) )   ( open_tm_wrt_co a' (g_Var_f c) )  )  ->
      ParProp P psi phi phi' ->
      Par P psi (a_CPi psi0 phi a) (a_CPi psi0 phi' a')
- | Par_Axiom : forall (P:econtext) (psi:grade) (F:tyfam) (a A:tm),
-      binds  F  (Ax  a A )   toplevel   ->
+ | Par_Axiom : forall (P:econtext) (psi:grade) (F:tyfam) (a:tm) (psi0:grade) (A:tm),
+      ( psi0  <=  psi )  ->
+      binds  F  ( psi0 , (Ax  a A ))   toplevel   ->
       uniq  P  ->
      Par P psi (a_Fam F) a
  | Par_Eta : forall (L:vars) (P:econtext) (psi psi0:grade) (a b' b:tm),
@@ -1168,8 +1168,8 @@ Inductive Beta : tm -> tm -> Prop :=    (* defn Beta *)
  | Beta_CAppCAbs : forall (psi:grade) (a':tm),
      lc_tm (a_UCAbs psi a') ->
      Beta (a_CApp  ( (a_UCAbs psi a') )  g_Triv)  (open_tm_wrt_co  a'   g_Triv ) 
- | Beta_Axiom : forall (F:tyfam) (a A:tm),
-      binds  F  (Ax  a A )   toplevel   ->
+ | Beta_Axiom : forall (F:tyfam) (a:tm) (psi0:grade) (A:tm),
+      binds  F  ( psi0 , (Ax  a A ))   toplevel   ->
      Beta (a_Fam F) a
 with reduction_in_one : tm -> tm -> Prop :=    (* defn reduction_in_one *)
  | E_AppLeft : forall (a:tm) (psi:grade) (b a':tm),
@@ -1186,8 +1186,8 @@ with reduction_in_one : tm -> tm -> Prop :=    (* defn reduction_in_one *)
  | E_CAppCAbs : forall (psi:grade) (b:tm),
      lc_tm (a_UCAbs psi b) ->
      reduction_in_one (a_CApp  ( (a_UCAbs psi b) )  g_Triv)  (open_tm_wrt_co  b   g_Triv ) 
- | E_Axiom : forall (F:tyfam) (a A:tm),
-      binds  F  (Ax  a A )   toplevel   ->
+ | E_Axiom : forall (F:tyfam) (a:tm) (psi0:grade) (A:tm),
+      binds  F  ( psi0 , (Ax  a A ))   toplevel   ->
      reduction_in_one (a_Fam F) a
 with reduction : tm -> tm -> Prop :=    (* defn reduction *)
  | Equal : forall (a:tm),
@@ -1253,10 +1253,10 @@ with Typing : context -> grade -> tm -> tm -> Prop :=    (* defn Typing *)
      Typing G psi a1 (a_CPi  q_Top  phi B1) ->
      DefEq  (meet_ctx_l   q_C    G )   q_C  phi ->
      Typing G psi (a_CApp a1 g_Triv)  (open_tm_wrt_co  B1   g_Triv ) 
- | E_Fam : forall (G:context) (psi:grade) (F:tyfam) (A a:tm),
-      (  q_C   <=  psi )  ->
+ | E_Fam : forall (G:context) (psi:grade) (F:tyfam) (A:tm) (psi0:grade) (a:tm),
+      ( psi0  <=  psi )  ->
      Ctx G ->
-      binds  F  (Ax  a A )   toplevel   ->
+      binds  F  ( psi0 , (Ax  a A ))   toplevel   ->
       ( Typing  nil   q_C  A a_Star )  ->
      Typing G psi (a_Fam F) A
 with Iso : context -> grade -> constraint -> constraint -> Prop :=    (* defn Iso *)
@@ -1402,12 +1402,12 @@ with Ctx : context -> Prop :=    (* defn Ctx *)
 Inductive Sig : sig -> Prop :=    (* defn Sig *)
  | Sig_Empty : 
      Sig  nil 
- | Sig_ConsAx : forall (S:sig) (F:tyfam) (a A:tm),
+ | Sig_ConsAx : forall (S:sig) (F:tyfam) (a:tm) (psi0:grade) (A:tm),
      Sig S ->
      Typing  nil   q_C  A a_Star ->
-     Typing  nil   q_C  a A ->
+     Typing  nil  psi0 a A ->
       ~ AtomSetImpl.In  F  (dom  S )  ->
-     Sig  (( F ~ Ax a A )++ S ) .
+     Sig  (( F ~ ( psi0 , Ax a A ))++ S ) .
 
 (* defns Jann *)
 Inductive AnnPropWff : context -> grade -> constraint -> Prop :=    (* defn AnnPropWff *)
@@ -1460,10 +1460,10 @@ with AnnTyping : context -> grade -> tm -> tm -> Prop :=    (* defn AnnTyping *)
      AnnTyping G psi a1 (a_CPi  q_Top  (Eq a b A1) B) ->
      AnnDefEq  (meet_ctx_l   q_C    G )   q_C  g a b ->
      AnnTyping G psi (a_CApp a1 g)  (open_tm_wrt_co  B   g ) 
- | An_Fam : forall (G:context) (psi:grade) (F:tyfam) (A a:tm),
+ | An_Fam : forall (G:context) (psi:grade) (F:tyfam) (A:tm) (psi0:grade) (a:tm),
      AnnCtx G ->
-      (  q_C   <=  psi )  ->
-      binds  F  (Ax  a A )   an_toplevel   ->
+      ( psi0  <=  psi )  ->
+      binds  F  ( psi0 , (Ax  a A ))   an_toplevel   ->
       ( AnnTyping  nil   q_C  A a_Star )  ->
      AnnTyping G psi (a_Fam F) A
 with AnnIso : context -> grade -> co -> constraint -> constraint -> Prop :=    (* defn AnnIso *)
@@ -1614,12 +1614,12 @@ with AnnCtx : context -> Prop :=    (* defn AnnCtx *)
 with AnnSig : sig -> Prop :=    (* defn AnnSig *)
  | An_Sig_Empty : 
      AnnSig  nil 
- | An_Sig_ConsAx : forall (S:sig) (F:tyfam) (a A:tm),
+ | An_Sig_ConsAx : forall (S:sig) (F:tyfam) (a:tm) (psi0:grade) (A:tm),
      AnnSig S ->
      AnnTyping  nil   q_C  A a_Star ->
-     AnnTyping  nil   q_C  a A ->
+     AnnTyping  nil  psi0 a A ->
       ~ AtomSetImpl.In  F  (dom  S )  ->
-     AnnSig  (( F ~ Ax a A )++ S ) .
+     AnnSig  (( F ~ ( psi0 , Ax a A ))++ S ) .
 
 (* defns Jred *)
 Inductive head_reduction : context -> tm -> tm -> Prop :=    (* defn head_reduction *)
@@ -1640,8 +1640,8 @@ Inductive head_reduction : context -> tm -> tm -> Prop :=    (* defn head_reduct
      lc_tm (a_CAbs psi0 phi b) ->
      lc_co g ->
      head_reduction G (a_CApp  ( (a_CAbs psi0 phi b) )  g)  (open_tm_wrt_co  b   g ) 
- | An_Axiom : forall (G:context) (F:tyfam) (a A:tm),
-      binds  F  (Ax  a A )   an_toplevel   ->
+ | An_Axiom : forall (G:context) (F:tyfam) (a:tm) (psi0:grade) (A:tm),
+      binds  F  ( psi0 , (Ax  a A ))   an_toplevel   ->
      head_reduction G (a_Fam F) a
  | An_ConvTerm : forall (G:context) (a:tm) (g:co) (a':tm),
      lc_co g ->

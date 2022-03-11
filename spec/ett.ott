@@ -292,12 +292,12 @@ econtext, P {{ tex \Phi }} :: 'ectx_' ::= {{ com erased contexts }}
   | (# P #)           ::  M   :: SecretParen {{ tex [[ P ]] }} {{ coq [[P]] }}
   | ( P )             ::  M   :: Paren {{ tex ([[ P ]]) }} {{ coq ([[P]]) }}
 
-sig, S {{ tex \Sigma }} :: 'sig_' ::= {{ com signatures }} {{ coq list (atom * sig_sort) }}
+sig, S {{ tex \Sigma }} :: 'sig_' ::= {{ com signatures }} {{ coq list (atom * (grade * sig_sort)) }}
    | emptyS         ::    :: Empty       {{ coq nil }}
      {{ tex \varnothing }}
-   | S , T : A      ::    :: ConsCs      {{ coq (([[T]]~ Cs[[A]])++[[S]]) }}
+   | S , T : psi A      ::    :: ConsCs      {{ coq (([[T]]~ ([[psi]], Cs[[A]]))++[[S]]) }}
      {{ tex [[S]] \cup \{[[T]] : [[A]]\} }}
-   | S , F ~ a : A  ::    :: ConsAx      {{ coq (([[F]]~ Ax[[a]][[A]])++[[S]]) }}
+   | S , F ~ a : psi A  ::    :: ConsAx      {{ coq (([[F]]~ ([[psi]], Ax[[a]][[A]]))++[[S]]) }}
      {{ tex [[S]] \cup \{[[F]]\sim[[a]] : [[A]]\} }}
    | toplevel       :: M  :: Toplevel
      {{ coq toplevel }}
@@ -385,8 +385,8 @@ formula :: 'formula_' ::=
   | T : A in S             ::   :: inGF
     {{ coq binds [[T]] (Cs [[A]]) [[S]] }}
 
-  | F ~ a : A in S             ::   :: inGFam
-    {{ coq binds [[F]] (Ax [[a]][[A]]) [[S]] }}
+  | F ~ a : psi A in S             ::   :: inGFam
+    {{ coq binds [[F]] ([[psi]], (Ax [[a]][[A]])) [[S]] }}
 
   | K : T G in S               ::   :: inSD
     {{ coq binds [[K]] ([[T]],[[G]]) [[S]] }}
@@ -519,7 +519,7 @@ Definition erase_csort s :=
 end.
 
 Definition erase_context (G : context) := map (fun '(psi, s) => (psi, erase_sort s)) G.
-Definition erase_sig S := map erase_csort S.
+Definition erase_sig (S : sig) := map (fun '(psi, s) => (psi, erase_csort s)) S.
 
 (* -------------- A specific signature with Fix ------------ *)
 Definition Fix : atom.
@@ -539,7 +539,7 @@ Definition FixTy : tm :=
              (a_Var_b 1)).
 
 
-Definition an_toplevel : sig := Fix ~ Ax FixDef FixTy.
+Definition an_toplevel : sig := Fix ~ (q_R, Ax FixDef FixTy).
 
 Definition toplevel : sig := erase_sig an_toplevel.
 
@@ -1081,7 +1081,8 @@ P |- psi phi => phi'
 P |- psi all c: psi0 phi. a => all c: psi0 phi'. a'
 
 % NOTE: toplevel is assumed to be locally closed
-F ~ a : A in toplevel
+psi0 <= psi
+F ~ a : psi0 A in toplevel
 uniq P
 -------------------------------- :: Axiom
 P |- psi F => a
@@ -1191,7 +1192,7 @@ by
 |= (/\ psi c .a') [o] > a' { o / c }
 
 
-F ~ a : A in toplevel
+F ~ a : psi0 A in toplevel
 -------------------------------- :: Axiom
 |= F > a
 
@@ -1228,7 +1229,7 @@ by
 --------------------------------  :: CAppCAbs
 |= (/\psi c .b) [o] ~> b { o / c}
 
-F ~ a : A in toplevel
+F ~ a : psi0 A in toplevel
 -------------------- :: Axiom
 |= F ~> a
 
@@ -1351,10 +1352,9 @@ CTime /\ G |= CTime phi
 G |= psi a1 [ o ] : B1 { o / c }
 
 
-% this isn't right: add a label to top-level expressions?
-CTime <= psi
+psi0 <= psi
 |= G
-F ~ a : A in toplevel
+F ~ a : psi0 A in toplevel
 [ empty |= CTime A : TYPE ]
 ------------------ :: Fam
 G |= psi F : A
@@ -1628,10 +1628,10 @@ by
 % is CTime the right level?
 |= S
 empty |= CTime A : TYPE
-empty |= CTime a : A
+empty |= psi0 a : A
 F notin dom S
 ---------------- :: ConsAx
-|= S, F ~ a : A
+|= S, F ~ a : psi0 A
 
 
 
@@ -1722,8 +1722,8 @@ CTime /\ G |- CTime g : a ~ b
 G |- psi a1 [ g ] : B { g / c }
 
 |- G
-CTime <= psi
-F ~ a : A in an_toplevel
+psi0 <= psi
+F ~ a : psi0 A in an_toplevel
 [ empty |- CTime A : TYPE ]
 ----------------------- :: Fam
 G |- psi F : A
@@ -1959,10 +1959,10 @@ by
 
 |- S
 empty |- CTime A : TYPE
-empty |- CTime a : A
+empty |- psi0 a : A
 F notin dom S
 ---------------- :: ConsAx
-|- S, F ~ a  : A
+|- S, F ~ a  : psi0 A
 
 
 defns
@@ -2000,7 +2000,7 @@ G |- (/\psi0 c:phi.b) [g] ~>h b { g / c}
 % G |- (\- x:A. b) ~>h (\- x:A. b')
 
 
-F ~ a : A in an_toplevel
+F ~ a : psi0 A in an_toplevel
 ------------------------- :: Axiom
 G |- F ~>h a
 
