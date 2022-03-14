@@ -100,10 +100,6 @@ Definition joins_constraint S D phi1 phi2 := exists phi3, erased_context S /\
                                                      erased_constraint phi2 /\
                                                      multipar_prop S D phi1 phi3 /\ multipar_prop S D phi2 phi3.
 
-Scheme erased_tm_ind' := Induction for erased_tm Sort Prop
-   with erased_constraint_ind' := Induction for erased_constraint Sort Prop.
-
-Combined Scheme erased_tm_constraint_mutual from erased_tm_ind', erased_constraint_ind'.
 
 
 Lemma ParProp_refl : forall G D phi, lc_constraint phi -> ParProp G D phi phi.

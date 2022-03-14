@@ -119,7 +119,7 @@ Ltac lc_solve_binds :=
   (* binds nil case *)
   | [ H : binds ?x ?s nil |- _ ] => inversion H; clear H
   (* binds cons case *)
-  | [ H : binds _ ?s ([(_,_)] ++ _) |- _ ?s] =>
+  | [ H : binds _ (_, ?s) ([(_,_)] ++ _) |- _ ?s] =>
       destruct (binds_cons_1 _ _ _ _ _ _ H); basic_solve
   (* variable cases *)
   | [ b : binds ?x _ ?G, H : ∀ (x' : atom) _, binds x' _ ?G → _ |- _] =>
@@ -139,6 +139,8 @@ Ltac lc_inversion c :=
     (* inversion for binders *)
   | [ H : forall x, (x `in` ?L -> False) -> lc_tm _ /\ _ |- _ ] =>
     destruct (H c ltac:(auto)); split_hyp; clear H
+  | [ H : forall x, (x `in` ?L -> False) -> lc_constraint _ |- _ ] =>
+    move : (H c ltac:(auto)); inversion 1; split_hyp; clear H
   (* simple inversions *)
   | [ H : lc_constraint (_ _) |- _ ] =>
     inversion H; clear H
@@ -152,11 +154,11 @@ Ltac lc_inversion c :=
     inversion H; clear H
   | [ H : lc_tm (a_Conv _ _) |- _ ] =>
     inversion H; clear H
-  | [ H : lc_tm (a_CPi _ _) |- _ ] =>
+  | [ H : lc_tm (a_CPi _ _ _) |- _ ] =>
     inversion H; clear H
-  | [ H : lc_tm (a_CAbs _ _) |- _ ] =>
+  | [ H : lc_tm (a_CAbs _ _ _) |- _ ] =>
     inversion H; clear H
-  | [ H : lc_tm (a_UCAbs _) |- _ ] =>
+  | [ H : lc_tm (a_UCAbs _ _) |- _ ] =>
     inversion H; clear H
   | [ H : lc_tm (a_CApp _ _) |- _ ] =>
     inversion H; clear H
@@ -242,27 +244,29 @@ Ltac invert_syntactic_equality :=
     inversion H; subst; clear H
   | [ H : a_Conv _ _ = a_Conv _ _ |- _ ] =>
     inversion H; subst; clear H
-  | [ H : a_UCAbs _ = a_UCAbs _ |- _ ] =>
+  | [ H : a_UCAbs _ _ = a_UCAbs _ _ |- _ ] =>
     inversion H; subst; clear H
   | [ H : a_CAbs + _ = a_CAbs _ _ |- _ ] =>
     inversion H; subst; clear H
   | [ H : a_CApp _ _  = a_CApp _ _ |- _ ] =>
     inversion H; subst; clear H
-  | [ H : a_CPi _ _ = a_CPi _ _ |- _ ] =>
+  | [ H : a_CPi _ _ _ = a_CPi _ _ _ |- _ ] =>
     inversion H; subst; clear H
   | [ H : Eq _ _ _ = Eq _ _ _ |- _ ] =>
+    inversion H; subst; clear H
+  | [ H : Impl _ _ = Impl _ _ |- _] =>
     inversion H; subst; clear H
   end.
 
 (* Invert an "interesting" assumption in the typing context *)
 Ltac ann_invert_clear :=
   match goal with
-  | H : AnnTyping _ a_Star _ |- _ => inversion H; subst; clear H
-  | H : AnnTyping _ (_ _) _ |- _ =>  inversion H; subst; clear H
-  | H : AnnPropWff _ _ |- _ => inversion H; subst; clear H
-  | H : AnnIso _ _ (_ _) _ _ |- _ => inversion H; subst; clear H
-  | H : AnnDefEq _ _ (_ _) _ _  |- _ => inversion H; subst; clear H
-  | H : AnnCtx ([(_,_)] ++ _) |- _ => inversion H; subst; clear H
+  | H : AnnTyping _ _ a_Star _ |- _ => inversion H; subst; clear H
+  | H : AnnTyping _ _ (_ _) _ |- _ =>  inversion H; subst; clear H
+  | H : AnnPropWff _ _ _ |- _ => inversion H; subst; clear H
+  | H : AnnIso _ _ _ (_ _) _ _ |- _ => inversion H; subst; clear H
+  | H : AnnDefEq _ _ _ (_ _) _ _  |- _ => inversion H; subst; clear H
+  | H : AnnCtx  ([(_,_)] ++ _)  |- _ => inversion H; subst; clear H
   | H : AnnCtx (_ :: _) |- _ => inversion H; subst; clear H
   end.
 
@@ -327,6 +331,20 @@ Scheme Par_ind' := Induction for Par Sort Prop
 Combined Scheme Par_tm_constraint_mutual from Par_ind', ParProp_ind', CPar_ind', CParProp_ind'.
 
 
+Scheme erased_tm_ind' := Induction for erased_tm Sort Prop
+   with erased_constraint_ind' := Induction for erased_constraint Sort Prop.
+
+Combined Scheme erased_tm_constraint_mutual from erased_tm_ind', erased_constraint_ind'.
+
+Scheme Grade_ind' := Induction for Grade Sort Prop
+    with CGrade_ind'   := Induction for CGrade Sort Prop
+    with CoGrade_ind' := Induction for CoGrade Sort Prop.
+
+Combined Scheme CGrade_Grade_mutual
+  from Grade_ind', CGrade_ind', CoGrade_ind'.
+
+
+(* unnecessary because they are not actually mutually recursive *)
 (* Scheme CoercedValue_ind' := Induction for CoercedValue Sort Prop *)
 (*                             with Value_ind' := Induction for Value Sort Prop. *)
 (* Combined Scheme CoercedValue_Value_mutual from CoercedValue_ind', Value_ind'. *)
@@ -466,6 +484,7 @@ Ltac gather_atoms ::=
 
 Ltac rewrite_body :=
   match goal with
+
   | [ e : ∀ x : atom, (x `in` ?L → False)
       → open_tm_wrt_tm _ (a_Var_f x) = open_tm_wrt_tm _ (_ (a_Var_f x) _) |- _ ] =>
      rewrite e; auto

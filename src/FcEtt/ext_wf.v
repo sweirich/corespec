@@ -33,12 +33,6 @@ Qed.
 Hint Resolve DataTy_lc : lc.
 *)
 
-(* We don't need this scheme. *)
-(* Scheme erased_tm_ind' := Induction for erased_tm Sort Prop *)
-(*    with erased_constraint_ind' := Induction for erased_constraint Sort Prop. *)
-
-(* Combined Scheme erased_tm_constraint_mutual from erased_tm_ind', erased_constraint_ind'. *)
-
 Lemma Value_lc : forall A, Value A -> lc_tm A.
 Proof.
   induction 1; eauto.
@@ -186,89 +180,93 @@ Qed.
 (* TODO: put these hints in a database? *)
 Hint Resolve Typing_Ctx PropWff_Ctx Iso_Ctx DefEq_Ctx Ctx_Ctx CDefEq_Ctx.
 
-
-
 Lemma lc_mutual :
   (forall G0 psi a A, Typing G0 psi a A -> lc_tm a /\ lc_tm A) /\
-  (forall G0 psi phi, PropWff G0 phi -> lc_constraint phi) /\
-  (forall G0 D p1 p2, Iso G0 D p1 p2 -> lc_constraint p1 /\ lc_constraint p2) /\
-  (forall G0 D phi, DefEq G0 D phi -> lc_constraint phi) /\
-  (forall G0, Ctx G0 -> forall x s , binds x s G0 -> lc_sort s).
+  (forall G0 psi phi, PropWff G0 psi phi -> lc_constraint phi) /\
+  (forall G0 psi p1 p2, Iso G0 psi p1 p2 -> lc_constraint p1 /\ lc_constraint p2) /\
+  (forall G0 psi phi, DefEq G0 psi phi -> lc_constraint phi) /\
+  (forall G0 , Ctx G0 -> forall x psi s , binds x (psi, s) G0 -> lc_sort s) /\
+  (forall G0 psi psi0 a b A,CDefEq G0 psi psi0 a b A -> lc_tm a /\ lc_tm b /\ lc_tm A).
 Proof.
-  eapply typing_wff_iso_defeq_mutual.
+  apply typing_wff_iso_defeq_mutual.
   all: pre; basic_solve_n 2.
   all: split_hyp.
   all: lc_solve.
+  all : try constructor; lc_solve.
+  all : try sauto depth:1 lq: on.
+  (* The Impl case may require strengthening the typing relation *)
 Qed.
-(* This version of the proof is incredibly slow. *)
-(*
-  all: pre; basic_solve.
-  all: try oh_c'mon.
-  all: try invert_open_wrt.
-  all: try pick fresh c for L.
-  all: try eapply lc_a_UCAbs_exists; eauto.
-  all: try apply H; eauto.
-  all: eapply (lc_a_UAbs_exists c). rewrite e. eauto. done.
-Qed.*)
+
 
 Definition Typing_lc  := first lc_mutual.
 Definition PropWff_lc := second lc_mutual.
 Definition Iso_lc     := third lc_mutual.
 Definition DefEq_lc   := fourth lc_mutual.
 Definition Ctx_lc     := fifth lc_mutual.
+Lemma CDefEq_lc : forall G0 psi psi0 a b A,CDefEq G0 psi psi0 a b A -> lc_tm a /\ lc_tm b /\ lc_tm A.
+Proof.
+  pose proof lc_mutual.
+  tauto.
+Qed.
 
-Lemma Typing_lc1 : forall G0 a A, Typing G0 a A -> lc_tm a.
+Lemma Typing_lc1 : forall G0 psi a A, Typing G0 psi a A -> lc_tm a.
 Proof.
   intros. apply (first lc_mutual) in H. destruct H. auto.
 Qed.
-Lemma Typing_lc2 : forall G0 a A, Typing G0 a A -> lc_tm A.
+Lemma Typing_lc2 : forall G0 psi a A, Typing G0 psi a A -> lc_tm A.
 Proof.
   intros. apply (first lc_mutual) in H. destruct H. auto.
 Qed.
 
-Lemma Iso_lc1 : forall G0 D p1 p2, Iso G0 D p1 p2 -> lc_constraint p1.
+Lemma Iso_lc1 : forall G0 psi p1 p2, Iso G0 psi p1 p2 -> lc_constraint p1.
 Proof.
   intros. apply (third lc_mutual) in H. destruct H. auto.
 Qed.
-Lemma Iso_lc2 : forall G0 D p1 p2, Iso G0 D p1 p2 -> lc_constraint p2.
+Lemma Iso_lc2 : forall G0 psi p1 p2, Iso G0 psi p1 p2 -> lc_constraint p2.
 Proof.
   intros. apply (third lc_mutual) in H. destruct H. auto.
 Qed.
-Lemma DefEq_lc1 : forall G0 D A B T,   DefEq G0 D (Eq A B T) -> lc_tm A.
+Lemma DefEq_lc1 : forall G0 psi A B T,   DefEq G0 psi (Eq A B T) -> lc_tm A.
 Proof.
-  intros. apply (fourth lc_mutual) in H. destruct H. auto.
+  sauto lq: on use: DefEq_lc.
+Qed.
+Lemma DefEq_lc2 : forall G0 psi A B T,   DefEq G0 psi (Eq A B T) -> lc_tm B.
+Proof.
+  sauto lq: on use: DefEq_lc.
+Qed.
+Lemma DefEq_lc3 : forall G0 psi A B T,   DefEq G0 psi (Eq A B T) -> lc_tm T.
+Proof.
+  sauto lq: on use: DefEq_lc.
+Qed.
+Lemma CDefEq_lc1 : forall G0 psi psi0 A B T,   CDefEq G0 psi psi0 A B T -> lc_tm A.
+Proof.
+  sauto lq: on use: CDefEq_lc.
+Qed.
+Lemma CDefEq_lc2 : forall G0 psi psi0 A B T,   CDefEq G0 psi psi0 A B T -> lc_tm B.
+Proof.
+  sauto lq: on use: CDefEq_lc.
+Qed.
+Lemma CDefEq_lc3 : forall G0 psi psi0 A B T,   CDefEq G0 psi psi0 A B T -> lc_tm T.
+Proof.
+  sauto lq: on use: CDefEq_lc.
 Qed.
 
-Lemma DefEq_lc2 : forall G0 D A B T,   DefEq G0 D (Eq A B T) -> lc_tm B.
-Proof.
-  intros. apply (fourth lc_mutual) in H. split_hyp. auto.
-Qed.
-Lemma DefEq_lc3 : forall G0 D A B T,   DefEq G0 D (Eq A B T) -> lc_tm T.
-Proof.
-  intros. apply (fourth lc_mutual) in H. split_hyp. auto.
-Qed.
+Hint Resolve Typing_lc1 Typing_lc2 Iso_lc1 Iso_lc2
+     DefEq_lc1 DefEq_lc2 DefEq_lc3 Ctx_lc CDefEq_lc1 CDefEq_lc2 CDefEq_lc3 : lc.
 
-Hint Resolve Typing_lc1 Typing_lc2 Iso_lc1 Iso_lc2 DefEq_lc1 DefEq_lc2 DefEq_lc3 Ctx_lc : lc.
-
-Lemma Toplevel_lc : forall c s, binds c s toplevel -> lc_sig_sort s.
+Lemma Toplevel_lc : forall c psi s, binds c (psi, s) toplevel -> lc_sig_sort s.
 Proof. induction Sig_toplevel.
        intros. inversion H.
        intros. destruct H2. inversion H2. subst.
        simpl in H0. eauto. eauto with lc.
        eauto.
-
 Qed.
 
-
-(* prove these in ext_wf? *)
 Lemma DefEq_uniq : (forall G psi phi,
   DefEq G psi phi -> uniq G).
 Proof.
-  induction 1.
-  all: intros; eauto 3 using Grade_uniq.
-  all: try pick fresh x; spec x; solve_uniq.
+  sfirstorder use: DefEq_Ctx, Ctx_uniq.
 Qed.
 
-
 Lemma Typing_uniq : forall W psi a A, Typing W psi a A -> uniq W.
-Proof. induction 1; unfold join_ctx_l in *; eauto using uniq_map_1. Qed.
+Proof. hauto lq: on use: Typing_Ctx, Ctx_uniq. Qed.
