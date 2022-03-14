@@ -54,6 +54,13 @@ Qed.
 
 Hint Resolve Ctx_uniq.
 
+Require Import FcEtt.ett_ind.
+
+Print Ltac gather_atoms.
+Print Ltac pick_fresh.
+
+Ltac all_union_set := let L := gather_atoms in exact L.
+
 Lemma ctx_wff_narrow_mutual :
   (forall G0 psi a A, Typing G0 psi a A -> (Ctx G0 /\ (forall G1, ctx_sub G1 G0 -> Typing G1 psi a A))) /\
   (forall G0 psi phi,   PropWff G0 psi phi -> (Ctx G0 /\ (forall G1, ctx_sub G1 G0 -> PropWff G1 psi phi))) /\
@@ -74,7 +81,7 @@ Proof.
   (* 14 goals (afer hauto) *)
   - move : (ctx_sub_binds H0 b) => [psi0' [h0 h1]].
     apply E_Var with (psi0 := psi0');  hauto db:lattice_props.
-  - apply E_Pi with (L := ltac:(gather_atoms)).
+  - apply E_Pi with (L := ltac:(all_union_set)).
     + intros.
       destruct_notin.
       apply H; auto.
@@ -82,7 +89,7 @@ Proof.
         hfcrush ctrs:uniq use:ctx_sub_uniq, ctx_sub_refl.
     + sfirstorder ctrs:Typing.
   - pick fresh x0.
-    apply E_Abs with (L := dom G \u dom G1 \u L).
+    apply E_Abs with (L := ltac:(all_union_set)).
     + intros.
       destruct_notin.
       apply H; auto.
@@ -93,7 +100,7 @@ Proof.
       fcrush use:ctx_sub_uniq.
     + hauto lq:on use:ctx_sub_meet_ctx_l.
   (* Same as E_Pi *)
-  - apply E_CPi with (L := dom G1 \u L).
+  - apply E_CPi with (L := ltac:(all_union_set)).
     + intros.
       destruct_notin.
       apply H; auto.
@@ -102,7 +109,7 @@ Proof.
     + sfirstorder ctrs:Typing.
   (* Same as E_Abs *)
   - pick fresh x0.
-    apply E_CAbs with (L := dom G \u dom G1 \u L).
+    apply E_CAbs with (L := ltac:(all_union_set)).
     + intros.
       destruct_notin.
       apply H; auto.
@@ -115,7 +122,7 @@ Proof.
   (* Similar to E_Var *)
   - move : (ctx_sub_binds H0 b) => [psi0' [h0 h1]].
     eapply E_Assn with (psi0 := psi0'); hauto db:lattice_props.
-  - apply E_PiCong with (L := dom G \u dom G1 \u L); try firstorder.
+  - apply E_PiCong with (L := ltac:(all_union_set)); try firstorder.
     apply H0.
     fsetdec.
     apply ctx_sub_app; auto.
@@ -123,7 +130,7 @@ Proof.
     sblast use:ctx_sub_uniq.
   (* Same as E_Abs *)
   - pick fresh x0.
-    apply E_AbsCong with (L := dom G \u dom G1 \u L).
+    apply E_AbsCong with (L := ltac:(all_union_set)).
     + intros.
       destruct_notin.
       apply H; auto.
@@ -134,7 +141,7 @@ Proof.
       fcrush use:ctx_sub_uniq.
     + hauto lq:on use:ctx_sub_meet_ctx_l.
   (* Similar to E_CPi *)
-  - apply E_CPiCong with (L := dom G \u dom G1 \u L); auto; try sfirstorder depth:1.
+  - apply E_CPiCong with (L := ltac:(all_union_set)); auto; try sfirstorder depth:1.
     intros.
     apply H0; auto.
     apply ctx_sub_app; auto.
@@ -143,7 +150,7 @@ Proof.
     sblast use:ctx_sub_uniq.
   (* Same as E_CAbs *)
   - pick fresh x0.
-    apply E_CAbsCong with (L := dom G \u dom G1 \u L).
+    apply E_CAbsCong with (L := ltac:(all_union_set)).
     + intros.
       destruct_notin.
       apply H; auto.
