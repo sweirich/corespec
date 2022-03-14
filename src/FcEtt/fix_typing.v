@@ -1,4 +1,5 @@
 Require Import Metalib.Metatheory.
+
 Require Import FcEtt.ett_ott.
 Require Import FcEtt.ett_inf.
 Require Import FcEtt.imports.
@@ -62,20 +63,8 @@ Proof.
   hauto lq: on ctrs: AnnTyping.
 Qed.
 
-Lemma FixTy_Star :
-  AnnTyping nil q_C FixTy a_Star.
-Proof.
-  an_use_binder An_Pi X.
-  an_use_binder An_Pi Z.
-  an_use_binder An_Pi W.
-
-  hfcrush ctrs: AnnTyping.
-  all : try solve [qauto ctrs: AnnTyping use: meet_idem, q_leb_refl].
-
-  an_use_binder An_Pi W.
-  all : solve [qauto ctrs: AnnTyping use: meet_idem, q_leb_refl].
-Qed.
-
+Create HintDb l1_lattice.
+Create HintDb lattice_props.
 
 Ltac solve_lattice := sfirstorder ctrs: AnnTyping
        use: join_idem, join_leq, meet_comm, meet_leq, meet_idem, R_lt_C, join_comm, q_leb_refl, join_Top_r, leq_Top.
@@ -120,11 +109,25 @@ Proof.
   solve_lattice.
 Qed.
 
-Create HintDb l1_lattice.
-Create HintDb lattice_props.
 
-Hint Resolve join_idem join_leq meet_comm meet_leq meet_idem R_lt_C join_comm q_leb_refl join_Top_r leq_Top : lattice_props.
-Hint Rewrite C_join_R R_join_C C_join_C R_join_R C_meet_R R_meet_C C_meet_C R_meet_R : l1_lattice.
+Hint Resolve join_idem join_leq meet_comm meet_leq meet_idem R_lt_C join_comm q_leb_refl join_Top_r leq_Top q_leb_trans q_leb_antisym : lattice_props.
+Hint Rewrite C_join_R R_join_C C_join_C R_join_R C_meet_R R_meet_C C_meet_C R_meet_R join_idem_l join_Top_l join_assoc join_Top_r join_idem : l1_lattice.
+
+
+Lemma FixTy_Star :
+  AnnTyping nil q_C FixTy a_Star.
+Proof.
+  an_use_binder An_Pi X.
+  an_use_binder An_Pi Z.
+  an_use_binder An_Pi W.
+
+  hfcrush ctrs: AnnTyping.
+  all : try solve [qauto ctrs: AnnTyping use: meet_idem, q_leb_refl].
+  an_use_binder An_Pi W.
+  all : solve [qauto ctrs: AnnTyping use: meet_idem, q_leb_refl].
+Qed.
+
+
 
 
 Lemma FixDef_FixTy :
@@ -135,7 +138,7 @@ Proof.
   { an_use_binder An_Pi Z.
     simpl.
     apply An_Var with (psi0 := q_C);
-    hfcrush ctrs: AnnTyping db: l1_lattice.
+    hecrush ctrs: AnnTyping db: l1_lattice.
     qauto l: on ctrs: AnnTyping use: join_leq, meet_leq, meet_idem, R_lt_C, join_comm, q_leb_refl.
     qauto l: on ctrs: AnnTyping use: join_leq, meet_leq, meet_idem, R_lt_C, join_comm, q_leb_refl.
        }
