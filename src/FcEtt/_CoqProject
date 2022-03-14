@@ -38,6 +38,7 @@ grade_sig.v
 imports.v
 labels.v
 main.v
+narrowing.v
 tactics.v
 toplevel.v
 uniq.v

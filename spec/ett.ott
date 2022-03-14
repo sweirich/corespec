@@ -1275,6 +1275,9 @@ G |= psi phi1 ==> phi2 ok
 
 defn
 
+-- TODO: add l <= C to all the leaf nodes --
+
+
 G |= psi a : A ::   :: Typing :: 'E_'
 {{ tex [[G]] \vDash [[a]]:^{[[psi]]} [[A]] }}
 {{ com typing }}
