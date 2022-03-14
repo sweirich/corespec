@@ -74,7 +74,7 @@ Proof.
   (* 14 goals (afer hauto) *)
   - move : (ctx_sub_binds H0 b) => [psi0' [h0 h1]].
     apply E_Var with (psi0 := psi0');  hauto db:lattice_props.
-  - apply E_Pi with (L := dom G1 \u L).
+  - apply E_Pi with (L := ltac:(gather_atoms)).
     + intros.
       destruct_notin.
       apply H; auto.

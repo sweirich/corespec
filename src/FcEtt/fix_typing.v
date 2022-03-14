@@ -63,6 +63,9 @@ Proof.
   hauto lq: on ctrs: AnnTyping.
 Qed.
 
+(* coqhammer turns out to be more brittle than I expected *)
+(* make sure the following two HintDbs are never extended with extra
+   theorems or certain proofs may not go through *)
 Create HintDb l1_lattice.
 Create HintDb lattice_props.
 

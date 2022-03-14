@@ -52,9 +52,9 @@ Proof.
   case (lt_eq_lt_dec n k);
     try (move=> []); simpl; auto.
   all: f_equal; eauto 1.
-  destruct rho.
-  + simpl; auto. autorewcs. rewrite H0.  rewrite H. auto.
-  + simpl; auto. rewrite H.  auto.
+  (* destruct rho. *)
+  (* + simpl; auto. autorewcs. rewrite H0.  rewrite H. auto. *)
+  (* + simpl; auto. rewrite H.  auto. *)
 Qed.
 
 
@@ -147,7 +147,7 @@ Proof.
   basic_nosolve_fo'.
   - case (lt_ge_dec n k); done.
   - move eqe : (x == x0) => [] // .
-  - destruct rho; basic_solve_fo'.
+  (* - destruct rho; basic_solve_fo'. *)
 Qed.
 
 Lemma close_co_erase_all : ∀ x : covar,
@@ -270,7 +270,7 @@ Proof.
   try (rewrite H; try rewrite H0; auto).
   destruct (x0 == x); simpl; auto.
   all: f_equal; eauto 2.
-  destruct rho; simpl; f_equal; eauto 2.
+  (* destruct rho; simpl; f_equal; eauto 2. *)
 Qed.
 
 Lemma subst_co_erase : forall a x,
@@ -624,21 +624,22 @@ Qed.
 
 (* ---------------------------------- *)
 
-Lemma ann_rho_swap : forall rho x x0 a,
-    x `notin` fv_tm_tm_tm (erase_tm a) ->
-    x0 `notin` fv_tm_tm_tm (erase_tm a) ->
-    RhoCheck rho x (erase_tm (open_tm_wrt_tm a (a_Var_f x))) ->
-    RhoCheck rho x0 (erase_tm (open_tm_wrt_tm a (a_Var_f x0))).
-Proof.
-  intros rho x x0 a F1 F2 H0.
-  inversion H0; subst; constructor.
-  + auto. (*autorewcs. rewrite -open_tm_erase_tm. simpl.
-    autorewcshyp H. rewrite -open_tm_erase_tm in H. simpl in H.
-    eapply lc_swap with (x0 := x0) (x:= x); auto. *)
-  + autorewcs. rewrite -open_tm_erase_tm. simpl.
-    autorewcshyp H. rewrite -open_tm_erase_tm in H. simpl in H.
-    eapply fv_swap with (x:=x); eauto.
-Qed.
+(* TODO: rephrase this in terms of the grade judgment? *)
+(* Lemma ann_rho_swap : forall rho x x0 a, *)
+(*     x `notin` fv_tm_tm_tm (erase_tm a) -> *)
+(*     x0 `notin` fv_tm_tm_tm (erase_tm a) -> *)
+(*     RhoCheck rho x (erase_tm (open_tm_wrt_tm a (a_Var_f x))) -> *)
+(*     RhoCheck rho x0 (erase_tm (open_tm_wrt_tm a (a_Var_f x0))). *)
+(* Proof. *)
+(*   intros rho x x0 a F1 F2 H0. *)
+(*   inversion H0; subst; constructor. *)
+(*   + auto. (*autorewcs. rewrite -open_tm_erase_tm. simpl. *)
+(*     autorewcshyp H. rewrite -open_tm_erase_tm in H. simpl in H. *)
+(*     eapply lc_swap with (x0 := x0) (x:= x); auto. *) *)
+(*   + autorewcs. rewrite -open_tm_erase_tm. simpl. *)
+(*     autorewcshyp H. rewrite -open_tm_erase_tm in H. simpl in H. *)
+(*     eapply fv_swap with (x:=x); eauto. *)
+(* Qed. *)
 
 (* --------------------------------------------------------- *)
 

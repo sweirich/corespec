@@ -66,9 +66,9 @@ Ltac erased_inversion :=
     inversion H; subst; clear H
   | [H : erased_tm (a_Pi _ _ _)|- _ ] =>
     inversion H; subst; clear H
-  | [H : erased_tm (a_CPi _ _)|- _ ] =>
+  | [H : erased_tm (a_CPi _ _ _)|- _ ] =>
     inversion H; subst; clear H
-  | [H : erased_tm (a_UCAbs _ ) |- _ ] =>
+  | [H : erased_tm (a_UCAbs _ _ ) |- _ ] =>
     inversion H; subst; clear H
   | [H : erased_tm (a_CApp _ _)|- _ ] =>
     inversion H; subst; clear H
@@ -90,7 +90,7 @@ Inductive erased_sort : sort -> Prop :=
 | erased_Co : forall phi, erased_constraint phi -> erased_sort (Co phi).
 
 Definition erased_context : context -> Prop :=
-  Forall (fun p => match p with (a,s) => erased_sort s end).
+  Forall (fun p => match p with (a,(psi,s)) => erased_sort s end).
 
 Definition joins S D a b := exists c, erased_context S /\ erased_tm a /\ erased_tm b /\
                                multipar S D a c /\ multipar S D b c.

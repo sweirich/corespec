@@ -134,30 +134,31 @@ Qed.
 
 (* ------------------------------------------------- *)
 
-Lemma Value_UAbsIrrel_exists : ∀ x (a : tm),
-    x `notin` fv_tm a
-    → (Value (open_tm_wrt_tm a (a_Var_f x)))
-    → Value (a_UAbs Irrel a).
-Proof.
-  intros.
-  eapply (Value_UAbsIrrel ({{x}})); eauto.
-  intros.
-  rewrite (tm_subst_tm_tm_intro x); eauto.
-  eapply Value_tm_subst_tm_tm; auto.
-Qed.
+(* TODO: we don't need to consider these cases anymore? *)
+(* Lemma Value_UAbsIrrel_exists : ∀ x (a : tm), *)
+(*     x `notin` fv_tm a *)
+(*     → (Value (open_tm_wrt_tm a (a_Var_f x))) *)
+(*     → Value (a_UAbs Irrel a). *)
+(* Proof. *)
+(*   intros. *)
+(*   eapply (Value_UAbsIrrel ({{x}})); eauto. *)
+(*   intros. *)
+(*   rewrite (tm_subst_tm_tm_intro x); eauto. *)
+(*   eapply Value_tm_subst_tm_tm; auto. *)
+(* Qed. *)
 
-Lemma Value_AbsIrrel_exists : ∀ x (A a : tm),
-    x `notin` fv_tm a
-    -> lc_tm A
-    → (CoercedValue (open_tm_wrt_tm a (a_Var_f x)))
-    → Value (a_Abs Irrel A a).
-Proof.
-  intros.
-  eapply (Value_AbsIrrel ({{x}})); eauto.
-  intros.
-  rewrite (tm_subst_tm_tm_intro x); eauto.
-  eapply CoercedValue_tm_subst_tm_tm; auto.
-Qed.
+(* Lemma Value_AbsIrrel_exists : ∀ x (A a : tm), *)
+(*     x `notin` fv_tm a *)
+(*     -> lc_tm A *)
+(*     → (CoercedValue (open_tm_wrt_tm a (a_Var_f x))) *)
+(*     → Value (a_Abs Irrel A a). *)
+(* Proof. *)
+(*   intros. *)
+(*   eapply (Value_AbsIrrel ({{x}})); eauto. *)
+(*   intros. *)
+(*   rewrite (tm_subst_tm_tm_intro x); eauto. *)
+(*   eapply CoercedValue_tm_subst_tm_tm; auto. *)
+(* Qed. *)
 
 (* ----- *)
 
