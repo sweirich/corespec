@@ -54,7 +54,6 @@ Qed.
 
 Hint Resolve Ctx_uniq.
 
-Require Import FcEtt.ett_ind.
 
 Print Ltac gather_atoms.
 Print Ltac pick_fresh.
