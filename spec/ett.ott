@@ -1263,7 +1263,10 @@ by
 
 G |= psi a : A
 G |= psi b : A
+% not a typo: we should use psi
 [ G |= psi A : TYPE ]
+% we'd only use CTime /\ ... if we had phi : PHI, wf PHI
+% wf PHI should then be checked under top
 ---------------------------  :: WffEq
 G |= psi a ~ b : A  ok
 
@@ -1275,20 +1278,19 @@ G |= psi phi1 ==> phi2 ok
 
 defn
 
--- TODO: add l <= C to all the leaf nodes --
-
-
 G |= psi a : A ::   :: Typing :: 'E_'
 {{ tex [[G]] \vDash [[a]]:^{[[psi]]} [[A]] }}
 {{ com typing }}
 by
 
 |= G
+psi <= CTime
 ------------  :: Star
 G |= psi TYPE : TYPE
 
 |= G
 psi0 <= psi
+psi <= CTime
 x: psi0 A in G
 ------------------ :: Var
 G |= psi x : A
@@ -1316,10 +1318,6 @@ G |= psi b psi0 a : B { a / x }
 G |= psi b : all x : psi0 A -> B
 CTime /\ G |= CTime a : A
 CTime < psi0
-% not psi0 <= CTime
-% it's okay to use psi0 here
-% we know that psi <= C holds all the time.
-% the only way to go higher is to have psi0 > C?
 ------------------------------------- :: AppIrrel
 G |= psi b psi0 a : B { a / x }
 
@@ -1356,6 +1354,7 @@ G |= psi a1 [ o ] : B1 { o / c }
 
 
 psi0 <= psi
+psi <= CTime
 |= G
 F ~ a : psi0 A in toplevel
 [ empty |= CTime A : TYPE ]
@@ -1374,8 +1373,11 @@ G |= psi B1 ~ B2 : A
 ---------------------------------------- :: PropCong
 G |= psi A1 ~ B1 : A == A2 ~ B2 : A
 
-% phi1 == phi2 ok should imply phi1,phi2 : Prop
+% phi1 == phi2 should imply phi1,phi2 : Prop
 % at the same grade
+% this should mirror rules like refl
+% psi a == a, psi a : A
+% psi phi == phi, psi phi : Prop
 G |= psi A ~ B : TYPE
 G |= psi A1 ~ A2 : A ok
 G |= psi A1 ~ A2 : B ok
@@ -1392,6 +1394,11 @@ G |= psi phi3 == phi4
 G |= psi phi1 ==> phi3 == phi2 ==> phi4
 
 
+% NOTE: it is possible to have G |= top psi0 a ~ b : A
+% where top > CTime, but it's impossible to have
+% G |= top a ~ b : A. When proving Typing_leq_C,
+% make sure that the CDefEq case maps to a trivial
+% True statement
 defn
  G |= psi psi0 a ~ b : A :: :: CDefEq :: 'CDefEq_' {{ com Definitional Equality }}
  {{ tex [[ G ]] \vdash [[ a ]] \equiv_{[[ psi ]]} [[ b ]]  }}
@@ -1402,6 +1409,8 @@ by
    G |= psi psi0 a ~ b : A
 
 
+% There are two cases because I inlined the |- a :top B relation
+% the same way it is inlined into App, producing two rules: App and AppIrrel
    not (psi0 <= psi)
    |= G
    psi0 <= CTime
@@ -1431,6 +1440,7 @@ by
 % labeled well-formedness judgment?
 |= G
 psi0 <= psi
+psi <= CTime
 c : psi0 phi in G
 -------------------- :: Assn
 G |= psi phi
@@ -1557,7 +1567,10 @@ G |= psi phi1
 G |= psi phi2
 
 
-G , c : CTime phi1 |= psi phi2
+% mirror Abs
+% note that phi1 ==> phi2 does not include grades yet
+G , c : psi phi1 |= psi phi2
+[ CTime /\ G |= CTime phi1 ok ]
 --------------------------------------------------- :: ImplAbs
 G |= psi phi1 ==> phi2
 

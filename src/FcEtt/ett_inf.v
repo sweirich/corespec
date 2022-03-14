@@ -14,17 +14,17 @@ Require Export ett_ott.
 (* *********************************************************************** *)
 (** * Induction principles for nonterminals *)
 
-(* Scheme grade_ind' := Induction for grade Sort Prop. *)
+Scheme grade_ind' := Induction for grade Sort Prop.
 
-(* Definition grade_mutind := *)
-(*   fun H1 => *)
-(*   grade_ind' H1. *)
+Definition grade_mutind :=
+  fun H1 =>
+  grade_ind' H1.
 
-(* Scheme grade_rec' := Induction for grade Sort Set. *)
+Scheme grade_rec' := Induction for grade Sort Set.
 
-(* Definition grade_mutrec := *)
-(*   fun H1 => *)
-(*   grade_rec' H1. *)
+Definition grade_mutrec :=
+  fun H1 =>
+  grade_rec' H1.
 
 Scheme tm_ind' := Induction for tm Sort Prop
   with brs_ind' := Induction for brs Sort Prop
@@ -196,10 +196,10 @@ Definition close_constraint_wrt_co c1 phi1 := close_constraint_wrt_co_rec 0 c1 p
 (* *********************************************************************** *)
 (** * Size *)
 
-(* Fixpoint size_grade (psi1 : grade) {struct psi1} : nat := *)
-(*   match psi1 with *)
+Fixpoint size_grade (psi1 : grade) {struct psi1} : nat :=
+  match psi1 with
 
-(*   end. *)
+  end.
 
 Fixpoint size_tm (a1 : tm) {struct a1} : nat :=
   match a1 with

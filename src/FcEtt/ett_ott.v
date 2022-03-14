@@ -62,20 +62,19 @@ with co : Set :=  (*r explicit coercions *)
  | g_Left (g:co) (g':co)
  | g_Right (g:co) (g':co).
 
-Inductive sort : Set :=  (*r binding classifier *)
- | Tm (A:tm)
- | Co (phi:constraint).
+Definition econtext : Set := list ( atom * grade ).
 
 Inductive sig_sort : Set :=  (*r signature classifier *)
  | Cs (A:tm)
  | Ax (a:tm) (A:tm).
 
-Definition sig : Set := list (atom * (grade * sig_sort)).
-
-Definition econtext : Set := list ( atom * grade ).
+Inductive sort : Set :=  (*r binding classifier *)
+ | Tm (A:tm)
+ | Co (phi:constraint).
 
 Definition context : Set := list ( atom * (grade * sort) ).
 
+Definition sig : Set := list (atom * (grade * sig_sort)).
 
 
 (* EXPERIMENTAL *)
@@ -847,8 +846,8 @@ with Value : tm -> Prop :=    (* defn Value *)
      Value (a_CAbs psi phi a)
  | Value_UCAbs : forall (psi:grade) (a:tm),
      lc_tm (a_UCAbs psi a) ->
-     Value (a_UCAbs psi a).
-Inductive value_type : tm -> Prop :=    (* defn value_type *)
+     Value (a_UCAbs psi a)
+with value_type : tm -> Prop :=    (* defn value_type *)
  | value_type_Star : 
      value_type a_Star
  | value_type_Pi : forall (psi:grade) (A B:tm),
@@ -1212,10 +1211,12 @@ Inductive PropWff : context -> grade -> constraint -> Prop :=    (* defn PropWff
 with Typing : context -> grade -> tm -> tm -> Prop :=    (* defn Typing *)
  | E_Star : forall (G:context) (psi:grade),
      Ctx G ->
+      ( psi  <=   q_C  )  ->
      Typing G psi a_Star a_Star
  | E_Var : forall (G:context) (psi:grade) (x:tmvar) (A:tm) (psi0:grade),
      Ctx G ->
       ( psi0  <=  psi )  ->
+      ( psi  <=   q_C  )  ->
       binds  x  ( psi0 , (Tm  A ))  G  ->
      Typing G psi (a_Var_f x) A
  | E_Pi : forall (L:vars) (G:context) (psi psi0:grade) (A B:tm),
@@ -1255,6 +1256,7 @@ with Typing : context -> grade -> tm -> tm -> Prop :=    (* defn Typing *)
      Typing G psi (a_CApp a1 g_Triv)  (open_tm_wrt_co  B1   g_Triv ) 
  | E_Fam : forall (G:context) (psi:grade) (F:tyfam) (A:tm) (psi0:grade) (a:tm),
       ( psi0  <=  psi )  ->
+      ( psi  <=   q_C  )  ->
      Ctx G ->
       binds  F  ( psi0 , (Ax  a A ))   toplevel   ->
       ( Typing  nil   q_C  A a_Star )  ->
@@ -1299,6 +1301,7 @@ with DefEq : context -> grade -> constraint -> Prop :=    (* defn DefEq *)
  | E_Assn : forall (G:context) (psi:grade) (phi:constraint) (psi0:grade) (c:covar),
      Ctx G ->
       ( psi0  <=  psi )  ->
+      ( psi  <=   q_C  )  ->
       binds  c  ( psi0 , (Co  phi ))  G  ->
      DefEq G psi phi
  | E_Refl : forall (G:context) (psi:grade) (a A:tm),
@@ -1382,7 +1385,8 @@ with DefEq : context -> grade -> constraint -> Prop :=    (* defn DefEq *)
      DefEq G psi phi1 ->
      DefEq G psi phi2
  | E_ImplAbs : forall (G:context) (psi:grade) (phi1 phi2:constraint) (c:covar),
-     DefEq  (( c ~ (  q_C  , Co  phi1 )) ++  G )  psi phi2 ->
+     DefEq  (( c ~ ( psi , Co  phi1 )) ++  G )  psi phi2 ->
+      ( PropWff  (meet_ctx_l   q_C    G )   q_C  phi1 )  ->
      DefEq G psi (Impl phi1 phi2)
 with Ctx : context -> Prop :=    (* defn Ctx *)
  | E_Empty : 
