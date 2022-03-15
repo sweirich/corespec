@@ -7,6 +7,23 @@ Require Import FcEtt.ett_inf.
 
 (* Tactics for the project *)
 
+Ltac fresh_apply_Grade x := 
+  match goal with 
+      | [ |- Grade ?P ?psi (a_Pi ?psi2 ?a ?b) ] => pick fresh x and apply G_Pi
+      | [ |- Grade ?P ?psi (a_CPi ?psi2 ?a ?b) ] => pick fresh x and apply G_CPi
+      | [ |- Grade ?P ?psi (a_UAbs ?psi2 ?b) ] => pick fresh x and apply G_Abs
+      | [ |- Grade ?P ?psi (a_UCAbs ?psi2 ?b) ] => pick fresh x and apply G_CAbs
+    end.
+
+Ltac fresh_apply_GEq x := 
+  match goal with 
+      | [ |- GEq ?P ?psi (a_Pi ?psi2 ?a ?b) (a_Pi ?psi3 ?a2 ?b2) ] => pick fresh x and apply GEq_Pi
+      | [ |- GEq ?P ?psi (a_CPi ?psi2 ?a ?b) (a_CPi ?psi3 ?a2 ?b2) ] => pick fresh x and apply GEq_CPi
+      | [ |- GEq ?P ?psi (a_UAbs ?psi2 ?b) (a_UAbs ?psi3 ?b3) ] => pick fresh x and apply GEq_Abs
+      | [ |- GEq ?P ?psi (a_UCAbs ?psi2 ?b) (a_UCAbs ?psi3 ?b3) ] => pick fresh x and apply GEq_CAbs
+    end.
+
+
 (* TODO
    - automated f_equal (etc)
    - split forall ands
