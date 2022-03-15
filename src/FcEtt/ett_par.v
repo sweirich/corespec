@@ -92,19 +92,25 @@ Inductive erased_sort : sort -> Prop :=
 Definition erased_context : context -> Prop :=
   Forall (fun p => match p with (a,(psi,s)) => erased_sort s end).
 
-Definition joins S D a b := exists c, erased_context S /\ erased_tm a /\ erased_tm b /\
-                               multipar S D a c /\ multipar S D b c.
+Definition joins P psi a b := exists c, uniq P /\ erased_tm a /\ erased_tm b /\
+                               multipar P psi a c /\ multipar P psi b c.
 
-Definition joins_constraint S D phi1 phi2 := exists phi3, erased_context S /\
+Definition joins_constraint P psi phi1 phi2 := exists phi3, uniq P  /\
                                                      erased_constraint phi1 /\
                                                      erased_constraint phi2 /\
-                                                     multipar_prop S D phi1 phi3 /\ multipar_prop S D phi2 phi3.
+                                                     multipar_prop P psi phi1 phi3 /\ multipar_prop P psi phi2 phi3.
 
 
+(* Lemma CPar_Par_Grade : (forall P psi phi a b, CPar P psi phi a b -> CGrade P psi phi a /\ CGrade P psi phi b) /\  *)
+(*                        (forall P psi a b, Par P psi a b -> Grade P psi a /\ Grade P psi b). *)
 
-Lemma ParProp_refl : forall G D phi, lc_constraint phi -> ParProp G D phi phi.
+Lemma Par_grade_mutual : 
+
+
+Lemma ParProp_refl : forall P psi phi, lc_constraint phi -> ParProp P psi phi phi.
 Proof.
-  induction phi; inversion 1;auto.
+  induction phi; inversion 1;subst; auto.
+  
 Qed.
 
 (* YL: Should I add refl rule to ParProp? *)
