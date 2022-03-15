@@ -62,20 +62,19 @@ with co : Set :=  (*r explicit coercions *)
  | g_Left (g:co) (g':co)
  | g_Right (g:co) (g':co).
 
-Definition econtext : Set := list ( atom * grade ).
-
 Inductive sig_sort : Set :=  (*r signature classifier *)
  | Cs (A:tm)
  | Ax (a:tm) (A:tm).
+
+Definition sig : Set := list (atom * (grade * sig_sort)).
 
 Inductive sort : Set :=  (*r binding classifier *)
  | Tm (A:tm)
  | Co (phi:constraint).
 
+Definition econtext : Set := list ( atom * grade ).
+
 Definition context : Set := list ( atom * (grade * sort) ).
-
-Definition sig : Set := list (atom * (grade * sig_sort)).
-
 
 (* EXPERIMENTAL *)
 (** auxiliary functions on the new list types *)
@@ -1341,17 +1340,17 @@ with DefEq : context -> grade -> constraint -> Prop :=    (* defn DefEq *)
      DefEq G psi (Eq (a_Pi psi0 A1 B1) (a_Pi psi0 A2 B2) a_Star) ->
      DefEq G psi (Eq a1 a2 A1) ->
      DefEq G psi (Eq  (open_tm_wrt_tm  B1   a1 )   (open_tm_wrt_tm  B2   a2 )  a_Star)
- | E_CPiCong : forall (L:vars) (G:context) (psi psi0:grade) (phi1:constraint) (A:tm) (phi2:constraint) (B:tm),
+ | E_CPiCong : forall (L:vars) (G:context) (psi:grade) (phi1:constraint) (A:tm) (phi2:constraint) (B:tm),
      Iso G psi phi1 phi2 ->
-      ( forall c , c \notin  L  -> DefEq  (( c ~ ( psi , Co  phi1 )) ++  G )  psi (Eq  ( open_tm_wrt_co A (g_Var_f c) )   ( open_tm_wrt_co B (g_Var_f c) )  a_Star) )  ->
+      ( forall c , c \notin  L  -> DefEq  (( c ~ (  q_Top  , Co  phi1 )) ++  G )  psi (Eq  ( open_tm_wrt_co A (g_Var_f c) )   ( open_tm_wrt_co B (g_Var_f c) )  a_Star) )  ->
       ( PropWff G psi phi1 )  ->
-      ( Typing G psi (a_CPi psi0 phi1 A) a_Star )  ->
-      ( Typing G psi (a_CPi psi0 phi2 B) a_Star )  ->
-     DefEq G psi (Eq (a_CPi psi0 phi1 A) (a_CPi psi0 phi2 B) a_Star)
- | E_CAbsCong : forall (L:vars) (G:context) (psi psi0:grade) (a b:tm) (phi1:constraint) (B:tm),
-      ( forall c , c \notin  L  -> DefEq  (( c ~ (  (q_join  psi0   psi )  , Co  phi1 )) ++  G )  psi (Eq  ( open_tm_wrt_co a (g_Var_f c) )   ( open_tm_wrt_co b (g_Var_f c) )   ( open_tm_wrt_co B (g_Var_f c) ) ) )  ->
+      ( Typing G psi (a_CPi  q_Top  phi1 A) a_Star )  ->
+      ( Typing G psi (a_CPi  q_Top  phi2 B) a_Star )  ->
+     DefEq G psi (Eq (a_CPi  q_Top  phi1 A) (a_CPi  q_Top  phi2 B) a_Star)
+ | E_CAbsCong : forall (L:vars) (G:context) (psi:grade) (a b:tm) (phi1:constraint) (B:tm),
+      ( forall c , c \notin  L  -> DefEq  (( c ~ (  q_Top  , Co  phi1 )) ++  G )  psi (Eq  ( open_tm_wrt_co a (g_Var_f c) )   ( open_tm_wrt_co b (g_Var_f c) )   ( open_tm_wrt_co B (g_Var_f c) ) ) )  ->
       ( PropWff  (meet_ctx_l   q_C    G )   q_C  phi1 )  ->
-     DefEq G psi (Eq  ( (a_UCAbs psi0 a) )   ( (a_UCAbs psi0 b) )  (a_CPi psi0 phi1 B))
+     DefEq G psi (Eq  ( (a_UCAbs  q_Top  a) )   ( (a_UCAbs  q_Top  b) )  (a_CPi  q_Top  phi1 B))
  | E_CAppCong : forall (G:context) (psi:grade) (a1 b1 B:tm) (phi:constraint),
      DefEq G psi (Eq a1 b1 (a_CPi  q_Top  phi B)) ->
      DefEq  (meet_ctx_l   q_C    G )   q_C  phi ->

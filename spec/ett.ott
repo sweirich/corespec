@@ -1504,20 +1504,18 @@ G |=  psi B1 {a1 /x}  ~ B2 {a2/x} : TYPE
 
 % YL: I think it's okay to use psi instead of CTime
 % joinability still covers propositions
--- TODO -- this is wrong
 G |= psi phi1 == phi2
-% not a typo! 
-G, c: psi phi1 |= psi A ~ B : TYPE
+G, c: top phi1 |= psi A ~ B : TYPE
 [G |= psi phi1 ok]
-[G |= psi all c:psi0 phi1. A : TYPE]
-[G |= psi all c:psi0 phi2. B : TYPE]
+[G |= psi all c:top phi1. A : TYPE]
+[G |= psi all c:top phi2. B : TYPE]
 --------------------------------------------------------- :: CPiCong
-G |= psi all c:psi0 phi1. A  ~ all c:psi0 phi2. B : TYPE
+G |= psi all c:top phi1. A  ~ all c:top phi2. B : TYPE
 
-G, c: psi0 \/ psi phi1 |= psi a ~ b : B
+G, c: top phi1 |= psi a ~ b : B
 [ CTime /\ G |= CTime phi1 ok ]
 ------------------------------------------------------------ :: CAbsCong
-G |= psi (/\psi0 c . a) ~ (/\ psi0 c . b) : all c:psi0 phi1. B
+G |= psi (/\top c . a) ~ (/\ top c . b) : all c:top phi1. B
 
 % YL: hardwired psi0 to top
 G |= psi a1 ~ b1 : all c: top phi. B

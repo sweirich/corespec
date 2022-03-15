@@ -6,6 +6,8 @@ Require Export Metalib.LibLNgen.
 
 Require Export ett_ott.
 
+Local Set Warnings "-non-recursive". 
+
 (** NOTE: Auxiliary theorems are hidden in generated documentation.
     In general, there is a [_rec] version of every lemma involving
     [open] and [close]. *)
@@ -14,41 +16,19 @@ Require Export ett_ott.
 (* *********************************************************************** *)
 (** * Induction principles for nonterminals *)
 
-Scheme grade_ind' := Induction for grade Sort Prop.
-
-Definition grade_mutind :=
-  fun H1 =>
-  grade_ind' H1.
-
-Scheme grade_rec' := Induction for grade Sort Set.
-
-Definition grade_mutrec :=
-  fun H1 =>
-  grade_rec' H1.
-
 Scheme tm_ind' := Induction for tm Sort Prop
   with brs_ind' := Induction for brs Sort Prop
   with co_ind' := Induction for co Sort Prop
   with constraint_ind' := Induction for constraint Sort Prop.
 
-Definition tm_brs_co_constraint_mutind :=
-  fun H1 H2 H3 H4 H5 H6 H7 H8 H9 H10 H11 H12 H13 H14 H15 H16 H17 H18 H19 H20 H21 H22 H23 H24 H25 H26 H27 H28 H29 H30 H31 H32 H33 H34 H35 H36 H37 H38 H39 H40 H41 H42 H43 H44 H45 H46 H47 H48 H49 =>
-  (conj (tm_ind' H1 H2 H3 H4 H5 H6 H7 H8 H9 H10 H11 H12 H13 H14 H15 H16 H17 H18 H19 H20 H21 H22 H23 H24 H25 H26 H27 H28 H29 H30 H31 H32 H33 H34 H35 H36 H37 H38 H39 H40 H41 H42 H43 H44 H45 H46 H47 H48 H49)
-  ((conj (brs_ind' H1 H2 H3 H4 H5 H6 H7 H8 H9 H10 H11 H12 H13 H14 H15 H16 H17 H18 H19 H20 H21 H22 H23 H24 H25 H26 H27 H28 H29 H30 H31 H32 H33 H34 H35 H36 H37 H38 H39 H40 H41 H42 H43 H44 H45 H46 H47 H48 H49)
-  ((conj (co_ind' H1 H2 H3 H4 H5 H6 H7 H8 H9 H10 H11 H12 H13 H14 H15 H16 H17 H18 H19 H20 H21 H22 H23 H24 H25 H26 H27 H28 H29 H30 H31 H32 H33 H34 H35 H36 H37 H38 H39 H40 H41 H42 H43 H44 H45 H46 H47 H48 H49)
-  (constraint_ind' H1 H2 H3 H4 H5 H6 H7 H8 H9 H10 H11 H12 H13 H14 H15 H16 H17 H18 H19 H20 H21 H22 H23 H24 H25 H26 H27 H28 H29 H30 H31 H32 H33 H34 H35 H36 H37 H38 H39 H40 H41 H42 H43 H44 H45 H46 H47 H48 H49)))))).
+Combined Scheme tm_brs_co_constraint_mutind from tm_ind',brs_ind',co_ind',constraint_ind'.
 
 Scheme tm_rec' := Induction for tm Sort Set
   with brs_rec' := Induction for brs Sort Set
   with co_rec' := Induction for co Sort Set
   with constraint_rec' := Induction for constraint Sort Set.
 
-Definition tm_brs_co_constraint_mutrec :=
-  fun H1 H2 H3 H4 H5 H6 H7 H8 H9 H10 H11 H12 H13 H14 H15 H16 H17 H18 H19 H20 H21 H22 H23 H24 H25 H26 H27 H28 H29 H30 H31 H32 H33 H34 H35 H36 H37 H38 H39 H40 H41 H42 H43 H44 H45 H46 H47 H48 H49 =>
-  (pair ((pair ((pair (tm_rec' H1 H2 H3 H4 H5 H6 H7 H8 H9 H10 H11 H12 H13 H14 H15 H16 H17 H18 H19 H20 H21 H22 H23 H24 H25 H26 H27 H28 H29 H30 H31 H32 H33 H34 H35 H36 H37 H38 H39 H40 H41 H42 H43 H44 H45 H46 H47 H48 H49)
-  (brs_rec' H1 H2 H3 H4 H5 H6 H7 H8 H9 H10 H11 H12 H13 H14 H15 H16 H17 H18 H19 H20 H21 H22 H23 H24 H25 H26 H27 H28 H29 H30 H31 H32 H33 H34 H35 H36 H37 H38 H39 H40 H41 H42 H43 H44 H45 H46 H47 H48 H49)))
-  (co_rec' H1 H2 H3 H4 H5 H6 H7 H8 H9 H10 H11 H12 H13 H14 H15 H16 H17 H18 H19 H20 H21 H22 H23 H24 H25 H26 H27 H28 H29 H30 H31 H32 H33 H34 H35 H36 H37 H38 H39 H40 H41 H42 H43 H44 H45 H46 H47 H48 H49)))
-  (constraint_rec' H1 H2 H3 H4 H5 H6 H7 H8 H9 H10 H11 H12 H13 H14 H15 H16 H17 H18 H19 H20 H21 H22 H23 H24 H25 H26 H27 H28 H29 H30 H31 H32 H33 H34 H35 H36 H37 H38 H39 H40 H41 H42 H43 H44 H45 H46 H47 H48 H49)).
+Combined Scheme tm_brs_co_constraint_mutrec from tm_rec',brs_rec',co_rec',constraint_rec'.
 
 
 (* *********************************************************************** *)
@@ -196,10 +176,8 @@ Definition close_constraint_wrt_co c1 phi1 := close_constraint_wrt_co_rec 0 c1 p
 (* *********************************************************************** *)
 (** * Size *)
 
-Fixpoint size_grade (psi1 : grade) {struct psi1} : nat :=
-  match psi1 with
-
-  end.
+Definition size_grade (psi1 : grade) : nat := 1
+.
 
 Fixpoint size_tm (a1 : tm) {struct a1} : nat :=
   match a1 with
@@ -609,40 +587,30 @@ Scheme degree_tm_wrt_tm_ind' := Induction for degree_tm_wrt_tm Sort Prop
   with degree_co_wrt_tm_ind' := Induction for degree_co_wrt_tm Sort Prop
   with degree_constraint_wrt_tm_ind' := Induction for degree_constraint_wrt_tm Sort Prop.
 
-Definition degree_tm_wrt_tm_degree_brs_wrt_tm_degree_co_wrt_tm_degree_constraint_wrt_tm_mutind :=
-  fun H1 H2 H3 H4 H5 H6 H7 H8 H9 H10 H11 H12 H13 H14 H15 H16 H17 H18 H19 H20 H21 H22 H23 H24 H25 H26 H27 H28 H29 H30 H31 H32 H33 H34 H35 H36 H37 H38 H39 H40 H41 H42 H43 H44 H45 H46 H47 H48 H49 =>
-  (conj (degree_tm_wrt_tm_ind' H1 H2 H3 H4 H5 H6 H7 H8 H9 H10 H11 H12 H13 H14 H15 H16 H17 H18 H19 H20 H21 H22 H23 H24 H25 H26 H27 H28 H29 H30 H31 H32 H33 H34 H35 H36 H37 H38 H39 H40 H41 H42 H43 H44 H45 H46 H47 H48 H49)
-  ((conj (degree_brs_wrt_tm_ind' H1 H2 H3 H4 H5 H6 H7 H8 H9 H10 H11 H12 H13 H14 H15 H16 H17 H18 H19 H20 H21 H22 H23 H24 H25 H26 H27 H28 H29 H30 H31 H32 H33 H34 H35 H36 H37 H38 H39 H40 H41 H42 H43 H44 H45 H46 H47 H48 H49)
-  ((conj (degree_co_wrt_tm_ind' H1 H2 H3 H4 H5 H6 H7 H8 H9 H10 H11 H12 H13 H14 H15 H16 H17 H18 H19 H20 H21 H22 H23 H24 H25 H26 H27 H28 H29 H30 H31 H32 H33 H34 H35 H36 H37 H38 H39 H40 H41 H42 H43 H44 H45 H46 H47 H48 H49)
-  (degree_constraint_wrt_tm_ind' H1 H2 H3 H4 H5 H6 H7 H8 H9 H10 H11 H12 H13 H14 H15 H16 H17 H18 H19 H20 H21 H22 H23 H24 H25 H26 H27 H28 H29 H30 H31 H32 H33 H34 H35 H36 H37 H38 H39 H40 H41 H42 H43 H44 H45 H46 H47 H48 H49)))))).
+Combined Scheme degree_tm_wrt_tm_degree_brs_wrt_tm_degree_co_wrt_tm_degree_constraint_wrt_tm_mutind from degree_tm_wrt_tm_ind',degree_brs_wrt_tm_ind',degree_co_wrt_tm_ind',degree_constraint_wrt_tm_ind'.
 
 Scheme degree_tm_wrt_co_ind' := Induction for degree_tm_wrt_co Sort Prop
   with degree_brs_wrt_co_ind' := Induction for degree_brs_wrt_co Sort Prop
   with degree_co_wrt_co_ind' := Induction for degree_co_wrt_co Sort Prop
   with degree_constraint_wrt_co_ind' := Induction for degree_constraint_wrt_co Sort Prop.
 
-Definition degree_tm_wrt_co_degree_brs_wrt_co_degree_co_wrt_co_degree_constraint_wrt_co_mutind :=
-  fun H1 H2 H3 H4 H5 H6 H7 H8 H9 H10 H11 H12 H13 H14 H15 H16 H17 H18 H19 H20 H21 H22 H23 H24 H25 H26 H27 H28 H29 H30 H31 H32 H33 H34 H35 H36 H37 H38 H39 H40 H41 H42 H43 H44 H45 H46 H47 H48 H49 =>
-  (conj (degree_tm_wrt_co_ind' H1 H2 H3 H4 H5 H6 H7 H8 H9 H10 H11 H12 H13 H14 H15 H16 H17 H18 H19 H20 H21 H22 H23 H24 H25 H26 H27 H28 H29 H30 H31 H32 H33 H34 H35 H36 H37 H38 H39 H40 H41 H42 H43 H44 H45 H46 H47 H48 H49)
-  ((conj (degree_brs_wrt_co_ind' H1 H2 H3 H4 H5 H6 H7 H8 H9 H10 H11 H12 H13 H14 H15 H16 H17 H18 H19 H20 H21 H22 H23 H24 H25 H26 H27 H28 H29 H30 H31 H32 H33 H34 H35 H36 H37 H38 H39 H40 H41 H42 H43 H44 H45 H46 H47 H48 H49)
-  ((conj (degree_co_wrt_co_ind' H1 H2 H3 H4 H5 H6 H7 H8 H9 H10 H11 H12 H13 H14 H15 H16 H17 H18 H19 H20 H21 H22 H23 H24 H25 H26 H27 H28 H29 H30 H31 H32 H33 H34 H35 H36 H37 H38 H39 H40 H41 H42 H43 H44 H45 H46 H47 H48 H49)
-  (degree_constraint_wrt_co_ind' H1 H2 H3 H4 H5 H6 H7 H8 H9 H10 H11 H12 H13 H14 H15 H16 H17 H18 H19 H20 H21 H22 H23 H24 H25 H26 H27 H28 H29 H30 H31 H32 H33 H34 H35 H36 H37 H38 H39 H40 H41 H42 H43 H44 H45 H46 H47 H48 H49)))))).
+Combined Scheme degree_tm_wrt_co_degree_brs_wrt_co_degree_co_wrt_co_degree_constraint_wrt_co_mutind from degree_tm_wrt_co_ind',degree_brs_wrt_co_ind',degree_co_wrt_co_ind',degree_constraint_wrt_co_ind'.
 
-Hint Constructors degree_tm_wrt_tm : core lngen.
+#[export] Hint Constructors degree_tm_wrt_tm : core lngen.
 
-Hint Constructors degree_brs_wrt_tm : core lngen.
+#[export] Hint Constructors degree_brs_wrt_tm : core lngen.
 
-Hint Constructors degree_co_wrt_tm : core lngen.
+#[export] Hint Constructors degree_co_wrt_tm : core lngen.
 
-Hint Constructors degree_constraint_wrt_tm : core lngen.
+#[export] Hint Constructors degree_constraint_wrt_tm : core lngen.
 
-Hint Constructors degree_tm_wrt_co : core lngen.
+#[export] Hint Constructors degree_tm_wrt_co : core lngen.
 
-Hint Constructors degree_brs_wrt_co : core lngen.
+#[export] Hint Constructors degree_brs_wrt_co : core lngen.
 
-Hint Constructors degree_co_wrt_co : core lngen.
+#[export] Hint Constructors degree_co_wrt_co : core lngen.
 
-Hint Constructors degree_constraint_wrt_co : core lngen.
+#[export] Hint Constructors degree_constraint_wrt_co : core lngen.
 
 
 (* *********************************************************************** *)
@@ -816,52 +784,37 @@ Scheme lc_tm_ind' := Induction for lc_tm Sort Prop
   with lc_co_ind' := Induction for lc_co Sort Prop
   with lc_constraint_ind' := Induction for lc_constraint Sort Prop.
 
-Definition lc_tm_lc_brs_lc_co_lc_constraint_mutind :=
-  fun H1 H2 H3 H4 H5 H6 H7 H8 H9 H10 H11 H12 H13 H14 H15 H16 H17 H18 H19 H20 H21 H22 H23 H24 H25 H26 H27 H28 H29 H30 H31 H32 H33 H34 H35 H36 H37 H38 H39 H40 H41 H42 H43 H44 H45 H46 H47 =>
-  (conj (lc_tm_ind' H1 H2 H3 H4 H5 H6 H7 H8 H9 H10 H11 H12 H13 H14 H15 H16 H17 H18 H19 H20 H21 H22 H23 H24 H25 H26 H27 H28 H29 H30 H31 H32 H33 H34 H35 H36 H37 H38 H39 H40 H41 H42 H43 H44 H45 H46 H47)
-  ((conj (lc_brs_ind' H1 H2 H3 H4 H5 H6 H7 H8 H9 H10 H11 H12 H13 H14 H15 H16 H17 H18 H19 H20 H21 H22 H23 H24 H25 H26 H27 H28 H29 H30 H31 H32 H33 H34 H35 H36 H37 H38 H39 H40 H41 H42 H43 H44 H45 H46 H47)
-  ((conj (lc_co_ind' H1 H2 H3 H4 H5 H6 H7 H8 H9 H10 H11 H12 H13 H14 H15 H16 H17 H18 H19 H20 H21 H22 H23 H24 H25 H26 H27 H28 H29 H30 H31 H32 H33 H34 H35 H36 H37 H38 H39 H40 H41 H42 H43 H44 H45 H46 H47)
-  (lc_constraint_ind' H1 H2 H3 H4 H5 H6 H7 H8 H9 H10 H11 H12 H13 H14 H15 H16 H17 H18 H19 H20 H21 H22 H23 H24 H25 H26 H27 H28 H29 H30 H31 H32 H33 H34 H35 H36 H37 H38 H39 H40 H41 H42 H43 H44 H45 H46 H47)))))).
+Combined Scheme lc_tm_lc_brs_lc_co_lc_constraint_mutind from lc_tm_ind',lc_brs_ind',lc_co_ind',lc_constraint_ind'.
 
 Scheme lc_set_tm_ind' := Induction for lc_set_tm Sort Prop
   with lc_set_brs_ind' := Induction for lc_set_brs Sort Prop
   with lc_set_co_ind' := Induction for lc_set_co Sort Prop
   with lc_set_constraint_ind' := Induction for lc_set_constraint Sort Prop.
 
-Definition lc_set_tm_lc_set_brs_lc_set_co_lc_set_constraint_mutind :=
-  fun H1 H2 H3 H4 H5 H6 H7 H8 H9 H10 H11 H12 H13 H14 H15 H16 H17 H18 H19 H20 H21 H22 H23 H24 H25 H26 H27 H28 H29 H30 H31 H32 H33 H34 H35 H36 H37 H38 H39 H40 H41 H42 H43 H44 H45 H46 H47 =>
-  (conj (lc_set_tm_ind' H1 H2 H3 H4 H5 H6 H7 H8 H9 H10 H11 H12 H13 H14 H15 H16 H17 H18 H19 H20 H21 H22 H23 H24 H25 H26 H27 H28 H29 H30 H31 H32 H33 H34 H35 H36 H37 H38 H39 H40 H41 H42 H43 H44 H45 H46 H47)
-  ((conj (lc_set_brs_ind' H1 H2 H3 H4 H5 H6 H7 H8 H9 H10 H11 H12 H13 H14 H15 H16 H17 H18 H19 H20 H21 H22 H23 H24 H25 H26 H27 H28 H29 H30 H31 H32 H33 H34 H35 H36 H37 H38 H39 H40 H41 H42 H43 H44 H45 H46 H47)
-  ((conj (lc_set_co_ind' H1 H2 H3 H4 H5 H6 H7 H8 H9 H10 H11 H12 H13 H14 H15 H16 H17 H18 H19 H20 H21 H22 H23 H24 H25 H26 H27 H28 H29 H30 H31 H32 H33 H34 H35 H36 H37 H38 H39 H40 H41 H42 H43 H44 H45 H46 H47)
-  (lc_set_constraint_ind' H1 H2 H3 H4 H5 H6 H7 H8 H9 H10 H11 H12 H13 H14 H15 H16 H17 H18 H19 H20 H21 H22 H23 H24 H25 H26 H27 H28 H29 H30 H31 H32 H33 H34 H35 H36 H37 H38 H39 H40 H41 H42 H43 H44 H45 H46 H47)))))).
+Combined Scheme lc_set_tm_lc_set_brs_lc_set_co_lc_set_constraint_mutind from lc_set_tm_ind',lc_set_brs_ind',lc_set_co_ind',lc_set_constraint_ind'.
 
 Scheme lc_set_tm_rec' := Induction for lc_set_tm Sort Set
   with lc_set_brs_rec' := Induction for lc_set_brs Sort Set
   with lc_set_co_rec' := Induction for lc_set_co Sort Set
   with lc_set_constraint_rec' := Induction for lc_set_constraint Sort Set.
 
-Definition lc_set_tm_lc_set_brs_lc_set_co_lc_set_constraint_mutrec :=
-  fun H1 H2 H3 H4 H5 H6 H7 H8 H9 H10 H11 H12 H13 H14 H15 H16 H17 H18 H19 H20 H21 H22 H23 H24 H25 H26 H27 H28 H29 H30 H31 H32 H33 H34 H35 H36 H37 H38 H39 H40 H41 H42 H43 H44 H45 H46 H47 =>
-  (pair ((pair ((pair (lc_set_tm_rec' H1 H2 H3 H4 H5 H6 H7 H8 H9 H10 H11 H12 H13 H14 H15 H16 H17 H18 H19 H20 H21 H22 H23 H24 H25 H26 H27 H28 H29 H30 H31 H32 H33 H34 H35 H36 H37 H38 H39 H40 H41 H42 H43 H44 H45 H46 H47)
-  (lc_set_brs_rec' H1 H2 H3 H4 H5 H6 H7 H8 H9 H10 H11 H12 H13 H14 H15 H16 H17 H18 H19 H20 H21 H22 H23 H24 H25 H26 H27 H28 H29 H30 H31 H32 H33 H34 H35 H36 H37 H38 H39 H40 H41 H42 H43 H44 H45 H46 H47)))
-  (lc_set_co_rec' H1 H2 H3 H4 H5 H6 H7 H8 H9 H10 H11 H12 H13 H14 H15 H16 H17 H18 H19 H20 H21 H22 H23 H24 H25 H26 H27 H28 H29 H30 H31 H32 H33 H34 H35 H36 H37 H38 H39 H40 H41 H42 H43 H44 H45 H46 H47)))
-  (lc_set_constraint_rec' H1 H2 H3 H4 H5 H6 H7 H8 H9 H10 H11 H12 H13 H14 H15 H16 H17 H18 H19 H20 H21 H22 H23 H24 H25 H26 H27 H28 H29 H30 H31 H32 H33 H34 H35 H36 H37 H38 H39 H40 H41 H42 H43 H44 H45 H46 H47)).
+Combined Scheme lc_set_tm_lc_set_brs_lc_set_co_lc_set_constraint_mutrec from lc_set_tm_rec',lc_set_brs_rec',lc_set_co_rec',lc_set_constraint_rec'.
 
-Hint Constructors lc_tm : core lngen.
+#[export] Hint Constructors lc_tm : core lngen.
 
-Hint Constructors lc_brs : core lngen.
+#[export] Hint Constructors lc_brs : core lngen.
 
-Hint Constructors lc_co : core lngen.
+#[export] Hint Constructors lc_co : core lngen.
 
-Hint Constructors lc_constraint : core lngen.
+#[export] Hint Constructors lc_constraint : core lngen.
 
-Hint Constructors lc_set_tm : core lngen.
+#[export] Hint Constructors lc_set_tm : core lngen.
 
-Hint Constructors lc_set_brs : core lngen.
+#[export] Hint Constructors lc_set_brs : core lngen.
 
-Hint Constructors lc_set_co : core lngen.
+#[export] Hint Constructors lc_set_co : core lngen.
 
-Hint Constructors lc_set_constraint : core lngen.
+#[export] Hint Constructors lc_set_constraint : core lngen.
 
 
 (* *********************************************************************** *)
@@ -883,21 +836,21 @@ Definition body_co_wrt_co g1 := forall c1, lc_co (open_co_wrt_co g1 (g_Var_f c1)
 
 Definition body_constraint_wrt_co phi1 := forall c1, lc_constraint (open_constraint_wrt_co phi1 (g_Var_f c1)).
 
-Hint Unfold body_tm_wrt_tm : core.
+#[export] Hint Unfold body_tm_wrt_tm : core.
 
-Hint Unfold body_brs_wrt_tm : core.
+#[export] Hint Unfold body_brs_wrt_tm : core.
 
-Hint Unfold body_co_wrt_tm : core.
+#[export] Hint Unfold body_co_wrt_tm : core.
 
-Hint Unfold body_constraint_wrt_tm : core.
+#[export] Hint Unfold body_constraint_wrt_tm : core.
 
-Hint Unfold body_tm_wrt_co : core.
+#[export] Hint Unfold body_tm_wrt_co : core.
 
-Hint Unfold body_brs_wrt_co : core.
+#[export] Hint Unfold body_brs_wrt_co : core.
 
-Hint Unfold body_co_wrt_co : core.
+#[export] Hint Unfold body_co_wrt_co : core.
 
-Hint Unfold body_constraint_wrt_co : core.
+#[export] Hint Unfold body_constraint_wrt_co : core.
 
 
 (* *********************************************************************** *)
@@ -905,7 +858,7 @@ Hint Unfold body_constraint_wrt_co : core.
 
 (** Additional hint declarations. *)
 
-Hint Resolve @plus_le_compat : lngen.
+#[export] Hint Resolve plus_le_compat : lngen.
 
 (** Redefine some tactics. *)
 
@@ -935,7 +888,7 @@ Lemma size_grade_min :
 forall psi1, 1 <= size_grade psi1.
 Proof. Admitted.
 
-Hint Resolve size_grade_min : lngen.
+#[export] Hint Resolve size_grade_min : lngen.
 
 (* begin hide *)
 
@@ -952,25 +905,25 @@ Lemma size_tm_min :
 forall a1, 1 <= size_tm a1.
 Proof. Admitted.
 
-Hint Resolve size_tm_min : lngen.
+#[export] Hint Resolve size_tm_min : lngen.
 
 Lemma size_brs_min :
 forall brs1, 1 <= size_brs brs1.
 Proof. Admitted.
 
-Hint Resolve size_brs_min : lngen.
+#[export] Hint Resolve size_brs_min : lngen.
 
 Lemma size_co_min :
 forall g1, 1 <= size_co g1.
 Proof. Admitted.
 
-Hint Resolve size_co_min : lngen.
+#[export] Hint Resolve size_co_min : lngen.
 
 Lemma size_constraint_min :
 forall phi1, 1 <= size_constraint phi1.
 Proof. Admitted.
 
-Hint Resolve size_constraint_min : lngen.
+#[export] Hint Resolve size_constraint_min : lngen.
 
 (* begin hide *)
 
@@ -994,8 +947,8 @@ forall a1 x1 n1,
   size_tm (close_tm_wrt_tm_rec n1 x1 a1) = size_tm a1.
 Proof. Admitted.
 
-Hint Resolve size_tm_close_tm_wrt_tm_rec : lngen.
-Hint Rewrite size_tm_close_tm_wrt_tm_rec using solve [auto] : lngen.
+#[export] Hint Resolve size_tm_close_tm_wrt_tm_rec : lngen.
+#[export] Hint Rewrite size_tm_close_tm_wrt_tm_rec using solve [auto] : lngen.
 
 (* end hide *)
 
@@ -1006,8 +959,8 @@ forall brs1 x1 n1,
   size_brs (close_brs_wrt_tm_rec n1 x1 brs1) = size_brs brs1.
 Proof. Admitted.
 
-Hint Resolve size_brs_close_brs_wrt_tm_rec : lngen.
-Hint Rewrite size_brs_close_brs_wrt_tm_rec using solve [auto] : lngen.
+#[export] Hint Resolve size_brs_close_brs_wrt_tm_rec : lngen.
+#[export] Hint Rewrite size_brs_close_brs_wrt_tm_rec using solve [auto] : lngen.
 
 (* end hide *)
 
@@ -1018,8 +971,8 @@ forall g1 x1 n1,
   size_co (close_co_wrt_tm_rec n1 x1 g1) = size_co g1.
 Proof. Admitted.
 
-Hint Resolve size_co_close_co_wrt_tm_rec : lngen.
-Hint Rewrite size_co_close_co_wrt_tm_rec using solve [auto] : lngen.
+#[export] Hint Resolve size_co_close_co_wrt_tm_rec : lngen.
+#[export] Hint Rewrite size_co_close_co_wrt_tm_rec using solve [auto] : lngen.
 
 (* end hide *)
 
@@ -1030,8 +983,8 @@ forall phi1 x1 n1,
   size_constraint (close_constraint_wrt_tm_rec n1 x1 phi1) = size_constraint phi1.
 Proof. Admitted.
 
-Hint Resolve size_constraint_close_constraint_wrt_tm_rec : lngen.
-Hint Rewrite size_constraint_close_constraint_wrt_tm_rec using solve [auto] : lngen.
+#[export] Hint Resolve size_constraint_close_constraint_wrt_tm_rec : lngen.
+#[export] Hint Rewrite size_constraint_close_constraint_wrt_tm_rec using solve [auto] : lngen.
 
 (* end hide *)
 
@@ -1057,8 +1010,8 @@ forall a1 c1 n1,
   size_tm (close_tm_wrt_co_rec n1 c1 a1) = size_tm a1.
 Proof. Admitted.
 
-Hint Resolve size_tm_close_tm_wrt_co_rec : lngen.
-Hint Rewrite size_tm_close_tm_wrt_co_rec using solve [auto] : lngen.
+#[export] Hint Resolve size_tm_close_tm_wrt_co_rec : lngen.
+#[export] Hint Rewrite size_tm_close_tm_wrt_co_rec using solve [auto] : lngen.
 
 (* end hide *)
 
@@ -1069,8 +1022,8 @@ forall brs1 c1 n1,
   size_brs (close_brs_wrt_co_rec n1 c1 brs1) = size_brs brs1.
 Proof. Admitted.
 
-Hint Resolve size_brs_close_brs_wrt_co_rec : lngen.
-Hint Rewrite size_brs_close_brs_wrt_co_rec using solve [auto] : lngen.
+#[export] Hint Resolve size_brs_close_brs_wrt_co_rec : lngen.
+#[export] Hint Rewrite size_brs_close_brs_wrt_co_rec using solve [auto] : lngen.
 
 (* end hide *)
 
@@ -1081,8 +1034,8 @@ forall g1 c1 n1,
   size_co (close_co_wrt_co_rec n1 c1 g1) = size_co g1.
 Proof. Admitted.
 
-Hint Resolve size_co_close_co_wrt_co_rec : lngen.
-Hint Rewrite size_co_close_co_wrt_co_rec using solve [auto] : lngen.
+#[export] Hint Resolve size_co_close_co_wrt_co_rec : lngen.
+#[export] Hint Rewrite size_co_close_co_wrt_co_rec using solve [auto] : lngen.
 
 (* end hide *)
 
@@ -1093,8 +1046,8 @@ forall phi1 c1 n1,
   size_constraint (close_constraint_wrt_co_rec n1 c1 phi1) = size_constraint phi1.
 Proof. Admitted.
 
-Hint Resolve size_constraint_close_constraint_wrt_co_rec : lngen.
-Hint Rewrite size_constraint_close_constraint_wrt_co_rec using solve [auto] : lngen.
+#[export] Hint Resolve size_constraint_close_constraint_wrt_co_rec : lngen.
+#[export] Hint Rewrite size_constraint_close_constraint_wrt_co_rec using solve [auto] : lngen.
 
 (* end hide *)
 
@@ -1103,64 +1056,64 @@ forall a1 x1,
   size_tm (close_tm_wrt_tm x1 a1) = size_tm a1.
 Proof. Admitted.
 
-Hint Resolve size_tm_close_tm_wrt_tm : lngen.
-Hint Rewrite size_tm_close_tm_wrt_tm using solve [auto] : lngen.
+#[export] Hint Resolve size_tm_close_tm_wrt_tm : lngen.
+#[export] Hint Rewrite size_tm_close_tm_wrt_tm using solve [auto] : lngen.
 
 Lemma size_brs_close_brs_wrt_tm :
 forall brs1 x1,
   size_brs (close_brs_wrt_tm x1 brs1) = size_brs brs1.
 Proof. Admitted.
 
-Hint Resolve size_brs_close_brs_wrt_tm : lngen.
-Hint Rewrite size_brs_close_brs_wrt_tm using solve [auto] : lngen.
+#[export] Hint Resolve size_brs_close_brs_wrt_tm : lngen.
+#[export] Hint Rewrite size_brs_close_brs_wrt_tm using solve [auto] : lngen.
 
 Lemma size_co_close_co_wrt_tm :
 forall g1 x1,
   size_co (close_co_wrt_tm x1 g1) = size_co g1.
 Proof. Admitted.
 
-Hint Resolve size_co_close_co_wrt_tm : lngen.
-Hint Rewrite size_co_close_co_wrt_tm using solve [auto] : lngen.
+#[export] Hint Resolve size_co_close_co_wrt_tm : lngen.
+#[export] Hint Rewrite size_co_close_co_wrt_tm using solve [auto] : lngen.
 
 Lemma size_constraint_close_constraint_wrt_tm :
 forall phi1 x1,
   size_constraint (close_constraint_wrt_tm x1 phi1) = size_constraint phi1.
 Proof. Admitted.
 
-Hint Resolve size_constraint_close_constraint_wrt_tm : lngen.
-Hint Rewrite size_constraint_close_constraint_wrt_tm using solve [auto] : lngen.
+#[export] Hint Resolve size_constraint_close_constraint_wrt_tm : lngen.
+#[export] Hint Rewrite size_constraint_close_constraint_wrt_tm using solve [auto] : lngen.
 
 Lemma size_tm_close_tm_wrt_co :
 forall a1 c1,
   size_tm (close_tm_wrt_co c1 a1) = size_tm a1.
 Proof. Admitted.
 
-Hint Resolve size_tm_close_tm_wrt_co : lngen.
-Hint Rewrite size_tm_close_tm_wrt_co using solve [auto] : lngen.
+#[export] Hint Resolve size_tm_close_tm_wrt_co : lngen.
+#[export] Hint Rewrite size_tm_close_tm_wrt_co using solve [auto] : lngen.
 
 Lemma size_brs_close_brs_wrt_co :
 forall brs1 c1,
   size_brs (close_brs_wrt_co c1 brs1) = size_brs brs1.
 Proof. Admitted.
 
-Hint Resolve size_brs_close_brs_wrt_co : lngen.
-Hint Rewrite size_brs_close_brs_wrt_co using solve [auto] : lngen.
+#[export] Hint Resolve size_brs_close_brs_wrt_co : lngen.
+#[export] Hint Rewrite size_brs_close_brs_wrt_co using solve [auto] : lngen.
 
 Lemma size_co_close_co_wrt_co :
 forall g1 c1,
   size_co (close_co_wrt_co c1 g1) = size_co g1.
 Proof. Admitted.
 
-Hint Resolve size_co_close_co_wrt_co : lngen.
-Hint Rewrite size_co_close_co_wrt_co using solve [auto] : lngen.
+#[export] Hint Resolve size_co_close_co_wrt_co : lngen.
+#[export] Hint Rewrite size_co_close_co_wrt_co using solve [auto] : lngen.
 
 Lemma size_constraint_close_constraint_wrt_co :
 forall phi1 c1,
   size_constraint (close_constraint_wrt_co c1 phi1) = size_constraint phi1.
 Proof. Admitted.
 
-Hint Resolve size_constraint_close_constraint_wrt_co : lngen.
-Hint Rewrite size_constraint_close_constraint_wrt_co using solve [auto] : lngen.
+#[export] Hint Resolve size_constraint_close_constraint_wrt_co : lngen.
+#[export] Hint Rewrite size_constraint_close_constraint_wrt_co using solve [auto] : lngen.
 
 (* begin hide *)
 
@@ -1184,7 +1137,7 @@ forall a1 a2 n1,
   size_tm a1 <= size_tm (open_tm_wrt_tm_rec n1 a2 a1).
 Proof. Admitted.
 
-Hint Resolve size_tm_open_tm_wrt_tm_rec : lngen.
+#[export] Hint Resolve size_tm_open_tm_wrt_tm_rec : lngen.
 
 (* end hide *)
 
@@ -1195,7 +1148,7 @@ forall brs1 a1 n1,
   size_brs brs1 <= size_brs (open_brs_wrt_tm_rec n1 a1 brs1).
 Proof. Admitted.
 
-Hint Resolve size_brs_open_brs_wrt_tm_rec : lngen.
+#[export] Hint Resolve size_brs_open_brs_wrt_tm_rec : lngen.
 
 (* end hide *)
 
@@ -1206,7 +1159,7 @@ forall g1 a1 n1,
   size_co g1 <= size_co (open_co_wrt_tm_rec n1 a1 g1).
 Proof. Admitted.
 
-Hint Resolve size_co_open_co_wrt_tm_rec : lngen.
+#[export] Hint Resolve size_co_open_co_wrt_tm_rec : lngen.
 
 (* end hide *)
 
@@ -1217,7 +1170,7 @@ forall phi1 a1 n1,
   size_constraint phi1 <= size_constraint (open_constraint_wrt_tm_rec n1 a1 phi1).
 Proof. Admitted.
 
-Hint Resolve size_constraint_open_constraint_wrt_tm_rec : lngen.
+#[export] Hint Resolve size_constraint_open_constraint_wrt_tm_rec : lngen.
 
 (* end hide *)
 
@@ -1243,7 +1196,7 @@ forall a1 g1 n1,
   size_tm a1 <= size_tm (open_tm_wrt_co_rec n1 g1 a1).
 Proof. Admitted.
 
-Hint Resolve size_tm_open_tm_wrt_co_rec : lngen.
+#[export] Hint Resolve size_tm_open_tm_wrt_co_rec : lngen.
 
 (* end hide *)
 
@@ -1254,7 +1207,7 @@ forall brs1 g1 n1,
   size_brs brs1 <= size_brs (open_brs_wrt_co_rec n1 g1 brs1).
 Proof. Admitted.
 
-Hint Resolve size_brs_open_brs_wrt_co_rec : lngen.
+#[export] Hint Resolve size_brs_open_brs_wrt_co_rec : lngen.
 
 (* end hide *)
 
@@ -1265,7 +1218,7 @@ forall g1 g2 n1,
   size_co g1 <= size_co (open_co_wrt_co_rec n1 g2 g1).
 Proof. Admitted.
 
-Hint Resolve size_co_open_co_wrt_co_rec : lngen.
+#[export] Hint Resolve size_co_open_co_wrt_co_rec : lngen.
 
 (* end hide *)
 
@@ -1276,7 +1229,7 @@ forall phi1 g1 n1,
   size_constraint phi1 <= size_constraint (open_constraint_wrt_co_rec n1 g1 phi1).
 Proof. Admitted.
 
-Hint Resolve size_constraint_open_constraint_wrt_co_rec : lngen.
+#[export] Hint Resolve size_constraint_open_constraint_wrt_co_rec : lngen.
 
 (* end hide *)
 
@@ -1285,56 +1238,56 @@ forall a1 a2,
   size_tm a1 <= size_tm (open_tm_wrt_tm a1 a2).
 Proof. Admitted.
 
-Hint Resolve size_tm_open_tm_wrt_tm : lngen.
+#[export] Hint Resolve size_tm_open_tm_wrt_tm : lngen.
 
 Lemma size_brs_open_brs_wrt_tm :
 forall brs1 a1,
   size_brs brs1 <= size_brs (open_brs_wrt_tm brs1 a1).
 Proof. Admitted.
 
-Hint Resolve size_brs_open_brs_wrt_tm : lngen.
+#[export] Hint Resolve size_brs_open_brs_wrt_tm : lngen.
 
 Lemma size_co_open_co_wrt_tm :
 forall g1 a1,
   size_co g1 <= size_co (open_co_wrt_tm g1 a1).
 Proof. Admitted.
 
-Hint Resolve size_co_open_co_wrt_tm : lngen.
+#[export] Hint Resolve size_co_open_co_wrt_tm : lngen.
 
 Lemma size_constraint_open_constraint_wrt_tm :
 forall phi1 a1,
   size_constraint phi1 <= size_constraint (open_constraint_wrt_tm phi1 a1).
 Proof. Admitted.
 
-Hint Resolve size_constraint_open_constraint_wrt_tm : lngen.
+#[export] Hint Resolve size_constraint_open_constraint_wrt_tm : lngen.
 
 Lemma size_tm_open_tm_wrt_co :
 forall a1 g1,
   size_tm a1 <= size_tm (open_tm_wrt_co a1 g1).
 Proof. Admitted.
 
-Hint Resolve size_tm_open_tm_wrt_co : lngen.
+#[export] Hint Resolve size_tm_open_tm_wrt_co : lngen.
 
 Lemma size_brs_open_brs_wrt_co :
 forall brs1 g1,
   size_brs brs1 <= size_brs (open_brs_wrt_co brs1 g1).
 Proof. Admitted.
 
-Hint Resolve size_brs_open_brs_wrt_co : lngen.
+#[export] Hint Resolve size_brs_open_brs_wrt_co : lngen.
 
 Lemma size_co_open_co_wrt_co :
 forall g1 g2,
   size_co g1 <= size_co (open_co_wrt_co g1 g2).
 Proof. Admitted.
 
-Hint Resolve size_co_open_co_wrt_co : lngen.
+#[export] Hint Resolve size_co_open_co_wrt_co : lngen.
 
 Lemma size_constraint_open_constraint_wrt_co :
 forall phi1 g1,
   size_constraint phi1 <= size_constraint (open_constraint_wrt_co phi1 g1).
 Proof. Admitted.
 
-Hint Resolve size_constraint_open_constraint_wrt_co : lngen.
+#[export] Hint Resolve size_constraint_open_constraint_wrt_co : lngen.
 
 (* begin hide *)
 
@@ -1358,8 +1311,8 @@ forall a1 x1 n1,
   size_tm (open_tm_wrt_tm_rec n1 (a_Var_f x1) a1) = size_tm a1.
 Proof. Admitted.
 
-Hint Resolve size_tm_open_tm_wrt_tm_rec_var : lngen.
-Hint Rewrite size_tm_open_tm_wrt_tm_rec_var using solve [auto] : lngen.
+#[export] Hint Resolve size_tm_open_tm_wrt_tm_rec_var : lngen.
+#[export] Hint Rewrite size_tm_open_tm_wrt_tm_rec_var using solve [auto] : lngen.
 
 (* end hide *)
 
@@ -1370,8 +1323,8 @@ forall brs1 x1 n1,
   size_brs (open_brs_wrt_tm_rec n1 (a_Var_f x1) brs1) = size_brs brs1.
 Proof. Admitted.
 
-Hint Resolve size_brs_open_brs_wrt_tm_rec_var : lngen.
-Hint Rewrite size_brs_open_brs_wrt_tm_rec_var using solve [auto] : lngen.
+#[export] Hint Resolve size_brs_open_brs_wrt_tm_rec_var : lngen.
+#[export] Hint Rewrite size_brs_open_brs_wrt_tm_rec_var using solve [auto] : lngen.
 
 (* end hide *)
 
@@ -1382,8 +1335,8 @@ forall g1 x1 n1,
   size_co (open_co_wrt_tm_rec n1 (a_Var_f x1) g1) = size_co g1.
 Proof. Admitted.
 
-Hint Resolve size_co_open_co_wrt_tm_rec_var : lngen.
-Hint Rewrite size_co_open_co_wrt_tm_rec_var using solve [auto] : lngen.
+#[export] Hint Resolve size_co_open_co_wrt_tm_rec_var : lngen.
+#[export] Hint Rewrite size_co_open_co_wrt_tm_rec_var using solve [auto] : lngen.
 
 (* end hide *)
 
@@ -1394,8 +1347,8 @@ forall phi1 x1 n1,
   size_constraint (open_constraint_wrt_tm_rec n1 (a_Var_f x1) phi1) = size_constraint phi1.
 Proof. Admitted.
 
-Hint Resolve size_constraint_open_constraint_wrt_tm_rec_var : lngen.
-Hint Rewrite size_constraint_open_constraint_wrt_tm_rec_var using solve [auto] : lngen.
+#[export] Hint Resolve size_constraint_open_constraint_wrt_tm_rec_var : lngen.
+#[export] Hint Rewrite size_constraint_open_constraint_wrt_tm_rec_var using solve [auto] : lngen.
 
 (* end hide *)
 
@@ -1421,8 +1374,8 @@ forall a1 c1 n1,
   size_tm (open_tm_wrt_co_rec n1 (g_Var_f c1) a1) = size_tm a1.
 Proof. Admitted.
 
-Hint Resolve size_tm_open_tm_wrt_co_rec_var : lngen.
-Hint Rewrite size_tm_open_tm_wrt_co_rec_var using solve [auto] : lngen.
+#[export] Hint Resolve size_tm_open_tm_wrt_co_rec_var : lngen.
+#[export] Hint Rewrite size_tm_open_tm_wrt_co_rec_var using solve [auto] : lngen.
 
 (* end hide *)
 
@@ -1433,8 +1386,8 @@ forall brs1 c1 n1,
   size_brs (open_brs_wrt_co_rec n1 (g_Var_f c1) brs1) = size_brs brs1.
 Proof. Admitted.
 
-Hint Resolve size_brs_open_brs_wrt_co_rec_var : lngen.
-Hint Rewrite size_brs_open_brs_wrt_co_rec_var using solve [auto] : lngen.
+#[export] Hint Resolve size_brs_open_brs_wrt_co_rec_var : lngen.
+#[export] Hint Rewrite size_brs_open_brs_wrt_co_rec_var using solve [auto] : lngen.
 
 (* end hide *)
 
@@ -1445,8 +1398,8 @@ forall g1 c1 n1,
   size_co (open_co_wrt_co_rec n1 (g_Var_f c1) g1) = size_co g1.
 Proof. Admitted.
 
-Hint Resolve size_co_open_co_wrt_co_rec_var : lngen.
-Hint Rewrite size_co_open_co_wrt_co_rec_var using solve [auto] : lngen.
+#[export] Hint Resolve size_co_open_co_wrt_co_rec_var : lngen.
+#[export] Hint Rewrite size_co_open_co_wrt_co_rec_var using solve [auto] : lngen.
 
 (* end hide *)
 
@@ -1457,8 +1410,8 @@ forall phi1 c1 n1,
   size_constraint (open_constraint_wrt_co_rec n1 (g_Var_f c1) phi1) = size_constraint phi1.
 Proof. Admitted.
 
-Hint Resolve size_constraint_open_constraint_wrt_co_rec_var : lngen.
-Hint Rewrite size_constraint_open_constraint_wrt_co_rec_var using solve [auto] : lngen.
+#[export] Hint Resolve size_constraint_open_constraint_wrt_co_rec_var : lngen.
+#[export] Hint Rewrite size_constraint_open_constraint_wrt_co_rec_var using solve [auto] : lngen.
 
 (* end hide *)
 
@@ -1467,64 +1420,64 @@ forall a1 x1,
   size_tm (open_tm_wrt_tm a1 (a_Var_f x1)) = size_tm a1.
 Proof. Admitted.
 
-Hint Resolve size_tm_open_tm_wrt_tm_var : lngen.
-Hint Rewrite size_tm_open_tm_wrt_tm_var using solve [auto] : lngen.
+#[export] Hint Resolve size_tm_open_tm_wrt_tm_var : lngen.
+#[export] Hint Rewrite size_tm_open_tm_wrt_tm_var using solve [auto] : lngen.
 
 Lemma size_brs_open_brs_wrt_tm_var :
 forall brs1 x1,
   size_brs (open_brs_wrt_tm brs1 (a_Var_f x1)) = size_brs brs1.
 Proof. Admitted.
 
-Hint Resolve size_brs_open_brs_wrt_tm_var : lngen.
-Hint Rewrite size_brs_open_brs_wrt_tm_var using solve [auto] : lngen.
+#[export] Hint Resolve size_brs_open_brs_wrt_tm_var : lngen.
+#[export] Hint Rewrite size_brs_open_brs_wrt_tm_var using solve [auto] : lngen.
 
 Lemma size_co_open_co_wrt_tm_var :
 forall g1 x1,
   size_co (open_co_wrt_tm g1 (a_Var_f x1)) = size_co g1.
 Proof. Admitted.
 
-Hint Resolve size_co_open_co_wrt_tm_var : lngen.
-Hint Rewrite size_co_open_co_wrt_tm_var using solve [auto] : lngen.
+#[export] Hint Resolve size_co_open_co_wrt_tm_var : lngen.
+#[export] Hint Rewrite size_co_open_co_wrt_tm_var using solve [auto] : lngen.
 
 Lemma size_constraint_open_constraint_wrt_tm_var :
 forall phi1 x1,
   size_constraint (open_constraint_wrt_tm phi1 (a_Var_f x1)) = size_constraint phi1.
 Proof. Admitted.
 
-Hint Resolve size_constraint_open_constraint_wrt_tm_var : lngen.
-Hint Rewrite size_constraint_open_constraint_wrt_tm_var using solve [auto] : lngen.
+#[export] Hint Resolve size_constraint_open_constraint_wrt_tm_var : lngen.
+#[export] Hint Rewrite size_constraint_open_constraint_wrt_tm_var using solve [auto] : lngen.
 
 Lemma size_tm_open_tm_wrt_co_var :
 forall a1 c1,
   size_tm (open_tm_wrt_co a1 (g_Var_f c1)) = size_tm a1.
 Proof. Admitted.
 
-Hint Resolve size_tm_open_tm_wrt_co_var : lngen.
-Hint Rewrite size_tm_open_tm_wrt_co_var using solve [auto] : lngen.
+#[export] Hint Resolve size_tm_open_tm_wrt_co_var : lngen.
+#[export] Hint Rewrite size_tm_open_tm_wrt_co_var using solve [auto] : lngen.
 
 Lemma size_brs_open_brs_wrt_co_var :
 forall brs1 c1,
   size_brs (open_brs_wrt_co brs1 (g_Var_f c1)) = size_brs brs1.
 Proof. Admitted.
 
-Hint Resolve size_brs_open_brs_wrt_co_var : lngen.
-Hint Rewrite size_brs_open_brs_wrt_co_var using solve [auto] : lngen.
+#[export] Hint Resolve size_brs_open_brs_wrt_co_var : lngen.
+#[export] Hint Rewrite size_brs_open_brs_wrt_co_var using solve [auto] : lngen.
 
 Lemma size_co_open_co_wrt_co_var :
 forall g1 c1,
   size_co (open_co_wrt_co g1 (g_Var_f c1)) = size_co g1.
 Proof. Admitted.
 
-Hint Resolve size_co_open_co_wrt_co_var : lngen.
-Hint Rewrite size_co_open_co_wrt_co_var using solve [auto] : lngen.
+#[export] Hint Resolve size_co_open_co_wrt_co_var : lngen.
+#[export] Hint Rewrite size_co_open_co_wrt_co_var using solve [auto] : lngen.
 
 Lemma size_constraint_open_constraint_wrt_co_var :
 forall phi1 c1,
   size_constraint (open_constraint_wrt_co phi1 (g_Var_f c1)) = size_constraint phi1.
 Proof. Admitted.
 
-Hint Resolve size_constraint_open_constraint_wrt_co_var : lngen.
-Hint Rewrite size_constraint_open_constraint_wrt_co_var using solve [auto] : lngen.
+#[export] Hint Resolve size_constraint_open_constraint_wrt_co_var : lngen.
+#[export] Hint Rewrite size_constraint_open_constraint_wrt_co_var using solve [auto] : lngen.
 
 
 (* *********************************************************************** *)
@@ -1558,7 +1511,7 @@ forall n1 a1,
   degree_tm_wrt_tm (S n1) a1.
 Proof. Admitted.
 
-Hint Resolve degree_tm_wrt_tm_S : lngen.
+#[export] Hint Resolve degree_tm_wrt_tm_S : lngen.
 
 Lemma degree_brs_wrt_tm_S :
 forall n1 brs1,
@@ -1566,7 +1519,7 @@ forall n1 brs1,
   degree_brs_wrt_tm (S n1) brs1.
 Proof. Admitted.
 
-Hint Resolve degree_brs_wrt_tm_S : lngen.
+#[export] Hint Resolve degree_brs_wrt_tm_S : lngen.
 
 Lemma degree_co_wrt_tm_S :
 forall n1 g1,
@@ -1574,7 +1527,7 @@ forall n1 g1,
   degree_co_wrt_tm (S n1) g1.
 Proof. Admitted.
 
-Hint Resolve degree_co_wrt_tm_S : lngen.
+#[export] Hint Resolve degree_co_wrt_tm_S : lngen.
 
 Lemma degree_constraint_wrt_tm_S :
 forall n1 phi1,
@@ -1582,7 +1535,7 @@ forall n1 phi1,
   degree_constraint_wrt_tm (S n1) phi1.
 Proof. Admitted.
 
-Hint Resolve degree_constraint_wrt_tm_S : lngen.
+#[export] Hint Resolve degree_constraint_wrt_tm_S : lngen.
 
 (* begin hide *)
 
@@ -1609,7 +1562,7 @@ forall n1 a1,
   degree_tm_wrt_co (S n1) a1.
 Proof. Admitted.
 
-Hint Resolve degree_tm_wrt_co_S : lngen.
+#[export] Hint Resolve degree_tm_wrt_co_S : lngen.
 
 Lemma degree_brs_wrt_co_S :
 forall n1 brs1,
@@ -1617,7 +1570,7 @@ forall n1 brs1,
   degree_brs_wrt_co (S n1) brs1.
 Proof. Admitted.
 
-Hint Resolve degree_brs_wrt_co_S : lngen.
+#[export] Hint Resolve degree_brs_wrt_co_S : lngen.
 
 Lemma degree_co_wrt_co_S :
 forall n1 g1,
@@ -1625,7 +1578,7 @@ forall n1 g1,
   degree_co_wrt_co (S n1) g1.
 Proof. Admitted.
 
-Hint Resolve degree_co_wrt_co_S : lngen.
+#[export] Hint Resolve degree_co_wrt_co_S : lngen.
 
 Lemma degree_constraint_wrt_co_S :
 forall n1 phi1,
@@ -1633,7 +1586,7 @@ forall n1 phi1,
   degree_constraint_wrt_co (S n1) phi1.
 Proof. Admitted.
 
-Hint Resolve degree_constraint_wrt_co_S : lngen.
+#[export] Hint Resolve degree_constraint_wrt_co_S : lngen.
 
 Lemma degree_tm_wrt_tm_O :
 forall n1 a1,
@@ -1641,7 +1594,7 @@ forall n1 a1,
   degree_tm_wrt_tm n1 a1.
 Proof. Admitted.
 
-Hint Resolve degree_tm_wrt_tm_O : lngen.
+#[export] Hint Resolve degree_tm_wrt_tm_O : lngen.
 
 Lemma degree_brs_wrt_tm_O :
 forall n1 brs1,
@@ -1649,7 +1602,7 @@ forall n1 brs1,
   degree_brs_wrt_tm n1 brs1.
 Proof. Admitted.
 
-Hint Resolve degree_brs_wrt_tm_O : lngen.
+#[export] Hint Resolve degree_brs_wrt_tm_O : lngen.
 
 Lemma degree_co_wrt_tm_O :
 forall n1 g1,
@@ -1657,7 +1610,7 @@ forall n1 g1,
   degree_co_wrt_tm n1 g1.
 Proof. Admitted.
 
-Hint Resolve degree_co_wrt_tm_O : lngen.
+#[export] Hint Resolve degree_co_wrt_tm_O : lngen.
 
 Lemma degree_constraint_wrt_tm_O :
 forall n1 phi1,
@@ -1665,7 +1618,7 @@ forall n1 phi1,
   degree_constraint_wrt_tm n1 phi1.
 Proof. Admitted.
 
-Hint Resolve degree_constraint_wrt_tm_O : lngen.
+#[export] Hint Resolve degree_constraint_wrt_tm_O : lngen.
 
 Lemma degree_tm_wrt_co_O :
 forall n1 a1,
@@ -1673,7 +1626,7 @@ forall n1 a1,
   degree_tm_wrt_co n1 a1.
 Proof. Admitted.
 
-Hint Resolve degree_tm_wrt_co_O : lngen.
+#[export] Hint Resolve degree_tm_wrt_co_O : lngen.
 
 Lemma degree_brs_wrt_co_O :
 forall n1 brs1,
@@ -1681,7 +1634,7 @@ forall n1 brs1,
   degree_brs_wrt_co n1 brs1.
 Proof. Admitted.
 
-Hint Resolve degree_brs_wrt_co_O : lngen.
+#[export] Hint Resolve degree_brs_wrt_co_O : lngen.
 
 Lemma degree_co_wrt_co_O :
 forall n1 g1,
@@ -1689,7 +1642,7 @@ forall n1 g1,
   degree_co_wrt_co n1 g1.
 Proof. Admitted.
 
-Hint Resolve degree_co_wrt_co_O : lngen.
+#[export] Hint Resolve degree_co_wrt_co_O : lngen.
 
 Lemma degree_constraint_wrt_co_O :
 forall n1 phi1,
@@ -1697,7 +1650,7 @@ forall n1 phi1,
   degree_constraint_wrt_co n1 phi1.
 Proof. Admitted.
 
-Hint Resolve degree_constraint_wrt_co_O : lngen.
+#[export] Hint Resolve degree_constraint_wrt_co_O : lngen.
 
 (* begin hide *)
 
@@ -1726,7 +1679,7 @@ forall a1 x1 n1,
   degree_tm_wrt_tm (S n1) (close_tm_wrt_tm_rec n1 x1 a1).
 Proof. Admitted.
 
-Hint Resolve degree_tm_wrt_tm_close_tm_wrt_tm_rec : lngen.
+#[export] Hint Resolve degree_tm_wrt_tm_close_tm_wrt_tm_rec : lngen.
 
 (* end hide *)
 
@@ -1738,7 +1691,7 @@ forall brs1 x1 n1,
   degree_brs_wrt_tm (S n1) (close_brs_wrt_tm_rec n1 x1 brs1).
 Proof. Admitted.
 
-Hint Resolve degree_brs_wrt_tm_close_brs_wrt_tm_rec : lngen.
+#[export] Hint Resolve degree_brs_wrt_tm_close_brs_wrt_tm_rec : lngen.
 
 (* end hide *)
 
@@ -1750,7 +1703,7 @@ forall g1 x1 n1,
   degree_co_wrt_tm (S n1) (close_co_wrt_tm_rec n1 x1 g1).
 Proof. Admitted.
 
-Hint Resolve degree_co_wrt_tm_close_co_wrt_tm_rec : lngen.
+#[export] Hint Resolve degree_co_wrt_tm_close_co_wrt_tm_rec : lngen.
 
 (* end hide *)
 
@@ -1762,7 +1715,7 @@ forall phi1 x1 n1,
   degree_constraint_wrt_tm (S n1) (close_constraint_wrt_tm_rec n1 x1 phi1).
 Proof. Admitted.
 
-Hint Resolve degree_constraint_wrt_tm_close_constraint_wrt_tm_rec : lngen.
+#[export] Hint Resolve degree_constraint_wrt_tm_close_constraint_wrt_tm_rec : lngen.
 
 (* end hide *)
 
@@ -1793,7 +1746,7 @@ forall a1 c1 n1 n2,
   degree_tm_wrt_tm n2 (close_tm_wrt_co_rec n1 c1 a1).
 Proof. Admitted.
 
-Hint Resolve degree_tm_wrt_tm_close_tm_wrt_co_rec : lngen.
+#[export] Hint Resolve degree_tm_wrt_tm_close_tm_wrt_co_rec : lngen.
 
 (* end hide *)
 
@@ -1805,7 +1758,7 @@ forall brs1 c1 n1 n2,
   degree_brs_wrt_tm n2 (close_brs_wrt_co_rec n1 c1 brs1).
 Proof. Admitted.
 
-Hint Resolve degree_brs_wrt_tm_close_brs_wrt_co_rec : lngen.
+#[export] Hint Resolve degree_brs_wrt_tm_close_brs_wrt_co_rec : lngen.
 
 (* end hide *)
 
@@ -1817,7 +1770,7 @@ forall g1 c1 n1 n2,
   degree_co_wrt_tm n2 (close_co_wrt_co_rec n1 c1 g1).
 Proof. Admitted.
 
-Hint Resolve degree_co_wrt_tm_close_co_wrt_co_rec : lngen.
+#[export] Hint Resolve degree_co_wrt_tm_close_co_wrt_co_rec : lngen.
 
 (* end hide *)
 
@@ -1829,7 +1782,7 @@ forall phi1 c1 n1 n2,
   degree_constraint_wrt_tm n2 (close_constraint_wrt_co_rec n1 c1 phi1).
 Proof. Admitted.
 
-Hint Resolve degree_constraint_wrt_tm_close_constraint_wrt_co_rec : lngen.
+#[export] Hint Resolve degree_constraint_wrt_tm_close_constraint_wrt_co_rec : lngen.
 
 (* end hide *)
 
@@ -1860,7 +1813,7 @@ forall a1 x1 n1 n2,
   degree_tm_wrt_co n2 (close_tm_wrt_tm_rec n1 x1 a1).
 Proof. Admitted.
 
-Hint Resolve degree_tm_wrt_co_close_tm_wrt_tm_rec : lngen.
+#[export] Hint Resolve degree_tm_wrt_co_close_tm_wrt_tm_rec : lngen.
 
 (* end hide *)
 
@@ -1872,7 +1825,7 @@ forall brs1 x1 n1 n2,
   degree_brs_wrt_co n2 (close_brs_wrt_tm_rec n1 x1 brs1).
 Proof. Admitted.
 
-Hint Resolve degree_brs_wrt_co_close_brs_wrt_tm_rec : lngen.
+#[export] Hint Resolve degree_brs_wrt_co_close_brs_wrt_tm_rec : lngen.
 
 (* end hide *)
 
@@ -1884,7 +1837,7 @@ forall g1 x1 n1 n2,
   degree_co_wrt_co n2 (close_co_wrt_tm_rec n1 x1 g1).
 Proof. Admitted.
 
-Hint Resolve degree_co_wrt_co_close_co_wrt_tm_rec : lngen.
+#[export] Hint Resolve degree_co_wrt_co_close_co_wrt_tm_rec : lngen.
 
 (* end hide *)
 
@@ -1896,7 +1849,7 @@ forall phi1 x1 n1 n2,
   degree_constraint_wrt_co n2 (close_constraint_wrt_tm_rec n1 x1 phi1).
 Proof. Admitted.
 
-Hint Resolve degree_constraint_wrt_co_close_constraint_wrt_tm_rec : lngen.
+#[export] Hint Resolve degree_constraint_wrt_co_close_constraint_wrt_tm_rec : lngen.
 
 (* end hide *)
 
@@ -1927,7 +1880,7 @@ forall a1 c1 n1,
   degree_tm_wrt_co (S n1) (close_tm_wrt_co_rec n1 c1 a1).
 Proof. Admitted.
 
-Hint Resolve degree_tm_wrt_co_close_tm_wrt_co_rec : lngen.
+#[export] Hint Resolve degree_tm_wrt_co_close_tm_wrt_co_rec : lngen.
 
 (* end hide *)
 
@@ -1939,7 +1892,7 @@ forall brs1 c1 n1,
   degree_brs_wrt_co (S n1) (close_brs_wrt_co_rec n1 c1 brs1).
 Proof. Admitted.
 
-Hint Resolve degree_brs_wrt_co_close_brs_wrt_co_rec : lngen.
+#[export] Hint Resolve degree_brs_wrt_co_close_brs_wrt_co_rec : lngen.
 
 (* end hide *)
 
@@ -1951,7 +1904,7 @@ forall g1 c1 n1,
   degree_co_wrt_co (S n1) (close_co_wrt_co_rec n1 c1 g1).
 Proof. Admitted.
 
-Hint Resolve degree_co_wrt_co_close_co_wrt_co_rec : lngen.
+#[export] Hint Resolve degree_co_wrt_co_close_co_wrt_co_rec : lngen.
 
 (* end hide *)
 
@@ -1963,7 +1916,7 @@ forall phi1 c1 n1,
   degree_constraint_wrt_co (S n1) (close_constraint_wrt_co_rec n1 c1 phi1).
 Proof. Admitted.
 
-Hint Resolve degree_constraint_wrt_co_close_constraint_wrt_co_rec : lngen.
+#[export] Hint Resolve degree_constraint_wrt_co_close_constraint_wrt_co_rec : lngen.
 
 (* end hide *)
 
@@ -1973,7 +1926,7 @@ forall a1 x1,
   degree_tm_wrt_tm 1 (close_tm_wrt_tm x1 a1).
 Proof. Admitted.
 
-Hint Resolve degree_tm_wrt_tm_close_tm_wrt_tm : lngen.
+#[export] Hint Resolve degree_tm_wrt_tm_close_tm_wrt_tm : lngen.
 
 Lemma degree_brs_wrt_tm_close_brs_wrt_tm :
 forall brs1 x1,
@@ -1981,7 +1934,7 @@ forall brs1 x1,
   degree_brs_wrt_tm 1 (close_brs_wrt_tm x1 brs1).
 Proof. Admitted.
 
-Hint Resolve degree_brs_wrt_tm_close_brs_wrt_tm : lngen.
+#[export] Hint Resolve degree_brs_wrt_tm_close_brs_wrt_tm : lngen.
 
 Lemma degree_co_wrt_tm_close_co_wrt_tm :
 forall g1 x1,
@@ -1989,7 +1942,7 @@ forall g1 x1,
   degree_co_wrt_tm 1 (close_co_wrt_tm x1 g1).
 Proof. Admitted.
 
-Hint Resolve degree_co_wrt_tm_close_co_wrt_tm : lngen.
+#[export] Hint Resolve degree_co_wrt_tm_close_co_wrt_tm : lngen.
 
 Lemma degree_constraint_wrt_tm_close_constraint_wrt_tm :
 forall phi1 x1,
@@ -1997,7 +1950,7 @@ forall phi1 x1,
   degree_constraint_wrt_tm 1 (close_constraint_wrt_tm x1 phi1).
 Proof. Admitted.
 
-Hint Resolve degree_constraint_wrt_tm_close_constraint_wrt_tm : lngen.
+#[export] Hint Resolve degree_constraint_wrt_tm_close_constraint_wrt_tm : lngen.
 
 Lemma degree_tm_wrt_tm_close_tm_wrt_co :
 forall a1 c1 n1,
@@ -2005,7 +1958,7 @@ forall a1 c1 n1,
   degree_tm_wrt_tm n1 (close_tm_wrt_co c1 a1).
 Proof. Admitted.
 
-Hint Resolve degree_tm_wrt_tm_close_tm_wrt_co : lngen.
+#[export] Hint Resolve degree_tm_wrt_tm_close_tm_wrt_co : lngen.
 
 Lemma degree_brs_wrt_tm_close_brs_wrt_co :
 forall brs1 c1 n1,
@@ -2013,7 +1966,7 @@ forall brs1 c1 n1,
   degree_brs_wrt_tm n1 (close_brs_wrt_co c1 brs1).
 Proof. Admitted.
 
-Hint Resolve degree_brs_wrt_tm_close_brs_wrt_co : lngen.
+#[export] Hint Resolve degree_brs_wrt_tm_close_brs_wrt_co : lngen.
 
 Lemma degree_co_wrt_tm_close_co_wrt_co :
 forall g1 c1 n1,
@@ -2021,7 +1974,7 @@ forall g1 c1 n1,
   degree_co_wrt_tm n1 (close_co_wrt_co c1 g1).
 Proof. Admitted.
 
-Hint Resolve degree_co_wrt_tm_close_co_wrt_co : lngen.
+#[export] Hint Resolve degree_co_wrt_tm_close_co_wrt_co : lngen.
 
 Lemma degree_constraint_wrt_tm_close_constraint_wrt_co :
 forall phi1 c1 n1,
@@ -2029,7 +1982,7 @@ forall phi1 c1 n1,
   degree_constraint_wrt_tm n1 (close_constraint_wrt_co c1 phi1).
 Proof. Admitted.
 
-Hint Resolve degree_constraint_wrt_tm_close_constraint_wrt_co : lngen.
+#[export] Hint Resolve degree_constraint_wrt_tm_close_constraint_wrt_co : lngen.
 
 Lemma degree_tm_wrt_co_close_tm_wrt_tm :
 forall a1 x1 n1,
@@ -2037,7 +1990,7 @@ forall a1 x1 n1,
   degree_tm_wrt_co n1 (close_tm_wrt_tm x1 a1).
 Proof. Admitted.
 
-Hint Resolve degree_tm_wrt_co_close_tm_wrt_tm : lngen.
+#[export] Hint Resolve degree_tm_wrt_co_close_tm_wrt_tm : lngen.
 
 Lemma degree_brs_wrt_co_close_brs_wrt_tm :
 forall brs1 x1 n1,
@@ -2045,7 +1998,7 @@ forall brs1 x1 n1,
   degree_brs_wrt_co n1 (close_brs_wrt_tm x1 brs1).
 Proof. Admitted.
 
-Hint Resolve degree_brs_wrt_co_close_brs_wrt_tm : lngen.
+#[export] Hint Resolve degree_brs_wrt_co_close_brs_wrt_tm : lngen.
 
 Lemma degree_co_wrt_co_close_co_wrt_tm :
 forall g1 x1 n1,
@@ -2053,7 +2006,7 @@ forall g1 x1 n1,
   degree_co_wrt_co n1 (close_co_wrt_tm x1 g1).
 Proof. Admitted.
 
-Hint Resolve degree_co_wrt_co_close_co_wrt_tm : lngen.
+#[export] Hint Resolve degree_co_wrt_co_close_co_wrt_tm : lngen.
 
 Lemma degree_constraint_wrt_co_close_constraint_wrt_tm :
 forall phi1 x1 n1,
@@ -2061,7 +2014,7 @@ forall phi1 x1 n1,
   degree_constraint_wrt_co n1 (close_constraint_wrt_tm x1 phi1).
 Proof. Admitted.
 
-Hint Resolve degree_constraint_wrt_co_close_constraint_wrt_tm : lngen.
+#[export] Hint Resolve degree_constraint_wrt_co_close_constraint_wrt_tm : lngen.
 
 Lemma degree_tm_wrt_co_close_tm_wrt_co :
 forall a1 c1,
@@ -2069,7 +2022,7 @@ forall a1 c1,
   degree_tm_wrt_co 1 (close_tm_wrt_co c1 a1).
 Proof. Admitted.
 
-Hint Resolve degree_tm_wrt_co_close_tm_wrt_co : lngen.
+#[export] Hint Resolve degree_tm_wrt_co_close_tm_wrt_co : lngen.
 
 Lemma degree_brs_wrt_co_close_brs_wrt_co :
 forall brs1 c1,
@@ -2077,7 +2030,7 @@ forall brs1 c1,
   degree_brs_wrt_co 1 (close_brs_wrt_co c1 brs1).
 Proof. Admitted.
 
-Hint Resolve degree_brs_wrt_co_close_brs_wrt_co : lngen.
+#[export] Hint Resolve degree_brs_wrt_co_close_brs_wrt_co : lngen.
 
 Lemma degree_co_wrt_co_close_co_wrt_co :
 forall g1 c1,
@@ -2085,7 +2038,7 @@ forall g1 c1,
   degree_co_wrt_co 1 (close_co_wrt_co c1 g1).
 Proof. Admitted.
 
-Hint Resolve degree_co_wrt_co_close_co_wrt_co : lngen.
+#[export] Hint Resolve degree_co_wrt_co_close_co_wrt_co : lngen.
 
 Lemma degree_constraint_wrt_co_close_constraint_wrt_co :
 forall phi1 c1,
@@ -2093,7 +2046,7 @@ forall phi1 c1,
   degree_constraint_wrt_co 1 (close_constraint_wrt_co c1 phi1).
 Proof. Admitted.
 
-Hint Resolve degree_constraint_wrt_co_close_constraint_wrt_co : lngen.
+#[export] Hint Resolve degree_constraint_wrt_co_close_constraint_wrt_co : lngen.
 
 (* begin hide *)
 
@@ -2122,7 +2075,7 @@ forall a1 x1 n1,
   degree_tm_wrt_tm n1 a1.
 Proof. Admitted.
 
-Hint Immediate degree_tm_wrt_tm_close_tm_wrt_tm_rec_inv : lngen.
+#[export] Hint Immediate degree_tm_wrt_tm_close_tm_wrt_tm_rec_inv : lngen.
 
 (* end hide *)
 
@@ -2134,7 +2087,7 @@ forall brs1 x1 n1,
   degree_brs_wrt_tm n1 brs1.
 Proof. Admitted.
 
-Hint Immediate degree_brs_wrt_tm_close_brs_wrt_tm_rec_inv : lngen.
+#[export] Hint Immediate degree_brs_wrt_tm_close_brs_wrt_tm_rec_inv : lngen.
 
 (* end hide *)
 
@@ -2146,7 +2099,7 @@ forall g1 x1 n1,
   degree_co_wrt_tm n1 g1.
 Proof. Admitted.
 
-Hint Immediate degree_co_wrt_tm_close_co_wrt_tm_rec_inv : lngen.
+#[export] Hint Immediate degree_co_wrt_tm_close_co_wrt_tm_rec_inv : lngen.
 
 (* end hide *)
 
@@ -2158,7 +2111,7 @@ forall phi1 x1 n1,
   degree_constraint_wrt_tm n1 phi1.
 Proof. Admitted.
 
-Hint Immediate degree_constraint_wrt_tm_close_constraint_wrt_tm_rec_inv : lngen.
+#[export] Hint Immediate degree_constraint_wrt_tm_close_constraint_wrt_tm_rec_inv : lngen.
 
 (* end hide *)
 
@@ -2189,7 +2142,7 @@ forall a1 c1 n1 n2,
   degree_tm_wrt_tm n2 a1.
 Proof. Admitted.
 
-Hint Immediate degree_tm_wrt_tm_close_tm_wrt_co_rec_inv : lngen.
+#[export] Hint Immediate degree_tm_wrt_tm_close_tm_wrt_co_rec_inv : lngen.
 
 (* end hide *)
 
@@ -2201,7 +2154,7 @@ forall brs1 c1 n1 n2,
   degree_brs_wrt_tm n2 brs1.
 Proof. Admitted.
 
-Hint Immediate degree_brs_wrt_tm_close_brs_wrt_co_rec_inv : lngen.
+#[export] Hint Immediate degree_brs_wrt_tm_close_brs_wrt_co_rec_inv : lngen.
 
 (* end hide *)
 
@@ -2213,7 +2166,7 @@ forall g1 c1 n1 n2,
   degree_co_wrt_tm n2 g1.
 Proof. Admitted.
 
-Hint Immediate degree_co_wrt_tm_close_co_wrt_co_rec_inv : lngen.
+#[export] Hint Immediate degree_co_wrt_tm_close_co_wrt_co_rec_inv : lngen.
 
 (* end hide *)
 
@@ -2225,7 +2178,7 @@ forall phi1 c1 n1 n2,
   degree_constraint_wrt_tm n2 phi1.
 Proof. Admitted.
 
-Hint Immediate degree_constraint_wrt_tm_close_constraint_wrt_co_rec_inv : lngen.
+#[export] Hint Immediate degree_constraint_wrt_tm_close_constraint_wrt_co_rec_inv : lngen.
 
 (* end hide *)
 
@@ -2256,7 +2209,7 @@ forall a1 x1 n1 n2,
   degree_tm_wrt_co n2 a1.
 Proof. Admitted.
 
-Hint Immediate degree_tm_wrt_co_close_tm_wrt_tm_rec_inv : lngen.
+#[export] Hint Immediate degree_tm_wrt_co_close_tm_wrt_tm_rec_inv : lngen.
 
 (* end hide *)
 
@@ -2268,7 +2221,7 @@ forall brs1 x1 n1 n2,
   degree_brs_wrt_co n2 brs1.
 Proof. Admitted.
 
-Hint Immediate degree_brs_wrt_co_close_brs_wrt_tm_rec_inv : lngen.
+#[export] Hint Immediate degree_brs_wrt_co_close_brs_wrt_tm_rec_inv : lngen.
 
 (* end hide *)
 
@@ -2280,7 +2233,7 @@ forall g1 x1 n1 n2,
   degree_co_wrt_co n2 g1.
 Proof. Admitted.
 
-Hint Immediate degree_co_wrt_co_close_co_wrt_tm_rec_inv : lngen.
+#[export] Hint Immediate degree_co_wrt_co_close_co_wrt_tm_rec_inv : lngen.
 
 (* end hide *)
 
@@ -2292,7 +2245,7 @@ forall phi1 x1 n1 n2,
   degree_constraint_wrt_co n2 phi1.
 Proof. Admitted.
 
-Hint Immediate degree_constraint_wrt_co_close_constraint_wrt_tm_rec_inv : lngen.
+#[export] Hint Immediate degree_constraint_wrt_co_close_constraint_wrt_tm_rec_inv : lngen.
 
 (* end hide *)
 
@@ -2323,7 +2276,7 @@ forall a1 c1 n1,
   degree_tm_wrt_co n1 a1.
 Proof. Admitted.
 
-Hint Immediate degree_tm_wrt_co_close_tm_wrt_co_rec_inv : lngen.
+#[export] Hint Immediate degree_tm_wrt_co_close_tm_wrt_co_rec_inv : lngen.
 
 (* end hide *)
 
@@ -2335,7 +2288,7 @@ forall brs1 c1 n1,
   degree_brs_wrt_co n1 brs1.
 Proof. Admitted.
 
-Hint Immediate degree_brs_wrt_co_close_brs_wrt_co_rec_inv : lngen.
+#[export] Hint Immediate degree_brs_wrt_co_close_brs_wrt_co_rec_inv : lngen.
 
 (* end hide *)
 
@@ -2347,7 +2300,7 @@ forall g1 c1 n1,
   degree_co_wrt_co n1 g1.
 Proof. Admitted.
 
-Hint Immediate degree_co_wrt_co_close_co_wrt_co_rec_inv : lngen.
+#[export] Hint Immediate degree_co_wrt_co_close_co_wrt_co_rec_inv : lngen.
 
 (* end hide *)
 
@@ -2359,7 +2312,7 @@ forall phi1 c1 n1,
   degree_constraint_wrt_co n1 phi1.
 Proof. Admitted.
 
-Hint Immediate degree_constraint_wrt_co_close_constraint_wrt_co_rec_inv : lngen.
+#[export] Hint Immediate degree_constraint_wrt_co_close_constraint_wrt_co_rec_inv : lngen.
 
 (* end hide *)
 
@@ -2369,7 +2322,7 @@ forall a1 x1,
   degree_tm_wrt_tm 0 a1.
 Proof. Admitted.
 
-Hint Immediate degree_tm_wrt_tm_close_tm_wrt_tm_inv : lngen.
+#[export] Hint Immediate degree_tm_wrt_tm_close_tm_wrt_tm_inv : lngen.
 
 Lemma degree_brs_wrt_tm_close_brs_wrt_tm_inv :
 forall brs1 x1,
@@ -2377,7 +2330,7 @@ forall brs1 x1,
   degree_brs_wrt_tm 0 brs1.
 Proof. Admitted.
 
-Hint Immediate degree_brs_wrt_tm_close_brs_wrt_tm_inv : lngen.
+#[export] Hint Immediate degree_brs_wrt_tm_close_brs_wrt_tm_inv : lngen.
 
 Lemma degree_co_wrt_tm_close_co_wrt_tm_inv :
 forall g1 x1,
@@ -2385,7 +2338,7 @@ forall g1 x1,
   degree_co_wrt_tm 0 g1.
 Proof. Admitted.
 
-Hint Immediate degree_co_wrt_tm_close_co_wrt_tm_inv : lngen.
+#[export] Hint Immediate degree_co_wrt_tm_close_co_wrt_tm_inv : lngen.
 
 Lemma degree_constraint_wrt_tm_close_constraint_wrt_tm_inv :
 forall phi1 x1,
@@ -2393,7 +2346,7 @@ forall phi1 x1,
   degree_constraint_wrt_tm 0 phi1.
 Proof. Admitted.
 
-Hint Immediate degree_constraint_wrt_tm_close_constraint_wrt_tm_inv : lngen.
+#[export] Hint Immediate degree_constraint_wrt_tm_close_constraint_wrt_tm_inv : lngen.
 
 Lemma degree_tm_wrt_tm_close_tm_wrt_co_inv :
 forall a1 c1 n1,
@@ -2401,7 +2354,7 @@ forall a1 c1 n1,
   degree_tm_wrt_tm n1 a1.
 Proof. Admitted.
 
-Hint Immediate degree_tm_wrt_tm_close_tm_wrt_co_inv : lngen.
+#[export] Hint Immediate degree_tm_wrt_tm_close_tm_wrt_co_inv : lngen.
 
 Lemma degree_brs_wrt_tm_close_brs_wrt_co_inv :
 forall brs1 c1 n1,
@@ -2409,7 +2362,7 @@ forall brs1 c1 n1,
   degree_brs_wrt_tm n1 brs1.
 Proof. Admitted.
 
-Hint Immediate degree_brs_wrt_tm_close_brs_wrt_co_inv : lngen.
+#[export] Hint Immediate degree_brs_wrt_tm_close_brs_wrt_co_inv : lngen.
 
 Lemma degree_co_wrt_tm_close_co_wrt_co_inv :
 forall g1 c1 n1,
@@ -2417,7 +2370,7 @@ forall g1 c1 n1,
   degree_co_wrt_tm n1 g1.
 Proof. Admitted.
 
-Hint Immediate degree_co_wrt_tm_close_co_wrt_co_inv : lngen.
+#[export] Hint Immediate degree_co_wrt_tm_close_co_wrt_co_inv : lngen.
 
 Lemma degree_constraint_wrt_tm_close_constraint_wrt_co_inv :
 forall phi1 c1 n1,
@@ -2425,7 +2378,7 @@ forall phi1 c1 n1,
   degree_constraint_wrt_tm n1 phi1.
 Proof. Admitted.
 
-Hint Immediate degree_constraint_wrt_tm_close_constraint_wrt_co_inv : lngen.
+#[export] Hint Immediate degree_constraint_wrt_tm_close_constraint_wrt_co_inv : lngen.
 
 Lemma degree_tm_wrt_co_close_tm_wrt_tm_inv :
 forall a1 x1 n1,
@@ -2433,7 +2386,7 @@ forall a1 x1 n1,
   degree_tm_wrt_co n1 a1.
 Proof. Admitted.
 
-Hint Immediate degree_tm_wrt_co_close_tm_wrt_tm_inv : lngen.
+#[export] Hint Immediate degree_tm_wrt_co_close_tm_wrt_tm_inv : lngen.
 
 Lemma degree_brs_wrt_co_close_brs_wrt_tm_inv :
 forall brs1 x1 n1,
@@ -2441,7 +2394,7 @@ forall brs1 x1 n1,
   degree_brs_wrt_co n1 brs1.
 Proof. Admitted.
 
-Hint Immediate degree_brs_wrt_co_close_brs_wrt_tm_inv : lngen.
+#[export] Hint Immediate degree_brs_wrt_co_close_brs_wrt_tm_inv : lngen.
 
 Lemma degree_co_wrt_co_close_co_wrt_tm_inv :
 forall g1 x1 n1,
@@ -2449,7 +2402,7 @@ forall g1 x1 n1,
   degree_co_wrt_co n1 g1.
 Proof. Admitted.
 
-Hint Immediate degree_co_wrt_co_close_co_wrt_tm_inv : lngen.
+#[export] Hint Immediate degree_co_wrt_co_close_co_wrt_tm_inv : lngen.
 
 Lemma degree_constraint_wrt_co_close_constraint_wrt_tm_inv :
 forall phi1 x1 n1,
@@ -2457,7 +2410,7 @@ forall phi1 x1 n1,
   degree_constraint_wrt_co n1 phi1.
 Proof. Admitted.
 
-Hint Immediate degree_constraint_wrt_co_close_constraint_wrt_tm_inv : lngen.
+#[export] Hint Immediate degree_constraint_wrt_co_close_constraint_wrt_tm_inv : lngen.
 
 Lemma degree_tm_wrt_co_close_tm_wrt_co_inv :
 forall a1 c1,
@@ -2465,7 +2418,7 @@ forall a1 c1,
   degree_tm_wrt_co 0 a1.
 Proof. Admitted.
 
-Hint Immediate degree_tm_wrt_co_close_tm_wrt_co_inv : lngen.
+#[export] Hint Immediate degree_tm_wrt_co_close_tm_wrt_co_inv : lngen.
 
 Lemma degree_brs_wrt_co_close_brs_wrt_co_inv :
 forall brs1 c1,
@@ -2473,7 +2426,7 @@ forall brs1 c1,
   degree_brs_wrt_co 0 brs1.
 Proof. Admitted.
 
-Hint Immediate degree_brs_wrt_co_close_brs_wrt_co_inv : lngen.
+#[export] Hint Immediate degree_brs_wrt_co_close_brs_wrt_co_inv : lngen.
 
 Lemma degree_co_wrt_co_close_co_wrt_co_inv :
 forall g1 c1,
@@ -2481,7 +2434,7 @@ forall g1 c1,
   degree_co_wrt_co 0 g1.
 Proof. Admitted.
 
-Hint Immediate degree_co_wrt_co_close_co_wrt_co_inv : lngen.
+#[export] Hint Immediate degree_co_wrt_co_close_co_wrt_co_inv : lngen.
 
 Lemma degree_constraint_wrt_co_close_constraint_wrt_co_inv :
 forall phi1 c1,
@@ -2489,7 +2442,7 @@ forall phi1 c1,
   degree_constraint_wrt_co 0 phi1.
 Proof. Admitted.
 
-Hint Immediate degree_constraint_wrt_co_close_constraint_wrt_co_inv : lngen.
+#[export] Hint Immediate degree_constraint_wrt_co_close_constraint_wrt_co_inv : lngen.
 
 (* begin hide *)
 
@@ -2523,7 +2476,7 @@ forall a1 a2 n1,
   degree_tm_wrt_tm n1 (open_tm_wrt_tm_rec n1 a2 a1).
 Proof. Admitted.
 
-Hint Resolve degree_tm_wrt_tm_open_tm_wrt_tm_rec : lngen.
+#[export] Hint Resolve degree_tm_wrt_tm_open_tm_wrt_tm_rec : lngen.
 
 (* end hide *)
 
@@ -2536,7 +2489,7 @@ forall brs1 a1 n1,
   degree_brs_wrt_tm n1 (open_brs_wrt_tm_rec n1 a1 brs1).
 Proof. Admitted.
 
-Hint Resolve degree_brs_wrt_tm_open_brs_wrt_tm_rec : lngen.
+#[export] Hint Resolve degree_brs_wrt_tm_open_brs_wrt_tm_rec : lngen.
 
 (* end hide *)
 
@@ -2549,7 +2502,7 @@ forall g1 a1 n1,
   degree_co_wrt_tm n1 (open_co_wrt_tm_rec n1 a1 g1).
 Proof. Admitted.
 
-Hint Resolve degree_co_wrt_tm_open_co_wrt_tm_rec : lngen.
+#[export] Hint Resolve degree_co_wrt_tm_open_co_wrt_tm_rec : lngen.
 
 (* end hide *)
 
@@ -2562,7 +2515,7 @@ forall phi1 a1 n1,
   degree_constraint_wrt_tm n1 (open_constraint_wrt_tm_rec n1 a1 phi1).
 Proof. Admitted.
 
-Hint Resolve degree_constraint_wrt_tm_open_constraint_wrt_tm_rec : lngen.
+#[export] Hint Resolve degree_constraint_wrt_tm_open_constraint_wrt_tm_rec : lngen.
 
 (* end hide *)
 
@@ -2598,7 +2551,7 @@ forall a1 g1 n1 n2,
   degree_tm_wrt_tm n1 (open_tm_wrt_co_rec n2 g1 a1).
 Proof. Admitted.
 
-Hint Resolve degree_tm_wrt_tm_open_tm_wrt_co_rec : lngen.
+#[export] Hint Resolve degree_tm_wrt_tm_open_tm_wrt_co_rec : lngen.
 
 (* end hide *)
 
@@ -2611,7 +2564,7 @@ forall brs1 g1 n1 n2,
   degree_brs_wrt_tm n1 (open_brs_wrt_co_rec n2 g1 brs1).
 Proof. Admitted.
 
-Hint Resolve degree_brs_wrt_tm_open_brs_wrt_co_rec : lngen.
+#[export] Hint Resolve degree_brs_wrt_tm_open_brs_wrt_co_rec : lngen.
 
 (* end hide *)
 
@@ -2624,7 +2577,7 @@ forall g1 g2 n1 n2,
   degree_co_wrt_tm n1 (open_co_wrt_co_rec n2 g2 g1).
 Proof. Admitted.
 
-Hint Resolve degree_co_wrt_tm_open_co_wrt_co_rec : lngen.
+#[export] Hint Resolve degree_co_wrt_tm_open_co_wrt_co_rec : lngen.
 
 (* end hide *)
 
@@ -2637,7 +2590,7 @@ forall phi1 g1 n1 n2,
   degree_constraint_wrt_tm n1 (open_constraint_wrt_co_rec n2 g1 phi1).
 Proof. Admitted.
 
-Hint Resolve degree_constraint_wrt_tm_open_constraint_wrt_co_rec : lngen.
+#[export] Hint Resolve degree_constraint_wrt_tm_open_constraint_wrt_co_rec : lngen.
 
 (* end hide *)
 
@@ -2673,7 +2626,7 @@ forall a1 a2 n1 n2,
   degree_tm_wrt_co n1 (open_tm_wrt_tm_rec n2 a2 a1).
 Proof. Admitted.
 
-Hint Resolve degree_tm_wrt_co_open_tm_wrt_tm_rec : lngen.
+#[export] Hint Resolve degree_tm_wrt_co_open_tm_wrt_tm_rec : lngen.
 
 (* end hide *)
 
@@ -2686,7 +2639,7 @@ forall brs1 a1 n1 n2,
   degree_brs_wrt_co n1 (open_brs_wrt_tm_rec n2 a1 brs1).
 Proof. Admitted.
 
-Hint Resolve degree_brs_wrt_co_open_brs_wrt_tm_rec : lngen.
+#[export] Hint Resolve degree_brs_wrt_co_open_brs_wrt_tm_rec : lngen.
 
 (* end hide *)
 
@@ -2699,7 +2652,7 @@ forall g1 a1 n1 n2,
   degree_co_wrt_co n1 (open_co_wrt_tm_rec n2 a1 g1).
 Proof. Admitted.
 
-Hint Resolve degree_co_wrt_co_open_co_wrt_tm_rec : lngen.
+#[export] Hint Resolve degree_co_wrt_co_open_co_wrt_tm_rec : lngen.
 
 (* end hide *)
 
@@ -2712,7 +2665,7 @@ forall phi1 a1 n1 n2,
   degree_constraint_wrt_co n1 (open_constraint_wrt_tm_rec n2 a1 phi1).
 Proof. Admitted.
 
-Hint Resolve degree_constraint_wrt_co_open_constraint_wrt_tm_rec : lngen.
+#[export] Hint Resolve degree_constraint_wrt_co_open_constraint_wrt_tm_rec : lngen.
 
 (* end hide *)
 
@@ -2748,7 +2701,7 @@ forall a1 g1 n1,
   degree_tm_wrt_co n1 (open_tm_wrt_co_rec n1 g1 a1).
 Proof. Admitted.
 
-Hint Resolve degree_tm_wrt_co_open_tm_wrt_co_rec : lngen.
+#[export] Hint Resolve degree_tm_wrt_co_open_tm_wrt_co_rec : lngen.
 
 (* end hide *)
 
@@ -2761,7 +2714,7 @@ forall brs1 g1 n1,
   degree_brs_wrt_co n1 (open_brs_wrt_co_rec n1 g1 brs1).
 Proof. Admitted.
 
-Hint Resolve degree_brs_wrt_co_open_brs_wrt_co_rec : lngen.
+#[export] Hint Resolve degree_brs_wrt_co_open_brs_wrt_co_rec : lngen.
 
 (* end hide *)
 
@@ -2774,7 +2727,7 @@ forall g1 g2 n1,
   degree_co_wrt_co n1 (open_co_wrt_co_rec n1 g2 g1).
 Proof. Admitted.
 
-Hint Resolve degree_co_wrt_co_open_co_wrt_co_rec : lngen.
+#[export] Hint Resolve degree_co_wrt_co_open_co_wrt_co_rec : lngen.
 
 (* end hide *)
 
@@ -2787,7 +2740,7 @@ forall phi1 g1 n1,
   degree_constraint_wrt_co n1 (open_constraint_wrt_co_rec n1 g1 phi1).
 Proof. Admitted.
 
-Hint Resolve degree_constraint_wrt_co_open_constraint_wrt_co_rec : lngen.
+#[export] Hint Resolve degree_constraint_wrt_co_open_constraint_wrt_co_rec : lngen.
 
 (* end hide *)
 
@@ -2798,7 +2751,7 @@ forall a1 a2,
   degree_tm_wrt_tm 0 (open_tm_wrt_tm a1 a2).
 Proof. Admitted.
 
-Hint Resolve degree_tm_wrt_tm_open_tm_wrt_tm : lngen.
+#[export] Hint Resolve degree_tm_wrt_tm_open_tm_wrt_tm : lngen.
 
 Lemma degree_brs_wrt_tm_open_brs_wrt_tm :
 forall brs1 a1,
@@ -2807,7 +2760,7 @@ forall brs1 a1,
   degree_brs_wrt_tm 0 (open_brs_wrt_tm brs1 a1).
 Proof. Admitted.
 
-Hint Resolve degree_brs_wrt_tm_open_brs_wrt_tm : lngen.
+#[export] Hint Resolve degree_brs_wrt_tm_open_brs_wrt_tm : lngen.
 
 Lemma degree_co_wrt_tm_open_co_wrt_tm :
 forall g1 a1,
@@ -2816,7 +2769,7 @@ forall g1 a1,
   degree_co_wrt_tm 0 (open_co_wrt_tm g1 a1).
 Proof. Admitted.
 
-Hint Resolve degree_co_wrt_tm_open_co_wrt_tm : lngen.
+#[export] Hint Resolve degree_co_wrt_tm_open_co_wrt_tm : lngen.
 
 Lemma degree_constraint_wrt_tm_open_constraint_wrt_tm :
 forall phi1 a1,
@@ -2825,7 +2778,7 @@ forall phi1 a1,
   degree_constraint_wrt_tm 0 (open_constraint_wrt_tm phi1 a1).
 Proof. Admitted.
 
-Hint Resolve degree_constraint_wrt_tm_open_constraint_wrt_tm : lngen.
+#[export] Hint Resolve degree_constraint_wrt_tm_open_constraint_wrt_tm : lngen.
 
 Lemma degree_tm_wrt_tm_open_tm_wrt_co :
 forall a1 g1 n1,
@@ -2834,7 +2787,7 @@ forall a1 g1 n1,
   degree_tm_wrt_tm n1 (open_tm_wrt_co a1 g1).
 Proof. Admitted.
 
-Hint Resolve degree_tm_wrt_tm_open_tm_wrt_co : lngen.
+#[export] Hint Resolve degree_tm_wrt_tm_open_tm_wrt_co : lngen.
 
 Lemma degree_brs_wrt_tm_open_brs_wrt_co :
 forall brs1 g1 n1,
@@ -2843,7 +2796,7 @@ forall brs1 g1 n1,
   degree_brs_wrt_tm n1 (open_brs_wrt_co brs1 g1).
 Proof. Admitted.
 
-Hint Resolve degree_brs_wrt_tm_open_brs_wrt_co : lngen.
+#[export] Hint Resolve degree_brs_wrt_tm_open_brs_wrt_co : lngen.
 
 Lemma degree_co_wrt_tm_open_co_wrt_co :
 forall g1 g2 n1,
@@ -2852,7 +2805,7 @@ forall g1 g2 n1,
   degree_co_wrt_tm n1 (open_co_wrt_co g1 g2).
 Proof. Admitted.
 
-Hint Resolve degree_co_wrt_tm_open_co_wrt_co : lngen.
+#[export] Hint Resolve degree_co_wrt_tm_open_co_wrt_co : lngen.
 
 Lemma degree_constraint_wrt_tm_open_constraint_wrt_co :
 forall phi1 g1 n1,
@@ -2861,7 +2814,7 @@ forall phi1 g1 n1,
   degree_constraint_wrt_tm n1 (open_constraint_wrt_co phi1 g1).
 Proof. Admitted.
 
-Hint Resolve degree_constraint_wrt_tm_open_constraint_wrt_co : lngen.
+#[export] Hint Resolve degree_constraint_wrt_tm_open_constraint_wrt_co : lngen.
 
 Lemma degree_tm_wrt_co_open_tm_wrt_tm :
 forall a1 a2 n1,
@@ -2870,7 +2823,7 @@ forall a1 a2 n1,
   degree_tm_wrt_co n1 (open_tm_wrt_tm a1 a2).
 Proof. Admitted.
 
-Hint Resolve degree_tm_wrt_co_open_tm_wrt_tm : lngen.
+#[export] Hint Resolve degree_tm_wrt_co_open_tm_wrt_tm : lngen.
 
 Lemma degree_brs_wrt_co_open_brs_wrt_tm :
 forall brs1 a1 n1,
@@ -2879,7 +2832,7 @@ forall brs1 a1 n1,
   degree_brs_wrt_co n1 (open_brs_wrt_tm brs1 a1).
 Proof. Admitted.
 
-Hint Resolve degree_brs_wrt_co_open_brs_wrt_tm : lngen.
+#[export] Hint Resolve degree_brs_wrt_co_open_brs_wrt_tm : lngen.
 
 Lemma degree_co_wrt_co_open_co_wrt_tm :
 forall g1 a1 n1,
@@ -2888,7 +2841,7 @@ forall g1 a1 n1,
   degree_co_wrt_co n1 (open_co_wrt_tm g1 a1).
 Proof. Admitted.
 
-Hint Resolve degree_co_wrt_co_open_co_wrt_tm : lngen.
+#[export] Hint Resolve degree_co_wrt_co_open_co_wrt_tm : lngen.
 
 Lemma degree_constraint_wrt_co_open_constraint_wrt_tm :
 forall phi1 a1 n1,
@@ -2897,7 +2850,7 @@ forall phi1 a1 n1,
   degree_constraint_wrt_co n1 (open_constraint_wrt_tm phi1 a1).
 Proof. Admitted.
 
-Hint Resolve degree_constraint_wrt_co_open_constraint_wrt_tm : lngen.
+#[export] Hint Resolve degree_constraint_wrt_co_open_constraint_wrt_tm : lngen.
 
 Lemma degree_tm_wrt_co_open_tm_wrt_co :
 forall a1 g1,
@@ -2906,7 +2859,7 @@ forall a1 g1,
   degree_tm_wrt_co 0 (open_tm_wrt_co a1 g1).
 Proof. Admitted.
 
-Hint Resolve degree_tm_wrt_co_open_tm_wrt_co : lngen.
+#[export] Hint Resolve degree_tm_wrt_co_open_tm_wrt_co : lngen.
 
 Lemma degree_brs_wrt_co_open_brs_wrt_co :
 forall brs1 g1,
@@ -2915,7 +2868,7 @@ forall brs1 g1,
   degree_brs_wrt_co 0 (open_brs_wrt_co brs1 g1).
 Proof. Admitted.
 
-Hint Resolve degree_brs_wrt_co_open_brs_wrt_co : lngen.
+#[export] Hint Resolve degree_brs_wrt_co_open_brs_wrt_co : lngen.
 
 Lemma degree_co_wrt_co_open_co_wrt_co :
 forall g1 g2,
@@ -2924,7 +2877,7 @@ forall g1 g2,
   degree_co_wrt_co 0 (open_co_wrt_co g1 g2).
 Proof. Admitted.
 
-Hint Resolve degree_co_wrt_co_open_co_wrt_co : lngen.
+#[export] Hint Resolve degree_co_wrt_co_open_co_wrt_co : lngen.
 
 Lemma degree_constraint_wrt_co_open_constraint_wrt_co :
 forall phi1 g1,
@@ -2933,7 +2886,7 @@ forall phi1 g1,
   degree_constraint_wrt_co 0 (open_constraint_wrt_co phi1 g1).
 Proof. Admitted.
 
-Hint Resolve degree_constraint_wrt_co_open_constraint_wrt_co : lngen.
+#[export] Hint Resolve degree_constraint_wrt_co_open_constraint_wrt_co : lngen.
 
 (* begin hide *)
 
@@ -2962,7 +2915,7 @@ forall a1 a2 n1,
   degree_tm_wrt_tm (S n1) a1.
 Proof. Admitted.
 
-Hint Immediate degree_tm_wrt_tm_open_tm_wrt_tm_rec_inv : lngen.
+#[export] Hint Immediate degree_tm_wrt_tm_open_tm_wrt_tm_rec_inv : lngen.
 
 (* end hide *)
 
@@ -2974,7 +2927,7 @@ forall brs1 a1 n1,
   degree_brs_wrt_tm (S n1) brs1.
 Proof. Admitted.
 
-Hint Immediate degree_brs_wrt_tm_open_brs_wrt_tm_rec_inv : lngen.
+#[export] Hint Immediate degree_brs_wrt_tm_open_brs_wrt_tm_rec_inv : lngen.
 
 (* end hide *)
 
@@ -2986,7 +2939,7 @@ forall g1 a1 n1,
   degree_co_wrt_tm (S n1) g1.
 Proof. Admitted.
 
-Hint Immediate degree_co_wrt_tm_open_co_wrt_tm_rec_inv : lngen.
+#[export] Hint Immediate degree_co_wrt_tm_open_co_wrt_tm_rec_inv : lngen.
 
 (* end hide *)
 
@@ -2998,7 +2951,7 @@ forall phi1 a1 n1,
   degree_constraint_wrt_tm (S n1) phi1.
 Proof. Admitted.
 
-Hint Immediate degree_constraint_wrt_tm_open_constraint_wrt_tm_rec_inv : lngen.
+#[export] Hint Immediate degree_constraint_wrt_tm_open_constraint_wrt_tm_rec_inv : lngen.
 
 (* end hide *)
 
@@ -3029,7 +2982,7 @@ forall a1 g1 n1 n2,
   degree_tm_wrt_tm n1 a1.
 Proof. Admitted.
 
-Hint Immediate degree_tm_wrt_tm_open_tm_wrt_co_rec_inv : lngen.
+#[export] Hint Immediate degree_tm_wrt_tm_open_tm_wrt_co_rec_inv : lngen.
 
 (* end hide *)
 
@@ -3041,7 +2994,7 @@ forall brs1 g1 n1 n2,
   degree_brs_wrt_tm n1 brs1.
 Proof. Admitted.
 
-Hint Immediate degree_brs_wrt_tm_open_brs_wrt_co_rec_inv : lngen.
+#[export] Hint Immediate degree_brs_wrt_tm_open_brs_wrt_co_rec_inv : lngen.
 
 (* end hide *)
 
@@ -3053,7 +3006,7 @@ forall g1 g2 n1 n2,
   degree_co_wrt_tm n1 g1.
 Proof. Admitted.
 
-Hint Immediate degree_co_wrt_tm_open_co_wrt_co_rec_inv : lngen.
+#[export] Hint Immediate degree_co_wrt_tm_open_co_wrt_co_rec_inv : lngen.
 
 (* end hide *)
 
@@ -3065,7 +3018,7 @@ forall phi1 g1 n1 n2,
   degree_constraint_wrt_tm n1 phi1.
 Proof. Admitted.
 
-Hint Immediate degree_constraint_wrt_tm_open_constraint_wrt_co_rec_inv : lngen.
+#[export] Hint Immediate degree_constraint_wrt_tm_open_constraint_wrt_co_rec_inv : lngen.
 
 (* end hide *)
 
@@ -3096,7 +3049,7 @@ forall a1 a2 n1 n2,
   degree_tm_wrt_co n1 a1.
 Proof. Admitted.
 
-Hint Immediate degree_tm_wrt_co_open_tm_wrt_tm_rec_inv : lngen.
+#[export] Hint Immediate degree_tm_wrt_co_open_tm_wrt_tm_rec_inv : lngen.
 
 (* end hide *)
 
@@ -3108,7 +3061,7 @@ forall brs1 a1 n1 n2,
   degree_brs_wrt_co n1 brs1.
 Proof. Admitted.
 
-Hint Immediate degree_brs_wrt_co_open_brs_wrt_tm_rec_inv : lngen.
+#[export] Hint Immediate degree_brs_wrt_co_open_brs_wrt_tm_rec_inv : lngen.
 
 (* end hide *)
 
@@ -3120,7 +3073,7 @@ forall g1 a1 n1 n2,
   degree_co_wrt_co n1 g1.
 Proof. Admitted.
 
-Hint Immediate degree_co_wrt_co_open_co_wrt_tm_rec_inv : lngen.
+#[export] Hint Immediate degree_co_wrt_co_open_co_wrt_tm_rec_inv : lngen.
 
 (* end hide *)
 
@@ -3132,7 +3085,7 @@ forall phi1 a1 n1 n2,
   degree_constraint_wrt_co n1 phi1.
 Proof. Admitted.
 
-Hint Immediate degree_constraint_wrt_co_open_constraint_wrt_tm_rec_inv : lngen.
+#[export] Hint Immediate degree_constraint_wrt_co_open_constraint_wrt_tm_rec_inv : lngen.
 
 (* end hide *)
 
@@ -3163,7 +3116,7 @@ forall a1 g1 n1,
   degree_tm_wrt_co (S n1) a1.
 Proof. Admitted.
 
-Hint Immediate degree_tm_wrt_co_open_tm_wrt_co_rec_inv : lngen.
+#[export] Hint Immediate degree_tm_wrt_co_open_tm_wrt_co_rec_inv : lngen.
 
 (* end hide *)
 
@@ -3175,7 +3128,7 @@ forall brs1 g1 n1,
   degree_brs_wrt_co (S n1) brs1.
 Proof. Admitted.
 
-Hint Immediate degree_brs_wrt_co_open_brs_wrt_co_rec_inv : lngen.
+#[export] Hint Immediate degree_brs_wrt_co_open_brs_wrt_co_rec_inv : lngen.
 
 (* end hide *)
 
@@ -3187,7 +3140,7 @@ forall g1 g2 n1,
   degree_co_wrt_co (S n1) g1.
 Proof. Admitted.
 
-Hint Immediate degree_co_wrt_co_open_co_wrt_co_rec_inv : lngen.
+#[export] Hint Immediate degree_co_wrt_co_open_co_wrt_co_rec_inv : lngen.
 
 (* end hide *)
 
@@ -3199,7 +3152,7 @@ forall phi1 g1 n1,
   degree_constraint_wrt_co (S n1) phi1.
 Proof. Admitted.
 
-Hint Immediate degree_constraint_wrt_co_open_constraint_wrt_co_rec_inv : lngen.
+#[export] Hint Immediate degree_constraint_wrt_co_open_constraint_wrt_co_rec_inv : lngen.
 
 (* end hide *)
 
@@ -3209,7 +3162,7 @@ forall a1 a2,
   degree_tm_wrt_tm 1 a1.
 Proof. Admitted.
 
-Hint Immediate degree_tm_wrt_tm_open_tm_wrt_tm_inv : lngen.
+#[export] Hint Immediate degree_tm_wrt_tm_open_tm_wrt_tm_inv : lngen.
 
 Lemma degree_brs_wrt_tm_open_brs_wrt_tm_inv :
 forall brs1 a1,
@@ -3217,7 +3170,7 @@ forall brs1 a1,
   degree_brs_wrt_tm 1 brs1.
 Proof. Admitted.
 
-Hint Immediate degree_brs_wrt_tm_open_brs_wrt_tm_inv : lngen.
+#[export] Hint Immediate degree_brs_wrt_tm_open_brs_wrt_tm_inv : lngen.
 
 Lemma degree_co_wrt_tm_open_co_wrt_tm_inv :
 forall g1 a1,
@@ -3225,7 +3178,7 @@ forall g1 a1,
   degree_co_wrt_tm 1 g1.
 Proof. Admitted.
 
-Hint Immediate degree_co_wrt_tm_open_co_wrt_tm_inv : lngen.
+#[export] Hint Immediate degree_co_wrt_tm_open_co_wrt_tm_inv : lngen.
 
 Lemma degree_constraint_wrt_tm_open_constraint_wrt_tm_inv :
 forall phi1 a1,
@@ -3233,7 +3186,7 @@ forall phi1 a1,
   degree_constraint_wrt_tm 1 phi1.
 Proof. Admitted.
 
-Hint Immediate degree_constraint_wrt_tm_open_constraint_wrt_tm_inv : lngen.
+#[export] Hint Immediate degree_constraint_wrt_tm_open_constraint_wrt_tm_inv : lngen.
 
 Lemma degree_tm_wrt_tm_open_tm_wrt_co_inv :
 forall a1 g1 n1,
@@ -3241,7 +3194,7 @@ forall a1 g1 n1,
   degree_tm_wrt_tm n1 a1.
 Proof. Admitted.
 
-Hint Immediate degree_tm_wrt_tm_open_tm_wrt_co_inv : lngen.
+#[export] Hint Immediate degree_tm_wrt_tm_open_tm_wrt_co_inv : lngen.
 
 Lemma degree_brs_wrt_tm_open_brs_wrt_co_inv :
 forall brs1 g1 n1,
@@ -3249,7 +3202,7 @@ forall brs1 g1 n1,
   degree_brs_wrt_tm n1 brs1.
 Proof. Admitted.
 
-Hint Immediate degree_brs_wrt_tm_open_brs_wrt_co_inv : lngen.
+#[export] Hint Immediate degree_brs_wrt_tm_open_brs_wrt_co_inv : lngen.
 
 Lemma degree_co_wrt_tm_open_co_wrt_co_inv :
 forall g1 g2 n1,
@@ -3257,7 +3210,7 @@ forall g1 g2 n1,
   degree_co_wrt_tm n1 g1.
 Proof. Admitted.
 
-Hint Immediate degree_co_wrt_tm_open_co_wrt_co_inv : lngen.
+#[export] Hint Immediate degree_co_wrt_tm_open_co_wrt_co_inv : lngen.
 
 Lemma degree_constraint_wrt_tm_open_constraint_wrt_co_inv :
 forall phi1 g1 n1,
@@ -3265,7 +3218,7 @@ forall phi1 g1 n1,
   degree_constraint_wrt_tm n1 phi1.
 Proof. Admitted.
 
-Hint Immediate degree_constraint_wrt_tm_open_constraint_wrt_co_inv : lngen.
+#[export] Hint Immediate degree_constraint_wrt_tm_open_constraint_wrt_co_inv : lngen.
 
 Lemma degree_tm_wrt_co_open_tm_wrt_tm_inv :
 forall a1 a2 n1,
@@ -3273,7 +3226,7 @@ forall a1 a2 n1,
   degree_tm_wrt_co n1 a1.
 Proof. Admitted.
 
-Hint Immediate degree_tm_wrt_co_open_tm_wrt_tm_inv : lngen.
+#[export] Hint Immediate degree_tm_wrt_co_open_tm_wrt_tm_inv : lngen.
 
 Lemma degree_brs_wrt_co_open_brs_wrt_tm_inv :
 forall brs1 a1 n1,
@@ -3281,7 +3234,7 @@ forall brs1 a1 n1,
   degree_brs_wrt_co n1 brs1.
 Proof. Admitted.
 
-Hint Immediate degree_brs_wrt_co_open_brs_wrt_tm_inv : lngen.
+#[export] Hint Immediate degree_brs_wrt_co_open_brs_wrt_tm_inv : lngen.
 
 Lemma degree_co_wrt_co_open_co_wrt_tm_inv :
 forall g1 a1 n1,
@@ -3289,7 +3242,7 @@ forall g1 a1 n1,
   degree_co_wrt_co n1 g1.
 Proof. Admitted.
 
-Hint Immediate degree_co_wrt_co_open_co_wrt_tm_inv : lngen.
+#[export] Hint Immediate degree_co_wrt_co_open_co_wrt_tm_inv : lngen.
 
 Lemma degree_constraint_wrt_co_open_constraint_wrt_tm_inv :
 forall phi1 a1 n1,
@@ -3297,7 +3250,7 @@ forall phi1 a1 n1,
   degree_constraint_wrt_co n1 phi1.
 Proof. Admitted.
 
-Hint Immediate degree_constraint_wrt_co_open_constraint_wrt_tm_inv : lngen.
+#[export] Hint Immediate degree_constraint_wrt_co_open_constraint_wrt_tm_inv : lngen.
 
 Lemma degree_tm_wrt_co_open_tm_wrt_co_inv :
 forall a1 g1,
@@ -3305,7 +3258,7 @@ forall a1 g1,
   degree_tm_wrt_co 1 a1.
 Proof. Admitted.
 
-Hint Immediate degree_tm_wrt_co_open_tm_wrt_co_inv : lngen.
+#[export] Hint Immediate degree_tm_wrt_co_open_tm_wrt_co_inv : lngen.
 
 Lemma degree_brs_wrt_co_open_brs_wrt_co_inv :
 forall brs1 g1,
@@ -3313,7 +3266,7 @@ forall brs1 g1,
   degree_brs_wrt_co 1 brs1.
 Proof. Admitted.
 
-Hint Immediate degree_brs_wrt_co_open_brs_wrt_co_inv : lngen.
+#[export] Hint Immediate degree_brs_wrt_co_open_brs_wrt_co_inv : lngen.
 
 Lemma degree_co_wrt_co_open_co_wrt_co_inv :
 forall g1 g2,
@@ -3321,7 +3274,7 @@ forall g1 g2,
   degree_co_wrt_co 1 g1.
 Proof. Admitted.
 
-Hint Immediate degree_co_wrt_co_open_co_wrt_co_inv : lngen.
+#[export] Hint Immediate degree_co_wrt_co_open_co_wrt_co_inv : lngen.
 
 Lemma degree_constraint_wrt_co_open_constraint_wrt_co_inv :
 forall phi1 g1,
@@ -3329,7 +3282,7 @@ forall phi1 g1,
   degree_constraint_wrt_co 1 phi1.
 Proof. Admitted.
 
-Hint Immediate degree_constraint_wrt_co_open_constraint_wrt_co_inv : lngen.
+#[export] Hint Immediate degree_constraint_wrt_co_open_constraint_wrt_co_inv : lngen.
 
 
 (* *********************************************************************** *)
@@ -3365,7 +3318,7 @@ forall a1 a2 x1 n1,
   a1 = a2.
 Proof. Admitted.
 
-Hint Immediate close_tm_wrt_tm_rec_inj : lngen.
+#[export] Hint Immediate close_tm_wrt_tm_rec_inj : lngen.
 
 (* end hide *)
 
@@ -3377,7 +3330,7 @@ forall brs1 brs2 x1 n1,
   brs1 = brs2.
 Proof. Admitted.
 
-Hint Immediate close_brs_wrt_tm_rec_inj : lngen.
+#[export] Hint Immediate close_brs_wrt_tm_rec_inj : lngen.
 
 (* end hide *)
 
@@ -3389,7 +3342,7 @@ forall g1 g2 x1 n1,
   g1 = g2.
 Proof. Admitted.
 
-Hint Immediate close_co_wrt_tm_rec_inj : lngen.
+#[export] Hint Immediate close_co_wrt_tm_rec_inj : lngen.
 
 (* end hide *)
 
@@ -3401,7 +3354,7 @@ forall phi1 phi2 x1 n1,
   phi1 = phi2.
 Proof. Admitted.
 
-Hint Immediate close_constraint_wrt_tm_rec_inj : lngen.
+#[export] Hint Immediate close_constraint_wrt_tm_rec_inj : lngen.
 
 (* end hide *)
 
@@ -3432,7 +3385,7 @@ forall a1 a2 c1 n1,
   a1 = a2.
 Proof. Admitted.
 
-Hint Immediate close_tm_wrt_co_rec_inj : lngen.
+#[export] Hint Immediate close_tm_wrt_co_rec_inj : lngen.
 
 (* end hide *)
 
@@ -3444,7 +3397,7 @@ forall brs1 brs2 c1 n1,
   brs1 = brs2.
 Proof. Admitted.
 
-Hint Immediate close_brs_wrt_co_rec_inj : lngen.
+#[export] Hint Immediate close_brs_wrt_co_rec_inj : lngen.
 
 (* end hide *)
 
@@ -3456,7 +3409,7 @@ forall g1 g2 c1 n1,
   g1 = g2.
 Proof. Admitted.
 
-Hint Immediate close_co_wrt_co_rec_inj : lngen.
+#[export] Hint Immediate close_co_wrt_co_rec_inj : lngen.
 
 (* end hide *)
 
@@ -3468,7 +3421,7 @@ forall phi1 phi2 c1 n1,
   phi1 = phi2.
 Proof. Admitted.
 
-Hint Immediate close_constraint_wrt_co_rec_inj : lngen.
+#[export] Hint Immediate close_constraint_wrt_co_rec_inj : lngen.
 
 (* end hide *)
 
@@ -3478,7 +3431,7 @@ forall a1 a2 x1,
   a1 = a2.
 Proof. Admitted.
 
-Hint Immediate close_tm_wrt_tm_inj : lngen.
+#[export] Hint Immediate close_tm_wrt_tm_inj : lngen.
 
 Lemma close_brs_wrt_tm_inj :
 forall brs1 brs2 x1,
@@ -3486,7 +3439,7 @@ forall brs1 brs2 x1,
   brs1 = brs2.
 Proof. Admitted.
 
-Hint Immediate close_brs_wrt_tm_inj : lngen.
+#[export] Hint Immediate close_brs_wrt_tm_inj : lngen.
 
 Lemma close_co_wrt_tm_inj :
 forall g1 g2 x1,
@@ -3494,7 +3447,7 @@ forall g1 g2 x1,
   g1 = g2.
 Proof. Admitted.
 
-Hint Immediate close_co_wrt_tm_inj : lngen.
+#[export] Hint Immediate close_co_wrt_tm_inj : lngen.
 
 Lemma close_constraint_wrt_tm_inj :
 forall phi1 phi2 x1,
@@ -3502,7 +3455,7 @@ forall phi1 phi2 x1,
   phi1 = phi2.
 Proof. Admitted.
 
-Hint Immediate close_constraint_wrt_tm_inj : lngen.
+#[export] Hint Immediate close_constraint_wrt_tm_inj : lngen.
 
 Lemma close_tm_wrt_co_inj :
 forall a1 a2 c1,
@@ -3510,7 +3463,7 @@ forall a1 a2 c1,
   a1 = a2.
 Proof. Admitted.
 
-Hint Immediate close_tm_wrt_co_inj : lngen.
+#[export] Hint Immediate close_tm_wrt_co_inj : lngen.
 
 Lemma close_brs_wrt_co_inj :
 forall brs1 brs2 c1,
@@ -3518,7 +3471,7 @@ forall brs1 brs2 c1,
   brs1 = brs2.
 Proof. Admitted.
 
-Hint Immediate close_brs_wrt_co_inj : lngen.
+#[export] Hint Immediate close_brs_wrt_co_inj : lngen.
 
 Lemma close_co_wrt_co_inj :
 forall g1 g2 c1,
@@ -3526,7 +3479,7 @@ forall g1 g2 c1,
   g1 = g2.
 Proof. Admitted.
 
-Hint Immediate close_co_wrt_co_inj : lngen.
+#[export] Hint Immediate close_co_wrt_co_inj : lngen.
 
 Lemma close_constraint_wrt_co_inj :
 forall phi1 phi2 c1,
@@ -3534,7 +3487,7 @@ forall phi1 phi2 c1,
   phi1 = phi2.
 Proof. Admitted.
 
-Hint Immediate close_constraint_wrt_co_inj : lngen.
+#[export] Hint Immediate close_constraint_wrt_co_inj : lngen.
 
 (* begin hide *)
 
@@ -3563,8 +3516,8 @@ forall a1 x1 n1,
   close_tm_wrt_tm_rec n1 x1 (open_tm_wrt_tm_rec n1 (a_Var_f x1) a1) = a1.
 Proof. Admitted.
 
-Hint Resolve close_tm_wrt_tm_rec_open_tm_wrt_tm_rec : lngen.
-Hint Rewrite close_tm_wrt_tm_rec_open_tm_wrt_tm_rec using solve [auto] : lngen.
+#[export] Hint Resolve close_tm_wrt_tm_rec_open_tm_wrt_tm_rec : lngen.
+#[export] Hint Rewrite close_tm_wrt_tm_rec_open_tm_wrt_tm_rec using solve [auto] : lngen.
 
 (* end hide *)
 
@@ -3576,8 +3529,8 @@ forall brs1 x1 n1,
   close_brs_wrt_tm_rec n1 x1 (open_brs_wrt_tm_rec n1 (a_Var_f x1) brs1) = brs1.
 Proof. Admitted.
 
-Hint Resolve close_brs_wrt_tm_rec_open_brs_wrt_tm_rec : lngen.
-Hint Rewrite close_brs_wrt_tm_rec_open_brs_wrt_tm_rec using solve [auto] : lngen.
+#[export] Hint Resolve close_brs_wrt_tm_rec_open_brs_wrt_tm_rec : lngen.
+#[export] Hint Rewrite close_brs_wrt_tm_rec_open_brs_wrt_tm_rec using solve [auto] : lngen.
 
 (* end hide *)
 
@@ -3589,8 +3542,8 @@ forall g1 x1 n1,
   close_co_wrt_tm_rec n1 x1 (open_co_wrt_tm_rec n1 (a_Var_f x1) g1) = g1.
 Proof. Admitted.
 
-Hint Resolve close_co_wrt_tm_rec_open_co_wrt_tm_rec : lngen.
-Hint Rewrite close_co_wrt_tm_rec_open_co_wrt_tm_rec using solve [auto] : lngen.
+#[export] Hint Resolve close_co_wrt_tm_rec_open_co_wrt_tm_rec : lngen.
+#[export] Hint Rewrite close_co_wrt_tm_rec_open_co_wrt_tm_rec using solve [auto] : lngen.
 
 (* end hide *)
 
@@ -3602,8 +3555,8 @@ forall phi1 x1 n1,
   close_constraint_wrt_tm_rec n1 x1 (open_constraint_wrt_tm_rec n1 (a_Var_f x1) phi1) = phi1.
 Proof. Admitted.
 
-Hint Resolve close_constraint_wrt_tm_rec_open_constraint_wrt_tm_rec : lngen.
-Hint Rewrite close_constraint_wrt_tm_rec_open_constraint_wrt_tm_rec using solve [auto] : lngen.
+#[export] Hint Resolve close_constraint_wrt_tm_rec_open_constraint_wrt_tm_rec : lngen.
+#[export] Hint Rewrite close_constraint_wrt_tm_rec_open_constraint_wrt_tm_rec using solve [auto] : lngen.
 
 (* end hide *)
 
@@ -3634,8 +3587,8 @@ forall a1 c1 n1,
   close_tm_wrt_co_rec n1 c1 (open_tm_wrt_co_rec n1 (g_Var_f c1) a1) = a1.
 Proof. Admitted.
 
-Hint Resolve close_tm_wrt_co_rec_open_tm_wrt_co_rec : lngen.
-Hint Rewrite close_tm_wrt_co_rec_open_tm_wrt_co_rec using solve [auto] : lngen.
+#[export] Hint Resolve close_tm_wrt_co_rec_open_tm_wrt_co_rec : lngen.
+#[export] Hint Rewrite close_tm_wrt_co_rec_open_tm_wrt_co_rec using solve [auto] : lngen.
 
 (* end hide *)
 
@@ -3647,8 +3600,8 @@ forall brs1 c1 n1,
   close_brs_wrt_co_rec n1 c1 (open_brs_wrt_co_rec n1 (g_Var_f c1) brs1) = brs1.
 Proof. Admitted.
 
-Hint Resolve close_brs_wrt_co_rec_open_brs_wrt_co_rec : lngen.
-Hint Rewrite close_brs_wrt_co_rec_open_brs_wrt_co_rec using solve [auto] : lngen.
+#[export] Hint Resolve close_brs_wrt_co_rec_open_brs_wrt_co_rec : lngen.
+#[export] Hint Rewrite close_brs_wrt_co_rec_open_brs_wrt_co_rec using solve [auto] : lngen.
 
 (* end hide *)
 
@@ -3660,8 +3613,8 @@ forall g1 c1 n1,
   close_co_wrt_co_rec n1 c1 (open_co_wrt_co_rec n1 (g_Var_f c1) g1) = g1.
 Proof. Admitted.
 
-Hint Resolve close_co_wrt_co_rec_open_co_wrt_co_rec : lngen.
-Hint Rewrite close_co_wrt_co_rec_open_co_wrt_co_rec using solve [auto] : lngen.
+#[export] Hint Resolve close_co_wrt_co_rec_open_co_wrt_co_rec : lngen.
+#[export] Hint Rewrite close_co_wrt_co_rec_open_co_wrt_co_rec using solve [auto] : lngen.
 
 (* end hide *)
 
@@ -3673,8 +3626,8 @@ forall phi1 c1 n1,
   close_constraint_wrt_co_rec n1 c1 (open_constraint_wrt_co_rec n1 (g_Var_f c1) phi1) = phi1.
 Proof. Admitted.
 
-Hint Resolve close_constraint_wrt_co_rec_open_constraint_wrt_co_rec : lngen.
-Hint Rewrite close_constraint_wrt_co_rec_open_constraint_wrt_co_rec using solve [auto] : lngen.
+#[export] Hint Resolve close_constraint_wrt_co_rec_open_constraint_wrt_co_rec : lngen.
+#[export] Hint Rewrite close_constraint_wrt_co_rec_open_constraint_wrt_co_rec using solve [auto] : lngen.
 
 (* end hide *)
 
@@ -3684,8 +3637,8 @@ forall a1 x1,
   close_tm_wrt_tm x1 (open_tm_wrt_tm a1 (a_Var_f x1)) = a1.
 Proof. Admitted.
 
-Hint Resolve close_tm_wrt_tm_open_tm_wrt_tm : lngen.
-Hint Rewrite close_tm_wrt_tm_open_tm_wrt_tm using solve [auto] : lngen.
+#[export] Hint Resolve close_tm_wrt_tm_open_tm_wrt_tm : lngen.
+#[export] Hint Rewrite close_tm_wrt_tm_open_tm_wrt_tm using solve [auto] : lngen.
 
 Lemma close_brs_wrt_tm_open_brs_wrt_tm :
 forall brs1 x1,
@@ -3693,8 +3646,8 @@ forall brs1 x1,
   close_brs_wrt_tm x1 (open_brs_wrt_tm brs1 (a_Var_f x1)) = brs1.
 Proof. Admitted.
 
-Hint Resolve close_brs_wrt_tm_open_brs_wrt_tm : lngen.
-Hint Rewrite close_brs_wrt_tm_open_brs_wrt_tm using solve [auto] : lngen.
+#[export] Hint Resolve close_brs_wrt_tm_open_brs_wrt_tm : lngen.
+#[export] Hint Rewrite close_brs_wrt_tm_open_brs_wrt_tm using solve [auto] : lngen.
 
 Lemma close_co_wrt_tm_open_co_wrt_tm :
 forall g1 x1,
@@ -3702,8 +3655,8 @@ forall g1 x1,
   close_co_wrt_tm x1 (open_co_wrt_tm g1 (a_Var_f x1)) = g1.
 Proof. Admitted.
 
-Hint Resolve close_co_wrt_tm_open_co_wrt_tm : lngen.
-Hint Rewrite close_co_wrt_tm_open_co_wrt_tm using solve [auto] : lngen.
+#[export] Hint Resolve close_co_wrt_tm_open_co_wrt_tm : lngen.
+#[export] Hint Rewrite close_co_wrt_tm_open_co_wrt_tm using solve [auto] : lngen.
 
 Lemma close_constraint_wrt_tm_open_constraint_wrt_tm :
 forall phi1 x1,
@@ -3711,8 +3664,8 @@ forall phi1 x1,
   close_constraint_wrt_tm x1 (open_constraint_wrt_tm phi1 (a_Var_f x1)) = phi1.
 Proof. Admitted.
 
-Hint Resolve close_constraint_wrt_tm_open_constraint_wrt_tm : lngen.
-Hint Rewrite close_constraint_wrt_tm_open_constraint_wrt_tm using solve [auto] : lngen.
+#[export] Hint Resolve close_constraint_wrt_tm_open_constraint_wrt_tm : lngen.
+#[export] Hint Rewrite close_constraint_wrt_tm_open_constraint_wrt_tm using solve [auto] : lngen.
 
 Lemma close_tm_wrt_co_open_tm_wrt_co :
 forall a1 c1,
@@ -3720,8 +3673,8 @@ forall a1 c1,
   close_tm_wrt_co c1 (open_tm_wrt_co a1 (g_Var_f c1)) = a1.
 Proof. Admitted.
 
-Hint Resolve close_tm_wrt_co_open_tm_wrt_co : lngen.
-Hint Rewrite close_tm_wrt_co_open_tm_wrt_co using solve [auto] : lngen.
+#[export] Hint Resolve close_tm_wrt_co_open_tm_wrt_co : lngen.
+#[export] Hint Rewrite close_tm_wrt_co_open_tm_wrt_co using solve [auto] : lngen.
 
 Lemma close_brs_wrt_co_open_brs_wrt_co :
 forall brs1 c1,
@@ -3729,8 +3682,8 @@ forall brs1 c1,
   close_brs_wrt_co c1 (open_brs_wrt_co brs1 (g_Var_f c1)) = brs1.
 Proof. Admitted.
 
-Hint Resolve close_brs_wrt_co_open_brs_wrt_co : lngen.
-Hint Rewrite close_brs_wrt_co_open_brs_wrt_co using solve [auto] : lngen.
+#[export] Hint Resolve close_brs_wrt_co_open_brs_wrt_co : lngen.
+#[export] Hint Rewrite close_brs_wrt_co_open_brs_wrt_co using solve [auto] : lngen.
 
 Lemma close_co_wrt_co_open_co_wrt_co :
 forall g1 c1,
@@ -3738,8 +3691,8 @@ forall g1 c1,
   close_co_wrt_co c1 (open_co_wrt_co g1 (g_Var_f c1)) = g1.
 Proof. Admitted.
 
-Hint Resolve close_co_wrt_co_open_co_wrt_co : lngen.
-Hint Rewrite close_co_wrt_co_open_co_wrt_co using solve [auto] : lngen.
+#[export] Hint Resolve close_co_wrt_co_open_co_wrt_co : lngen.
+#[export] Hint Rewrite close_co_wrt_co_open_co_wrt_co using solve [auto] : lngen.
 
 Lemma close_constraint_wrt_co_open_constraint_wrt_co :
 forall phi1 c1,
@@ -3747,8 +3700,8 @@ forall phi1 c1,
   close_constraint_wrt_co c1 (open_constraint_wrt_co phi1 (g_Var_f c1)) = phi1.
 Proof. Admitted.
 
-Hint Resolve close_constraint_wrt_co_open_constraint_wrt_co : lngen.
-Hint Rewrite close_constraint_wrt_co_open_constraint_wrt_co using solve [auto] : lngen.
+#[export] Hint Resolve close_constraint_wrt_co_open_constraint_wrt_co : lngen.
+#[export] Hint Rewrite close_constraint_wrt_co_open_constraint_wrt_co using solve [auto] : lngen.
 
 (* begin hide *)
 
@@ -3772,8 +3725,8 @@ forall a1 x1 n1,
   open_tm_wrt_tm_rec n1 (a_Var_f x1) (close_tm_wrt_tm_rec n1 x1 a1) = a1.
 Proof. Admitted.
 
-Hint Resolve open_tm_wrt_tm_rec_close_tm_wrt_tm_rec : lngen.
-Hint Rewrite open_tm_wrt_tm_rec_close_tm_wrt_tm_rec using solve [auto] : lngen.
+#[export] Hint Resolve open_tm_wrt_tm_rec_close_tm_wrt_tm_rec : lngen.
+#[export] Hint Rewrite open_tm_wrt_tm_rec_close_tm_wrt_tm_rec using solve [auto] : lngen.
 
 (* end hide *)
 
@@ -3784,8 +3737,8 @@ forall brs1 x1 n1,
   open_brs_wrt_tm_rec n1 (a_Var_f x1) (close_brs_wrt_tm_rec n1 x1 brs1) = brs1.
 Proof. Admitted.
 
-Hint Resolve open_brs_wrt_tm_rec_close_brs_wrt_tm_rec : lngen.
-Hint Rewrite open_brs_wrt_tm_rec_close_brs_wrt_tm_rec using solve [auto] : lngen.
+#[export] Hint Resolve open_brs_wrt_tm_rec_close_brs_wrt_tm_rec : lngen.
+#[export] Hint Rewrite open_brs_wrt_tm_rec_close_brs_wrt_tm_rec using solve [auto] : lngen.
 
 (* end hide *)
 
@@ -3796,8 +3749,8 @@ forall g1 x1 n1,
   open_co_wrt_tm_rec n1 (a_Var_f x1) (close_co_wrt_tm_rec n1 x1 g1) = g1.
 Proof. Admitted.
 
-Hint Resolve open_co_wrt_tm_rec_close_co_wrt_tm_rec : lngen.
-Hint Rewrite open_co_wrt_tm_rec_close_co_wrt_tm_rec using solve [auto] : lngen.
+#[export] Hint Resolve open_co_wrt_tm_rec_close_co_wrt_tm_rec : lngen.
+#[export] Hint Rewrite open_co_wrt_tm_rec_close_co_wrt_tm_rec using solve [auto] : lngen.
 
 (* end hide *)
 
@@ -3808,8 +3761,8 @@ forall phi1 x1 n1,
   open_constraint_wrt_tm_rec n1 (a_Var_f x1) (close_constraint_wrt_tm_rec n1 x1 phi1) = phi1.
 Proof. Admitted.
 
-Hint Resolve open_constraint_wrt_tm_rec_close_constraint_wrt_tm_rec : lngen.
-Hint Rewrite open_constraint_wrt_tm_rec_close_constraint_wrt_tm_rec using solve [auto] : lngen.
+#[export] Hint Resolve open_constraint_wrt_tm_rec_close_constraint_wrt_tm_rec : lngen.
+#[export] Hint Rewrite open_constraint_wrt_tm_rec_close_constraint_wrt_tm_rec using solve [auto] : lngen.
 
 (* end hide *)
 
@@ -3835,8 +3788,8 @@ forall a1 c1 n1,
   open_tm_wrt_co_rec n1 (g_Var_f c1) (close_tm_wrt_co_rec n1 c1 a1) = a1.
 Proof. Admitted.
 
-Hint Resolve open_tm_wrt_co_rec_close_tm_wrt_co_rec : lngen.
-Hint Rewrite open_tm_wrt_co_rec_close_tm_wrt_co_rec using solve [auto] : lngen.
+#[export] Hint Resolve open_tm_wrt_co_rec_close_tm_wrt_co_rec : lngen.
+#[export] Hint Rewrite open_tm_wrt_co_rec_close_tm_wrt_co_rec using solve [auto] : lngen.
 
 (* end hide *)
 
@@ -3847,8 +3800,8 @@ forall brs1 c1 n1,
   open_brs_wrt_co_rec n1 (g_Var_f c1) (close_brs_wrt_co_rec n1 c1 brs1) = brs1.
 Proof. Admitted.
 
-Hint Resolve open_brs_wrt_co_rec_close_brs_wrt_co_rec : lngen.
-Hint Rewrite open_brs_wrt_co_rec_close_brs_wrt_co_rec using solve [auto] : lngen.
+#[export] Hint Resolve open_brs_wrt_co_rec_close_brs_wrt_co_rec : lngen.
+#[export] Hint Rewrite open_brs_wrt_co_rec_close_brs_wrt_co_rec using solve [auto] : lngen.
 
 (* end hide *)
 
@@ -3859,8 +3812,8 @@ forall g1 c1 n1,
   open_co_wrt_co_rec n1 (g_Var_f c1) (close_co_wrt_co_rec n1 c1 g1) = g1.
 Proof. Admitted.
 
-Hint Resolve open_co_wrt_co_rec_close_co_wrt_co_rec : lngen.
-Hint Rewrite open_co_wrt_co_rec_close_co_wrt_co_rec using solve [auto] : lngen.
+#[export] Hint Resolve open_co_wrt_co_rec_close_co_wrt_co_rec : lngen.
+#[export] Hint Rewrite open_co_wrt_co_rec_close_co_wrt_co_rec using solve [auto] : lngen.
 
 (* end hide *)
 
@@ -3871,8 +3824,8 @@ forall phi1 c1 n1,
   open_constraint_wrt_co_rec n1 (g_Var_f c1) (close_constraint_wrt_co_rec n1 c1 phi1) = phi1.
 Proof. Admitted.
 
-Hint Resolve open_constraint_wrt_co_rec_close_constraint_wrt_co_rec : lngen.
-Hint Rewrite open_constraint_wrt_co_rec_close_constraint_wrt_co_rec using solve [auto] : lngen.
+#[export] Hint Resolve open_constraint_wrt_co_rec_close_constraint_wrt_co_rec : lngen.
+#[export] Hint Rewrite open_constraint_wrt_co_rec_close_constraint_wrt_co_rec using solve [auto] : lngen.
 
 (* end hide *)
 
@@ -3881,64 +3834,64 @@ forall a1 x1,
   open_tm_wrt_tm (close_tm_wrt_tm x1 a1) (a_Var_f x1) = a1.
 Proof. Admitted.
 
-Hint Resolve open_tm_wrt_tm_close_tm_wrt_tm : lngen.
-Hint Rewrite open_tm_wrt_tm_close_tm_wrt_tm using solve [auto] : lngen.
+#[export] Hint Resolve open_tm_wrt_tm_close_tm_wrt_tm : lngen.
+#[export] Hint Rewrite open_tm_wrt_tm_close_tm_wrt_tm using solve [auto] : lngen.
 
 Lemma open_brs_wrt_tm_close_brs_wrt_tm :
 forall brs1 x1,
   open_brs_wrt_tm (close_brs_wrt_tm x1 brs1) (a_Var_f x1) = brs1.
 Proof. Admitted.
 
-Hint Resolve open_brs_wrt_tm_close_brs_wrt_tm : lngen.
-Hint Rewrite open_brs_wrt_tm_close_brs_wrt_tm using solve [auto] : lngen.
+#[export] Hint Resolve open_brs_wrt_tm_close_brs_wrt_tm : lngen.
+#[export] Hint Rewrite open_brs_wrt_tm_close_brs_wrt_tm using solve [auto] : lngen.
 
 Lemma open_co_wrt_tm_close_co_wrt_tm :
 forall g1 x1,
   open_co_wrt_tm (close_co_wrt_tm x1 g1) (a_Var_f x1) = g1.
 Proof. Admitted.
 
-Hint Resolve open_co_wrt_tm_close_co_wrt_tm : lngen.
-Hint Rewrite open_co_wrt_tm_close_co_wrt_tm using solve [auto] : lngen.
+#[export] Hint Resolve open_co_wrt_tm_close_co_wrt_tm : lngen.
+#[export] Hint Rewrite open_co_wrt_tm_close_co_wrt_tm using solve [auto] : lngen.
 
 Lemma open_constraint_wrt_tm_close_constraint_wrt_tm :
 forall phi1 x1,
   open_constraint_wrt_tm (close_constraint_wrt_tm x1 phi1) (a_Var_f x1) = phi1.
 Proof. Admitted.
 
-Hint Resolve open_constraint_wrt_tm_close_constraint_wrt_tm : lngen.
-Hint Rewrite open_constraint_wrt_tm_close_constraint_wrt_tm using solve [auto] : lngen.
+#[export] Hint Resolve open_constraint_wrt_tm_close_constraint_wrt_tm : lngen.
+#[export] Hint Rewrite open_constraint_wrt_tm_close_constraint_wrt_tm using solve [auto] : lngen.
 
 Lemma open_tm_wrt_co_close_tm_wrt_co :
 forall a1 c1,
   open_tm_wrt_co (close_tm_wrt_co c1 a1) (g_Var_f c1) = a1.
 Proof. Admitted.
 
-Hint Resolve open_tm_wrt_co_close_tm_wrt_co : lngen.
-Hint Rewrite open_tm_wrt_co_close_tm_wrt_co using solve [auto] : lngen.
+#[export] Hint Resolve open_tm_wrt_co_close_tm_wrt_co : lngen.
+#[export] Hint Rewrite open_tm_wrt_co_close_tm_wrt_co using solve [auto] : lngen.
 
 Lemma open_brs_wrt_co_close_brs_wrt_co :
 forall brs1 c1,
   open_brs_wrt_co (close_brs_wrt_co c1 brs1) (g_Var_f c1) = brs1.
 Proof. Admitted.
 
-Hint Resolve open_brs_wrt_co_close_brs_wrt_co : lngen.
-Hint Rewrite open_brs_wrt_co_close_brs_wrt_co using solve [auto] : lngen.
+#[export] Hint Resolve open_brs_wrt_co_close_brs_wrt_co : lngen.
+#[export] Hint Rewrite open_brs_wrt_co_close_brs_wrt_co using solve [auto] : lngen.
 
 Lemma open_co_wrt_co_close_co_wrt_co :
 forall g1 c1,
   open_co_wrt_co (close_co_wrt_co c1 g1) (g_Var_f c1) = g1.
 Proof. Admitted.
 
-Hint Resolve open_co_wrt_co_close_co_wrt_co : lngen.
-Hint Rewrite open_co_wrt_co_close_co_wrt_co using solve [auto] : lngen.
+#[export] Hint Resolve open_co_wrt_co_close_co_wrt_co : lngen.
+#[export] Hint Rewrite open_co_wrt_co_close_co_wrt_co using solve [auto] : lngen.
 
 Lemma open_constraint_wrt_co_close_constraint_wrt_co :
 forall phi1 c1,
   open_constraint_wrt_co (close_constraint_wrt_co c1 phi1) (g_Var_f c1) = phi1.
 Proof. Admitted.
 
-Hint Resolve open_constraint_wrt_co_close_constraint_wrt_co : lngen.
-Hint Rewrite open_constraint_wrt_co_close_constraint_wrt_co using solve [auto] : lngen.
+#[export] Hint Resolve open_constraint_wrt_co_close_constraint_wrt_co : lngen.
+#[export] Hint Rewrite open_constraint_wrt_co_close_constraint_wrt_co using solve [auto] : lngen.
 
 (* begin hide *)
 
@@ -3977,7 +3930,7 @@ forall a2 a1 x1 n1,
   a2 = a1.
 Proof. Admitted.
 
-Hint Immediate open_tm_wrt_tm_rec_inj : lngen.
+#[export] Hint Immediate open_tm_wrt_tm_rec_inj : lngen.
 
 (* end hide *)
 
@@ -3991,7 +3944,7 @@ forall brs2 brs1 x1 n1,
   brs2 = brs1.
 Proof. Admitted.
 
-Hint Immediate open_brs_wrt_tm_rec_inj : lngen.
+#[export] Hint Immediate open_brs_wrt_tm_rec_inj : lngen.
 
 (* end hide *)
 
@@ -4005,7 +3958,7 @@ forall g2 g1 x1 n1,
   g2 = g1.
 Proof. Admitted.
 
-Hint Immediate open_co_wrt_tm_rec_inj : lngen.
+#[export] Hint Immediate open_co_wrt_tm_rec_inj : lngen.
 
 (* end hide *)
 
@@ -4019,7 +3972,7 @@ forall phi2 phi1 x1 n1,
   phi2 = phi1.
 Proof. Admitted.
 
-Hint Immediate open_constraint_wrt_tm_rec_inj : lngen.
+#[export] Hint Immediate open_constraint_wrt_tm_rec_inj : lngen.
 
 (* end hide *)
 
@@ -4060,7 +4013,7 @@ forall a2 a1 c1 n1,
   a2 = a1.
 Proof. Admitted.
 
-Hint Immediate open_tm_wrt_co_rec_inj : lngen.
+#[export] Hint Immediate open_tm_wrt_co_rec_inj : lngen.
 
 (* end hide *)
 
@@ -4074,7 +4027,7 @@ forall brs2 brs1 c1 n1,
   brs2 = brs1.
 Proof. Admitted.
 
-Hint Immediate open_brs_wrt_co_rec_inj : lngen.
+#[export] Hint Immediate open_brs_wrt_co_rec_inj : lngen.
 
 (* end hide *)
 
@@ -4088,7 +4041,7 @@ forall g2 g1 c1 n1,
   g2 = g1.
 Proof. Admitted.
 
-Hint Immediate open_co_wrt_co_rec_inj : lngen.
+#[export] Hint Immediate open_co_wrt_co_rec_inj : lngen.
 
 (* end hide *)
 
@@ -4102,7 +4055,7 @@ forall phi2 phi1 c1 n1,
   phi2 = phi1.
 Proof. Admitted.
 
-Hint Immediate open_constraint_wrt_co_rec_inj : lngen.
+#[export] Hint Immediate open_constraint_wrt_co_rec_inj : lngen.
 
 (* end hide *)
 
@@ -4114,7 +4067,7 @@ forall a2 a1 x1,
   a2 = a1.
 Proof. Admitted.
 
-Hint Immediate open_tm_wrt_tm_inj : lngen.
+#[export] Hint Immediate open_tm_wrt_tm_inj : lngen.
 
 Lemma open_brs_wrt_tm_inj :
 forall brs2 brs1 x1,
@@ -4124,7 +4077,7 @@ forall brs2 brs1 x1,
   brs2 = brs1.
 Proof. Admitted.
 
-Hint Immediate open_brs_wrt_tm_inj : lngen.
+#[export] Hint Immediate open_brs_wrt_tm_inj : lngen.
 
 Lemma open_co_wrt_tm_inj :
 forall g2 g1 x1,
@@ -4134,7 +4087,7 @@ forall g2 g1 x1,
   g2 = g1.
 Proof. Admitted.
 
-Hint Immediate open_co_wrt_tm_inj : lngen.
+#[export] Hint Immediate open_co_wrt_tm_inj : lngen.
 
 Lemma open_constraint_wrt_tm_inj :
 forall phi2 phi1 x1,
@@ -4144,7 +4097,7 @@ forall phi2 phi1 x1,
   phi2 = phi1.
 Proof. Admitted.
 
-Hint Immediate open_constraint_wrt_tm_inj : lngen.
+#[export] Hint Immediate open_constraint_wrt_tm_inj : lngen.
 
 Lemma open_tm_wrt_co_inj :
 forall a2 a1 c1,
@@ -4154,7 +4107,7 @@ forall a2 a1 c1,
   a2 = a1.
 Proof. Admitted.
 
-Hint Immediate open_tm_wrt_co_inj : lngen.
+#[export] Hint Immediate open_tm_wrt_co_inj : lngen.
 
 Lemma open_brs_wrt_co_inj :
 forall brs2 brs1 c1,
@@ -4164,7 +4117,7 @@ forall brs2 brs1 c1,
   brs2 = brs1.
 Proof. Admitted.
 
-Hint Immediate open_brs_wrt_co_inj : lngen.
+#[export] Hint Immediate open_brs_wrt_co_inj : lngen.
 
 Lemma open_co_wrt_co_inj :
 forall g2 g1 c1,
@@ -4174,7 +4127,7 @@ forall g2 g1 c1,
   g2 = g1.
 Proof. Admitted.
 
-Hint Immediate open_co_wrt_co_inj : lngen.
+#[export] Hint Immediate open_co_wrt_co_inj : lngen.
 
 Lemma open_constraint_wrt_co_inj :
 forall phi2 phi1 c1,
@@ -4184,7 +4137,7 @@ forall phi2 phi1 c1,
   phi2 = phi1.
 Proof. Admitted.
 
-Hint Immediate open_constraint_wrt_co_inj : lngen.
+#[export] Hint Immediate open_constraint_wrt_co_inj : lngen.
 
 
 (* *********************************************************************** *)
@@ -4218,7 +4171,7 @@ forall a1,
   degree_tm_wrt_tm 0 a1.
 Proof. Admitted.
 
-Hint Resolve degree_tm_wrt_tm_of_lc_tm : lngen.
+#[export] Hint Resolve degree_tm_wrt_tm_of_lc_tm : lngen.
 
 Lemma degree_brs_wrt_tm_of_lc_brs :
 forall brs1,
@@ -4226,7 +4179,7 @@ forall brs1,
   degree_brs_wrt_tm 0 brs1.
 Proof. Admitted.
 
-Hint Resolve degree_brs_wrt_tm_of_lc_brs : lngen.
+#[export] Hint Resolve degree_brs_wrt_tm_of_lc_brs : lngen.
 
 Lemma degree_co_wrt_tm_of_lc_co :
 forall g1,
@@ -4234,7 +4187,7 @@ forall g1,
   degree_co_wrt_tm 0 g1.
 Proof. Admitted.
 
-Hint Resolve degree_co_wrt_tm_of_lc_co : lngen.
+#[export] Hint Resolve degree_co_wrt_tm_of_lc_co : lngen.
 
 Lemma degree_constraint_wrt_tm_of_lc_constraint :
 forall phi1,
@@ -4242,7 +4195,7 @@ forall phi1,
   degree_constraint_wrt_tm 0 phi1.
 Proof. Admitted.
 
-Hint Resolve degree_constraint_wrt_tm_of_lc_constraint : lngen.
+#[export] Hint Resolve degree_constraint_wrt_tm_of_lc_constraint : lngen.
 
 (* begin hide *)
 
@@ -4269,7 +4222,7 @@ forall a1,
   degree_tm_wrt_co 0 a1.
 Proof. Admitted.
 
-Hint Resolve degree_tm_wrt_co_of_lc_tm : lngen.
+#[export] Hint Resolve degree_tm_wrt_co_of_lc_tm : lngen.
 
 Lemma degree_brs_wrt_co_of_lc_brs :
 forall brs1,
@@ -4277,7 +4230,7 @@ forall brs1,
   degree_brs_wrt_co 0 brs1.
 Proof. Admitted.
 
-Hint Resolve degree_brs_wrt_co_of_lc_brs : lngen.
+#[export] Hint Resolve degree_brs_wrt_co_of_lc_brs : lngen.
 
 Lemma degree_co_wrt_co_of_lc_co :
 forall g1,
@@ -4285,7 +4238,7 @@ forall g1,
   degree_co_wrt_co 0 g1.
 Proof. Admitted.
 
-Hint Resolve degree_co_wrt_co_of_lc_co : lngen.
+#[export] Hint Resolve degree_co_wrt_co_of_lc_co : lngen.
 
 Lemma degree_constraint_wrt_co_of_lc_constraint :
 forall phi1,
@@ -4293,7 +4246,7 @@ forall phi1,
   degree_constraint_wrt_co 0 phi1.
 Proof. Admitted.
 
-Hint Resolve degree_constraint_wrt_co_of_lc_constraint : lngen.
+#[export] Hint Resolve degree_constraint_wrt_co_of_lc_constraint : lngen.
 
 (* begin hide *)
 
@@ -4330,7 +4283,7 @@ forall a1,
   lc_tm a1.
 Proof. Admitted.
 
-Hint Resolve lc_tm_of_degree : lngen.
+#[export] Hint Resolve lc_tm_of_degree : lngen.
 
 Lemma lc_brs_of_degree :
 forall brs1,
@@ -4339,7 +4292,7 @@ forall brs1,
   lc_brs brs1.
 Proof. Admitted.
 
-Hint Resolve lc_brs_of_degree : lngen.
+#[export] Hint Resolve lc_brs_of_degree : lngen.
 
 Lemma lc_co_of_degree :
 forall g1,
@@ -4348,7 +4301,7 @@ forall g1,
   lc_co g1.
 Proof. Admitted.
 
-Hint Resolve lc_co_of_degree : lngen.
+#[export] Hint Resolve lc_co_of_degree : lngen.
 
 Lemma lc_constraint_of_degree :
 forall phi1,
@@ -4357,7 +4310,7 @@ forall phi1,
   lc_constraint phi1.
 Proof. Admitted.
 
-Hint Resolve lc_constraint_of_degree : lngen.
+#[export] Hint Resolve lc_constraint_of_degree : lngen.
 
 Ltac grade_lc_exists_tac :=
   repeat (match goal with
@@ -4450,52 +4403,52 @@ forall c1 psi1 g1 g2 g3,
   lc_co (g_CAbsCong psi1 g1 g2 g3).
 Proof. Admitted.
 
-Hint Extern 1 (lc_tm (a_Abs _ _ _)) =>
+#[export] Hint Extern 1 (lc_tm (a_Abs _ _ _)) =>
   let x1 := fresh in
   pick_fresh x1;
   apply (lc_a_Abs_exists x1) : core.
 
-Hint Extern 1 (lc_tm (a_UAbs _ _)) =>
+#[export] Hint Extern 1 (lc_tm (a_UAbs _ _)) =>
   let x1 := fresh in
   pick_fresh x1;
   apply (lc_a_UAbs_exists x1) : core.
 
-Hint Extern 1 (lc_tm (a_Pi _ _ _)) =>
+#[export] Hint Extern 1 (lc_tm (a_Pi _ _ _)) =>
   let x1 := fresh in
   pick_fresh x1;
   apply (lc_a_Pi_exists x1) : core.
 
-Hint Extern 1 (lc_tm (a_CPi _ _ _)) =>
+#[export] Hint Extern 1 (lc_tm (a_CPi _ _ _)) =>
   let c1 := fresh in
   pick_fresh c1;
   apply (lc_a_CPi_exists c1) : core.
 
-Hint Extern 1 (lc_tm (a_CAbs _ _ _)) =>
+#[export] Hint Extern 1 (lc_tm (a_CAbs _ _ _)) =>
   let c1 := fresh in
   pick_fresh c1;
   apply (lc_a_CAbs_exists c1) : core.
 
-Hint Extern 1 (lc_tm (a_UCAbs _ _)) =>
+#[export] Hint Extern 1 (lc_tm (a_UCAbs _ _)) =>
   let c1 := fresh in
   pick_fresh c1;
   apply (lc_a_UCAbs_exists c1) : core.
 
-Hint Extern 1 (lc_co (g_PiCong _ _ _)) =>
+#[export] Hint Extern 1 (lc_co (g_PiCong _ _ _)) =>
   let x1 := fresh in
   pick_fresh x1;
   apply (lc_g_PiCong_exists x1) : core.
 
-Hint Extern 1 (lc_co (g_AbsCong _ _ _)) =>
+#[export] Hint Extern 1 (lc_co (g_AbsCong _ _ _)) =>
   let x1 := fresh in
   pick_fresh x1;
   apply (lc_g_AbsCong_exists x1) : core.
 
-Hint Extern 1 (lc_co (g_CPiCong _ _)) =>
+#[export] Hint Extern 1 (lc_co (g_CPiCong _ _)) =>
   let c1 := fresh in
   pick_fresh c1;
   apply (lc_g_CPiCong_exists c1) : core.
 
-Hint Extern 1 (lc_co (g_CAbsCong _ _ _ _)) =>
+#[export] Hint Extern 1 (lc_co (g_CAbsCong _ _ _ _)) =>
   let c1 := fresh in
   pick_fresh c1;
   apply (lc_g_CAbsCong_exists c1) : core.
@@ -4507,7 +4460,7 @@ forall a1 a2,
   lc_tm (open_tm_wrt_tm a1 a2).
 Proof. Admitted.
 
-Hint Resolve lc_body_tm_wrt_tm : lngen.
+#[export] Hint Resolve lc_body_tm_wrt_tm : lngen.
 
 Lemma lc_body_brs_wrt_tm :
 forall brs1 a1,
@@ -4516,7 +4469,7 @@ forall brs1 a1,
   lc_brs (open_brs_wrt_tm brs1 a1).
 Proof. Admitted.
 
-Hint Resolve lc_body_brs_wrt_tm : lngen.
+#[export] Hint Resolve lc_body_brs_wrt_tm : lngen.
 
 Lemma lc_body_co_wrt_tm :
 forall g1 a1,
@@ -4525,7 +4478,7 @@ forall g1 a1,
   lc_co (open_co_wrt_tm g1 a1).
 Proof. Admitted.
 
-Hint Resolve lc_body_co_wrt_tm : lngen.
+#[export] Hint Resolve lc_body_co_wrt_tm : lngen.
 
 Lemma lc_body_constraint_wrt_tm :
 forall phi1 a1,
@@ -4534,7 +4487,7 @@ forall phi1 a1,
   lc_constraint (open_constraint_wrt_tm phi1 a1).
 Proof. Admitted.
 
-Hint Resolve lc_body_constraint_wrt_tm : lngen.
+#[export] Hint Resolve lc_body_constraint_wrt_tm : lngen.
 
 Lemma lc_body_tm_wrt_co :
 forall a1 g1,
@@ -4543,7 +4496,7 @@ forall a1 g1,
   lc_tm (open_tm_wrt_co a1 g1).
 Proof. Admitted.
 
-Hint Resolve lc_body_tm_wrt_co : lngen.
+#[export] Hint Resolve lc_body_tm_wrt_co : lngen.
 
 Lemma lc_body_brs_wrt_co :
 forall brs1 g1,
@@ -4552,7 +4505,7 @@ forall brs1 g1,
   lc_brs (open_brs_wrt_co brs1 g1).
 Proof. Admitted.
 
-Hint Resolve lc_body_brs_wrt_co : lngen.
+#[export] Hint Resolve lc_body_brs_wrt_co : lngen.
 
 Lemma lc_body_co_wrt_co :
 forall g1 g2,
@@ -4561,7 +4514,7 @@ forall g1 g2,
   lc_co (open_co_wrt_co g1 g2).
 Proof. Admitted.
 
-Hint Resolve lc_body_co_wrt_co : lngen.
+#[export] Hint Resolve lc_body_co_wrt_co : lngen.
 
 Lemma lc_body_constraint_wrt_co :
 forall phi1 g1,
@@ -4570,7 +4523,7 @@ forall phi1 g1,
   lc_constraint (open_constraint_wrt_co phi1 g1).
 Proof. Admitted.
 
-Hint Resolve lc_body_constraint_wrt_co : lngen.
+#[export] Hint Resolve lc_body_constraint_wrt_co : lngen.
 
 Lemma lc_body_a_Abs_3 :
 forall psi1 A1 b1,
@@ -4578,7 +4531,7 @@ forall psi1 A1 b1,
   body_tm_wrt_tm b1.
 Proof. Admitted.
 
-Hint Resolve lc_body_a_Abs_3 : lngen.
+#[export] Hint Resolve lc_body_a_Abs_3 : lngen.
 
 Lemma lc_body_a_UAbs_2 :
 forall psi1 b1,
@@ -4586,7 +4539,7 @@ forall psi1 b1,
   body_tm_wrt_tm b1.
 Proof. Admitted.
 
-Hint Resolve lc_body_a_UAbs_2 : lngen.
+#[export] Hint Resolve lc_body_a_UAbs_2 : lngen.
 
 Lemma lc_body_a_Pi_3 :
 forall psi1 A1 B1,
@@ -4594,7 +4547,7 @@ forall psi1 A1 B1,
   body_tm_wrt_tm B1.
 Proof. Admitted.
 
-Hint Resolve lc_body_a_Pi_3 : lngen.
+#[export] Hint Resolve lc_body_a_Pi_3 : lngen.
 
 Lemma lc_body_a_CPi_3 :
 forall psi1 phi1 B1,
@@ -4602,7 +4555,7 @@ forall psi1 phi1 B1,
   body_tm_wrt_co B1.
 Proof. Admitted.
 
-Hint Resolve lc_body_a_CPi_3 : lngen.
+#[export] Hint Resolve lc_body_a_CPi_3 : lngen.
 
 Lemma lc_body_a_CAbs_3 :
 forall psi1 phi1 b1,
@@ -4610,7 +4563,7 @@ forall psi1 phi1 b1,
   body_tm_wrt_co b1.
 Proof. Admitted.
 
-Hint Resolve lc_body_a_CAbs_3 : lngen.
+#[export] Hint Resolve lc_body_a_CAbs_3 : lngen.
 
 Lemma lc_body_a_UCAbs_2 :
 forall psi1 b1,
@@ -4618,7 +4571,7 @@ forall psi1 b1,
   body_tm_wrt_co b1.
 Proof. Admitted.
 
-Hint Resolve lc_body_a_UCAbs_2 : lngen.
+#[export] Hint Resolve lc_body_a_UCAbs_2 : lngen.
 
 Lemma lc_body_g_PiCong_3 :
 forall psi1 g1 g2,
@@ -4626,7 +4579,7 @@ forall psi1 g1 g2,
   body_co_wrt_tm g2.
 Proof. Admitted.
 
-Hint Resolve lc_body_g_PiCong_3 : lngen.
+#[export] Hint Resolve lc_body_g_PiCong_3 : lngen.
 
 Lemma lc_body_g_AbsCong_3 :
 forall psi1 g1 g2,
@@ -4634,7 +4587,7 @@ forall psi1 g1 g2,
   body_co_wrt_tm g2.
 Proof. Admitted.
 
-Hint Resolve lc_body_g_AbsCong_3 : lngen.
+#[export] Hint Resolve lc_body_g_AbsCong_3 : lngen.
 
 Lemma lc_body_g_CPiCong_2 :
 forall g1 g2,
@@ -4642,7 +4595,7 @@ forall g1 g2,
   body_co_wrt_co g2.
 Proof. Admitted.
 
-Hint Resolve lc_body_g_CPiCong_2 : lngen.
+#[export] Hint Resolve lc_body_g_CPiCong_2 : lngen.
 
 Lemma lc_body_g_CAbsCong_3 :
 forall psi1 g1 g2 g3,
@@ -4650,7 +4603,7 @@ forall psi1 g1 g2 g3,
   body_co_wrt_co g2.
 Proof. Admitted.
 
-Hint Resolve lc_body_g_CAbsCong_3 : lngen.
+#[export] Hint Resolve lc_body_g_CAbsCong_3 : lngen.
 
 (* begin hide *)
 
@@ -4667,25 +4620,25 @@ Lemma lc_tm_unique :
 forall a1 (proof2 proof3 : lc_tm a1), proof2 = proof3.
 Proof. Admitted.
 
-Hint Resolve lc_tm_unique : lngen.
+#[export] Hint Resolve lc_tm_unique : lngen.
 
 Lemma lc_brs_unique :
 forall brs1 (proof2 proof3 : lc_brs brs1), proof2 = proof3.
 Proof. Admitted.
 
-Hint Resolve lc_brs_unique : lngen.
+#[export] Hint Resolve lc_brs_unique : lngen.
 
 Lemma lc_co_unique :
 forall g1 (proof2 proof3 : lc_co g1), proof2 = proof3.
 Proof. Admitted.
 
-Hint Resolve lc_co_unique : lngen.
+#[export] Hint Resolve lc_co_unique : lngen.
 
 Lemma lc_constraint_unique :
 forall phi1 (proof2 proof3 : lc_constraint phi1), proof2 = proof3.
 Proof. Admitted.
 
-Hint Resolve lc_constraint_unique : lngen.
+#[export] Hint Resolve lc_constraint_unique : lngen.
 
 (* begin hide *)
 
@@ -4702,25 +4655,25 @@ Lemma lc_tm_of_lc_set_tm :
 forall a1, lc_set_tm a1 -> lc_tm a1.
 Proof. Admitted.
 
-Hint Resolve lc_tm_of_lc_set_tm : lngen.
+#[export] Hint Resolve lc_tm_of_lc_set_tm : lngen.
 
 Lemma lc_brs_of_lc_set_brs :
 forall brs1, lc_set_brs brs1 -> lc_brs brs1.
 Proof. Admitted.
 
-Hint Resolve lc_brs_of_lc_set_brs : lngen.
+#[export] Hint Resolve lc_brs_of_lc_set_brs : lngen.
 
 Lemma lc_co_of_lc_set_co :
 forall g1, lc_set_co g1 -> lc_co g1.
 Proof. Admitted.
 
-Hint Resolve lc_co_of_lc_set_co : lngen.
+#[export] Hint Resolve lc_co_of_lc_set_co : lngen.
 
 Lemma lc_constraint_of_lc_set_constraint :
 forall phi1, lc_set_constraint phi1 -> lc_constraint phi1.
 Proof. Admitted.
 
-Hint Resolve lc_constraint_of_lc_set_constraint : lngen.
+#[export] Hint Resolve lc_constraint_of_lc_set_constraint : lngen.
 
 (* begin hide *)
 
@@ -4752,7 +4705,7 @@ forall a1,
   lc_set_tm a1.
 Proof. Admitted.
 
-Hint Resolve lc_set_tm_of_lc_tm : lngen.
+#[export] Hint Resolve lc_set_tm_of_lc_tm : lngen.
 
 Lemma lc_set_brs_of_lc_brs :
 forall brs1,
@@ -4760,7 +4713,7 @@ forall brs1,
   lc_set_brs brs1.
 Proof. Admitted.
 
-Hint Resolve lc_set_brs_of_lc_brs : lngen.
+#[export] Hint Resolve lc_set_brs_of_lc_brs : lngen.
 
 Lemma lc_set_co_of_lc_co :
 forall g1,
@@ -4768,7 +4721,7 @@ forall g1,
   lc_set_co g1.
 Proof. Admitted.
 
-Hint Resolve lc_set_co_of_lc_co : lngen.
+#[export] Hint Resolve lc_set_co_of_lc_co : lngen.
 
 Lemma lc_set_constraint_of_lc_constraint :
 forall phi1,
@@ -4776,7 +4729,7 @@ forall phi1,
   lc_set_constraint phi1.
 Proof. Admitted.
 
-Hint Resolve lc_set_constraint_of_lc_constraint : lngen.
+#[export] Hint Resolve lc_set_constraint_of_lc_constraint : lngen.
 
 
 (* *********************************************************************** *)
@@ -4817,8 +4770,8 @@ forall a1 x1 n1,
   close_tm_wrt_tm_rec n1 x1 a1 = a1.
 Proof. Admitted.
 
-Hint Resolve close_tm_wrt_tm_rec_degree_tm_wrt_tm : lngen.
-Hint Rewrite close_tm_wrt_tm_rec_degree_tm_wrt_tm using solve [auto] : lngen.
+#[export] Hint Resolve close_tm_wrt_tm_rec_degree_tm_wrt_tm : lngen.
+#[export] Hint Rewrite close_tm_wrt_tm_rec_degree_tm_wrt_tm using solve [auto] : lngen.
 
 (* end hide *)
 
@@ -4831,8 +4784,8 @@ forall brs1 x1 n1,
   close_brs_wrt_tm_rec n1 x1 brs1 = brs1.
 Proof. Admitted.
 
-Hint Resolve close_brs_wrt_tm_rec_degree_brs_wrt_tm : lngen.
-Hint Rewrite close_brs_wrt_tm_rec_degree_brs_wrt_tm using solve [auto] : lngen.
+#[export] Hint Resolve close_brs_wrt_tm_rec_degree_brs_wrt_tm : lngen.
+#[export] Hint Rewrite close_brs_wrt_tm_rec_degree_brs_wrt_tm using solve [auto] : lngen.
 
 (* end hide *)
 
@@ -4845,8 +4798,8 @@ forall g1 x1 n1,
   close_co_wrt_tm_rec n1 x1 g1 = g1.
 Proof. Admitted.
 
-Hint Resolve close_co_wrt_tm_rec_degree_co_wrt_tm : lngen.
-Hint Rewrite close_co_wrt_tm_rec_degree_co_wrt_tm using solve [auto] : lngen.
+#[export] Hint Resolve close_co_wrt_tm_rec_degree_co_wrt_tm : lngen.
+#[export] Hint Rewrite close_co_wrt_tm_rec_degree_co_wrt_tm using solve [auto] : lngen.
 
 (* end hide *)
 
@@ -4859,8 +4812,8 @@ forall phi1 x1 n1,
   close_constraint_wrt_tm_rec n1 x1 phi1 = phi1.
 Proof. Admitted.
 
-Hint Resolve close_constraint_wrt_tm_rec_degree_constraint_wrt_tm : lngen.
-Hint Rewrite close_constraint_wrt_tm_rec_degree_constraint_wrt_tm using solve [auto] : lngen.
+#[export] Hint Resolve close_constraint_wrt_tm_rec_degree_constraint_wrt_tm : lngen.
+#[export] Hint Rewrite close_constraint_wrt_tm_rec_degree_constraint_wrt_tm using solve [auto] : lngen.
 
 (* end hide *)
 
@@ -4896,8 +4849,8 @@ forall a1 c1 n1,
   close_tm_wrt_co_rec n1 c1 a1 = a1.
 Proof. Admitted.
 
-Hint Resolve close_tm_wrt_co_rec_degree_tm_wrt_co : lngen.
-Hint Rewrite close_tm_wrt_co_rec_degree_tm_wrt_co using solve [auto] : lngen.
+#[export] Hint Resolve close_tm_wrt_co_rec_degree_tm_wrt_co : lngen.
+#[export] Hint Rewrite close_tm_wrt_co_rec_degree_tm_wrt_co using solve [auto] : lngen.
 
 (* end hide *)
 
@@ -4910,8 +4863,8 @@ forall brs1 c1 n1,
   close_brs_wrt_co_rec n1 c1 brs1 = brs1.
 Proof. Admitted.
 
-Hint Resolve close_brs_wrt_co_rec_degree_brs_wrt_co : lngen.
-Hint Rewrite close_brs_wrt_co_rec_degree_brs_wrt_co using solve [auto] : lngen.
+#[export] Hint Resolve close_brs_wrt_co_rec_degree_brs_wrt_co : lngen.
+#[export] Hint Rewrite close_brs_wrt_co_rec_degree_brs_wrt_co using solve [auto] : lngen.
 
 (* end hide *)
 
@@ -4924,8 +4877,8 @@ forall g1 c1 n1,
   close_co_wrt_co_rec n1 c1 g1 = g1.
 Proof. Admitted.
 
-Hint Resolve close_co_wrt_co_rec_degree_co_wrt_co : lngen.
-Hint Rewrite close_co_wrt_co_rec_degree_co_wrt_co using solve [auto] : lngen.
+#[export] Hint Resolve close_co_wrt_co_rec_degree_co_wrt_co : lngen.
+#[export] Hint Rewrite close_co_wrt_co_rec_degree_co_wrt_co using solve [auto] : lngen.
 
 (* end hide *)
 
@@ -4938,8 +4891,8 @@ forall phi1 c1 n1,
   close_constraint_wrt_co_rec n1 c1 phi1 = phi1.
 Proof. Admitted.
 
-Hint Resolve close_constraint_wrt_co_rec_degree_constraint_wrt_co : lngen.
-Hint Rewrite close_constraint_wrt_co_rec_degree_constraint_wrt_co using solve [auto] : lngen.
+#[export] Hint Resolve close_constraint_wrt_co_rec_degree_constraint_wrt_co : lngen.
+#[export] Hint Rewrite close_constraint_wrt_co_rec_degree_constraint_wrt_co using solve [auto] : lngen.
 
 (* end hide *)
 
@@ -4950,8 +4903,8 @@ forall a1 x1,
   close_tm_wrt_tm x1 a1 = a1.
 Proof. Admitted.
 
-Hint Resolve close_tm_wrt_tm_lc_tm : lngen.
-Hint Rewrite close_tm_wrt_tm_lc_tm using solve [auto] : lngen.
+#[export] Hint Resolve close_tm_wrt_tm_lc_tm : lngen.
+#[export] Hint Rewrite close_tm_wrt_tm_lc_tm using solve [auto] : lngen.
 
 Lemma close_brs_wrt_tm_lc_brs :
 forall brs1 x1,
@@ -4960,8 +4913,8 @@ forall brs1 x1,
   close_brs_wrt_tm x1 brs1 = brs1.
 Proof. Admitted.
 
-Hint Resolve close_brs_wrt_tm_lc_brs : lngen.
-Hint Rewrite close_brs_wrt_tm_lc_brs using solve [auto] : lngen.
+#[export] Hint Resolve close_brs_wrt_tm_lc_brs : lngen.
+#[export] Hint Rewrite close_brs_wrt_tm_lc_brs using solve [auto] : lngen.
 
 Lemma close_co_wrt_tm_lc_co :
 forall g1 x1,
@@ -4970,8 +4923,8 @@ forall g1 x1,
   close_co_wrt_tm x1 g1 = g1.
 Proof. Admitted.
 
-Hint Resolve close_co_wrt_tm_lc_co : lngen.
-Hint Rewrite close_co_wrt_tm_lc_co using solve [auto] : lngen.
+#[export] Hint Resolve close_co_wrt_tm_lc_co : lngen.
+#[export] Hint Rewrite close_co_wrt_tm_lc_co using solve [auto] : lngen.
 
 Lemma close_constraint_wrt_tm_lc_constraint :
 forall phi1 x1,
@@ -4980,8 +4933,8 @@ forall phi1 x1,
   close_constraint_wrt_tm x1 phi1 = phi1.
 Proof. Admitted.
 
-Hint Resolve close_constraint_wrt_tm_lc_constraint : lngen.
-Hint Rewrite close_constraint_wrt_tm_lc_constraint using solve [auto] : lngen.
+#[export] Hint Resolve close_constraint_wrt_tm_lc_constraint : lngen.
+#[export] Hint Rewrite close_constraint_wrt_tm_lc_constraint using solve [auto] : lngen.
 
 Lemma close_tm_wrt_co_lc_tm :
 forall a1 c1,
@@ -4990,8 +4943,8 @@ forall a1 c1,
   close_tm_wrt_co c1 a1 = a1.
 Proof. Admitted.
 
-Hint Resolve close_tm_wrt_co_lc_tm : lngen.
-Hint Rewrite close_tm_wrt_co_lc_tm using solve [auto] : lngen.
+#[export] Hint Resolve close_tm_wrt_co_lc_tm : lngen.
+#[export] Hint Rewrite close_tm_wrt_co_lc_tm using solve [auto] : lngen.
 
 Lemma close_brs_wrt_co_lc_brs :
 forall brs1 c1,
@@ -5000,8 +4953,8 @@ forall brs1 c1,
   close_brs_wrt_co c1 brs1 = brs1.
 Proof. Admitted.
 
-Hint Resolve close_brs_wrt_co_lc_brs : lngen.
-Hint Rewrite close_brs_wrt_co_lc_brs using solve [auto] : lngen.
+#[export] Hint Resolve close_brs_wrt_co_lc_brs : lngen.
+#[export] Hint Rewrite close_brs_wrt_co_lc_brs using solve [auto] : lngen.
 
 Lemma close_co_wrt_co_lc_co :
 forall g1 c1,
@@ -5010,8 +4963,8 @@ forall g1 c1,
   close_co_wrt_co c1 g1 = g1.
 Proof. Admitted.
 
-Hint Resolve close_co_wrt_co_lc_co : lngen.
-Hint Rewrite close_co_wrt_co_lc_co using solve [auto] : lngen.
+#[export] Hint Resolve close_co_wrt_co_lc_co : lngen.
+#[export] Hint Rewrite close_co_wrt_co_lc_co using solve [auto] : lngen.
 
 Lemma close_constraint_wrt_co_lc_constraint :
 forall phi1 c1,
@@ -5020,8 +4973,8 @@ forall phi1 c1,
   close_constraint_wrt_co c1 phi1 = phi1.
 Proof. Admitted.
 
-Hint Resolve close_constraint_wrt_co_lc_constraint : lngen.
-Hint Rewrite close_constraint_wrt_co_lc_constraint using solve [auto] : lngen.
+#[export] Hint Resolve close_constraint_wrt_co_lc_constraint : lngen.
+#[export] Hint Rewrite close_constraint_wrt_co_lc_constraint using solve [auto] : lngen.
 
 (* begin hide *)
 
@@ -5050,8 +5003,8 @@ forall a2 a1 n1,
   open_tm_wrt_tm_rec n1 a1 a2 = a2.
 Proof. Admitted.
 
-Hint Resolve open_tm_wrt_tm_rec_degree_tm_wrt_tm : lngen.
-Hint Rewrite open_tm_wrt_tm_rec_degree_tm_wrt_tm using solve [auto] : lngen.
+#[export] Hint Resolve open_tm_wrt_tm_rec_degree_tm_wrt_tm : lngen.
+#[export] Hint Rewrite open_tm_wrt_tm_rec_degree_tm_wrt_tm using solve [auto] : lngen.
 
 (* end hide *)
 
@@ -5063,8 +5016,8 @@ forall brs1 a1 n1,
   open_brs_wrt_tm_rec n1 a1 brs1 = brs1.
 Proof. Admitted.
 
-Hint Resolve open_brs_wrt_tm_rec_degree_brs_wrt_tm : lngen.
-Hint Rewrite open_brs_wrt_tm_rec_degree_brs_wrt_tm using solve [auto] : lngen.
+#[export] Hint Resolve open_brs_wrt_tm_rec_degree_brs_wrt_tm : lngen.
+#[export] Hint Rewrite open_brs_wrt_tm_rec_degree_brs_wrt_tm using solve [auto] : lngen.
 
 (* end hide *)
 
@@ -5076,8 +5029,8 @@ forall g1 a1 n1,
   open_co_wrt_tm_rec n1 a1 g1 = g1.
 Proof. Admitted.
 
-Hint Resolve open_co_wrt_tm_rec_degree_co_wrt_tm : lngen.
-Hint Rewrite open_co_wrt_tm_rec_degree_co_wrt_tm using solve [auto] : lngen.
+#[export] Hint Resolve open_co_wrt_tm_rec_degree_co_wrt_tm : lngen.
+#[export] Hint Rewrite open_co_wrt_tm_rec_degree_co_wrt_tm using solve [auto] : lngen.
 
 (* end hide *)
 
@@ -5089,8 +5042,8 @@ forall phi1 a1 n1,
   open_constraint_wrt_tm_rec n1 a1 phi1 = phi1.
 Proof. Admitted.
 
-Hint Resolve open_constraint_wrt_tm_rec_degree_constraint_wrt_tm : lngen.
-Hint Rewrite open_constraint_wrt_tm_rec_degree_constraint_wrt_tm using solve [auto] : lngen.
+#[export] Hint Resolve open_constraint_wrt_tm_rec_degree_constraint_wrt_tm : lngen.
+#[export] Hint Rewrite open_constraint_wrt_tm_rec_degree_constraint_wrt_tm using solve [auto] : lngen.
 
 (* end hide *)
 
@@ -5121,8 +5074,8 @@ forall a1 g1 n1,
   open_tm_wrt_co_rec n1 g1 a1 = a1.
 Proof. Admitted.
 
-Hint Resolve open_tm_wrt_co_rec_degree_tm_wrt_co : lngen.
-Hint Rewrite open_tm_wrt_co_rec_degree_tm_wrt_co using solve [auto] : lngen.
+#[export] Hint Resolve open_tm_wrt_co_rec_degree_tm_wrt_co : lngen.
+#[export] Hint Rewrite open_tm_wrt_co_rec_degree_tm_wrt_co using solve [auto] : lngen.
 
 (* end hide *)
 
@@ -5134,8 +5087,8 @@ forall brs1 g1 n1,
   open_brs_wrt_co_rec n1 g1 brs1 = brs1.
 Proof. Admitted.
 
-Hint Resolve open_brs_wrt_co_rec_degree_brs_wrt_co : lngen.
-Hint Rewrite open_brs_wrt_co_rec_degree_brs_wrt_co using solve [auto] : lngen.
+#[export] Hint Resolve open_brs_wrt_co_rec_degree_brs_wrt_co : lngen.
+#[export] Hint Rewrite open_brs_wrt_co_rec_degree_brs_wrt_co using solve [auto] : lngen.
 
 (* end hide *)
 
@@ -5147,8 +5100,8 @@ forall g2 g1 n1,
   open_co_wrt_co_rec n1 g1 g2 = g2.
 Proof. Admitted.
 
-Hint Resolve open_co_wrt_co_rec_degree_co_wrt_co : lngen.
-Hint Rewrite open_co_wrt_co_rec_degree_co_wrt_co using solve [auto] : lngen.
+#[export] Hint Resolve open_co_wrt_co_rec_degree_co_wrt_co : lngen.
+#[export] Hint Rewrite open_co_wrt_co_rec_degree_co_wrt_co using solve [auto] : lngen.
 
 (* end hide *)
 
@@ -5160,8 +5113,8 @@ forall phi1 g1 n1,
   open_constraint_wrt_co_rec n1 g1 phi1 = phi1.
 Proof. Admitted.
 
-Hint Resolve open_constraint_wrt_co_rec_degree_constraint_wrt_co : lngen.
-Hint Rewrite open_constraint_wrt_co_rec_degree_constraint_wrt_co using solve [auto] : lngen.
+#[export] Hint Resolve open_constraint_wrt_co_rec_degree_constraint_wrt_co : lngen.
+#[export] Hint Rewrite open_constraint_wrt_co_rec_degree_constraint_wrt_co using solve [auto] : lngen.
 
 (* end hide *)
 
@@ -5171,8 +5124,8 @@ forall a2 a1,
   open_tm_wrt_tm a2 a1 = a2.
 Proof. Admitted.
 
-Hint Resolve open_tm_wrt_tm_lc_tm : lngen.
-Hint Rewrite open_tm_wrt_tm_lc_tm using solve [auto] : lngen.
+#[export] Hint Resolve open_tm_wrt_tm_lc_tm : lngen.
+#[export] Hint Rewrite open_tm_wrt_tm_lc_tm using solve [auto] : lngen.
 
 Lemma open_brs_wrt_tm_lc_brs :
 forall brs1 a1,
@@ -5180,8 +5133,8 @@ forall brs1 a1,
   open_brs_wrt_tm brs1 a1 = brs1.
 Proof. Admitted.
 
-Hint Resolve open_brs_wrt_tm_lc_brs : lngen.
-Hint Rewrite open_brs_wrt_tm_lc_brs using solve [auto] : lngen.
+#[export] Hint Resolve open_brs_wrt_tm_lc_brs : lngen.
+#[export] Hint Rewrite open_brs_wrt_tm_lc_brs using solve [auto] : lngen.
 
 Lemma open_co_wrt_tm_lc_co :
 forall g1 a1,
@@ -5189,8 +5142,8 @@ forall g1 a1,
   open_co_wrt_tm g1 a1 = g1.
 Proof. Admitted.
 
-Hint Resolve open_co_wrt_tm_lc_co : lngen.
-Hint Rewrite open_co_wrt_tm_lc_co using solve [auto] : lngen.
+#[export] Hint Resolve open_co_wrt_tm_lc_co : lngen.
+#[export] Hint Rewrite open_co_wrt_tm_lc_co using solve [auto] : lngen.
 
 Lemma open_constraint_wrt_tm_lc_constraint :
 forall phi1 a1,
@@ -5198,8 +5151,8 @@ forall phi1 a1,
   open_constraint_wrt_tm phi1 a1 = phi1.
 Proof. Admitted.
 
-Hint Resolve open_constraint_wrt_tm_lc_constraint : lngen.
-Hint Rewrite open_constraint_wrt_tm_lc_constraint using solve [auto] : lngen.
+#[export] Hint Resolve open_constraint_wrt_tm_lc_constraint : lngen.
+#[export] Hint Rewrite open_constraint_wrt_tm_lc_constraint using solve [auto] : lngen.
 
 Lemma open_tm_wrt_co_lc_tm :
 forall a1 g1,
@@ -5207,8 +5160,8 @@ forall a1 g1,
   open_tm_wrt_co a1 g1 = a1.
 Proof. Admitted.
 
-Hint Resolve open_tm_wrt_co_lc_tm : lngen.
-Hint Rewrite open_tm_wrt_co_lc_tm using solve [auto] : lngen.
+#[export] Hint Resolve open_tm_wrt_co_lc_tm : lngen.
+#[export] Hint Rewrite open_tm_wrt_co_lc_tm using solve [auto] : lngen.
 
 Lemma open_brs_wrt_co_lc_brs :
 forall brs1 g1,
@@ -5216,8 +5169,8 @@ forall brs1 g1,
   open_brs_wrt_co brs1 g1 = brs1.
 Proof. Admitted.
 
-Hint Resolve open_brs_wrt_co_lc_brs : lngen.
-Hint Rewrite open_brs_wrt_co_lc_brs using solve [auto] : lngen.
+#[export] Hint Resolve open_brs_wrt_co_lc_brs : lngen.
+#[export] Hint Rewrite open_brs_wrt_co_lc_brs using solve [auto] : lngen.
 
 Lemma open_co_wrt_co_lc_co :
 forall g2 g1,
@@ -5225,8 +5178,8 @@ forall g2 g1,
   open_co_wrt_co g2 g1 = g2.
 Proof. Admitted.
 
-Hint Resolve open_co_wrt_co_lc_co : lngen.
-Hint Rewrite open_co_wrt_co_lc_co using solve [auto] : lngen.
+#[export] Hint Resolve open_co_wrt_co_lc_co : lngen.
+#[export] Hint Rewrite open_co_wrt_co_lc_co using solve [auto] : lngen.
 
 Lemma open_constraint_wrt_co_lc_constraint :
 forall phi1 g1,
@@ -5234,8 +5187,8 @@ forall phi1 g1,
   open_constraint_wrt_co phi1 g1 = phi1.
 Proof. Admitted.
 
-Hint Resolve open_constraint_wrt_co_lc_constraint : lngen.
-Hint Rewrite open_constraint_wrt_co_lc_constraint using solve [auto] : lngen.
+#[export] Hint Resolve open_constraint_wrt_co_lc_constraint : lngen.
+#[export] Hint Rewrite open_constraint_wrt_co_lc_constraint using solve [auto] : lngen.
 
 
 (* *********************************************************************** *)
@@ -5266,8 +5219,8 @@ forall a1 x1 n1,
   fv_tm_tm_tm (close_tm_wrt_tm_rec n1 x1 a1) [=] remove x1 (fv_tm_tm_tm a1).
 Proof. Admitted.
 
-Hint Resolve fv_tm_tm_tm_close_tm_wrt_tm_rec : lngen.
-Hint Rewrite fv_tm_tm_tm_close_tm_wrt_tm_rec using solve [auto] : lngen.
+#[export] Hint Resolve fv_tm_tm_tm_close_tm_wrt_tm_rec : lngen.
+#[export] Hint Rewrite fv_tm_tm_tm_close_tm_wrt_tm_rec using solve [auto] : lngen.
 
 (* end hide *)
 
@@ -5278,8 +5231,8 @@ forall brs1 x1 n1,
   fv_tm_tm_brs (close_brs_wrt_tm_rec n1 x1 brs1) [=] remove x1 (fv_tm_tm_brs brs1).
 Proof. Admitted.
 
-Hint Resolve fv_tm_tm_brs_close_brs_wrt_tm_rec : lngen.
-Hint Rewrite fv_tm_tm_brs_close_brs_wrt_tm_rec using solve [auto] : lngen.
+#[export] Hint Resolve fv_tm_tm_brs_close_brs_wrt_tm_rec : lngen.
+#[export] Hint Rewrite fv_tm_tm_brs_close_brs_wrt_tm_rec using solve [auto] : lngen.
 
 (* end hide *)
 
@@ -5290,8 +5243,8 @@ forall g1 x1 n1,
   fv_tm_tm_co (close_co_wrt_tm_rec n1 x1 g1) [=] remove x1 (fv_tm_tm_co g1).
 Proof. Admitted.
 
-Hint Resolve fv_tm_tm_co_close_co_wrt_tm_rec : lngen.
-Hint Rewrite fv_tm_tm_co_close_co_wrt_tm_rec using solve [auto] : lngen.
+#[export] Hint Resolve fv_tm_tm_co_close_co_wrt_tm_rec : lngen.
+#[export] Hint Rewrite fv_tm_tm_co_close_co_wrt_tm_rec using solve [auto] : lngen.
 
 (* end hide *)
 
@@ -5302,8 +5255,8 @@ forall phi1 x1 n1,
   fv_tm_tm_constraint (close_constraint_wrt_tm_rec n1 x1 phi1) [=] remove x1 (fv_tm_tm_constraint phi1).
 Proof. Admitted.
 
-Hint Resolve fv_tm_tm_constraint_close_constraint_wrt_tm_rec : lngen.
-Hint Rewrite fv_tm_tm_constraint_close_constraint_wrt_tm_rec using solve [auto] : lngen.
+#[export] Hint Resolve fv_tm_tm_constraint_close_constraint_wrt_tm_rec : lngen.
+#[export] Hint Rewrite fv_tm_tm_constraint_close_constraint_wrt_tm_rec using solve [auto] : lngen.
 
 (* end hide *)
 
@@ -5329,8 +5282,8 @@ forall a1 c1 n1,
   fv_tm_tm_tm (close_tm_wrt_co_rec n1 c1 a1) [=] fv_tm_tm_tm a1.
 Proof. Admitted.
 
-Hint Resolve fv_tm_tm_tm_close_tm_wrt_co_rec : lngen.
-Hint Rewrite fv_tm_tm_tm_close_tm_wrt_co_rec using solve [auto] : lngen.
+#[export] Hint Resolve fv_tm_tm_tm_close_tm_wrt_co_rec : lngen.
+#[export] Hint Rewrite fv_tm_tm_tm_close_tm_wrt_co_rec using solve [auto] : lngen.
 
 (* end hide *)
 
@@ -5341,8 +5294,8 @@ forall brs1 c1 n1,
   fv_tm_tm_brs (close_brs_wrt_co_rec n1 c1 brs1) [=] fv_tm_tm_brs brs1.
 Proof. Admitted.
 
-Hint Resolve fv_tm_tm_brs_close_brs_wrt_co_rec : lngen.
-Hint Rewrite fv_tm_tm_brs_close_brs_wrt_co_rec using solve [auto] : lngen.
+#[export] Hint Resolve fv_tm_tm_brs_close_brs_wrt_co_rec : lngen.
+#[export] Hint Rewrite fv_tm_tm_brs_close_brs_wrt_co_rec using solve [auto] : lngen.
 
 (* end hide *)
 
@@ -5353,8 +5306,8 @@ forall g1 c1 n1,
   fv_tm_tm_co (close_co_wrt_co_rec n1 c1 g1) [=] fv_tm_tm_co g1.
 Proof. Admitted.
 
-Hint Resolve fv_tm_tm_co_close_co_wrt_co_rec : lngen.
-Hint Rewrite fv_tm_tm_co_close_co_wrt_co_rec using solve [auto] : lngen.
+#[export] Hint Resolve fv_tm_tm_co_close_co_wrt_co_rec : lngen.
+#[export] Hint Rewrite fv_tm_tm_co_close_co_wrt_co_rec using solve [auto] : lngen.
 
 (* end hide *)
 
@@ -5365,8 +5318,8 @@ forall phi1 c1 n1,
   fv_tm_tm_constraint (close_constraint_wrt_co_rec n1 c1 phi1) [=] fv_tm_tm_constraint phi1.
 Proof. Admitted.
 
-Hint Resolve fv_tm_tm_constraint_close_constraint_wrt_co_rec : lngen.
-Hint Rewrite fv_tm_tm_constraint_close_constraint_wrt_co_rec using solve [auto] : lngen.
+#[export] Hint Resolve fv_tm_tm_constraint_close_constraint_wrt_co_rec : lngen.
+#[export] Hint Rewrite fv_tm_tm_constraint_close_constraint_wrt_co_rec using solve [auto] : lngen.
 
 (* end hide *)
 
@@ -5392,8 +5345,8 @@ forall a1 x1 n1,
   fv_co_co_tm (close_tm_wrt_tm_rec n1 x1 a1) [=] fv_co_co_tm a1.
 Proof. Admitted.
 
-Hint Resolve fv_co_co_tm_close_tm_wrt_tm_rec : lngen.
-Hint Rewrite fv_co_co_tm_close_tm_wrt_tm_rec using solve [auto] : lngen.
+#[export] Hint Resolve fv_co_co_tm_close_tm_wrt_tm_rec : lngen.
+#[export] Hint Rewrite fv_co_co_tm_close_tm_wrt_tm_rec using solve [auto] : lngen.
 
 (* end hide *)
 
@@ -5404,8 +5357,8 @@ forall brs1 x1 n1,
   fv_co_co_brs (close_brs_wrt_tm_rec n1 x1 brs1) [=] fv_co_co_brs brs1.
 Proof. Admitted.
 
-Hint Resolve fv_co_co_brs_close_brs_wrt_tm_rec : lngen.
-Hint Rewrite fv_co_co_brs_close_brs_wrt_tm_rec using solve [auto] : lngen.
+#[export] Hint Resolve fv_co_co_brs_close_brs_wrt_tm_rec : lngen.
+#[export] Hint Rewrite fv_co_co_brs_close_brs_wrt_tm_rec using solve [auto] : lngen.
 
 (* end hide *)
 
@@ -5416,8 +5369,8 @@ forall g1 x1 n1,
   fv_co_co_co (close_co_wrt_tm_rec n1 x1 g1) [=] fv_co_co_co g1.
 Proof. Admitted.
 
-Hint Resolve fv_co_co_co_close_co_wrt_tm_rec : lngen.
-Hint Rewrite fv_co_co_co_close_co_wrt_tm_rec using solve [auto] : lngen.
+#[export] Hint Resolve fv_co_co_co_close_co_wrt_tm_rec : lngen.
+#[export] Hint Rewrite fv_co_co_co_close_co_wrt_tm_rec using solve [auto] : lngen.
 
 (* end hide *)
 
@@ -5428,8 +5381,8 @@ forall phi1 x1 n1,
   fv_co_co_constraint (close_constraint_wrt_tm_rec n1 x1 phi1) [=] fv_co_co_constraint phi1.
 Proof. Admitted.
 
-Hint Resolve fv_co_co_constraint_close_constraint_wrt_tm_rec : lngen.
-Hint Rewrite fv_co_co_constraint_close_constraint_wrt_tm_rec using solve [auto] : lngen.
+#[export] Hint Resolve fv_co_co_constraint_close_constraint_wrt_tm_rec : lngen.
+#[export] Hint Rewrite fv_co_co_constraint_close_constraint_wrt_tm_rec using solve [auto] : lngen.
 
 (* end hide *)
 
@@ -5455,8 +5408,8 @@ forall a1 c1 n1,
   fv_co_co_tm (close_tm_wrt_co_rec n1 c1 a1) [=] remove c1 (fv_co_co_tm a1).
 Proof. Admitted.
 
-Hint Resolve fv_co_co_tm_close_tm_wrt_co_rec : lngen.
-Hint Rewrite fv_co_co_tm_close_tm_wrt_co_rec using solve [auto] : lngen.
+#[export] Hint Resolve fv_co_co_tm_close_tm_wrt_co_rec : lngen.
+#[export] Hint Rewrite fv_co_co_tm_close_tm_wrt_co_rec using solve [auto] : lngen.
 
 (* end hide *)
 
@@ -5467,8 +5420,8 @@ forall brs1 c1 n1,
   fv_co_co_brs (close_brs_wrt_co_rec n1 c1 brs1) [=] remove c1 (fv_co_co_brs brs1).
 Proof. Admitted.
 
-Hint Resolve fv_co_co_brs_close_brs_wrt_co_rec : lngen.
-Hint Rewrite fv_co_co_brs_close_brs_wrt_co_rec using solve [auto] : lngen.
+#[export] Hint Resolve fv_co_co_brs_close_brs_wrt_co_rec : lngen.
+#[export] Hint Rewrite fv_co_co_brs_close_brs_wrt_co_rec using solve [auto] : lngen.
 
 (* end hide *)
 
@@ -5479,8 +5432,8 @@ forall g1 c1 n1,
   fv_co_co_co (close_co_wrt_co_rec n1 c1 g1) [=] remove c1 (fv_co_co_co g1).
 Proof. Admitted.
 
-Hint Resolve fv_co_co_co_close_co_wrt_co_rec : lngen.
-Hint Rewrite fv_co_co_co_close_co_wrt_co_rec using solve [auto] : lngen.
+#[export] Hint Resolve fv_co_co_co_close_co_wrt_co_rec : lngen.
+#[export] Hint Rewrite fv_co_co_co_close_co_wrt_co_rec using solve [auto] : lngen.
 
 (* end hide *)
 
@@ -5491,8 +5444,8 @@ forall phi1 c1 n1,
   fv_co_co_constraint (close_constraint_wrt_co_rec n1 c1 phi1) [=] remove c1 (fv_co_co_constraint phi1).
 Proof. Admitted.
 
-Hint Resolve fv_co_co_constraint_close_constraint_wrt_co_rec : lngen.
-Hint Rewrite fv_co_co_constraint_close_constraint_wrt_co_rec using solve [auto] : lngen.
+#[export] Hint Resolve fv_co_co_constraint_close_constraint_wrt_co_rec : lngen.
+#[export] Hint Rewrite fv_co_co_constraint_close_constraint_wrt_co_rec using solve [auto] : lngen.
 
 (* end hide *)
 
@@ -5501,128 +5454,128 @@ forall a1 x1,
   fv_tm_tm_tm (close_tm_wrt_tm x1 a1) [=] remove x1 (fv_tm_tm_tm a1).
 Proof. Admitted.
 
-Hint Resolve fv_tm_tm_tm_close_tm_wrt_tm : lngen.
-Hint Rewrite fv_tm_tm_tm_close_tm_wrt_tm using solve [auto] : lngen.
+#[export] Hint Resolve fv_tm_tm_tm_close_tm_wrt_tm : lngen.
+#[export] Hint Rewrite fv_tm_tm_tm_close_tm_wrt_tm using solve [auto] : lngen.
 
 Lemma fv_tm_tm_brs_close_brs_wrt_tm :
 forall brs1 x1,
   fv_tm_tm_brs (close_brs_wrt_tm x1 brs1) [=] remove x1 (fv_tm_tm_brs brs1).
 Proof. Admitted.
 
-Hint Resolve fv_tm_tm_brs_close_brs_wrt_tm : lngen.
-Hint Rewrite fv_tm_tm_brs_close_brs_wrt_tm using solve [auto] : lngen.
+#[export] Hint Resolve fv_tm_tm_brs_close_brs_wrt_tm : lngen.
+#[export] Hint Rewrite fv_tm_tm_brs_close_brs_wrt_tm using solve [auto] : lngen.
 
 Lemma fv_tm_tm_co_close_co_wrt_tm :
 forall g1 x1,
   fv_tm_tm_co (close_co_wrt_tm x1 g1) [=] remove x1 (fv_tm_tm_co g1).
 Proof. Admitted.
 
-Hint Resolve fv_tm_tm_co_close_co_wrt_tm : lngen.
-Hint Rewrite fv_tm_tm_co_close_co_wrt_tm using solve [auto] : lngen.
+#[export] Hint Resolve fv_tm_tm_co_close_co_wrt_tm : lngen.
+#[export] Hint Rewrite fv_tm_tm_co_close_co_wrt_tm using solve [auto] : lngen.
 
 Lemma fv_tm_tm_constraint_close_constraint_wrt_tm :
 forall phi1 x1,
   fv_tm_tm_constraint (close_constraint_wrt_tm x1 phi1) [=] remove x1 (fv_tm_tm_constraint phi1).
 Proof. Admitted.
 
-Hint Resolve fv_tm_tm_constraint_close_constraint_wrt_tm : lngen.
-Hint Rewrite fv_tm_tm_constraint_close_constraint_wrt_tm using solve [auto] : lngen.
+#[export] Hint Resolve fv_tm_tm_constraint_close_constraint_wrt_tm : lngen.
+#[export] Hint Rewrite fv_tm_tm_constraint_close_constraint_wrt_tm using solve [auto] : lngen.
 
 Lemma fv_tm_tm_tm_close_tm_wrt_co :
 forall a1 c1,
   fv_tm_tm_tm (close_tm_wrt_co c1 a1) [=] fv_tm_tm_tm a1.
 Proof. Admitted.
 
-Hint Resolve fv_tm_tm_tm_close_tm_wrt_co : lngen.
-Hint Rewrite fv_tm_tm_tm_close_tm_wrt_co using solve [auto] : lngen.
+#[export] Hint Resolve fv_tm_tm_tm_close_tm_wrt_co : lngen.
+#[export] Hint Rewrite fv_tm_tm_tm_close_tm_wrt_co using solve [auto] : lngen.
 
 Lemma fv_tm_tm_brs_close_brs_wrt_co :
 forall brs1 c1,
   fv_tm_tm_brs (close_brs_wrt_co c1 brs1) [=] fv_tm_tm_brs brs1.
 Proof. Admitted.
 
-Hint Resolve fv_tm_tm_brs_close_brs_wrt_co : lngen.
-Hint Rewrite fv_tm_tm_brs_close_brs_wrt_co using solve [auto] : lngen.
+#[export] Hint Resolve fv_tm_tm_brs_close_brs_wrt_co : lngen.
+#[export] Hint Rewrite fv_tm_tm_brs_close_brs_wrt_co using solve [auto] : lngen.
 
 Lemma fv_tm_tm_co_close_co_wrt_co :
 forall g1 c1,
   fv_tm_tm_co (close_co_wrt_co c1 g1) [=] fv_tm_tm_co g1.
 Proof. Admitted.
 
-Hint Resolve fv_tm_tm_co_close_co_wrt_co : lngen.
-Hint Rewrite fv_tm_tm_co_close_co_wrt_co using solve [auto] : lngen.
+#[export] Hint Resolve fv_tm_tm_co_close_co_wrt_co : lngen.
+#[export] Hint Rewrite fv_tm_tm_co_close_co_wrt_co using solve [auto] : lngen.
 
 Lemma fv_tm_tm_constraint_close_constraint_wrt_co :
 forall phi1 c1,
   fv_tm_tm_constraint (close_constraint_wrt_co c1 phi1) [=] fv_tm_tm_constraint phi1.
 Proof. Admitted.
 
-Hint Resolve fv_tm_tm_constraint_close_constraint_wrt_co : lngen.
-Hint Rewrite fv_tm_tm_constraint_close_constraint_wrt_co using solve [auto] : lngen.
+#[export] Hint Resolve fv_tm_tm_constraint_close_constraint_wrt_co : lngen.
+#[export] Hint Rewrite fv_tm_tm_constraint_close_constraint_wrt_co using solve [auto] : lngen.
 
 Lemma fv_co_co_tm_close_tm_wrt_tm :
 forall a1 x1,
   fv_co_co_tm (close_tm_wrt_tm x1 a1) [=] fv_co_co_tm a1.
 Proof. Admitted.
 
-Hint Resolve fv_co_co_tm_close_tm_wrt_tm : lngen.
-Hint Rewrite fv_co_co_tm_close_tm_wrt_tm using solve [auto] : lngen.
+#[export] Hint Resolve fv_co_co_tm_close_tm_wrt_tm : lngen.
+#[export] Hint Rewrite fv_co_co_tm_close_tm_wrt_tm using solve [auto] : lngen.
 
 Lemma fv_co_co_brs_close_brs_wrt_tm :
 forall brs1 x1,
   fv_co_co_brs (close_brs_wrt_tm x1 brs1) [=] fv_co_co_brs brs1.
 Proof. Admitted.
 
-Hint Resolve fv_co_co_brs_close_brs_wrt_tm : lngen.
-Hint Rewrite fv_co_co_brs_close_brs_wrt_tm using solve [auto] : lngen.
+#[export] Hint Resolve fv_co_co_brs_close_brs_wrt_tm : lngen.
+#[export] Hint Rewrite fv_co_co_brs_close_brs_wrt_tm using solve [auto] : lngen.
 
 Lemma fv_co_co_co_close_co_wrt_tm :
 forall g1 x1,
   fv_co_co_co (close_co_wrt_tm x1 g1) [=] fv_co_co_co g1.
 Proof. Admitted.
 
-Hint Resolve fv_co_co_co_close_co_wrt_tm : lngen.
-Hint Rewrite fv_co_co_co_close_co_wrt_tm using solve [auto] : lngen.
+#[export] Hint Resolve fv_co_co_co_close_co_wrt_tm : lngen.
+#[export] Hint Rewrite fv_co_co_co_close_co_wrt_tm using solve [auto] : lngen.
 
 Lemma fv_co_co_constraint_close_constraint_wrt_tm :
 forall phi1 x1,
   fv_co_co_constraint (close_constraint_wrt_tm x1 phi1) [=] fv_co_co_constraint phi1.
 Proof. Admitted.
 
-Hint Resolve fv_co_co_constraint_close_constraint_wrt_tm : lngen.
-Hint Rewrite fv_co_co_constraint_close_constraint_wrt_tm using solve [auto] : lngen.
+#[export] Hint Resolve fv_co_co_constraint_close_constraint_wrt_tm : lngen.
+#[export] Hint Rewrite fv_co_co_constraint_close_constraint_wrt_tm using solve [auto] : lngen.
 
 Lemma fv_co_co_tm_close_tm_wrt_co :
 forall a1 c1,
   fv_co_co_tm (close_tm_wrt_co c1 a1) [=] remove c1 (fv_co_co_tm a1).
 Proof. Admitted.
 
-Hint Resolve fv_co_co_tm_close_tm_wrt_co : lngen.
-Hint Rewrite fv_co_co_tm_close_tm_wrt_co using solve [auto] : lngen.
+#[export] Hint Resolve fv_co_co_tm_close_tm_wrt_co : lngen.
+#[export] Hint Rewrite fv_co_co_tm_close_tm_wrt_co using solve [auto] : lngen.
 
 Lemma fv_co_co_brs_close_brs_wrt_co :
 forall brs1 c1,
   fv_co_co_brs (close_brs_wrt_co c1 brs1) [=] remove c1 (fv_co_co_brs brs1).
 Proof. Admitted.
 
-Hint Resolve fv_co_co_brs_close_brs_wrt_co : lngen.
-Hint Rewrite fv_co_co_brs_close_brs_wrt_co using solve [auto] : lngen.
+#[export] Hint Resolve fv_co_co_brs_close_brs_wrt_co : lngen.
+#[export] Hint Rewrite fv_co_co_brs_close_brs_wrt_co using solve [auto] : lngen.
 
 Lemma fv_co_co_co_close_co_wrt_co :
 forall g1 c1,
   fv_co_co_co (close_co_wrt_co c1 g1) [=] remove c1 (fv_co_co_co g1).
 Proof. Admitted.
 
-Hint Resolve fv_co_co_co_close_co_wrt_co : lngen.
-Hint Rewrite fv_co_co_co_close_co_wrt_co using solve [auto] : lngen.
+#[export] Hint Resolve fv_co_co_co_close_co_wrt_co : lngen.
+#[export] Hint Rewrite fv_co_co_co_close_co_wrt_co using solve [auto] : lngen.
 
 Lemma fv_co_co_constraint_close_constraint_wrt_co :
 forall phi1 c1,
   fv_co_co_constraint (close_constraint_wrt_co c1 phi1) [=] remove c1 (fv_co_co_constraint phi1).
 Proof. Admitted.
 
-Hint Resolve fv_co_co_constraint_close_constraint_wrt_co : lngen.
-Hint Rewrite fv_co_co_constraint_close_constraint_wrt_co using solve [auto] : lngen.
+#[export] Hint Resolve fv_co_co_constraint_close_constraint_wrt_co : lngen.
+#[export] Hint Rewrite fv_co_co_constraint_close_constraint_wrt_co using solve [auto] : lngen.
 
 (* begin hide *)
 
@@ -5646,7 +5599,7 @@ forall a1 a2 n1,
   fv_tm_tm_tm a1 [<=] fv_tm_tm_tm (open_tm_wrt_tm_rec n1 a2 a1).
 Proof. Admitted.
 
-Hint Resolve fv_tm_tm_tm_open_tm_wrt_tm_rec_lower : lngen.
+#[export] Hint Resolve fv_tm_tm_tm_open_tm_wrt_tm_rec_lower : lngen.
 
 (* end hide *)
 
@@ -5657,7 +5610,7 @@ forall brs1 a1 n1,
   fv_tm_tm_brs brs1 [<=] fv_tm_tm_brs (open_brs_wrt_tm_rec n1 a1 brs1).
 Proof. Admitted.
 
-Hint Resolve fv_tm_tm_brs_open_brs_wrt_tm_rec_lower : lngen.
+#[export] Hint Resolve fv_tm_tm_brs_open_brs_wrt_tm_rec_lower : lngen.
 
 (* end hide *)
 
@@ -5668,7 +5621,7 @@ forall g1 a1 n1,
   fv_tm_tm_co g1 [<=] fv_tm_tm_co (open_co_wrt_tm_rec n1 a1 g1).
 Proof. Admitted.
 
-Hint Resolve fv_tm_tm_co_open_co_wrt_tm_rec_lower : lngen.
+#[export] Hint Resolve fv_tm_tm_co_open_co_wrt_tm_rec_lower : lngen.
 
 (* end hide *)
 
@@ -5679,7 +5632,7 @@ forall phi1 a1 n1,
   fv_tm_tm_constraint phi1 [<=] fv_tm_tm_constraint (open_constraint_wrt_tm_rec n1 a1 phi1).
 Proof. Admitted.
 
-Hint Resolve fv_tm_tm_constraint_open_constraint_wrt_tm_rec_lower : lngen.
+#[export] Hint Resolve fv_tm_tm_constraint_open_constraint_wrt_tm_rec_lower : lngen.
 
 (* end hide *)
 
@@ -5705,7 +5658,7 @@ forall a1 g1 n1,
   fv_tm_tm_tm a1 [<=] fv_tm_tm_tm (open_tm_wrt_co_rec n1 g1 a1).
 Proof. Admitted.
 
-Hint Resolve fv_tm_tm_tm_open_tm_wrt_co_rec_lower : lngen.
+#[export] Hint Resolve fv_tm_tm_tm_open_tm_wrt_co_rec_lower : lngen.
 
 (* end hide *)
 
@@ -5716,7 +5669,7 @@ forall brs1 g1 n1,
   fv_tm_tm_brs brs1 [<=] fv_tm_tm_brs (open_brs_wrt_co_rec n1 g1 brs1).
 Proof. Admitted.
 
-Hint Resolve fv_tm_tm_brs_open_brs_wrt_co_rec_lower : lngen.
+#[export] Hint Resolve fv_tm_tm_brs_open_brs_wrt_co_rec_lower : lngen.
 
 (* end hide *)
 
@@ -5727,7 +5680,7 @@ forall g1 g2 n1,
   fv_tm_tm_co g1 [<=] fv_tm_tm_co (open_co_wrt_co_rec n1 g2 g1).
 Proof. Admitted.
 
-Hint Resolve fv_tm_tm_co_open_co_wrt_co_rec_lower : lngen.
+#[export] Hint Resolve fv_tm_tm_co_open_co_wrt_co_rec_lower : lngen.
 
 (* end hide *)
 
@@ -5738,7 +5691,7 @@ forall phi1 g1 n1,
   fv_tm_tm_constraint phi1 [<=] fv_tm_tm_constraint (open_constraint_wrt_co_rec n1 g1 phi1).
 Proof. Admitted.
 
-Hint Resolve fv_tm_tm_constraint_open_constraint_wrt_co_rec_lower : lngen.
+#[export] Hint Resolve fv_tm_tm_constraint_open_constraint_wrt_co_rec_lower : lngen.
 
 (* end hide *)
 
@@ -5764,7 +5717,7 @@ forall a1 a2 n1,
   fv_co_co_tm a1 [<=] fv_co_co_tm (open_tm_wrt_tm_rec n1 a2 a1).
 Proof. Admitted.
 
-Hint Resolve fv_co_co_tm_open_tm_wrt_tm_rec_lower : lngen.
+#[export] Hint Resolve fv_co_co_tm_open_tm_wrt_tm_rec_lower : lngen.
 
 (* end hide *)
 
@@ -5775,7 +5728,7 @@ forall brs1 a1 n1,
   fv_co_co_brs brs1 [<=] fv_co_co_brs (open_brs_wrt_tm_rec n1 a1 brs1).
 Proof. Admitted.
 
-Hint Resolve fv_co_co_brs_open_brs_wrt_tm_rec_lower : lngen.
+#[export] Hint Resolve fv_co_co_brs_open_brs_wrt_tm_rec_lower : lngen.
 
 (* end hide *)
 
@@ -5786,7 +5739,7 @@ forall g1 a1 n1,
   fv_co_co_co g1 [<=] fv_co_co_co (open_co_wrt_tm_rec n1 a1 g1).
 Proof. Admitted.
 
-Hint Resolve fv_co_co_co_open_co_wrt_tm_rec_lower : lngen.
+#[export] Hint Resolve fv_co_co_co_open_co_wrt_tm_rec_lower : lngen.
 
 (* end hide *)
 
@@ -5797,7 +5750,7 @@ forall phi1 a1 n1,
   fv_co_co_constraint phi1 [<=] fv_co_co_constraint (open_constraint_wrt_tm_rec n1 a1 phi1).
 Proof. Admitted.
 
-Hint Resolve fv_co_co_constraint_open_constraint_wrt_tm_rec_lower : lngen.
+#[export] Hint Resolve fv_co_co_constraint_open_constraint_wrt_tm_rec_lower : lngen.
 
 (* end hide *)
 
@@ -5823,7 +5776,7 @@ forall a1 g1 n1,
   fv_co_co_tm a1 [<=] fv_co_co_tm (open_tm_wrt_co_rec n1 g1 a1).
 Proof. Admitted.
 
-Hint Resolve fv_co_co_tm_open_tm_wrt_co_rec_lower : lngen.
+#[export] Hint Resolve fv_co_co_tm_open_tm_wrt_co_rec_lower : lngen.
 
 (* end hide *)
 
@@ -5834,7 +5787,7 @@ forall brs1 g1 n1,
   fv_co_co_brs brs1 [<=] fv_co_co_brs (open_brs_wrt_co_rec n1 g1 brs1).
 Proof. Admitted.
 
-Hint Resolve fv_co_co_brs_open_brs_wrt_co_rec_lower : lngen.
+#[export] Hint Resolve fv_co_co_brs_open_brs_wrt_co_rec_lower : lngen.
 
 (* end hide *)
 
@@ -5845,7 +5798,7 @@ forall g1 g2 n1,
   fv_co_co_co g1 [<=] fv_co_co_co (open_co_wrt_co_rec n1 g2 g1).
 Proof. Admitted.
 
-Hint Resolve fv_co_co_co_open_co_wrt_co_rec_lower : lngen.
+#[export] Hint Resolve fv_co_co_co_open_co_wrt_co_rec_lower : lngen.
 
 (* end hide *)
 
@@ -5856,7 +5809,7 @@ forall phi1 g1 n1,
   fv_co_co_constraint phi1 [<=] fv_co_co_constraint (open_constraint_wrt_co_rec n1 g1 phi1).
 Proof. Admitted.
 
-Hint Resolve fv_co_co_constraint_open_constraint_wrt_co_rec_lower : lngen.
+#[export] Hint Resolve fv_co_co_constraint_open_constraint_wrt_co_rec_lower : lngen.
 
 (* end hide *)
 
@@ -5865,112 +5818,112 @@ forall a1 a2,
   fv_tm_tm_tm a1 [<=] fv_tm_tm_tm (open_tm_wrt_tm a1 a2).
 Proof. Admitted.
 
-Hint Resolve fv_tm_tm_tm_open_tm_wrt_tm_lower : lngen.
+#[export] Hint Resolve fv_tm_tm_tm_open_tm_wrt_tm_lower : lngen.
 
 Lemma fv_tm_tm_brs_open_brs_wrt_tm_lower :
 forall brs1 a1,
   fv_tm_tm_brs brs1 [<=] fv_tm_tm_brs (open_brs_wrt_tm brs1 a1).
 Proof. Admitted.
 
-Hint Resolve fv_tm_tm_brs_open_brs_wrt_tm_lower : lngen.
+#[export] Hint Resolve fv_tm_tm_brs_open_brs_wrt_tm_lower : lngen.
 
 Lemma fv_tm_tm_co_open_co_wrt_tm_lower :
 forall g1 a1,
   fv_tm_tm_co g1 [<=] fv_tm_tm_co (open_co_wrt_tm g1 a1).
 Proof. Admitted.
 
-Hint Resolve fv_tm_tm_co_open_co_wrt_tm_lower : lngen.
+#[export] Hint Resolve fv_tm_tm_co_open_co_wrt_tm_lower : lngen.
 
 Lemma fv_tm_tm_constraint_open_constraint_wrt_tm_lower :
 forall phi1 a1,
   fv_tm_tm_constraint phi1 [<=] fv_tm_tm_constraint (open_constraint_wrt_tm phi1 a1).
 Proof. Admitted.
 
-Hint Resolve fv_tm_tm_constraint_open_constraint_wrt_tm_lower : lngen.
+#[export] Hint Resolve fv_tm_tm_constraint_open_constraint_wrt_tm_lower : lngen.
 
 Lemma fv_tm_tm_tm_open_tm_wrt_co_lower :
 forall a1 g1,
   fv_tm_tm_tm a1 [<=] fv_tm_tm_tm (open_tm_wrt_co a1 g1).
 Proof. Admitted.
 
-Hint Resolve fv_tm_tm_tm_open_tm_wrt_co_lower : lngen.
+#[export] Hint Resolve fv_tm_tm_tm_open_tm_wrt_co_lower : lngen.
 
 Lemma fv_tm_tm_brs_open_brs_wrt_co_lower :
 forall brs1 g1,
   fv_tm_tm_brs brs1 [<=] fv_tm_tm_brs (open_brs_wrt_co brs1 g1).
 Proof. Admitted.
 
-Hint Resolve fv_tm_tm_brs_open_brs_wrt_co_lower : lngen.
+#[export] Hint Resolve fv_tm_tm_brs_open_brs_wrt_co_lower : lngen.
 
 Lemma fv_tm_tm_co_open_co_wrt_co_lower :
 forall g1 g2,
   fv_tm_tm_co g1 [<=] fv_tm_tm_co (open_co_wrt_co g1 g2).
 Proof. Admitted.
 
-Hint Resolve fv_tm_tm_co_open_co_wrt_co_lower : lngen.
+#[export] Hint Resolve fv_tm_tm_co_open_co_wrt_co_lower : lngen.
 
 Lemma fv_tm_tm_constraint_open_constraint_wrt_co_lower :
 forall phi1 g1,
   fv_tm_tm_constraint phi1 [<=] fv_tm_tm_constraint (open_constraint_wrt_co phi1 g1).
 Proof. Admitted.
 
-Hint Resolve fv_tm_tm_constraint_open_constraint_wrt_co_lower : lngen.
+#[export] Hint Resolve fv_tm_tm_constraint_open_constraint_wrt_co_lower : lngen.
 
 Lemma fv_co_co_tm_open_tm_wrt_tm_lower :
 forall a1 a2,
   fv_co_co_tm a1 [<=] fv_co_co_tm (open_tm_wrt_tm a1 a2).
 Proof. Admitted.
 
-Hint Resolve fv_co_co_tm_open_tm_wrt_tm_lower : lngen.
+#[export] Hint Resolve fv_co_co_tm_open_tm_wrt_tm_lower : lngen.
 
 Lemma fv_co_co_brs_open_brs_wrt_tm_lower :
 forall brs1 a1,
   fv_co_co_brs brs1 [<=] fv_co_co_brs (open_brs_wrt_tm brs1 a1).
 Proof. Admitted.
 
-Hint Resolve fv_co_co_brs_open_brs_wrt_tm_lower : lngen.
+#[export] Hint Resolve fv_co_co_brs_open_brs_wrt_tm_lower : lngen.
 
 Lemma fv_co_co_co_open_co_wrt_tm_lower :
 forall g1 a1,
   fv_co_co_co g1 [<=] fv_co_co_co (open_co_wrt_tm g1 a1).
 Proof. Admitted.
 
-Hint Resolve fv_co_co_co_open_co_wrt_tm_lower : lngen.
+#[export] Hint Resolve fv_co_co_co_open_co_wrt_tm_lower : lngen.
 
 Lemma fv_co_co_constraint_open_constraint_wrt_tm_lower :
 forall phi1 a1,
   fv_co_co_constraint phi1 [<=] fv_co_co_constraint (open_constraint_wrt_tm phi1 a1).
 Proof. Admitted.
 
-Hint Resolve fv_co_co_constraint_open_constraint_wrt_tm_lower : lngen.
+#[export] Hint Resolve fv_co_co_constraint_open_constraint_wrt_tm_lower : lngen.
 
 Lemma fv_co_co_tm_open_tm_wrt_co_lower :
 forall a1 g1,
   fv_co_co_tm a1 [<=] fv_co_co_tm (open_tm_wrt_co a1 g1).
 Proof. Admitted.
 
-Hint Resolve fv_co_co_tm_open_tm_wrt_co_lower : lngen.
+#[export] Hint Resolve fv_co_co_tm_open_tm_wrt_co_lower : lngen.
 
 Lemma fv_co_co_brs_open_brs_wrt_co_lower :
 forall brs1 g1,
   fv_co_co_brs brs1 [<=] fv_co_co_brs (open_brs_wrt_co brs1 g1).
 Proof. Admitted.
 
-Hint Resolve fv_co_co_brs_open_brs_wrt_co_lower : lngen.
+#[export] Hint Resolve fv_co_co_brs_open_brs_wrt_co_lower : lngen.
 
 Lemma fv_co_co_co_open_co_wrt_co_lower :
 forall g1 g2,
   fv_co_co_co g1 [<=] fv_co_co_co (open_co_wrt_co g1 g2).
 Proof. Admitted.
 
-Hint Resolve fv_co_co_co_open_co_wrt_co_lower : lngen.
+#[export] Hint Resolve fv_co_co_co_open_co_wrt_co_lower : lngen.
 
 Lemma fv_co_co_constraint_open_constraint_wrt_co_lower :
 forall phi1 g1,
   fv_co_co_constraint phi1 [<=] fv_co_co_constraint (open_constraint_wrt_co phi1 g1).
 Proof. Admitted.
 
-Hint Resolve fv_co_co_constraint_open_constraint_wrt_co_lower : lngen.
+#[export] Hint Resolve fv_co_co_constraint_open_constraint_wrt_co_lower : lngen.
 
 (* begin hide *)
 
@@ -5994,7 +5947,7 @@ forall a1 a2 n1,
   fv_tm_tm_tm (open_tm_wrt_tm_rec n1 a2 a1) [<=] fv_tm_tm_tm a2 `union` fv_tm_tm_tm a1.
 Proof. Admitted.
 
-Hint Resolve fv_tm_tm_tm_open_tm_wrt_tm_rec_upper : lngen.
+#[export] Hint Resolve fv_tm_tm_tm_open_tm_wrt_tm_rec_upper : lngen.
 
 (* end hide *)
 
@@ -6005,7 +5958,7 @@ forall brs1 a1 n1,
   fv_tm_tm_brs (open_brs_wrt_tm_rec n1 a1 brs1) [<=] fv_tm_tm_tm a1 `union` fv_tm_tm_brs brs1.
 Proof. Admitted.
 
-Hint Resolve fv_tm_tm_brs_open_brs_wrt_tm_rec_upper : lngen.
+#[export] Hint Resolve fv_tm_tm_brs_open_brs_wrt_tm_rec_upper : lngen.
 
 (* end hide *)
 
@@ -6016,7 +5969,7 @@ forall g1 a1 n1,
   fv_tm_tm_co (open_co_wrt_tm_rec n1 a1 g1) [<=] fv_tm_tm_tm a1 `union` fv_tm_tm_co g1.
 Proof. Admitted.
 
-Hint Resolve fv_tm_tm_co_open_co_wrt_tm_rec_upper : lngen.
+#[export] Hint Resolve fv_tm_tm_co_open_co_wrt_tm_rec_upper : lngen.
 
 (* end hide *)
 
@@ -6027,7 +5980,7 @@ forall phi1 a1 n1,
   fv_tm_tm_constraint (open_constraint_wrt_tm_rec n1 a1 phi1) [<=] fv_tm_tm_tm a1 `union` fv_tm_tm_constraint phi1.
 Proof. Admitted.
 
-Hint Resolve fv_tm_tm_constraint_open_constraint_wrt_tm_rec_upper : lngen.
+#[export] Hint Resolve fv_tm_tm_constraint_open_constraint_wrt_tm_rec_upper : lngen.
 
 (* end hide *)
 
@@ -6053,7 +6006,7 @@ forall a1 g1 n1,
   fv_tm_tm_tm (open_tm_wrt_co_rec n1 g1 a1) [<=] fv_tm_tm_co g1 `union` fv_tm_tm_tm a1.
 Proof. Admitted.
 
-Hint Resolve fv_tm_tm_tm_open_tm_wrt_co_rec_upper : lngen.
+#[export] Hint Resolve fv_tm_tm_tm_open_tm_wrt_co_rec_upper : lngen.
 
 (* end hide *)
 
@@ -6064,7 +6017,7 @@ forall brs1 g1 n1,
   fv_tm_tm_brs (open_brs_wrt_co_rec n1 g1 brs1) [<=] fv_tm_tm_co g1 `union` fv_tm_tm_brs brs1.
 Proof. Admitted.
 
-Hint Resolve fv_tm_tm_brs_open_brs_wrt_co_rec_upper : lngen.
+#[export] Hint Resolve fv_tm_tm_brs_open_brs_wrt_co_rec_upper : lngen.
 
 (* end hide *)
 
@@ -6075,7 +6028,7 @@ forall g1 g2 n1,
   fv_tm_tm_co (open_co_wrt_co_rec n1 g2 g1) [<=] fv_tm_tm_co g2 `union` fv_tm_tm_co g1.
 Proof. Admitted.
 
-Hint Resolve fv_tm_tm_co_open_co_wrt_co_rec_upper : lngen.
+#[export] Hint Resolve fv_tm_tm_co_open_co_wrt_co_rec_upper : lngen.
 
 (* end hide *)
 
@@ -6086,7 +6039,7 @@ forall phi1 g1 n1,
   fv_tm_tm_constraint (open_constraint_wrt_co_rec n1 g1 phi1) [<=] fv_tm_tm_co g1 `union` fv_tm_tm_constraint phi1.
 Proof. Admitted.
 
-Hint Resolve fv_tm_tm_constraint_open_constraint_wrt_co_rec_upper : lngen.
+#[export] Hint Resolve fv_tm_tm_constraint_open_constraint_wrt_co_rec_upper : lngen.
 
 (* end hide *)
 
@@ -6112,7 +6065,7 @@ forall a1 a2 n1,
   fv_co_co_tm (open_tm_wrt_tm_rec n1 a2 a1) [<=] fv_co_co_tm a2 `union` fv_co_co_tm a1.
 Proof. Admitted.
 
-Hint Resolve fv_co_co_tm_open_tm_wrt_tm_rec_upper : lngen.
+#[export] Hint Resolve fv_co_co_tm_open_tm_wrt_tm_rec_upper : lngen.
 
 (* end hide *)
 
@@ -6123,7 +6076,7 @@ forall brs1 a1 n1,
   fv_co_co_brs (open_brs_wrt_tm_rec n1 a1 brs1) [<=] fv_co_co_tm a1 `union` fv_co_co_brs brs1.
 Proof. Admitted.
 
-Hint Resolve fv_co_co_brs_open_brs_wrt_tm_rec_upper : lngen.
+#[export] Hint Resolve fv_co_co_brs_open_brs_wrt_tm_rec_upper : lngen.
 
 (* end hide *)
 
@@ -6134,7 +6087,7 @@ forall g1 a1 n1,
   fv_co_co_co (open_co_wrt_tm_rec n1 a1 g1) [<=] fv_co_co_tm a1 `union` fv_co_co_co g1.
 Proof. Admitted.
 
-Hint Resolve fv_co_co_co_open_co_wrt_tm_rec_upper : lngen.
+#[export] Hint Resolve fv_co_co_co_open_co_wrt_tm_rec_upper : lngen.
 
 (* end hide *)
 
@@ -6145,7 +6098,7 @@ forall phi1 a1 n1,
   fv_co_co_constraint (open_constraint_wrt_tm_rec n1 a1 phi1) [<=] fv_co_co_tm a1 `union` fv_co_co_constraint phi1.
 Proof. Admitted.
 
-Hint Resolve fv_co_co_constraint_open_constraint_wrt_tm_rec_upper : lngen.
+#[export] Hint Resolve fv_co_co_constraint_open_constraint_wrt_tm_rec_upper : lngen.
 
 (* end hide *)
 
@@ -6171,7 +6124,7 @@ forall a1 g1 n1,
   fv_co_co_tm (open_tm_wrt_co_rec n1 g1 a1) [<=] fv_co_co_co g1 `union` fv_co_co_tm a1.
 Proof. Admitted.
 
-Hint Resolve fv_co_co_tm_open_tm_wrt_co_rec_upper : lngen.
+#[export] Hint Resolve fv_co_co_tm_open_tm_wrt_co_rec_upper : lngen.
 
 (* end hide *)
 
@@ -6182,7 +6135,7 @@ forall brs1 g1 n1,
   fv_co_co_brs (open_brs_wrt_co_rec n1 g1 brs1) [<=] fv_co_co_co g1 `union` fv_co_co_brs brs1.
 Proof. Admitted.
 
-Hint Resolve fv_co_co_brs_open_brs_wrt_co_rec_upper : lngen.
+#[export] Hint Resolve fv_co_co_brs_open_brs_wrt_co_rec_upper : lngen.
 
 (* end hide *)
 
@@ -6193,7 +6146,7 @@ forall g1 g2 n1,
   fv_co_co_co (open_co_wrt_co_rec n1 g2 g1) [<=] fv_co_co_co g2 `union` fv_co_co_co g1.
 Proof. Admitted.
 
-Hint Resolve fv_co_co_co_open_co_wrt_co_rec_upper : lngen.
+#[export] Hint Resolve fv_co_co_co_open_co_wrt_co_rec_upper : lngen.
 
 (* end hide *)
 
@@ -6204,7 +6157,7 @@ forall phi1 g1 n1,
   fv_co_co_constraint (open_constraint_wrt_co_rec n1 g1 phi1) [<=] fv_co_co_co g1 `union` fv_co_co_constraint phi1.
 Proof. Admitted.
 
-Hint Resolve fv_co_co_constraint_open_constraint_wrt_co_rec_upper : lngen.
+#[export] Hint Resolve fv_co_co_constraint_open_constraint_wrt_co_rec_upper : lngen.
 
 (* end hide *)
 
@@ -6213,112 +6166,112 @@ forall a1 a2,
   fv_tm_tm_tm (open_tm_wrt_tm a1 a2) [<=] fv_tm_tm_tm a2 `union` fv_tm_tm_tm a1.
 Proof. Admitted.
 
-Hint Resolve fv_tm_tm_tm_open_tm_wrt_tm_upper : lngen.
+#[export] Hint Resolve fv_tm_tm_tm_open_tm_wrt_tm_upper : lngen.
 
 Lemma fv_tm_tm_brs_open_brs_wrt_tm_upper :
 forall brs1 a1,
   fv_tm_tm_brs (open_brs_wrt_tm brs1 a1) [<=] fv_tm_tm_tm a1 `union` fv_tm_tm_brs brs1.
 Proof. Admitted.
 
-Hint Resolve fv_tm_tm_brs_open_brs_wrt_tm_upper : lngen.
+#[export] Hint Resolve fv_tm_tm_brs_open_brs_wrt_tm_upper : lngen.
 
 Lemma fv_tm_tm_co_open_co_wrt_tm_upper :
 forall g1 a1,
   fv_tm_tm_co (open_co_wrt_tm g1 a1) [<=] fv_tm_tm_tm a1 `union` fv_tm_tm_co g1.
 Proof. Admitted.
 
-Hint Resolve fv_tm_tm_co_open_co_wrt_tm_upper : lngen.
+#[export] Hint Resolve fv_tm_tm_co_open_co_wrt_tm_upper : lngen.
 
 Lemma fv_tm_tm_constraint_open_constraint_wrt_tm_upper :
 forall phi1 a1,
   fv_tm_tm_constraint (open_constraint_wrt_tm phi1 a1) [<=] fv_tm_tm_tm a1 `union` fv_tm_tm_constraint phi1.
 Proof. Admitted.
 
-Hint Resolve fv_tm_tm_constraint_open_constraint_wrt_tm_upper : lngen.
+#[export] Hint Resolve fv_tm_tm_constraint_open_constraint_wrt_tm_upper : lngen.
 
 Lemma fv_tm_tm_tm_open_tm_wrt_co_upper :
 forall a1 g1,
   fv_tm_tm_tm (open_tm_wrt_co a1 g1) [<=] fv_tm_tm_co g1 `union` fv_tm_tm_tm a1.
 Proof. Admitted.
 
-Hint Resolve fv_tm_tm_tm_open_tm_wrt_co_upper : lngen.
+#[export] Hint Resolve fv_tm_tm_tm_open_tm_wrt_co_upper : lngen.
 
 Lemma fv_tm_tm_brs_open_brs_wrt_co_upper :
 forall brs1 g1,
   fv_tm_tm_brs (open_brs_wrt_co brs1 g1) [<=] fv_tm_tm_co g1 `union` fv_tm_tm_brs brs1.
 Proof. Admitted.
 
-Hint Resolve fv_tm_tm_brs_open_brs_wrt_co_upper : lngen.
+#[export] Hint Resolve fv_tm_tm_brs_open_brs_wrt_co_upper : lngen.
 
 Lemma fv_tm_tm_co_open_co_wrt_co_upper :
 forall g1 g2,
   fv_tm_tm_co (open_co_wrt_co g1 g2) [<=] fv_tm_tm_co g2 `union` fv_tm_tm_co g1.
 Proof. Admitted.
 
-Hint Resolve fv_tm_tm_co_open_co_wrt_co_upper : lngen.
+#[export] Hint Resolve fv_tm_tm_co_open_co_wrt_co_upper : lngen.
 
 Lemma fv_tm_tm_constraint_open_constraint_wrt_co_upper :
 forall phi1 g1,
   fv_tm_tm_constraint (open_constraint_wrt_co phi1 g1) [<=] fv_tm_tm_co g1 `union` fv_tm_tm_constraint phi1.
 Proof. Admitted.
 
-Hint Resolve fv_tm_tm_constraint_open_constraint_wrt_co_upper : lngen.
+#[export] Hint Resolve fv_tm_tm_constraint_open_constraint_wrt_co_upper : lngen.
 
 Lemma fv_co_co_tm_open_tm_wrt_tm_upper :
 forall a1 a2,
   fv_co_co_tm (open_tm_wrt_tm a1 a2) [<=] fv_co_co_tm a2 `union` fv_co_co_tm a1.
 Proof. Admitted.
 
-Hint Resolve fv_co_co_tm_open_tm_wrt_tm_upper : lngen.
+#[export] Hint Resolve fv_co_co_tm_open_tm_wrt_tm_upper : lngen.
 
 Lemma fv_co_co_brs_open_brs_wrt_tm_upper :
 forall brs1 a1,
   fv_co_co_brs (open_brs_wrt_tm brs1 a1) [<=] fv_co_co_tm a1 `union` fv_co_co_brs brs1.
 Proof. Admitted.
 
-Hint Resolve fv_co_co_brs_open_brs_wrt_tm_upper : lngen.
+#[export] Hint Resolve fv_co_co_brs_open_brs_wrt_tm_upper : lngen.
 
 Lemma fv_co_co_co_open_co_wrt_tm_upper :
 forall g1 a1,
   fv_co_co_co (open_co_wrt_tm g1 a1) [<=] fv_co_co_tm a1 `union` fv_co_co_co g1.
 Proof. Admitted.
 
-Hint Resolve fv_co_co_co_open_co_wrt_tm_upper : lngen.
+#[export] Hint Resolve fv_co_co_co_open_co_wrt_tm_upper : lngen.
 
 Lemma fv_co_co_constraint_open_constraint_wrt_tm_upper :
 forall phi1 a1,
   fv_co_co_constraint (open_constraint_wrt_tm phi1 a1) [<=] fv_co_co_tm a1 `union` fv_co_co_constraint phi1.
 Proof. Admitted.
 
-Hint Resolve fv_co_co_constraint_open_constraint_wrt_tm_upper : lngen.
+#[export] Hint Resolve fv_co_co_constraint_open_constraint_wrt_tm_upper : lngen.
 
 Lemma fv_co_co_tm_open_tm_wrt_co_upper :
 forall a1 g1,
   fv_co_co_tm (open_tm_wrt_co a1 g1) [<=] fv_co_co_co g1 `union` fv_co_co_tm a1.
 Proof. Admitted.
 
-Hint Resolve fv_co_co_tm_open_tm_wrt_co_upper : lngen.
+#[export] Hint Resolve fv_co_co_tm_open_tm_wrt_co_upper : lngen.
 
 Lemma fv_co_co_brs_open_brs_wrt_co_upper :
 forall brs1 g1,
   fv_co_co_brs (open_brs_wrt_co brs1 g1) [<=] fv_co_co_co g1 `union` fv_co_co_brs brs1.
 Proof. Admitted.
 
-Hint Resolve fv_co_co_brs_open_brs_wrt_co_upper : lngen.
+#[export] Hint Resolve fv_co_co_brs_open_brs_wrt_co_upper : lngen.
 
 Lemma fv_co_co_co_open_co_wrt_co_upper :
 forall g1 g2,
   fv_co_co_co (open_co_wrt_co g1 g2) [<=] fv_co_co_co g2 `union` fv_co_co_co g1.
 Proof. Admitted.
 
-Hint Resolve fv_co_co_co_open_co_wrt_co_upper : lngen.
+#[export] Hint Resolve fv_co_co_co_open_co_wrt_co_upper : lngen.
 
 Lemma fv_co_co_constraint_open_constraint_wrt_co_upper :
 forall phi1 g1,
   fv_co_co_constraint (open_constraint_wrt_co phi1 g1) [<=] fv_co_co_co g1 `union` fv_co_co_constraint phi1.
 Proof. Admitted.
 
-Hint Resolve fv_co_co_constraint_open_constraint_wrt_co_upper : lngen.
+#[export] Hint Resolve fv_co_co_constraint_open_constraint_wrt_co_upper : lngen.
 
 (* begin hide *)
 
@@ -6345,8 +6298,8 @@ forall a1 a2 x1,
   fv_tm_tm_tm (tm_subst_tm_tm a2 x1 a1) [=] fv_tm_tm_tm a1.
 Proof. Admitted.
 
-Hint Resolve fv_tm_tm_tm_tm_subst_tm_tm_fresh : lngen.
-Hint Rewrite fv_tm_tm_tm_tm_subst_tm_tm_fresh using solve [auto] : lngen.
+#[export] Hint Resolve fv_tm_tm_tm_tm_subst_tm_tm_fresh : lngen.
+#[export] Hint Rewrite fv_tm_tm_tm_tm_subst_tm_tm_fresh using solve [auto] : lngen.
 
 Lemma fv_tm_tm_brs_tm_subst_tm_brs_fresh :
 forall brs1 a1 x1,
@@ -6354,8 +6307,8 @@ forall brs1 a1 x1,
   fv_tm_tm_brs (tm_subst_tm_brs a1 x1 brs1) [=] fv_tm_tm_brs brs1.
 Proof. Admitted.
 
-Hint Resolve fv_tm_tm_brs_tm_subst_tm_brs_fresh : lngen.
-Hint Rewrite fv_tm_tm_brs_tm_subst_tm_brs_fresh using solve [auto] : lngen.
+#[export] Hint Resolve fv_tm_tm_brs_tm_subst_tm_brs_fresh : lngen.
+#[export] Hint Rewrite fv_tm_tm_brs_tm_subst_tm_brs_fresh using solve [auto] : lngen.
 
 Lemma fv_tm_tm_co_tm_subst_tm_co_fresh :
 forall g1 a1 x1,
@@ -6363,8 +6316,8 @@ forall g1 a1 x1,
   fv_tm_tm_co (tm_subst_tm_co a1 x1 g1) [=] fv_tm_tm_co g1.
 Proof. Admitted.
 
-Hint Resolve fv_tm_tm_co_tm_subst_tm_co_fresh : lngen.
-Hint Rewrite fv_tm_tm_co_tm_subst_tm_co_fresh using solve [auto] : lngen.
+#[export] Hint Resolve fv_tm_tm_co_tm_subst_tm_co_fresh : lngen.
+#[export] Hint Rewrite fv_tm_tm_co_tm_subst_tm_co_fresh using solve [auto] : lngen.
 
 Lemma fv_tm_tm_constraint_tm_subst_tm_constraint_fresh :
 forall phi1 a1 x1,
@@ -6372,8 +6325,8 @@ forall phi1 a1 x1,
   fv_tm_tm_constraint (tm_subst_tm_constraint a1 x1 phi1) [=] fv_tm_tm_constraint phi1.
 Proof. Admitted.
 
-Hint Resolve fv_tm_tm_constraint_tm_subst_tm_constraint_fresh : lngen.
-Hint Rewrite fv_tm_tm_constraint_tm_subst_tm_constraint_fresh using solve [auto] : lngen.
+#[export] Hint Resolve fv_tm_tm_constraint_tm_subst_tm_constraint_fresh : lngen.
+#[export] Hint Rewrite fv_tm_tm_constraint_tm_subst_tm_constraint_fresh using solve [auto] : lngen.
 
 (* begin hide *)
 
@@ -6400,8 +6353,8 @@ forall a1 g1 c1,
   fv_co_co_tm (co_subst_co_tm g1 c1 a1) [=] fv_co_co_tm a1.
 Proof. Admitted.
 
-Hint Resolve fv_co_co_tm_co_subst_co_tm_fresh : lngen.
-Hint Rewrite fv_co_co_tm_co_subst_co_tm_fresh using solve [auto] : lngen.
+#[export] Hint Resolve fv_co_co_tm_co_subst_co_tm_fresh : lngen.
+#[export] Hint Rewrite fv_co_co_tm_co_subst_co_tm_fresh using solve [auto] : lngen.
 
 Lemma fv_co_co_brs_co_subst_co_brs_fresh :
 forall brs1 g1 c1,
@@ -6409,8 +6362,8 @@ forall brs1 g1 c1,
   fv_co_co_brs (co_subst_co_brs g1 c1 brs1) [=] fv_co_co_brs brs1.
 Proof. Admitted.
 
-Hint Resolve fv_co_co_brs_co_subst_co_brs_fresh : lngen.
-Hint Rewrite fv_co_co_brs_co_subst_co_brs_fresh using solve [auto] : lngen.
+#[export] Hint Resolve fv_co_co_brs_co_subst_co_brs_fresh : lngen.
+#[export] Hint Rewrite fv_co_co_brs_co_subst_co_brs_fresh using solve [auto] : lngen.
 
 Lemma fv_co_co_co_co_subst_co_co_fresh :
 forall g1 g2 c1,
@@ -6418,8 +6371,8 @@ forall g1 g2 c1,
   fv_co_co_co (co_subst_co_co g2 c1 g1) [=] fv_co_co_co g1.
 Proof. Admitted.
 
-Hint Resolve fv_co_co_co_co_subst_co_co_fresh : lngen.
-Hint Rewrite fv_co_co_co_co_subst_co_co_fresh using solve [auto] : lngen.
+#[export] Hint Resolve fv_co_co_co_co_subst_co_co_fresh : lngen.
+#[export] Hint Rewrite fv_co_co_co_co_subst_co_co_fresh using solve [auto] : lngen.
 
 Lemma fv_co_co_constraint_co_subst_co_constraint_fresh :
 forall phi1 g1 c1,
@@ -6427,8 +6380,8 @@ forall phi1 g1 c1,
   fv_co_co_constraint (co_subst_co_constraint g1 c1 phi1) [=] fv_co_co_constraint phi1.
 Proof. Admitted.
 
-Hint Resolve fv_co_co_constraint_co_subst_co_constraint_fresh : lngen.
-Hint Rewrite fv_co_co_constraint_co_subst_co_constraint_fresh using solve [auto] : lngen.
+#[export] Hint Resolve fv_co_co_constraint_co_subst_co_constraint_fresh : lngen.
+#[export] Hint Rewrite fv_co_co_constraint_co_subst_co_constraint_fresh using solve [auto] : lngen.
 
 (* begin hide *)
 
@@ -6450,28 +6403,28 @@ forall a1 a2 x1,
   remove x1 (fv_tm_tm_tm a1) [<=] fv_tm_tm_tm (tm_subst_tm_tm a2 x1 a1).
 Proof. Admitted.
 
-Hint Resolve fv_tm_tm_tm_tm_subst_tm_tm_lower : lngen.
+#[export] Hint Resolve fv_tm_tm_tm_tm_subst_tm_tm_lower : lngen.
 
 Lemma fv_tm_tm_brs_tm_subst_tm_brs_lower :
 forall brs1 a1 x1,
   remove x1 (fv_tm_tm_brs brs1) [<=] fv_tm_tm_brs (tm_subst_tm_brs a1 x1 brs1).
 Proof. Admitted.
 
-Hint Resolve fv_tm_tm_brs_tm_subst_tm_brs_lower : lngen.
+#[export] Hint Resolve fv_tm_tm_brs_tm_subst_tm_brs_lower : lngen.
 
 Lemma fv_tm_tm_co_tm_subst_tm_co_lower :
 forall g1 a1 x1,
   remove x1 (fv_tm_tm_co g1) [<=] fv_tm_tm_co (tm_subst_tm_co a1 x1 g1).
 Proof. Admitted.
 
-Hint Resolve fv_tm_tm_co_tm_subst_tm_co_lower : lngen.
+#[export] Hint Resolve fv_tm_tm_co_tm_subst_tm_co_lower : lngen.
 
 Lemma fv_tm_tm_constraint_tm_subst_tm_constraint_lower :
 forall phi1 a1 x1,
   remove x1 (fv_tm_tm_constraint phi1) [<=] fv_tm_tm_constraint (tm_subst_tm_constraint a1 x1 phi1).
 Proof. Admitted.
 
-Hint Resolve fv_tm_tm_constraint_tm_subst_tm_constraint_lower : lngen.
+#[export] Hint Resolve fv_tm_tm_constraint_tm_subst_tm_constraint_lower : lngen.
 
 (* begin hide *)
 
@@ -6493,28 +6446,28 @@ forall a1 g1 c1,
   fv_tm_tm_tm a1 [<=] fv_tm_tm_tm (co_subst_co_tm g1 c1 a1).
 Proof. Admitted.
 
-Hint Resolve fv_tm_tm_tm_co_subst_co_tm_lower : lngen.
+#[export] Hint Resolve fv_tm_tm_tm_co_subst_co_tm_lower : lngen.
 
 Lemma fv_tm_tm_brs_co_subst_co_brs_lower :
 forall brs1 g1 c1,
   fv_tm_tm_brs brs1 [<=] fv_tm_tm_brs (co_subst_co_brs g1 c1 brs1).
 Proof. Admitted.
 
-Hint Resolve fv_tm_tm_brs_co_subst_co_brs_lower : lngen.
+#[export] Hint Resolve fv_tm_tm_brs_co_subst_co_brs_lower : lngen.
 
 Lemma fv_tm_tm_co_co_subst_co_co_lower :
 forall g1 g2 c1,
   fv_tm_tm_co g1 [<=] fv_tm_tm_co (co_subst_co_co g2 c1 g1).
 Proof. Admitted.
 
-Hint Resolve fv_tm_tm_co_co_subst_co_co_lower : lngen.
+#[export] Hint Resolve fv_tm_tm_co_co_subst_co_co_lower : lngen.
 
 Lemma fv_tm_tm_constraint_co_subst_co_constraint_lower :
 forall phi1 g1 c1,
   fv_tm_tm_constraint phi1 [<=] fv_tm_tm_constraint (co_subst_co_constraint g1 c1 phi1).
 Proof. Admitted.
 
-Hint Resolve fv_tm_tm_constraint_co_subst_co_constraint_lower : lngen.
+#[export] Hint Resolve fv_tm_tm_constraint_co_subst_co_constraint_lower : lngen.
 
 (* begin hide *)
 
@@ -6536,28 +6489,28 @@ forall a1 a2 x1,
   fv_co_co_tm a1 [<=] fv_co_co_tm (tm_subst_tm_tm a2 x1 a1).
 Proof. Admitted.
 
-Hint Resolve fv_co_co_tm_tm_subst_tm_tm_lower : lngen.
+#[export] Hint Resolve fv_co_co_tm_tm_subst_tm_tm_lower : lngen.
 
 Lemma fv_co_co_brs_tm_subst_tm_brs_lower :
 forall brs1 a1 x1,
   fv_co_co_brs brs1 [<=] fv_co_co_brs (tm_subst_tm_brs a1 x1 brs1).
 Proof. Admitted.
 
-Hint Resolve fv_co_co_brs_tm_subst_tm_brs_lower : lngen.
+#[export] Hint Resolve fv_co_co_brs_tm_subst_tm_brs_lower : lngen.
 
 Lemma fv_co_co_co_tm_subst_tm_co_lower :
 forall g1 a1 x1,
   fv_co_co_co g1 [<=] fv_co_co_co (tm_subst_tm_co a1 x1 g1).
 Proof. Admitted.
 
-Hint Resolve fv_co_co_co_tm_subst_tm_co_lower : lngen.
+#[export] Hint Resolve fv_co_co_co_tm_subst_tm_co_lower : lngen.
 
 Lemma fv_co_co_constraint_tm_subst_tm_constraint_lower :
 forall phi1 a1 x1,
   fv_co_co_constraint phi1 [<=] fv_co_co_constraint (tm_subst_tm_constraint a1 x1 phi1).
 Proof. Admitted.
 
-Hint Resolve fv_co_co_constraint_tm_subst_tm_constraint_lower : lngen.
+#[export] Hint Resolve fv_co_co_constraint_tm_subst_tm_constraint_lower : lngen.
 
 (* begin hide *)
 
@@ -6579,28 +6532,28 @@ forall a1 g1 c1,
   remove c1 (fv_co_co_tm a1) [<=] fv_co_co_tm (co_subst_co_tm g1 c1 a1).
 Proof. Admitted.
 
-Hint Resolve fv_co_co_tm_co_subst_co_tm_lower : lngen.
+#[export] Hint Resolve fv_co_co_tm_co_subst_co_tm_lower : lngen.
 
 Lemma fv_co_co_brs_co_subst_co_brs_lower :
 forall brs1 g1 c1,
   remove c1 (fv_co_co_brs brs1) [<=] fv_co_co_brs (co_subst_co_brs g1 c1 brs1).
 Proof. Admitted.
 
-Hint Resolve fv_co_co_brs_co_subst_co_brs_lower : lngen.
+#[export] Hint Resolve fv_co_co_brs_co_subst_co_brs_lower : lngen.
 
 Lemma fv_co_co_co_co_subst_co_co_lower :
 forall g1 g2 c1,
   remove c1 (fv_co_co_co g1) [<=] fv_co_co_co (co_subst_co_co g2 c1 g1).
 Proof. Admitted.
 
-Hint Resolve fv_co_co_co_co_subst_co_co_lower : lngen.
+#[export] Hint Resolve fv_co_co_co_co_subst_co_co_lower : lngen.
 
 Lemma fv_co_co_constraint_co_subst_co_constraint_lower :
 forall phi1 g1 c1,
   remove c1 (fv_co_co_constraint phi1) [<=] fv_co_co_constraint (co_subst_co_constraint g1 c1 phi1).
 Proof. Admitted.
 
-Hint Resolve fv_co_co_constraint_co_subst_co_constraint_lower : lngen.
+#[export] Hint Resolve fv_co_co_constraint_co_subst_co_constraint_lower : lngen.
 
 (* begin hide *)
 
@@ -6632,7 +6585,7 @@ forall a1 a2 x1 x2,
   x2 `notin` fv_tm_tm_tm (tm_subst_tm_tm a2 x1 a1).
 Proof. Admitted.
 
-Hint Resolve fv_tm_tm_tm_tm_subst_tm_tm_notin : lngen.
+#[export] Hint Resolve fv_tm_tm_tm_tm_subst_tm_tm_notin : lngen.
 
 Lemma fv_tm_tm_brs_tm_subst_tm_brs_notin :
 forall brs1 a1 x1 x2,
@@ -6641,7 +6594,7 @@ forall brs1 a1 x1 x2,
   x2 `notin` fv_tm_tm_brs (tm_subst_tm_brs a1 x1 brs1).
 Proof. Admitted.
 
-Hint Resolve fv_tm_tm_brs_tm_subst_tm_brs_notin : lngen.
+#[export] Hint Resolve fv_tm_tm_brs_tm_subst_tm_brs_notin : lngen.
 
 Lemma fv_tm_tm_co_tm_subst_tm_co_notin :
 forall g1 a1 x1 x2,
@@ -6650,7 +6603,7 @@ forall g1 a1 x1 x2,
   x2 `notin` fv_tm_tm_co (tm_subst_tm_co a1 x1 g1).
 Proof. Admitted.
 
-Hint Resolve fv_tm_tm_co_tm_subst_tm_co_notin : lngen.
+#[export] Hint Resolve fv_tm_tm_co_tm_subst_tm_co_notin : lngen.
 
 Lemma fv_tm_tm_constraint_tm_subst_tm_constraint_notin :
 forall phi1 a1 x1 x2,
@@ -6659,7 +6612,7 @@ forall phi1 a1 x1 x2,
   x2 `notin` fv_tm_tm_constraint (tm_subst_tm_constraint a1 x1 phi1).
 Proof. Admitted.
 
-Hint Resolve fv_tm_tm_constraint_tm_subst_tm_constraint_notin : lngen.
+#[export] Hint Resolve fv_tm_tm_constraint_tm_subst_tm_constraint_notin : lngen.
 
 (* begin hide *)
 
@@ -6691,7 +6644,7 @@ forall a1 g1 c1 x1,
   x1 `notin` fv_tm_tm_tm (co_subst_co_tm g1 c1 a1).
 Proof. Admitted.
 
-Hint Resolve fv_tm_tm_tm_co_subst_co_tm_notin : lngen.
+#[export] Hint Resolve fv_tm_tm_tm_co_subst_co_tm_notin : lngen.
 
 Lemma fv_tm_tm_brs_co_subst_co_brs_notin :
 forall brs1 g1 c1 x1,
@@ -6700,7 +6653,7 @@ forall brs1 g1 c1 x1,
   x1 `notin` fv_tm_tm_brs (co_subst_co_brs g1 c1 brs1).
 Proof. Admitted.
 
-Hint Resolve fv_tm_tm_brs_co_subst_co_brs_notin : lngen.
+#[export] Hint Resolve fv_tm_tm_brs_co_subst_co_brs_notin : lngen.
 
 Lemma fv_tm_tm_co_co_subst_co_co_notin :
 forall g1 g2 c1 x1,
@@ -6709,7 +6662,7 @@ forall g1 g2 c1 x1,
   x1 `notin` fv_tm_tm_co (co_subst_co_co g2 c1 g1).
 Proof. Admitted.
 
-Hint Resolve fv_tm_tm_co_co_subst_co_co_notin : lngen.
+#[export] Hint Resolve fv_tm_tm_co_co_subst_co_co_notin : lngen.
 
 Lemma fv_tm_tm_constraint_co_subst_co_constraint_notin :
 forall phi1 g1 c1 x1,
@@ -6718,7 +6671,7 @@ forall phi1 g1 c1 x1,
   x1 `notin` fv_tm_tm_constraint (co_subst_co_constraint g1 c1 phi1).
 Proof. Admitted.
 
-Hint Resolve fv_tm_tm_constraint_co_subst_co_constraint_notin : lngen.
+#[export] Hint Resolve fv_tm_tm_constraint_co_subst_co_constraint_notin : lngen.
 
 (* begin hide *)
 
@@ -6750,7 +6703,7 @@ forall a1 a2 x1 c1,
   c1 `notin` fv_co_co_tm (tm_subst_tm_tm a2 x1 a1).
 Proof. Admitted.
 
-Hint Resolve fv_co_co_tm_tm_subst_tm_tm_notin : lngen.
+#[export] Hint Resolve fv_co_co_tm_tm_subst_tm_tm_notin : lngen.
 
 Lemma fv_co_co_brs_tm_subst_tm_brs_notin :
 forall brs1 a1 x1 c1,
@@ -6759,7 +6712,7 @@ forall brs1 a1 x1 c1,
   c1 `notin` fv_co_co_brs (tm_subst_tm_brs a1 x1 brs1).
 Proof. Admitted.
 
-Hint Resolve fv_co_co_brs_tm_subst_tm_brs_notin : lngen.
+#[export] Hint Resolve fv_co_co_brs_tm_subst_tm_brs_notin : lngen.
 
 Lemma fv_co_co_co_tm_subst_tm_co_notin :
 forall g1 a1 x1 c1,
@@ -6768,7 +6721,7 @@ forall g1 a1 x1 c1,
   c1 `notin` fv_co_co_co (tm_subst_tm_co a1 x1 g1).
 Proof. Admitted.
 
-Hint Resolve fv_co_co_co_tm_subst_tm_co_notin : lngen.
+#[export] Hint Resolve fv_co_co_co_tm_subst_tm_co_notin : lngen.
 
 Lemma fv_co_co_constraint_tm_subst_tm_constraint_notin :
 forall phi1 a1 x1 c1,
@@ -6777,7 +6730,7 @@ forall phi1 a1 x1 c1,
   c1 `notin` fv_co_co_constraint (tm_subst_tm_constraint a1 x1 phi1).
 Proof. Admitted.
 
-Hint Resolve fv_co_co_constraint_tm_subst_tm_constraint_notin : lngen.
+#[export] Hint Resolve fv_co_co_constraint_tm_subst_tm_constraint_notin : lngen.
 
 (* begin hide *)
 
@@ -6809,7 +6762,7 @@ forall a1 g1 c1 c2,
   c2 `notin` fv_co_co_tm (co_subst_co_tm g1 c1 a1).
 Proof. Admitted.
 
-Hint Resolve fv_co_co_tm_co_subst_co_tm_notin : lngen.
+#[export] Hint Resolve fv_co_co_tm_co_subst_co_tm_notin : lngen.
 
 Lemma fv_co_co_brs_co_subst_co_brs_notin :
 forall brs1 g1 c1 c2,
@@ -6818,7 +6771,7 @@ forall brs1 g1 c1 c2,
   c2 `notin` fv_co_co_brs (co_subst_co_brs g1 c1 brs1).
 Proof. Admitted.
 
-Hint Resolve fv_co_co_brs_co_subst_co_brs_notin : lngen.
+#[export] Hint Resolve fv_co_co_brs_co_subst_co_brs_notin : lngen.
 
 Lemma fv_co_co_co_co_subst_co_co_notin :
 forall g1 g2 c1 c2,
@@ -6827,7 +6780,7 @@ forall g1 g2 c1 c2,
   c2 `notin` fv_co_co_co (co_subst_co_co g2 c1 g1).
 Proof. Admitted.
 
-Hint Resolve fv_co_co_co_co_subst_co_co_notin : lngen.
+#[export] Hint Resolve fv_co_co_co_co_subst_co_co_notin : lngen.
 
 Lemma fv_co_co_constraint_co_subst_co_constraint_notin :
 forall phi1 g1 c1 c2,
@@ -6836,7 +6789,7 @@ forall phi1 g1 c1 c2,
   c2 `notin` fv_co_co_constraint (co_subst_co_constraint g1 c1 phi1).
 Proof. Admitted.
 
-Hint Resolve fv_co_co_constraint_co_subst_co_constraint_notin : lngen.
+#[export] Hint Resolve fv_co_co_constraint_co_subst_co_constraint_notin : lngen.
 
 (* begin hide *)
 
@@ -6858,28 +6811,28 @@ forall a1 a2 x1,
   fv_tm_tm_tm (tm_subst_tm_tm a2 x1 a1) [<=] fv_tm_tm_tm a2 `union` remove x1 (fv_tm_tm_tm a1).
 Proof. Admitted.
 
-Hint Resolve fv_tm_tm_tm_tm_subst_tm_tm_upper : lngen.
+#[export] Hint Resolve fv_tm_tm_tm_tm_subst_tm_tm_upper : lngen.
 
 Lemma fv_tm_tm_brs_tm_subst_tm_brs_upper :
 forall brs1 a1 x1,
   fv_tm_tm_brs (tm_subst_tm_brs a1 x1 brs1) [<=] fv_tm_tm_tm a1 `union` remove x1 (fv_tm_tm_brs brs1).
 Proof. Admitted.
 
-Hint Resolve fv_tm_tm_brs_tm_subst_tm_brs_upper : lngen.
+#[export] Hint Resolve fv_tm_tm_brs_tm_subst_tm_brs_upper : lngen.
 
 Lemma fv_tm_tm_co_tm_subst_tm_co_upper :
 forall g1 a1 x1,
   fv_tm_tm_co (tm_subst_tm_co a1 x1 g1) [<=] fv_tm_tm_tm a1 `union` remove x1 (fv_tm_tm_co g1).
 Proof. Admitted.
 
-Hint Resolve fv_tm_tm_co_tm_subst_tm_co_upper : lngen.
+#[export] Hint Resolve fv_tm_tm_co_tm_subst_tm_co_upper : lngen.
 
 Lemma fv_tm_tm_constraint_tm_subst_tm_constraint_upper :
 forall phi1 a1 x1,
   fv_tm_tm_constraint (tm_subst_tm_constraint a1 x1 phi1) [<=] fv_tm_tm_tm a1 `union` remove x1 (fv_tm_tm_constraint phi1).
 Proof. Admitted.
 
-Hint Resolve fv_tm_tm_constraint_tm_subst_tm_constraint_upper : lngen.
+#[export] Hint Resolve fv_tm_tm_constraint_tm_subst_tm_constraint_upper : lngen.
 
 (* begin hide *)
 
@@ -6901,28 +6854,28 @@ forall a1 g1 c1,
   fv_tm_tm_tm (co_subst_co_tm g1 c1 a1) [<=] fv_tm_tm_co g1 `union` fv_tm_tm_tm a1.
 Proof. Admitted.
 
-Hint Resolve fv_tm_tm_tm_co_subst_co_tm_upper : lngen.
+#[export] Hint Resolve fv_tm_tm_tm_co_subst_co_tm_upper : lngen.
 
 Lemma fv_tm_tm_brs_co_subst_co_brs_upper :
 forall brs1 g1 c1,
   fv_tm_tm_brs (co_subst_co_brs g1 c1 brs1) [<=] fv_tm_tm_co g1 `union` fv_tm_tm_brs brs1.
 Proof. Admitted.
 
-Hint Resolve fv_tm_tm_brs_co_subst_co_brs_upper : lngen.
+#[export] Hint Resolve fv_tm_tm_brs_co_subst_co_brs_upper : lngen.
 
 Lemma fv_tm_tm_co_co_subst_co_co_upper :
 forall g1 g2 c1,
   fv_tm_tm_co (co_subst_co_co g2 c1 g1) [<=] fv_tm_tm_co g2 `union` fv_tm_tm_co g1.
 Proof. Admitted.
 
-Hint Resolve fv_tm_tm_co_co_subst_co_co_upper : lngen.
+#[export] Hint Resolve fv_tm_tm_co_co_subst_co_co_upper : lngen.
 
 Lemma fv_tm_tm_constraint_co_subst_co_constraint_upper :
 forall phi1 g1 c1,
   fv_tm_tm_constraint (co_subst_co_constraint g1 c1 phi1) [<=] fv_tm_tm_co g1 `union` fv_tm_tm_constraint phi1.
 Proof. Admitted.
 
-Hint Resolve fv_tm_tm_constraint_co_subst_co_constraint_upper : lngen.
+#[export] Hint Resolve fv_tm_tm_constraint_co_subst_co_constraint_upper : lngen.
 
 (* begin hide *)
 
@@ -6944,28 +6897,28 @@ forall a1 a2 x1,
   fv_co_co_tm (tm_subst_tm_tm a2 x1 a1) [<=] fv_co_co_tm a2 `union` fv_co_co_tm a1.
 Proof. Admitted.
 
-Hint Resolve fv_co_co_tm_tm_subst_tm_tm_upper : lngen.
+#[export] Hint Resolve fv_co_co_tm_tm_subst_tm_tm_upper : lngen.
 
 Lemma fv_co_co_brs_tm_subst_tm_brs_upper :
 forall brs1 a1 x1,
   fv_co_co_brs (tm_subst_tm_brs a1 x1 brs1) [<=] fv_co_co_tm a1 `union` fv_co_co_brs brs1.
 Proof. Admitted.
 
-Hint Resolve fv_co_co_brs_tm_subst_tm_brs_upper : lngen.
+#[export] Hint Resolve fv_co_co_brs_tm_subst_tm_brs_upper : lngen.
 
 Lemma fv_co_co_co_tm_subst_tm_co_upper :
 forall g1 a1 x1,
   fv_co_co_co (tm_subst_tm_co a1 x1 g1) [<=] fv_co_co_tm a1 `union` fv_co_co_co g1.
 Proof. Admitted.
 
-Hint Resolve fv_co_co_co_tm_subst_tm_co_upper : lngen.
+#[export] Hint Resolve fv_co_co_co_tm_subst_tm_co_upper : lngen.
 
 Lemma fv_co_co_constraint_tm_subst_tm_constraint_upper :
 forall phi1 a1 x1,
   fv_co_co_constraint (tm_subst_tm_constraint a1 x1 phi1) [<=] fv_co_co_tm a1 `union` fv_co_co_constraint phi1.
 Proof. Admitted.
 
-Hint Resolve fv_co_co_constraint_tm_subst_tm_constraint_upper : lngen.
+#[export] Hint Resolve fv_co_co_constraint_tm_subst_tm_constraint_upper : lngen.
 
 (* begin hide *)
 
@@ -6987,28 +6940,28 @@ forall a1 g1 c1,
   fv_co_co_tm (co_subst_co_tm g1 c1 a1) [<=] fv_co_co_co g1 `union` remove c1 (fv_co_co_tm a1).
 Proof. Admitted.
 
-Hint Resolve fv_co_co_tm_co_subst_co_tm_upper : lngen.
+#[export] Hint Resolve fv_co_co_tm_co_subst_co_tm_upper : lngen.
 
 Lemma fv_co_co_brs_co_subst_co_brs_upper :
 forall brs1 g1 c1,
   fv_co_co_brs (co_subst_co_brs g1 c1 brs1) [<=] fv_co_co_co g1 `union` remove c1 (fv_co_co_brs brs1).
 Proof. Admitted.
 
-Hint Resolve fv_co_co_brs_co_subst_co_brs_upper : lngen.
+#[export] Hint Resolve fv_co_co_brs_co_subst_co_brs_upper : lngen.
 
 Lemma fv_co_co_co_co_subst_co_co_upper :
 forall g1 g2 c1,
   fv_co_co_co (co_subst_co_co g2 c1 g1) [<=] fv_co_co_co g2 `union` remove c1 (fv_co_co_co g1).
 Proof. Admitted.
 
-Hint Resolve fv_co_co_co_co_subst_co_co_upper : lngen.
+#[export] Hint Resolve fv_co_co_co_co_subst_co_co_upper : lngen.
 
 Lemma fv_co_co_constraint_co_subst_co_constraint_upper :
 forall phi1 g1 c1,
   fv_co_co_constraint (co_subst_co_constraint g1 c1 phi1) [<=] fv_co_co_co g1 `union` remove c1 (fv_co_co_constraint phi1).
 Proof. Admitted.
 
-Hint Resolve fv_co_co_constraint_co_subst_co_constraint_upper : lngen.
+#[export] Hint Resolve fv_co_co_constraint_co_subst_co_constraint_upper : lngen.
 
 
 (* *********************************************************************** *)
@@ -7052,7 +7005,7 @@ forall a2 a1 x1 x2 n1,
   tm_subst_tm_tm a1 x1 (close_tm_wrt_tm_rec n1 x2 a2) = close_tm_wrt_tm_rec n1 x2 (tm_subst_tm_tm a1 x1 a2).
 Proof. Admitted.
 
-Hint Resolve tm_subst_tm_tm_close_tm_wrt_tm_rec : lngen.
+#[export] Hint Resolve tm_subst_tm_tm_close_tm_wrt_tm_rec : lngen.
 
 Lemma tm_subst_tm_brs_close_brs_wrt_tm_rec :
 forall brs1 a1 x1 x2 n1,
@@ -7062,7 +7015,7 @@ forall brs1 a1 x1 x2 n1,
   tm_subst_tm_brs a1 x1 (close_brs_wrt_tm_rec n1 x2 brs1) = close_brs_wrt_tm_rec n1 x2 (tm_subst_tm_brs a1 x1 brs1).
 Proof. Admitted.
 
-Hint Resolve tm_subst_tm_brs_close_brs_wrt_tm_rec : lngen.
+#[export] Hint Resolve tm_subst_tm_brs_close_brs_wrt_tm_rec : lngen.
 
 Lemma tm_subst_tm_co_close_co_wrt_tm_rec :
 forall g1 a1 x1 x2 n1,
@@ -7072,7 +7025,7 @@ forall g1 a1 x1 x2 n1,
   tm_subst_tm_co a1 x1 (close_co_wrt_tm_rec n1 x2 g1) = close_co_wrt_tm_rec n1 x2 (tm_subst_tm_co a1 x1 g1).
 Proof. Admitted.
 
-Hint Resolve tm_subst_tm_co_close_co_wrt_tm_rec : lngen.
+#[export] Hint Resolve tm_subst_tm_co_close_co_wrt_tm_rec : lngen.
 
 Lemma tm_subst_tm_constraint_close_constraint_wrt_tm_rec :
 forall phi1 a1 x1 x2 n1,
@@ -7082,7 +7035,7 @@ forall phi1 a1 x1 x2 n1,
   tm_subst_tm_constraint a1 x1 (close_constraint_wrt_tm_rec n1 x2 phi1) = close_constraint_wrt_tm_rec n1 x2 (tm_subst_tm_constraint a1 x1 phi1).
 Proof. Admitted.
 
-Hint Resolve tm_subst_tm_constraint_close_constraint_wrt_tm_rec : lngen.
+#[export] Hint Resolve tm_subst_tm_constraint_close_constraint_wrt_tm_rec : lngen.
 
 (* begin hide *)
 
@@ -7114,7 +7067,7 @@ forall a2 a1 c1 x1 n1,
   tm_subst_tm_tm a1 c1 (close_tm_wrt_co_rec n1 x1 a2) = close_tm_wrt_co_rec n1 x1 (tm_subst_tm_tm a1 c1 a2).
 Proof. Admitted.
 
-Hint Resolve tm_subst_tm_tm_close_tm_wrt_co_rec : lngen.
+#[export] Hint Resolve tm_subst_tm_tm_close_tm_wrt_co_rec : lngen.
 
 Lemma tm_subst_tm_brs_close_brs_wrt_co_rec :
 forall brs1 a1 c1 x1 n1,
@@ -7123,7 +7076,7 @@ forall brs1 a1 c1 x1 n1,
   tm_subst_tm_brs a1 c1 (close_brs_wrt_co_rec n1 x1 brs1) = close_brs_wrt_co_rec n1 x1 (tm_subst_tm_brs a1 c1 brs1).
 Proof. Admitted.
 
-Hint Resolve tm_subst_tm_brs_close_brs_wrt_co_rec : lngen.
+#[export] Hint Resolve tm_subst_tm_brs_close_brs_wrt_co_rec : lngen.
 
 Lemma tm_subst_tm_co_close_co_wrt_co_rec :
 forall g1 a1 c1 x1 n1,
@@ -7132,7 +7085,7 @@ forall g1 a1 c1 x1 n1,
   tm_subst_tm_co a1 c1 (close_co_wrt_co_rec n1 x1 g1) = close_co_wrt_co_rec n1 x1 (tm_subst_tm_co a1 c1 g1).
 Proof. Admitted.
 
-Hint Resolve tm_subst_tm_co_close_co_wrt_co_rec : lngen.
+#[export] Hint Resolve tm_subst_tm_co_close_co_wrt_co_rec : lngen.
 
 Lemma tm_subst_tm_constraint_close_constraint_wrt_co_rec :
 forall phi1 a1 c1 x1 n1,
@@ -7141,7 +7094,7 @@ forall phi1 a1 c1 x1 n1,
   tm_subst_tm_constraint a1 c1 (close_constraint_wrt_co_rec n1 x1 phi1) = close_constraint_wrt_co_rec n1 x1 (tm_subst_tm_constraint a1 c1 phi1).
 Proof. Admitted.
 
-Hint Resolve tm_subst_tm_constraint_close_constraint_wrt_co_rec : lngen.
+#[export] Hint Resolve tm_subst_tm_constraint_close_constraint_wrt_co_rec : lngen.
 
 (* begin hide *)
 
@@ -7173,7 +7126,7 @@ forall a1 g1 x1 c1 n1,
   co_subst_co_tm g1 x1 (close_tm_wrt_tm_rec n1 c1 a1) = close_tm_wrt_tm_rec n1 c1 (co_subst_co_tm g1 x1 a1).
 Proof. Admitted.
 
-Hint Resolve co_subst_co_tm_close_tm_wrt_tm_rec : lngen.
+#[export] Hint Resolve co_subst_co_tm_close_tm_wrt_tm_rec : lngen.
 
 Lemma co_subst_co_brs_close_brs_wrt_tm_rec :
 forall brs1 g1 x1 c1 n1,
@@ -7182,7 +7135,7 @@ forall brs1 g1 x1 c1 n1,
   co_subst_co_brs g1 x1 (close_brs_wrt_tm_rec n1 c1 brs1) = close_brs_wrt_tm_rec n1 c1 (co_subst_co_brs g1 x1 brs1).
 Proof. Admitted.
 
-Hint Resolve co_subst_co_brs_close_brs_wrt_tm_rec : lngen.
+#[export] Hint Resolve co_subst_co_brs_close_brs_wrt_tm_rec : lngen.
 
 Lemma co_subst_co_co_close_co_wrt_tm_rec :
 forall g2 g1 x1 c1 n1,
@@ -7191,7 +7144,7 @@ forall g2 g1 x1 c1 n1,
   co_subst_co_co g1 x1 (close_co_wrt_tm_rec n1 c1 g2) = close_co_wrt_tm_rec n1 c1 (co_subst_co_co g1 x1 g2).
 Proof. Admitted.
 
-Hint Resolve co_subst_co_co_close_co_wrt_tm_rec : lngen.
+#[export] Hint Resolve co_subst_co_co_close_co_wrt_tm_rec : lngen.
 
 Lemma co_subst_co_constraint_close_constraint_wrt_tm_rec :
 forall phi1 g1 x1 c1 n1,
@@ -7200,7 +7153,7 @@ forall phi1 g1 x1 c1 n1,
   co_subst_co_constraint g1 x1 (close_constraint_wrt_tm_rec n1 c1 phi1) = close_constraint_wrt_tm_rec n1 c1 (co_subst_co_constraint g1 x1 phi1).
 Proof. Admitted.
 
-Hint Resolve co_subst_co_constraint_close_constraint_wrt_tm_rec : lngen.
+#[export] Hint Resolve co_subst_co_constraint_close_constraint_wrt_tm_rec : lngen.
 
 (* begin hide *)
 
@@ -7237,7 +7190,7 @@ forall a1 g1 c1 c2 n1,
   co_subst_co_tm g1 c1 (close_tm_wrt_co_rec n1 c2 a1) = close_tm_wrt_co_rec n1 c2 (co_subst_co_tm g1 c1 a1).
 Proof. Admitted.
 
-Hint Resolve co_subst_co_tm_close_tm_wrt_co_rec : lngen.
+#[export] Hint Resolve co_subst_co_tm_close_tm_wrt_co_rec : lngen.
 
 Lemma co_subst_co_brs_close_brs_wrt_co_rec :
 forall brs1 g1 c1 c2 n1,
@@ -7247,7 +7200,7 @@ forall brs1 g1 c1 c2 n1,
   co_subst_co_brs g1 c1 (close_brs_wrt_co_rec n1 c2 brs1) = close_brs_wrt_co_rec n1 c2 (co_subst_co_brs g1 c1 brs1).
 Proof. Admitted.
 
-Hint Resolve co_subst_co_brs_close_brs_wrt_co_rec : lngen.
+#[export] Hint Resolve co_subst_co_brs_close_brs_wrt_co_rec : lngen.
 
 Lemma co_subst_co_co_close_co_wrt_co_rec :
 forall g2 g1 c1 c2 n1,
@@ -7257,7 +7210,7 @@ forall g2 g1 c1 c2 n1,
   co_subst_co_co g1 c1 (close_co_wrt_co_rec n1 c2 g2) = close_co_wrt_co_rec n1 c2 (co_subst_co_co g1 c1 g2).
 Proof. Admitted.
 
-Hint Resolve co_subst_co_co_close_co_wrt_co_rec : lngen.
+#[export] Hint Resolve co_subst_co_co_close_co_wrt_co_rec : lngen.
 
 Lemma co_subst_co_constraint_close_constraint_wrt_co_rec :
 forall phi1 g1 c1 c2 n1,
@@ -7267,7 +7220,7 @@ forall phi1 g1 c1 c2 n1,
   co_subst_co_constraint g1 c1 (close_constraint_wrt_co_rec n1 c2 phi1) = close_constraint_wrt_co_rec n1 c2 (co_subst_co_constraint g1 c1 phi1).
 Proof. Admitted.
 
-Hint Resolve co_subst_co_constraint_close_constraint_wrt_co_rec : lngen.
+#[export] Hint Resolve co_subst_co_constraint_close_constraint_wrt_co_rec : lngen.
 
 Lemma tm_subst_tm_tm_close_tm_wrt_tm :
 forall a2 a1 x1 x2,
@@ -7276,7 +7229,7 @@ forall a2 a1 x1 x2,
   tm_subst_tm_tm a1 x1 (close_tm_wrt_tm x2 a2) = close_tm_wrt_tm x2 (tm_subst_tm_tm a1 x1 a2).
 Proof. Admitted.
 
-Hint Resolve tm_subst_tm_tm_close_tm_wrt_tm : lngen.
+#[export] Hint Resolve tm_subst_tm_tm_close_tm_wrt_tm : lngen.
 
 Lemma tm_subst_tm_brs_close_brs_wrt_tm :
 forall brs1 a1 x1 x2,
@@ -7285,7 +7238,7 @@ forall brs1 a1 x1 x2,
   tm_subst_tm_brs a1 x1 (close_brs_wrt_tm x2 brs1) = close_brs_wrt_tm x2 (tm_subst_tm_brs a1 x1 brs1).
 Proof. Admitted.
 
-Hint Resolve tm_subst_tm_brs_close_brs_wrt_tm : lngen.
+#[export] Hint Resolve tm_subst_tm_brs_close_brs_wrt_tm : lngen.
 
 Lemma tm_subst_tm_co_close_co_wrt_tm :
 forall g1 a1 x1 x2,
@@ -7294,7 +7247,7 @@ forall g1 a1 x1 x2,
   tm_subst_tm_co a1 x1 (close_co_wrt_tm x2 g1) = close_co_wrt_tm x2 (tm_subst_tm_co a1 x1 g1).
 Proof. Admitted.
 
-Hint Resolve tm_subst_tm_co_close_co_wrt_tm : lngen.
+#[export] Hint Resolve tm_subst_tm_co_close_co_wrt_tm : lngen.
 
 Lemma tm_subst_tm_constraint_close_constraint_wrt_tm :
 forall phi1 a1 x1 x2,
@@ -7303,7 +7256,7 @@ forall phi1 a1 x1 x2,
   tm_subst_tm_constraint a1 x1 (close_constraint_wrt_tm x2 phi1) = close_constraint_wrt_tm x2 (tm_subst_tm_constraint a1 x1 phi1).
 Proof. Admitted.
 
-Hint Resolve tm_subst_tm_constraint_close_constraint_wrt_tm : lngen.
+#[export] Hint Resolve tm_subst_tm_constraint_close_constraint_wrt_tm : lngen.
 
 Lemma tm_subst_tm_tm_close_tm_wrt_co :
 forall a2 a1 c1 x1,
@@ -7311,7 +7264,7 @@ forall a2 a1 c1 x1,
   tm_subst_tm_tm a1 c1 (close_tm_wrt_co x1 a2) = close_tm_wrt_co x1 (tm_subst_tm_tm a1 c1 a2).
 Proof. Admitted.
 
-Hint Resolve tm_subst_tm_tm_close_tm_wrt_co : lngen.
+#[export] Hint Resolve tm_subst_tm_tm_close_tm_wrt_co : lngen.
 
 Lemma tm_subst_tm_brs_close_brs_wrt_co :
 forall brs1 a1 c1 x1,
@@ -7319,7 +7272,7 @@ forall brs1 a1 c1 x1,
   tm_subst_tm_brs a1 c1 (close_brs_wrt_co x1 brs1) = close_brs_wrt_co x1 (tm_subst_tm_brs a1 c1 brs1).
 Proof. Admitted.
 
-Hint Resolve tm_subst_tm_brs_close_brs_wrt_co : lngen.
+#[export] Hint Resolve tm_subst_tm_brs_close_brs_wrt_co : lngen.
 
 Lemma tm_subst_tm_co_close_co_wrt_co :
 forall g1 a1 c1 x1,
@@ -7327,7 +7280,7 @@ forall g1 a1 c1 x1,
   tm_subst_tm_co a1 c1 (close_co_wrt_co x1 g1) = close_co_wrt_co x1 (tm_subst_tm_co a1 c1 g1).
 Proof. Admitted.
 
-Hint Resolve tm_subst_tm_co_close_co_wrt_co : lngen.
+#[export] Hint Resolve tm_subst_tm_co_close_co_wrt_co : lngen.
 
 Lemma tm_subst_tm_constraint_close_constraint_wrt_co :
 forall phi1 a1 c1 x1,
@@ -7335,7 +7288,7 @@ forall phi1 a1 c1 x1,
   tm_subst_tm_constraint a1 c1 (close_constraint_wrt_co x1 phi1) = close_constraint_wrt_co x1 (tm_subst_tm_constraint a1 c1 phi1).
 Proof. Admitted.
 
-Hint Resolve tm_subst_tm_constraint_close_constraint_wrt_co : lngen.
+#[export] Hint Resolve tm_subst_tm_constraint_close_constraint_wrt_co : lngen.
 
 Lemma co_subst_co_tm_close_tm_wrt_tm :
 forall a1 g1 x1 c1,
@@ -7343,7 +7296,7 @@ forall a1 g1 x1 c1,
   co_subst_co_tm g1 x1 (close_tm_wrt_tm c1 a1) = close_tm_wrt_tm c1 (co_subst_co_tm g1 x1 a1).
 Proof. Admitted.
 
-Hint Resolve co_subst_co_tm_close_tm_wrt_tm : lngen.
+#[export] Hint Resolve co_subst_co_tm_close_tm_wrt_tm : lngen.
 
 Lemma co_subst_co_brs_close_brs_wrt_tm :
 forall brs1 g1 x1 c1,
@@ -7351,7 +7304,7 @@ forall brs1 g1 x1 c1,
   co_subst_co_brs g1 x1 (close_brs_wrt_tm c1 brs1) = close_brs_wrt_tm c1 (co_subst_co_brs g1 x1 brs1).
 Proof. Admitted.
 
-Hint Resolve co_subst_co_brs_close_brs_wrt_tm : lngen.
+#[export] Hint Resolve co_subst_co_brs_close_brs_wrt_tm : lngen.
 
 Lemma co_subst_co_co_close_co_wrt_tm :
 forall g2 g1 x1 c1,
@@ -7359,7 +7312,7 @@ forall g2 g1 x1 c1,
   co_subst_co_co g1 x1 (close_co_wrt_tm c1 g2) = close_co_wrt_tm c1 (co_subst_co_co g1 x1 g2).
 Proof. Admitted.
 
-Hint Resolve co_subst_co_co_close_co_wrt_tm : lngen.
+#[export] Hint Resolve co_subst_co_co_close_co_wrt_tm : lngen.
 
 Lemma co_subst_co_constraint_close_constraint_wrt_tm :
 forall phi1 g1 x1 c1,
@@ -7367,7 +7320,7 @@ forall phi1 g1 x1 c1,
   co_subst_co_constraint g1 x1 (close_constraint_wrt_tm c1 phi1) = close_constraint_wrt_tm c1 (co_subst_co_constraint g1 x1 phi1).
 Proof. Admitted.
 
-Hint Resolve co_subst_co_constraint_close_constraint_wrt_tm : lngen.
+#[export] Hint Resolve co_subst_co_constraint_close_constraint_wrt_tm : lngen.
 
 Lemma co_subst_co_tm_close_tm_wrt_co :
 forall a1 g1 c1 c2,
@@ -7376,7 +7329,7 @@ forall a1 g1 c1 c2,
   co_subst_co_tm g1 c1 (close_tm_wrt_co c2 a1) = close_tm_wrt_co c2 (co_subst_co_tm g1 c1 a1).
 Proof. Admitted.
 
-Hint Resolve co_subst_co_tm_close_tm_wrt_co : lngen.
+#[export] Hint Resolve co_subst_co_tm_close_tm_wrt_co : lngen.
 
 Lemma co_subst_co_brs_close_brs_wrt_co :
 forall brs1 g1 c1 c2,
@@ -7385,7 +7338,7 @@ forall brs1 g1 c1 c2,
   co_subst_co_brs g1 c1 (close_brs_wrt_co c2 brs1) = close_brs_wrt_co c2 (co_subst_co_brs g1 c1 brs1).
 Proof. Admitted.
 
-Hint Resolve co_subst_co_brs_close_brs_wrt_co : lngen.
+#[export] Hint Resolve co_subst_co_brs_close_brs_wrt_co : lngen.
 
 Lemma co_subst_co_co_close_co_wrt_co :
 forall g2 g1 c1 c2,
@@ -7394,7 +7347,7 @@ forall g2 g1 c1 c2,
   co_subst_co_co g1 c1 (close_co_wrt_co c2 g2) = close_co_wrt_co c2 (co_subst_co_co g1 c1 g2).
 Proof. Admitted.
 
-Hint Resolve co_subst_co_co_close_co_wrt_co : lngen.
+#[export] Hint Resolve co_subst_co_co_close_co_wrt_co : lngen.
 
 Lemma co_subst_co_constraint_close_constraint_wrt_co :
 forall phi1 g1 c1 c2,
@@ -7403,7 +7356,7 @@ forall phi1 g1 c1 c2,
   co_subst_co_constraint g1 c1 (close_constraint_wrt_co c2 phi1) = close_constraint_wrt_co c2 (co_subst_co_constraint g1 c1 phi1).
 Proof. Admitted.
 
-Hint Resolve co_subst_co_constraint_close_constraint_wrt_co : lngen.
+#[export] Hint Resolve co_subst_co_constraint_close_constraint_wrt_co : lngen.
 
 (* begin hide *)
 
@@ -7435,7 +7388,7 @@ forall a1 a2 x1 n1,
   degree_tm_wrt_tm n1 (tm_subst_tm_tm a2 x1 a1).
 Proof. Admitted.
 
-Hint Resolve tm_subst_tm_tm_degree_tm_wrt_tm : lngen.
+#[export] Hint Resolve tm_subst_tm_tm_degree_tm_wrt_tm : lngen.
 
 Lemma tm_subst_tm_brs_degree_brs_wrt_tm :
 forall brs1 a1 x1 n1,
@@ -7444,7 +7397,7 @@ forall brs1 a1 x1 n1,
   degree_brs_wrt_tm n1 (tm_subst_tm_brs a1 x1 brs1).
 Proof. Admitted.
 
-Hint Resolve tm_subst_tm_brs_degree_brs_wrt_tm : lngen.
+#[export] Hint Resolve tm_subst_tm_brs_degree_brs_wrt_tm : lngen.
 
 Lemma tm_subst_tm_co_degree_co_wrt_tm :
 forall g1 a1 x1 n1,
@@ -7453,7 +7406,7 @@ forall g1 a1 x1 n1,
   degree_co_wrt_tm n1 (tm_subst_tm_co a1 x1 g1).
 Proof. Admitted.
 
-Hint Resolve tm_subst_tm_co_degree_co_wrt_tm : lngen.
+#[export] Hint Resolve tm_subst_tm_co_degree_co_wrt_tm : lngen.
 
 Lemma tm_subst_tm_constraint_degree_constraint_wrt_tm :
 forall phi1 a1 x1 n1,
@@ -7462,7 +7415,7 @@ forall phi1 a1 x1 n1,
   degree_constraint_wrt_tm n1 (tm_subst_tm_constraint a1 x1 phi1).
 Proof. Admitted.
 
-Hint Resolve tm_subst_tm_constraint_degree_constraint_wrt_tm : lngen.
+#[export] Hint Resolve tm_subst_tm_constraint_degree_constraint_wrt_tm : lngen.
 
 (* begin hide *)
 
@@ -7494,7 +7447,7 @@ forall a1 a2 x1 n1,
   degree_tm_wrt_co n1 (tm_subst_tm_tm a2 x1 a1).
 Proof. Admitted.
 
-Hint Resolve tm_subst_tm_tm_degree_tm_wrt_co : lngen.
+#[export] Hint Resolve tm_subst_tm_tm_degree_tm_wrt_co : lngen.
 
 Lemma tm_subst_tm_brs_degree_brs_wrt_co :
 forall brs1 a1 x1 n1,
@@ -7503,7 +7456,7 @@ forall brs1 a1 x1 n1,
   degree_brs_wrt_co n1 (tm_subst_tm_brs a1 x1 brs1).
 Proof. Admitted.
 
-Hint Resolve tm_subst_tm_brs_degree_brs_wrt_co : lngen.
+#[export] Hint Resolve tm_subst_tm_brs_degree_brs_wrt_co : lngen.
 
 Lemma tm_subst_tm_co_degree_co_wrt_co :
 forall g1 a1 x1 n1,
@@ -7512,7 +7465,7 @@ forall g1 a1 x1 n1,
   degree_co_wrt_co n1 (tm_subst_tm_co a1 x1 g1).
 Proof. Admitted.
 
-Hint Resolve tm_subst_tm_co_degree_co_wrt_co : lngen.
+#[export] Hint Resolve tm_subst_tm_co_degree_co_wrt_co : lngen.
 
 Lemma tm_subst_tm_constraint_degree_constraint_wrt_co :
 forall phi1 a1 x1 n1,
@@ -7521,7 +7474,7 @@ forall phi1 a1 x1 n1,
   degree_constraint_wrt_co n1 (tm_subst_tm_constraint a1 x1 phi1).
 Proof. Admitted.
 
-Hint Resolve tm_subst_tm_constraint_degree_constraint_wrt_co : lngen.
+#[export] Hint Resolve tm_subst_tm_constraint_degree_constraint_wrt_co : lngen.
 
 (* begin hide *)
 
@@ -7553,7 +7506,7 @@ forall a1 g1 c1 n1,
   degree_tm_wrt_tm n1 (co_subst_co_tm g1 c1 a1).
 Proof. Admitted.
 
-Hint Resolve co_subst_co_tm_degree_tm_wrt_tm : lngen.
+#[export] Hint Resolve co_subst_co_tm_degree_tm_wrt_tm : lngen.
 
 Lemma co_subst_co_brs_degree_brs_wrt_tm :
 forall brs1 g1 c1 n1,
@@ -7562,7 +7515,7 @@ forall brs1 g1 c1 n1,
   degree_brs_wrt_tm n1 (co_subst_co_brs g1 c1 brs1).
 Proof. Admitted.
 
-Hint Resolve co_subst_co_brs_degree_brs_wrt_tm : lngen.
+#[export] Hint Resolve co_subst_co_brs_degree_brs_wrt_tm : lngen.
 
 Lemma co_subst_co_co_degree_co_wrt_tm :
 forall g1 g2 c1 n1,
@@ -7571,7 +7524,7 @@ forall g1 g2 c1 n1,
   degree_co_wrt_tm n1 (co_subst_co_co g2 c1 g1).
 Proof. Admitted.
 
-Hint Resolve co_subst_co_co_degree_co_wrt_tm : lngen.
+#[export] Hint Resolve co_subst_co_co_degree_co_wrt_tm : lngen.
 
 Lemma co_subst_co_constraint_degree_constraint_wrt_tm :
 forall phi1 g1 c1 n1,
@@ -7580,7 +7533,7 @@ forall phi1 g1 c1 n1,
   degree_constraint_wrt_tm n1 (co_subst_co_constraint g1 c1 phi1).
 Proof. Admitted.
 
-Hint Resolve co_subst_co_constraint_degree_constraint_wrt_tm : lngen.
+#[export] Hint Resolve co_subst_co_constraint_degree_constraint_wrt_tm : lngen.
 
 (* begin hide *)
 
@@ -7612,7 +7565,7 @@ forall a1 g1 c1 n1,
   degree_tm_wrt_co n1 (co_subst_co_tm g1 c1 a1).
 Proof. Admitted.
 
-Hint Resolve co_subst_co_tm_degree_tm_wrt_co : lngen.
+#[export] Hint Resolve co_subst_co_tm_degree_tm_wrt_co : lngen.
 
 Lemma co_subst_co_brs_degree_brs_wrt_co :
 forall brs1 g1 c1 n1,
@@ -7621,7 +7574,7 @@ forall brs1 g1 c1 n1,
   degree_brs_wrt_co n1 (co_subst_co_brs g1 c1 brs1).
 Proof. Admitted.
 
-Hint Resolve co_subst_co_brs_degree_brs_wrt_co : lngen.
+#[export] Hint Resolve co_subst_co_brs_degree_brs_wrt_co : lngen.
 
 Lemma co_subst_co_co_degree_co_wrt_co :
 forall g1 g2 c1 n1,
@@ -7630,7 +7583,7 @@ forall g1 g2 c1 n1,
   degree_co_wrt_co n1 (co_subst_co_co g2 c1 g1).
 Proof. Admitted.
 
-Hint Resolve co_subst_co_co_degree_co_wrt_co : lngen.
+#[export] Hint Resolve co_subst_co_co_degree_co_wrt_co : lngen.
 
 Lemma co_subst_co_constraint_degree_constraint_wrt_co :
 forall phi1 g1 c1 n1,
@@ -7639,7 +7592,7 @@ forall phi1 g1 c1 n1,
   degree_constraint_wrt_co n1 (co_subst_co_constraint g1 c1 phi1).
 Proof. Admitted.
 
-Hint Resolve co_subst_co_constraint_degree_constraint_wrt_co : lngen.
+#[export] Hint Resolve co_subst_co_constraint_degree_constraint_wrt_co : lngen.
 
 (* begin hide *)
 
@@ -7666,8 +7619,8 @@ forall a2 a1 x1,
   tm_subst_tm_tm a1 x1 a2 = a2.
 Proof. Admitted.
 
-Hint Resolve tm_subst_tm_tm_fresh_eq : lngen.
-Hint Rewrite tm_subst_tm_tm_fresh_eq using solve [auto] : lngen.
+#[export] Hint Resolve tm_subst_tm_tm_fresh_eq : lngen.
+#[export] Hint Rewrite tm_subst_tm_tm_fresh_eq using solve [auto] : lngen.
 
 Lemma tm_subst_tm_brs_fresh_eq :
 forall brs1 a1 x1,
@@ -7675,8 +7628,8 @@ forall brs1 a1 x1,
   tm_subst_tm_brs a1 x1 brs1 = brs1.
 Proof. Admitted.
 
-Hint Resolve tm_subst_tm_brs_fresh_eq : lngen.
-Hint Rewrite tm_subst_tm_brs_fresh_eq using solve [auto] : lngen.
+#[export] Hint Resolve tm_subst_tm_brs_fresh_eq : lngen.
+#[export] Hint Rewrite tm_subst_tm_brs_fresh_eq using solve [auto] : lngen.
 
 Lemma tm_subst_tm_co_fresh_eq :
 forall g1 a1 x1,
@@ -7684,8 +7637,8 @@ forall g1 a1 x1,
   tm_subst_tm_co a1 x1 g1 = g1.
 Proof. Admitted.
 
-Hint Resolve tm_subst_tm_co_fresh_eq : lngen.
-Hint Rewrite tm_subst_tm_co_fresh_eq using solve [auto] : lngen.
+#[export] Hint Resolve tm_subst_tm_co_fresh_eq : lngen.
+#[export] Hint Rewrite tm_subst_tm_co_fresh_eq using solve [auto] : lngen.
 
 Lemma tm_subst_tm_constraint_fresh_eq :
 forall phi1 a1 x1,
@@ -7693,8 +7646,8 @@ forall phi1 a1 x1,
   tm_subst_tm_constraint a1 x1 phi1 = phi1.
 Proof. Admitted.
 
-Hint Resolve tm_subst_tm_constraint_fresh_eq : lngen.
-Hint Rewrite tm_subst_tm_constraint_fresh_eq using solve [auto] : lngen.
+#[export] Hint Resolve tm_subst_tm_constraint_fresh_eq : lngen.
+#[export] Hint Rewrite tm_subst_tm_constraint_fresh_eq using solve [auto] : lngen.
 
 (* begin hide *)
 
@@ -7721,8 +7674,8 @@ forall a1 g1 c1,
   co_subst_co_tm g1 c1 a1 = a1.
 Proof. Admitted.
 
-Hint Resolve co_subst_co_tm_fresh_eq : lngen.
-Hint Rewrite co_subst_co_tm_fresh_eq using solve [auto] : lngen.
+#[export] Hint Resolve co_subst_co_tm_fresh_eq : lngen.
+#[export] Hint Rewrite co_subst_co_tm_fresh_eq using solve [auto] : lngen.
 
 Lemma co_subst_co_brs_fresh_eq :
 forall brs1 g1 c1,
@@ -7730,8 +7683,8 @@ forall brs1 g1 c1,
   co_subst_co_brs g1 c1 brs1 = brs1.
 Proof. Admitted.
 
-Hint Resolve co_subst_co_brs_fresh_eq : lngen.
-Hint Rewrite co_subst_co_brs_fresh_eq using solve [auto] : lngen.
+#[export] Hint Resolve co_subst_co_brs_fresh_eq : lngen.
+#[export] Hint Rewrite co_subst_co_brs_fresh_eq using solve [auto] : lngen.
 
 Lemma co_subst_co_co_fresh_eq :
 forall g2 g1 c1,
@@ -7739,8 +7692,8 @@ forall g2 g1 c1,
   co_subst_co_co g1 c1 g2 = g2.
 Proof. Admitted.
 
-Hint Resolve co_subst_co_co_fresh_eq : lngen.
-Hint Rewrite co_subst_co_co_fresh_eq using solve [auto] : lngen.
+#[export] Hint Resolve co_subst_co_co_fresh_eq : lngen.
+#[export] Hint Rewrite co_subst_co_co_fresh_eq using solve [auto] : lngen.
 
 Lemma co_subst_co_constraint_fresh_eq :
 forall phi1 g1 c1,
@@ -7748,8 +7701,8 @@ forall phi1 g1 c1,
   co_subst_co_constraint g1 c1 phi1 = phi1.
 Proof. Admitted.
 
-Hint Resolve co_subst_co_constraint_fresh_eq : lngen.
-Hint Rewrite co_subst_co_constraint_fresh_eq using solve [auto] : lngen.
+#[export] Hint Resolve co_subst_co_constraint_fresh_eq : lngen.
+#[export] Hint Rewrite co_subst_co_constraint_fresh_eq using solve [auto] : lngen.
 
 (* begin hide *)
 
@@ -7776,7 +7729,7 @@ forall a2 a1 x1,
   x1 `notin` fv_tm_tm_tm (tm_subst_tm_tm a1 x1 a2).
 Proof. Admitted.
 
-Hint Resolve tm_subst_tm_tm_fresh_same : lngen.
+#[export] Hint Resolve tm_subst_tm_tm_fresh_same : lngen.
 
 Lemma tm_subst_tm_brs_fresh_same :
 forall brs1 a1 x1,
@@ -7784,7 +7737,7 @@ forall brs1 a1 x1,
   x1 `notin` fv_tm_tm_brs (tm_subst_tm_brs a1 x1 brs1).
 Proof. Admitted.
 
-Hint Resolve tm_subst_tm_brs_fresh_same : lngen.
+#[export] Hint Resolve tm_subst_tm_brs_fresh_same : lngen.
 
 Lemma tm_subst_tm_co_fresh_same :
 forall g1 a1 x1,
@@ -7792,7 +7745,7 @@ forall g1 a1 x1,
   x1 `notin` fv_tm_tm_co (tm_subst_tm_co a1 x1 g1).
 Proof. Admitted.
 
-Hint Resolve tm_subst_tm_co_fresh_same : lngen.
+#[export] Hint Resolve tm_subst_tm_co_fresh_same : lngen.
 
 Lemma tm_subst_tm_constraint_fresh_same :
 forall phi1 a1 x1,
@@ -7800,7 +7753,7 @@ forall phi1 a1 x1,
   x1 `notin` fv_tm_tm_constraint (tm_subst_tm_constraint a1 x1 phi1).
 Proof. Admitted.
 
-Hint Resolve tm_subst_tm_constraint_fresh_same : lngen.
+#[export] Hint Resolve tm_subst_tm_constraint_fresh_same : lngen.
 
 (* begin hide *)
 
@@ -7827,7 +7780,7 @@ forall a1 g1 c1,
   c1 `notin` fv_co_co_tm (co_subst_co_tm g1 c1 a1).
 Proof. Admitted.
 
-Hint Resolve co_subst_co_tm_fresh_same : lngen.
+#[export] Hint Resolve co_subst_co_tm_fresh_same : lngen.
 
 Lemma co_subst_co_brs_fresh_same :
 forall brs1 g1 c1,
@@ -7835,7 +7788,7 @@ forall brs1 g1 c1,
   c1 `notin` fv_co_co_brs (co_subst_co_brs g1 c1 brs1).
 Proof. Admitted.
 
-Hint Resolve co_subst_co_brs_fresh_same : lngen.
+#[export] Hint Resolve co_subst_co_brs_fresh_same : lngen.
 
 Lemma co_subst_co_co_fresh_same :
 forall g2 g1 c1,
@@ -7843,7 +7796,7 @@ forall g2 g1 c1,
   c1 `notin` fv_co_co_co (co_subst_co_co g1 c1 g2).
 Proof. Admitted.
 
-Hint Resolve co_subst_co_co_fresh_same : lngen.
+#[export] Hint Resolve co_subst_co_co_fresh_same : lngen.
 
 Lemma co_subst_co_constraint_fresh_same :
 forall phi1 g1 c1,
@@ -7851,7 +7804,7 @@ forall phi1 g1 c1,
   c1 `notin` fv_co_co_constraint (co_subst_co_constraint g1 c1 phi1).
 Proof. Admitted.
 
-Hint Resolve co_subst_co_constraint_fresh_same : lngen.
+#[export] Hint Resolve co_subst_co_constraint_fresh_same : lngen.
 
 (* begin hide *)
 
@@ -7883,7 +7836,7 @@ forall a2 a1 x1 x2,
   x1 `notin` fv_tm_tm_tm (tm_subst_tm_tm a1 x2 a2).
 Proof. Admitted.
 
-Hint Resolve tm_subst_tm_tm_fresh : lngen.
+#[export] Hint Resolve tm_subst_tm_tm_fresh : lngen.
 
 Lemma tm_subst_tm_brs_fresh :
 forall brs1 a1 x1 x2,
@@ -7892,7 +7845,7 @@ forall brs1 a1 x1 x2,
   x1 `notin` fv_tm_tm_brs (tm_subst_tm_brs a1 x2 brs1).
 Proof. Admitted.
 
-Hint Resolve tm_subst_tm_brs_fresh : lngen.
+#[export] Hint Resolve tm_subst_tm_brs_fresh : lngen.
 
 Lemma tm_subst_tm_co_fresh :
 forall g1 a1 x1 x2,
@@ -7901,7 +7854,7 @@ forall g1 a1 x1 x2,
   x1 `notin` fv_tm_tm_co (tm_subst_tm_co a1 x2 g1).
 Proof. Admitted.
 
-Hint Resolve tm_subst_tm_co_fresh : lngen.
+#[export] Hint Resolve tm_subst_tm_co_fresh : lngen.
 
 Lemma tm_subst_tm_constraint_fresh :
 forall phi1 a1 x1 x2,
@@ -7910,7 +7863,7 @@ forall phi1 a1 x1 x2,
   x1 `notin` fv_tm_tm_constraint (tm_subst_tm_constraint a1 x2 phi1).
 Proof. Admitted.
 
-Hint Resolve tm_subst_tm_constraint_fresh : lngen.
+#[export] Hint Resolve tm_subst_tm_constraint_fresh : lngen.
 
 (* begin hide *)
 
@@ -7942,7 +7895,7 @@ forall a1 g1 c1 c2,
   c1 `notin` fv_co_co_tm (co_subst_co_tm g1 c2 a1).
 Proof. Admitted.
 
-Hint Resolve co_subst_co_tm_fresh : lngen.
+#[export] Hint Resolve co_subst_co_tm_fresh : lngen.
 
 Lemma co_subst_co_brs_fresh :
 forall brs1 g1 c1 c2,
@@ -7951,7 +7904,7 @@ forall brs1 g1 c1 c2,
   c1 `notin` fv_co_co_brs (co_subst_co_brs g1 c2 brs1).
 Proof. Admitted.
 
-Hint Resolve co_subst_co_brs_fresh : lngen.
+#[export] Hint Resolve co_subst_co_brs_fresh : lngen.
 
 Lemma co_subst_co_co_fresh :
 forall g2 g1 c1 c2,
@@ -7960,7 +7913,7 @@ forall g2 g1 c1 c2,
   c1 `notin` fv_co_co_co (co_subst_co_co g1 c2 g2).
 Proof. Admitted.
 
-Hint Resolve co_subst_co_co_fresh : lngen.
+#[export] Hint Resolve co_subst_co_co_fresh : lngen.
 
 Lemma co_subst_co_constraint_fresh :
 forall phi1 g1 c1 c2,
@@ -7969,7 +7922,7 @@ forall phi1 g1 c1 c2,
   c1 `notin` fv_co_co_constraint (co_subst_co_constraint g1 c2 phi1).
 Proof. Admitted.
 
-Hint Resolve co_subst_co_constraint_fresh : lngen.
+#[export] Hint Resolve co_subst_co_constraint_fresh : lngen.
 
 Lemma tm_subst_tm_tm_lc_tm :
 forall a1 a2 x1,
@@ -7978,7 +7931,7 @@ forall a1 a2 x1,
   lc_tm (tm_subst_tm_tm a2 x1 a1).
 Proof. Admitted.
 
-Hint Resolve tm_subst_tm_tm_lc_tm : lngen.
+#[export] Hint Resolve tm_subst_tm_tm_lc_tm : lngen.
 
 Lemma tm_subst_tm_brs_lc_brs :
 forall brs1 a1 x1,
@@ -7987,7 +7940,7 @@ forall brs1 a1 x1,
   lc_brs (tm_subst_tm_brs a1 x1 brs1).
 Proof. Admitted.
 
-Hint Resolve tm_subst_tm_brs_lc_brs : lngen.
+#[export] Hint Resolve tm_subst_tm_brs_lc_brs : lngen.
 
 Lemma tm_subst_tm_co_lc_co :
 forall g1 a1 x1,
@@ -7996,7 +7949,7 @@ forall g1 a1 x1,
   lc_co (tm_subst_tm_co a1 x1 g1).
 Proof. Admitted.
 
-Hint Resolve tm_subst_tm_co_lc_co : lngen.
+#[export] Hint Resolve tm_subst_tm_co_lc_co : lngen.
 
 Lemma tm_subst_tm_constraint_lc_constraint :
 forall phi1 a1 x1,
@@ -8005,7 +7958,7 @@ forall phi1 a1 x1,
   lc_constraint (tm_subst_tm_constraint a1 x1 phi1).
 Proof. Admitted.
 
-Hint Resolve tm_subst_tm_constraint_lc_constraint : lngen.
+#[export] Hint Resolve tm_subst_tm_constraint_lc_constraint : lngen.
 
 Lemma co_subst_co_tm_lc_tm :
 forall a1 g1 c1,
@@ -8014,7 +7967,7 @@ forall a1 g1 c1,
   lc_tm (co_subst_co_tm g1 c1 a1).
 Proof. Admitted.
 
-Hint Resolve co_subst_co_tm_lc_tm : lngen.
+#[export] Hint Resolve co_subst_co_tm_lc_tm : lngen.
 
 Lemma co_subst_co_brs_lc_brs :
 forall brs1 g1 c1,
@@ -8023,7 +7976,7 @@ forall brs1 g1 c1,
   lc_brs (co_subst_co_brs g1 c1 brs1).
 Proof. Admitted.
 
-Hint Resolve co_subst_co_brs_lc_brs : lngen.
+#[export] Hint Resolve co_subst_co_brs_lc_brs : lngen.
 
 Lemma co_subst_co_co_lc_co :
 forall g1 g2 c1,
@@ -8032,7 +7985,7 @@ forall g1 g2 c1,
   lc_co (co_subst_co_co g2 c1 g1).
 Proof. Admitted.
 
-Hint Resolve co_subst_co_co_lc_co : lngen.
+#[export] Hint Resolve co_subst_co_co_lc_co : lngen.
 
 Lemma co_subst_co_constraint_lc_constraint :
 forall phi1 g1 c1,
@@ -8041,7 +7994,7 @@ forall phi1 g1 c1,
   lc_constraint (co_subst_co_constraint g1 c1 phi1).
 Proof. Admitted.
 
-Hint Resolve co_subst_co_constraint_lc_constraint : lngen.
+#[export] Hint Resolve co_subst_co_constraint_lc_constraint : lngen.
 
 (* begin hide *)
 
@@ -8070,7 +8023,7 @@ forall a3 a1 a2 x1 n1,
   tm_subst_tm_tm a1 x1 (open_tm_wrt_tm_rec n1 a2 a3) = open_tm_wrt_tm_rec n1 (tm_subst_tm_tm a1 x1 a2) (tm_subst_tm_tm a1 x1 a3).
 Proof. Admitted.
 
-Hint Resolve tm_subst_tm_tm_open_tm_wrt_tm_rec : lngen.
+#[export] Hint Resolve tm_subst_tm_tm_open_tm_wrt_tm_rec : lngen.
 
 (* end hide *)
 
@@ -8082,7 +8035,7 @@ forall brs1 a1 a2 x1 n1,
   tm_subst_tm_brs a1 x1 (open_brs_wrt_tm_rec n1 a2 brs1) = open_brs_wrt_tm_rec n1 (tm_subst_tm_tm a1 x1 a2) (tm_subst_tm_brs a1 x1 brs1).
 Proof. Admitted.
 
-Hint Resolve tm_subst_tm_brs_open_brs_wrt_tm_rec : lngen.
+#[export] Hint Resolve tm_subst_tm_brs_open_brs_wrt_tm_rec : lngen.
 
 (* end hide *)
 
@@ -8094,7 +8047,7 @@ forall g1 a1 a2 x1 n1,
   tm_subst_tm_co a1 x1 (open_co_wrt_tm_rec n1 a2 g1) = open_co_wrt_tm_rec n1 (tm_subst_tm_tm a1 x1 a2) (tm_subst_tm_co a1 x1 g1).
 Proof. Admitted.
 
-Hint Resolve tm_subst_tm_co_open_co_wrt_tm_rec : lngen.
+#[export] Hint Resolve tm_subst_tm_co_open_co_wrt_tm_rec : lngen.
 
 (* end hide *)
 
@@ -8106,7 +8059,7 @@ forall phi1 a1 a2 x1 n1,
   tm_subst_tm_constraint a1 x1 (open_constraint_wrt_tm_rec n1 a2 phi1) = open_constraint_wrt_tm_rec n1 (tm_subst_tm_tm a1 x1 a2) (tm_subst_tm_constraint a1 x1 phi1).
 Proof. Admitted.
 
-Hint Resolve tm_subst_tm_constraint_open_constraint_wrt_tm_rec : lngen.
+#[export] Hint Resolve tm_subst_tm_constraint_open_constraint_wrt_tm_rec : lngen.
 
 (* end hide *)
 
@@ -8137,7 +8090,7 @@ forall a2 a1 g1 x1 n1,
   tm_subst_tm_tm a1 x1 (open_tm_wrt_co_rec n1 g1 a2) = open_tm_wrt_co_rec n1 (tm_subst_tm_co a1 x1 g1) (tm_subst_tm_tm a1 x1 a2).
 Proof. Admitted.
 
-Hint Resolve tm_subst_tm_tm_open_tm_wrt_co_rec : lngen.
+#[export] Hint Resolve tm_subst_tm_tm_open_tm_wrt_co_rec : lngen.
 
 (* end hide *)
 
@@ -8149,7 +8102,7 @@ forall brs1 a1 g1 x1 n1,
   tm_subst_tm_brs a1 x1 (open_brs_wrt_co_rec n1 g1 brs1) = open_brs_wrt_co_rec n1 (tm_subst_tm_co a1 x1 g1) (tm_subst_tm_brs a1 x1 brs1).
 Proof. Admitted.
 
-Hint Resolve tm_subst_tm_brs_open_brs_wrt_co_rec : lngen.
+#[export] Hint Resolve tm_subst_tm_brs_open_brs_wrt_co_rec : lngen.
 
 (* end hide *)
 
@@ -8161,7 +8114,7 @@ forall g2 a1 g1 x1 n1,
   tm_subst_tm_co a1 x1 (open_co_wrt_co_rec n1 g1 g2) = open_co_wrt_co_rec n1 (tm_subst_tm_co a1 x1 g1) (tm_subst_tm_co a1 x1 g2).
 Proof. Admitted.
 
-Hint Resolve tm_subst_tm_co_open_co_wrt_co_rec : lngen.
+#[export] Hint Resolve tm_subst_tm_co_open_co_wrt_co_rec : lngen.
 
 (* end hide *)
 
@@ -8173,7 +8126,7 @@ forall phi1 a1 g1 x1 n1,
   tm_subst_tm_constraint a1 x1 (open_constraint_wrt_co_rec n1 g1 phi1) = open_constraint_wrt_co_rec n1 (tm_subst_tm_co a1 x1 g1) (tm_subst_tm_constraint a1 x1 phi1).
 Proof. Admitted.
 
-Hint Resolve tm_subst_tm_constraint_open_constraint_wrt_co_rec : lngen.
+#[export] Hint Resolve tm_subst_tm_constraint_open_constraint_wrt_co_rec : lngen.
 
 (* end hide *)
 
@@ -8204,7 +8157,7 @@ forall a2 g1 a1 c1 n1,
   co_subst_co_tm g1 c1 (open_tm_wrt_tm_rec n1 a1 a2) = open_tm_wrt_tm_rec n1 (co_subst_co_tm g1 c1 a1) (co_subst_co_tm g1 c1 a2).
 Proof. Admitted.
 
-Hint Resolve co_subst_co_tm_open_tm_wrt_tm_rec : lngen.
+#[export] Hint Resolve co_subst_co_tm_open_tm_wrt_tm_rec : lngen.
 
 (* end hide *)
 
@@ -8216,7 +8169,7 @@ forall brs1 g1 a1 c1 n1,
   co_subst_co_brs g1 c1 (open_brs_wrt_tm_rec n1 a1 brs1) = open_brs_wrt_tm_rec n1 (co_subst_co_tm g1 c1 a1) (co_subst_co_brs g1 c1 brs1).
 Proof. Admitted.
 
-Hint Resolve co_subst_co_brs_open_brs_wrt_tm_rec : lngen.
+#[export] Hint Resolve co_subst_co_brs_open_brs_wrt_tm_rec : lngen.
 
 (* end hide *)
 
@@ -8228,7 +8181,7 @@ forall g2 g1 a1 c1 n1,
   co_subst_co_co g1 c1 (open_co_wrt_tm_rec n1 a1 g2) = open_co_wrt_tm_rec n1 (co_subst_co_tm g1 c1 a1) (co_subst_co_co g1 c1 g2).
 Proof. Admitted.
 
-Hint Resolve co_subst_co_co_open_co_wrt_tm_rec : lngen.
+#[export] Hint Resolve co_subst_co_co_open_co_wrt_tm_rec : lngen.
 
 (* end hide *)
 
@@ -8240,7 +8193,7 @@ forall phi1 g1 a1 c1 n1,
   co_subst_co_constraint g1 c1 (open_constraint_wrt_tm_rec n1 a1 phi1) = open_constraint_wrt_tm_rec n1 (co_subst_co_tm g1 c1 a1) (co_subst_co_constraint g1 c1 phi1).
 Proof. Admitted.
 
-Hint Resolve co_subst_co_constraint_open_constraint_wrt_tm_rec : lngen.
+#[export] Hint Resolve co_subst_co_constraint_open_constraint_wrt_tm_rec : lngen.
 
 (* end hide *)
 
@@ -8271,7 +8224,7 @@ forall a1 g1 g2 c1 n1,
   co_subst_co_tm g1 c1 (open_tm_wrt_co_rec n1 g2 a1) = open_tm_wrt_co_rec n1 (co_subst_co_co g1 c1 g2) (co_subst_co_tm g1 c1 a1).
 Proof. Admitted.
 
-Hint Resolve co_subst_co_tm_open_tm_wrt_co_rec : lngen.
+#[export] Hint Resolve co_subst_co_tm_open_tm_wrt_co_rec : lngen.
 
 (* end hide *)
 
@@ -8283,7 +8236,7 @@ forall brs1 g1 g2 c1 n1,
   co_subst_co_brs g1 c1 (open_brs_wrt_co_rec n1 g2 brs1) = open_brs_wrt_co_rec n1 (co_subst_co_co g1 c1 g2) (co_subst_co_brs g1 c1 brs1).
 Proof. Admitted.
 
-Hint Resolve co_subst_co_brs_open_brs_wrt_co_rec : lngen.
+#[export] Hint Resolve co_subst_co_brs_open_brs_wrt_co_rec : lngen.
 
 (* end hide *)
 
@@ -8295,7 +8248,7 @@ forall g3 g1 g2 c1 n1,
   co_subst_co_co g1 c1 (open_co_wrt_co_rec n1 g2 g3) = open_co_wrt_co_rec n1 (co_subst_co_co g1 c1 g2) (co_subst_co_co g1 c1 g3).
 Proof. Admitted.
 
-Hint Resolve co_subst_co_co_open_co_wrt_co_rec : lngen.
+#[export] Hint Resolve co_subst_co_co_open_co_wrt_co_rec : lngen.
 
 (* end hide *)
 
@@ -8307,7 +8260,7 @@ forall phi1 g1 g2 c1 n1,
   co_subst_co_constraint g1 c1 (open_constraint_wrt_co_rec n1 g2 phi1) = open_constraint_wrt_co_rec n1 (co_subst_co_co g1 c1 g2) (co_subst_co_constraint g1 c1 phi1).
 Proof. Admitted.
 
-Hint Resolve co_subst_co_constraint_open_constraint_wrt_co_rec : lngen.
+#[export] Hint Resolve co_subst_co_constraint_open_constraint_wrt_co_rec : lngen.
 
 (* end hide *)
 
@@ -8317,7 +8270,7 @@ forall a3 a1 a2 x1,
   tm_subst_tm_tm a1 x1 (open_tm_wrt_tm a3 a2) = open_tm_wrt_tm (tm_subst_tm_tm a1 x1 a3) (tm_subst_tm_tm a1 x1 a2).
 Proof. Admitted.
 
-Hint Resolve tm_subst_tm_tm_open_tm_wrt_tm : lngen.
+#[export] Hint Resolve tm_subst_tm_tm_open_tm_wrt_tm : lngen.
 
 Lemma tm_subst_tm_brs_open_brs_wrt_tm :
 forall brs1 a1 a2 x1,
@@ -8325,7 +8278,7 @@ forall brs1 a1 a2 x1,
   tm_subst_tm_brs a1 x1 (open_brs_wrt_tm brs1 a2) = open_brs_wrt_tm (tm_subst_tm_brs a1 x1 brs1) (tm_subst_tm_tm a1 x1 a2).
 Proof. Admitted.
 
-Hint Resolve tm_subst_tm_brs_open_brs_wrt_tm : lngen.
+#[export] Hint Resolve tm_subst_tm_brs_open_brs_wrt_tm : lngen.
 
 Lemma tm_subst_tm_co_open_co_wrt_tm :
 forall g1 a1 a2 x1,
@@ -8333,7 +8286,7 @@ forall g1 a1 a2 x1,
   tm_subst_tm_co a1 x1 (open_co_wrt_tm g1 a2) = open_co_wrt_tm (tm_subst_tm_co a1 x1 g1) (tm_subst_tm_tm a1 x1 a2).
 Proof. Admitted.
 
-Hint Resolve tm_subst_tm_co_open_co_wrt_tm : lngen.
+#[export] Hint Resolve tm_subst_tm_co_open_co_wrt_tm : lngen.
 
 Lemma tm_subst_tm_constraint_open_constraint_wrt_tm :
 forall phi1 a1 a2 x1,
@@ -8341,7 +8294,7 @@ forall phi1 a1 a2 x1,
   tm_subst_tm_constraint a1 x1 (open_constraint_wrt_tm phi1 a2) = open_constraint_wrt_tm (tm_subst_tm_constraint a1 x1 phi1) (tm_subst_tm_tm a1 x1 a2).
 Proof. Admitted.
 
-Hint Resolve tm_subst_tm_constraint_open_constraint_wrt_tm : lngen.
+#[export] Hint Resolve tm_subst_tm_constraint_open_constraint_wrt_tm : lngen.
 
 Lemma tm_subst_tm_tm_open_tm_wrt_co :
 forall a2 a1 g1 x1,
@@ -8349,7 +8302,7 @@ forall a2 a1 g1 x1,
   tm_subst_tm_tm a1 x1 (open_tm_wrt_co a2 g1) = open_tm_wrt_co (tm_subst_tm_tm a1 x1 a2) (tm_subst_tm_co a1 x1 g1).
 Proof. Admitted.
 
-Hint Resolve tm_subst_tm_tm_open_tm_wrt_co : lngen.
+#[export] Hint Resolve tm_subst_tm_tm_open_tm_wrt_co : lngen.
 
 Lemma tm_subst_tm_brs_open_brs_wrt_co :
 forall brs1 a1 g1 x1,
@@ -8357,7 +8310,7 @@ forall brs1 a1 g1 x1,
   tm_subst_tm_brs a1 x1 (open_brs_wrt_co brs1 g1) = open_brs_wrt_co (tm_subst_tm_brs a1 x1 brs1) (tm_subst_tm_co a1 x1 g1).
 Proof. Admitted.
 
-Hint Resolve tm_subst_tm_brs_open_brs_wrt_co : lngen.
+#[export] Hint Resolve tm_subst_tm_brs_open_brs_wrt_co : lngen.
 
 Lemma tm_subst_tm_co_open_co_wrt_co :
 forall g2 a1 g1 x1,
@@ -8365,7 +8318,7 @@ forall g2 a1 g1 x1,
   tm_subst_tm_co a1 x1 (open_co_wrt_co g2 g1) = open_co_wrt_co (tm_subst_tm_co a1 x1 g2) (tm_subst_tm_co a1 x1 g1).
 Proof. Admitted.
 
-Hint Resolve tm_subst_tm_co_open_co_wrt_co : lngen.
+#[export] Hint Resolve tm_subst_tm_co_open_co_wrt_co : lngen.
 
 Lemma tm_subst_tm_constraint_open_constraint_wrt_co :
 forall phi1 a1 g1 x1,
@@ -8373,7 +8326,7 @@ forall phi1 a1 g1 x1,
   tm_subst_tm_constraint a1 x1 (open_constraint_wrt_co phi1 g1) = open_constraint_wrt_co (tm_subst_tm_constraint a1 x1 phi1) (tm_subst_tm_co a1 x1 g1).
 Proof. Admitted.
 
-Hint Resolve tm_subst_tm_constraint_open_constraint_wrt_co : lngen.
+#[export] Hint Resolve tm_subst_tm_constraint_open_constraint_wrt_co : lngen.
 
 Lemma co_subst_co_tm_open_tm_wrt_tm :
 forall a2 g1 a1 c1,
@@ -8381,7 +8334,7 @@ forall a2 g1 a1 c1,
   co_subst_co_tm g1 c1 (open_tm_wrt_tm a2 a1) = open_tm_wrt_tm (co_subst_co_tm g1 c1 a2) (co_subst_co_tm g1 c1 a1).
 Proof. Admitted.
 
-Hint Resolve co_subst_co_tm_open_tm_wrt_tm : lngen.
+#[export] Hint Resolve co_subst_co_tm_open_tm_wrt_tm : lngen.
 
 Lemma co_subst_co_brs_open_brs_wrt_tm :
 forall brs1 g1 a1 c1,
@@ -8389,7 +8342,7 @@ forall brs1 g1 a1 c1,
   co_subst_co_brs g1 c1 (open_brs_wrt_tm brs1 a1) = open_brs_wrt_tm (co_subst_co_brs g1 c1 brs1) (co_subst_co_tm g1 c1 a1).
 Proof. Admitted.
 
-Hint Resolve co_subst_co_brs_open_brs_wrt_tm : lngen.
+#[export] Hint Resolve co_subst_co_brs_open_brs_wrt_tm : lngen.
 
 Lemma co_subst_co_co_open_co_wrt_tm :
 forall g2 g1 a1 c1,
@@ -8397,7 +8350,7 @@ forall g2 g1 a1 c1,
   co_subst_co_co g1 c1 (open_co_wrt_tm g2 a1) = open_co_wrt_tm (co_subst_co_co g1 c1 g2) (co_subst_co_tm g1 c1 a1).
 Proof. Admitted.
 
-Hint Resolve co_subst_co_co_open_co_wrt_tm : lngen.
+#[export] Hint Resolve co_subst_co_co_open_co_wrt_tm : lngen.
 
 Lemma co_subst_co_constraint_open_constraint_wrt_tm :
 forall phi1 g1 a1 c1,
@@ -8405,7 +8358,7 @@ forall phi1 g1 a1 c1,
   co_subst_co_constraint g1 c1 (open_constraint_wrt_tm phi1 a1) = open_constraint_wrt_tm (co_subst_co_constraint g1 c1 phi1) (co_subst_co_tm g1 c1 a1).
 Proof. Admitted.
 
-Hint Resolve co_subst_co_constraint_open_constraint_wrt_tm : lngen.
+#[export] Hint Resolve co_subst_co_constraint_open_constraint_wrt_tm : lngen.
 
 Lemma co_subst_co_tm_open_tm_wrt_co :
 forall a1 g1 g2 c1,
@@ -8413,7 +8366,7 @@ forall a1 g1 g2 c1,
   co_subst_co_tm g1 c1 (open_tm_wrt_co a1 g2) = open_tm_wrt_co (co_subst_co_tm g1 c1 a1) (co_subst_co_co g1 c1 g2).
 Proof. Admitted.
 
-Hint Resolve co_subst_co_tm_open_tm_wrt_co : lngen.
+#[export] Hint Resolve co_subst_co_tm_open_tm_wrt_co : lngen.
 
 Lemma co_subst_co_brs_open_brs_wrt_co :
 forall brs1 g1 g2 c1,
@@ -8421,7 +8374,7 @@ forall brs1 g1 g2 c1,
   co_subst_co_brs g1 c1 (open_brs_wrt_co brs1 g2) = open_brs_wrt_co (co_subst_co_brs g1 c1 brs1) (co_subst_co_co g1 c1 g2).
 Proof. Admitted.
 
-Hint Resolve co_subst_co_brs_open_brs_wrt_co : lngen.
+#[export] Hint Resolve co_subst_co_brs_open_brs_wrt_co : lngen.
 
 Lemma co_subst_co_co_open_co_wrt_co :
 forall g3 g1 g2 c1,
@@ -8429,7 +8382,7 @@ forall g3 g1 g2 c1,
   co_subst_co_co g1 c1 (open_co_wrt_co g3 g2) = open_co_wrt_co (co_subst_co_co g1 c1 g3) (co_subst_co_co g1 c1 g2).
 Proof. Admitted.
 
-Hint Resolve co_subst_co_co_open_co_wrt_co : lngen.
+#[export] Hint Resolve co_subst_co_co_open_co_wrt_co : lngen.
 
 Lemma co_subst_co_constraint_open_constraint_wrt_co :
 forall phi1 g1 g2 c1,
@@ -8437,7 +8390,7 @@ forall phi1 g1 g2 c1,
   co_subst_co_constraint g1 c1 (open_constraint_wrt_co phi1 g2) = open_constraint_wrt_co (co_subst_co_constraint g1 c1 phi1) (co_subst_co_co g1 c1 g2).
 Proof. Admitted.
 
-Hint Resolve co_subst_co_constraint_open_constraint_wrt_co : lngen.
+#[export] Hint Resolve co_subst_co_constraint_open_constraint_wrt_co : lngen.
 
 Lemma tm_subst_tm_tm_open_tm_wrt_tm_var :
 forall a2 a1 x1 x2,
@@ -8446,7 +8399,7 @@ forall a2 a1 x1 x2,
   open_tm_wrt_tm (tm_subst_tm_tm a1 x1 a2) (a_Var_f x2) = tm_subst_tm_tm a1 x1 (open_tm_wrt_tm a2 (a_Var_f x2)).
 Proof. Admitted.
 
-Hint Resolve tm_subst_tm_tm_open_tm_wrt_tm_var : lngen.
+#[export] Hint Resolve tm_subst_tm_tm_open_tm_wrt_tm_var : lngen.
 
 Lemma tm_subst_tm_brs_open_brs_wrt_tm_var :
 forall brs1 a1 x1 x2,
@@ -8455,7 +8408,7 @@ forall brs1 a1 x1 x2,
   open_brs_wrt_tm (tm_subst_tm_brs a1 x1 brs1) (a_Var_f x2) = tm_subst_tm_brs a1 x1 (open_brs_wrt_tm brs1 (a_Var_f x2)).
 Proof. Admitted.
 
-Hint Resolve tm_subst_tm_brs_open_brs_wrt_tm_var : lngen.
+#[export] Hint Resolve tm_subst_tm_brs_open_brs_wrt_tm_var : lngen.
 
 Lemma tm_subst_tm_co_open_co_wrt_tm_var :
 forall g1 a1 x1 x2,
@@ -8464,7 +8417,7 @@ forall g1 a1 x1 x2,
   open_co_wrt_tm (tm_subst_tm_co a1 x1 g1) (a_Var_f x2) = tm_subst_tm_co a1 x1 (open_co_wrt_tm g1 (a_Var_f x2)).
 Proof. Admitted.
 
-Hint Resolve tm_subst_tm_co_open_co_wrt_tm_var : lngen.
+#[export] Hint Resolve tm_subst_tm_co_open_co_wrt_tm_var : lngen.
 
 Lemma tm_subst_tm_constraint_open_constraint_wrt_tm_var :
 forall phi1 a1 x1 x2,
@@ -8473,7 +8426,7 @@ forall phi1 a1 x1 x2,
   open_constraint_wrt_tm (tm_subst_tm_constraint a1 x1 phi1) (a_Var_f x2) = tm_subst_tm_constraint a1 x1 (open_constraint_wrt_tm phi1 (a_Var_f x2)).
 Proof. Admitted.
 
-Hint Resolve tm_subst_tm_constraint_open_constraint_wrt_tm_var : lngen.
+#[export] Hint Resolve tm_subst_tm_constraint_open_constraint_wrt_tm_var : lngen.
 
 Lemma tm_subst_tm_tm_open_tm_wrt_co_var :
 forall a2 a1 x1 c1,
@@ -8481,7 +8434,7 @@ forall a2 a1 x1 c1,
   open_tm_wrt_co (tm_subst_tm_tm a1 x1 a2) (g_Var_f c1) = tm_subst_tm_tm a1 x1 (open_tm_wrt_co a2 (g_Var_f c1)).
 Proof. Admitted.
 
-Hint Resolve tm_subst_tm_tm_open_tm_wrt_co_var : lngen.
+#[export] Hint Resolve tm_subst_tm_tm_open_tm_wrt_co_var : lngen.
 
 Lemma tm_subst_tm_brs_open_brs_wrt_co_var :
 forall brs1 a1 x1 c1,
@@ -8489,7 +8442,7 @@ forall brs1 a1 x1 c1,
   open_brs_wrt_co (tm_subst_tm_brs a1 x1 brs1) (g_Var_f c1) = tm_subst_tm_brs a1 x1 (open_brs_wrt_co brs1 (g_Var_f c1)).
 Proof. Admitted.
 
-Hint Resolve tm_subst_tm_brs_open_brs_wrt_co_var : lngen.
+#[export] Hint Resolve tm_subst_tm_brs_open_brs_wrt_co_var : lngen.
 
 Lemma tm_subst_tm_co_open_co_wrt_co_var :
 forall g1 a1 x1 c1,
@@ -8497,7 +8450,7 @@ forall g1 a1 x1 c1,
   open_co_wrt_co (tm_subst_tm_co a1 x1 g1) (g_Var_f c1) = tm_subst_tm_co a1 x1 (open_co_wrt_co g1 (g_Var_f c1)).
 Proof. Admitted.
 
-Hint Resolve tm_subst_tm_co_open_co_wrt_co_var : lngen.
+#[export] Hint Resolve tm_subst_tm_co_open_co_wrt_co_var : lngen.
 
 Lemma tm_subst_tm_constraint_open_constraint_wrt_co_var :
 forall phi1 a1 x1 c1,
@@ -8505,7 +8458,7 @@ forall phi1 a1 x1 c1,
   open_constraint_wrt_co (tm_subst_tm_constraint a1 x1 phi1) (g_Var_f c1) = tm_subst_tm_constraint a1 x1 (open_constraint_wrt_co phi1 (g_Var_f c1)).
 Proof. Admitted.
 
-Hint Resolve tm_subst_tm_constraint_open_constraint_wrt_co_var : lngen.
+#[export] Hint Resolve tm_subst_tm_constraint_open_constraint_wrt_co_var : lngen.
 
 Lemma co_subst_co_tm_open_tm_wrt_tm_var :
 forall a1 g1 c1 x1,
@@ -8513,7 +8466,7 @@ forall a1 g1 c1 x1,
   open_tm_wrt_tm (co_subst_co_tm g1 c1 a1) (a_Var_f x1) = co_subst_co_tm g1 c1 (open_tm_wrt_tm a1 (a_Var_f x1)).
 Proof. Admitted.
 
-Hint Resolve co_subst_co_tm_open_tm_wrt_tm_var : lngen.
+#[export] Hint Resolve co_subst_co_tm_open_tm_wrt_tm_var : lngen.
 
 Lemma co_subst_co_brs_open_brs_wrt_tm_var :
 forall brs1 g1 c1 x1,
@@ -8521,7 +8474,7 @@ forall brs1 g1 c1 x1,
   open_brs_wrt_tm (co_subst_co_brs g1 c1 brs1) (a_Var_f x1) = co_subst_co_brs g1 c1 (open_brs_wrt_tm brs1 (a_Var_f x1)).
 Proof. Admitted.
 
-Hint Resolve co_subst_co_brs_open_brs_wrt_tm_var : lngen.
+#[export] Hint Resolve co_subst_co_brs_open_brs_wrt_tm_var : lngen.
 
 Lemma co_subst_co_co_open_co_wrt_tm_var :
 forall g2 g1 c1 x1,
@@ -8529,7 +8482,7 @@ forall g2 g1 c1 x1,
   open_co_wrt_tm (co_subst_co_co g1 c1 g2) (a_Var_f x1) = co_subst_co_co g1 c1 (open_co_wrt_tm g2 (a_Var_f x1)).
 Proof. Admitted.
 
-Hint Resolve co_subst_co_co_open_co_wrt_tm_var : lngen.
+#[export] Hint Resolve co_subst_co_co_open_co_wrt_tm_var : lngen.
 
 Lemma co_subst_co_constraint_open_constraint_wrt_tm_var :
 forall phi1 g1 c1 x1,
@@ -8537,7 +8490,7 @@ forall phi1 g1 c1 x1,
   open_constraint_wrt_tm (co_subst_co_constraint g1 c1 phi1) (a_Var_f x1) = co_subst_co_constraint g1 c1 (open_constraint_wrt_tm phi1 (a_Var_f x1)).
 Proof. Admitted.
 
-Hint Resolve co_subst_co_constraint_open_constraint_wrt_tm_var : lngen.
+#[export] Hint Resolve co_subst_co_constraint_open_constraint_wrt_tm_var : lngen.
 
 Lemma co_subst_co_tm_open_tm_wrt_co_var :
 forall a1 g1 c1 c2,
@@ -8546,7 +8499,7 @@ forall a1 g1 c1 c2,
   open_tm_wrt_co (co_subst_co_tm g1 c1 a1) (g_Var_f c2) = co_subst_co_tm g1 c1 (open_tm_wrt_co a1 (g_Var_f c2)).
 Proof. Admitted.
 
-Hint Resolve co_subst_co_tm_open_tm_wrt_co_var : lngen.
+#[export] Hint Resolve co_subst_co_tm_open_tm_wrt_co_var : lngen.
 
 Lemma co_subst_co_brs_open_brs_wrt_co_var :
 forall brs1 g1 c1 c2,
@@ -8555,7 +8508,7 @@ forall brs1 g1 c1 c2,
   open_brs_wrt_co (co_subst_co_brs g1 c1 brs1) (g_Var_f c2) = co_subst_co_brs g1 c1 (open_brs_wrt_co brs1 (g_Var_f c2)).
 Proof. Admitted.
 
-Hint Resolve co_subst_co_brs_open_brs_wrt_co_var : lngen.
+#[export] Hint Resolve co_subst_co_brs_open_brs_wrt_co_var : lngen.
 
 Lemma co_subst_co_co_open_co_wrt_co_var :
 forall g2 g1 c1 c2,
@@ -8564,7 +8517,7 @@ forall g2 g1 c1 c2,
   open_co_wrt_co (co_subst_co_co g1 c1 g2) (g_Var_f c2) = co_subst_co_co g1 c1 (open_co_wrt_co g2 (g_Var_f c2)).
 Proof. Admitted.
 
-Hint Resolve co_subst_co_co_open_co_wrt_co_var : lngen.
+#[export] Hint Resolve co_subst_co_co_open_co_wrt_co_var : lngen.
 
 Lemma co_subst_co_constraint_open_constraint_wrt_co_var :
 forall phi1 g1 c1 c2,
@@ -8573,7 +8526,7 @@ forall phi1 g1 c1 c2,
   open_constraint_wrt_co (co_subst_co_constraint g1 c1 phi1) (g_Var_f c2) = co_subst_co_constraint g1 c1 (open_constraint_wrt_co phi1 (g_Var_f c2)).
 Proof. Admitted.
 
-Hint Resolve co_subst_co_constraint_open_constraint_wrt_co_var : lngen.
+#[export] Hint Resolve co_subst_co_constraint_open_constraint_wrt_co_var : lngen.
 
 (* begin hide *)
 
@@ -8597,7 +8550,7 @@ forall a1 a2 x1 n1,
   tm_subst_tm_tm a2 x1 a1 = open_tm_wrt_tm_rec n1 a2 (close_tm_wrt_tm_rec n1 x1 a1).
 Proof. Admitted.
 
-Hint Resolve tm_subst_tm_tm_spec_rec : lngen.
+#[export] Hint Resolve tm_subst_tm_tm_spec_rec : lngen.
 
 (* end hide *)
 
@@ -8608,7 +8561,7 @@ forall brs1 a1 x1 n1,
   tm_subst_tm_brs a1 x1 brs1 = open_brs_wrt_tm_rec n1 a1 (close_brs_wrt_tm_rec n1 x1 brs1).
 Proof. Admitted.
 
-Hint Resolve tm_subst_tm_brs_spec_rec : lngen.
+#[export] Hint Resolve tm_subst_tm_brs_spec_rec : lngen.
 
 (* end hide *)
 
@@ -8619,7 +8572,7 @@ forall g1 a1 x1 n1,
   tm_subst_tm_co a1 x1 g1 = open_co_wrt_tm_rec n1 a1 (close_co_wrt_tm_rec n1 x1 g1).
 Proof. Admitted.
 
-Hint Resolve tm_subst_tm_co_spec_rec : lngen.
+#[export] Hint Resolve tm_subst_tm_co_spec_rec : lngen.
 
 (* end hide *)
 
@@ -8630,7 +8583,7 @@ forall phi1 a1 x1 n1,
   tm_subst_tm_constraint a1 x1 phi1 = open_constraint_wrt_tm_rec n1 a1 (close_constraint_wrt_tm_rec n1 x1 phi1).
 Proof. Admitted.
 
-Hint Resolve tm_subst_tm_constraint_spec_rec : lngen.
+#[export] Hint Resolve tm_subst_tm_constraint_spec_rec : lngen.
 
 (* end hide *)
 
@@ -8656,7 +8609,7 @@ forall a1 g1 c1 n1,
   co_subst_co_tm g1 c1 a1 = open_tm_wrt_co_rec n1 g1 (close_tm_wrt_co_rec n1 c1 a1).
 Proof. Admitted.
 
-Hint Resolve co_subst_co_tm_spec_rec : lngen.
+#[export] Hint Resolve co_subst_co_tm_spec_rec : lngen.
 
 (* end hide *)
 
@@ -8667,7 +8620,7 @@ forall brs1 g1 c1 n1,
   co_subst_co_brs g1 c1 brs1 = open_brs_wrt_co_rec n1 g1 (close_brs_wrt_co_rec n1 c1 brs1).
 Proof. Admitted.
 
-Hint Resolve co_subst_co_brs_spec_rec : lngen.
+#[export] Hint Resolve co_subst_co_brs_spec_rec : lngen.
 
 (* end hide *)
 
@@ -8678,7 +8631,7 @@ forall g1 g2 c1 n1,
   co_subst_co_co g2 c1 g1 = open_co_wrt_co_rec n1 g2 (close_co_wrt_co_rec n1 c1 g1).
 Proof. Admitted.
 
-Hint Resolve co_subst_co_co_spec_rec : lngen.
+#[export] Hint Resolve co_subst_co_co_spec_rec : lngen.
 
 (* end hide *)
 
@@ -8689,7 +8642,7 @@ forall phi1 g1 c1 n1,
   co_subst_co_constraint g1 c1 phi1 = open_constraint_wrt_co_rec n1 g1 (close_constraint_wrt_co_rec n1 c1 phi1).
 Proof. Admitted.
 
-Hint Resolve co_subst_co_constraint_spec_rec : lngen.
+#[export] Hint Resolve co_subst_co_constraint_spec_rec : lngen.
 
 (* end hide *)
 
@@ -8698,56 +8651,56 @@ forall a1 a2 x1,
   tm_subst_tm_tm a2 x1 a1 = open_tm_wrt_tm (close_tm_wrt_tm x1 a1) a2.
 Proof. Admitted.
 
-Hint Resolve tm_subst_tm_tm_spec : lngen.
+#[export] Hint Resolve tm_subst_tm_tm_spec : lngen.
 
 Lemma tm_subst_tm_brs_spec :
 forall brs1 a1 x1,
   tm_subst_tm_brs a1 x1 brs1 = open_brs_wrt_tm (close_brs_wrt_tm x1 brs1) a1.
 Proof. Admitted.
 
-Hint Resolve tm_subst_tm_brs_spec : lngen.
+#[export] Hint Resolve tm_subst_tm_brs_spec : lngen.
 
 Lemma tm_subst_tm_co_spec :
 forall g1 a1 x1,
   tm_subst_tm_co a1 x1 g1 = open_co_wrt_tm (close_co_wrt_tm x1 g1) a1.
 Proof. Admitted.
 
-Hint Resolve tm_subst_tm_co_spec : lngen.
+#[export] Hint Resolve tm_subst_tm_co_spec : lngen.
 
 Lemma tm_subst_tm_constraint_spec :
 forall phi1 a1 x1,
   tm_subst_tm_constraint a1 x1 phi1 = open_constraint_wrt_tm (close_constraint_wrt_tm x1 phi1) a1.
 Proof. Admitted.
 
-Hint Resolve tm_subst_tm_constraint_spec : lngen.
+#[export] Hint Resolve tm_subst_tm_constraint_spec : lngen.
 
 Lemma co_subst_co_tm_spec :
 forall a1 g1 c1,
   co_subst_co_tm g1 c1 a1 = open_tm_wrt_co (close_tm_wrt_co c1 a1) g1.
 Proof. Admitted.
 
-Hint Resolve co_subst_co_tm_spec : lngen.
+#[export] Hint Resolve co_subst_co_tm_spec : lngen.
 
 Lemma co_subst_co_brs_spec :
 forall brs1 g1 c1,
   co_subst_co_brs g1 c1 brs1 = open_brs_wrt_co (close_brs_wrt_co c1 brs1) g1.
 Proof. Admitted.
 
-Hint Resolve co_subst_co_brs_spec : lngen.
+#[export] Hint Resolve co_subst_co_brs_spec : lngen.
 
 Lemma co_subst_co_co_spec :
 forall g1 g2 c1,
   co_subst_co_co g2 c1 g1 = open_co_wrt_co (close_co_wrt_co c1 g1) g2.
 Proof. Admitted.
 
-Hint Resolve co_subst_co_co_spec : lngen.
+#[export] Hint Resolve co_subst_co_co_spec : lngen.
 
 Lemma co_subst_co_constraint_spec :
 forall phi1 g1 c1,
   co_subst_co_constraint g1 c1 phi1 = open_constraint_wrt_co (close_constraint_wrt_co c1 phi1) g1.
 Proof. Admitted.
 
-Hint Resolve co_subst_co_constraint_spec : lngen.
+#[export] Hint Resolve co_subst_co_constraint_spec : lngen.
 
 (* begin hide *)
 
@@ -8779,7 +8732,7 @@ forall a1 a2 a3 x2 x1,
   tm_subst_tm_tm a2 x1 (tm_subst_tm_tm a3 x2 a1) = tm_subst_tm_tm (tm_subst_tm_tm a2 x1 a3) x2 (tm_subst_tm_tm a2 x1 a1).
 Proof. Admitted.
 
-Hint Resolve tm_subst_tm_tm_tm_subst_tm_tm : lngen.
+#[export] Hint Resolve tm_subst_tm_tm_tm_subst_tm_tm : lngen.
 
 Lemma tm_subst_tm_brs_tm_subst_tm_brs :
 forall brs1 a1 a2 x2 x1,
@@ -8788,7 +8741,7 @@ forall brs1 a1 a2 x2 x1,
   tm_subst_tm_brs a1 x1 (tm_subst_tm_brs a2 x2 brs1) = tm_subst_tm_brs (tm_subst_tm_tm a1 x1 a2) x2 (tm_subst_tm_brs a1 x1 brs1).
 Proof. Admitted.
 
-Hint Resolve tm_subst_tm_brs_tm_subst_tm_brs : lngen.
+#[export] Hint Resolve tm_subst_tm_brs_tm_subst_tm_brs : lngen.
 
 Lemma tm_subst_tm_co_tm_subst_tm_co :
 forall g1 a1 a2 x2 x1,
@@ -8797,7 +8750,7 @@ forall g1 a1 a2 x2 x1,
   tm_subst_tm_co a1 x1 (tm_subst_tm_co a2 x2 g1) = tm_subst_tm_co (tm_subst_tm_tm a1 x1 a2) x2 (tm_subst_tm_co a1 x1 g1).
 Proof. Admitted.
 
-Hint Resolve tm_subst_tm_co_tm_subst_tm_co : lngen.
+#[export] Hint Resolve tm_subst_tm_co_tm_subst_tm_co : lngen.
 
 Lemma tm_subst_tm_constraint_tm_subst_tm_constraint :
 forall phi1 a1 a2 x2 x1,
@@ -8806,7 +8759,7 @@ forall phi1 a1 a2 x2 x1,
   tm_subst_tm_constraint a1 x1 (tm_subst_tm_constraint a2 x2 phi1) = tm_subst_tm_constraint (tm_subst_tm_tm a1 x1 a2) x2 (tm_subst_tm_constraint a1 x1 phi1).
 Proof. Admitted.
 
-Hint Resolve tm_subst_tm_constraint_tm_subst_tm_constraint : lngen.
+#[export] Hint Resolve tm_subst_tm_constraint_tm_subst_tm_constraint : lngen.
 
 (* begin hide *)
 
@@ -8833,7 +8786,7 @@ forall a1 a2 g1 c1 x1,
   tm_subst_tm_tm a2 x1 (co_subst_co_tm g1 c1 a1) = co_subst_co_tm (tm_subst_tm_co a2 x1 g1) c1 (tm_subst_tm_tm a2 x1 a1).
 Proof. Admitted.
 
-Hint Resolve tm_subst_tm_tm_co_subst_co_tm : lngen.
+#[export] Hint Resolve tm_subst_tm_tm_co_subst_co_tm : lngen.
 
 Lemma tm_subst_tm_brs_co_subst_co_brs :
 forall brs1 a1 g1 c1 x1,
@@ -8841,7 +8794,7 @@ forall brs1 a1 g1 c1 x1,
   tm_subst_tm_brs a1 x1 (co_subst_co_brs g1 c1 brs1) = co_subst_co_brs (tm_subst_tm_co a1 x1 g1) c1 (tm_subst_tm_brs a1 x1 brs1).
 Proof. Admitted.
 
-Hint Resolve tm_subst_tm_brs_co_subst_co_brs : lngen.
+#[export] Hint Resolve tm_subst_tm_brs_co_subst_co_brs : lngen.
 
 Lemma tm_subst_tm_co_co_subst_co_co :
 forall g1 a1 g2 c1 x1,
@@ -8849,7 +8802,7 @@ forall g1 a1 g2 c1 x1,
   tm_subst_tm_co a1 x1 (co_subst_co_co g2 c1 g1) = co_subst_co_co (tm_subst_tm_co a1 x1 g2) c1 (tm_subst_tm_co a1 x1 g1).
 Proof. Admitted.
 
-Hint Resolve tm_subst_tm_co_co_subst_co_co : lngen.
+#[export] Hint Resolve tm_subst_tm_co_co_subst_co_co : lngen.
 
 Lemma tm_subst_tm_constraint_co_subst_co_constraint :
 forall phi1 a1 g1 c1 x1,
@@ -8857,7 +8810,7 @@ forall phi1 a1 g1 c1 x1,
   tm_subst_tm_constraint a1 x1 (co_subst_co_constraint g1 c1 phi1) = co_subst_co_constraint (tm_subst_tm_co a1 x1 g1) c1 (tm_subst_tm_constraint a1 x1 phi1).
 Proof. Admitted.
 
-Hint Resolve tm_subst_tm_constraint_co_subst_co_constraint : lngen.
+#[export] Hint Resolve tm_subst_tm_constraint_co_subst_co_constraint : lngen.
 
 (* begin hide *)
 
@@ -8884,7 +8837,7 @@ forall a1 g1 a2 x1 c1,
   co_subst_co_tm g1 c1 (tm_subst_tm_tm a2 x1 a1) = tm_subst_tm_tm (co_subst_co_tm g1 c1 a2) x1 (co_subst_co_tm g1 c1 a1).
 Proof. Admitted.
 
-Hint Resolve co_subst_co_tm_tm_subst_tm_tm : lngen.
+#[export] Hint Resolve co_subst_co_tm_tm_subst_tm_tm : lngen.
 
 Lemma co_subst_co_brs_tm_subst_tm_brs :
 forall brs1 g1 a1 x1 c1,
@@ -8892,7 +8845,7 @@ forall brs1 g1 a1 x1 c1,
   co_subst_co_brs g1 c1 (tm_subst_tm_brs a1 x1 brs1) = tm_subst_tm_brs (co_subst_co_tm g1 c1 a1) x1 (co_subst_co_brs g1 c1 brs1).
 Proof. Admitted.
 
-Hint Resolve co_subst_co_brs_tm_subst_tm_brs : lngen.
+#[export] Hint Resolve co_subst_co_brs_tm_subst_tm_brs : lngen.
 
 Lemma co_subst_co_co_tm_subst_tm_co :
 forall g1 g2 a1 x1 c1,
@@ -8900,7 +8853,7 @@ forall g1 g2 a1 x1 c1,
   co_subst_co_co g2 c1 (tm_subst_tm_co a1 x1 g1) = tm_subst_tm_co (co_subst_co_tm g2 c1 a1) x1 (co_subst_co_co g2 c1 g1).
 Proof. Admitted.
 
-Hint Resolve co_subst_co_co_tm_subst_tm_co : lngen.
+#[export] Hint Resolve co_subst_co_co_tm_subst_tm_co : lngen.
 
 Lemma co_subst_co_constraint_tm_subst_tm_constraint :
 forall phi1 g1 a1 x1 c1,
@@ -8908,7 +8861,7 @@ forall phi1 g1 a1 x1 c1,
   co_subst_co_constraint g1 c1 (tm_subst_tm_constraint a1 x1 phi1) = tm_subst_tm_constraint (co_subst_co_tm g1 c1 a1) x1 (co_subst_co_constraint g1 c1 phi1).
 Proof. Admitted.
 
-Hint Resolve co_subst_co_constraint_tm_subst_tm_constraint : lngen.
+#[export] Hint Resolve co_subst_co_constraint_tm_subst_tm_constraint : lngen.
 
 (* begin hide *)
 
@@ -8940,7 +8893,7 @@ forall a1 g1 g2 c2 c1,
   co_subst_co_tm g1 c1 (co_subst_co_tm g2 c2 a1) = co_subst_co_tm (co_subst_co_co g1 c1 g2) c2 (co_subst_co_tm g1 c1 a1).
 Proof. Admitted.
 
-Hint Resolve co_subst_co_tm_co_subst_co_tm : lngen.
+#[export] Hint Resolve co_subst_co_tm_co_subst_co_tm : lngen.
 
 Lemma co_subst_co_brs_co_subst_co_brs :
 forall brs1 g1 g2 c2 c1,
@@ -8949,7 +8902,7 @@ forall brs1 g1 g2 c2 c1,
   co_subst_co_brs g1 c1 (co_subst_co_brs g2 c2 brs1) = co_subst_co_brs (co_subst_co_co g1 c1 g2) c2 (co_subst_co_brs g1 c1 brs1).
 Proof. Admitted.
 
-Hint Resolve co_subst_co_brs_co_subst_co_brs : lngen.
+#[export] Hint Resolve co_subst_co_brs_co_subst_co_brs : lngen.
 
 Lemma co_subst_co_co_co_subst_co_co :
 forall g1 g2 g3 c2 c1,
@@ -8958,7 +8911,7 @@ forall g1 g2 g3 c2 c1,
   co_subst_co_co g2 c1 (co_subst_co_co g3 c2 g1) = co_subst_co_co (co_subst_co_co g2 c1 g3) c2 (co_subst_co_co g2 c1 g1).
 Proof. Admitted.
 
-Hint Resolve co_subst_co_co_co_subst_co_co : lngen.
+#[export] Hint Resolve co_subst_co_co_co_subst_co_co : lngen.
 
 Lemma co_subst_co_constraint_co_subst_co_constraint :
 forall phi1 g1 g2 c2 c1,
@@ -8967,7 +8920,7 @@ forall phi1 g1 g2 c2 c1,
   co_subst_co_constraint g1 c1 (co_subst_co_constraint g2 c2 phi1) = co_subst_co_constraint (co_subst_co_co g1 c1 g2) c2 (co_subst_co_constraint g1 c1 phi1).
 Proof. Admitted.
 
-Hint Resolve co_subst_co_constraint_co_subst_co_constraint : lngen.
+#[export] Hint Resolve co_subst_co_constraint_co_subst_co_constraint : lngen.
 
 (* begin hide *)
 
@@ -9011,7 +8964,7 @@ forall a2 a1 x1 x2 n1,
   tm_subst_tm_tm a1 x1 a2 = close_tm_wrt_tm_rec n1 x2 (tm_subst_tm_tm a1 x1 (open_tm_wrt_tm_rec n1 (a_Var_f x2) a2)).
 Proof. Admitted.
 
-Hint Resolve tm_subst_tm_tm_close_tm_wrt_tm_rec_open_tm_wrt_tm_rec : lngen.
+#[export] Hint Resolve tm_subst_tm_tm_close_tm_wrt_tm_rec_open_tm_wrt_tm_rec : lngen.
 
 (* end hide *)
 
@@ -9026,7 +8979,7 @@ forall brs1 a1 x1 x2 n1,
   tm_subst_tm_brs a1 x1 brs1 = close_brs_wrt_tm_rec n1 x2 (tm_subst_tm_brs a1 x1 (open_brs_wrt_tm_rec n1 (a_Var_f x2) brs1)).
 Proof. Admitted.
 
-Hint Resolve tm_subst_tm_brs_close_brs_wrt_tm_rec_open_brs_wrt_tm_rec : lngen.
+#[export] Hint Resolve tm_subst_tm_brs_close_brs_wrt_tm_rec_open_brs_wrt_tm_rec : lngen.
 
 (* end hide *)
 
@@ -9041,7 +8994,7 @@ forall g1 a1 x1 x2 n1,
   tm_subst_tm_co a1 x1 g1 = close_co_wrt_tm_rec n1 x2 (tm_subst_tm_co a1 x1 (open_co_wrt_tm_rec n1 (a_Var_f x2) g1)).
 Proof. Admitted.
 
-Hint Resolve tm_subst_tm_co_close_co_wrt_tm_rec_open_co_wrt_tm_rec : lngen.
+#[export] Hint Resolve tm_subst_tm_co_close_co_wrt_tm_rec_open_co_wrt_tm_rec : lngen.
 
 (* end hide *)
 
@@ -9056,7 +9009,7 @@ forall phi1 a1 x1 x2 n1,
   tm_subst_tm_constraint a1 x1 phi1 = close_constraint_wrt_tm_rec n1 x2 (tm_subst_tm_constraint a1 x1 (open_constraint_wrt_tm_rec n1 (a_Var_f x2) phi1)).
 Proof. Admitted.
 
-Hint Resolve tm_subst_tm_constraint_close_constraint_wrt_tm_rec_open_constraint_wrt_tm_rec : lngen.
+#[export] Hint Resolve tm_subst_tm_constraint_close_constraint_wrt_tm_rec_open_constraint_wrt_tm_rec : lngen.
 
 (* end hide *)
 
@@ -9097,7 +9050,7 @@ forall a2 a1 x1 c1 n1,
   tm_subst_tm_tm a1 x1 a2 = close_tm_wrt_co_rec n1 c1 (tm_subst_tm_tm a1 x1 (open_tm_wrt_co_rec n1 (g_Var_f c1) a2)).
 Proof. Admitted.
 
-Hint Resolve tm_subst_tm_tm_close_tm_wrt_co_rec_open_tm_wrt_co_rec : lngen.
+#[export] Hint Resolve tm_subst_tm_tm_close_tm_wrt_co_rec_open_tm_wrt_co_rec : lngen.
 
 (* end hide *)
 
@@ -9111,7 +9064,7 @@ forall brs1 a1 x1 c1 n1,
   tm_subst_tm_brs a1 x1 brs1 = close_brs_wrt_co_rec n1 c1 (tm_subst_tm_brs a1 x1 (open_brs_wrt_co_rec n1 (g_Var_f c1) brs1)).
 Proof. Admitted.
 
-Hint Resolve tm_subst_tm_brs_close_brs_wrt_co_rec_open_brs_wrt_co_rec : lngen.
+#[export] Hint Resolve tm_subst_tm_brs_close_brs_wrt_co_rec_open_brs_wrt_co_rec : lngen.
 
 (* end hide *)
 
@@ -9125,7 +9078,7 @@ forall g1 a1 x1 c1 n1,
   tm_subst_tm_co a1 x1 g1 = close_co_wrt_co_rec n1 c1 (tm_subst_tm_co a1 x1 (open_co_wrt_co_rec n1 (g_Var_f c1) g1)).
 Proof. Admitted.
 
-Hint Resolve tm_subst_tm_co_close_co_wrt_co_rec_open_co_wrt_co_rec : lngen.
+#[export] Hint Resolve tm_subst_tm_co_close_co_wrt_co_rec_open_co_wrt_co_rec : lngen.
 
 (* end hide *)
 
@@ -9139,7 +9092,7 @@ forall phi1 a1 x1 c1 n1,
   tm_subst_tm_constraint a1 x1 phi1 = close_constraint_wrt_co_rec n1 c1 (tm_subst_tm_constraint a1 x1 (open_constraint_wrt_co_rec n1 (g_Var_f c1) phi1)).
 Proof. Admitted.
 
-Hint Resolve tm_subst_tm_constraint_close_constraint_wrt_co_rec_open_constraint_wrt_co_rec : lngen.
+#[export] Hint Resolve tm_subst_tm_constraint_close_constraint_wrt_co_rec_open_constraint_wrt_co_rec : lngen.
 
 (* end hide *)
 
@@ -9180,7 +9133,7 @@ forall a1 g1 c1 x1 n1,
   co_subst_co_tm g1 c1 a1 = close_tm_wrt_tm_rec n1 x1 (co_subst_co_tm g1 c1 (open_tm_wrt_tm_rec n1 (a_Var_f x1) a1)).
 Proof. Admitted.
 
-Hint Resolve co_subst_co_tm_close_tm_wrt_tm_rec_open_tm_wrt_tm_rec : lngen.
+#[export] Hint Resolve co_subst_co_tm_close_tm_wrt_tm_rec_open_tm_wrt_tm_rec : lngen.
 
 (* end hide *)
 
@@ -9194,7 +9147,7 @@ forall brs1 g1 c1 x1 n1,
   co_subst_co_brs g1 c1 brs1 = close_brs_wrt_tm_rec n1 x1 (co_subst_co_brs g1 c1 (open_brs_wrt_tm_rec n1 (a_Var_f x1) brs1)).
 Proof. Admitted.
 
-Hint Resolve co_subst_co_brs_close_brs_wrt_tm_rec_open_brs_wrt_tm_rec : lngen.
+#[export] Hint Resolve co_subst_co_brs_close_brs_wrt_tm_rec_open_brs_wrt_tm_rec : lngen.
 
 (* end hide *)
 
@@ -9208,7 +9161,7 @@ forall g2 g1 c1 x1 n1,
   co_subst_co_co g1 c1 g2 = close_co_wrt_tm_rec n1 x1 (co_subst_co_co g1 c1 (open_co_wrt_tm_rec n1 (a_Var_f x1) g2)).
 Proof. Admitted.
 
-Hint Resolve co_subst_co_co_close_co_wrt_tm_rec_open_co_wrt_tm_rec : lngen.
+#[export] Hint Resolve co_subst_co_co_close_co_wrt_tm_rec_open_co_wrt_tm_rec : lngen.
 
 (* end hide *)
 
@@ -9222,7 +9175,7 @@ forall phi1 g1 c1 x1 n1,
   co_subst_co_constraint g1 c1 phi1 = close_constraint_wrt_tm_rec n1 x1 (co_subst_co_constraint g1 c1 (open_constraint_wrt_tm_rec n1 (a_Var_f x1) phi1)).
 Proof. Admitted.
 
-Hint Resolve co_subst_co_constraint_close_constraint_wrt_tm_rec_open_constraint_wrt_tm_rec : lngen.
+#[export] Hint Resolve co_subst_co_constraint_close_constraint_wrt_tm_rec_open_constraint_wrt_tm_rec : lngen.
 
 (* end hide *)
 
@@ -9268,7 +9221,7 @@ forall a1 g1 c1 c2 n1,
   co_subst_co_tm g1 c1 a1 = close_tm_wrt_co_rec n1 c2 (co_subst_co_tm g1 c1 (open_tm_wrt_co_rec n1 (g_Var_f c2) a1)).
 Proof. Admitted.
 
-Hint Resolve co_subst_co_tm_close_tm_wrt_co_rec_open_tm_wrt_co_rec : lngen.
+#[export] Hint Resolve co_subst_co_tm_close_tm_wrt_co_rec_open_tm_wrt_co_rec : lngen.
 
 (* end hide *)
 
@@ -9283,7 +9236,7 @@ forall brs1 g1 c1 c2 n1,
   co_subst_co_brs g1 c1 brs1 = close_brs_wrt_co_rec n1 c2 (co_subst_co_brs g1 c1 (open_brs_wrt_co_rec n1 (g_Var_f c2) brs1)).
 Proof. Admitted.
 
-Hint Resolve co_subst_co_brs_close_brs_wrt_co_rec_open_brs_wrt_co_rec : lngen.
+#[export] Hint Resolve co_subst_co_brs_close_brs_wrt_co_rec_open_brs_wrt_co_rec : lngen.
 
 (* end hide *)
 
@@ -9298,7 +9251,7 @@ forall g2 g1 c1 c2 n1,
   co_subst_co_co g1 c1 g2 = close_co_wrt_co_rec n1 c2 (co_subst_co_co g1 c1 (open_co_wrt_co_rec n1 (g_Var_f c2) g2)).
 Proof. Admitted.
 
-Hint Resolve co_subst_co_co_close_co_wrt_co_rec_open_co_wrt_co_rec : lngen.
+#[export] Hint Resolve co_subst_co_co_close_co_wrt_co_rec_open_co_wrt_co_rec : lngen.
 
 (* end hide *)
 
@@ -9313,7 +9266,7 @@ forall phi1 g1 c1 c2 n1,
   co_subst_co_constraint g1 c1 phi1 = close_constraint_wrt_co_rec n1 c2 (co_subst_co_constraint g1 c1 (open_constraint_wrt_co_rec n1 (g_Var_f c2) phi1)).
 Proof. Admitted.
 
-Hint Resolve co_subst_co_constraint_close_constraint_wrt_co_rec_open_constraint_wrt_co_rec : lngen.
+#[export] Hint Resolve co_subst_co_constraint_close_constraint_wrt_co_rec_open_constraint_wrt_co_rec : lngen.
 
 (* end hide *)
 
@@ -9326,7 +9279,7 @@ forall a2 a1 x1 x2,
   tm_subst_tm_tm a1 x1 a2 = close_tm_wrt_tm x2 (tm_subst_tm_tm a1 x1 (open_tm_wrt_tm a2 (a_Var_f x2))).
 Proof. Admitted.
 
-Hint Resolve tm_subst_tm_tm_close_tm_wrt_tm_open_tm_wrt_tm : lngen.
+#[export] Hint Resolve tm_subst_tm_tm_close_tm_wrt_tm_open_tm_wrt_tm : lngen.
 
 Lemma tm_subst_tm_brs_close_brs_wrt_tm_open_brs_wrt_tm :
 forall brs1 a1 x1 x2,
@@ -9337,7 +9290,7 @@ forall brs1 a1 x1 x2,
   tm_subst_tm_brs a1 x1 brs1 = close_brs_wrt_tm x2 (tm_subst_tm_brs a1 x1 (open_brs_wrt_tm brs1 (a_Var_f x2))).
 Proof. Admitted.
 
-Hint Resolve tm_subst_tm_brs_close_brs_wrt_tm_open_brs_wrt_tm : lngen.
+#[export] Hint Resolve tm_subst_tm_brs_close_brs_wrt_tm_open_brs_wrt_tm : lngen.
 
 Lemma tm_subst_tm_co_close_co_wrt_tm_open_co_wrt_tm :
 forall g1 a1 x1 x2,
@@ -9348,7 +9301,7 @@ forall g1 a1 x1 x2,
   tm_subst_tm_co a1 x1 g1 = close_co_wrt_tm x2 (tm_subst_tm_co a1 x1 (open_co_wrt_tm g1 (a_Var_f x2))).
 Proof. Admitted.
 
-Hint Resolve tm_subst_tm_co_close_co_wrt_tm_open_co_wrt_tm : lngen.
+#[export] Hint Resolve tm_subst_tm_co_close_co_wrt_tm_open_co_wrt_tm : lngen.
 
 Lemma tm_subst_tm_constraint_close_constraint_wrt_tm_open_constraint_wrt_tm :
 forall phi1 a1 x1 x2,
@@ -9359,7 +9312,7 @@ forall phi1 a1 x1 x2,
   tm_subst_tm_constraint a1 x1 phi1 = close_constraint_wrt_tm x2 (tm_subst_tm_constraint a1 x1 (open_constraint_wrt_tm phi1 (a_Var_f x2))).
 Proof. Admitted.
 
-Hint Resolve tm_subst_tm_constraint_close_constraint_wrt_tm_open_constraint_wrt_tm : lngen.
+#[export] Hint Resolve tm_subst_tm_constraint_close_constraint_wrt_tm_open_constraint_wrt_tm : lngen.
 
 Lemma tm_subst_tm_tm_close_tm_wrt_co_open_tm_wrt_co :
 forall a2 a1 x1 c1,
@@ -9369,7 +9322,7 @@ forall a2 a1 x1 c1,
   tm_subst_tm_tm a1 x1 a2 = close_tm_wrt_co c1 (tm_subst_tm_tm a1 x1 (open_tm_wrt_co a2 (g_Var_f c1))).
 Proof. Admitted.
 
-Hint Resolve tm_subst_tm_tm_close_tm_wrt_co_open_tm_wrt_co : lngen.
+#[export] Hint Resolve tm_subst_tm_tm_close_tm_wrt_co_open_tm_wrt_co : lngen.
 
 Lemma tm_subst_tm_brs_close_brs_wrt_co_open_brs_wrt_co :
 forall brs1 a1 x1 c1,
@@ -9379,7 +9332,7 @@ forall brs1 a1 x1 c1,
   tm_subst_tm_brs a1 x1 brs1 = close_brs_wrt_co c1 (tm_subst_tm_brs a1 x1 (open_brs_wrt_co brs1 (g_Var_f c1))).
 Proof. Admitted.
 
-Hint Resolve tm_subst_tm_brs_close_brs_wrt_co_open_brs_wrt_co : lngen.
+#[export] Hint Resolve tm_subst_tm_brs_close_brs_wrt_co_open_brs_wrt_co : lngen.
 
 Lemma tm_subst_tm_co_close_co_wrt_co_open_co_wrt_co :
 forall g1 a1 x1 c1,
@@ -9389,7 +9342,7 @@ forall g1 a1 x1 c1,
   tm_subst_tm_co a1 x1 g1 = close_co_wrt_co c1 (tm_subst_tm_co a1 x1 (open_co_wrt_co g1 (g_Var_f c1))).
 Proof. Admitted.
 
-Hint Resolve tm_subst_tm_co_close_co_wrt_co_open_co_wrt_co : lngen.
+#[export] Hint Resolve tm_subst_tm_co_close_co_wrt_co_open_co_wrt_co : lngen.
 
 Lemma tm_subst_tm_constraint_close_constraint_wrt_co_open_constraint_wrt_co :
 forall phi1 a1 x1 c1,
@@ -9399,7 +9352,7 @@ forall phi1 a1 x1 c1,
   tm_subst_tm_constraint a1 x1 phi1 = close_constraint_wrt_co c1 (tm_subst_tm_constraint a1 x1 (open_constraint_wrt_co phi1 (g_Var_f c1))).
 Proof. Admitted.
 
-Hint Resolve tm_subst_tm_constraint_close_constraint_wrt_co_open_constraint_wrt_co : lngen.
+#[export] Hint Resolve tm_subst_tm_constraint_close_constraint_wrt_co_open_constraint_wrt_co : lngen.
 
 Lemma co_subst_co_tm_close_tm_wrt_tm_open_tm_wrt_tm :
 forall a1 g1 c1 x1,
@@ -9409,7 +9362,7 @@ forall a1 g1 c1 x1,
   co_subst_co_tm g1 c1 a1 = close_tm_wrt_tm x1 (co_subst_co_tm g1 c1 (open_tm_wrt_tm a1 (a_Var_f x1))).
 Proof. Admitted.
 
-Hint Resolve co_subst_co_tm_close_tm_wrt_tm_open_tm_wrt_tm : lngen.
+#[export] Hint Resolve co_subst_co_tm_close_tm_wrt_tm_open_tm_wrt_tm : lngen.
 
 Lemma co_subst_co_brs_close_brs_wrt_tm_open_brs_wrt_tm :
 forall brs1 g1 c1 x1,
@@ -9419,7 +9372,7 @@ forall brs1 g1 c1 x1,
   co_subst_co_brs g1 c1 brs1 = close_brs_wrt_tm x1 (co_subst_co_brs g1 c1 (open_brs_wrt_tm brs1 (a_Var_f x1))).
 Proof. Admitted.
 
-Hint Resolve co_subst_co_brs_close_brs_wrt_tm_open_brs_wrt_tm : lngen.
+#[export] Hint Resolve co_subst_co_brs_close_brs_wrt_tm_open_brs_wrt_tm : lngen.
 
 Lemma co_subst_co_co_close_co_wrt_tm_open_co_wrt_tm :
 forall g2 g1 c1 x1,
@@ -9429,7 +9382,7 @@ forall g2 g1 c1 x1,
   co_subst_co_co g1 c1 g2 = close_co_wrt_tm x1 (co_subst_co_co g1 c1 (open_co_wrt_tm g2 (a_Var_f x1))).
 Proof. Admitted.
 
-Hint Resolve co_subst_co_co_close_co_wrt_tm_open_co_wrt_tm : lngen.
+#[export] Hint Resolve co_subst_co_co_close_co_wrt_tm_open_co_wrt_tm : lngen.
 
 Lemma co_subst_co_constraint_close_constraint_wrt_tm_open_constraint_wrt_tm :
 forall phi1 g1 c1 x1,
@@ -9439,7 +9392,7 @@ forall phi1 g1 c1 x1,
   co_subst_co_constraint g1 c1 phi1 = close_constraint_wrt_tm x1 (co_subst_co_constraint g1 c1 (open_constraint_wrt_tm phi1 (a_Var_f x1))).
 Proof. Admitted.
 
-Hint Resolve co_subst_co_constraint_close_constraint_wrt_tm_open_constraint_wrt_tm : lngen.
+#[export] Hint Resolve co_subst_co_constraint_close_constraint_wrt_tm_open_constraint_wrt_tm : lngen.
 
 Lemma co_subst_co_tm_close_tm_wrt_co_open_tm_wrt_co :
 forall a1 g1 c1 c2,
@@ -9450,7 +9403,7 @@ forall a1 g1 c1 c2,
   co_subst_co_tm g1 c1 a1 = close_tm_wrt_co c2 (co_subst_co_tm g1 c1 (open_tm_wrt_co a1 (g_Var_f c2))).
 Proof. Admitted.
 
-Hint Resolve co_subst_co_tm_close_tm_wrt_co_open_tm_wrt_co : lngen.
+#[export] Hint Resolve co_subst_co_tm_close_tm_wrt_co_open_tm_wrt_co : lngen.
 
 Lemma co_subst_co_brs_close_brs_wrt_co_open_brs_wrt_co :
 forall brs1 g1 c1 c2,
@@ -9461,7 +9414,7 @@ forall brs1 g1 c1 c2,
   co_subst_co_brs g1 c1 brs1 = close_brs_wrt_co c2 (co_subst_co_brs g1 c1 (open_brs_wrt_co brs1 (g_Var_f c2))).
 Proof. Admitted.
 
-Hint Resolve co_subst_co_brs_close_brs_wrt_co_open_brs_wrt_co : lngen.
+#[export] Hint Resolve co_subst_co_brs_close_brs_wrt_co_open_brs_wrt_co : lngen.
 
 Lemma co_subst_co_co_close_co_wrt_co_open_co_wrt_co :
 forall g2 g1 c1 c2,
@@ -9472,7 +9425,7 @@ forall g2 g1 c1 c2,
   co_subst_co_co g1 c1 g2 = close_co_wrt_co c2 (co_subst_co_co g1 c1 (open_co_wrt_co g2 (g_Var_f c2))).
 Proof. Admitted.
 
-Hint Resolve co_subst_co_co_close_co_wrt_co_open_co_wrt_co : lngen.
+#[export] Hint Resolve co_subst_co_co_close_co_wrt_co_open_co_wrt_co : lngen.
 
 Lemma co_subst_co_constraint_close_constraint_wrt_co_open_constraint_wrt_co :
 forall phi1 g1 c1 c2,
@@ -9483,7 +9436,7 @@ forall phi1 g1 c1 c2,
   co_subst_co_constraint g1 c1 phi1 = close_constraint_wrt_co c2 (co_subst_co_constraint g1 c1 (open_constraint_wrt_co phi1 (g_Var_f c2))).
 Proof. Admitted.
 
-Hint Resolve co_subst_co_constraint_close_constraint_wrt_co_open_constraint_wrt_co : lngen.
+#[export] Hint Resolve co_subst_co_constraint_close_constraint_wrt_co_open_constraint_wrt_co : lngen.
 
 Lemma tm_subst_tm_tm_a_Abs :
 forall x2 psi1 A1 b1 a1 x1,
@@ -9492,7 +9445,7 @@ forall x2 psi1 A1 b1 a1 x1,
   tm_subst_tm_tm a1 x1 (a_Abs psi1 A1 b1) = a_Abs (psi1) (tm_subst_tm_tm a1 x1 A1) (close_tm_wrt_tm x2 (tm_subst_tm_tm a1 x1 (open_tm_wrt_tm b1 (a_Var_f x2)))).
 Proof. Admitted.
 
-Hint Resolve tm_subst_tm_tm_a_Abs : lngen.
+#[export] Hint Resolve tm_subst_tm_tm_a_Abs : lngen.
 
 Lemma tm_subst_tm_tm_a_UAbs :
 forall x2 psi1 b1 a1 x1,
@@ -9501,7 +9454,7 @@ forall x2 psi1 b1 a1 x1,
   tm_subst_tm_tm a1 x1 (a_UAbs psi1 b1) = a_UAbs (psi1) (close_tm_wrt_tm x2 (tm_subst_tm_tm a1 x1 (open_tm_wrt_tm b1 (a_Var_f x2)))).
 Proof. Admitted.
 
-Hint Resolve tm_subst_tm_tm_a_UAbs : lngen.
+#[export] Hint Resolve tm_subst_tm_tm_a_UAbs : lngen.
 
 Lemma tm_subst_tm_tm_a_Pi :
 forall x2 psi1 A1 B1 a1 x1,
@@ -9510,7 +9463,7 @@ forall x2 psi1 A1 B1 a1 x1,
   tm_subst_tm_tm a1 x1 (a_Pi psi1 A1 B1) = a_Pi (psi1) (tm_subst_tm_tm a1 x1 A1) (close_tm_wrt_tm x2 (tm_subst_tm_tm a1 x1 (open_tm_wrt_tm B1 (a_Var_f x2)))).
 Proof. Admitted.
 
-Hint Resolve tm_subst_tm_tm_a_Pi : lngen.
+#[export] Hint Resolve tm_subst_tm_tm_a_Pi : lngen.
 
 Lemma tm_subst_tm_tm_a_CPi :
 forall c1 psi1 phi1 B1 a1 x1,
@@ -9519,7 +9472,7 @@ forall c1 psi1 phi1 B1 a1 x1,
   tm_subst_tm_tm a1 x1 (a_CPi psi1 phi1 B1) = a_CPi (psi1) (tm_subst_tm_constraint a1 x1 phi1) (close_tm_wrt_co c1 (tm_subst_tm_tm a1 x1 (open_tm_wrt_co B1 (g_Var_f c1)))).
 Proof. Admitted.
 
-Hint Resolve tm_subst_tm_tm_a_CPi : lngen.
+#[export] Hint Resolve tm_subst_tm_tm_a_CPi : lngen.
 
 Lemma tm_subst_tm_tm_a_CAbs :
 forall c1 psi1 phi1 b1 a1 x1,
@@ -9528,7 +9481,7 @@ forall c1 psi1 phi1 b1 a1 x1,
   tm_subst_tm_tm a1 x1 (a_CAbs psi1 phi1 b1) = a_CAbs (psi1) (tm_subst_tm_constraint a1 x1 phi1) (close_tm_wrt_co c1 (tm_subst_tm_tm a1 x1 (open_tm_wrt_co b1 (g_Var_f c1)))).
 Proof. Admitted.
 
-Hint Resolve tm_subst_tm_tm_a_CAbs : lngen.
+#[export] Hint Resolve tm_subst_tm_tm_a_CAbs : lngen.
 
 Lemma tm_subst_tm_tm_a_UCAbs :
 forall c1 psi1 b1 a1 x1,
@@ -9537,7 +9490,7 @@ forall c1 psi1 b1 a1 x1,
   tm_subst_tm_tm a1 x1 (a_UCAbs psi1 b1) = a_UCAbs (psi1) (close_tm_wrt_co c1 (tm_subst_tm_tm a1 x1 (open_tm_wrt_co b1 (g_Var_f c1)))).
 Proof. Admitted.
 
-Hint Resolve tm_subst_tm_tm_a_UCAbs : lngen.
+#[export] Hint Resolve tm_subst_tm_tm_a_UCAbs : lngen.
 
 Lemma co_subst_co_tm_a_Abs :
 forall x1 psi1 A1 b1 g1 c1,
@@ -9546,7 +9499,7 @@ forall x1 psi1 A1 b1 g1 c1,
   co_subst_co_tm g1 c1 (a_Abs psi1 A1 b1) = a_Abs (psi1) (co_subst_co_tm g1 c1 A1) (close_tm_wrt_tm x1 (co_subst_co_tm g1 c1 (open_tm_wrt_tm b1 (a_Var_f x1)))).
 Proof. Admitted.
 
-Hint Resolve co_subst_co_tm_a_Abs : lngen.
+#[export] Hint Resolve co_subst_co_tm_a_Abs : lngen.
 
 Lemma co_subst_co_tm_a_UAbs :
 forall x1 psi1 b1 g1 c1,
@@ -9555,7 +9508,7 @@ forall x1 psi1 b1 g1 c1,
   co_subst_co_tm g1 c1 (a_UAbs psi1 b1) = a_UAbs (psi1) (close_tm_wrt_tm x1 (co_subst_co_tm g1 c1 (open_tm_wrt_tm b1 (a_Var_f x1)))).
 Proof. Admitted.
 
-Hint Resolve co_subst_co_tm_a_UAbs : lngen.
+#[export] Hint Resolve co_subst_co_tm_a_UAbs : lngen.
 
 Lemma co_subst_co_tm_a_Pi :
 forall x1 psi1 A1 B1 g1 c1,
@@ -9564,7 +9517,7 @@ forall x1 psi1 A1 B1 g1 c1,
   co_subst_co_tm g1 c1 (a_Pi psi1 A1 B1) = a_Pi (psi1) (co_subst_co_tm g1 c1 A1) (close_tm_wrt_tm x1 (co_subst_co_tm g1 c1 (open_tm_wrt_tm B1 (a_Var_f x1)))).
 Proof. Admitted.
 
-Hint Resolve co_subst_co_tm_a_Pi : lngen.
+#[export] Hint Resolve co_subst_co_tm_a_Pi : lngen.
 
 Lemma co_subst_co_tm_a_CPi :
 forall c2 psi1 phi1 B1 g1 c1,
@@ -9573,7 +9526,7 @@ forall c2 psi1 phi1 B1 g1 c1,
   co_subst_co_tm g1 c1 (a_CPi psi1 phi1 B1) = a_CPi (psi1) (co_subst_co_constraint g1 c1 phi1) (close_tm_wrt_co c2 (co_subst_co_tm g1 c1 (open_tm_wrt_co B1 (g_Var_f c2)))).
 Proof. Admitted.
 
-Hint Resolve co_subst_co_tm_a_CPi : lngen.
+#[export] Hint Resolve co_subst_co_tm_a_CPi : lngen.
 
 Lemma co_subst_co_tm_a_CAbs :
 forall c2 psi1 phi1 b1 g1 c1,
@@ -9582,7 +9535,7 @@ forall c2 psi1 phi1 b1 g1 c1,
   co_subst_co_tm g1 c1 (a_CAbs psi1 phi1 b1) = a_CAbs (psi1) (co_subst_co_constraint g1 c1 phi1) (close_tm_wrt_co c2 (co_subst_co_tm g1 c1 (open_tm_wrt_co b1 (g_Var_f c2)))).
 Proof. Admitted.
 
-Hint Resolve co_subst_co_tm_a_CAbs : lngen.
+#[export] Hint Resolve co_subst_co_tm_a_CAbs : lngen.
 
 Lemma co_subst_co_tm_a_UCAbs :
 forall c2 psi1 b1 g1 c1,
@@ -9591,7 +9544,7 @@ forall c2 psi1 b1 g1 c1,
   co_subst_co_tm g1 c1 (a_UCAbs psi1 b1) = a_UCAbs (psi1) (close_tm_wrt_co c2 (co_subst_co_tm g1 c1 (open_tm_wrt_co b1 (g_Var_f c2)))).
 Proof. Admitted.
 
-Hint Resolve co_subst_co_tm_a_UCAbs : lngen.
+#[export] Hint Resolve co_subst_co_tm_a_UCAbs : lngen.
 
 Lemma tm_subst_tm_co_g_PiCong :
 forall x2 psi1 g1 g2 a1 x1,
@@ -9600,7 +9553,7 @@ forall x2 psi1 g1 g2 a1 x1,
   tm_subst_tm_co a1 x1 (g_PiCong psi1 g1 g2) = g_PiCong (psi1) (tm_subst_tm_co a1 x1 g1) (close_co_wrt_tm x2 (tm_subst_tm_co a1 x1 (open_co_wrt_tm g2 (a_Var_f x2)))).
 Proof. Admitted.
 
-Hint Resolve tm_subst_tm_co_g_PiCong : lngen.
+#[export] Hint Resolve tm_subst_tm_co_g_PiCong : lngen.
 
 Lemma tm_subst_tm_co_g_AbsCong :
 forall x2 psi1 g1 g2 a1 x1,
@@ -9609,7 +9562,7 @@ forall x2 psi1 g1 g2 a1 x1,
   tm_subst_tm_co a1 x1 (g_AbsCong psi1 g1 g2) = g_AbsCong (psi1) (tm_subst_tm_co a1 x1 g1) (close_co_wrt_tm x2 (tm_subst_tm_co a1 x1 (open_co_wrt_tm g2 (a_Var_f x2)))).
 Proof. Admitted.
 
-Hint Resolve tm_subst_tm_co_g_AbsCong : lngen.
+#[export] Hint Resolve tm_subst_tm_co_g_AbsCong : lngen.
 
 Lemma tm_subst_tm_co_g_CPiCong :
 forall c1 g1 g2 a1 x1,
@@ -9618,7 +9571,7 @@ forall c1 g1 g2 a1 x1,
   tm_subst_tm_co a1 x1 (g_CPiCong g1 g2) = g_CPiCong (tm_subst_tm_co a1 x1 g1) (close_co_wrt_co c1 (tm_subst_tm_co a1 x1 (open_co_wrt_co g2 (g_Var_f c1)))).
 Proof. Admitted.
 
-Hint Resolve tm_subst_tm_co_g_CPiCong : lngen.
+#[export] Hint Resolve tm_subst_tm_co_g_CPiCong : lngen.
 
 Lemma tm_subst_tm_co_g_CAbsCong :
 forall c1 psi1 g1 g2 g3 a1 x1,
@@ -9627,7 +9580,7 @@ forall c1 psi1 g1 g2 g3 a1 x1,
   tm_subst_tm_co a1 x1 (g_CAbsCong psi1 g1 g2 g3) = g_CAbsCong (psi1) (tm_subst_tm_co a1 x1 g1) (close_co_wrt_co c1 (tm_subst_tm_co a1 x1 (open_co_wrt_co g2 (g_Var_f c1)))) (tm_subst_tm_co a1 x1 g3).
 Proof. Admitted.
 
-Hint Resolve tm_subst_tm_co_g_CAbsCong : lngen.
+#[export] Hint Resolve tm_subst_tm_co_g_CAbsCong : lngen.
 
 Lemma co_subst_co_co_g_PiCong :
 forall x1 psi1 g2 g3 g1 c1,
@@ -9636,7 +9589,7 @@ forall x1 psi1 g2 g3 g1 c1,
   co_subst_co_co g1 c1 (g_PiCong psi1 g2 g3) = g_PiCong (psi1) (co_subst_co_co g1 c1 g2) (close_co_wrt_tm x1 (co_subst_co_co g1 c1 (open_co_wrt_tm g3 (a_Var_f x1)))).
 Proof. Admitted.
 
-Hint Resolve co_subst_co_co_g_PiCong : lngen.
+#[export] Hint Resolve co_subst_co_co_g_PiCong : lngen.
 
 Lemma co_subst_co_co_g_AbsCong :
 forall x1 psi1 g2 g3 g1 c1,
@@ -9645,7 +9598,7 @@ forall x1 psi1 g2 g3 g1 c1,
   co_subst_co_co g1 c1 (g_AbsCong psi1 g2 g3) = g_AbsCong (psi1) (co_subst_co_co g1 c1 g2) (close_co_wrt_tm x1 (co_subst_co_co g1 c1 (open_co_wrt_tm g3 (a_Var_f x1)))).
 Proof. Admitted.
 
-Hint Resolve co_subst_co_co_g_AbsCong : lngen.
+#[export] Hint Resolve co_subst_co_co_g_AbsCong : lngen.
 
 Lemma co_subst_co_co_g_CPiCong :
 forall c2 g2 g3 g1 c1,
@@ -9654,7 +9607,7 @@ forall c2 g2 g3 g1 c1,
   co_subst_co_co g1 c1 (g_CPiCong g2 g3) = g_CPiCong (co_subst_co_co g1 c1 g2) (close_co_wrt_co c2 (co_subst_co_co g1 c1 (open_co_wrt_co g3 (g_Var_f c2)))).
 Proof. Admitted.
 
-Hint Resolve co_subst_co_co_g_CPiCong : lngen.
+#[export] Hint Resolve co_subst_co_co_g_CPiCong : lngen.
 
 Lemma co_subst_co_co_g_CAbsCong :
 forall c2 psi1 g2 g3 g4 g1 c1,
@@ -9663,7 +9616,7 @@ forall c2 psi1 g2 g3 g4 g1 c1,
   co_subst_co_co g1 c1 (g_CAbsCong psi1 g2 g3 g4) = g_CAbsCong (psi1) (co_subst_co_co g1 c1 g2) (close_co_wrt_co c2 (co_subst_co_co g1 c1 (open_co_wrt_co g3 (g_Var_f c2)))) (co_subst_co_co g1 c1 g4).
 Proof. Admitted.
 
-Hint Resolve co_subst_co_co_g_CAbsCong : lngen.
+#[export] Hint Resolve co_subst_co_co_g_CAbsCong : lngen.
 
 (* begin hide *)
 
@@ -9690,8 +9643,8 @@ forall a1 x1 a2 n1,
   open_tm_wrt_tm_rec n1 a2 a1 = tm_subst_tm_tm a2 x1 (open_tm_wrt_tm_rec n1 (a_Var_f x1) a1).
 Proof. Admitted.
 
-Hint Resolve tm_subst_tm_tm_intro_rec : lngen.
-Hint Rewrite tm_subst_tm_tm_intro_rec using solve [auto] : lngen.
+#[export] Hint Resolve tm_subst_tm_tm_intro_rec : lngen.
+#[export] Hint Rewrite tm_subst_tm_tm_intro_rec using solve [auto] : lngen.
 
 Lemma tm_subst_tm_brs_intro_rec :
 forall brs1 x1 a1 n1,
@@ -9699,8 +9652,8 @@ forall brs1 x1 a1 n1,
   open_brs_wrt_tm_rec n1 a1 brs1 = tm_subst_tm_brs a1 x1 (open_brs_wrt_tm_rec n1 (a_Var_f x1) brs1).
 Proof. Admitted.
 
-Hint Resolve tm_subst_tm_brs_intro_rec : lngen.
-Hint Rewrite tm_subst_tm_brs_intro_rec using solve [auto] : lngen.
+#[export] Hint Resolve tm_subst_tm_brs_intro_rec : lngen.
+#[export] Hint Rewrite tm_subst_tm_brs_intro_rec using solve [auto] : lngen.
 
 Lemma tm_subst_tm_co_intro_rec :
 forall g1 x1 a1 n1,
@@ -9708,8 +9661,8 @@ forall g1 x1 a1 n1,
   open_co_wrt_tm_rec n1 a1 g1 = tm_subst_tm_co a1 x1 (open_co_wrt_tm_rec n1 (a_Var_f x1) g1).
 Proof. Admitted.
 
-Hint Resolve tm_subst_tm_co_intro_rec : lngen.
-Hint Rewrite tm_subst_tm_co_intro_rec using solve [auto] : lngen.
+#[export] Hint Resolve tm_subst_tm_co_intro_rec : lngen.
+#[export] Hint Rewrite tm_subst_tm_co_intro_rec using solve [auto] : lngen.
 
 Lemma tm_subst_tm_constraint_intro_rec :
 forall phi1 x1 a1 n1,
@@ -9717,8 +9670,8 @@ forall phi1 x1 a1 n1,
   open_constraint_wrt_tm_rec n1 a1 phi1 = tm_subst_tm_constraint a1 x1 (open_constraint_wrt_tm_rec n1 (a_Var_f x1) phi1).
 Proof. Admitted.
 
-Hint Resolve tm_subst_tm_constraint_intro_rec : lngen.
-Hint Rewrite tm_subst_tm_constraint_intro_rec using solve [auto] : lngen.
+#[export] Hint Resolve tm_subst_tm_constraint_intro_rec : lngen.
+#[export] Hint Rewrite tm_subst_tm_constraint_intro_rec using solve [auto] : lngen.
 
 (* begin hide *)
 
@@ -9745,8 +9698,8 @@ forall a1 c1 g1 n1,
   open_tm_wrt_co_rec n1 g1 a1 = co_subst_co_tm g1 c1 (open_tm_wrt_co_rec n1 (g_Var_f c1) a1).
 Proof. Admitted.
 
-Hint Resolve co_subst_co_tm_intro_rec : lngen.
-Hint Rewrite co_subst_co_tm_intro_rec using solve [auto] : lngen.
+#[export] Hint Resolve co_subst_co_tm_intro_rec : lngen.
+#[export] Hint Rewrite co_subst_co_tm_intro_rec using solve [auto] : lngen.
 
 Lemma co_subst_co_brs_intro_rec :
 forall brs1 c1 g1 n1,
@@ -9754,8 +9707,8 @@ forall brs1 c1 g1 n1,
   open_brs_wrt_co_rec n1 g1 brs1 = co_subst_co_brs g1 c1 (open_brs_wrt_co_rec n1 (g_Var_f c1) brs1).
 Proof. Admitted.
 
-Hint Resolve co_subst_co_brs_intro_rec : lngen.
-Hint Rewrite co_subst_co_brs_intro_rec using solve [auto] : lngen.
+#[export] Hint Resolve co_subst_co_brs_intro_rec : lngen.
+#[export] Hint Rewrite co_subst_co_brs_intro_rec using solve [auto] : lngen.
 
 Lemma co_subst_co_co_intro_rec :
 forall g1 c1 g2 n1,
@@ -9763,8 +9716,8 @@ forall g1 c1 g2 n1,
   open_co_wrt_co_rec n1 g2 g1 = co_subst_co_co g2 c1 (open_co_wrt_co_rec n1 (g_Var_f c1) g1).
 Proof. Admitted.
 
-Hint Resolve co_subst_co_co_intro_rec : lngen.
-Hint Rewrite co_subst_co_co_intro_rec using solve [auto] : lngen.
+#[export] Hint Resolve co_subst_co_co_intro_rec : lngen.
+#[export] Hint Rewrite co_subst_co_co_intro_rec using solve [auto] : lngen.
 
 Lemma co_subst_co_constraint_intro_rec :
 forall phi1 c1 g1 n1,
@@ -9772,8 +9725,8 @@ forall phi1 c1 g1 n1,
   open_constraint_wrt_co_rec n1 g1 phi1 = co_subst_co_constraint g1 c1 (open_constraint_wrt_co_rec n1 (g_Var_f c1) phi1).
 Proof. Admitted.
 
-Hint Resolve co_subst_co_constraint_intro_rec : lngen.
-Hint Rewrite co_subst_co_constraint_intro_rec using solve [auto] : lngen.
+#[export] Hint Resolve co_subst_co_constraint_intro_rec : lngen.
+#[export] Hint Rewrite co_subst_co_constraint_intro_rec using solve [auto] : lngen.
 
 Lemma tm_subst_tm_tm_intro :
 forall x1 a1 a2,
@@ -9781,7 +9734,7 @@ forall x1 a1 a2,
   open_tm_wrt_tm a1 a2 = tm_subst_tm_tm a2 x1 (open_tm_wrt_tm a1 (a_Var_f x1)).
 Proof. Admitted.
 
-Hint Resolve tm_subst_tm_tm_intro : lngen.
+#[export] Hint Resolve tm_subst_tm_tm_intro : lngen.
 
 Lemma tm_subst_tm_brs_intro :
 forall x1 brs1 a1,
@@ -9789,7 +9742,7 @@ forall x1 brs1 a1,
   open_brs_wrt_tm brs1 a1 = tm_subst_tm_brs a1 x1 (open_brs_wrt_tm brs1 (a_Var_f x1)).
 Proof. Admitted.
 
-Hint Resolve tm_subst_tm_brs_intro : lngen.
+#[export] Hint Resolve tm_subst_tm_brs_intro : lngen.
 
 Lemma tm_subst_tm_co_intro :
 forall x1 g1 a1,
@@ -9797,7 +9750,7 @@ forall x1 g1 a1,
   open_co_wrt_tm g1 a1 = tm_subst_tm_co a1 x1 (open_co_wrt_tm g1 (a_Var_f x1)).
 Proof. Admitted.
 
-Hint Resolve tm_subst_tm_co_intro : lngen.
+#[export] Hint Resolve tm_subst_tm_co_intro : lngen.
 
 Lemma tm_subst_tm_constraint_intro :
 forall x1 phi1 a1,
@@ -9805,7 +9758,7 @@ forall x1 phi1 a1,
   open_constraint_wrt_tm phi1 a1 = tm_subst_tm_constraint a1 x1 (open_constraint_wrt_tm phi1 (a_Var_f x1)).
 Proof. Admitted.
 
-Hint Resolve tm_subst_tm_constraint_intro : lngen.
+#[export] Hint Resolve tm_subst_tm_constraint_intro : lngen.
 
 Lemma co_subst_co_tm_intro :
 forall c1 a1 g1,
@@ -9813,7 +9766,7 @@ forall c1 a1 g1,
   open_tm_wrt_co a1 g1 = co_subst_co_tm g1 c1 (open_tm_wrt_co a1 (g_Var_f c1)).
 Proof. Admitted.
 
-Hint Resolve co_subst_co_tm_intro : lngen.
+#[export] Hint Resolve co_subst_co_tm_intro : lngen.
 
 Lemma co_subst_co_brs_intro :
 forall c1 brs1 g1,
@@ -9821,7 +9774,7 @@ forall c1 brs1 g1,
   open_brs_wrt_co brs1 g1 = co_subst_co_brs g1 c1 (open_brs_wrt_co brs1 (g_Var_f c1)).
 Proof. Admitted.
 
-Hint Resolve co_subst_co_brs_intro : lngen.
+#[export] Hint Resolve co_subst_co_brs_intro : lngen.
 
 Lemma co_subst_co_co_intro :
 forall c1 g1 g2,
@@ -9829,7 +9782,7 @@ forall c1 g1 g2,
   open_co_wrt_co g1 g2 = co_subst_co_co g2 c1 (open_co_wrt_co g1 (g_Var_f c1)).
 Proof. Admitted.
 
-Hint Resolve co_subst_co_co_intro : lngen.
+#[export] Hint Resolve co_subst_co_co_intro : lngen.
 
 Lemma co_subst_co_constraint_intro :
 forall c1 phi1 g1,
@@ -9837,7 +9790,7 @@ forall c1 phi1 g1,
   open_constraint_wrt_co phi1 g1 = co_subst_co_constraint g1 c1 (open_constraint_wrt_co phi1 (g_Var_f c1)).
 Proof. Admitted.
 
-Hint Resolve co_subst_co_constraint_intro : lngen.
+#[export] Hint Resolve co_subst_co_constraint_intro : lngen.
 
 
 (* *********************************************************************** *)

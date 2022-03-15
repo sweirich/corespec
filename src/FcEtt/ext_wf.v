@@ -166,6 +166,7 @@ Proof.
     apply ctx_sub_refl.
     sfirstorder ctrs:uniq.
     sauto lq: on use: ctx_sub_uniq, ctx_sub_dom, Ctx_uniq.
+    hauto l: on use: ctx_sub_meet_ctx_l.
   - inversion H; auto.
   - sauto q: on use: ctx_sub_meet_ctx_l.
   - sauto q: on use: ctx_sub_meet_ctx_l.
@@ -200,7 +201,6 @@ Proof.
   all: lc_solve.
   all : try constructor; lc_solve.
   all : try sauto depth:1 lq: on.
-  (* The Impl case may require strengthening the typing relation *)
 Qed.
 
 
