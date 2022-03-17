@@ -1061,7 +1061,8 @@ P |- psi a => a'
 ----------------------- :: CApp
 P |- psi a [o] => a' [o]
 
-P |- psi a => a'
+% TODO
+P , x : psi0 |- psi a => a'
 -------------------------------- :: Abs
 P |- psi \ psi0 x. a => \ psi0 x. a'
 
@@ -1070,7 +1071,7 @@ P , x:psi |- psi B => B'
 -------------------------------------------- :: Pi
 P |- psi all x: psi0 A -> B => all x:psi0 A' -> B'
 
-P |- psi a => a'
+P , c : psi0 |- psi a => a'
 --------------------------- :: CAbs
 P |- psi /\ psi0 c . a => /\ psi0 c . a'
 
@@ -1101,7 +1102,7 @@ P |- psi \psi0 x. a => b'
 P |- psi b => b'
 a = b [o]
 ----------------------------- :: EtaC
-P |- psi /\top c. a => b'
+P |- psi /\psi0 c. a => b'
 
 
 defns
