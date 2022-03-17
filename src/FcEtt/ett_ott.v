@@ -62,22 +62,19 @@ with co : Set :=  (*r explicit coercions *)
  | g_Left (g:co) (g':co)
  | g_Right (g:co) (g':co).
 
+Inductive sort : Set :=  (*r binding classifier *)
+ | Tm (A:tm)
+ | Co (phi:constraint).
 
 Inductive sig_sort : Set :=  (*r signature classifier *)
  | Cs (A:tm)
  | Ax (a:tm) (A:tm).
-
-Inductive sort : Set :=  (*r binding classifier *)
- | Tm (A:tm)
- | Co (phi:constraint).
 
 Definition sig : Set := list (atom * (grade * sig_sort)).
 
 Definition econtext : Set := list ( atom * grade ).
 
 Definition context : Set := list ( atom * (grade * sort) ).
-
-
 
 (* EXPERIMENTAL *)
 (** auxiliary functions on the new list types *)
@@ -1113,14 +1110,14 @@ with Par : econtext -> grade -> tm -> tm -> Prop :=    (* defn Par *)
      Par P psi a a' ->
      Par P psi (a_CApp a g_Triv) (a_CApp a' g_Triv)
  | Par_Abs : forall (L:vars) (P:econtext) (psi psi0:grade) (a a':tm),
-      ( forall x , x \notin  L  -> Par P psi  ( open_tm_wrt_tm a (a_Var_f x) )   ( open_tm_wrt_tm a' (a_Var_f x) )  )  ->
+      ( forall x , x \notin  L  -> Par  (( x ~  psi0 ) ++  P )  psi  ( open_tm_wrt_tm a (a_Var_f x) )   ( open_tm_wrt_tm a' (a_Var_f x) )  )  ->
      Par P psi (a_UAbs psi0 a) (a_UAbs psi0 a')
  | Par_Pi : forall (L:vars) (P:econtext) (psi psi0:grade) (A B A' B':tm),
      Par P psi A A' ->
       ( forall x , x \notin  L  -> Par  (( x ~  psi ) ++  P )  psi  ( open_tm_wrt_tm B (a_Var_f x) )   ( open_tm_wrt_tm B' (a_Var_f x) )  )  ->
      Par P psi (a_Pi psi0 A B) (a_Pi psi0 A' B')
  | Par_CAbs : forall (L:vars) (P:econtext) (psi psi0:grade) (a a':tm),
-      ( forall c , c \notin  L  -> Par P psi  ( open_tm_wrt_co a (g_Var_f c) )   ( open_tm_wrt_co a' (g_Var_f c) )  )  ->
+      ( forall c , c \notin  L  -> Par  (( c ~  psi0 ) ++  P )  psi  ( open_tm_wrt_co a (g_Var_f c) )   ( open_tm_wrt_co a' (g_Var_f c) )  )  ->
      Par P psi (a_UCAbs psi0 a) (a_UCAbs psi0 a')
  | Par_CPi : forall (L:vars) (P:econtext) (psi psi0:grade) (phi:constraint) (a:tm) (phi':constraint) (a':tm),
       ( forall c , c \notin  L  -> Par  (( c ~  psi ) ++  P )  psi  ( open_tm_wrt_co a (g_Var_f c) )   ( open_tm_wrt_co a' (g_Var_f c) )  )  ->
@@ -1135,10 +1132,10 @@ with Par : econtext -> grade -> tm -> tm -> Prop :=    (* defn Par *)
      Par P psi b b' ->
       ( forall x , x \notin  L  ->  (  ( open_tm_wrt_tm a (a_Var_f x) )   =  (a_App b psi0 (a_Var_f x)) )  )  ->
      Par P psi (a_UAbs psi0 a) b'
- | Par_EtaC : forall (L:vars) (P:econtext) (psi:grade) (a b' b:tm),
+ | Par_EtaC : forall (L:vars) (P:econtext) (psi psi0:grade) (a b' b:tm),
      Par P psi b b' ->
       ( forall c , c \notin  L  ->  (  ( open_tm_wrt_co a (g_Var_f c) )   =  (a_CApp b g_Triv) )  )  ->
-     Par P psi (a_UCAbs  q_Top  a) b'.
+     Par P psi (a_UCAbs psi0 a) b'.
 
 (* defns Jmultipar *)
 Inductive multipar : econtext -> grade -> tm -> tm -> Prop :=    (* defn multipar *)
