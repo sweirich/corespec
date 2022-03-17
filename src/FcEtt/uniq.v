@@ -22,20 +22,11 @@ Qed.
 
 Arguments ctx_sub_uniq {_} {_}.
 
-
 Lemma Grade_uniq : forall P psi a, Grade P psi a -> uniq P.
 Proof. intros; induction H; eauto;
        pick fresh x; repeat spec x;
        match goal with [ H2 : uniq ([_] ++ _) |- _ ] => inversion H2; auto end.
 Qed.
-
-Scheme GEq_ind' := Induction for GEq Sort Prop
-    with CEq_ind'   := Induction for CEq Sort Prop
-    with CoGEq_ind' := Induction for CoGEq Sort Prop.
-
-Combined Scheme CEq_GEq_mutual
-  from CEq_ind', GEq_ind', CoGEq_ind'.
-
 
 Lemma CEq_GEq_CoGEq_uniq : 
   (forall P psi psi0 a b,

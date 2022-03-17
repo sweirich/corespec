@@ -24,6 +24,11 @@ Ltac fresh_apply_GEq x :=
     end.
 
 
+
+
+
+
+
 (* TODO
    - automated f_equal (etc)
    - split forall ands

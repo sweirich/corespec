@@ -1032,7 +1032,7 @@ P |= psi a
 P |- psi a => a
 
 
-P |- psi a => (\psi x.a')
+P |- psi a => (\psi0 x.a')
 P |- psi psi0 b => b'
 ---------------------------- :: Beta
 P |- psi a psi0 b => a' { b' / x }

@@ -303,6 +303,15 @@ Qed.
 
 (* Induction schemes *)
 
+
+
+Scheme GEq_ind' := Induction for GEq Sort Prop
+    with CEq_ind'   := Induction for CEq Sort Prop
+    with CoGEq_ind' := Induction for CoGEq Sort Prop.
+
+Combined Scheme CEq_GEq_mutual
+  from CEq_ind', GEq_ind', CoGEq_ind'.
+
 Scheme typing_ind' := Induction for Typing Sort Prop
    with wff_ind'   := Induction for PropWff Sort Prop
    with iso_ind'   := Induction for Iso Sort Prop

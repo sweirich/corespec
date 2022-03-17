@@ -25,8 +25,6 @@ Ltac fresh_apply_Grade x :=
     end.
 
 
-
-
 Lemma CGrade_Grade_weakening_middle : (forall P psi b,
     Grade P psi b -> forall P1 P2, P = P2 ++ P1 -> forall P3,
      uniq (P2 ++ P3 ++ P1) 

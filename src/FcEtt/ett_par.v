@@ -8,6 +8,7 @@ Require Import FcEtt.utils.
 Require Export FcEtt.ett_inf.
 Require Export FcEtt.ett_ott.
 Require Export FcEtt.ett_ind.
+Require Export FcEtt.grade_subst.
 
 
 Require Export FcEtt.ext_context_fv.
@@ -101,10 +102,41 @@ Definition joins_constraint P psi phi1 phi2 := exists phi3, uniq P  /\
                                                      multipar_prop P psi phi1 phi3 /\ multipar_prop P psi phi2 phi3.
 
 
+Ltac invert_CGrade a :=
+  match goal with 
+    [ H : CGrade ?P ?phi ?psi a |- _] => inversion H ; subst 
+  end.
+
 (* Lemma CPar_Par_Grade : (forall P psi phi a b, CPar P psi phi a b -> CGrade P psi phi a /\ CGrade P psi phi b) /\  *)
 (*                        (forall P psi a b, Par P psi a b -> Grade P psi a /\ Grade P psi b). *)
 
-Lemma Par_grade_mutual : 
+Lemma Par_grade_mutual :
+  (  forall P1 psi a b, Par P1 psi a b -> Grade P1 psi a /\ Grade P1 psi b) /\
+  (  forall P1 psi phi1 phi2, ParProp P1 psi phi1 phi2 -> CoGrade P1 psi phi1 /\ CoGrade P1 psi phi2) /\
+  (  forall P1 psi psi0 a b, CPar P1 psi psi0 a b -> CGrade P1 psi psi0 a /\ CGrade P1 psi psi0 b) /\
+  (  forall P1 psi psi0 phi1 phi2, CParProp P1 psi psi0 phi1 phi2 -> True).
+Proof.
+  apply Par_tm_constraint_mutual.
+  all: split; split_hyp; eauto.
+  all: try solve [invert_Grade; subst; auto].
+  all: try solve [fresh_apply_Grade x; auto; repeat spec x; split_hyp; eauto].
+  - invert_Grade; subst. pick fresh y; repeat spec y.
+    invert_CGrade b'. eapply Grade_open; eauto. eapply Grade_open_irrel; eauto. 
+  - admit.
+(* invert_Grade; subst. pick fresh y; repeat spec y. *)
+    (* invert_CGrade b'. eapply Grade_open; eauto. eapply Grade_open_irrel; eauto.  *)
+    
+  - fresh_apply_Grade x; auto; repeat spec x; split_hyp; eauto.
+  - admit.
+  - fresh_apply_Grade x; auto; repeat spec x; split_hyp; eauto.
+  - admit.
+  - 
+
+
+    Check Grade_open.
+    invert_Grade; subst; pick fresh y; repeat spec y. invert_CGrade b'. eapply Grade_open; eauto. eapply Grade_open_irrel; eauto.
+fresh_apply_Grade x; auto; repeat spec x; split_hyp; eauto. 
+  
 
 
 Lemma ParProp_refl : forall P psi phi, lc_constraint phi -> ParProp P psi phi phi.

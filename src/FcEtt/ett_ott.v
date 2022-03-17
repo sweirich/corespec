@@ -62,19 +62,22 @@ with co : Set :=  (*r explicit coercions *)
  | g_Left (g:co) (g':co)
  | g_Right (g:co) (g':co).
 
+
 Inductive sig_sort : Set :=  (*r signature classifier *)
  | Cs (A:tm)
  | Ax (a:tm) (A:tm).
-
-Definition sig : Set := list (atom * (grade * sig_sort)).
 
 Inductive sort : Set :=  (*r binding classifier *)
  | Tm (A:tm)
  | Co (phi:constraint).
 
+Definition sig : Set := list (atom * (grade * sig_sort)).
+
 Definition econtext : Set := list ( atom * grade ).
 
 Definition context : Set := list ( atom * (grade * sort) ).
+
+
 
 (* EXPERIMENTAL *)
 (** auxiliary functions on the new list types *)
@@ -1096,7 +1099,7 @@ with Par : econtext -> grade -> tm -> tm -> Prop :=    (* defn Par *)
      Grade P psi a ->
      Par P psi a a
  | Par_Beta : forall (P:econtext) (psi:grade) (a:tm) (psi0:grade) (b a' b':tm),
-     Par P psi a  ( (a_UAbs psi a') )  ->
+     Par P psi a  ( (a_UAbs psi0 a') )  ->
      CPar P psi psi0 b b' ->
      Par P psi (a_App a psi0 b)  (open_tm_wrt_tm  a'   b' ) 
  | Par_App : forall (P:econtext) (psi:grade) (a:tm) (psi0:grade) (b a' b':tm),

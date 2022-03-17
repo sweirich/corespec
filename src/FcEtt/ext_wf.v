@@ -33,6 +33,8 @@ Qed.
 Hint Resolve DataTy_lc : lc.
 *)
 
+
+
 Lemma Value_lc : forall A, Value A -> lc_tm A.
 Proof.
   induction 1; eauto.
@@ -204,6 +206,7 @@ Proof.
 Qed.
 
 
+
 Definition Typing_lc  := first lc_mutual.
 Definition PropWff_lc := second lc_mutual.
 Definition Iso_lc     := third lc_mutual.
@@ -276,3 +279,52 @@ Qed.
 
 Lemma Typing_uniq : forall W psi a A, Typing W psi a A -> uniq W.
 Proof. hauto lq: on use: Typing_Ctx, Ctx_uniq. Qed.
+
+
+
+
+Lemma CGrade_Grade_lc : 
+  (forall P psi a,
+  Grade P psi a -> lc_tm a) /\
+  (forall P psi psi0 a,
+  CGrade P psi psi0 a -> lc_tm a) /\
+  (forall P psi phi,
+  CoGrade P psi phi -> lc_constraint phi).
+Proof. 
+  apply CGrade_Grade_mutual.
+  all: intros; split_hyp; eauto.
+Qed.
+
+Lemma Grade_lc : forall {P psi a}, Grade P psi a -> lc_tm a.
+Proof. sfirstorder use:CGrade_Grade_lc. Qed.
+Lemma CGrade_lc : forall {P psi phi a}, CGrade P psi phi a -> lc_tm a.
+Proof. sfirstorder use:CGrade_Grade_lc. Qed.
+Lemma CoGrade_lc : forall P psi phi, CoGrade P psi phi -> lc_constraint phi.
+Proof. sfirstorder use:CGrade_Grade_lc. Qed.
+
+Lemma CEq_GEq_lc : 
+  (forall P psi psi0 a b,
+  CEq P psi psi0 a b -> lc_tm a /\ lc_tm b) /\
+  (forall P psi a b,
+    GEq P psi a b -> lc_tm a /\ lc_tm b) /\
+  (forall P psi phi1 phi2, CoGEq P psi phi1 phi2 -> lc_constraint phi1 /\ lc_constraint phi2).
+Proof. 
+  apply CEq_GEq_mutual.
+  all: pre; basic_solve_n 2.
+  all: split_hyp.
+  all: lc_solve.
+Qed.
+
+
+Lemma GEq_lc1 : forall {W a psi b}, GEq W psi a b -> lc_tm a.
+Proof. hauto l: on use: CEq_GEq_lc. Qed.
+Lemma GEq_lc2 : forall {W a psi b}, GEq W psi a b -> lc_tm b.
+Proof. hauto l: on use: CEq_GEq_lc. Qed.
+Lemma CEq_lc1 : forall {W a psi phi b}, CEq W psi phi a b -> lc_tm a.
+Proof. hauto l: on use: CEq_GEq_lc. Qed.
+Lemma CEq_lc2 : forall {W a psi phi b}, CEq W psi phi a b -> lc_tm b.
+Proof. hauto l: on use: CEq_GEq_lc. Qed.
+Lemma CoGEq_lc1 : forall {P psi phi1 phi2}, CoGEq P psi phi1 phi2 -> lc_constraint phi1.
+Proof. hauto l: on use: CEq_GEq_lc. Qed.
+Lemma CoGEq_lc2 : forall {P psi phi1 phi2}, CoGEq P psi phi1 phi2 -> lc_constraint phi2.
+Proof. hauto l: on use: CEq_GEq_lc. Qed.
