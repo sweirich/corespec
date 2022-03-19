@@ -70,11 +70,15 @@ Inductive sig_sort : Set :=  (*r signature classifier *)
  | Cs (A:tm)
  | Ax (a:tm) (A:tm).
 
+Inductive esort : Set :=  (*r binding classifier *)
+ | e_Tm : esort
+ | e_Co : esort.
+
 Definition sig : Set := list (atom * (grade * sig_sort)).
 
-Definition econtext : Set := list ( atom * grade ).
-
 Definition context : Set := list ( atom * (grade * sort) ).
+
+Definition econtext : Set := list ( atom * (grade * esort) ).
 
 (* EXPERIMENTAL *)
 (** auxiliary functions on the new list types *)
@@ -420,6 +424,15 @@ with lc_constraint : constraint -> Prop :=    (* defn lc_constraint *)
      (lc_constraint phi2) ->
      (lc_constraint (Impl phi1 phi2)).
 
+(* defns LC_sort *)
+Inductive lc_sort : sort -> Prop :=    (* defn lc_sort *)
+ | lc_Tm : forall (A:tm),
+     (lc_tm A) ->
+     (lc_sort (Tm A))
+ | lc_Co : forall (phi:constraint),
+     (lc_constraint phi) ->
+     (lc_sort (Co phi)).
+
 (* defns LC_sig_sort *)
 Inductive lc_sig_sort : sig_sort -> Prop :=    (* defn lc_sig_sort *)
  | lc_Cs : forall (A:tm),
@@ -429,15 +442,6 @@ Inductive lc_sig_sort : sig_sort -> Prop :=    (* defn lc_sig_sort *)
      (lc_tm a) ->
      (lc_tm A) ->
      (lc_sig_sort (Ax a A)).
-
-(* defns LC_sort *)
-Inductive lc_sort : sort -> Prop :=    (* defn lc_sort *)
- | lc_Tm : forall (A:tm),
-     (lc_tm A) ->
-     (lc_sort (Tm A))
- | lc_Co : forall (phi:constraint),
-     (lc_constraint phi) ->
-     (lc_sort (Co phi)).
 (** free variables *)
 Fixpoint fv_tm_tm_co (g_5:co) : vars :=
   match g_5 with
@@ -722,8 +726,14 @@ end.
 
 Local Open Scope grade_scope.
 
+Definition sort_to_esort (s:sort) : esort :=
+  match s with
+  | Tm _ => e_Tm
+  | Co _ => e_Co
+  end.
+
 Definition labels : context -> econtext :=
-  map (fun '(u , s) => u).
+  map (fun '(u , s) => (u , sort_to_esort s)).
 
 Definition subst_ctx (a : tm) (x:var) : context -> context :=
   map (fun '(g, A) => (g, (tm_subst_tm_sort a x A))).
@@ -927,12 +937,18 @@ with erased_tm : tm -> Prop :=    (* defn erased_tm *)
 Inductive P_sub : econtext -> econtext -> Prop :=    (* defn P_sub *)
  | P_Empty : 
      P_sub  nil   nil 
- | P_Cons : forall (P1:econtext) (x:tmvar) (psi1:grade) (P2:econtext) (psi2:grade),
+ | P_ConsTm : forall (P1:econtext) (x:tmvar) (psi1:grade) (P2:econtext) (psi2:grade),
       ( psi1  <=  psi2 )  ->
      P_sub P1 P2 ->
       ~ AtomSetImpl.In  x  (dom  P1 )  ->
       ~ AtomSetImpl.In  x  (dom  P2 )  ->
-     P_sub  (( x ~  psi1 ) ++  P1 )   (( x ~  psi2 ) ++  P2 ) .
+     P_sub  (( x  ~ ( psi1 ,e_Tm)) ++  P1 )   (( x  ~ ( psi2 ,e_Tm)) ++  P2 ) 
+ | P_ConsCo : forall (P1:econtext) (c:covar) (psi1:grade) (P2:econtext) (psi2:grade),
+      ( psi1  <=  psi2 )  ->
+     P_sub P1 P2 ->
+      ~ AtomSetImpl.In  c  (dom  P1 )  ->
+      ~ AtomSetImpl.In  c  (dom  P2 )  ->
+     P_sub  (( c  ~ ( psi1 ,e_Co)) ++  P1 )   (( c  ~ ( psi2 ,e_Co)) ++  P2 ) .
 
 (* defns Wsub *)
 Inductive ctx_sub : context -> context -> Prop :=    (* defn ctx_sub *)
@@ -977,7 +993,7 @@ with CGrade : econtext -> grade -> grade -> tm -> Prop :=    (* defn CGrade *)
 with Grade : econtext -> grade -> tm -> Prop :=    (* defn Grade *)
  | G_Var : forall (P:econtext) (psi:grade) (x:tmvar) (psi0:grade),
       uniq  P  ->
-      binds  x   psi0   P  ->
+      binds  x  ( psi0 ,e_Tm)  P  ->
       ( psi0  <=  psi )  ->
      Grade P psi (a_Var_f x)
  | G_Type : forall (P:econtext) (psi:grade),
@@ -985,10 +1001,10 @@ with Grade : econtext -> grade -> tm -> Prop :=    (* defn Grade *)
      Grade P psi a_Star
  | G_Pi : forall (L:vars) (P:econtext) (psi psi0:grade) (A B:tm),
      Grade P psi A ->
-      ( forall x , x \notin  L  -> Grade  (( x ~  psi ) ++  P )  psi  ( open_tm_wrt_tm B (a_Var_f x) )  )  ->
+      ( forall x , x \notin  L  -> Grade  (( x  ~ ( psi ,e_Tm)) ++  P )  psi  ( open_tm_wrt_tm B (a_Var_f x) )  )  ->
      Grade P psi (a_Pi psi0 A B)
  | G_Abs : forall (L:vars) (P:econtext) (psi psi0:grade) (b:tm),
-      ( forall x , x \notin  L  -> Grade  (( x ~  psi0 ) ++  P )  psi  ( open_tm_wrt_tm b (a_Var_f x) )  )  ->
+      ( forall x , x \notin  L  -> Grade  (( x  ~ ( psi0 ,e_Tm)) ++  P )  psi  ( open_tm_wrt_tm b (a_Var_f x) )  )  ->
      Grade P psi (a_UAbs psi0 b)
  | G_App : forall (P:econtext) (psi:grade) (b:tm) (psi0:grade) (a:tm),
      Grade P psi b ->
@@ -996,10 +1012,10 @@ with Grade : econtext -> grade -> tm -> Prop :=    (* defn Grade *)
      Grade P psi (a_App b psi0 a)
  | G_CPi : forall (L:vars) (P:econtext) (psi psi0:grade) (phi:constraint) (B:tm),
      CoGrade P psi phi ->
-      ( forall c , c \notin  L  -> Grade  (( c ~  psi ) ++  P )  psi  ( open_tm_wrt_co B (g_Var_f c) )  )  ->
+      ( forall c , c \notin  L  -> Grade  (( c  ~ ( psi ,e_Co)) ++  P )  psi  ( open_tm_wrt_co B (g_Var_f c) )  )  ->
      Grade P psi (a_CPi psi0 phi B)
  | G_CAbs : forall (L:vars) (P:econtext) (psi psi0:grade) (b:tm),
-      ( forall c , c \notin  L  -> Grade  (( c ~  psi0 ) ++  P )  psi  ( open_tm_wrt_co b (g_Var_f c) )  )  ->
+      ( forall c , c \notin  L  -> Grade  (( c  ~ ( psi0 ,e_Co)) ++  P )  psi  ( open_tm_wrt_co b (g_Var_f c) )  )  ->
      Grade P psi (a_UCAbs psi0 b)
  | G_CApp : forall (P:econtext) (psi:grade) (b:tm),
      Grade P psi b ->
@@ -1030,7 +1046,7 @@ with CEq : econtext -> grade -> grade -> tm -> tm -> Prop :=    (* defn CEq *)
 with GEq : econtext -> grade -> tm -> tm -> Prop :=    (* defn GEq *)
  | GEq_Var : forall (P:econtext) (psi:grade) (x:tmvar) (psi0:grade),
       uniq  P  ->
-      binds  x   psi0   P  ->
+      binds  x  ( psi0 ,e_Tm)  P  ->
       ( psi0  <=  psi )  ->
      GEq P psi (a_Var_f x) (a_Var_f x)
  | GEq_Type : forall (P:econtext) (psi:grade),
@@ -1038,10 +1054,10 @@ with GEq : econtext -> grade -> tm -> tm -> Prop :=    (* defn GEq *)
      GEq P psi a_Star a_Star
  | GEq_Pi : forall (L:vars) (P:econtext) (psi psi0:grade) (A1 B1 A2 B2:tm),
      GEq P psi A1 A2 ->
-      ( forall x , x \notin  L  -> GEq  (( x ~  psi ) ++  P )  psi  ( open_tm_wrt_tm B1 (a_Var_f x) )   ( open_tm_wrt_tm B2 (a_Var_f x) )  )  ->
+      ( forall x , x \notin  L  -> GEq  (( x  ~ ( psi ,e_Tm)) ++  P )  psi  ( open_tm_wrt_tm B1 (a_Var_f x) )   ( open_tm_wrt_tm B2 (a_Var_f x) )  )  ->
      GEq P psi (a_Pi psi0 A1 B1) (a_Pi psi0 A2 B2)
  | GEq_Abs : forall (L:vars) (P:econtext) (psi psi0:grade) (b1 b2:tm),
-      ( forall x , x \notin  L  -> GEq  (( x ~  psi0 ) ++  P )  psi  ( open_tm_wrt_tm b1 (a_Var_f x) )   ( open_tm_wrt_tm b2 (a_Var_f x) )  )  ->
+      ( forall x , x \notin  L  -> GEq  (( x  ~ ( psi0 ,e_Tm)) ++  P )  psi  ( open_tm_wrt_tm b1 (a_Var_f x) )   ( open_tm_wrt_tm b2 (a_Var_f x) )  )  ->
      GEq P psi (a_UAbs psi0 b1) (a_UAbs psi0 b2)
  | GEq_App : forall (P:econtext) (psi:grade) (b1:tm) (psi0:grade) (a1 b2 a2:tm),
      GEq P psi b1 b2 ->
@@ -1049,14 +1065,20 @@ with GEq : econtext -> grade -> tm -> tm -> Prop :=    (* defn GEq *)
      GEq P psi (a_App b1 psi0 a1) (a_App b2 psi0 a2)
  | GEq_CPi : forall (L:vars) (P:econtext) (psi psi0:grade) (phi1:constraint) (B1:tm) (phi2:constraint) (B2:tm),
      CoGEq P psi phi1 phi2 ->
-      ( forall c , c \notin  L  -> GEq  (( c ~  psi ) ++  P )  psi  ( open_tm_wrt_co B1 (g_Var_f c) )   ( open_tm_wrt_co B2 (g_Var_f c) )  )  ->
+      ( forall c , c \notin  L  -> GEq  (( c  ~ ( psi ,e_Co)) ++  P )  psi  ( open_tm_wrt_co B1 (g_Var_f c) )   ( open_tm_wrt_co B2 (g_Var_f c) )  )  ->
      GEq P psi (a_CPi psi0 phi1 B1) (a_CPi psi0 phi2 B2)
  | GEq_CAbs : forall (L:vars) (P:econtext) (psi psi0:grade) (b1 b2:tm),
-      ( forall c , c \notin  L  -> GEq  (( c ~  psi0 ) ++  P )  psi  ( open_tm_wrt_co b1 (g_Var_f c) )   ( open_tm_wrt_co b2 (g_Var_f c) )  )  ->
+      ( forall c , c \notin  L  -> GEq  (( c  ~ ( psi0 ,e_Co)) ++  P )  psi  ( open_tm_wrt_co b1 (g_Var_f c) )   ( open_tm_wrt_co b2 (g_Var_f c) )  )  ->
      GEq P psi (a_UCAbs psi0 b1) (a_UCAbs psi0 b2)
  | GEq_CApp : forall (P:econtext) (psi:grade) (b1 b2:tm),
      GEq P psi b1 b2 ->
-     GEq P psi (a_CApp b1 g_Triv) (a_CApp b2 g_Triv).
+     GEq P psi (a_CApp b1 g_Triv) (a_CApp b2 g_Triv)
+ | GEq_Fam : forall (P:econtext) (psi:grade) (F:tyfam) (a:tm) (psi0:grade) (A:tm),
+      binds  F  ( psi0 , (Ax  a A ))   toplevel   ->
+      ( psi0  <=  psi )  ->
+      ( Grade  nil   q_C  A )  ->
+      uniq  P  ->
+     GEq P psi (a_Fam F) a.
 
 (* defns Jpar *)
 Inductive CParProp : econtext -> grade -> grade -> constraint -> constraint -> Prop :=    (* defn CParProp *)
@@ -1110,17 +1132,17 @@ with Par : econtext -> grade -> tm -> tm -> Prop :=    (* defn Par *)
      Par P psi a a' ->
      Par P psi (a_CApp a g_Triv) (a_CApp a' g_Triv)
  | Par_Abs : forall (L:vars) (P:econtext) (psi psi0:grade) (a a':tm),
-      ( forall x , x \notin  L  -> Par  (( x ~  psi0 ) ++  P )  psi  ( open_tm_wrt_tm a (a_Var_f x) )   ( open_tm_wrt_tm a' (a_Var_f x) )  )  ->
+      ( forall x , x \notin  L  -> Par  (( x  ~ ( psi0 ,e_Tm)) ++  P )  psi  ( open_tm_wrt_tm a (a_Var_f x) )   ( open_tm_wrt_tm a' (a_Var_f x) )  )  ->
      Par P psi (a_UAbs psi0 a) (a_UAbs psi0 a')
  | Par_Pi : forall (L:vars) (P:econtext) (psi psi0:grade) (A B A' B':tm),
      Par P psi A A' ->
-      ( forall x , x \notin  L  -> Par  (( x ~  psi ) ++  P )  psi  ( open_tm_wrt_tm B (a_Var_f x) )   ( open_tm_wrt_tm B' (a_Var_f x) )  )  ->
+      ( forall x , x \notin  L  -> Par  (( x  ~ ( psi ,e_Tm)) ++  P )  psi  ( open_tm_wrt_tm B (a_Var_f x) )   ( open_tm_wrt_tm B' (a_Var_f x) )  )  ->
      Par P psi (a_Pi psi0 A B) (a_Pi psi0 A' B')
  | Par_CAbs : forall (L:vars) (P:econtext) (psi psi0:grade) (a a':tm),
-      ( forall c , c \notin  L  -> Par  (( c ~  psi0 ) ++  P )  psi  ( open_tm_wrt_co a (g_Var_f c) )   ( open_tm_wrt_co a' (g_Var_f c) )  )  ->
+      ( forall c , c \notin  L  -> Par  (( c  ~ ( psi0 ,e_Co)) ++  P )  psi  ( open_tm_wrt_co a (g_Var_f c) )   ( open_tm_wrt_co a' (g_Var_f c) )  )  ->
      Par P psi (a_UCAbs psi0 a) (a_UCAbs psi0 a')
  | Par_CPi : forall (L:vars) (P:econtext) (psi psi0:grade) (phi:constraint) (a:tm) (phi':constraint) (a':tm),
-      ( forall c , c \notin  L  -> Par  (( c ~  psi ) ++  P )  psi  ( open_tm_wrt_co a (g_Var_f c) )   ( open_tm_wrt_co a' (g_Var_f c) )  )  ->
+      ( forall c , c \notin  L  -> Par  (( c  ~ ( psi ,e_Co)) ++  P )  psi  ( open_tm_wrt_co a (g_Var_f c) )   ( open_tm_wrt_co a' (g_Var_f c) )  )  ->
      ParProp P psi phi phi' ->
      Par P psi (a_CPi psi0 phi a) (a_CPi psi0 phi' a')
  | Par_Axiom : forall (P:econtext) (psi:grade) (F:tyfam) (a:tm) (psi0:grade) (A:tm),
@@ -1253,12 +1275,10 @@ with Typing : context -> grade -> tm -> tm -> Prop :=    (* defn Typing *)
      Typing G psi a1 (a_CPi  q_Top  phi B1) ->
      DefEq  (meet_ctx_l   q_C    G )   q_C  phi ->
      Typing G psi (a_CApp a1 g_Triv)  (open_tm_wrt_co  B1   g_Triv ) 
- | E_Fam : forall (G:context) (psi:grade) (F:tyfam) (A:tm) (psi0:grade) (a:tm),
+ | E_Fam : forall (G:context) (psi:grade) (F:tyfam) (A:tm) (psi0:grade) (P:econtext) (a:tm),
       ( psi0  <=  psi )  ->
-      ( psi  <=   q_C  )  ->
-     Ctx G ->
+      uniq  P  ->
       binds  F  ( psi0 , (Ax  a A ))   toplevel   ->
-      ( Typing  nil   q_C  A a_Star )  ->
      Typing G psi (a_Fam F) A
 with Iso : context -> grade -> constraint -> constraint -> Prop :=    (* defn Iso *)
  | E_PropCong : forall (G:context) (psi:grade) (A1 B1 A A2 B2:tm),
@@ -1670,6 +1690,6 @@ Inductive head_reduction : context -> tm -> tm -> Prop :=    (* defn head_reduct
 
 
 (** infrastructure *)
-Hint Constructors CoercedValue Value value_type consistent erased_constraint erased_tm P_sub ctx_sub CoGrade CGrade Grade CoGEq CEq GEq CParProp CPar ParProp Par multipar multipar_prop Beta reduction_in_one reduction PropWff Typing Iso CDefEq DefEq Ctx Sig AnnPropWff AnnTyping AnnIso AnnDefCEq AnnDefEq AnnCtx AnnSig head_reduction lc_co lc_brs lc_tm lc_constraint lc_sig_sort lc_sort : core.
+Hint Constructors CoercedValue Value value_type consistent erased_constraint erased_tm P_sub ctx_sub CoGrade CGrade Grade CoGEq CEq GEq CParProp CPar ParProp Par multipar multipar_prop Beta reduction_in_one reduction PropWff Typing Iso CDefEq DefEq Ctx Sig AnnPropWff AnnTyping AnnIso AnnDefCEq AnnDefEq AnnCtx AnnSig head_reduction lc_co lc_brs lc_tm lc_constraint lc_sort lc_sig_sort : core.
 
 

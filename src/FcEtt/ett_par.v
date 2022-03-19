@@ -122,16 +122,32 @@ Proof.
   all: try solve [fresh_apply_Grade x; auto; repeat spec x; split_hyp; eauto].
   - invert_Grade; subst. pick fresh y; repeat spec y.
     invert_CGrade b'. eapply Grade_open; eauto. eapply Grade_open_irrel; eauto. 
-  - admit.
-(* invert_Grade; subst. pick fresh y; repeat spec y. *)
-    (* invert_CGrade b'. eapply Grade_open; eauto. eapply Grade_open_irrel; eauto.  *)
+  - invert_Grade; subst. pick fresh y; repeat spec y.
     
-  - fresh_apply_Grade x; auto; repeat spec x; split_hyp; eauto.
+    admit.
+  -                             (* use fix typing *)
+(* grade axiom *)
+    admit.
   - admit.
-  - fresh_apply_Grade x; auto; repeat spec x; split_hyp; eauto.
-  - admit.
-  - 
+  - fresh_apply_Grade x; auto; repeat spec x; split_hyp; eauto. rewrite e.
+    pose proof Grade_uniq H.
+    constructor.
+    + qauto l: on use: Grade_uniq, Grade_weakening ctrs: uniq, Grade.
+    + destruct (q_leb psi0 psi) eqn:eq.
+      * apply CG_Leq; 
+        hecrush.
+      * apply CG_Nleq; sfirstorder.
+  - fresh_apply_Grade x; auto; repeat spec x; split_hyp; eauto. rewrite e.
+    pose proof Grade_uniq H.
+    constructor.
+    qauto l: on use: Grade_uniq, Grade_weakening ctrs: uniq, Grade.
+    
+        
+        
+        
+    
 
+  - admit.
 
     Check Grade_open.
     invert_Grade; subst; pick fresh y; repeat spec y. invert_CGrade b'. eapply Grade_open; eauto. eapply Grade_open_irrel; eauto.

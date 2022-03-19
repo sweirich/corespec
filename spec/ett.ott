@@ -256,6 +256,10 @@ sort :: '' ::= {{ com binding classifier }}
    | Tm A             ::   :: Tm
    | Co phi           ::   :: Co
 
+esort :: 'e_' ::= {{ com binding classifier }}
+   | Tm             ::   :: Tm
+   | Co             ::   :: Co
+
 
 grammar
 
@@ -278,16 +282,16 @@ context, G {{ tex \Gamma }} :: 'ctx_' ::= {{ com contexts }}
                                           {{ tex [[psi]] \wedge [[G]] }}
 
 econtext, P {{ tex \Phi }} :: 'ectx_' ::= {{ com erased contexts }}
-                                          {{ coq list ( atom * grade ) }}
+                                          {{ coq list ( atom * (grade * esort) ) }}
   | empty             ::  M   :: Empty    {{ coq nil }}
   | G |               ::  M   :: Erased   {{ tex | [[ G ]] | }}
                                           {{ coq (labels [[G]]) }}
-  | x : psi           ::  M   :: OneTm    {{ tex [[x]] \! : [[ psi ]] }}
+  | x : psi           ::  M   :: OneTm    {{ tex [[x]] \! : ([[psi]], e_Tm) }}
                                           {{ coq ([[x]]~[[psi]])}}
-  | c : psi           ::  M   :: OneCo    {{ tex [[c]] \! : [[ psi ]] }}
+  | c : psi           ::  M   :: OneCo    {{ tex [[c]] \! : ([[psi]], e_Co) }}
                                           {{ coq ([[c]]~[[psi]])}}
-  | P , x : psi       ::  M   :: ConsTm   {{ coq (([[x]]~ [[psi]]) ++ [[P]]) }}
-  | P , c : psi       ::  M   :: ConsCo   {{ coq (([[c]]~ [[psi]]) ++ [[P]]) }}
+  | P , x : psi       ::  M   :: ConsTm   {{ coq (([[x]] ~ ([[psi]],e_Tm)) ++ [[P]]) }}
+  | P , c : psi       ::  M   :: ConsCo   {{ coq (([[c]] ~ ([[psi]],e_Co)) ++ [[P]]) }}
   | P ++ P'           ::  M   :: Append   {{ tex [[P]] , [[P']] }} {{ coq ([[P']]++[[P]]) }}
   | (# P #)           ::  M   :: SecretParen {{ tex [[ P ]] }} {{ coq [[P]] }}
   | ( P )             ::  M   :: Paren {{ tex ([[ P ]]) }} {{ coq ([[P]]) }}
@@ -372,8 +376,10 @@ terminals :: 'terminals_' ::=
 formula :: 'formula_' ::=
   | judgement                ::   :: judgement
   | x : psi in P               ::   :: inP
-    {{ coq binds [[x]] [[psi]] [[P]] }}
+    {{ coq binds [[x]] ([[psi]],e_Tm) [[P]] }}
 
+  | c : psi in P               ::    :: inPP
+    {{ coq binds [[c]] ([[psi]],e_Co) [[P]] }}
   | x : psi A in G               ::   :: inG
     {{ coq binds [[x]] ([[psi]], (Tm [[A]])) [[G]] }}
     {{ tex [[x]]\! :^{[[psi]]}\![[A]] \in [[G]] }}
@@ -457,8 +463,14 @@ formula :: 'formula_' ::=
 embed {{ coq
 Local Open Scope grade_scope.
 
+Definition sort_to_esort (s:sort) : esort :=
+  match s with
+  | Tm _ => e_Tm
+  | Co _ => e_Co
+  end.
+
 Definition labels : context -> econtext :=
-  map (fun '(u , s) => u).
+  map (fun '(u , s) => (u , sort_to_esort s)).
 
 Definition subst_ctx (a : tm) (x:var) : context -> context :=
   map (fun '(g, A) => (g, (tm_subst_tm_sort a x A))).
@@ -758,9 +770,15 @@ by
   P1 <= P2
   x notin dom P1
   x notin dom P2
----------------------------------- :: Cons
+---------------------------------- :: ConsTm
   P1 , x : psi1 <= P2 , x : psi2
-        
+
+  psi1 <= psi2
+  P1 <= P2
+  c notin dom P1
+  c notin dom P2
+---------------------------------- :: ConsCo
+  P1 , c : psi1 <= P2 , c : psi2
 
 defns 
   Wsub :: '' ::=
@@ -962,6 +980,14 @@ P |= psi /\ psi0 c . b1 ~~ /\ psi0 c . b2
 P |= psi b1 ~~ b2
 -------------------------------- :: CApp
 P |= psi b1 [ o ] ~~ b2 [ o ]
+
+F ~ a : psi0 A in toplevel
+psi0 <= psi
+[empty |= CTime A]
+uniq P
+-------------------------------- :: Fam
+P |= psi F ~~ a
+
 
 
 
@@ -1354,11 +1380,11 @@ CTime /\ G |= CTime phi
 G |= psi a1 [ o ] : B1 { o / c }
 
 
+% do we need this?
+% [ empty |= CTime A : TYPE ]
 psi0 <= psi
-psi <= CTime
-|= G
+uniq P
 F ~ a : psi0 A in toplevel
-[ empty |= CTime A : TYPE ]
 ------------------ :: Fam
 G |= psi F : A
 

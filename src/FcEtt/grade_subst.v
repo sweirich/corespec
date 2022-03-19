@@ -86,6 +86,39 @@ Ltac substitution_ih :=
     rewrite tm_subst_tm_tm_var_neq in H3
     end.
 
+(* TODO: extend to include relevant coercions *)
+Lemma CGrade_Grade_substitution_triv_CGrade : 
+      (forall P psi b, 
+          Grade P psi b -> forall P1 P2 c psi1, 
+            P = P2 ++ [(c,psi1)] ++ P1 
+            -> Grade (P2 ++ P1) psi (co_subst_co_tm g_Triv c b)) /\
+      (forall P psi psi0 b,
+      CGrade P psi psi0 b -> forall P1 P2 c psi1, 
+        P = P2 ++ [(c,psi1)] ++ P1 
+        -> CGrade (P2 ++ P1) psi psi0 (co_subst_co_tm g_Triv c b)) /\
+      (forall P psi phi, CoGrade P psi phi -> forall P1 P2 c psi1,
+      P = P2 ++ [(c,psi1)] ++ P1 -> CoGrade (P2 ++ P1) psi (co_subst_co_constraint g_Triv c phi)).
+Proof.
+  apply CGrade_Grade_mutual.
+  all: intros; subst.
+  all: try solve [simpl; eauto].
+  all: try solve [eauto  using co_subst_co_tm_lc_tm, CGrade_lc] .
+  - simpl.
+    econstructor.
+    solve_uniq.
+    Search (binds _ _ (_ ++ _ ++ _)).
+    apply binds_remove_mid in b; eauto.
+
+    move : (utils.binds_cases _ _ _ _ _ _  u b).
+    apply utils.binds_cases in b; eauto.
+    
+  all: try solve [simpl;
+    fresh_apply_Grade y;
+    eauto using co_subst_co_tm_lc_tm, CGrade_lc;
+    repeat spec y;
+    substitution_ih;
+    eauto].
+
 (* Possible to weaken CoGrade to something like: (psi0 <= psi -> ... /\ otherwise -> True)? *)
 Lemma CGrade_Grade_substitution_CGrade : 
       (forall P psi b, 
