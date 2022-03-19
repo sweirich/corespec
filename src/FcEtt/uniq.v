@@ -22,6 +22,11 @@ Qed.
 
 Arguments ctx_sub_uniq {_} {_}.
 
+Lemma ECtx_uniq : forall P, ECtx P -> uniq P.
+Proof.
+  induction 1; sfirstorder.
+Qed.
+
 Lemma Grade_uniq : forall P psi a, Grade P psi a -> uniq P.
 Proof. intros; induction H; eauto;
        pick fresh x; repeat spec x;

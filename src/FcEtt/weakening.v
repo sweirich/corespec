@@ -24,6 +24,42 @@ Ltac fresh_apply_Grade x :=
       | [ |- Grade ?P ?psi (a_UCAbs ?psi2 ?b) ] => pick fresh x and apply G_CAbs
     end.
 
+Lemma concat_ECtx : forall P P1, uniq (P ++ P1) -> ECtx P -> ECtx P1 -> ECtx (P ++ P1).
+Proof.
+  intros.
+  dependent induction H0; sauto lq: on rew: off.
+Qed.
+
+Lemma ECtx_concat : forall P P1, ECtx (P ++ P1) -> ECtx P /\ ECtx P1.
+Proof.
+  intros H.
+  dependent induction H.
+  - sfirstorder.
+  - destruct a.
+    destruct p.
+    destruct e.
+    + intros; split.
+      inversion H0; subst.
+      constructor; auto.
+      move : (IHlist P1). sfirstorder.
+      qauto l:on inv:ECtx.
+    + intros; split.
+      inversion H0; subst.
+      constructor; auto.
+      move : (IHlist P1). sfirstorder.
+      qauto l:on inv:ECtx.
+Qed.
+
+(* a trivial version of weakening *)
+Lemma ECtx_weakening_middle : forall P P1 P2, ECtx (P ++ P1 ++ P2) -> ECtx (P ++ P2).
+Proof.
+  move => P P1 P2 H.
+  have h0 : ECtx P /\ (ECtx (P1 ++ P2)). sfirstorder use:ECtx_concat.
+  split_hyp.
+  have h1 : ECtx P1 /\ ECtx P2. hauto lq:on use:ECtx_concat.
+  split_hyp.
+  hauto lq: on use: uniq_remove_mid, concat_ECtx, ECtx_uniq.
+Qed.
 
 Lemma CGrade_Grade_weakening_middle : (forall P psi b,
     Grade P psi b -> forall P1 P2, P = P2 ++ P1 -> forall P3,
@@ -191,6 +227,7 @@ Lemma Par_weakening :
 Proof.
   intros. eapply Par_weakening_middle with (F := nil); eauto.
 Qed.
+
 
 
 (* TODO: prove these mutually recursively in ext_weak *)

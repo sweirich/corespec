@@ -347,10 +347,11 @@ Combined Scheme erased_tm_constraint_mutual from erased_tm_ind', erased_constrai
 
 Scheme Grade_ind' := Induction for Grade Sort Prop
     with CGrade_ind'   := Induction for CGrade Sort Prop
-    with CoGrade_ind' := Induction for CoGrade Sort Prop.
+    with CoGrade_ind' := Induction for CoGrade Sort Prop
+    with ECtx_ind' := Induction for ECtx Sort Prop.
 
 Combined Scheme CGrade_Grade_mutual
-  from Grade_ind', CGrade_ind', CoGrade_ind'.
+  from Grade_ind', CGrade_ind', CoGrade_ind', ECtx_ind'.
 
 
 (* unnecessary because they are not actually mutually recursive *)

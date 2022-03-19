@@ -1,4 +1,5 @@
 Require Export FcEtt.ett_ind.
+Require Import FcEtt.ett_ind.
 Require Export FcEtt.tactics.
 Require Export FcEtt.labels. 
 Require Export FcEtt.weakening.
@@ -47,13 +48,28 @@ Open Scope grade_scope.
 (*      rewrite subst_tm_tm_var_neq; auto. *)
 (* Qed. *)
 
-
 (* --- grade --- *)
+(* TODO: move to the proper place *)
+Lemma Grade_ECtx_mutual :
+  (forall P psi b, Grade P psi b -> ECtx P) /\
+  (forall P psi psi0 b, CGrade P psi psi0 b -> ECtx P) /\
+  (forall P psi phi, CoGrade P psi phi -> ECtx P) /\
+  (forall P, ECtx P -> True).
+Proof.
+  apply CGrade_Grade_mutual; auto; intros; pick fresh x; sauto lq:on.
+Qed.
+
+Lemma Grade_ECtx : forall P psi psi0 b, CGrade P psi psi0 b -> ECtx P.
+Proof.
+  sfirstorder use:Grade_ECtx_mutual.
+Qed.
+
 
 Lemma CGrade_Grade_lc :
-  (forall P si b, Grade P si b -> lc_tm b) /\
+  (forall P psi b, Grade P psi b -> lc_tm b) /\
   (forall P psi psi0 b, CGrade P psi psi0 b -> lc_tm b) /\
-  (forall P psi phi, CoGrade P psi phi -> lc_constraint phi).
+  (forall P psi phi, CoGrade P psi phi -> lc_constraint phi) /\
+  (forall P, ECtx P -> True).
 Proof. 
   apply CGrade_Grade_mutual.
   all: intros; split_hyp; eauto.
@@ -72,6 +88,7 @@ Proof.
   destruct (q_leb psi phi) eqn:LE.
   eapply CG_Leq; eauto. 
   eapply CG_Nleq; eauto using Grade_uniq, Grade_lc.
+  sfirstorder use:Grade_ECtx_mutual.
 Qed.
 
 Local Hint Resolve Grade_CGrade : core.
@@ -90,33 +107,34 @@ Ltac substitution_ih :=
 Lemma CGrade_Grade_substitution_triv_CGrade : 
       (forall P psi b, 
           Grade P psi b -> forall P1 P2 c psi1, 
-            P = P2 ++ [(c,psi1)] ++ P1 
+            P = P2 ++ [(c,(psi1, e_Co))] ++ P1 
             -> Grade (P2 ++ P1) psi (co_subst_co_tm g_Triv c b)) /\
       (forall P psi psi0 b,
       CGrade P psi psi0 b -> forall P1 P2 c psi1, 
-        P = P2 ++ [(c,psi1)] ++ P1 
+        P = P2 ++ [(c,(psi1, e_Co))] ++ P1 
         -> CGrade (P2 ++ P1) psi psi0 (co_subst_co_tm g_Triv c b)) /\
       (forall P psi phi, CoGrade P psi phi -> forall P1 P2 c psi1,
-      P = P2 ++ [(c,psi1)] ++ P1 -> CoGrade (P2 ++ P1) psi (co_subst_co_constraint g_Triv c phi)).
+      P = P2 ++ [(c,(psi1, e_Co))] ++ P1 -> CoGrade (P2 ++ P1) psi (co_subst_co_constraint g_Triv c phi)) /\
+      (forall P, ECtx P -> True).
 Proof.
   apply CGrade_Grade_mutual.
   all: intros; subst.
   all: try solve [simpl; eauto].
-  all: try solve [eauto  using co_subst_co_tm_lc_tm, CGrade_lc] .
+  all: try solve [eauto  using co_subst_co_tm_lc_tm, CGrade_Grade_lc, ECtx_weakening_middle] .
   - simpl.
-    econstructor.
-    solve_uniq.
-    Search (binds _ _ (_ ++ _ ++ _)).
+    have h0 : uniq (P2 ++ c ~ (psi1, e_Co) ++ P1). sfirstorder use:ECtx_uniq.
+    econstructor; eauto.
+    hauto lq:on use:ECtx_weakening_middle.
     apply binds_remove_mid in b; eauto.
-    move : (utils.binds_cases _ _ _ _ _ _  u b).
-    move => [h0 | [h1 | h2]]; try sfirstorder.
+    move : (utils.binds_cases _ _ _ _ _ _  ltac:(sfirstorder use:ECtx_uniq) b).
+    move => [h1 | [h2 | h3]]; try sfirstorder.
+  - 
+    simpl;
+      fresh_apply_Grade y;
+      eauto using co_subst_co_tm_lc_tm, CGrade_lc.
+    repeat spec y.
+Admitted.
     
-  all: try solve [simpl;
-    fresh_apply_Grade y;
-    eauto using co_subst_co_tm_lc_tm, CGrade_lc;
-    repeat spec y;
-    substitution_ih;
-    eauto].
 
 (* Possible to weaken CoGrade to something like: (psi0 <= psi -> ... /\ otherwise -> True)? *)
 Lemma CGrade_Grade_substitution_CGrade : 
