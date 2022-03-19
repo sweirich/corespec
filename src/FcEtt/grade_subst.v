@@ -108,9 +108,8 @@ Proof.
     solve_uniq.
     Search (binds _ _ (_ ++ _ ++ _)).
     apply binds_remove_mid in b; eauto.
-
     move : (utils.binds_cases _ _ _ _ _ _  u b).
-    apply utils.binds_cases in b; eauto.
+    move => [h0 | [h1 | h2]]; try sfirstorder.
     
   all: try solve [simpl;
     fresh_apply_Grade y;

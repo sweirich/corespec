@@ -58,12 +58,12 @@ Qed.
 
 (* -------------------------------------- *)
 
-Lemma binds_cases: forall G F x A y B,
+Lemma binds_cases: forall {sort} (G : list (atom * (grade * sort))) F x A y B,
     uniq (F ++ [(y, B)] ++ G) ->
-    @binds sort x A (F ++ [(y, B)] ++ G) ->
+    binds x A (F ++ [(y, B)] ++ G) ->
     (binds x A F /\ x <> y /\ x `notin` dom G) \/ (x = y /\ A = B) \/ (binds x A G /\ x <> y /\ x `notin` dom F).
 Proof.
-  intros G F x A y B U b.
+  intros sort G F x A y B U b.
   edestruct binds_app_1. eauto 1.
   + left. split.
     auto.

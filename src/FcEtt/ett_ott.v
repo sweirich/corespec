@@ -62,17 +62,17 @@ with co : Set :=  (*r explicit coercions *)
  | g_Left (g:co) (g':co)
  | g_Right (g:co) (g':co).
 
-Inductive sort : Set :=  (*r binding classifier *)
- | Tm (A:tm)
- | Co (phi:constraint).
+Inductive esort : Set :=  (*r binding classifier *)
+ | e_Tm : esort
+ | e_Co : esort.
 
 Inductive sig_sort : Set :=  (*r signature classifier *)
  | Cs (A:tm)
  | Ax (a:tm) (A:tm).
 
-Inductive esort : Set :=  (*r binding classifier *)
- | e_Tm : esort
- | e_Co : esort.
+Inductive sort : Set :=  (*r binding classifier *)
+ | Tm (A:tm)
+ | Co (phi:constraint).
 
 Definition sig : Set := list (atom * (grade * sig_sort)).
 
@@ -970,7 +970,18 @@ Inductive ctx_sub : context -> context -> Prop :=    (* defn ctx_sub *)
      ctx_sub  (( c ~ ( psi1 , Co  phi )) ++  G1 )   (( c ~ ( psi2 , Co  phi )) ++  G2 ) .
 
 (* defns JGrade *)
-Inductive CoGrade : econtext -> grade -> constraint -> Prop :=    (* defn CoGrade *)
+Inductive ECtx : econtext -> Prop :=    (* defn ECtx *)
+ | G_Empty : 
+     ECtx  nil 
+ | G_ConsTm : forall (P:econtext) (x:tmvar) (psi:grade),
+     ECtx P ->
+      ~ AtomSetImpl.In  x  (dom  P )  ->
+     ECtx  (( x  ~ ( psi ,e_Tm)) ++  P ) 
+ | G_ConsCo : forall (P:econtext) (c:covar) (psi:grade),
+     ECtx P ->
+      ~ AtomSetImpl.In  c  (dom  P )  ->
+     ECtx  (( c  ~ ( psi ,e_Co)) ++  P ) 
+with CoGrade : econtext -> grade -> constraint -> Prop :=    (* defn CoGrade *)
  | CoG_Eq : forall (P:econtext) (psi:grade) (a b A:tm),
      Grade P psi a ->
      Grade P psi b ->
@@ -988,16 +999,16 @@ with CGrade : econtext -> grade -> grade -> tm -> Prop :=    (* defn CGrade *)
  | CG_Nleq : forall (P:econtext) (psi psi0:grade) (a:tm),
      lc_tm a ->
       not (  (  ( psi0  <=  psi )  )  )  ->
-      uniq  P  ->
+     ECtx P ->
      CGrade P psi psi0 a
 with Grade : econtext -> grade -> tm -> Prop :=    (* defn Grade *)
  | G_Var : forall (P:econtext) (psi:grade) (x:tmvar) (psi0:grade),
-      uniq  P  ->
+     ECtx P ->
       binds  x  ( psi0 ,e_Tm)  P  ->
       ( psi0  <=  psi )  ->
      Grade P psi (a_Var_f x)
  | G_Type : forall (P:econtext) (psi:grade),
-      uniq  P  ->
+     ECtx P ->
      Grade P psi a_Star
  | G_Pi : forall (L:vars) (P:econtext) (psi psi0:grade) (A B:tm),
      Grade P psi A ->
@@ -1041,16 +1052,16 @@ with CEq : econtext -> grade -> grade -> tm -> tm -> Prop :=    (* defn CEq *)
      lc_tm a1 ->
      lc_tm a2 ->
       not (  (  ( psi0  <=  psi )  )  )  ->
-      uniq  P  ->
+     ECtx P ->
      CEq P psi psi0 a1 a2
 with GEq : econtext -> grade -> tm -> tm -> Prop :=    (* defn GEq *)
  | GEq_Var : forall (P:econtext) (psi:grade) (x:tmvar) (psi0:grade),
-      uniq  P  ->
+     ECtx P ->
       binds  x  ( psi0 ,e_Tm)  P  ->
       ( psi0  <=  psi )  ->
      GEq P psi (a_Var_f x) (a_Var_f x)
  | GEq_Type : forall (P:econtext) (psi:grade),
-      uniq  P  ->
+     ECtx P ->
      GEq P psi a_Star a_Star
  | GEq_Pi : forall (L:vars) (P:econtext) (psi psi0:grade) (A1 B1 A2 B2:tm),
      GEq P psi A1 A2 ->
@@ -1077,7 +1088,7 @@ with GEq : econtext -> grade -> tm -> tm -> Prop :=    (* defn GEq *)
       binds  F  ( psi0 , (Ax  a A ))   toplevel   ->
       ( psi0  <=  psi )  ->
       ( Grade  nil   q_C  A )  ->
-      uniq  P  ->
+     ECtx P ->
      GEq P psi (a_Fam F) a.
 
 (* defns Jpar *)
@@ -1090,7 +1101,7 @@ Inductive CParProp : econtext -> grade -> grade -> constraint -> constraint -> P
      lc_constraint phi1 ->
      lc_constraint phi2 ->
       not (  (  ( psi0  <=  psi )  )  )  ->
-      uniq  P  ->
+     ECtx P ->
      CParProp P psi psi0 phi1 phi2
 with CPar : econtext -> grade -> grade -> tm -> tm -> Prop :=    (* defn CPar *)
  | CPar_Leq : forall (P:econtext) (psi psi0:grade) (a1 a2:tm),
@@ -1101,7 +1112,7 @@ with CPar : econtext -> grade -> grade -> tm -> tm -> Prop :=    (* defn CPar *)
      lc_tm a1 ->
      lc_tm a2 ->
       not (  (  ( psi0  <=  psi )  )  )  ->
-      uniq  P  ->
+     ECtx P ->
      CPar P psi psi0 a1 a2
 with ParProp : econtext -> grade -> constraint -> constraint -> Prop :=    (* defn ParProp *)
  | ParProp_Eq : forall (P:econtext) (psi:grade) (a b A a' b' A':tm),
@@ -1148,7 +1159,7 @@ with Par : econtext -> grade -> tm -> tm -> Prop :=    (* defn Par *)
  | Par_Axiom : forall (P:econtext) (psi:grade) (F:tyfam) (a:tm) (psi0:grade) (A:tm),
       ( psi0  <=  psi )  ->
       binds  F  ( psi0 , (Ax  a A ))   toplevel   ->
-      uniq  P  ->
+     ECtx P ->
      Par P psi (a_Fam F) a
  | Par_Eta : forall (L:vars) (P:econtext) (psi psi0:grade) (a b' b:tm),
      Par P psi b b' ->
@@ -1163,7 +1174,7 @@ with Par : econtext -> grade -> tm -> tm -> Prop :=    (* defn Par *)
 Inductive multipar : econtext -> grade -> tm -> tm -> Prop :=    (* defn multipar *)
  | mp_refl : forall (P:econtext) (psi:grade) (a:tm),
      lc_tm a ->
-      uniq  P  ->
+     ECtx P ->
      multipar P psi a a
  | mp_step : forall (P:econtext) (psi:grade) (a a' b:tm),
      Par P psi a b ->
@@ -1172,7 +1183,7 @@ Inductive multipar : econtext -> grade -> tm -> tm -> Prop :=    (* defn multipa
 with multipar_prop : econtext -> grade -> constraint -> constraint -> Prop :=    (* defn multipar_prop *)
  | mpprop_refl : forall (P:econtext) (psi:grade) (phi:constraint),
      lc_constraint phi ->
-      uniq  P  ->
+     ECtx P ->
      multipar_prop P psi phi phi
  | mpprop_step : forall (P:econtext) (psi:grade) (phi1 phi3 phi2:constraint),
      ParProp P psi phi1 phi2 ->
@@ -1277,7 +1288,7 @@ with Typing : context -> grade -> tm -> tm -> Prop :=    (* defn Typing *)
      Typing G psi (a_CApp a1 g_Triv)  (open_tm_wrt_co  B1   g_Triv ) 
  | E_Fam : forall (G:context) (psi:grade) (F:tyfam) (A:tm) (psi0:grade) (P:econtext) (a:tm),
       ( psi0  <=  psi )  ->
-      uniq  P  ->
+     ECtx P ->
       binds  F  ( psi0 , (Ax  a A ))   toplevel   ->
      Typing G psi (a_Fam F) A
 with Iso : context -> grade -> constraint -> constraint -> Prop :=    (* defn Iso *)
@@ -1690,6 +1701,6 @@ Inductive head_reduction : context -> tm -> tm -> Prop :=    (* defn head_reduct
 
 
 (** infrastructure *)
-Hint Constructors CoercedValue Value value_type consistent erased_constraint erased_tm P_sub ctx_sub CoGrade CGrade Grade CoGEq CEq GEq CParProp CPar ParProp Par multipar multipar_prop Beta reduction_in_one reduction PropWff Typing Iso CDefEq DefEq Ctx Sig AnnPropWff AnnTyping AnnIso AnnDefCEq AnnDefEq AnnCtx AnnSig head_reduction lc_co lc_brs lc_tm lc_constraint lc_sort lc_sig_sort : core.
+Hint Constructors CoercedValue Value value_type consistent erased_constraint erased_tm P_sub ctx_sub ECtx CoGrade CGrade Grade CoGEq CEq GEq CParProp CPar ParProp Par multipar multipar_prop Beta reduction_in_one reduction PropWff Typing Iso CDefEq DefEq Ctx Sig AnnPropWff AnnTyping AnnIso AnnDefCEq AnnDefEq AnnCtx AnnSig head_reduction lc_co lc_brs lc_tm lc_constraint lc_sort lc_sig_sort : core.
 
 

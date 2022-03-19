@@ -7,17 +7,23 @@ Local Open Scope grade_scope.
 
 Set Implicit Arguments.
 
-Lemma P_sub_binds : forall P P' x psi, P_sub P' P -> binds x psi P -> exists psi', binds x psi' P' /\ psi' <= psi.
+Lemma P_sub_binds : forall P P' x es psi, P_sub P' P -> binds x (psi, es) P -> exists psi', binds x (psi', es) P' /\ psi' <= psi.
 Proof. intros. induction H; eauto.
-       inversion H0. inversion H4. subst. eexists. eauto.
-       destruct IHP_sub. eauto. split_hyp. eexists. split; eauto.
+       - inversion H0. inversion H4; subst; eexists; eauto.
+       destruct IHP_sub; eauto; split_hyp; eexists; split; eauto.
+       - inversion H0. inversion H4; subst; eexists; eauto.
+       destruct IHP_sub; eauto; split_hyp; eexists; split; eauto.
 Qed.
 
 
 Hint Constructors P_sub : core.
 Lemma P_sub_refl : forall P, uniq P -> P_sub P P.
-Proof. induction 1; econstructor; eauto. reflexivity. Qed.
-
+Proof. induction 1.
+       - constructor.
+       - destruct a.
+         destruct e; 
+           hauto l: on use: q_leb_refl.
+Qed.
 
 (* labels *)
 
@@ -26,7 +32,7 @@ Proof. induction W1; intros; simpl; auto. destruct a. destruct p.
        rewrite IHW1. eauto.
 Qed.
 
-Lemma labels_one : forall x psi0 A, labels [(x, (psi0, A))] = [(x,psi0)].
+Lemma labels_one : forall x psi0 A, labels [(x, (psi0, A))] = [(x,(psi0, sort_to_esort A))].
 Proof. reflexivity. Qed.
 
 Lemma labels_dom : forall W, dom (labels W) = dom W.
@@ -36,21 +42,22 @@ Lemma labels_uniq : forall W, uniq W -> uniq (labels W).
 Proof. induction W; intros; simpl; auto. destruct a. destruct p. 
        destruct_uniq. econstructor; eauto. rewrite labels_dom; eauto. Qed.
 
-Lemma binds_labels_1 : forall W x psi,  binds x psi (labels W) -> exists A, binds x (psi, A) W.
+Lemma binds_labels_1 : forall W x psi es,  binds x (psi, es) (labels W) -> exists A, binds x (psi, A) W.
 Proof. 
   intros. induction W; intros; inversion H; try destruct a; try destruct p; subst.
   inversion H0. subst. eauto.
   destruct IHW. auto. eauto. Qed.
-Lemma binds_labels_2 : forall W x psi A,  binds x (psi,A) W -> binds x psi (labels W).
-  intros. unfold labels. 
-  eapply binds_map_2 with (f := (fun '(u,_) => u)) in H. auto.
+Lemma binds_labels_2 : forall W x psi A,  binds x (psi,A) W -> binds x (psi, sort_to_esort A) (labels W).
+  intros. unfold labels.
+  eapply binds_map_2 with (f := (fun '(u,s) => (u, sort_to_esort s))) in H.
+  auto.
 Qed.
 
 Lemma labels_subst_ctx : forall a x W1, labels (subst_ctx a x W1) = labels W1.
 Proof.
   intros. induction W1; intros. auto. 
-  try destruct a0; try destruct p; subst. simpl.
-  f_equal. auto.
+  try destruct a0; try destruct p; try destruct s; subst. simpl. sfirstorder.
+  sfirstorder.
 Qed.
 
 Hint Rewrite labels_subst_ctx : rewr_list.

@@ -453,8 +453,8 @@ formula :: 'formula_' ::=
     {{ coq ([[psi1]] <= [[psi2]]) }}
   | psi1 < psi2               ::   :: ltrho
     {{ coq ([[psi1]] < [[psi2]]) }}
-  | uniq P                   ::   :: uniqP
-    {{ coq uniq [[P]] }} {{ tex }}
+  % | uniq P                   ::   :: uniqP
+  %   {{ coq uniq [[P]] }} {{ tex }}
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -813,6 +813,25 @@ defns
    JGrade :: '' ::= 
 
 defn
+|= P ::    :: ECtx  :: 'G_'
+        {{ com context wellformedness }}
+by
+
+---------- :: Empty
+|= empty
+
+|= P
+x notin dom P
+--------------------- :: ConsTm
+|= P, x : psi
+
+|= P
+c notin dom P
+-------------------- :: ConsCo
+|= P, c : psi
+
+
+defn
  P |= psi phi :: :: CoGrade :: 'CoG_' {{ com Guarded Grade for coercions }}
  {{ tex [[ P ]] \vDash_{[[psi]]} [[ phi ]]   }}
 by
@@ -842,7 +861,7 @@ by
    P |= psi psi0 a
 
    not (psi0 <= psi)
-   uniq P
+   |= P
   --------------------- :: Nleq 
    P |= psi psi0 a
 
@@ -855,13 +874,13 @@ defn
 
 by
 
-uniq P
+|= P
 x : psi0 in P
 psi0 <= psi
 ------------------ :: Var
 P |= psi x
 
-uniq P
+|= P
 ----------------- :: Type
 P |= psi TYPE
 
@@ -934,7 +953,7 @@ P |= psi a1 ~~ a2
 P |= psi psi0 a1 ~~ a2
 
 not (psi0 <= psi)
-uniq P
+|= P
 -------------------------------- :: Nleq
 P |= psi psi0 a1 ~~ a2
 
@@ -943,13 +962,13 @@ defn
  {{ tex [[ P ]] \vDash [[ a ]] \sim_{[[ psi ]]} [[ b ]]  }}
 
 by
-uniq P
+|= P
 x : psi0 in P 
 psi0 <= psi
 ------------------------------------------ :: Var
 P |= psi x ~~ x
 
-uniq P
+|= P
 ---------------------------- :: Type
 P |= psi TYPE ~~ TYPE
 
@@ -984,7 +1003,7 @@ P |= psi b1 [ o ] ~~ b2 [ o ]
 F ~ a : psi0 A in toplevel
 psi0 <= psi
 [empty |= CTime A]
-uniq P
+|= P
 -------------------------------- :: Fam
 P |= psi F ~~ a
 
@@ -1007,7 +1026,7 @@ P |- psi phi1 => phi2
 P |- psi psi0 phi1 => phi2
 
 not (psi0 <= psi)
-uniq P
+|= P
 -------------------------------- :: Nleq
 P |- psi psi0 phi1 => phi2
 
@@ -1024,7 +1043,7 @@ P |- psi a1 => a2
 P |- psi psi0 a1 => a2
 
 not (psi0 <= psi)
-uniq P
+|= P
 -------------------------------- :: Nleq
 P |- psi psi0 a1 => a2
 
@@ -1110,7 +1129,7 @@ P |- psi all c: psi0 phi. a => all c: psi0 phi'. a'
 % NOTE: toplevel is assumed to be locally closed
 psi0 <= psi
 F ~ a : psi0 A in toplevel
-uniq P
+|= P
 -------------------------------- :: Axiom
 P |- psi F => a
 
@@ -1140,7 +1159,7 @@ P |- psi a =>* b ::   :: multipar :: 'mp_'
 {{ com multistep parallel reduction }}
 by
 
-uniq P
+|= P
 ------------------ :: refl
 P |- psi a =>* a
 
@@ -1155,7 +1174,7 @@ P |- psi phi =>* phi' ::   :: multipar_prop :: 'mpprop_'
 {{ com multistep parallel reduction for constraints }}
 by
 
-uniq P
+|= P
 ------------------ :: refl
 P |- psi phi =>* phi
 
@@ -1383,7 +1402,7 @@ G |= psi a1 [ o ] : B1 { o / c }
 % do we need this?
 % [ empty |= CTime A : TYPE ]
 psi0 <= psi
-uniq P
+|= P
 F ~ a : psi0 A in toplevel
 ------------------ :: Fam
 G |= psi F : A
@@ -1634,7 +1653,7 @@ G |= psi phi1 ==> phi2
 % not sure what that would buy us
 defn
 |= G ::    :: Ctx  :: 'E_'
-{{ com context wellformedness }}
+        {{ com context wellformedness }}
 by
 
 ---------- :: Empty
