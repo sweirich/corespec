@@ -1030,7 +1030,13 @@ with Grade : econtext -> grade -> tm -> Prop :=    (* defn Grade *)
      Grade P psi (a_UCAbs psi0 b)
  | G_CApp : forall (P:econtext) (psi:grade) (b:tm),
      Grade P psi b ->
-     Grade P psi (a_CApp b g_Triv).
+     Grade P psi (a_CApp b g_Triv)
+ | G_Fam : forall (P:econtext) (psi:grade) (F:tyfam) (a:tm) (psi0:grade) (A:tm),
+      binds  F  ( psi0 , (Ax  a A ))   toplevel   ->
+      ( psi0  <=  psi )  ->
+      ( Grade  nil   q_C  A )  ->
+     ECtx P ->
+     Grade P psi (a_Fam F).
 
 (* defns JGEq *)
 Inductive CoGEq : econtext -> grade -> constraint -> constraint -> Prop :=    (* defn CoGEq *)

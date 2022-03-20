@@ -96,8 +96,9 @@ Local Hint Resolve Grade_CGrade : core.
 Ltac substitution_ih :=
     match goal with 
       | [H3 : forall P4 P3 x0 phi0,
-            [(?y, ?psi0)] ++ ?P2 ++ [(?x, ?phi)] ++ ?P1 = P3 ++ [(x0, phi0)] ++ P4 -> _ |- _ ] => 
-                specialize (H3 P1 ([(y, psi0)] ++ P2) x phi  ltac:(auto) _ ltac:(eauto)); 
+            [(?y, ?psi0)] ++ ?P2 ++ [(?x, (?phi, _))] ++ ?P1 = P3 ++ [(x0, (phi0, _))] ++ P4 -> _ |- _ ] => 
+          (* idtac "match" *)
+                specialize (H3 P1 ([(y, psi0)] ++ P2) x phi);
         simpl_env in H3;
     autorewrite with subst_open_var; eauto using CGrade_lc;
     rewrite tm_subst_tm_tm_var_neq in H3
@@ -121,6 +122,12 @@ Proof.
   all: intros; subst.
   all: try solve [simpl; eauto].
   all: try solve [eauto  using co_subst_co_tm_lc_tm, CGrade_Grade_lc, ECtx_weakening_middle] .
+  all: try solve [simpl;
+    fresh_apply_Grade y;
+    eauto using co_subst_co_tm_lc_tm, CGrade_lc;
+    repeat spec y;
+    substitution_ih;
+    eauto].
   - simpl.
     have h0 : uniq (P2 ++ c ~ (psi1, e_Co) ++ P1). sfirstorder use:ECtx_uniq.
     econstructor; eauto.
@@ -128,33 +135,28 @@ Proof.
     apply binds_remove_mid in b; eauto.
     move : (utils.binds_cases _ _ _ _ _ _  ltac:(sfirstorder use:ECtx_uniq) b).
     move => [h1 | [h2 | h3]]; try sfirstorder.
-  - 
-    simpl;
-      fresh_apply_Grade y;
-      eauto using co_subst_co_tm_lc_tm, CGrade_lc.
-    repeat spec y.
-Admitted.
-    
+Qed.    
 
 (* Possible to weaken CoGrade to something like: (psi0 <= psi -> ... /\ otherwise -> True)? *)
 Lemma CGrade_Grade_substitution_CGrade : 
       (forall P psi b, 
           Grade P psi b -> forall P1 P2 x psi1, 
-            P = P2 ++ [(x,psi1)] ++ P1 
+            P = P2 ++ [(x,(psi1, e_Tm))] ++ P1 
             -> forall a, CGrade P1 psi psi1 a 
                    -> Grade (P2 ++ P1) psi (tm_subst_tm_tm a x b)) /\
       (forall P psi psi0 b,
       CGrade P psi psi0 b -> forall P1 P2 x psi1, 
-        P = P2 ++ [(x,psi1)] ++ P1 
+        P = P2 ++ [(x,(psi1, e_Tm))] ++ P1 
         -> forall a , CGrade P1 psi psi1 a 
         -> CGrade (P2 ++ P1) psi psi0 (tm_subst_tm_tm a x b)) /\
       (forall P psi phi, CoGrade P psi phi -> forall P1 P2 x psi1,
-      P = P2 ++ [(x,psi1)] ++ P1 -> forall a, CGrade P1 psi psi1 a -> CoGrade (P2 ++ P1) psi (tm_subst_tm_constraint a x phi)).
+      P = P2 ++ [(x,(psi1, e_Tm))] ++ P1 -> forall a, CGrade P1 psi psi1 a -> CoGrade (P2 ++ P1) psi (tm_subst_tm_constraint a x phi)) /\
+      (forall P, ECtx P -> True).
 Proof.
   apply CGrade_Grade_mutual. 
   all: intros; subst.
-  all: try solve [simpl; eauto].
-  all: try solve [eapply CG_Nleq; eauto  using tm_subst_tm_tm_lc_tm, CGrade_lc] .
+  all: try solve [simpl; eauto using ECtx_weakening_middle].
+  all: try solve [eapply CG_Nleq; eauto  using tm_subst_tm_tm_lc_tm, CGrade_lc, ECtx_weakening_middle] .
   all: try solve [simpl;
     fresh_apply_Grade y;
     eauto using tm_subst_tm_tm_lc_tm, CGrade_lc;
@@ -167,23 +169,26 @@ Proof.
       apply binds_mid_eq in b; auto. subst.
       rewrite tm_subst_tm_tm_var; auto.
       eapply Grade_weakening; try solve_uniq.
-      match goal with [ H : CGrade _ _ _ _ |- _ ] => inversion H; clear H; subst end; auto; try done.
+      match goal with [ H : CGrade _ _ _ _ |- _ ] => inversion H; clear H; subst end; scongruence.
+      hauto lq: on use: ECtx_uniq, uniq_remove_mid.
+      hauto lq: on use: ECtx_uniq, uniq_remove_mid.
     + rewrite tm_subst_tm_tm_var_neq. auto.
       apply binds_remove_mid in b; auto.
       eapply G_Var; eauto.
+      hauto l: on use: ECtx_weakening_middle.
       assumption.
 Qed.
 
 Lemma Grade_substitution_CGrade : forall P2 x phi P1 psi a b,
-      Grade (P2 ++ x ~ phi ++ P1) psi b
+      Grade (P2 ++ x ~ (phi, e_Tm) ++ P1) psi b
     -> CGrade P1 psi phi a 
     -> Grade (P2 ++ P1) psi (tm_subst_tm_tm a x b).
 Proof. 
   intros.
   eapply CGrade_Grade_substitution_CGrade; eauto. Qed.
 
-Lemma Grade_substitution_same : forall P2 x phi P1 psi a b,
-      Grade (P2 ++ x ~ phi ++ P1) psi b
+Lemma Grade_substitution_tm_same : forall P2 x phi P1 psi a b,
+      Grade (P2 ++ x ~ (phi, e_Tm) ++ P1) psi b
     -> Grade P1 psi a 
     -> Grade (P2 ++ P1) psi (tm_subst_tm_tm a x b).
 Proof. 
@@ -192,7 +197,7 @@ Proof.
 Qed.
 
 Lemma CoGrade_substitution_CGrade : forall P2 x psi0 P1 psi a phi,
-      CoGrade (P2 ++ x ~ psi0 ++ P1) psi phi
+      CoGrade (P2 ++ x ~ (psi0, e_Tm) ++ P1) psi phi
     -> CGrade P1 psi psi0 a 
     -> CoGrade (P2 ++ P1) psi (tm_subst_tm_constraint a x phi).
 Proof. 
@@ -202,36 +207,38 @@ Qed.
 
   
 Lemma Grade_substitution_irrel : forall P2 x phi P1 psi a b,
-      Grade (P2 ++ x ~ phi ++ P1) psi b
+      Grade (P2 ++ x ~ (phi, e_Tm) ++ P1) psi b
     -> not (phi <= psi)
     -> lc_tm a
     -> Grade (P2 ++ P1) psi (tm_subst_tm_tm a x b).
 Proof. 
   intros.
+  have h0 : ECtx (x ~ (phi, e_Tm) ++ P1).
+  hauto lq: on use: Grade_ECtx_mutual, ECtx_concat.
+  have h1 : ECtx P1.
+  hauto lq: on use: ECtx_concat.
   eapply Grade_substitution_CGrade; eauto.
-  eapply Grade_uniq in H. destruct_uniq.
-  eauto.
 Qed.
 
-Lemma Grade_open : forall P psi y psi0 a b,
+Lemma Grade_open_tm : forall P psi y psi0 a b,
   y `notin` fv_tm_tm_tm a ->
   Grade P psi b ->
-  Grade ([(y, psi0)] ++ P) psi (open_tm_wrt_tm a (a_Var_f y)) -> 
+  Grade ([(y, (psi0, e_Tm))] ++ P) psi (open_tm_wrt_tm a (a_Var_f y)) -> 
   Grade P psi (open_tm_wrt_tm a b).
 Proof.
   intros.
-  move: (Grade_substitution_same nil _ _ H1 H0) => ss.
+  move: (Grade_substitution_tm_same nil _ _ H1 H0) => ss.
   rewrite tm_subst_tm_tm_open_tm_wrt_tm in ss;
   eauto using Grade_lc.
   rewrite tm_subst_tm_tm_var in ss.
   rewrite tm_subst_tm_tm_fresh_eq in ss; auto.
 Qed.
 
-Lemma Grade_open_irrel : forall P psi y psi0 a b,
+Lemma Grade_open_tm_irrel : forall P psi y psi0 a b,
   y `notin` fv_tm_tm_tm a ->
   not (psi0 <= psi) ->
   lc_tm b ->
-  Grade ([(y, psi0)] ++ P) psi (open_tm_wrt_tm a (a_Var_f y)) -> 
+  Grade ([(y, (psi0, e_Tm))] ++ P) psi (open_tm_wrt_tm a (a_Var_f y)) -> 
   Grade P psi (open_tm_wrt_tm a b).
 Proof.
   intros.
@@ -242,21 +249,22 @@ Proof.
   rewrite tm_subst_tm_tm_fresh_eq in ss; auto.
 Qed.
 
-Lemma Grade_renaming : forall y x psi0 P psi b1, 
+Lemma Grade_renaming_tm : forall y x psi0 P psi b1, 
     x `notin` dom P \u fv_tm_tm_tm b1 -> 
     y `notin` dom P \u fv_tm_tm_tm b1 \u {{x}} -> 
-    Grade ([(y, psi0)] ++ P) psi (open_tm_wrt_tm b1 (a_Var_f y)) -> 
-    Grade ([(x, psi0)] ++ P) psi (open_tm_wrt_tm b1 (a_Var_f x)).
+    Grade ([(y, (psi0, e_Tm))] ++ P) psi (open_tm_wrt_tm b1 (a_Var_f y)) -> 
+    Grade ([(x, (psi0, e_Tm))] ++ P) psi (open_tm_wrt_tm b1 (a_Var_f x)).
 Proof.
   intros.
+  have h0: ECtx (y ~ (psi0, e_Tm) ++ P) by sfirstorder using Grade_ECtx_mutual.
+  have h1: ECtx P by hauto lq:on using ECtx_concat.
   rewrite (tm_subst_tm_tm_intro y b1); auto.
   move: (Grade_uniq H1) => u. 
   destruct (q_leb psi0 psi) eqn:LE.
-  - eapply Grade_substitution_same with (P2 := nil) (P1 := ([(x, psi0)] ++ P)); simpl_env.
+  - eapply Grade_substitution_tm_same with (P2 := nil) (P1 := ([(x, (psi0, e_Tm))] ++ P)); simpl_env.
     eapply Grade_weakening_middle; eauto. 
     eapply G_Var; eauto.
-    solve_uniq.
-  - eapply Grade_substitution_irrel  with (P2 := nil) (P1 := ([(x, psi0)] ++ P)); simpl_env. 2: eauto.
+  - eapply Grade_substitution_irrel  with (P2 := nil) (P1 := ([(x, (psi0, e_Tm))] ++ P)); simpl_env. 2: eauto.
     eapply Grade_weakening_middle; eauto. 
     auto.
 Qed. 
@@ -264,7 +272,7 @@ Qed.
 Ltac exists_apply_Grade x :=
   let y := fresh in
   fresh_apply_Grade y; eauto;
-  eapply (@Grade_renaming x); try rewrite fv_tm_tm_tm_close_tm_wrt_tm; auto;
+  eapply (@Grade_renaming_tm x); try rewrite fv_tm_tm_tm_close_tm_wrt_tm; auto;
   rewrite open_tm_wrt_tm_close_tm_wrt_tm; auto.
 
 (* --- geq --- *)
@@ -282,20 +290,20 @@ Ltac invert_Grade :=
     end.
 
 
-Lemma CEq_GEq_equality_substitution : 
+Lemma CEq_GEq_equality_substitution_tm : 
   (forall P psi psi0 b1 b2,
   CEq P psi psi0 b1 b2 ->  forall P1 P2 x psi1, 
-        P = P2 ++ [(x,psi1)] ++ P1 
+        P = P2 ++ [(x,(psi1, e_Tm))] ++ P1 
        -> forall a1 a2, CEq P1 psi psi1 a1 a2 
        -> CEq (P2 ++ P1) psi psi0 (tm_subst_tm_tm a1 x b1) (tm_subst_tm_tm a2 x b2)) /\
   (forall P psi b1 b2,
   GEq P psi b1 b2 -> forall P1 P2 x psi1, 
-        P = P2 ++ [(x,psi1)] ++ P1 
+        P = P2 ++ [(x,(psi1, e_Tm))] ++ P1 
        -> forall a1 a2, CEq P1 psi psi1 a1 a2  
        -> GEq (P2 ++ P1) psi (tm_subst_tm_tm a1 x b1) (tm_subst_tm_tm a2 x b2)) /\
   (forall P psi phi1 phi2,
   CoGEq P psi phi1 phi2 -> forall P1 P2 x psi1,
-        P = P2 ++ [(x,psi1)] ++ P1
+        P = P2 ++ [(x,(psi1, e_Tm))] ++ P1
        -> forall a1 a2, CEq P1 psi psi1 a1 a2
        -> CoGEq (P2 ++ P1) psi (tm_subst_tm_constraint a1 x phi1) (tm_subst_tm_constraint a2 x phi2)).
 Proof. 
@@ -337,10 +345,10 @@ Proof.
 Qed.
 
 
-Lemma GEq_open: forall P psi psi0 a1 a2 a b0 x, 
+Lemma GEq_open_tm: forall P psi psi0 a1 a2 a b0 x, 
       x \notin fv_tm_tm_tm a -> x \notin fv_tm_tm_tm b0 ->
       CEq P psi psi0 a1 a2 ->
-      GEq ([(x, psi0)] ++ P) psi (open_tm_wrt_tm a (a_Var_f x)) (open_tm_wrt_tm b0 (a_Var_f x)) ->
+      GEq ([(x, (psi0, e_Tm))] ++ P) psi (open_tm_wrt_tm a (a_Var_f x)) (open_tm_wrt_tm b0 (a_Var_f x)) ->
       GEq P psi (open_tm_wrt_tm a a1) (open_tm_wrt_tm b0 a2).
 Proof.
       intros.
@@ -382,8 +390,8 @@ Proof.
   hauto lq: on use: CEq_GEq_equality_substitution, CEq_refl.
 Qed.
 
-Lemma GEq_substitution_irrel : forall P1 P2 x psi phi b1 b2 a1 a2,
-  GEq (P2 ++ [(x,psi)] ++ P1) phi b1 b2 
+Lemma GEq_substitution_tm_irrel : forall P1 P2 x psi phi b1 b2 a1 a2,
+  GEq (P2 ++ [(x,(psi, e_Tm))] ++ P1) phi b1 b2 
   -> not (psi <= phi)
   -> lc_tm a1
   -> lc_tm a2

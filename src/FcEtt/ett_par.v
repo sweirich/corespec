@@ -18,11 +18,14 @@ Import ext_wf.
 
 
 
+
 Require Import FcEtt.erase_syntax.
 
 Require Export FcEtt.toplevel.
 
 Require Export FcEtt.ett_value.
+
+Require Import Metalib.CoqEqDec.
 
 
 (* ------------------------------------------ *)
@@ -49,8 +52,8 @@ Ltac erased_pick_fresh x :=
     let v := match s with
              | a_UAbs _ _  => erased_a_Abs
              | a_Pi _ _ _  => erased_a_Pi
-             | a_CPi _ _   => erased_a_CPi
-             | a_UCAbs _   => erased_a_CAbs
+             | a_CPi _ _ _   => erased_a_CPi
+             | a_UCAbs _ _   => erased_a_CAbs
              end
     in pick fresh x and apply v
   end.
@@ -109,6 +112,49 @@ Ltac invert_CGrade a :=
 
 (* Lemma CPar_Par_Grade : (forall P psi phi a b, CPar P psi phi a b -> CGrade P psi phi a /\ CGrade P psi phi b) /\  *)
 (*                        (forall P psi a b, Par P psi a b -> Grade P psi a /\ Grade P psi b). *)
+Lemma Grade_substitution_co_CGrade : forall P2 c phi P1 psi b,
+      Grade (P2 ++ c ~ (phi, e_Co) ++ P1) psi b
+    -> Grade (P2 ++ P1) psi (co_subst_co_tm g_Triv c b).
+Proof.
+  sfirstorder use:CGrade_Grade_substitution_triv_CGrade.
+Qed.
+
+Lemma Grade_substitution_co_same : forall P2 c phi P1 psi b,
+      Grade (P2 ++ c ~ (phi, e_Co) ++ P1) psi b
+    -> Grade (P2 ++ P1) psi (co_subst_co_tm g_Triv c b).
+Proof.
+  sfirstorder use:Grade_substitution_co_CGrade.
+Qed.
+
+
+(* Lemma Grade_open_tm : forall P psi y psi0 a b, *)
+(*   y `notin` fv_tm_tm_tm a -> *)
+(*   Grade P psi b -> *)
+(*   Grade ([(y, (psi0, e_Tm))] ++ P) psi (open_tm_wrt_tm a (a_Var_f y)) -> *)
+(*   Grade P psi (open_tm_wrt_tm a b). *)
+(* Proof. *)
+(*   intros. *)
+(*   move: (Grade_substitution_tm_same nil _ _ H1 H0) => ss. *)
+(*   rewrite tm_subst_tm_tm_open_tm_wrt_tm in ss; *)
+(*     eauto using Grade_lc. *)
+(*   rewrite tm_subst_tm_tm_var in ss. *)
+(*   rewrite tm_subst_tm_tm_fresh_eq in ss; auto. *)
+(* Qed. *)
+
+
+Lemma Grade_open_co : forall P psi c psi0 a,
+  c `notin` fv_co_co_tm a ->
+  Grade ([(c, (psi0, e_Co))] ++ P) psi (open_tm_wrt_co a (g_Var_f c)) ->
+  Grade P psi (open_tm_wrt_co a g_Triv).
+Proof.
+  intros.
+  move: (Grade_substitution_co_same nil c psi0 P H0) => ss.
+  rewrite co_subst_co_tm_open_tm_wrt_co in ss;
+    eauto using Grade_lc.
+  rewrite co_subst_co_co_var in ss.
+  rewrite co_subst_co_tm_fresh_eq in ss; auto.
+Qed.
+
 
 Lemma Par_grade_mutual :
   (  forall P1 psi a b, Par P1 psi a b -> Grade P1 psi a /\ Grade P1 psi b) /\
@@ -121,49 +167,34 @@ Proof.
   all: try solve [invert_Grade; subst; auto].
   all: try solve [fresh_apply_Grade x; auto; repeat spec x; split_hyp; eauto].
   - invert_Grade; subst. pick fresh y; repeat spec y.
-    invert_CGrade b'. eapply Grade_open; eauto. eapply Grade_open_irrel; eauto. 
+    invert_CGrade b'. eapply Grade_open_tm; eauto. eapply Grade_open_tm_irrel; eauto. 
   - invert_Grade; subst. pick fresh y; repeat spec y.
-    
-    admit.
-  -                             (* use fix typing *)
-(* grade axiom *)
-    admit.
+    eapply Grade_open_co; eauto.
+  (* well-gradedness of toplevel *)
+  - econstructor; eauto. admit.
   - admit.
-  - fresh_apply_Grade x; auto; repeat spec x; split_hyp; eauto. rewrite e.
+  - have h0 : ECtx P by sfirstorder use:Grade_ECtx_mutual.
+    fresh_apply_Grade x; auto; repeat spec x; split_hyp; eauto. rewrite e.
     pose proof Grade_uniq H.
     constructor.
     + qauto l: on use: Grade_uniq, Grade_weakening ctrs: uniq, Grade.
     + destruct (q_leb psi0 psi) eqn:eq.
-      * apply CG_Leq; 
-        hecrush.
-      * apply CG_Nleq; sfirstorder.
+      * apply CG_Leq. sfirstorder ctrs:Grade.
+        econstructor; eauto.
+      * apply CG_Nleq; eauto.
   - fresh_apply_Grade x; auto; repeat spec x; split_hyp; eauto. rewrite e.
     pose proof Grade_uniq H.
     constructor.
     qauto l: on use: Grade_uniq, Grade_weakening ctrs: uniq, Grade.
-    
-        
-        
-        
-    
-
-  - admit.
-
-    Check Grade_open.
-    invert_Grade; subst; pick fresh y; repeat spec y. invert_CGrade b'. eapply Grade_open; eauto. eapply Grade_open_irrel; eauto.
-fresh_apply_Grade x; auto; repeat spec x; split_hyp; eauto. 
-  
+Admitted.  
 
 
-Lemma ParProp_refl : forall P psi phi, lc_constraint phi -> ParProp P psi phi phi.
+Lemma ParProp_refl : forall P, ECtx P -> forall psi phi, CoGrade P psi phi -> ParProp P psi phi phi.
 Proof.
-  induction phi; inversion 1;subst; auto.
-  
+  induction phi; sauto lq:on.
 Qed.
 
-(* YL: Should I add refl rule to ParProp? *)
 Hint Resolve ParProp_refl.
-
 
 Lemma erased_lc : (forall a, erased_tm a -> lc_tm a) /\ (forall phi, erased_constraint phi -> lc_constraint phi).
   eapply erased_tm_constraint_mutual; intros; auto.
@@ -182,30 +213,32 @@ Qed.
 Hint Resolve erased_lc_tm : lc.
 Hint Resolve erased_lc_constraint : lc.
 
+
 Lemma subst_tm_erased : (forall a , erased_tm a -> forall x b, erased_tm b -> erased_tm (tm_subst_tm_tm b x a)) /\
                         (forall phi, erased_constraint phi -> forall x b, erased_tm b -> erased_constraint (tm_subst_tm_constraint b x phi)).
 Proof.
-  eapply erased_tm_constraint_mutual; intros; simpl; eauto with lc.
+  apply erased_tm_constraint_mutual; intros; simpl; eauto with lc.
   all: try solve [erased_pick_fresh x0; autorewrite with subst_open_var; eauto with lc].
-  - destruct eq_dec; eauto.
-  - destruct rho.
-    + pick fresh y and apply erased_a_Abs; eauto.
-      assert (W: y `notin` L). fsetdec. apply H  with (x := y) (x0 := x) (b := b) in W.
-      rewrite tm_subst_tm_tm_open_tm_wrt_tm in W. simpl in W.
-      assert (Q: (if y == x then b else a_Var_f y) = (a_Var_f y)).
-      destruct (y == x). fsetdec. eauto. rewrite Q in W. eauto.
-      apply erased_lc; eauto.
-      assumption.
-    + pick fresh y and apply erased_a_Abs; eauto.
-      assert (W: y `notin` L). fsetdec. apply H with (x := y) (x0 := x) (b := b) in W.
-      rewrite tm_subst_tm_tm_open_tm_wrt_tm in W. simpl in W.
-      assert (Q: (if y == x then b else a_Var_f y) = (a_Var_f y)).
-      destruct (y == x). fsetdec. eauto. rewrite Q in W. eauto.
-      apply erased_lc; eauto. assumption.
-      assert (W: y `notin` L). fsetdec. apply r in W.
-      apply Rho_IrrRel. inversion W; subst.
-      rewrite tm_subst_tm_tm_open_tm_wrt_tm_var; eauto. apply fv_tm_tm_tm_tm_subst_tm_tm_notin.
-      auto. fsetdec. apply erased_lc; auto.
+  - hauto l: on use: eq_dec.
+    (* no longer need those because the complexity of rho is "amortized" by psi? *)
+  (* - destruct rho. *)
+  (*   + pick fresh y and apply erased_a_Abs; eauto. *)
+  (*     assert (W: y `notin` L). fsetdec. apply H  with (x := y) (x0 := x) (b := b) in W. *)
+  (*     rewrite tm_subst_tm_tm_open_tm_wrt_tm in W. simpl in W. *)
+  (*     assert (Q: (if y == x then b else a_Var_f y) = (a_Var_f y)). *)
+  (*     destruct (y == x). fsetdec. eauto. rewrite Q in W. eauto. *)
+  (*     apply erased_lc; eauto. *)
+  (*     assumption. *)
+  (*   + pick fresh y and apply erased_a_Abs; eauto. *)
+  (*     assert (W: y `notin` L). fsetdec. apply H with (x := y) (x0 := x) (b := b) in W. *)
+  (*     rewrite tm_subst_tm_tm_open_tm_wrt_tm in W. simpl in W. *)
+  (*     assert (Q: (if y == x then b else a_Var_f y) = (a_Var_f y)). *)
+  (*     destruct (y == x). fsetdec. eauto. rewrite Q in W. eauto. *)
+  (*     apply erased_lc; eauto. assumption. *)
+  (*     assert (W: y `notin` L). fsetdec. apply r in W. *)
+  (*     apply Rho_IrrRel. inversion W; subst. *)
+  (*     rewrite tm_subst_tm_tm_open_tm_wrt_tm_var; eauto. apply fv_tm_tm_tm_tm_subst_tm_tm_notin. *)
+  (*     auto. fsetdec. apply erased_lc; auto. *)
 Qed.
 
 

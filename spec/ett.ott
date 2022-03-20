@@ -911,6 +911,13 @@ P |= psi b
 -------------------------------- :: CApp
 P |= psi b [ o ]
 
+F ~ a : psi0 A in toplevel
+psi0 <= psi
+[empty |= CTime A]
+|= P
+-------------------------------- :: Fam
+P |= psi F
+
 
 % TODO: figure out how GEq is defined
 % [ G |= psi phi ok ]
