@@ -46,56 +46,6 @@ Hint Constructors multipar_prop.
 
 (* Tactics concerning erased terms. *)
 
-Ltac erased_pick_fresh x :=
-  match goal with
-    [ |- erased_tm ?s ] =>
-    let v := match s with
-             | a_UAbs _ _  => erased_a_Abs
-             | a_Pi _ _ _  => erased_a_Pi
-             | a_CPi _ _ _   => erased_a_CPi
-             | a_UCAbs _ _   => erased_a_CAbs
-             end
-    in pick fresh x and apply v
-  end.
-
-Ltac erased_inversion :=
-  repeat match goal with
-  | [H : erased_constraint (Eq _ _ _) |- _] =>
-    inversion H; subst; clear H
-  | [H : erased_constraint (Impl _ _) |- _] =>
-    inversion H; subst; clear H
-  | [H : erased_tm (a_UAbs _ _)|- _ ] =>
-    inversion H; subst; clear H
-  | [H : erased_tm (a_App _ _ _)|- _ ] =>
-    inversion H; subst; clear H
-  | [H : erased_tm (a_Pi _ _ _)|- _ ] =>
-    inversion H; subst; clear H
-  | [H : erased_tm (a_CPi _ _ _)|- _ ] =>
-    inversion H; subst; clear H
-  | [H : erased_tm (a_UCAbs _ _ ) |- _ ] =>
-    inversion H; subst; clear H
-  | [H : erased_tm (a_CApp _ _)|- _ ] =>
-    inversion H; subst; clear H
-end.
-
-Ltac erased_case :=
-  let x := fresh in
-  let h0 := fresh in
-  erased_pick_fresh x; eauto using lc_erase;
-  match goal with
-    [ H : forall x, erased_tm (erase (open_tm_wrt_tm ?b (a_Var_f x))) |- _ ] =>
-    move: (H x) => h0; rewrite <- open_tm_erase_tm in h0; eauto
-  | [ H : ∀ c, erased_tm (erase (open_tm_wrt_co ?b (g_Var_f c))) |- _ ] =>
-    move: (H x) => h0; rewrite <- open_co_erase_tm2 with (g := (g_Var_f x)) in h0; auto
-  end.
-
-Inductive erased_sort : sort -> Prop :=
-| erased_Tm : forall a, erased_tm a -> erased_sort (Tm a)
-| erased_Co : forall phi, erased_constraint phi -> erased_sort (Co phi).
-
-Definition erased_context : context -> Prop :=
-  Forall (fun p => match p with (a,(psi,s)) => erased_sort s end).
-
 Definition joins P psi a b := exists c, uniq P /\ erased_tm a /\ erased_tm b /\
                                multipar P psi a c /\ multipar P psi b c.
 
@@ -110,8 +60,6 @@ Ltac invert_CGrade a :=
     [ H : CGrade ?P ?phi ?psi a |- _] => inversion H ; subst 
   end.
 
-(* Lemma CPar_Par_Grade : (forall P psi phi a b, CPar P psi phi a b -> CGrade P psi phi a /\ CGrade P psi phi b) /\  *)
-(*                        (forall P psi a b, Par P psi a b -> Grade P psi a /\ Grade P psi b). *)
 Lemma Grade_substitution_co_CGrade : forall P2 c phi P1 psi b,
       Grade (P2 ++ c ~ (phi, e_Co) ++ P1) psi b
     -> Grade (P2 ++ P1) psi (co_subst_co_tm g_Triv c b).
@@ -125,22 +73,6 @@ Lemma Grade_substitution_co_same : forall P2 c phi P1 psi b,
 Proof.
   sfirstorder use:Grade_substitution_co_CGrade.
 Qed.
-
-
-(* Lemma Grade_open_tm : forall P psi y psi0 a b, *)
-(*   y `notin` fv_tm_tm_tm a -> *)
-(*   Grade P psi b -> *)
-(*   Grade ([(y, (psi0, e_Tm))] ++ P) psi (open_tm_wrt_tm a (a_Var_f y)) -> *)
-(*   Grade P psi (open_tm_wrt_tm a b). *)
-(* Proof. *)
-(*   intros. *)
-(*   move: (Grade_substitution_tm_same nil _ _ H1 H0) => ss. *)
-(*   rewrite tm_subst_tm_tm_open_tm_wrt_tm in ss; *)
-(*     eauto using Grade_lc. *)
-(*   rewrite tm_subst_tm_tm_var in ss. *)
-(*   rewrite tm_subst_tm_tm_fresh_eq in ss; auto. *)
-(* Qed. *)
-
 
 Lemma Grade_open_co : forall P psi c psi0 a,
   c `notin` fv_co_co_tm a ->
@@ -195,114 +127,6 @@ Proof.
 Qed.
 
 Hint Resolve ParProp_refl.
-
-
-
-Lemma typing_erased_mutual:
-    (forall G psi b A, Typing G psi b A -> erased_tm b) /\
-    (forall G0 psi phi (H : PropWff G0 psi phi), erased_constraint phi) /\
-     (forall G0 psi p1 p2 (H : Iso G0 psi p1 p2), True ) /\
-     (forall G0 psi phi (H : DefEq G0 psi phi), True) /\
-      (forall G0 (H : Ctx G0), True) /\
-    (forall G0 psi psi0 A B T (H : CDefEq G0 psi psi0 A B T), True).
-Proof.
-  apply typing_wff_iso_defeq_mutual; intros; repeat split; split_hyp; subst; simpl; auto.
-  (* all : try solve [inversion H2; subst; auto]. *)
-  all : try solve [econstructor; eauto].
-Qed.
-
-Lemma Typing_erased_tm: forall G psi b A, Typing G psi b A -> erased_tm b.
-Proof.
-  apply typing_erased_mutual.
-Qed.
-
-Lemma Typing_erased_constraint: forall G0 psi phi (H : PropWff G0 psi phi), erased_constraint phi.
-Proof.
-  apply typing_erased_mutual.
-Qed.
-
-Hint Resolve Typing_erased_tm Typing_erased_constraint : erased.
-
-Lemma typing_erased_type_mutual  :
-    (forall G psi b A, Typing G psi b A -> erased_tm A) /\
-    (forall G0 psi phi (H : PropWff G0 psi phi), erased_constraint phi) /\
-     (forall G0 psi p1 p2 (H : Iso G0 psi p1 p2), erased_constraint p1 /\ erased_constraint p2) /\
-     (forall G0 psi phi (H : DefEq G0 psi phi), erased_constraint phi) /\
-     (forall G0 (H : Ctx G0), erased_context G0) /\
-     (forall G0 psi psi0 A B T (H : CDefEq G0 psi psi0 A B T), erased_tm A /\ erased_tm B /\ erased_tm T).
-Proof.
-  apply typing_wff_iso_defeq_mutual; intros; repeat split; split_hyp; subst; simpl; auto.
-  all: unfold erased_context in *.
-  all: eauto with erased.
-    all: try solve [erased_inversion; pick fresh x;
-      rewrite (tm_subst_tm_tm_intro x); auto;
-        eapply subst_tm_erased;
-        eauto with erased].
-  all : try solve [erased_inversion; eauto].
-  all : try solve [erased_inversion;
-    pick fresh x; rewrite (tm_subst_tm_tm_intro x);auto; econstructor; try (eauto with erased; 
-                   match goal with [ |- _ `notin` _] => fsetdec end)].
-  all : try solve [constructor;
-                   try solve [econstructor; eauto with erased; intros;
-                                   move: (H _ H1) => h1;
-                                                    inversion h1; auto with erased]].
-  all : try solve [erased_inversion; econstructor; eauto;
-    apply typing_erased_mutual in t0; auto;
-    econstructor;
-    intros;
-    rewrite e; eauto].
-
-  - eapply Forall_forall in H; eauto. simpl in H. inversion H. auto.
-  - inversion H; pick fresh x;
-      rewrite (co_subst_co_tm_intro x); auto.
-        eauto with erased.
-  - unfold binds in b.
-    erewrite Forall_forall in H.
-    apply H in b.
-    inversion b; auto.
-  (* only handles one case? *)
-  - erased_inversion; pick fresh x; econstructor; eauto; rewrite (tm_subst_tm_tm_intro x);
-      eauto;eapply subst_tm_erased; eauto with erased lc lngen.
-
-  -  erased_inversion; pick fresh x; econstructor; eauto; try (rewrite (co_subst_co_tm_intro x);
-      eauto; eapply subst_co_erased_tm; eauto with erased lc lngen).
-
-  - erased_inversion; pick fresh x; econstructor; eauto; try (rewrite (co_subst_co_tm_intro x);
-      try eapply subst_co_erased_tm; try eapply subst_tm_erased; eauto with erased lc lngen).
-  - apply Forall_forall.
-    intros s h0. destruct s.
-    destruct h0. inversion H1. econstructor.
-    eauto with erased.
-    eapply Forall_forall in H; eauto. simpl in H. auto.
-  - apply Forall_forall.
-    intros s h0. destruct s.
-    induction p.
-    + subst.
-      destruct h0. inversion H4. econstructor;  eauto with erased.
-      eapply Forall_forall in H; eauto. simpl in H. auto.
-    + destruct h0. inversion H1; subst. constructor. assumption.
-      apply IHp1; eauto. inversion H0; eauto. right. assumption.
-Qed.
-
-Lemma Typing_erased_type : forall G psi b A, Typing G psi b A -> erased_tm A.
-Proof. apply typing_erased_type_mutual. Qed.
-
-Hint Resolve Typing_erased_type : erased.
-
-Lemma toplevel_erased1 : forall F psi a A, binds F (psi, (Ax a A)) toplevel -> erased_tm a.
-Proof.
-  intros.
-  move: (toplevel_closed H) => h0.
-  eauto with erased.
-Qed.
-Lemma toplevel_erased2 : forall F psi a A, binds F (psi,(Ax a A)) toplevel -> erased_tm A.
-Proof.
-  intros.
-  move: (toplevel_closed H) => h0.
-  eauto with erased.
-Qed.
-
-Hint Resolve toplevel_erased1 toplevel_erased2 : erased.
 
 
 (* Introduce a hypothesis about an erased opened term. *)
