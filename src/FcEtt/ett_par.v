@@ -16,7 +16,7 @@ Require Export FcEtt.ext_context_fv.
 Require Import FcEtt.ext_wf.
 Import ext_wf.
 
-
+Require Export FcEtt.ext_erased.
 
 
 Require Import FcEtt.erase_syntax.

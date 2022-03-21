@@ -3,28 +3,12 @@ Set Implicit Arguments.
 
 Require Export FcEtt.tactics.
 Require Export FcEtt.imports.
-Require Import FcEtt.utils.
-
 Require Export FcEtt.ett_inf.
 Require Export FcEtt.ett_ott.
 Require Export FcEtt.ett_ind.
-Require Export FcEtt.grade_subst.
-
-
-Require Export FcEtt.ext_context_fv.
-
 Require Import FcEtt.ext_wf.
-Import ext_wf.
-
-
-
-
 Require Import FcEtt.erase_syntax.
-
 Require Export FcEtt.toplevel.
-
-Require Export FcEtt.ett_value.
-
 Require Import Metalib.CoqEqDec.
 
 Lemma typing_erased_mutual:
