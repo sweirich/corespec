@@ -225,16 +225,17 @@ Qed.
 
 
 Lemma typing_weakening_mutual:
-  (forall G0 a A,     Typing G0 a A ->
-     forall E F G, (G0 = F ++ G) -> Ctx (F ++ E ++ G) -> Typing (F ++ E ++ G) a A) /\
-  (forall G0 phi,     PropWff G0 phi ->
-     forall E F G, (G0 = F ++ G) -> Ctx (F ++ E ++ G) -> PropWff (F ++ E ++ G) phi) /\
-  (forall G0 D p1 p2, Iso G0 D p1 p2 ->
-     forall E F G, (G0 = F ++ G) -> Ctx (F ++ E ++ G) -> Iso (F ++ E ++ G) D p1 p2) /\
-  (forall G0 D A B T, DefEq G0 D A B T ->
-     forall E F G, (G0 = F ++ G) -> Ctx (F ++ E ++ G) -> DefEq (F ++ E ++ G) D A B T) /\
+  (forall G0 psi a A,     Typing G0 psi a A ->
+     forall E F G, (G0 = F ++ G) -> Ctx (F ++ E ++ G) -> Typing (F ++ E ++ G) psi a A) /\
+  (forall G0 psi phi,     PropWff G0 psi phi ->
+     forall E F G, (G0 = F ++ G) -> Ctx (F ++ E ++ G) -> PropWff (F ++ E ++ G) psi phi) /\
+  (forall G0 psi p1 p2, Iso G0 psi p1 p2 ->
+     forall E F G, (G0 = F ++ G) -> Ctx (F ++ E ++ G) -> Iso (F ++ E ++ G) psi p1 p2) /\
+  (forall G0 psi phi, DefEq G0 psi phi ->
+     forall E F G, (G0 = F ++ G) -> Ctx (F ++ E ++ G) -> DefEq (F ++ E ++ G) psi phi) /\
   (forall G0,         Ctx G0 ->
-     forall E F G, (G0 = F ++ G) -> Ctx (F ++ E ++ G) -> Ctx (F ++ E ++ G)).
+     forall E F G, (G0 = F ++ G) -> Ctx (F ++ E ++ G) -> Ctx (F ++ E ++ G)) /\
+  (forall G0 psi psi0 A B T, CDefEq G0 psi psi0 A B T -> True).
 Proof.
   ext_induction CON.
   all: intros; subst; try done.

@@ -718,11 +718,10 @@ Ltac auto_rew_env :=
     | [ |- context [([(?x, ?T)] ++ ?G1 ++ ?G2 ++ ?G3)] ] => rewrite_env (((x ~ (T)) ++ G1) ++ G2 ++ G3)
   end.
 
-
 (* -------------- Pick fresh and apply for judgements with binding ----- *)
 Ltac E_pick_fresh x :=
   match goal with
-    | [ |- Typing _ ?shape _ ] =>
+    | [ |- Typing _ _ ?shape _ ] =>
       let v := match shape with
             | a_Pi _ _ _ => E_Pi
             | a_UAbs _ _ => E_Abs
