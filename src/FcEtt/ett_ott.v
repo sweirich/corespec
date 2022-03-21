@@ -62,6 +62,10 @@ with co : Set :=  (*r explicit coercions *)
  | g_Left (g:co) (g':co)
  | g_Right (g:co) (g':co).
 
+Inductive sort : Set :=  (*r binding classifier *)
+ | Tm (A:tm)
+ | Co (phi:constraint).
+
 Inductive esort : Set :=  (*r binding classifier *)
  | e_Tm : esort
  | e_Co : esort.
@@ -69,10 +73,6 @@ Inductive esort : Set :=  (*r binding classifier *)
 Inductive sig_sort : Set :=  (*r signature classifier *)
  | Cs (A:tm)
  | Ax (a:tm) (A:tm).
-
-Inductive sort : Set :=  (*r binding classifier *)
- | Tm (A:tm)
- | Co (phi:constraint).
 
 Definition sig : Set := list (atom * (grade * sig_sort)).
 
@@ -1293,6 +1293,7 @@ with Typing : context -> grade -> tm -> tm -> Prop :=    (* defn Typing *)
      DefEq  (meet_ctx_l   q_C    G )   q_C  phi ->
      Typing G psi (a_CApp a1 g_Triv)  (open_tm_wrt_co  B1   g_Triv ) 
  | E_Fam : forall (G:context) (psi:grade) (F:tyfam) (A:tm) (psi0:grade) (P:econtext) (a:tm),
+      ( Typing  nil   q_C  A a_Star )  ->
       ( psi0  <=  psi )  ->
      ECtx P ->
       binds  F  ( psi0 , (Ax  a A ))   toplevel   ->

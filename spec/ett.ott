@@ -1406,8 +1406,9 @@ CTime /\ G |= CTime phi
 G |= psi a1 [ o ] : B1 { o / c }
 
 
-% do we need this?
-% [ empty |= CTime A : TYPE ]
+% do we need the premise about A? yes.
+% for strengthening the IH
+[ empty |= CTime A : TYPE ]
 psi0 <= psi
 |= P
 F ~ a : psi0 A in toplevel
