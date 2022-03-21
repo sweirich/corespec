@@ -1,29 +1,31 @@
-Require Import FcEtt.sigs.
+(* Require Import FcEtt.sigs. *)
 Require Import FcEtt.imports.
 Require Import FcEtt.ett_ott.
 Require Import FcEtt.ett_inf.
 Require Import FcEtt.ett_ind.
 
-Require Import FcEtt.ett_par.
+Require Import FcEtt.ext_erased.
 Require Import FcEtt.ext_wf.
 
 Require Import FcEtt.utils.
+Require Import FcEtt.ext_weak.
 
-Module ext_invert (subst : ext_subst_sig) <: ext_invert_sig.
+(* Module ext_invert (subst : ext_subst_sig) <: ext_invert_sig. *)
 
-  Include subst.
+(*   Include subst. *)
 
 
 Set Bullet Behavior "Strict Subproofs".
 Set Implicit Arguments.
 
 
-Lemma binds_to_Typing: forall G T A, Ctx G -> binds T (Tm A) G -> Typing G A a_Star.
+Lemma binds_to_Typing: forall G T psi0 A, Ctx G -> binds T (psi0, (Tm A)) G -> Typing (meet_ctx_l q_C G) q_C A a_Star.
 Proof.
   induction G; try done.
-  intros T A H H0.
+  intros T psi0 A H H0.
   rewrite_env ([a] ++ G).
   destruct a.
+  destruct p.
   induction s; subst.
   - inversion H0; eauto.
     + inversion H1; subst; clear H1.

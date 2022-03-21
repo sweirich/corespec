@@ -1,16 +1,14 @@
-Require Import FcEtt.sigs.
-
 Require Import FcEtt.tactics.
 Require Import FcEtt.utils.
 Require Export FcEtt.imports.
 Require Export FcEtt.ett_inf.
-Require Export FcEtt.ett_par.
+(* Require Export FcEtt.ett_par. *)
 Require Export FcEtt.ett_ind.
 
 
-Module ext_weak (wf: ext_wf_sig).
+(* Module ext_weak (wf: ext_wf_sig). *)
 
-Include wf.
+(* Include wf. *)
 
 Set Bullet Behavior "Strict Subproofs".
 Set Implicit Arguments.
@@ -55,26 +53,28 @@ Ltac E_pick_fresh x :=
 (* Weakening Lemmas for the available set *)
 
 (* Can replace set with an equivalent *)
-Lemma respects_atoms_eq_mutual :
-  (forall G a A,     Typing  G a A       -> True) /\
-  (forall G phi,     PropWff G phi       -> True) /\
-  (forall G D p1 p2, Iso G D p1 p2 -> forall D', D [=] D' -> Iso G D' p1 p2) /\
-  (forall G D A B T,   DefEq G D A B T  -> forall D', D [=] D' -> DefEq G D' A B T) /\
-  (forall G,           Ctx G           -> True).
-Proof. 
-  ext_induction CON; intros; subst; eauto 2.
-  all: try solve [eapply CON; eauto 2; try fsetdec].
 
-  (* these are hard to find. *)
-  (*
-  eapply E_LeftRel with (b:=b)(b':=b'); eauto 2.
-  eapply E_LeftIrrel with (b:=b)(b':=b'); eauto 2.
-  eapply E_Right with (a:=a)(a':=a'); eauto 2.
-  *)
-Qed.
+(* YL: no need for this now that we don't have D *)
+(* Lemma respects_atoms_eq_mutual : *)
+(*   (forall G a A,     Typing  G a A       -> True) /\ *)
+(*   (forall G phi,     PropWff G phi       -> True) /\ *)
+(*   (forall G D p1 p2, Iso G D p1 p2 -> forall D', D [=] D' -> Iso G D' p1 p2) /\ *)
+(*   (forall G D A B T,   DefEq G D A B T  -> forall D', D [=] D' -> DefEq G D' A B T) /\ *)
+(*   (forall G,           Ctx G           -> True). *)
+(* Proof.  *)
+(*   ext_induction CON; intros; subst; eauto 2. *)
+(*   all: try solve [eapply CON; eauto 2; try fsetdec]. *)
 
-Definition Iso_respects_atoms_eq   := third  respects_atoms_eq_mutual.
-Definition DefEq_respects_atoms_eq := fourth respects_atoms_eq_mutual.
+(*   (* these are hard to find. *) *)
+(*   (* *)
+(*   eapply E_LeftRel with (b:=b)(b':=b'); eauto 2. *)
+(*   eapply E_LeftIrrel with (b:=b)(b':=b'); eauto 2. *)
+(*   eapply E_Right with (a:=a)(a':=a'); eauto 2. *)
+(*   *) *)
+(* Qed. *)
+
+(* Definition Iso_respects_atoms_eq   := third  respects_atoms_eq_mutual. *)
+(* Definition DefEq_respects_atoms_eq := fourth respects_atoms_eq_mutual. *)
 (*
 Instance Iso_atoms_eq_mor : Morphisms.Proper
                                  (eq ==> AtomSetImpl.Equal ==> eq ==> eq ==> iff)
@@ -106,82 +106,83 @@ Ltac binds_cons :=
     try done; eauto
   end.
 
+(* YL: no need for this when we don't have D. The context is always "minimal" *)
+(* Lemma strengthen_available_noncovar: *)
+(*   (forall G1  a A,    Typing G1 a A -> True) /\ *)
+(*   (forall G1  phi,    PropWff G1 phi -> True) /\ *)
+(*   (forall G1 D p1 p2, Iso G1 D p1 p2 -> forall x, not (exists phi, binds x (Co phi) G1) -> *)
+(*                  Iso G1 (remove x D) p1 p2) /\ *)
+(*   (forall G1 D A B A1,DefEq G1 D A B A1 ->  forall x, not (exists phi, binds x (Co phi) G1) -> *)
+(*                  DefEq G1 (remove x D) A B A1) /\ *)
+(*   (forall G1 ,        Ctx G1 -> True). *)
+(* Proof. *)
+(*   eapply typing_wff_iso_defeq_mutual; eauto 3; try done. *)
+(*   all: intros; unfold not in *. Focus 5. destruct rho. Unfocus. *)
+(*   all: try (E_pick_fresh y; eauto 3). *)
+(*   all: try solve [destruct (x == c); [ subst; assert False; eauto | eauto]]. *)
+(*   all: try (eapply H0; auto; binds_cons). *)
+(*   all: try (eapply H; auto; binds_cons). *)
+(*   all: try (move: H5 => /binds_cons_iff [[? [?]] | /= H5]; subst; *)
+(*                        assert (y <> y); [fsetdec|done|fsetdec|done]). *)
+(*   all: eauto 4. *)
+(*   - move: H2 => /binds_cons_iff [[? [?]] | /= H2]; subst; *)
+(*                        assert (y <> y); [fsetdec|done|fsetdec|done]. *)
+(* Qed.  (* strengthen_available_nocovar *) *)
 
-Lemma strengthen_available_noncovar:
-  (forall G1  a A,    Typing G1 a A -> True) /\
-  (forall G1  phi,    PropWff G1 phi -> True) /\
-  (forall G1 D p1 p2, Iso G1 D p1 p2 -> forall x, not (exists phi, binds x (Co phi) G1) ->
-                 Iso G1 (remove x D) p1 p2) /\
-  (forall G1 D A B A1,DefEq G1 D A B A1 ->  forall x, not (exists phi, binds x (Co phi) G1) ->
-                 DefEq G1 (remove x D) A B A1) /\
-  (forall G1 ,        Ctx G1 -> True).
-Proof.
-  eapply typing_wff_iso_defeq_mutual; eauto 3; try done.
-  all: intros; unfold not in *. Focus 5. destruct rho. Unfocus.
-  all: try (E_pick_fresh y; eauto 3).
-  all: try solve [destruct (x == c); [ subst; assert False; eauto | eauto]].
-  all: try (eapply H0; auto; binds_cons).
-  all: try (eapply H; auto; binds_cons).
-  all: try (move: H5 => /binds_cons_iff [[? [?]] | /= H5]; subst;
-                       assert (y <> y); [fsetdec|done|fsetdec|done]).
-  all: eauto 4.
-  - move: H2 => /binds_cons_iff [[? [?]] | /= H2]; subst;
-                       assert (y <> y); [fsetdec|done|fsetdec|done].
-Qed.  (* strengthen_available_nocovar *)
-
-Lemma DefEq_strengthen_available_tmvar :
-  forall G D g A B, DefEq G D g A B ->  forall x A', binds x (Tm A') G ->
-                    forall D', D' [=] remove x D ->
-                    DefEq G D' g A B.
-Proof.
-  intros. eapply respects_atoms_eq_mutual.
-  eapply (fourth strengthen_available_noncovar). eauto.
-  unfold not.
-  intros b. destruct b as [phi b].
-  assert (Tm A' = Co phi). eapply binds_unique; eauto.
-  inversion H2.
-  fsetdec.
-Qed.
+(* YL: removed for the same reason as strengthen_available_covar *)
+(* Lemma DefEq_strengthen_available_tmvar : *)
+(*   forall G D g A B, DefEq G D g A B ->  forall x A', binds x (Tm A') G -> *)
+(*                     forall D', D' [=] remove x D -> *)
+(*                     DefEq G D' g A B. *)
+(* Proof. *)
+(*   intros. eapply respects_atoms_eq_mutual. *)
+(*   eapply (fourth strengthen_available_noncovar). eauto. *)
+(*   unfold not. *)
+(*   intros b. destruct b as [phi b]. *)
+(*   assert (Tm A' = Co phi). eapply binds_unique; eauto. *)
+(*   inversion H2. *)
+(*   fsetdec. *)
+(* Qed. *)
 
 (* ----- *)
 
-Lemma weaken_available_mutual:
-  (forall G1  a A,   Typing G1 a A -> True) /\
-  (forall G1  phi,   PropWff G1 phi -> True) /\
-  (forall G1 D p1 p2, Iso G1 D p1 p2 -> forall D', D [<=] D' -> Iso G1 D' p1 p2) /\
-  (forall G1 D A B T,   DefEq G1 D A B T -> forall D', D [<=] D' -> DefEq G1 D' A B T) /\
-  (forall G1 ,       Ctx G1 -> True).
-Proof.
-  ext_induction CON.
-  all: try done.
-  all: intros; try solve [eapply CON; eauto 2].
-  (*
-  - eapply E_LeftRel   with (b := b) (b' := b'); eauto 2.
-  - eapply E_LeftIrrel with (b:=b) (b' := b'); eauto 2.
-  - eapply E_Right     with (a:=a)(a':=a'); eauto 2.
-  *)
-Qed.
+(* Lemma weaken_available_mutual: *)
+(*   (forall G1  a A,   Typing G1 a A -> True) /\ *)
+(*   (forall G1  phi,   PropWff G1 phi -> True) /\ *)
+(*   (forall G1 D p1 p2, Iso G1 D p1 p2 -> forall D', D [<=] D' -> Iso G1 D' p1 p2) /\ *)
+(*   (forall G1 D A B T,   DefEq G1 D A B T -> forall D', D [<=] D' -> DefEq G1 D' A B T) /\ *)
+(*   (forall G1 ,       Ctx G1 -> True). *)
+(* Proof. *)
+(*   ext_induction CON. *)
+(*   all: try done. *)
+(*   all: intros; try solve [eapply CON; eauto 2]. *)
+(*   (* *)
+(*   - eapply E_LeftRel   with (b := b) (b' := b'); eauto 2. *)
+(*   - eapply E_LeftIrrel with (b:=b) (b' := b'); eauto 2. *)
+(*   - eapply E_Right     with (a:=a)(a':=a'); eauto 2. *)
+(*   *) *)
+(* Qed. *)
 
-Lemma remove_available_mutual:
-  (forall G1  a A,   Typing G1 a A -> True) /\
-  (forall G1  phi,   PropWff G1 phi -> True) /\
-  (forall G1 D p1 p2, Iso G1 D p1 p2 ->
-                   Iso G1 (AtomSetImpl.inter D (dom G1)) p1 p2) /\
-  (forall G1 D A B T,   DefEq G1 D A B T ->
-                   DefEq G1 (AtomSetImpl.inter D (dom G1)) A B T) /\
-  (forall G1 ,       Ctx G1 -> True).
-Proof.
-  ext_induction CON.
-  all: try done.
-  all: eauto 2.
-  all: intros; try solve [eapply CON; eauto 2].
-  (* only binding constructors left *)
-  all: eapply (CON (L \u dom G \u D)); auto;
-    intros;
-    eapply (fourth respects_atoms_eq_mutual);
-    [match goal with [H0 : forall x, x `notin` ?L -> DefEq _ (AtomSetImpl.inter _ _) _ _ _ |- _ ] => eapply H0 end; auto|
-    auto; simpl; fsetdec].
-Qed.
+(* Lemma remove_available_mutual: *)
+(*   (forall G1  a A,   Typing G1 a A -> True) /\ *)
+(*   (forall G1  phi,   PropWff G1 phi -> True) /\ *)
+(*   (forall G1 D p1 p2, Iso G1 D p1 p2 -> *)
+(*                    Iso G1 (AtomSetImpl.inter D (dom G1)) p1 p2) /\ *)
+(*   (forall G1 D A B T,   DefEq G1 D A B T -> *)
+(*                    DefEq G1 (AtomSetImpl.inter D (dom G1)) A B T) /\ *)
+(*   (forall G1 ,       Ctx G1 -> True). *)
+(* Proof. *)
+(*   ext_induction CON. *)
+(*   all: try done. *)
+(*   all: eauto 2. *)
+(*   all: intros; try solve [eapply CON; eauto 2]. *)
+(*   (* only binding constructors left *) *)
+(*   all: eapply (CON (L \u dom G \u D)); auto; *)
+(*     intros; *)
+(*     eapply (fourth respects_atoms_eq_mutual); *)
+(*     [match goal with [H0 : forall x, x `notin` ?L -> DefEq _ (AtomSetImpl.inter _ _) _ _ _ |- _ ] => eapply H0 end; auto| *)
+(*     auto; simpl; fsetdec]. *)
+(* Qed. *)
 
 (*
 Instance Iso_atoms_sub_mor : Morphisms.Proper
@@ -199,27 +200,28 @@ Proof.
 Qed.
 *)
 
-Lemma DefEq_weaken_available :
-  forall G D A B T, DefEq G D A B T -> DefEq G (dom G) A B T.
-Proof.
-  intros.
-  remember (AtomSetImpl.inter D (dom G)) as D'.
-  eapply (fourth weaken_available_mutual).
-  eapply (fourth remove_available_mutual).
-  eauto. subst. fsetdec.
-Qed.
+(* YL: probably still need this lemma, but it has to be proven slightly differently *)
+(* Lemma DefEq_weaken_available : *)
+(*   forall G D A B T, DefEq G D A B T -> DefEq G (dom G) A B T. *)
+(* Proof. *)
+(*   intros. *)
+(*   remember (AtomSetImpl.inter D (dom G)) as D'. *)
+(*   eapply (fourth weaken_available_mutual). *)
+(*   eapply (fourth remove_available_mutual). *)
+(*   eauto. subst. fsetdec. *)
+(* Qed. *)
 
-Lemma Iso_weaken_available :
-  forall G D A B, Iso G D A B -> Iso G (dom G) A B.
-Proof.
-  intros G D. intros.
-  remember (AtomSetImpl.inter D (dom G)) as D'.
-  eapply (third weaken_available_mutual).
-  eapply (third remove_available_mutual).
-  eauto. subst. fsetdec.
-Qed.
+(* Lemma Iso_weaken_available : *)
+(*   forall G D A B, Iso G D A B -> Iso G (dom G) A B. *)
+(* Proof. *)
+(*   intros G D. intros. *)
+(*   remember (AtomSetImpl.inter D (dom G)) as D'. *)
+(*   eapply (third weaken_available_mutual). *)
+(*   eapply (third remove_available_mutual). *)
+(*   eauto. subst. fsetdec. *)
+(* Qed. *)
 
-Hint Resolve DefEq_weaken_available Iso_weaken_available.
+(* Hint Resolve DefEq_weaken_available Iso_weaken_available. *)
 
 
 Lemma typing_weakening_mutual:

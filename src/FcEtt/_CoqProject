@@ -12,6 +12,7 @@ ett_par.v
 ett_value.v
 ext_consist.v
 ext_context_fv.v
+ext_erased.v
 ext_invert.v
 ext_red_one.v
 ext_red.v
