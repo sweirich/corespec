@@ -62,6 +62,10 @@ with co : Set :=  (*r explicit coercions *)
  | g_Left (g:co) (g':co)
  | g_Right (g:co) (g':co).
 
+Inductive sig_sort : Set :=  (*r signature classifier *)
+ | Cs (A:tm)
+ | Ax (a:tm) (A:tm).
+
 Inductive sort : Set :=  (*r binding classifier *)
  | Tm (A:tm)
  | Co (phi:constraint).
@@ -69,10 +73,6 @@ Inductive sort : Set :=  (*r binding classifier *)
 Inductive esort : Set :=  (*r binding classifier *)
  | e_Tm : esort
  | e_Co : esort.
-
-Inductive sig_sort : Set :=  (*r signature classifier *)
- | Cs (A:tm)
- | Ax (a:tm) (A:tm).
 
 Definition sig : Set := list (atom * (grade * sig_sort)).
 
@@ -1331,6 +1331,7 @@ with CDefEq : context -> grade -> grade -> tm -> tm -> tm -> Prop :=    (* defn 
       not (  (  ( psi0  <=  psi )  )  )  ->
      Ctx G ->
       (  q_C   <  psi0 )  ->
+      ( psi  <=   q_C  )  ->
      Typing  (meet_ctx_l   q_C    G )   q_C  a A ->
      Typing  (meet_ctx_l   q_C    G )   q_C  b A ->
      CDefEq G psi psi0 a b A
@@ -1504,6 +1505,7 @@ with AnnTyping : context -> grade -> tm -> tm -> Prop :=    (* defn AnnTyping *)
  | An_Fam : forall (G:context) (psi:grade) (F:tyfam) (A:tm) (psi0:grade) (a:tm),
      AnnCtx G ->
       ( psi0  <=  psi )  ->
+      ( psi  <=   q_C  )  ->
       binds  F  ( psi0 , (Ax  a A ))   an_toplevel   ->
       ( AnnTyping  nil   q_C  A a_Star )  ->
      AnnTyping G psi (a_Fam F) A

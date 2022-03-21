@@ -1465,6 +1465,10 @@ by
 
 % There are two cases because I inlined the |- a :top B relation
 % the same way it is inlined into App, producing two rules: App and AppIrrel
+
+% psi0 not observable from psi
+% psi0 <= CTime
+% psi <= CTime (implied)
    not (psi0 <= psi)
    |= G
    psi0 <= CTime
@@ -1473,9 +1477,13 @@ by
   --------------------- :: Nleq 
    G |= psi psi0 a ~ b : A
 
+% psi0 not observable from psi
+% psi0 > CTime
+% psi <= CTime (needed explicitly)
    not (psi0 <= psi)
    |= G
    CTime < psi0
+   psi <= CTime
    CTime /\ G |= CTime a : A
    CTime /\ G |= CTime b : A
   --------------------- :: NleqIrrel
@@ -1792,6 +1800,7 @@ G |- psi a1 [ g ] : B { g / c }
 
 |- G
 psi0 <= psi
+psi <= CTime
 F ~ a : psi0 A in an_toplevel
 [ empty |- CTime A : TYPE ]
 ----------------------- :: Fam
