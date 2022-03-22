@@ -85,22 +85,31 @@ Lemma Typing_pumping_middle :
          G = E ++ [(x, (psi0, B))] ++  F -> 
          psi1 <= psi -> 
          DefEq (E ++ [(x, (psi0 * psi1, B))] ++ F) psi phi) /\
-    (* should be proven separately; Ctx G, G' = G except labels -> Ctx G' *)
+TODO FIX THIS
   (forall G (H : Ctx G),
-      forall x B psi psi' E F,
+    forall x B psi psi' E F,
          G = E ++ [(x, (psi, B))] ++  F ->
          Ctx (E ++ [(x, (psi', B))] ++ F)) /\
-  (forall G psi psi0 a b T (H : CDefEq G psi psi0 a b T), 
+
+  (forall G psi psi2 a b T (H : CDefEq G psi psi2 a b T), 
       forall x B psi0 E F psi1, 
          G = E ++ [(x, (psi0, B))] ++  F -> 
          psi1 <= psi -> 
-         CDefEq (E ++ [(x, (psi0 * psi1, B))] ++ F) psi psi0 a b T).
+         CDefEq (E ++ [(x, (psi0 * psi1, B))] ++ F) psi psi2 a b T).
 Proof.
   Ltac reassoc_env := match goal with
                        |  |- context[?A ++ ?B ++ ?C ++ ?D] => rewrite_env ((A ++ B) ++ C ++ D)
                       end.
 
   ext_induction CON; intros; subst; eauto 3.
+  all : try solve [eapply CON; eauto 3].
+  (* tactic below should solve : Pi, CPi, PiCong, CPiCOng *)
+  all : try solve [pick fresh y and apply CON; auto;
+                   destruct_notin;
+                   repeat spec y;
+                   reassoc_env;
+                   auto].
+  (* TODO: pull out abs in the same way *)
   - apply binds_cases in b; auto.
     move : b => [h0 | [h1 | h2]]; split_hyp.
     + apply E_Var with (psi0 := psi0); 
@@ -108,12 +117,6 @@ Proof.
     + inversion H2; subst.
       apply E_Var with (psi0 := psi1 * psi2); sfirstorder use:join_lub.
     + apply E_Var with (psi0 := psi0); sfirstorder.
-  (* Pi *)
-  - pick fresh y and apply CON; auto;
-    destruct_notin;
-    repeat spec y;
-      reassoc_env;
-      auto.
   (* Abs *)
   - pick fresh y and apply CON.
     auto;
@@ -131,9 +134,7 @@ Proof.
       apply H0; auto.
       hauto l:on use:map_app.
   (* App *)
-  - have h0 : psi <= q_C.
-    pick fresh x0; spec x0.
-    sfirstorder use: Typing_leq_C.
+  - have h0 : psi <= q_C by pick fresh x0; spec x0; sfirstorder use: Typing_leq_C.
     eapply CON; eauto.
     eapply H0; eauto.
     transitivity psi; eauto.
@@ -149,6 +150,7 @@ Proof.
     rewrite meet_mult; auto.
     apply H0; 
       simpl_env; auto.
+  (* Conv *)
   - have h0 : psi <= q_C.
     pick fresh x0; spec x0.
     sfirstorder use: Typing_leq_C.
@@ -157,12 +159,6 @@ Proof.
     eapply CON; simpl_env; try rewrite meet_mult; eauto 3.
     apply H0; simpl_env; eauto.
     apply H1; simpl_env; eauto.
-  (* CPi *)
-  - pick fresh y and apply CON; auto;
-    destruct_notin;
-    repeat spec y;
-      reassoc_env;
-      auto.
   (* CAbs *)
   - pick fresh y and apply CON.
     auto;
@@ -189,5 +185,105 @@ Proof.
     simpl_env.
     rewrite meet_mult; auto.
     apply H0; simpl_env; auto.
-  (* PropWff *)
-  - 
+  (* Assn (Var case for DefEq) *)
+  - apply binds_cases in b; auto.
+    move : b => [h0 | [h1 | h2]]; split_hyp.
+    + apply E_Assn with (psi0 := psi0) (c := c); 
+      sfirstorder.
+    + inversion H2; subst.
+      apply E_Assn with (psi0 := psi1 * psi2) (c := x); sfirstorder use:join_lub.
+    + apply E_Assn with (psi0 := psi0) (c := c); sfirstorder.
+  (* AbsCong *)
+  - pick fresh y and apply CON.
+    auto;
+    destruct_notin;
+      repeat spec y.
+    + reassoc_env.
+      auto.
+    + have LEQ: psi2 <= q_C.
+      transitivity psi; auto.
+      pick fresh y.
+      spec y.
+      sfirstorder use:Typing_leq_C.
+      simpl_env.
+      rewrite meet_mult; auto.
+      apply H0; auto.
+      hauto l:on use:map_app.
+  (* CAbsCong *)
+  - pick fresh y and apply CON.
+    auto;
+    destruct_notin;
+      repeat spec y.
+    + reassoc_env.
+      auto.
+    + have LEQ: psi1 <= q_C.
+      transitivity psi; auto.
+      pick fresh y.
+      spec y.
+      sfirstorder use:Typing_leq_C.
+      simpl_env.
+      rewrite meet_mult; auto.
+      apply H0; auto.
+      hauto l:on use:map_app.
+  (* CAppCong *)
+  - have h0 : psi <= q_C.
+    pick fresh x0; spec x0.
+    sfirstorder use: Typing_leq_C.
+    have LEQ: psi1 <= q_C.
+    transitivity psi; auto.
+    eapply CON; eauto 3.
+    simpl_env.
+    rewrite meet_mult; auto.
+    apply H0; simpl_env; auto.
+  (* CPiSnd *)
+  - have h0 : psi <= q_C.
+    pick fresh x0; spec x0.
+    sfirstorder use: Typing_leq_C.
+    have LEQ: psi2 <= q_C.
+    transitivity psi; auto.
+    eapply CON; eauto 3.
+    simpl_env.
+    rewrite meet_mult; auto.
+    apply H0; auto.
+    simpl_env. reflexivity.
+    simpl_env;
+    rewrite meet_mult; auto.
+    apply H1; auto.
+    simpl_env. reflexivity.
+  (* EqConv *)
+  - have h0 : psi <= q_C.
+    pick fresh x0; spec x0.
+    sfirstorder use: Typing_leq_C.
+    have LEQ: psi1 <= q_C.
+    transitivity psi; auto.
+    eapply CON; simpl_env; try rewrite meet_mult; eauto 3.
+    apply H0; simpl_env; eauto.
+  - have h0 : psi <= q_C.
+    pick fresh x0; spec x0.
+    sfirstorder use: Typing_leq_C.
+    have LEQ: psi1 <= q_C.
+    transitivity psi; auto.
+    apply CON with (c := c); simpl_env; try rewrite meet_mult; eauto 3.
+    reassoc_env.
+    apply H; eauto.
+    try rewrite meet_mult; eauto 3.
+    apply H0; eauto.
+    simpl_env; auto.
+  - induction E; scongruence.
+  - destruct E.
+    + simpl in *; inversion H1; subst; auto.
+    + simpl in H1.
+      simpl.
+      simpl in H.
+      inversion H1; subst; auto.
+      simpl.
+      constructor; eauto 2.
+      simpl_env; auto.
+      (* psi2 = q_C + psi' *)
+      (* forced: psi1 = psi0 *)
+      
+      (* do this on paper first *)
+      (* destruct (psi' <=? q_C) eqn:LEQ. *)
+      (* rewrite meet_comm. *)
+      (* rewrite meet_leq; auto. *)
+      (* rewrite <- join_leq with (a := q_C) (b := psi'); auto. *)
