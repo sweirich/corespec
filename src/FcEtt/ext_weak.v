@@ -240,11 +240,11 @@ Proof.
   ext_induction CON.
   all: intros; subst; try done.
 
-  (* TODO: move E_LeftRel etc. first using ensure_case *)
-
   all: try solve [eapply CON; eauto 2].
-  all: try solve [eapply CON; eauto 2; eapply DefEq_weaken_available; eauto 2]. 
-  Focus 6. destruct rho. Unfocus.
+  (* all: try solve [eapply CON; eauto 2; eapply DefEq_weaken_available; eauto 2].  *)
+  (* Focus 6. destruct rho. Unfocus. *)
+  - E_pick_fresh y; try auto_rew_env; apply_first_hyp; try simpl_env; eauto 3.
+    constructor; auto.
   all: try solve [E_pick_fresh y; try auto_rew_env; apply_first_hyp; try simpl_env; eauto 3].
   (*
   eapply E_LeftRel with (b:=b)(b':=b'); eauto 2;

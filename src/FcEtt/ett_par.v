@@ -60,6 +60,7 @@ Ltac invert_CGrade a :=
     [ H : CGrade ?P ?phi ?psi a |- _] => inversion H ; subst 
   end.
 
+(* erased_tm t -> x notin open_co_tm t (g_Var x)  *)
 Lemma Grade_substitution_co_CGrade : forall P2 c phi P1 psi b,
       Grade (P2 ++ c ~ (phi, e_Co) ++ P1) psi b
     -> Grade (P2 ++ P1) psi (co_subst_co_tm g_Triv c b).
