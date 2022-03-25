@@ -85,11 +85,11 @@ Lemma Typing_pumping_middle :
          G = E ++ [(x, (psi0, B))] ++  F -> 
          psi1 <= psi -> 
          DefEq (E ++ [(x, (psi0 * psi1, B))] ++ F) psi phi) /\
-TODO FIX THIS
   (forall G (H : Ctx G),
-    forall x B psi psi' E F,
-         G = E ++ [(x, (psi, B))] ++  F ->
-         Ctx (E ++ [(x, (psi', B))] ++ F)) /\
+    forall x B psi0 E F psi1,
+      G = E ++ [(x, (psi0, B))] ++  F ->
+      psi1 <= q_C ->
+      Ctx (E ++ [(x, (psi0 * psi1, B))] ++ F)) /\
 
   (forall G psi psi2 a b T (H : CDefEq G psi psi2 a b T), 
       forall x B psi0 E F psi1, 
@@ -102,7 +102,7 @@ Proof.
                       end.
 
   ext_induction CON; intros; subst; eauto 3.
-  all : try solve [eapply CON; eauto 3].
+  all : try solve [eapply CON; eauto 3 using q_leb_trans].
   (* tactic below should solve : Pi, CPi, PiCong, CPiCOng *)
   all : try solve [pick fresh y and apply CON; auto;
                    destruct_notin;
@@ -112,11 +112,12 @@ Proof.
   (* TODO: pull out abs in the same way *)
   - apply binds_cases in b; auto.
     move : b => [h0 | [h1 | h2]]; split_hyp.
-    + apply E_Var with (psi0 := psi0); 
-      sfirstorder.
+    + apply E_Var with (psi0 := psi0);
+      sfirstorder use:q_leb_trans.
     + inversion H2; subst.
-      apply E_Var with (psi0 := psi1 * psi2); sfirstorder use:join_lub.
-    + apply E_Var with (psi0 := psi0); sfirstorder.
+      apply E_Var with (psi0 := psi1 * psi2);
+        sfirstorder use:join_lub, q_leb_trans.
+    + apply E_Var with (psi0 := psi0); sfirstorder use:q_leb_trans.
   (* Abs *)
   - pick fresh y and apply CON.
     auto;
@@ -189,10 +190,10 @@ Proof.
   - apply binds_cases in b; auto.
     move : b => [h0 | [h1 | h2]]; split_hyp.
     + apply E_Assn with (psi0 := psi0) (c := c); 
-      sfirstorder.
+      sfirstorder use:q_leb_trans.
     + inversion H2; subst.
-      apply E_Assn with (psi0 := psi1 * psi2) (c := x); sfirstorder use:join_lub.
-    + apply E_Assn with (psi0 := psi0) (c := c); sfirstorder.
+      apply E_Assn with (psi0 := psi1 * psi2) (c := x); sfirstorder use:q_leb_trans use:join_lub.
+    + apply E_Assn with (psi0 := psi0) (c := c); sfirstorder use:q_leb_trans.
   (* AbsCong *)
   - pick fresh y and apply CON.
     auto;
@@ -204,7 +205,7 @@ Proof.
       transitivity psi; auto.
       pick fresh y.
       spec y.
-      sfirstorder use:Typing_leq_C.
+      sfirstorder use:q_leb_trans use:Typing_leq_C.
       simpl_env.
       rewrite meet_mult; auto.
       apply H0; auto.
@@ -220,7 +221,7 @@ Proof.
       transitivity psi; auto.
       pick fresh y.
       spec y.
-      sfirstorder use:Typing_leq_C.
+      sfirstorder use:q_leb_trans use:Typing_leq_C.
       simpl_env.
       rewrite meet_mult; auto.
       apply H0; auto.
@@ -228,7 +229,7 @@ Proof.
   (* CAppCong *)
   - have h0 : psi <= q_C.
     pick fresh x0; spec x0.
-    sfirstorder use: Typing_leq_C.
+    sfirstorder use:q_leb_trans use: Typing_leq_C.
     have LEQ: psi1 <= q_C.
     transitivity psi; auto.
     eapply CON; eauto 3.
@@ -238,7 +239,7 @@ Proof.
   (* CPiSnd *)
   - have h0 : psi <= q_C.
     pick fresh x0; spec x0.
-    sfirstorder use: Typing_leq_C.
+    sfirstorder use:q_leb_trans use: Typing_leq_C.
     have LEQ: psi2 <= q_C.
     transitivity psi; auto.
     eapply CON; eauto 3.
@@ -253,14 +254,14 @@ Proof.
   (* EqConv *)
   - have h0 : psi <= q_C.
     pick fresh x0; spec x0.
-    sfirstorder use: Typing_leq_C.
+    sfirstorder use:q_leb_trans use: Typing_leq_C.
     have LEQ: psi1 <= q_C.
     transitivity psi; auto.
     eapply CON; simpl_env; try rewrite meet_mult; eauto 3.
     apply H0; simpl_env; eauto.
   - have h0 : psi <= q_C.
     pick fresh x0; spec x0.
-    sfirstorder use: Typing_leq_C.
+    sfirstorder use:q_leb_trans use: Typing_leq_C.
     have LEQ: psi1 <= q_C.
     transitivity psi; auto.
     apply CON with (c := c); simpl_env; try rewrite meet_mult; eauto 3.
@@ -279,11 +280,47 @@ Proof.
       simpl.
       constructor; eauto 2.
       simpl_env; auto.
-      (* psi2 = q_C + psi' *)
-      (* forced: psi1 = psi0 *)
-      
-      (* do this on paper first *)
-      (* destruct (psi' <=? q_C) eqn:LEQ. *)
-      (* rewrite meet_comm. *)
-      (* rewrite meet_leq; auto. *)
-      (* rewrite <- join_leq with (a := q_C) (b := psi'); auto. *)
+      rewrite meet_mult; auto.
+      apply H0; auto.
+      simpl_env. reflexivity.
+  - destruct E.
+    + simpl in H1; simpl.
+      inversion H1; subst.
+      constructor; auto.
+    + simpl in H1; simpl.
+      inversion H1; subst.
+      constructor; auto.
+      apply H; auto.
+      simpl_env.
+      rewrite meet_mult; auto.
+      apply H0; auto.
+      simpl_env; auto.
+  - have h0 : psi0 * psi <= q_C.
+    pick fresh x0; spec x0.
+    sfirstorder use:q_leb_trans use: Typing_leq_C.
+    have h1 : psi <= q_C.
+    transitivity (psi0 * psi); auto.
+    apply leq_join_r.
+    have h3 : psi2 <= psi0 * psi.
+    transitivity psi; auto.
+    apply leq_join_r.
+    move : (H1 x B psi1 E F psi2 ltac:(reflexivity) ltac:(auto)) => h2.
+    apply CON; auto.
+    hauto l:on use:Typing_Ctx.
+  - have h0 : psi2 <= q_C.
+    transitivity psi; auto.
+    move: (H1 x B (q_C + psi1)
+              (meet_ctx_l q_C E)
+              (meet_ctx_l q_C F)
+              psi2
+              ltac:(simpl_env; reflexivity)
+                     ltac:(sfirstorder use:q_leb_trans)) => h1.
+    move: (H0 x B (q_C + psi1)
+              (meet_ctx_l q_C E)
+              (meet_ctx_l q_C F)
+              psi2
+              ltac:(simpl_env; reflexivity)
+                     ltac:(sfirstorder use:q_leb_trans)) => h2.
+    apply CON; eauto 2.
+    all: simpl_env; auto; rewrite meet_mult; auto.
+Qed.
