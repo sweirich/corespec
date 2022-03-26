@@ -26,14 +26,14 @@ Proof. intros.
        hauto l: on use: Typing_pumping_middle_mutual.
 Qed.
 
-Lemma DefEq_pumping_front :  forall {psi phi x B psi0 F psi1} (H : DefEq ([(x, (psi0, B))] ++  F) psi phi),
-    psi1 <= psi -> 
-    DefEq ([(x, (psi0 * psi1, B))] ++ F) psi phi.
-Proof. intros.
-       rewrite_env (nil ++ [(x, (psi0 * psi1, B))] ++ F).
-       rewrite_env (nil ++ x ~ (psi0, B) ++ F) in H.
-       hauto l: on use: Typing_pumping_middle_mutual.
-Qed.
+(* Lemma DefEq_pumping_front :  forall {psi phi x B psi0 F psi1} (H : DefEq ([(x, (psi0, B))] ++  F) psi phi), *)
+(*     psi1 <= psi ->  *)
+(*     DefEq ([(x, (psi0 * psi1, B))] ++ F) psi phi. *)
+(* Proof. intros. *)
+(*        rewrite_env (nil ++ [(x, (psi0 * psi1, B))] ++ F). *)
+(*        rewrite_env (nil ++ x ~ (psi0, B) ++ F) in H. *)
+(*        hauto l: on use: Typing_pumping_middle_mutual. *)
+(* Qed. *)
 
 Lemma Typing_pumping_front2 :  forall {psi b A x B psi0 F psi1} (H : Typing ([(x, (psi0 * psi1, B))] ++  F) psi b A),
     psi1 <= psi ->
@@ -47,27 +47,27 @@ Proof. intros.
        hauto lq: on drew: off use: Typing_pumping_middle_mutual, q_leb_refl.
 Qed.
 
-Lemma DefEq_pumping_front2 :  forall {psi phi x B psi0 F psi1} (H : DefEq ([(x, (psi0 * psi1, B))] ++  F) psi phi),
-    psi1 <= psi ->
-    DefEq ([(x, (psi0 * psi, B))] ++ F) psi phi.
-Proof. intros.
-       rewrite_env (nil ++ [(x, (psi0 * psi, B))] ++ F).
-       rewrite_env (nil ++ x ~ (psi0 * psi1, B) ++ F) in H.
-       have h0 : (psi0 * psi1) * psi = psi0 * psi.
-       rewrite <- join_assoc.
-       rewrite (join_leq psi1 psi); auto.
-       hauto lq: on drew: off use: Typing_pumping_middle_mutual, q_leb_refl.
-Qed.
+(* Lemma DefEq_pumping_front2 :  forall {psi phi x B psi0 F psi1} (H : DefEq ([(x, (psi0 * psi1, B))] ++  F) psi phi), *)
+(*     psi1 <= psi -> *)
+(*     DefEq ([(x, (psi0 * psi, B))] ++ F) psi phi. *)
+(* Proof. intros. *)
+(*        rewrite_env (nil ++ [(x, (psi0 * psi, B))] ++ F). *)
+(*        rewrite_env (nil ++ x ~ (psi0 * psi1, B) ++ F) in H. *)
+(*        have h0 : (psi0 * psi1) * psi = psi0 * psi. *)
+(*        rewrite <- join_assoc. *)
+(*        rewrite (join_leq psi1 psi); auto. *)
+(*        hauto lq: on drew: off use: Typing_pumping_middle_mutual, q_leb_refl. *)
+(* Qed. *)
 
-Lemma DefEq_pumping_self : forall {psi phi x B psi0 F} (H : DefEq ([(x, (psi0, B))] ++  F) psi phi),
-    psi0 <= psi -> 
-    DefEq ([(x, (psi, B))] ++ F) psi phi.
-Proof.
-  intros.
-  have h0 : psi <= psi by reflexivity.
-  move : (DefEq_pumping_front H h0).
-  rewrite join_leq; auto.
-Qed.
+(* Lemma DefEq_pumping_self : forall {psi phi x B psi0 F} (H : DefEq ([(x, (psi0, B))] ++  F) psi phi), *)
+(*     psi0 <= psi ->  *)
+(*     DefEq ([(x, (psi, B))] ++ F) psi phi. *)
+(* Proof. *)
+(*   intros. *)
+(*   have h0 : psi <= psi by reflexivity. *)
+(*   move : (DefEq_pumping_front H h0). *)
+(*   rewrite join_leq; auto. *)
+(* Qed. *)
 
 Lemma Typing_pumping_self :  forall {psi b A x B psi0 F} (H : Typing ([(x, (psi0, B))] ++  F) psi b A),
     psi0 <= psi -> 
@@ -90,15 +90,14 @@ Proof.
   ext_induction CON; intros.
   (* 44 goals *)
   all : eauto 3.
-  (* 27 goals *)
+  (* 9 goals *)
   all : try solve [eapply CON; eauto 3 using q_leb_trans, leq_join_r].
-  (* 13 goals *)
+  (* 7 goals *)
   (* the following tactic handles Pi and Abs *)
   all : try solve [pick fresh y and apply CON; 
-                   sfirstorder depth:1 use:Typing_pumping_self,Typing_pumping_front2,
-                         DefEq_pumping_self, DefEq_pumping_front2;
+                   sfirstorder depth:1 use:Typing_pumping_self,Typing_pumping_front2;
                    try pick fresh z; auto].
-  (* 7 goals *)
+  (* 3 goals *)
   (* var *)
   - sfirstorder use:q_leb_trans.
   (* AppRel *)
