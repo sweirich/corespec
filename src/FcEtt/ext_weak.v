@@ -234,7 +234,7 @@ Lemma typing_weakening_mutual:
   (forall G0 psi phi, DefEq G0 psi phi ->
      forall E F G, (G0 = F ++ G) -> Ctx (F ++ E ++ G) -> DefEq (F ++ E ++ G) psi phi) /\
   (forall G0,         Ctx G0 ->
-     forall E F G, (G0 = F ++ G) -> Ctx (F ++ E ++ G) -> Ctx (F ++ E ++ G)) /\
+     forall E F G, (G0 = F ++ G) -> Ctx (F ++ E ++ G)) /\
   (forall G0 psi psi0 A B T, CDefEq G0 psi psi0 A B T -> True).
 Proof.
   ext_induction CON.
@@ -243,9 +243,24 @@ Proof.
   all: try solve [eapply CON; eauto 2].
   (* all: try solve [eapply CON; eauto 2; eapply DefEq_weaken_available; eauto 2].  *)
   (* Focus 6. destruct rho. Unfocus. *)
-  - E_pick_fresh y; try auto_rew_env; apply_first_hyp; try simpl_env; eauto 3.
+  - pick fresh y and apply CON; auto.
+    rewrite_env ((y ~ (psi, Tm A) ++ F) ++ E ++ G0).
+    apply H; auto.
+    simpl_env.
     constructor; auto.
-  all: try solve [E_pick_fresh y; try auto_rew_env; apply_first_hyp; try simpl_env; eauto 3].
+    (* G |- A :psi *  from the premise *)
+    (* but Ctx (x ~ A ...) requires C/\ G |- A:C  *)
+    
+
+    
+    
+
+ E_pick_fresh y; try auto_rew_env; apply_first_hyp; try simpl_env; eauto 3.
+  constructor; auto.
+  apply H0.
+    
+    all: try solve [E_pick_fresh y; try auto_rew_env; apply_first_hyp; try simpl_env; eauto 3].
+    simpl_env.
   (*
   eapply E_LeftRel with (b:=b)(b':=b'); eauto 2;
     try eapply DefEq_weaken_available; eauto 2.

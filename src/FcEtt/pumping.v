@@ -36,24 +36,6 @@ Proof.
   sfirstorder use:join_ctx_r_ctx_sub, Ctx_uniq.
 Qed.
 
-(* Lemma Ctx_change_label_front : *)
-(*   forall x psi B G, Ctx ([(x, (psi, B))] ++ G) -> forall psi', Ctx ([(x, (psi', B))] ++ G). *)
-(* Proof. *)
-(*   move => x psi B G H. *)
-(*   dependent induction H; eauto. *)
-(* Qed. *)
-
-(* Lemma Ctx_change_label_middle : *)
-(*   forall F x psi B G, Ctx (F ++ [(x, (psi, B))] ++ G) -> forall psi', Ctx (F ++ [(x, (psi', B))] ++ G). *)
-(* Proof. *)
-(*   induction F; eauto using Ctx_change_label_front. *)
-(*   move => x psi B G HCtx psi'. *)
-(*   inversion HCtx; subst. *)
-(*   - simpl. *)
-(*     constructor. *)
-
-(* Qed. *)
-
 Lemma Typing_narrowing : forall {G0 psi a A}, Typing G0 psi a A -> forall {G1}, ctx_sub G1 G0 -> Typing G1 psi a A.
 Proof.
   hauto l:on use:ctx_wff_narrow_mutual.
@@ -324,3 +306,4 @@ Proof.
     apply CON; eauto 2.
     all: simpl_env; auto; rewrite meet_mult; auto.
 Qed.
+
