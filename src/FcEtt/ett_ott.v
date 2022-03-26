@@ -1292,11 +1292,10 @@ with Typing : context -> grade -> tm -> tm -> Prop :=    (* defn Typing *)
      Typing G psi a1 (a_CPi  q_Top  phi B1) ->
      DefEq  (meet_ctx_l   q_C    G )   q_C  phi ->
      Typing G psi (a_CApp a1 g_Triv)  (open_tm_wrt_co  B1   g_Triv ) 
- | E_Fam : forall (G:context) (psi:grade) (F:tyfam) (A:tm) (psi0:grade) (P:econtext) (a:tm),
+ | E_Fam : forall (G:context) (psi:grade) (F:tyfam) (A:tm) (psi0:grade) (a:tm),
       ( Typing  nil   q_C  A a_Star )  ->
       ( psi0  <=  psi )  ->
       ( psi  <=   q_C  )  ->
-     ECtx P ->
       binds  F  ( psi0 , (Ax  a A ))   toplevel   ->
      Typing G psi (a_Fam F) A
 with Iso : context -> grade -> constraint -> constraint -> Prop :=    (* defn Iso *)

@@ -1409,7 +1409,6 @@ G |= psi a1 [ o ] : B1 { o / c }
 [ empty |= CTime A : TYPE ]
 psi0 <= psi
 psi <= CTime
-|= P
 F ~ a : psi0 A in toplevel
 ------------------ :: Fam
 G |= psi F : A

@@ -46,7 +46,7 @@ Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
 
-Lemma Typing_pumping_middle :
+Lemma Typing_pumping_middle_mutual :
   (forall G psi b A (H : Typing G psi b A),
      forall x B psi0 E F psi1, 
          G = E ++ [(x, (psi0, B))] ++  F -> 
@@ -307,3 +307,9 @@ Proof.
     all: simpl_env; auto; rewrite meet_mult; auto.
 Qed.
 
+Lemma Typing_pumping_middle :  forall G psi b A (H : Typing G psi b A),
+  forall x B psi0 E F psi1, 
+    G = E ++ [(x, (psi0, B))] ++  F -> 
+    psi1 <= psi -> 
+    Typing (E ++ [(x, (psi0 * psi1, B))] ++ F) psi b A.
+Proof. sfirstorder use:Typing_pumping_middle_mutual. Qed.
