@@ -1,10 +1,13 @@
 Require Import FcEtt.tactics.
+Require Import FcEtt.grade_sig.
 Require Import FcEtt.utils.
 Require Export FcEtt.imports.
 Require Export FcEtt.ett_inf.
 (* Require Export FcEtt.ett_par. *)
 Require Export FcEtt.ett_ind.
-
+Require Export FcEtt.subsumption.
+Require Export FcEtt.ext_wf.
+Require Import FcEtt.ett_ind.
 
 (* Module ext_weak (wf: ext_wf_sig). *)
 
@@ -12,88 +15,6 @@ Require Export FcEtt.ett_ind.
 
 Set Bullet Behavior "Strict Subproofs".
 Set Implicit Arguments.
-
-(* TODO: this tactic is not so "automated" (e.g. has to link a_Pi to E_Pi),
-but it is hard to make it more
-         "searchy" without trying extensively all the lemmas. We could probably work something out, though *)
-(*
-Ltac E_pick_fresh x :=
-  match goal with
-    | [ |- Typing _ ?shape _ ] =>
-      let v := match shape with
-            | a_Pi _ _ _ => E_Pi
-            | a_UAbs _ _ => E_Abs
-            | a_CPi _ _  => E_CPi
-            | a_CAbs _ _ => E_CAbs
-            | a_UCAbs _  => E_CAbs
-           end
-      in pick fresh x and apply v
-    | [ |- DefEq _ _ ?shape _ _ ] =>
-      let v := match shape with
-            | a_Pi _ _ _ => E_PiCong
-            | a_UAbs _ _ => E_AbsCong
-            | a_CPi _ _  => E_CPiCong
-            | a_CAbs _ _ => E_CAbsCong
-            | a_UCAbs _  => E_CAbsCong
-               end
-      in pick fresh x and apply v
-    | [ |- Par _ _ ?shape _ ] =>
-      let v := match shape with
-            | a_Pi _ _ _ => Par_Pi
-            | a_UAbs _ _ => Par_Abs
-            | a_CPi _ _  => Par_CPi
-            | a_CAbs _ _ => Par_CAbs
-            | a_UCAbs _  => Par_CAbs
-           end
-      in pick fresh x and apply v
-  end.
-*)
-
-(* ------------------------------------------------------------------- *)
-(* Weakening Lemmas for the available set *)
-
-(* Can replace set with an equivalent *)
-
-(* YL: no need for this now that we don't have D *)
-(* Lemma respects_atoms_eq_mutual : *)
-(*   (forall G a A,     Typing  G a A       -> True) /\ *)
-(*   (forall G phi,     PropWff G phi       -> True) /\ *)
-(*   (forall G D p1 p2, Iso G D p1 p2 -> forall D', D [=] D' -> Iso G D' p1 p2) /\ *)
-(*   (forall G D A B T,   DefEq G D A B T  -> forall D', D [=] D' -> DefEq G D' A B T) /\ *)
-(*   (forall G,           Ctx G           -> True). *)
-(* Proof.  *)
-(*   ext_induction CON; intros; subst; eauto 2. *)
-(*   all: try solve [eapply CON; eauto 2; try fsetdec]. *)
-
-(*   (* these are hard to find. *) *)
-(*   (* *)
-(*   eapply E_LeftRel with (b:=b)(b':=b'); eauto 2. *)
-(*   eapply E_LeftIrrel with (b:=b)(b':=b'); eauto 2. *)
-(*   eapply E_Right with (a:=a)(a':=a'); eauto 2. *)
-(*   *) *)
-(* Qed. *)
-
-(* Definition Iso_respects_atoms_eq   := third  respects_atoms_eq_mutual. *)
-(* Definition DefEq_respects_atoms_eq := fourth respects_atoms_eq_mutual. *)
-(*
-Instance Iso_atoms_eq_mor : Morphisms.Proper
-                                 (eq ==> AtomSetImpl.Equal ==> eq ==> eq ==> iff)
-                                 Iso.
-Proof.
-  simpl_relation; split=> ?;
-  eauto using Iso_respects_atoms_eq, AtomSetProperties.equal_sym.
-Qed.
-
-Instance DefEq_atoms_eq_mor : Morphisms.Proper
-                                   (eq ==> AtomSetImpl.Equal ==> eq ==> eq ==> eq ==> iff)
-                                   DefEq.
-Proof.
-  simpl_relation; split=> ?;
-  eauto using DefEq_respects_atoms_eq, AtomSetProperties.equal_sym.
-Qed.
-
-*)
-(* ----- *)
 
 Ltac binds_cons :=
   let H5 := fresh in
@@ -106,123 +27,90 @@ Ltac binds_cons :=
     try done; eauto
   end.
 
-(* YL: no need for this when we don't have D. The context is always "minimal" *)
-(* Lemma strengthen_available_noncovar: *)
-(*   (forall G1  a A,    Typing G1 a A -> True) /\ *)
-(*   (forall G1  phi,    PropWff G1 phi -> True) /\ *)
-(*   (forall G1 D p1 p2, Iso G1 D p1 p2 -> forall x, not (exists phi, binds x (Co phi) G1) -> *)
-(*                  Iso G1 (remove x D) p1 p2) /\ *)
-(*   (forall G1 D A B A1,DefEq G1 D A B A1 ->  forall x, not (exists phi, binds x (Co phi) G1) -> *)
-(*                  DefEq G1 (remove x D) A B A1) /\ *)
-(*   (forall G1 ,        Ctx G1 -> True). *)
-(* Proof. *)
-(*   eapply typing_wff_iso_defeq_mutual; eauto 3; try done. *)
-(*   all: intros; unfold not in *. Focus 5. destruct rho. Unfocus. *)
-(*   all: try (E_pick_fresh y; eauto 3). *)
-(*   all: try solve [destruct (x == c); [ subst; assert False; eauto | eauto]]. *)
-(*   all: try (eapply H0; auto; binds_cons). *)
-(*   all: try (eapply H; auto; binds_cons). *)
-(*   all: try (move: H5 => /binds_cons_iff [[? [?]] | /= H5]; subst; *)
-(*                        assert (y <> y); [fsetdec|done|fsetdec|done]). *)
-(*   all: eauto 4. *)
-(*   - move: H2 => /binds_cons_iff [[? [?]] | /= H2]; subst; *)
-(*                        assert (y <> y); [fsetdec|done|fsetdec|done]. *)
-(* Qed.  (* strengthen_available_nocovar *) *)
 
-(* YL: removed for the same reason as strengthen_available_covar *)
-(* Lemma DefEq_strengthen_available_tmvar : *)
-(*   forall G D g A B, DefEq G D g A B ->  forall x A', binds x (Tm A') G -> *)
-(*                     forall D', D' [=] remove x D -> *)
-(*                     DefEq G D' g A B. *)
-(* Proof. *)
-(*   intros. eapply respects_atoms_eq_mutual. *)
-(*   eapply (fourth strengthen_available_noncovar). eauto. *)
-(*   unfold not. *)
-(*   intros b. destruct b as [phi b]. *)
-(*   assert (Tm A' = Co phi). eapply binds_unique; eauto. *)
-(*   inversion H2. *)
-(*   fsetdec. *)
-(* Qed. *)
-
-(* ----- *)
-
-(* Lemma weaken_available_mutual: *)
-(*   (forall G1  a A,   Typing G1 a A -> True) /\ *)
-(*   (forall G1  phi,   PropWff G1 phi -> True) /\ *)
-(*   (forall G1 D p1 p2, Iso G1 D p1 p2 -> forall D', D [<=] D' -> Iso G1 D' p1 p2) /\ *)
-(*   (forall G1 D A B T,   DefEq G1 D A B T -> forall D', D [<=] D' -> DefEq G1 D' A B T) /\ *)
-(*   (forall G1 ,       Ctx G1 -> True). *)
-(* Proof. *)
-(*   ext_induction CON. *)
-(*   all: try done. *)
-(*   all: intros; try solve [eapply CON; eauto 2]. *)
-(*   (* *)
-(*   - eapply E_LeftRel   with (b := b) (b' := b'); eauto 2. *)
-(*   - eapply E_LeftIrrel with (b:=b) (b' := b'); eauto 2. *)
-(*   - eapply E_Right     with (a:=a)(a':=a'); eauto 2. *)
-(*   *) *)
-(* Qed. *)
-
-(* Lemma remove_available_mutual: *)
-(*   (forall G1  a A,   Typing G1 a A -> True) /\ *)
-(*   (forall G1  phi,   PropWff G1 phi -> True) /\ *)
-(*   (forall G1 D p1 p2, Iso G1 D p1 p2 -> *)
-(*                    Iso G1 (AtomSetImpl.inter D (dom G1)) p1 p2) /\ *)
-(*   (forall G1 D A B T,   DefEq G1 D A B T -> *)
-(*                    DefEq G1 (AtomSetImpl.inter D (dom G1)) A B T) /\ *)
-(*   (forall G1 ,       Ctx G1 -> True). *)
-(* Proof. *)
-(*   ext_induction CON. *)
-(*   all: try done. *)
-(*   all: eauto 2. *)
-(*   all: intros; try solve [eapply CON; eauto 2]. *)
-(*   (* only binding constructors left *) *)
-(*   all: eapply (CON (L \u dom G \u D)); auto; *)
-(*     intros; *)
-(*     eapply (fourth respects_atoms_eq_mutual); *)
-(*     [match goal with [H0 : forall x, x `notin` ?L -> DefEq _ (AtomSetImpl.inter _ _) _ _ _ |- _ ] => eapply H0 end; auto| *)
-(*     auto; simpl; fsetdec]. *)
-(* Qed. *)
-
-(*
-Instance Iso_atoms_sub_mor : Morphisms.Proper
-                                    (eq ==> AtomSetImpl.Subset ==> eq ==> eq ==> impl)
-                                    Iso.
+Lemma typing_meet_ctx_l_C : forall G psi b B,
+    Typing G psi b B ->
+    Typing (meet_ctx_l q_C G) q_C b B.
 Proof.
-  simpl_relation; eapply (third weaken_available_mutual); eassumption.
+  move => G psi b B H.
+  have h0 : psi <= q_C by sfirstorder use:Typing_leq_C.
+  hauto use:Typing_meet_ctx_l, Typing_subsumption, q_leb_refl.
 Qed.
 
-Instance DefEq_atoms_sub_mor : Morphisms.Proper
-                                    (eq ==> AtomSetImpl.Subset ==> eq ==> eq ==> eq ==> impl)
-                                    DefEq.
+Lemma propwff_meet_ctx_l_C : forall G psi phi,
+    PropWff G psi phi ->
+    PropWff (meet_ctx_l q_C G) q_C phi.
 Proof.
-  simpl_relation; eapply (fourth weaken_available_mutual); eassumption.
+  move => G psi phi H.
+  have h0 : psi <= q_C by sfirstorder use:Typing_leq_C.
+  sfirstorder use:PropWff_meet_ctx_l, Typing_subsumption_mutual, q_leb_refl.
 Qed.
-*)
 
-(* YL: probably still need this lemma, but it has to be proven slightly differently *)
-(* Lemma DefEq_weaken_available : *)
-(*   forall G D A B T, DefEq G D A B T -> DefEq G (dom G) A B T. *)
-(* Proof. *)
-(*   intros. *)
-(*   remember (AtomSetImpl.inter D (dom G)) as D'. *)
-(*   eapply (fourth weaken_available_mutual). *)
-(*   eapply (fourth remove_available_mutual). *)
-(*   eauto. subst. fsetdec. *)
-(* Qed. *)
+Lemma Ctx_meet_l_C : forall {G} , Ctx G -> Ctx (meet_ctx_l q_C G).
+Proof.
+  induction 1; simpl; constructor; auto;
+    hauto lq:on use:meet_ctx_l_meet_ctx_l, dom_meet_ctx_l.
+Qed.
+  
+Lemma weakening_helper_typing : forall {F E G0 a A}
+  (H0 : ∀ E F0 G : list (atom * (grade * sort)),
+      meet_ctx_l q_C (F ++ G0) = F0 ++ G → Ctx (F0 ++ E ++ G) → Typing (F0 ++ E ++ G) q_C a A),
+  Ctx (F ++ E ++ G0) ->
+  Typing (meet_ctx_l q_C (F ++ E ++ G0)) q_C a A.
+Proof.
+  intros.
+  simpl_env.
+    apply H0; auto.
+    hauto q: on simp: simpl_env.
+    move : (Ctx_meet_l_C H) => h0.
+    simpl_env in h0.
+    assumption.
+Qed.
 
-(* Lemma Iso_weaken_available : *)
-(*   forall G D A B, Iso G D A B -> Iso G (dom G) A B. *)
-(* Proof. *)
-(*   intros G D. intros. *)
-(*   remember (AtomSetImpl.inter D (dom G)) as D'. *)
-(*   eapply (third weaken_available_mutual). *)
-(*   eapply (third remove_available_mutual). *)
-(*   eauto. subst. fsetdec. *)
-(* Qed. *)
+Lemma weakening_helper_defeq : forall {F E G0 psi phi }
+  (H0 : ∀ E F0 G : list (atom * (grade * sort)),
+      meet_ctx_l q_C (F ++ G0) = F0 ++ G → Ctx (F0 ++ E ++ G) → DefEq (F0 ++ E ++ G) psi phi),
+  Ctx (F ++ E ++ G0) ->
+  DefEq (meet_ctx_l q_C (F ++ E ++ G0)) psi phi.
+Proof.
+  intros.
+  simpl_env.
+    apply H0; auto.
+    hauto q: on simp: simpl_env.
+    move : (Ctx_meet_l_C H) => h0.
+    simpl_env in h0.
+    assumption.
+Qed.
 
-(* Hint Resolve DefEq_weaken_available Iso_weaken_available. *)
+Lemma weakening_helper_cdefeq : forall {F E psi0 G0 A B T}
+  (H0 : ∀ E F0 G : list (atom * (grade * sort)),
+      meet_ctx_l q_C (F ++ G0) = F0 ++ G → Ctx (F0 ++ E ++ G) → CDefEq (F0 ++ E ++ G) q_C psi0 A B T),
+  Ctx (F ++ E ++ G0) ->
+  CDefEq (meet_ctx_l q_C (F ++ E ++ G0)) q_C psi0 A B T.
+Proof.
+  intros.
+  simpl_env.
+    apply H0; auto.
+    hauto q: on simp: simpl_env.
+    move : (Ctx_meet_l_C H) => h0.
+    simpl_env in h0.
+    assumption.
+Qed.
 
+Lemma weakening_helper_propwff : forall {F E G0 phi}
+  (H0 : ∀ E F0 G : list (atom * (grade * sort)),
+      meet_ctx_l q_C (F ++ G0) = F0 ++ G → Ctx (F0 ++ E ++ G) → PropWff (F0 ++ E ++ G) q_C phi),
+  Ctx (F ++ E ++ G0) ->
+  PropWff (meet_ctx_l q_C (F ++ E ++ G0)) q_C phi.
+Proof.
+  intros.
+  simpl_env.
+    apply H0; auto.
+    hauto q: on simp: simpl_env.
+    move : (Ctx_meet_l_C H) => h0.
+    simpl_env in h0.
+    assumption.
+Qed.
 
 Lemma typing_weakening_mutual:
   (forall G0 psi a A,     Typing G0 psi a A ->
@@ -234,24 +122,77 @@ Lemma typing_weakening_mutual:
   (forall G0 psi phi, DefEq G0 psi phi ->
      forall E F G, (G0 = F ++ G) -> Ctx (F ++ E ++ G) -> DefEq (F ++ E ++ G) psi phi) /\
   (forall G0,         Ctx G0 ->
-     forall E F G, (G0 = F ++ G) -> Ctx (F ++ E ++ G)) /\
-  (forall G0 psi psi0 A B T, CDefEq G0 psi psi0 A B T -> True).
+     True) /\
+  (forall G0 psi psi0 A B T, CDefEq G0 psi psi0 A B T ->
+     forall E F G, (G0 = F ++ G) -> Ctx (F ++ E ++ G) -> CDefEq (F ++ E ++ G) psi psi0 A B T).
 Proof.
   ext_induction CON.
   all: intros; subst; try done.
-
-  all: try solve [eapply CON; eauto 2].
-  (* all: try solve [eapply CON; eauto 2; eapply DefEq_weaken_available; eauto 2].  *)
-  (* Focus 6. destruct rho. Unfocus. *)
+  all: try solve [eapply CON; eauto 2 using
+                    weakening_helper_typing,
+                    weakening_helper_defeq,
+                    weakening_helper_propwff].
+  (* Pi *)
   - pick fresh y and apply CON; auto.
     rewrite_env ((y ~ (psi, Tm A) ++ F) ++ E ++ G0).
-    apply H; auto.
+    apply_first_hyp; auto.
     simpl_env.
-    constructor; auto.
-    (* G |- A :psi *  from the premise *)
-    (* but Ctx (x ~ A ...) requires C/\ G |- A:C  *)
-    
-
+    constructor; auto 1.
+    sfirstorder use:typing_meet_ctx_l_C.
+  (* Abs *)
+  - pick fresh y and apply CON; spec y ; auto.
+    rewrite_env ((y ~ (psi0 * psi, Tm A) ++ F) ++ E ++ G0).
+    apply_first_hyp; auto.
+    simpl_env.
+    constructor; auto 1.
+    sfirstorder use:weakening_helper_typing.
+    sfirstorder use:weakening_helper_typing.
+  (* CPi *)
+  - pick fresh y and apply CON; auto.
+    rewrite_env ((y ~ (psi, Co phi) ++ F) ++ E ++ G0).
+    apply_first_hyp; auto.
+    simpl_env.
+    constructor; auto 1.
+    sfirstorder use:propwff_meet_ctx_l_C.
+  (* CAbs *)
+  - pick fresh y and apply CON; auto.
+    rewrite_env ((y ~ (psi0 * psi, Co phi) ++ F) ++ E ++ G0).
+    apply_first_hyp; auto.
+    simpl_env.
+    constructor; auto 1.
+    sfirstorder use:weakening_helper_propwff.
+    sfirstorder use:weakening_helper_propwff.
+  (* PiCong *)
+  - pick fresh y and apply CON; auto.
+    rewrite_env ((y ~ (psi, Tm A1) ++ F) ++ E ++ G0).
+    apply_first_hyp; auto.
+    simpl_env.
+    constructor; auto 1.
+    sfirstorder use:typing_meet_ctx_l_C.
+  (* AbsCong *)
+  - pick fresh y and apply CON; spec y ; auto.
+    rewrite_env ((y ~ (psi0 * psi, Tm A1) ++ F) ++ E ++ G0).
+    apply_first_hyp; auto.
+    simpl_env.
+    constructor; auto 1.
+    sfirstorder use:weakening_helper_typing.
+    sfirstorder use:weakening_helper_typing.
+  (* CPiCong *)
+  - pick fresh y and apply CON; auto.
+    rewrite_env ((y ~ (q_Top, Co phi1) ++ F) ++ E ++ G0).
+    apply_first_hyp; auto.
+    simpl_env.
+    constructor; auto 1.
+    sfirstorder use:propwff_meet_ctx_l_C.
+  - pick fresh y and apply CON; spec y ; auto.
+    rewrite_env ((y ~ (q_Top, Co phi1) ++ F) ++ E ++ G0).
+    apply_first_hyp; auto.
+    simpl_env.
+    constructor; auto 1.
+    sfirstorder use:weakening_helper_propwff.
+    sfirstorder use:weakening_helper_propwff.
+  - admit.
+Admitted.    
     
     
 

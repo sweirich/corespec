@@ -17,6 +17,13 @@ Proof.
   scrush use: Typing_Ctx, meet_ctx_l_ctx_sub.
 Qed.
 
+Lemma PropWff_meet_ctx_l : forall G psi phi q,
+    PropWff G psi phi ->
+    PropWff (meet_ctx_l q G) psi phi.
+Proof.
+  scrush use: PropWff_Ctx, meet_ctx_l_ctx_sub.
+Qed.
+
 Lemma Typing_pumping_front :  forall {psi b A x B psi0 F psi1} (H : Typing ([(x, (psi0, B))] ++  F) psi b A),
     psi1 <= psi -> 
     Typing ([(x, (psi0 * psi1, B))] ++ F) psi b A.
@@ -79,9 +86,10 @@ Proof.
   rewrite join_leq; auto.
 Qed.
 
-Lemma typing_subsumption_mutual :
+Lemma Typing_subsumption_mutual :
   (forall G0 psi a A, Typing G0 psi a A -> forall psi', psi <= psi' -> psi' <= q_C -> Typing G0 psi' a A) /\
   (forall G0 psi phi,   PropWff G0 psi phi -> forall psi', psi <= psi' -> psi' <= q_C -> PropWff G0 psi' phi) /\
+  (* DefEq does not satisfy the subsumption property *)
   (forall G0 psi p1 p2, Iso G0 psi p1 p2 -> True) /\
   (forall G0 psi phi,   DefEq G0 psi phi -> True) /\
   (forall G0, Ctx G0 -> True) /\
@@ -104,4 +112,9 @@ Proof.
   - eapply CON; sfirstorder depth:1 use: po_join_r, join_lub.
   (* Fam *)
   - hfcrush use: q_leb_trans.
+Qed.
+
+Lemma Typing_subsumption : forall {G0 a A} psi , Typing G0 psi a A -> forall psi', psi <= psi' -> psi' <= q_C -> Typing G0 psi' a A.
+Proof.
+  sfirstorder use:Typing_subsumption_mutual. 
 Qed.

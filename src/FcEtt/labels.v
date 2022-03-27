@@ -156,9 +156,10 @@ Qed.
 Lemma meet_ctx_l_one : forall q x psi0 A,  meet_ctx_l q [(x, (psi0, A))] = [(x, (q + psi0, A))]. intros; eauto. Qed.
 Lemma meet_ctx_l_app :forall W2 W1 q, meet_ctx_l q (W2 ++ W1) = meet_ctx_l q W2 ++ meet_ctx_l q W1.
 Proof. induction W2; simpl; eauto. destruct a. destruct p. intros. f_equal. eauto. Qed.
+Lemma meet_ctx_l_meet_ctx_l2 : forall W q0 q1, meet_ctx_l q0 (meet_ctx_l q1 W) = meet_ctx_l (q0 + q1) W.
+Proof. induction W; simpl; eauto. destruct a. destruct p. sfirstorder use:meet_assoc. Qed.
 Lemma meet_ctx_l_meet_ctx_l : forall W q,  meet_ctx_l q (meet_ctx_l q W) = meet_ctx_l q W.
-Proof. induction W; simpl; eauto. destruct a. destruct p. intros. f_equal. 
-       rewrite meet_assoc. rewrite meet_idem. auto. auto. Qed.
+Proof. sfirstorder use:meet_ctx_l_meet_ctx_l2, meet_idem. Qed.
 Lemma meet_ctx_l_subst_ctx : forall W q a x, meet_ctx_l q (subst_ctx a x W) = subst_ctx a x (meet_ctx_l q W).
 Proof. induction W; simpl; eauto. destruct a. destruct p. intros. f_equal. eauto. Qed.
 Lemma meet_ctx_l_uniq : forall W q, uniq W -> uniq (meet_ctx_l q W). intros. unfold meet_ctx_l. solve_uniq. Qed.
