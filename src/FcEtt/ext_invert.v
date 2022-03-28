@@ -30,16 +30,27 @@ Proof.
   - inversion H0; eauto.
     + inversion H1; subst; clear H1.
       inversion H; subst; eauto.
-      all: eapply Typing_weakening with (F:=nil); eauto.
-    + eapply Typing_weakening with (F:=nil); eauto 2.
-      rewrite_env G.
-      eapply IHG; eauto 2.
-      inversion H; auto.
+      simpl_env.
+      apply:Typing_weakening_front => //.
+      constructor => //.
+      * hauto use:Typing_Ctx.
+      * scongruence use:meet_ctx_l_meet_ctx_l.
+      * hauto lq:on use:dom_meet_ctx_l,Ctx_uniq.
+    + simpl_env.
+      apply:Typing_weakening_front => //.
+      * sauto lq:on use:Typing_weakening_front.
+      * constructor => //.
+        ** hauto lq:on use:Ctx_meet_l_C inv:Ctx.
+        ** hauto lq:on use:meet_ctx_l_meet_ctx_l inv:Ctx.
+        ** hauto use:dom_meet_ctx_l,Ctx_uniq inv:Ctx.
   - inversion H0; try done.
-    eapply Typing_weakening with (F:=nil); eauto 2.
-    rewrite_env G.
-    eapply IHG; eauto 2.
-    inversion H; auto.
+    simpl_env.
+    apply:Typing_weakening_front => //.
+    qauto l:on depth:1 use:Ctx_meet_l_C inv:Ctx.
+    constructor => //.
+    + hauto lq:on use:Ctx_meet_l_C inv:Ctx.
+    + hauto lq:on use:meet_ctx_l_meet_ctx_l inv:Ctx.
+    + hauto use:dom_meet_ctx_l,Ctx_uniq inv:Ctx.
 Qed.
 
 

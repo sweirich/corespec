@@ -9,7 +9,7 @@ Require Export Metalib.LibLNgen.
 Require Export FcEtt.ett_ott.
 
 From Hammer Require Export Tactics.
-
+From Hammer Require Export Hammer.
 (* SSR *)
 
 Require Export mathcomp.ssreflect.ssreflect.

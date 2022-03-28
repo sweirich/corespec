@@ -201,6 +201,13 @@ Lemma Typing_weakening : ∀ (E F G: context) psi (a A : tm),  Typing (F ++ G) p
                                                           Typing (F ++ E ++ G) psi a A.
 Proof. sfirstorder use:typing_weakening_mutual. Qed.
 
+Lemma Typing_weakening_front : ∀ (E G: context) psi (a A : tm),  Typing G psi a A →  Ctx (E ++ G) ->
+                                                          Typing (E ++ G) psi a A.
+Proof.
+  move => E G psi a A H0 H1.
+  suff : Typing (nil ++ E ++ G) psi a A => //.
+  hauto lq: on use: Typing_weakening.
+Qed.
 
 Lemma PropWff_weakening : forall (E F G : context) psi phi, PropWff (F ++ G) psi phi -> Ctx (F ++ E ++ G) → PropWff (F ++ E ++ G) psi phi.
 Proof. sfirstorder use:typing_weakening_mutual. Qed.
