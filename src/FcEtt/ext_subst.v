@@ -1,5 +1,3 @@
-Require Import FcEtt.sigs.
-
 Require Import FcEtt.tactics.
 Require Export FcEtt.imports.
 Require Import FcEtt.utils.
