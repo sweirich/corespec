@@ -53,32 +53,37 @@ Proof.
     + hauto use:dom_meet_ctx_l,Ctx_uniq inv:Ctx.
 Qed.
 
-
 Lemma invert_a_Pi:
-  forall G rho A0 A B0,
-    Typing G (a_Pi rho A0 B0) A
-    -> DefEq G (dom G) A a_Star a_Star
+  forall G psi psi0 A0 A B0,
+    Typing G psi (a_Pi psi0 A0 B0) A
+    -> DefEq (meet_ctx_l q_C G) q_C (Eq A a_Star a_Star)
       /\ (exists L, forall x,
               x `notin` L
-              -> Typing ([(x, Tm A0)] ++ G) (open_tm_wrt_tm B0 (a_Var_f x)) a_Star)
-      /\ Typing G A0 a_Star.
+              -> Typing ([(x, (psi, Tm A0))] ++ G) psi (open_tm_wrt_tm B0 (a_Var_f x)) a_Star)
+      /\ Typing G psi A0 a_Star.
 Proof.
-  intros G rho A0 A B0 h1.
+  move => G psi psi0 A0 A B0 h1.
   dependent induction h1; auto; try done.
-  - repeat split; eauto using Typing_Ctx.
-  - destruct (IHh1_1 rho A0 B0) as (h1 & h2 & h3); try reflexivity.
-    repeat split; eauto.
+  - repeat split; auto;
+    [ qauto l:on use: Typing_Ctx, Typing_leq_C, Ctx_meet_l_C, q_leb_refl depth:1
+    | sfirstorder depth:1].
+  - move : (IHh1_1 psi0 A0 B0 ltac:(reflexivity)) => h0; split_hyp; repeat split; 
+    qauto depth:1 l:on.
 Qed.
 
-Lemma invert_a_CPi: forall G phi A B0,
-    Typing G (a_CPi phi B0) A ->
-    DefEq G (dom G) A a_Star a_Star /\ (exists L, forall c, c `notin` L -> Typing ([(c, Co phi)] ++ G) (open_tm_wrt_co B0 (g_Var_f c) ) a_Star) /\ PropWff G phi.
+Lemma invert_a_CPi: forall G psi psi0 phi A B0,
+    Typing G psi (a_CPi psi0 phi B0) A ->
+    DefEq (meet_ctx_l q_C G) q_C (Eq A a_Star a_Star) /\
+      (exists L, forall c, c `notin` L -> Typing ([(c, (psi, Co phi))] ++ G) psi (open_tm_wrt_co B0 (g_Var_f c) ) a_Star) /\
+      PropWff G psi phi.
 Proof.
-  intros G phi A B0 h1.
+  move => G psi psi0 phi A B0 h1.
   dependent induction h1; eauto 2; try done.
-  destruct (IHh1_1 phi B0) as [h2 [L h3]]; first by done.
-  repeat split; eauto using Typing_Ctx.
-  repeat split; eauto using Typing_Ctx.
+  - move : (IHh1_1 psi0 phi B0 ltac:(reflexivity)) => h0; split_hyp; repeat split; 
+    qauto depth:1 l:on.
+  - repeat split; auto.
+    + qauto l:on use: PropWff_Ctx, Typing_leq_C, Ctx_meet_l_C, q_leb_refl depth:1.
+    + sfirstorder depth:1.
 Qed.
 
 (*
@@ -105,21 +110,24 @@ Proof.
 Qed. *)
 
 
-Lemma invert_a_Fam : forall G F A,
-    Typing G (a_Fam F) A ->
-    exists a B, DefEq G (dom G) A B a_Star /\
-           binds F (Ax a B) toplevel /\ Typing nil B a_Star.
+Lemma invert_a_Fam : forall G psi F A,
+    Typing G psi (a_Fam F) A ->
+    exists a B psi0, DefEq (meet_ctx_l q_C G) q_C (Eq A B a_Star) /\
+           binds F (psi0, (Ax a B)) toplevel /\ Typing nil q_C B a_Star.
 Proof.
-  intros G F A H. dependent induction H.
+  move => G psi F A H.
+  have h_ctx : Ctx G by (hauto lq:on use:Typing_Ctx).
+  dependent induction H.
   - destruct (IHTyping1 F) as (a & B1 & h0 & h1 & h3); try done.
-    exists a, B1 . repeat split; eauto 2.
-    eapply E_Trans with (a1 := A).
-    eapply E_Sym. auto. auto.
-  - exists a, A.
+    exists a, B1 .
+    sauto lq:on.
+  - exists a, A. eexists.
     repeat split; eauto 2.
-    eapply E_Refl.
-    eapply Typing_weakening with (F:=nil)(E:=G)(G:=nil) in H1.
-    simpl_env in H1. auto. auto. simpl_env. auto.
+    apply : E_Refl.
+    rewrite -[meet_ctx_l _ _]app_nil_r.
+    apply : Typing_weakening_front => //.
+    simpl_env.
+    apply : Ctx_meet_l_C => //.
 Qed.
 
 

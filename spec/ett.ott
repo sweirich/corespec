@@ -1406,6 +1406,7 @@ G |= psi a1 [ o ] : B1 { o / c }
 
 % do we need the premise about A? yes.
 % for strengthening the IH
+|= G
 [ empty |= CTime A : TYPE ]
 psi0 <= psi
 psi <= CTime
