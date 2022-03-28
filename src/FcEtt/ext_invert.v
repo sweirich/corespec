@@ -131,42 +131,37 @@ Proof.
 Qed.
 
 
-Lemma invert_a_Star: forall A G, Typing G a_Star A -> DefEq G (dom G) A a_Star a_Star.
+Lemma invert_a_Star: forall A G psi, Typing G psi a_Star A -> DefEq (meet_ctx_l q_C G) q_C (Eq A a_Star a_Star).
 Proof.
-  intros A G H.
+  move => A G psi H.
   dependent induction H; subst; eauto 2; try done.
-  eauto.
-  eauto 4.
+  sfirstorder use:Ctx_meet_l_C, q_leb_refl.
+  hfcrush use:Ctx_meet_l_C, q_leb_refl.
 Qed.
 
 
 Lemma invert_a_Var :
-  forall G x A, Typing G (a_Var_f x) A -> exists A', binds x (Tm A') G /\ DefEq G (dom G) A A' a_Star.
+  forall G psi x A, Typing G psi (a_Var_f x) A -> exists psi0 A', binds x (psi0, (Tm A')) G /\ DefEq (meet_ctx_l q_C G) q_C (Eq A A' a_Star).
 Proof.
-  intros G x A H. dependent induction H.
-  exists A. split. auto.
-  move: (binds_to_Typing x _ H H0) => h0.
-  eapply E_Refl; eauto.
-  destruct (IHTyping1 x eq_refl) as [A' [bi D]].
-  exists A'. split. auto. eapply E_Trans with (a1:= A).
-  eapply E_Sym; eauto.
-  auto.
+  move => G psi x A H.
+  dependent induction H.
+  - hauto l: on use: binds_to_Typing.
+  - sauto lq: on use: Typing_Ctx.
 Qed.
-
 
 (* -------------------------------
    Find a better place for these tactics
 *)
 Ltac expand sub_tm tm :=
   match tm with
-  | (a_Abs ?rho (_ ?A1) (_ ?b)) =>
-    replace (a_Abs rho (sub_tm A1) (sub_tm b)) with (sub_tm (a_Abs rho A1 b)); auto
-  | (a_Pi ?rho (_ ?A1) (_ ?B1)) =>
-    replace (a_Pi rho (sub_tm A1) (sub_tm B1)) with (sub_tm (a_Pi rho A1 B1)); auto
-  | (a_CAbs (?sc ?phi) (_ ?B)) =>
-    replace (a_CAbs (sc phi) (sub_tm B)) with (sub_tm (a_CAbs phi B)); auto
-  | (a_CPi (?sc ?phi) (_ ?B)) =>
-    replace (a_CPi (sc phi) (sub_tm B)) with (sub_tm (a_CPi phi B)); auto
+  | (a_Abs ?psi (_ ?A1) (_ ?b)) =>
+    replace (a_Abs psi (sub_tm A1) (sub_tm b)) with (sub_tm (a_Abs psi A1 b)); auto
+  | (a_Pi ?psi (_ ?A1) (_ ?B1)) =>
+    replace (a_Pi psi (sub_tm A1) (sub_tm B1)) with (sub_tm (a_Pi psi A1 B1)); auto
+  | (a_CAbs ?psi (?sc ?phi) (_ ?B)) =>
+    replace (a_CAbs psi (sc phi) (sub_tm B)) with (sub_tm (a_CAbs psi phi B)); auto
+  | (a_CPi ?psi (?sc ?phi) (_ ?B)) =>
+    replace (a_CPi psi (sc phi) (sub_tm B)) with (sub_tm (a_CPi psi phi B)); auto
 
   | a_Star => replace a_Star with (sub_tm a_Star); auto
 
@@ -185,7 +180,7 @@ Ltac un_subst_tm :=
    match goal with
    | [ |- context [tm_subst_tm_tm ?g ?c _] ] =>
      match goal with
-     | [ |- Typing _ ?a ?A ] => expand (tm_subst_tm_tm g c) a; expand (tm_subst_tm_tm g c) A
+     | [ |- Typing _ ?psi ?a ?A ] => expand (tm_subst_tm_tm g c) a; expand (tm_subst_tm_tm g c) A
      | [ |- DefEq _ _ ?a ?b ] => expand (tm_subst_tm_tm g c) a; expand (tm_subst_tm_tm g c) b
      | [ |- PropWff ?phi ] => expand_constraint (tm_subst_tm_tm g c) (tm_subst_tm_constraint g c) phi
      end
@@ -202,15 +197,21 @@ Ltac un_subst_tm :=
 
 (* --------------------------------------------------------------- *)
 
-Lemma Typing_regularity : forall e A G, Typing G e A -> Typing G A a_Star.
+Lemma Typing_regularity : forall e A G psi, Typing G psi e A -> Typing (meet_ctx_l q_C G) q_C A a_Star.
 Proof.
-  intros e A G H1.
-  induction H1; intros; eauto.
+  move => e A G psi H1.
+  induction H1; intros; eauto using Ctx_meet_l_C, q_leb_refl.
   - eapply binds_to_Typing; eauto.
+  - rewrite meet_ctx_l_meet_ctx_l in IHTyping.
+    apply: (E_Pi L) => // x Hx.
+    move : (H0 x Hx) => h0.
+    simpl in h0.
+    apply : Typing_pumping_self => /ltac:(sfirstorder use:leq_meet_l).
   - apply invert_a_Pi in IHTyping1; eauto.
     destruct IHTyping1 as [h2 [[L h3] h4]].
-    pick_fresh x.
+    pick_fresh x; spec x.
     rewrite (tm_subst_tm_tm_intro x); auto.
+    rewrite meet_ctx_l_meet_ctx_l in h2.
     un_subst_tm.
     eapply Typing_tm_subst; eauto.
   - apply invert_a_Pi in IHTyping1; eauto.
