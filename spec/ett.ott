@@ -62,7 +62,7 @@ constraint, phi {{ tex \phi }} :: '' ::= {{ com props }}
      {{ coq (open_constraint_wrt_tm [[x b]] [[phi]]) }}
    | | phi |          :: S :: Erase
      {{ coq (erase_constraint [[phi]]) }}
-   | phi1 ==> phi2 :: :: Impl
+   | all c : phi1 . phi2 :: :: Impl (+ bind c in phi2 +)
 %% TODO: think about adding this constraint
 %% | phi1 ~ phi2       ::   :: CoIso
 
@@ -1630,7 +1630,7 @@ G |= psi phi2
 G , c : psi phi1 |= psi phi2
 [ CTime /\ G |= CTime phi1 ok ]
 --------------------------------------------------- :: ImplAbs
-G |= psi phi1 ==> phi2
+G |= psi all c:phi1 . phi2
 
 
 
