@@ -9,6 +9,7 @@ Require Export FcEtt.ett_ind.
 Require Export FcEtt.beta.
 Require Export FcEtt.ext_wf.
 Require Export FcEtt.ett_value.
+Require Export FcEtt.ext_weak.
 
 Set Bullet Behavior "Strict Subproofs".
 Set Implicit Arguments.
@@ -21,112 +22,69 @@ Lemma Ctx_strengthen : forall G1 G2, Ctx (G2 ++ G1) -> Ctx G1.
   induction G2; [ | inversion 1]; simpl; auto.
 Qed.
 
-Lemma binds_to_PropWff: forall G0 psi psi0 phi c,
+Lemma binds_to_PropWff: forall G0 psi0 phi c,
     Ctx G0 ->
-    binds c (psi0, (Co phi)) G0 -> PropWff G0 psi phi.
+    binds c (psi0, (Co phi)) G0 -> PropWff (meet_ctx_l q_C G0) q_C phi.
 Proof.
   induction G0; auto; try done.
-  intros A B T c H H0.
+  move => psi0 phi c H H0.
   destruct a.
   destruct p.
-  - case H0; try done.
-    move => h0.
-    inversion H; subst.
-    have:   PropWff ( G0) (Eq A B T).
-    apply (IHG0 _ _ _ c H4); eauto.
-    move => h1.
-    rewrite_env (nil ++ [(a, Tm A0)] ++ G0).
-    eapply PropWff_weakening; eauto.
-  - destruct H0; subst.
-    inversion H0; subst.
-    inversion H; subst.
-    rewrite_env (nil ++ [(c, Co (Eq A B T))] ++ G0).
-    eapply PropWff_weakening; eauto.
-    rewrite_env (nil ++ [(a, Co phi)] ++ G0).
-    eapply PropWff_weakening; eauto.
+  case H0; try done.
+  -  move => h0.
+    inversion H; subst; auto.
+    have h1:   PropWff (meet_ctx_l q_C G0) q_C phi by scongruence.
     simpl.
-    inversion H.
-    eapply IHG0; eauto 2.
+    rewrite cons_app_one -[_ ++ _]app_nil_l.
+    apply : PropWff_weakening => //.
+    inversion h0; subst.
+    simpl.
+    rewrite cons_app_one -[_ ++ _]app_nil_l.
+    apply : PropWff_weakening => // /=.
+    move : H => /Ctx_meet_l_C //.
+  - move => h0.
+    simpl.
+    rewrite cons_app_one -[_ ++ _]app_nil_l.
+    apply : PropWff_weakening => // /=.
+    sauto lq:on.
+    hauto q:on use:Ctx_meet_l_C.
 Qed.
 
 Lemma tm_subst_fresh_1 :
-forall G a A a0 x s,
-  Typing G a A -> Ctx ((x ~ s) ++ G) -> tm_subst_tm_tm a0 x A = A.
+forall G psi a A a0 x s,
+  Typing G psi a A -> Ctx ((x ~ s) ++ G) -> tm_subst_tm_tm a0 x A = A.
 Proof.
-  intros G a A a0 x s H H0.
-  destruct s.
-  - apply tm_subst_tm_tm_fresh_eq.
-    inversion H0; subst; clear H0.
-    move => h0.
-    move: (Typing_context_fv H) => ?. split_hyp.
-    eauto.
-  - apply tm_subst_tm_tm_fresh_eq.
-    inversion H0; subst; clear H0.
-    move => h0.
-    move:(Typing_context_fv H) => ?. split_hyp.
-    eauto.
+  qauto l: on l: on use: tm_subst_tm_tm_fresh_eq, Typing_context_fv inv: sort, Ctx.
 Qed.
 
 Lemma tm_subst_co_fresh_1 :
-forall G a A a0 c s,
-  Typing G a A -> Ctx ((c ~ s) ++ G) -> co_subst_co_tm a0 c A = A.
+forall G psi a A a0 c s,
+  Typing G psi a A -> Ctx ((c ~ s) ++ G) -> co_subst_co_tm a0 c A = A.
 Proof.
-  intros G a A a0 x s H H0.
-  destruct s.
-  - apply co_subst_co_tm_fresh_eq.
-    inversion H0; subst; clear H0.
-    move => h0.
-    move: (Typing_context_fv H) => ?. split_hyp.
-    eauto.
-  - apply co_subst_co_tm_fresh_eq.
-    inversion H0; subst; clear H0.
-    move => h0.
-    move: (Typing_context_fv H) => ?. split_hyp.
-    eauto.
+  qauto l: on l: on use: co_subst_co_tm_fresh_eq, Typing_context_fv inv: sort, Ctx.
 Qed.
 
 Lemma tm_subst_fresh_2 :
-forall G a A a0 x s,
-  Typing G a A -> Ctx ((x ~ s) ++ G) -> tm_subst_tm_tm a0 x a = a.
+forall G psi a A a0 x s,
+  Typing G psi a A -> Ctx ((x ~ s) ++ G) -> tm_subst_tm_tm a0 x a = a.
 Proof.
-  intros G a A a0 x s H H0.
-  apply tm_subst_tm_tm_fresh_eq.
-  move: (Typing_context_fv H) => ?. split_hyp.
-  inversion H0; subst; auto.
+  qauto l: on l: on use: tm_subst_tm_tm_fresh_eq, Typing_context_fv inv: sort, Ctx.
 Qed.
 
 Lemma co_subst_fresh :
-forall G phi a0 x s,
-  PropWff G phi -> Ctx ((x ~ s) ++ G) -> tm_subst_tm_constraint a0 x phi = phi.
+forall G psi phi a0 x s,
+  PropWff G psi phi -> Ctx ((x ~ s) ++ G) -> tm_subst_tm_constraint a0 x phi = phi.
 Proof.
-  intros G phi a0 x s H H0.
-  apply tm_subst_tm_constraint_fresh_eq.
-  move: (ProfWff_context_fv H) => ?. split_hyp.
-  inversion H0; subst; auto.
+  qauto l: on use: tm_subst_tm_constraint_fresh_eq, ProfWff_context_fv inv: Ctx.
 Qed.
 
-Lemma bind_map_tm_subst_tm_sort: forall c F A B T x a,
-    binds c (Co (Eq A B T)) F ->
-    binds c (Co (Eq (tm_subst_tm_tm a x A)
-                    (tm_subst_tm_tm a x B) (tm_subst_tm_tm a x T))) (map (tm_subst_tm_sort a x) F).
+Lemma bind_map_tm_subst_tm_sort: forall c F phi x a,
+    binds c (Co phi) F ->
+    binds c (Co (tm_subst_tm_constraint a x phi)) (map (tm_subst_tm_sort a x) F).
 Proof.
-  induction F; try done.
-  destruct a.
-  destruct s; auto; try done.
-  - intros A0 B T x a0 H.
-    right.
-    (case H; try done) => h0.
-    apply IHF; auto.
-  - intros A B T x a0 H.
-    case H; auto.
-    + inversion 1; subst.
-      left; auto.
-    + move => h0.
-      right.
-      apply IHF; auto.
+  induction F; auto.
+  move : a => [? [? | ?]] /ltac:(sfirstorder).
 Qed.
-
-
 
 Lemma binds_map_4: forall x A F c0,
     binds x (Tm A) F ->
@@ -167,17 +125,18 @@ Proof.
   rewrite IHF; auto.
 Qed.
 
-Lemma subst_rho: forall L G a A x y b rho
-    (T : Typing G a A)
-    (Neq: x <> y)
-    (Fr: y `notin` fv_tm_tm_tm a)
-    (Fr2: y `notin` L)
-    (K : (forall x, x `notin` L -> RhoCheck rho x (open_tm_wrt_tm b (a_Var_f x)))),
-    RhoCheck rho y  (tm_subst_tm_tm a x (open_tm_wrt_tm b (a_Var_f y))).
-Proof.
-  intros.
-  RhoCheck_inversion y; eauto with lngen lc.
-Qed.
+(* subsumed by grade related structural rules? *)
+(* Lemma subst_rho: forall L G a A x y b rho *)
+(*     (T : Typing G a A) *)
+(*     (Neq: x <> y) *)
+(*     (Fr: y `notin` fv_tm_tm_tm a) *)
+(*     (Fr2: y `notin` L) *)
+(*     (K : (forall x, x `notin` L -> RhoCheck rho x (open_tm_wrt_tm b (a_Var_f x)))), *)
+(*     RhoCheck rho y  (tm_subst_tm_tm a x (open_tm_wrt_tm b (a_Var_f y))). *)
+(* Proof. *)
+(*   intros. *)
+(*   RhoCheck_inversion y; eauto with lngen lc. *)
+(* Qed. *)
 
 (* Rewrite the context in to the appropriate form for the induction
    hypothesis (in the cases with binding).
@@ -201,43 +160,39 @@ Ltac rewrite_subst_context :=
 Ltac eapply_E_subst :=
   first [ eapply E_Star     |
           eapply E_App      |
-          eapply E_IApp     |
           eapply E_CApp     |
 (*          eapply E_Const    | *)
           eapply E_IsoConv  |
           eapply E_AppCong  |
-          eapply E_IAppCong |
           eapply E_CAppCong |
           eapply E_PiSnd    |
           eapply E_CPiSnd].
 
-
-
 Lemma tm_substitution_mutual :
-  (forall G0 b B (H : Typing G0 b B),
-      forall G a A, Typing G a A ->
-               forall F x, G0 = (F ++ (x ~ Tm A) ++ G) ->
-                      Typing (map (tm_subst_tm_sort a x) F ++ G)
+  (forall G0 psi b B (H : Typing G0 psi b B),
+      forall G a psi0 A, Typing G psi a A ->
+               forall F x, G0 = (F ++ (x ~ (psi0, Tm A)) ++ G) ->
+                      Typing (map (tm_subst_tm_sort a x) F ++ G) psi
                              (tm_subst_tm_tm a x b)
                              (tm_subst_tm_tm a x B)) /\
-    (forall G0 phi (H : PropWff G0 phi),
+    (forall G0 psi phi (H : PropWff G0 phi),
         forall G a A, Typing G a A ->
                  forall F x, G0 = (F ++ (x ~ Tm A) ++ G) ->
                         PropWff (map (tm_subst_tm_sort a x) F ++ G)
                                 (tm_subst_tm_constraint a x phi)) /\
-    (forall G0 D p1 p2 (H : Iso G0 D p1 p2),
+    (forall G0 psi D p1 p2 (H : Iso G0 D p1 p2),
         forall G a A, Typing G a A ->
                  forall F x, G0 = (F ++ (x ~ Tm A) ++ G) ->
                 Iso (map (tm_subst_tm_sort a x) F ++ G) D
                     (tm_subst_tm_constraint a x p1)
                     (tm_subst_tm_constraint a x p2)) /\
-    (forall G0 D A B T (H : DefEq G0 D A B T),
+    (forall G0 psi D A B T (H : DefEq G0 D A B T),
        forall G a A0, Typing G a A0 ->
                  forall F x, G0 = (F ++ (x ~ Tm A0) ++ G) ->
                         DefEq (map (tm_subst_tm_sort a x) F ++ G) D
                               (tm_subst_tm_tm a x A)
                               (tm_subst_tm_tm a x B) (tm_subst_tm_tm a x T)) /\
-    (forall G0 (H : Ctx G0),
+    (forall G0 psi (H : Ctx G0),
         forall G a A, Typing G a A ->
                  forall F x, G0 = (F ++ (x ~ Tm A) ++ G) ->
                         Ctx (map (tm_subst_tm_sort a x) F ++ G)).
