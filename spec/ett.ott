@@ -987,7 +987,7 @@ P |= psi all x :psi0 A1 -> B1 ~~ all x :psi0 A2 -> B2
 P , x : psi0 |= psi b1 ~~ b2
 ------------------------------------- :: Abs
 P |= psi \ psi0 x  . b1 ~~ \ psi0 x . b2
-
+(a <= b) <=> (a \/ b <= b)
 
 P |= psi b1 ~~ b2
 P |= psi psi0 a1 ~~ a2
@@ -1540,6 +1540,8 @@ G, x: psi A1 |= psi B1 ~ B2 : TYPE
 G |= psi (all x: psi0 A1 -> B1) ~ (all x: psi0 A2 -> B2) : TYPE
 
 
+TODO remove \/ psi?
+TODO DDC : remove abs to use psi0
 G, x: psi0 \/ psi A1 |= psi b1 ~ b2 : B
 [ CTime /\ G |= CTime A1 : TYPE ]
 -------------------------------------------------------------- :: AbsCong
