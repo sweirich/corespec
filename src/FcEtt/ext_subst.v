@@ -168,35 +168,45 @@ Ltac eapply_E_subst :=
           eapply E_PiSnd    |
           eapply E_CPiSnd].
 
+Definition map_snd {A B C: Type} (f : A -> B) :
+  list (atom * (C * A)) -> list (atom * (C * B)) := map (fun '(x,y) => (x, f y)).
+
 Lemma tm_substitution_mutual :
   (forall G0 psi b B (H : Typing G0 psi b B),
-      forall G a psi0 A, Typing G psi a A ->
+      forall G a psi0 A, Typing G psi0 a A ->
                forall F x, G0 = (F ++ (x ~ (psi0, Tm A)) ++ G) ->
-                      Typing (map (tm_subst_tm_sort a x) F ++ G) psi
+                      Typing (map_snd (tm_subst_tm_sort a x) F ++ G) psi
                              (tm_subst_tm_tm a x b)
                              (tm_subst_tm_tm a x B)) /\
-    (forall G0 psi phi (H : PropWff G0 phi),
-        forall G a A, Typing G a A ->
-                 forall F x, G0 = (F ++ (x ~ Tm A) ++ G) ->
-                        PropWff (map (tm_subst_tm_sort a x) F ++ G)
+    (forall G0 psi phi (H : PropWff G0 psi phi),
+        forall G a psi0 A, Typing G psi0 a A ->
+                 forall F x, G0 = (F ++ (x ~ (psi0, Tm A)) ++ G) ->
+                        PropWff (map_snd (tm_subst_tm_sort a x) F ++ G) psi
                                 (tm_subst_tm_constraint a x phi)) /\
-    (forall G0 psi D p1 p2 (H : Iso G0 D p1 p2),
-        forall G a A, Typing G a A ->
-                 forall F x, G0 = (F ++ (x ~ Tm A) ++ G) ->
-                Iso (map (tm_subst_tm_sort a x) F ++ G) D
+    (forall G0 psi p1 p2 (H : Iso G0 psi p1 p2),
+        forall G a psi0 A, Typing G psi0 a A ->
+                 forall F x, G0 = (F ++ (x ~ (psi0, Tm A)) ++ G) ->
+                Iso (map_snd (tm_subst_tm_sort a x) F ++ G) psi
                     (tm_subst_tm_constraint a x p1)
                     (tm_subst_tm_constraint a x p2)) /\
-    (forall G0 psi D A B T (H : DefEq G0 D A B T),
-       forall G a A0, Typing G a A0 ->
-                 forall F x, G0 = (F ++ (x ~ Tm A0) ++ G) ->
-                        DefEq (map (tm_subst_tm_sort a x) F ++ G) D
-                              (tm_subst_tm_tm a x A)
-                              (tm_subst_tm_tm a x B) (tm_subst_tm_tm a x T)) /\
-    (forall G0 psi (H : Ctx G0),
-        forall G a A, Typing G a A ->
-                 forall F x, G0 = (F ++ (x ~ Tm A) ++ G) ->
-                        Ctx (map (tm_subst_tm_sort a x) F ++ G)).
-  eapply typing_wff_iso_defeq_mutual;
+    (forall G0 psi phi (H : DefEq G0 psi phi),
+       forall G a psi0 A0, Typing G psi0 a A0 ->
+                 forall F x, G0 = (F ++ (x ~ (psi0, Tm A0)) ++ G) ->
+                        DefEq (map_snd (tm_subst_tm_sort a x) F ++ G) psi
+                              (tm_subst_tm_constraint a x phi)) /\
+    (forall G0 (H : Ctx G0),
+       forall G a psi0 A, Typing G psi0 a A ->
+                 forall F x, G0 = (F ++ (x ~ (psi0, Tm A)) ++ G) ->
+                        Ctx (map_snd (tm_subst_tm_sort a x) F ++ G)) /\
+    (forall G0 psi psi0 a b T (H : CDefEq G0 psi psi0 a b T),
+       forall G a0 psi0 A, Typing G psi0 a0 A ->
+                 forall F x, G0 = (F ++ (x ~ (psi0, Tm A)) ++ G) ->
+                        CDefEq (map_snd (tm_subst_tm_sort a0 x) F ++ G) psi psi0
+                               (tm_subst_tm_tm a0 x a)
+                               (tm_subst_tm_tm a0 x b)
+                               (tm_subst_tm_tm a0 x T)).
+Proof.
+  ext_induction CON;
     intros; subst; simpl. Focus 22. destruct rho. Unfocus.
   all: try first [ E_pick_fresh y; autorewrite with subst_open_var; eauto 2 with lc;
                    try rewrite_subst_context; eauto 3 |
