@@ -12,6 +12,7 @@ Haskell".
 
 - [doc](doc/coqpl) for CoqPL abstract "Locally Nameless at Scale"
 
+- See paper [TYPES 2019 paper "Eta-Equivalence in Core Dependent Haskell"](https://drops.dagstuhl.de/opus/volltexte/2020/13071/pdf/LIPIcs-TYPES-2019-7.pdf) for a description of the modifications needed for eta-equivalence rules.
 
 *Acknowledgements*
 This material is based upon work supported by the National Science Foundation
