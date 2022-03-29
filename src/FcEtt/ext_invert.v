@@ -9,6 +9,7 @@ Require Import FcEtt.ext_wf.
 
 Require Import FcEtt.utils.
 Require Import FcEtt.ext_weak.
+Require Import FcEtt.ett_ind.
 
 (* Module ext_invert (subst : ext_subst_sig) <: ext_invert_sig. *)
 

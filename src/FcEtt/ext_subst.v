@@ -1,5 +1,3 @@
-Require Import FcEtt.sigs.
-
 Require Import FcEtt.tactics.
 Require Export FcEtt.imports.
 Require Import FcEtt.utils.
@@ -16,21 +14,21 @@ Set Bullet Behavior "Strict Subproofs".
 Set Implicit Arguments.
 
 
-Module ext_subst (weak : ext_weak_sig) <: ext_subst_sig.
-  Include weak.
+(* Module ext_subst (weak : ext_weak_sig) <: ext_subst_sig. *)
+(*   Include weak. *)
 
 Lemma Ctx_strengthen : forall G1 G2, Ctx (G2 ++ G1) -> Ctx G1.
   induction G2; [ | inversion 1]; simpl; auto.
 Qed.
 
-Lemma binds_to_PropWff: forall G0 A B T c,
+Lemma binds_to_PropWff: forall G0 psi psi0 phi c,
     Ctx G0 ->
-    binds c (Co (Eq A B T)) G0 -> PropWff G0 (Eq A B T).
+    binds c (psi0, (Co phi)) G0 -> PropWff G0 psi phi.
 Proof.
   induction G0; auto; try done.
   intros A B T c H H0.
   destruct a.
-  destruct s; auto; try done.
+  destruct p.
   - case H0; try done.
     move => h0.
     inversion H; subst.
@@ -702,4 +700,4 @@ Qed.
 
 
 
-End ext_subst.
+(* End ext_subst. *)
