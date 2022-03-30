@@ -10,6 +10,7 @@ Require Export FcEtt.beta.
 Require Export FcEtt.ext_wf.
 Require Export FcEtt.ett_value.
 Require Export FcEtt.ext_weak.
+Require Export FcEtt.subsumption.
 
 Set Bullet Behavior "Strict Subproofs".
 Set Implicit Arguments.
@@ -142,10 +143,17 @@ Qed.
    hypothesis (in the cases with binding).
    This rewriting is specific for substitution lemmas.
 *)
+
+Definition f_snd {A B C:Type} (f : B -> C) : (A * B) -> (A * C) := fun '(x,y) => (x, f y).
+
+Definition map_snd {A B C: Type} (f : A -> B) :
+  list (atom * (C * A)) -> list (atom * (C * B)) := map (f_snd f).
+
+(* ((y ~ (psi, Tm (tm_subst_tm_tm a x A)) ++ map_snd (tm_subst_tm_sort a x) F) ++ G0) *)
 Ltac rewrite_subst_context :=
   match goal with
-  | [ |- context [([(?y, ?C (_ _ _ ?T))] ++ map ?sub ?F ++ ?G0)] ] =>
-    rewrite_env (map sub ((y ~ (C T)) ++ F) ++ G0)
+  | [ |- context [([(?y, (?psi, ?C (_ _ _ ?T)))] ++ map_snd ?sub ?F ++ ?G0)] ] =>
+    rewrite_env (map_snd sub ((y ~ (psi, (C T))) ++ F) ++ G0)
   end.
 
 (*
@@ -168,9 +176,10 @@ Ltac eapply_E_subst :=
           eapply E_PiSnd    |
           eapply E_CPiSnd].
 
-Definition map_snd {A B C: Type} (f : A -> B) :
-  list (atom * (C * A)) -> list (atom * (C * B)) := map (fun '(x,y) => (x, f y)).
 
+(* TODO switch to CTyping G psi psi0 a A*)
+(* TODO define subst_ctx *)
+(* TODO define rewr_list rules *)
 Lemma tm_substitution_mutual :
   (forall G0 psi b B (H : Typing G0 psi b B),
       forall G a psi0 A, Typing G psi0 a A ->
@@ -207,7 +216,46 @@ Lemma tm_substitution_mutual :
                                (tm_subst_tm_tm a0 x T)).
 Proof.
   ext_induction CON;
-    intros; subst; simpl. Focus 22. destruct rho. Unfocus.
+    intros; subst; simpl.
+  (* 44 goals *)
+  all : try solve [eapply CON; eauto 2].
+  (* 33 goals *)
+  (* all: try first [ pick fresh y and apply CON; autorewrite with subst_open_var; eauto 2 with lc; *)
+  (*                  try rewrite_subst_context; eauto 3 | *)
+  (*                  autorewrite with subst_open; eauto 2 with lc ].   *)
+  - destruct (x == x0).
+    + subst.
+      have [HA HB]: Tm A = Tm A0 /\ psi0 = psi1 by hauto l:on use:binds_mid_eq.
+      inversion HA; inversion HB. subst.
+      assert (S : tm_subst_tm_tm a x0 A0 = A0) by sfirstorder use:tm_subst_fresh_1,Ctx_strengthen.
+      rewrite S.
+      rewrite -[_++_]app_nil_l.
+      hauto lq: on rew: off use:Typing_weakening, Typing_subsumption.
+    + apply binds_remove_mid in b; auto.
+      destruct (binds_app_1 _ _ _ _ _ b).
+      (* after x *)
+      eapply E_Var; eauto.
+      eapply binds_app_2.
+      assert (EQ : tm_subst_tm_sort a x0 (Tm A) = Tm (tm_subst_tm_tm a x0 A)). auto.
+      rewrite <- EQ.
+      rewrite /map_snd.
+      replace (psi0, tm_subst_tm_sort a x0 (Tm A)) with (f_snd (tm_subst_tm_sort a x0) (psi0, Tm A)); auto.
+      eapply E_Var; eauto.
+      apply Ctx_strengthen in c.
+      hauto b: on use: Ctx_strengthen, Typing_leq_C, tm_subst_fresh_1.
+
+  (* Pi *)
+  - pick fresh y and apply CON; eauto.
+    autorewrite with subst_open_var; eauto 2 with lc.
+    rewrite_subst_context; qauto l:on.
+  (* abs *)
+  - pick fresh y and apply CON; eauto.
+    autorewrite with subst_open_var; eauto 2 with lc.
+    rewrite_subst_context; qauto l:on.
+    simpl_env.
+
+
+  Focus 22. destruct rho. Unfocus.
   all: try first [ E_pick_fresh y; autorewrite with subst_open_var; eauto 2 with lc;
                    try rewrite_subst_context; eauto 3 |
                    autorewrite with subst_open; eauto 2 with lc ].
@@ -216,33 +264,6 @@ Proof.
   all: try solve [eapply subst_rho; eauto 2].
   all: try solve [eapply_first_hyp; eauto].
   all: try solve [eapply DefEq_weaken_available; eauto].
-  - destruct (x == x0).
-    + subst.
-      assert (HA: Tm A = Tm A0). eapply binds_mid_eq; eauto.
-      inversion HA. subst.
-      assert (S : tm_subst_tm_tm a x0 A0 = A0). eapply tm_subst_fresh_1. eauto.
-      apply Ctx_strengthen with (G2 := F). eauto.
-      rewrite S.
-      rewrite_env (nil ++ map (tm_subst_tm_sort a x0) F ++ G0).
-      eapply Typing_weakening; eauto 2.
-      (* simpl_env. *)
-      (* apply (H _ _ A0); auto. *)
-    + apply binds_remove_mid in b; auto.
-      destruct (binds_app_1 _ _ _ _ _ b).
-      (* after x *)
-      eapply E_Var; eauto.
-      eapply binds_app_2.
-      assert (EQ : tm_subst_tm_sort a x0 (Tm A) = Tm (tm_subst_tm_tm a x0 A)). auto.
-      rewrite <- EQ.
-      eapply binds_map_2. auto.
-      (* before x *)
-      eapply E_Var; eauto.
-      apply Ctx_strengthen in c.
-      assert (EQ: tm_subst_tm_tm a x0 A = A). eapply tm_subst_fresh_1.
-      eapply E_Var.
-      eapply Ctx_strengthen. eauto. eauto. eauto.
-      rewrite EQ.
-      eauto.
   - (* conversion *)
     econstructor; try eapply DefEq_weaken_available; eauto.
 (*  - have h0: Typing nil A a_Star by eauto using toplevel_closed.
