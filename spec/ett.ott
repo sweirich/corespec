@@ -690,7 +690,7 @@ erased_constraint a ~ b : A
 erased_constraint phi1
 erased_constraint phi2
 ------------------------ :: Impl
-erased_constraint phi1 ==> phi2
+erased_constraint all c : phi1 . phi2
 
 defn
   erased_tm a ::  :: erased_tm :: 'erased_a_'
@@ -844,9 +844,9 @@ P |= psi a ~ b : A
 
 
 P |= psi phi1
-P |= psi phi2
+P , c : psi |= psi phi2
 --------------------- :: Impl
-P |= psi phi1 ==> phi2
+P |= psi all c : phi1 . phi2
 
 
 
@@ -943,9 +943,9 @@ P |= psi a ~ b : A ~~ a' ~ b' : A'
 
 
 P |= psi phi1 ~~ phi2
-P |= psi phi3 ~~ phi4
+P, c : psi |= psi phi3 ~~ phi4
 --------------------- :: Impl
-P |= psi phi1 ==> phi3 ~~ phi2 ==> phi4
+P |= psi all c : phi1 . phi3 ~~ all c : phi2 . phi4
 
 
 defn 
@@ -987,7 +987,6 @@ P |= psi all x :psi0 A1 -> B1 ~~ all x :psi0 A2 -> B2
 P , x : psi0 |= psi b1 ~~ b2
 ------------------------------------- :: Abs
 P |= psi \ psi0 x  . b1 ~~ \ psi0 x . b2
-(a <= b) <=> (a \/ b <= b)
 
 P |= psi b1 ~~ b2
 P |= psi psi0 a1 ~~ a2
@@ -1068,9 +1067,9 @@ P |- psi A => A'
 P |- psi a ~ b : A => a' ~ b' : A'
 
 P |- psi phi1 => phi1'
-P |- psi phi2 => phi2'
+P , c : psi |- psi phi2 => phi2'
 ----------------------- :: Impl
-P |- psi phi1 ==> phi2 => phi1' ==> phi2'
+P |- psi all c : phi1 . phi2 => all c : phi1' . phi2'
 
 
 defn
@@ -1323,9 +1322,9 @@ G |= psi b : A
 G |= psi a ~ b : A  ok
 
 G |= psi phi1 ok
-G |= psi phi2 ok
+G , c : psi phi1 |= psi phi2 ok
 ---------------------------  :: WffImpl
-G |= psi phi1 ==> phi2 ok
+G |= psi all c : phi1 . phi2 ok
 
 
 defn
@@ -1415,6 +1414,7 @@ F ~ a : psi0 A in toplevel
 G |= psi F : A
 
 
+% there is an implicit phi1 == phi2 : Prop
 defn
 G |= psi phi1 == phi2  ::    :: Iso :: 'E_'
 {{ tex [[G]] \vDash [[phi1]] \equiv ^{[[psi]]} [[phi2]] }}
@@ -1442,10 +1442,11 @@ G |= psi all c:psi0 phi1. B1 ~ all c:psi0 phi2. B2 : TYPE
 ------------------------------------------------- :: CPiFst
 G |= psi phi1 == phi2
 
+% top or psi?
 G |= psi phi1 == phi2
-G |= psi phi3 == phi4
+G , c : top phi1 |= psi phi3 == phi4
 -------------------------------------- :: ImplCong
-G |= psi phi1 ==> phi3 == phi2 ==> phi4
+G |= psi all c : phi1 . phi3 == all c : phi2 . phi4
 
 
 % NOTE: it is possible to have G |= top psi0 a ~ b : A
@@ -1539,10 +1540,10 @@ G, x: psi A1 |= psi B1 ~ B2 : TYPE
 ---------------------------------------------------------- :: PiCong
 G |= psi (all x: psi0 A1 -> B1) ~ (all x: psi0 A2 -> B2) : TYPE
 
-
-TODO remove \/ psi?
-TODO DDC : remove abs to use psi0
-G, x: psi0 \/ psi A1 |= psi b1 ~ b2 : B
+TODO add ctyping
+% TODO remove \/ psi?
+% TODO DDC : remove abs to use psi0
+G, x: psi0 A1 |= psi b1 ~ b2 : B
 [ CTime /\ G |= CTime A1 : TYPE ]
 -------------------------------------------------------------- :: AbsCong
 G |= psi (\psi0 x. b1) ~ (\psi0 x. b2) : all x: psi0 A1 -> B
@@ -1621,7 +1622,7 @@ a = b [o]
 ------------------------------------------ :: EtaC
 G |= psi /\top c. a ~ b : all c:top phi. B
 
-G |= psi phi1 ==> phi2
+G |= psi all c : phi1 . phi2
 G |= psi phi1
 --------------------------------------------------- :: ImplApp
 G |= psi phi2
