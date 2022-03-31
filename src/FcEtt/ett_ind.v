@@ -317,9 +317,10 @@ Scheme typing_ind' := Induction for Typing Sort Prop
    with iso_ind'   := Induction for Iso Sort Prop
    with defeq_ind' := Induction for DefEq Sort Prop
    with ctx_ind'   := Induction for Ctx Sort Prop
-   with cdefeq_ind' := Induction for CDefEq Sort Prop.
+   with cdefeq_ind' := Induction for CDefEq Sort Prop
+   with ctyping_ind' := Induction for CTyping Sort Prop.
 
-Combined Scheme typing_wff_iso_defeq_mutual from typing_ind', wff_ind', iso_ind', defeq_ind', ctx_ind', cdefeq_ind'.
+Combined Scheme typing_wff_iso_defeq_mutual from typing_ind', wff_ind', iso_ind', defeq_ind', ctx_ind', cdefeq_ind', ctyping_ind'.
 
 Scheme ann_typing_ind' := Induction for AnnTyping Sort Prop
    with ann_wff_ind'   := Induction for AnnPropWff Sort Prop
