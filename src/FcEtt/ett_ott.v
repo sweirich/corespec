@@ -62,17 +62,17 @@ with co : Set :=  (*r explicit coercions *)
  | g_Left (g:co) (g':co)
  | g_Right (g:co) (g':co).
 
-Inductive esort : Set :=  (*r binding classifier *)
- | e_Tm : esort
- | e_Co : esort.
+Inductive sig_sort : Set :=  (*r signature classifier *)
+ | Cs (A:tm)
+ | Ax (a:tm) (A:tm).
 
 Inductive sort : Set :=  (*r binding classifier *)
  | Tm (A:tm)
  | Co (phi:constraint).
 
-Inductive sig_sort : Set :=  (*r signature classifier *)
- | Cs (A:tm)
- | Ax (a:tm) (A:tm).
+Inductive esort : Set :=  (*r binding classifier *)
+ | e_Tm : esort
+ | e_Co : esort.
 
 Definition sig : Set := list (atom * (grade * sig_sort)).
 
@@ -146,7 +146,7 @@ end
 with open_constraint_wrt_co_rec (k:nat) (g5:co) (phi_5:constraint) {struct phi_5}: constraint :=
   match phi_5 with
   | (Eq a b A) => Eq (open_tm_wrt_co_rec k g5 a) (open_tm_wrt_co_rec k g5 b) (open_tm_wrt_co_rec k g5 A)
-  | (Impl phi1 phi2) => Impl (open_constraint_wrt_co_rec k g5 phi1) (open_constraint_wrt_co_rec k g5 phi2)
+  | (Impl phi1 phi2) => Impl (open_constraint_wrt_co_rec k g5 phi1) (open_constraint_wrt_co_rec (S k) g5 phi2)
 end.
 
 Fixpoint open_co_wrt_tm_rec (k:nat) (a5:tm) (g_5:co) {struct g_5}: co :=
@@ -421,7 +421,7 @@ with lc_constraint : constraint -> Prop :=    (* defn lc_constraint *)
      (lc_constraint (Eq a b A))
  | lc_Impl : forall (phi1 phi2:constraint),
      (lc_constraint phi1) ->
-     (lc_constraint phi2) ->
+      ( forall c , lc_constraint  ( open_constraint_wrt_co phi2 (g_Var_f c) )  )  ->
      (lc_constraint (Impl phi1 phi2)).
 
 (* defns LC_sort *)
@@ -738,6 +738,9 @@ Definition labels : context -> econtext :=
 Definition subst_ctx (a : tm) (x:var) : context -> context :=
   map (fun '(g, A) => (g, (tm_subst_tm_sort a x A))).
 
+Definition subst_ctx_co (g : co) (c:covar) : context -> context :=
+  map (fun '(x, A) => (x, (co_subst_co_sort g c A))).
+
 Definition join_ctx_l (psi : grade) : context -> context :=    
   map (fun '(g, A) => (psi * g, A)).
 
@@ -900,9 +903,9 @@ Inductive erased_constraint : constraint -> Prop :=    (* defn erased_constraint
      erased_tm b ->
      erased_tm A ->
      erased_constraint (Eq a b A)
- | erased_c_Impl : forall (phi1 phi2:constraint),
+ | erased_c_Impl : forall (L:vars) (phi1 phi2:constraint),
      erased_constraint phi1 ->
-     erased_constraint phi2 ->
+      ( forall c , c \notin  L  -> erased_constraint  ( open_constraint_wrt_co phi2 (g_Var_f c) )  )  ->
      erased_constraint (Impl phi1 phi2)
 with erased_tm : tm -> Prop :=    (* defn erased_tm *)
  | erased_a_Star : 
@@ -987,9 +990,9 @@ with CoGrade : econtext -> grade -> constraint -> Prop :=    (* defn CoGrade *)
      Grade P psi b ->
      Grade P psi A ->
      CoGrade P psi (Eq a b A)
- | CoG_Impl : forall (P:econtext) (psi:grade) (phi1 phi2:constraint),
+ | CoG_Impl : forall (L:vars) (P:econtext) (psi:grade) (phi1 phi2:constraint),
      CoGrade P psi phi1 ->
-     CoGrade P psi phi2 ->
+      ( forall c , c \notin  L  -> CoGrade  (( c  ~ ( psi ,e_Co)) ++  P )  psi  ( open_constraint_wrt_co phi2 (g_Var_f c) )  )  ->
      CoGrade P psi (Impl phi1 phi2)
 with CGrade : econtext -> grade -> grade -> tm -> Prop :=    (* defn CGrade *)
  | CG_Leq : forall (P:econtext) (psi psi0:grade) (a:tm),
@@ -1045,9 +1048,9 @@ Inductive CoGEq : econtext -> grade -> constraint -> constraint -> Prop :=    (*
      GEq P psi b b' ->
      GEq P psi A A' ->
      CoGEq P psi (Eq a b A) (Eq a' b' A')
- | CoGEq_Impl : forall (P:econtext) (psi:grade) (phi1 phi3 phi2 phi4:constraint),
+ | CoGEq_Impl : forall (L:vars) (P:econtext) (psi:grade) (phi1 phi3 phi2 phi4:constraint),
      CoGEq P psi phi1 phi2 ->
-     CoGEq P psi phi3 phi4 ->
+      ( forall c , c \notin  L  -> CoGEq  (( c  ~ ( psi ,e_Co)) ++  P )  psi  ( open_constraint_wrt_co phi3 (g_Var_f c) )   ( open_constraint_wrt_co phi4 (g_Var_f c) )  )  ->
      CoGEq P psi (Impl phi1 phi3) (Impl phi2 phi4)
 with CEq : econtext -> grade -> grade -> tm -> tm -> Prop :=    (* defn CEq *)
  | CEq_Leq : forall (P:econtext) (psi psi0:grade) (a1 a2:tm),
@@ -1126,9 +1129,9 @@ with ParProp : econtext -> grade -> constraint -> constraint -> Prop :=    (* de
      Par P psi b b' ->
      Par P psi A A' ->
      ParProp P psi (Eq a b A) (Eq a' b' A')
- | ParProp_Impl : forall (P:econtext) (psi:grade) (phi1 phi2 phi1' phi2':constraint),
+ | ParProp_Impl : forall (L:vars) (P:econtext) (psi:grade) (phi1 phi2 phi1' phi2':constraint),
      ParProp P psi phi1 phi1' ->
-     ParProp P psi phi2 phi2' ->
+      ( forall c , c \notin  L  -> ParProp  (( c  ~ ( psi ,e_Co)) ++  P )  psi  ( open_constraint_wrt_co phi2 (g_Var_f c) )   ( open_constraint_wrt_co phi2' (g_Var_f c) )  )  ->
      ParProp P psi (Impl phi1 phi2) (Impl phi1' phi2')
 with Par : econtext -> grade -> tm -> tm -> Prop :=    (* defn Par *)
  | Par_Refl : forall (P:econtext) (psi:grade) (a:tm),
@@ -1242,10 +1245,19 @@ Inductive PropWff : context -> grade -> constraint -> Prop :=    (* defn PropWff
      Typing G psi b A ->
       ( Typing G psi A a_Star )  ->
      PropWff G psi (Eq a b A)
- | E_WffImpl : forall (G:context) (psi:grade) (phi1 phi2:constraint),
+ | E_WffImpl : forall (L:vars) (G:context) (psi:grade) (phi1 phi2:constraint),
      PropWff G psi phi1 ->
-     PropWff G psi phi2 ->
+      ( forall c , c \notin  L  -> PropWff  (( c ~ ( psi , Co  phi1 )) ++  G )  psi  ( open_constraint_wrt_co phi2 (g_Var_f c) )  )  ->
      PropWff G psi (Impl phi1 phi2)
+with CTyping : context -> grade -> tm -> tm -> Prop :=    (* defn CTyping *)
+ | CE_Leq : forall (G:context) (psi:grade) (a A:tm),
+     Typing G psi a A ->
+      ( psi  <=   q_C  )  ->
+     CTyping G psi a A
+ | CE_Top : forall (G:context) (psi:grade) (a A:tm),
+     Typing  (meet_ctx_l   q_C    G )   q_C  a A ->
+      (  q_C   <  psi )  ->
+     CTyping G psi a A
 with Typing : context -> grade -> tm -> tm -> Prop :=    (* defn Typing *)
  | E_Star : forall (G:context) (psi:grade),
      Ctx G ->
@@ -1267,13 +1279,7 @@ with Typing : context -> grade -> tm -> tm -> Prop :=    (* defn Typing *)
      Typing G psi (a_UAbs psi0 a) (a_Pi psi0 A B)
  | E_App : forall (G:context) (psi:grade) (b:tm) (psi0:grade) (a B A:tm),
      Typing G psi b (a_Pi psi0 A B) ->
-     Typing G  (q_join  psi0   psi )  a A ->
-      ( psi0  <=   q_C  )  ->
-     Typing G psi (a_App b psi0 a)  (open_tm_wrt_tm  B   a ) 
- | E_AppIrrel : forall (G:context) (psi:grade) (b:tm) (psi0:grade) (a B A:tm),
-     Typing G psi b (a_Pi psi0 A B) ->
-     Typing  (meet_ctx_l   q_C    G )   q_C  a A ->
-      (  q_C   <  psi0 )  ->
+     CTyping G  (q_join  psi0   psi )  a A ->
      Typing G psi (a_App b psi0 a)  (open_tm_wrt_tm  B   a ) 
  | E_Conv : forall (G:context) (psi:grade) (a B A:tm),
      Typing G psi a A ->
@@ -1293,6 +1299,7 @@ with Typing : context -> grade -> tm -> tm -> Prop :=    (* defn Typing *)
      DefEq  (meet_ctx_l   q_C    G )   q_C  phi ->
      Typing G psi (a_CApp a1 g_Triv)  (open_tm_wrt_co  B1   g_Triv ) 
  | E_Fam : forall (G:context) (psi:grade) (F:tyfam) (A:tm) (psi0:grade) (a:tm),
+     Ctx G ->
       ( Typing  nil   q_C  A a_Star )  ->
       ( psi0  <=  psi )  ->
       ( psi  <=   q_C  )  ->
@@ -1311,9 +1318,9 @@ with Iso : context -> grade -> constraint -> constraint -> Prop :=    (* defn Is
  | E_CPiFst : forall (G:context) (psi:grade) (phi1 phi2:constraint) (psi0:grade) (B1 B2:tm),
      DefEq G psi (Eq (a_CPi psi0 phi1 B1) (a_CPi psi0 phi2 B2) a_Star) ->
      Iso G psi phi1 phi2
- | E_ImplCong : forall (G:context) (psi:grade) (phi1 phi3 phi2 phi4:constraint),
+ | E_ImplCong : forall (L:vars) (G:context) (psi:grade) (phi1 phi3 phi2 phi4:constraint),
      Iso G psi phi1 phi2 ->
-     Iso G psi phi3 phi4 ->
+      ( forall c , c \notin  L  -> Iso  (( c ~ (  q_Top  , Co  phi1 )) ++  G )  psi  ( open_constraint_wrt_co phi3 (g_Var_f c) )   ( open_constraint_wrt_co phi4 (g_Var_f c) )  )  ->
      Iso G psi (Impl phi1 phi3) (Impl phi2 phi4)
 with CDefEq : context -> grade -> grade -> tm -> tm -> tm -> Prop :=    (* defn CDefEq *)
  | CDefEq_Leq : forall (G:context) (psi psi0:grade) (a b A:tm),
@@ -1323,17 +1330,8 @@ with CDefEq : context -> grade -> grade -> tm -> tm -> tm -> Prop :=    (* defn 
  | CDefEq_Nleq : forall (G:context) (psi psi0:grade) (a b A:tm),
       not (  (  ( psi0  <=  psi )  )  )  ->
      Ctx G ->
-      ( psi0  <=   q_C  )  ->
-     Typing G  (q_join  psi0   psi )  a A ->
-     Typing G  (q_join  psi0   psi )  b A ->
-     CDefEq G psi psi0 a b A
- | CDefEq_NleqIrrel : forall (G:context) (psi psi0:grade) (a b A:tm),
-      not (  (  ( psi0  <=  psi )  )  )  ->
-     Ctx G ->
-      (  q_C   <  psi0 )  ->
-      ( psi  <=   q_C  )  ->
-     Typing  (meet_ctx_l   q_C    G )   q_C  a A ->
-     Typing  (meet_ctx_l   q_C    G )   q_C  b A ->
+     CTyping G  (q_join  psi0   psi )  a A ->
+     CTyping G  (q_join  psi0   psi )  b A ->
      CDefEq G psi psi0 a b A
 with DefEq : context -> grade -> constraint -> Prop :=    (* defn DefEq *)
  | E_Assn : forall (G:context) (psi:grade) (phi:constraint) (psi0:grade) (c:covar),
@@ -1365,7 +1363,7 @@ with DefEq : context -> grade -> constraint -> Prop :=    (* defn DefEq *)
       ( Typing G psi (a_Pi psi0 A2 B2) a_Star )  ->
      DefEq G psi (Eq  ( (a_Pi psi0 A1 B1) )   ( (a_Pi psi0 A2 B2) )  a_Star)
  | E_AbsCong : forall (L:vars) (G:context) (psi psi0:grade) (b1 b2 A1 B:tm),
-      ( forall x , x \notin  L  -> DefEq  (( x ~ (  (q_join  psi0   psi )  , Tm  A1 )) ++  G )  psi (Eq  ( open_tm_wrt_tm b1 (a_Var_f x) )   ( open_tm_wrt_tm b2 (a_Var_f x) )   ( open_tm_wrt_tm B (a_Var_f x) ) ) )  ->
+      ( forall x , x \notin  L  -> DefEq  (( x ~ ( psi0 , Tm  A1 )) ++  G )  psi (Eq  ( open_tm_wrt_tm b1 (a_Var_f x) )   ( open_tm_wrt_tm b2 (a_Var_f x) )   ( open_tm_wrt_tm B (a_Var_f x) ) ) )  ->
       ( Typing  (meet_ctx_l   q_C    G )   q_C  A1 a_Star )  ->
      DefEq G psi (Eq  ( (a_UAbs psi0 b1) )   ( (a_UAbs psi0 b2) )  (a_Pi psi0 A1 B))
  | E_AppCong : forall (G:context) (psi:grade) (a1:tm) (psi0:grade) (a2 b1 b2 B A:tm),
@@ -1418,12 +1416,12 @@ with DefEq : context -> grade -> constraint -> Prop :=    (* defn DefEq *)
      Typing G psi b (a_CPi  q_Top  phi B) ->
       ( forall c , c \notin  L  ->  (  ( open_tm_wrt_co a (g_Var_f c) )   =  (a_CApp b g_Triv) )  )  ->
      DefEq G psi (Eq (a_UCAbs  q_Top  a) b (a_CPi  q_Top  phi B))
- | E_ImplApp : forall (G:context) (psi:grade) (phi2 phi1:constraint),
+ | E_ImplApp : forall (L:vars) (G:context) (psi:grade) (phi2 phi1:constraint),
      DefEq G psi (Impl phi1 phi2) ->
      DefEq G psi phi1 ->
-     DefEq G psi phi2
- | E_ImplAbs : forall (G:context) (psi:grade) (phi1 phi2:constraint) (c:covar),
-     DefEq  (( c ~ ( psi , Co  phi1 )) ++  G )  psi phi2 ->
+      ( forall c , c \notin  L  -> DefEq G psi  ( open_constraint_wrt_co phi2 (g_Var_f c) )  ) 
+ | E_ImplAbs : forall (L:vars) (G:context) (psi:grade) (phi1 phi2:constraint),
+      ( forall c , c \notin  L  -> DefEq  (( c ~ ( psi , Co  phi1 )) ++  G )  psi  ( open_constraint_wrt_co phi2 (g_Var_f c) )  )  ->
       ( PropWff  (meet_ctx_l   q_C    G )   q_C  phi1 )  ->
      DefEq G psi (Impl phi1 phi2)
 with Ctx : context -> Prop :=    (* defn Ctx *)
@@ -1710,6 +1708,6 @@ Inductive head_reduction : context -> tm -> tm -> Prop :=    (* defn head_reduct
 
 
 (** infrastructure *)
-Hint Constructors CoercedValue Value value_type consistent erased_constraint erased_tm P_sub ctx_sub ECtx CoGrade CGrade Grade CoGEq CEq GEq CParProp CPar ParProp Par multipar multipar_prop Beta reduction_in_one reduction PropWff Typing Iso CDefEq DefEq Ctx Sig AnnPropWff AnnTyping AnnIso AnnDefCEq AnnDefEq AnnCtx AnnSig head_reduction lc_co lc_brs lc_tm lc_constraint lc_sort lc_sig_sort : core.
+Hint Constructors CoercedValue Value value_type consistent erased_constraint erased_tm P_sub ctx_sub ECtx CoGrade CGrade Grade CoGEq CEq GEq CParProp CPar ParProp Par multipar multipar_prop Beta reduction_in_one reduction PropWff CTyping Typing Iso CDefEq DefEq Ctx Sig AnnPropWff AnnTyping AnnIso AnnDefCEq AnnDefEq AnnCtx AnnSig head_reduction lc_co lc_brs lc_tm lc_constraint lc_sort lc_sig_sort : core.
 
 

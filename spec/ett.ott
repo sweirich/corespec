@@ -475,6 +475,9 @@ Definition labels : context -> econtext :=
 Definition subst_ctx (a : tm) (x:var) : context -> context :=
   map (fun '(g, A) => (g, (tm_subst_tm_sort a x A))).
 
+Definition subst_ctx_co (g : co) (c:covar) : context -> context :=
+  map (fun '(x, A) => (x, (co_subst_co_sort g c A))).
+
 Definition join_ctx_l (psi : grade) : context -> context :=    
   map (fun '(g, A) => (psi * g, A)).
 
@@ -1329,6 +1332,22 @@ G |= psi all c : phi1 . phi2 ok
 
 defn
 
+G |=> psi a : A :: :: CTyping :: 'CE_'
+{{ tex [[G]] \Vdash [[a]]:^{[[psi]]} [[A]]}}
+by
+
+G |= psi a : A
+psi <= CTime
+------------------- :: Leq
+G |=> psi a : A
+
+CTime /\ G |= CTime a : A
+CTime < psi
+------------------- :: Top
+G |=> psi a : A
+
+defn
+
 G |= psi a : A ::   :: Typing :: 'E_'
 {{ tex [[G]] \vDash [[a]]:^{[[psi]]} [[A]] }}
 {{ com typing }}
@@ -1361,16 +1380,16 @@ G |= psi \ psi0 x . a : all x:psi0 A -> B
 % Split into 2
 % define the syntax sugar
 G |= psi b : all x : psi0 A -> B
-G |= psi0 \/ psi a : A
-psi0 <= CTime
+G |=> psi0 \/ psi a : A
+% psi0 <= CTime
 ------------------------------------- :: App
 G |= psi b psi0 a : B { a / x }
 
-G |= psi b : all x : psi0 A -> B
-CTime /\ G |= CTime a : A
-CTime < psi0
-------------------------------------- :: AppIrrel
-G |= psi b psi0 a : B { a / x }
+% G |= psi b : all x : psi0 A -> B
+% CTime /\ G |= CTime a : A
+% CTime < psi0
+% ------------------------------------- :: AppIrrel
+% G |= psi b psi0 a : B { a / x }
 
 
 % YL: replaced by AppIrrel?
@@ -1443,6 +1462,10 @@ G |= psi all c:psi0 phi1. B1 ~ all c:psi0 phi2. B2 : TYPE
 G |= psi phi1 == phi2
 
 % top or psi?
+% rule of thumb: if phi is an equation and we are in a Cong rule
+% always use top
+% I think this can condition can be relaxed, but at the moment,
+% setting c to top is the only thing we can do
 G |= psi phi1 == phi2
 G , c : top phi1 |= psi phi3 == phi4
 -------------------------------------- :: ImplCong
@@ -1472,24 +1495,10 @@ by
 % psi <= CTime (implied)
    not (psi0 <= psi)
    |= G
-   psi0 <= CTime
-   G |= psi0 \/ psi a : A
-   G |= psi0 \/ psi b : A
+   G |=> psi0 \/ psi a : A
+   G |=> psi0 \/ psi b : A
   --------------------- :: Nleq 
    G |= psi psi0 a ~ b : A
-
-% psi0 not observable from psi
-% psi0 > CTime
-% psi <= CTime (needed explicitly)
-   not (psi0 <= psi)
-   |= G
-   CTime < psi0
-   psi <= CTime
-   CTime /\ G |= CTime a : A
-   CTime /\ G |= CTime b : A
-  --------------------- :: NleqIrrel
-   G |= psi psi0 a ~ b : A
-
 
 
 
@@ -1540,7 +1549,7 @@ G, x: psi A1 |= psi B1 ~ B2 : TYPE
 ---------------------------------------------------------- :: PiCong
 G |= psi (all x: psi0 A1 -> B1) ~ (all x: psi0 A2 -> B2) : TYPE
 
-TODO add ctyping
+% TODO add ctyping
 % TODO remove \/ psi?
 % TODO DDC : remove abs to use psi0
 G, x: psi0 A1 |= psi b1 ~ b2 : B
