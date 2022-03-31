@@ -144,16 +144,11 @@ Qed.
    This rewriting is specific for substitution lemmas.
 *)
 
-Definition f_snd {A B C:Type} (f : B -> C) : (A * B) -> (A * C) := fun '(x,y) => (x, f y).
-
-Definition map_snd {A B C: Type} (f : A -> B) :
-  list (atom * (C * A)) -> list (atom * (C * B)) := map (f_snd f).
-
 (* ((y ~ (psi, Tm (tm_subst_tm_tm a x A)) ++ map_snd (tm_subst_tm_sort a x) F) ++ G0) *)
 Ltac rewrite_subst_context :=
   match goal with
-  | [ |- context [([(?y, (?psi, ?C (_ _ _ ?T)))] ++ map_snd ?sub ?F ++ ?G0)] ] =>
-    rewrite_env (map_snd sub ((y ~ (psi, (C T))) ++ F) ++ G0)
+  | [ |- context [([(?y, (?psi, ?C (_ _ _ ?T)))] ++ map ?sub ?F ++ ?G0)] ] =>
+    rewrite_env (map sub ((y ~ (psi, (C T))) ++ F) ++ G0)
   end.
 
 (*
@@ -182,38 +177,44 @@ Ltac eapply_E_subst :=
 (* TODO define rewr_list rules *)
 Lemma tm_substitution_mutual :
   (forall G0 psi b B (H : Typing G0 psi b B),
-      forall G a psi0 A, Typing G psi0 a A ->
+      forall G a psi0 A, CTyping G psi0 a A ->
                forall F x, G0 = (F ++ (x ~ (psi0, Tm A)) ++ G) ->
-                      Typing (map_snd (tm_subst_tm_sort a x) F ++ G) psi
+                      Typing (subst_ctx a x F ++ G) psi
                              (tm_subst_tm_tm a x b)
                              (tm_subst_tm_tm a x B)) /\
     (forall G0 psi phi (H : PropWff G0 psi phi),
-        forall G a psi0 A, Typing G psi0 a A ->
+        forall G a psi0 A, CTyping G psi0 a A ->
                  forall F x, G0 = (F ++ (x ~ (psi0, Tm A)) ++ G) ->
-                        PropWff (map_snd (tm_subst_tm_sort a x) F ++ G) psi
+                        PropWff (subst_ctx a x F ++ G) psi
                                 (tm_subst_tm_constraint a x phi)) /\
     (forall G0 psi p1 p2 (H : Iso G0 psi p1 p2),
-        forall G a psi0 A, Typing G psi0 a A ->
+        forall G a psi0 A, CTyping G psi0 a A ->
                  forall F x, G0 = (F ++ (x ~ (psi0, Tm A)) ++ G) ->
-                Iso (map_snd (tm_subst_tm_sort a x) F ++ G) psi
+                Iso (subst_ctx a x F ++ G) psi
                     (tm_subst_tm_constraint a x p1)
                     (tm_subst_tm_constraint a x p2)) /\
     (forall G0 psi phi (H : DefEq G0 psi phi),
-       forall G a psi0 A0, Typing G psi0 a A0 ->
+       forall G a psi0 A0, CTyping G psi0 a A0 ->
                  forall F x, G0 = (F ++ (x ~ (psi0, Tm A0)) ++ G) ->
-                        DefEq (map_snd (tm_subst_tm_sort a x) F ++ G) psi
+                        DefEq (subst_ctx a x F ++ G) psi
                               (tm_subst_tm_constraint a x phi)) /\
     (forall G0 (H : Ctx G0),
-       forall G a psi0 A, Typing G psi0 a A ->
+       forall G a psi0 A, CTyping G psi0 a A ->
                  forall F x, G0 = (F ++ (x ~ (psi0, Tm A)) ++ G) ->
-                        Ctx (map_snd (tm_subst_tm_sort a x) F ++ G)) /\
+                        Ctx (subst_ctx a x F ++ G)) /\
     (forall G0 psi psi0 a b T (H : CDefEq G0 psi psi0 a b T),
-       forall G a0 psi0 A, Typing G psi0 a0 A ->
+       forall G a0 psi0 A, CTyping G psi0 a0 A ->
                  forall F x, G0 = (F ++ (x ~ (psi0, Tm A)) ++ G) ->
-                        CDefEq (map_snd (tm_subst_tm_sort a0 x) F ++ G) psi psi0
+                        CDefEq (subst_ctx a0 x F ++ G) psi psi0
                                (tm_subst_tm_tm a0 x a)
                                (tm_subst_tm_tm a0 x b)
-                               (tm_subst_tm_tm a0 x T)).
+                               (tm_subst_tm_tm a0 x T)) /\
+   (forall G0 psi b B (H : CTyping G0 psi b B),
+      forall G a psi0 A, CTyping G psi0 a A ->
+               forall F x, G0 = (F ++ (x ~ (psi0, Tm A)) ++ G) ->
+                      CTyping (subst_ctx a x F ++ G) psi
+                             (tm_subst_tm_tm a x b)
+                             (tm_subst_tm_tm a x B)).
 Proof.
   ext_induction CON;
     intros; subst; simpl.

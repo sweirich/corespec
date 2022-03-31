@@ -373,7 +373,7 @@ Ltac ext_induction CON :=
       pose CON :=  E_Pi         |
       pose CON :=  E_Abs        |
       pose CON :=  E_App        |
-      pose CON :=  E_AppIrrel   |
+      (* pose CON :=  E_AppIrrel   | *)
       pose CON :=  E_Conv       |
       pose CON :=  E_CPi        |
       pose CON :=  E_CAbs       |
@@ -418,7 +418,10 @@ Ltac ext_induction CON :=
       pose CON :=  E_ConsCo     | 
       pose CON :=  CDefEq_Leq   |
       pose CON :=  CDefEq_Nleq  |
-      pose CON :=  CDefEq_NleqIrrel 
+      (* pose CON :=  CDefEq_NleqIrrel  *)
+
+      pose CON :=  CE_Leq       |
+      pose CON :=  CE_Top
      ].
 
 
