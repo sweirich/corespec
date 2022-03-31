@@ -162,6 +162,10 @@ Lemma meet_ctx_l_meet_ctx_l : forall W q,  meet_ctx_l q (meet_ctx_l q W) = meet_
 Proof. sfirstorder use:meet_ctx_l_meet_ctx_l2, meet_idem. Qed.
 Lemma meet_ctx_l_subst_ctx : forall W q a x, meet_ctx_l q (subst_ctx a x W) = subst_ctx a x (meet_ctx_l q W).
 Proof. induction W; simpl; eauto. destruct a. destruct p. intros. f_equal. eauto. Qed.
+
+Lemma meet_ctx_l_subst_ctx_co : forall W q g c, meet_ctx_l q (subst_ctx_co g c W) = subst_ctx_co g c (meet_ctx_l q W).
+Proof. induction W; hauto q:on inv:sort. Qed.
+
 Lemma meet_ctx_l_uniq : forall W q, uniq W -> uniq (meet_ctx_l q W). intros. unfold meet_ctx_l. solve_uniq. Qed.
 
 Lemma meet_ctx_l_ctx_sub : forall W q, uniq W ->  ctx_sub (meet_ctx_l q W) W.
@@ -178,9 +182,10 @@ eapply leq_meet_r. unfold meet_ctx_l.  auto.
 
 Qed.
 
+
 Hint Rewrite meet_ctx_l_meet_ctx_l : rewr_list.
 Hint Rewrite meet_ctx_l_one : rewr_list.
 Hint Rewrite meet_ctx_l_app : rewr_list.
 Hint Rewrite meet_ctx_l_subst_ctx : rewr_list.
-
+Hint Rewrite meet_ctx_l_subst_ctx_co : rewr_list.
 Hint Resolve meet_ctx_l_uniq : core.
