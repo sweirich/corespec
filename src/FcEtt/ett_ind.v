@@ -55,7 +55,9 @@ Hint Rewrite co_subst_co_co_open_co_wrt_co_var : subst_open_var.
 Hint Rewrite co_subst_co_co_open_co_wrt_tm_var : subst_open_var.
 Hint Rewrite co_subst_co_tm_open_tm_wrt_co_var : subst_open_var.
 Hint Rewrite co_subst_co_tm_open_tm_wrt_tm_var : subst_open_var.
+Hint Rewrite tm_subst_tm_constraint_open_constraint_wrt_co_var : subst_open_var.
 
+Hint Rewrite <- tm_subst_tm_constraint_open_constraint_wrt_co_var : open_subst_var.
 Hint Rewrite <- tm_subst_tm_tm_open_tm_wrt_tm_var : open_subst_var.
 Hint Rewrite <- co_subst_co_tm_open_tm_wrt_tm_var : open_subst_var.
 Hint Rewrite <- tm_subst_tm_tm_open_tm_wrt_co_var : open_subst_var.

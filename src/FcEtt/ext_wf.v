@@ -218,6 +218,12 @@ Proof.
   tauto.
 Qed.
 
+Lemma CTyping_lc1 : forall G0 psi a A, CTyping G0 psi a A -> lc_tm a.
+Admitted.
+
+Lemma CTyping_lc2 : forall G0 psi a A, CTyping G0 psi a A -> lc_tm A.
+Admitted.
+
 Lemma Typing_lc1 : forall G0 psi a A, Typing G0 psi a A -> lc_tm a.
 Proof.
   intros. apply (first lc_mutual) in H. destruct H. auto.
@@ -260,7 +266,7 @@ Proof.
   sauto lq: on use: CDefEq_lc.
 Qed.
 
-Hint Resolve Typing_lc1 Typing_lc2 Iso_lc1 Iso_lc2
+Hint Resolve CTyping_lc1 CTyping_lc2 Typing_lc1 Typing_lc2 Iso_lc1 Iso_lc2
      DefEq_lc1 DefEq_lc2 DefEq_lc3 Ctx_lc CDefEq_lc1 CDefEq_lc2 CDefEq_lc3 : lc.
 
 Lemma Toplevel_lc : forall c psi s, binds c (psi, s) toplevel -> lc_sig_sort s.

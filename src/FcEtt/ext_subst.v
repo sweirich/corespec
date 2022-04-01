@@ -145,10 +145,11 @@ Qed.
 *)
 
 (* ((y ~ (psi, Tm (tm_subst_tm_tm a x A)) ++ map_snd (tm_subst_tm_sort a x) F) ++ G0) *)
+  (* (y ~ (psi, Tm (tm_subst_tm_tm a x A)) ++ subst_ctx a x F ++ G0) *)
 Ltac rewrite_subst_context :=
   match goal with
-  | [ |- context [([(?y, (?psi, ?C (_ _ _ ?T)))] ++ map ?sub ?F ++ ?G0)] ] =>
-    rewrite_env (map sub ((y ~ (psi, (C T))) ++ F) ++ G0)
+  | [ |- context [([(?y, (?psi, ?C (_ _ _ ?T)))] ++ subst_ctx ?a ?x ?F ++ ?G0)] ] =>
+    rewrite_env (subst_ctx a x ((y ~ (psi, (C T))) ++ F) ++ G0)
   end.
 
 (*
@@ -177,18 +178,18 @@ Ltac eapply_E_subst :=
 (* TODO define rewr_list rules *)
 Lemma tm_substitution_mutual :
   (forall G0 psi b B (H : Typing G0 psi b B),
-      forall G a psi0 A, CTyping G psi0 a A ->
+      forall G a psi0 A (H0 : CTyping G psi0 a A),
                forall F x, G0 = (F ++ (x ~ (psi0, Tm A)) ++ G) ->
                       Typing (subst_ctx a x F ++ G) psi
                              (tm_subst_tm_tm a x b)
                              (tm_subst_tm_tm a x B)) /\
     (forall G0 psi phi (H : PropWff G0 psi phi),
-        forall G a psi0 A, CTyping G psi0 a A ->
+        forall G a psi0 A (H0 : CTyping G psi0 a A),
                  forall F x, G0 = (F ++ (x ~ (psi0, Tm A)) ++ G) ->
                         PropWff (subst_ctx a x F ++ G) psi
                                 (tm_subst_tm_constraint a x phi)) /\
     (forall G0 psi p1 p2 (H : Iso G0 psi p1 p2),
-        forall G a psi0 A, CTyping G psi0 a A ->
+        forall G a psi0 A (H0 : CTyping G psi0 a A),
                  forall F x, G0 = (F ++ (x ~ (psi0, Tm A)) ++ G) ->
                 Iso (subst_ctx a x F ++ G) psi
                     (tm_subst_tm_constraint a x p1)
@@ -199,18 +200,18 @@ Lemma tm_substitution_mutual :
                         DefEq (subst_ctx a x F ++ G) psi
                               (tm_subst_tm_constraint a x phi)) /\
     (forall G0 (H : Ctx G0),
-       forall G a psi0 A, CTyping G psi0 a A ->
+       forall G a psi0 A (H0 : CTyping G psi0 a A),
                  forall F x, G0 = (F ++ (x ~ (psi0, Tm A)) ++ G) ->
                         Ctx (subst_ctx a x F ++ G)) /\
     (forall G0 psi psi0 a b T (H : CDefEq G0 psi psi0 a b T),
-       forall G a0 psi0 A, CTyping G psi0 a0 A ->
+       forall G a0 psi0 A (H0 : CTyping G psi0 a0 A),
                  forall F x, G0 = (F ++ (x ~ (psi0, Tm A)) ++ G) ->
                         CDefEq (subst_ctx a0 x F ++ G) psi psi0
                                (tm_subst_tm_tm a0 x a)
                                (tm_subst_tm_tm a0 x b)
                                (tm_subst_tm_tm a0 x T)) /\
    (forall G0 psi b B (H : CTyping G0 psi b B),
-      forall G a psi0 A, CTyping G psi0 a A ->
+      forall G a psi0 A (H0 : CTyping G psi0 a A),
                forall F x, G0 = (F ++ (x ~ (psi0, Tm A)) ++ G) ->
                       CTyping (subst_ctx a x F ++ G) psi
                              (tm_subst_tm_tm a x b)
@@ -220,43 +221,92 @@ Proof.
     intros; subst; simpl.
   (* 44 goals *)
   all : try solve [eapply CON; eauto 2].
-  (* 33 goals *)
-  (* all: try first [ pick fresh y and apply CON; autorewrite with subst_open_var; eauto 2 with lc; *)
-  (*                  try rewrite_subst_context; eauto 3 | *)
-  (*                  autorewrite with subst_open; eauto 2 with lc ].   *)
+  (* 35 goals *)
   - destruct (x == x0).
     + subst.
       have [HA HB]: Tm A = Tm A0 /\ psi0 = psi1 by hauto l:on use:binds_mid_eq.
       inversion HA; inversion HB. subst.
-      assert (S : tm_subst_tm_tm a x0 A0 = A0) by sfirstorder use:tm_subst_fresh_1,Ctx_strengthen.
-      rewrite S.
-      rewrite -[_++_]app_nil_l.
-      hauto lq: on rew: off use:Typing_weakening, Typing_subsumption.
-    + apply binds_remove_mid in b; auto.
+      inversion H0; subst; auto.
+      * have S : tm_subst_tm_tm a x0 A0 = A0
+          by sfirstorder use:tm_subst_fresh_1,Ctx_strengthen.
+        hauto l: on l: on q: on use:Typing_weakening_front, Typing_subsumption.
+      * exfalso.
+        sfirstorder use:Typing_leq_C, q_leb_trans, q_leb_antisym.
+    + eapply E_Var; eauto.
+      apply binds_remove_mid in b; auto.
       destruct (binds_app_1 _ _ _ _ _ b).
-      (* after x *)
-      eapply E_Var; eauto.
-      eapply binds_app_2.
-      assert (EQ : tm_subst_tm_sort a x0 (Tm A) = Tm (tm_subst_tm_tm a x0 A)). auto.
-      rewrite <- EQ.
-      rewrite /map_snd.
-      replace (psi0, tm_subst_tm_sort a x0 (Tm A)) with (f_snd (tm_subst_tm_sort a x0) (psi0, Tm A)); auto.
-      eapply E_Var; eauto.
-      apply Ctx_strengthen in c.
-      hauto b: on use: Ctx_strengthen, Typing_leq_C, tm_subst_fresh_1.
-
+      * eapply binds_map with (f := fun '(q, A) => (q, tm_subst_tm_sort a x0 A)) in H1.
+        eapply binds_app_2; auto.
+      * eapply binds_app_3.
+        apply Ctx_strengthen in c.
+        hauto b: on use: Ctx_strengthen, Typing_leq_C, tm_subst_fresh_1.
   (* Pi *)
-  - pick fresh y and apply CON; eauto.
-    autorewrite with subst_open_var; eauto 2 with lc.
-    rewrite_subst_context; qauto l:on.
+  - pick fresh y and apply CON; eauto;
+    autorewrite with subst_open_var; eauto 2 with lc;
+    rewrite_subst_context; qauto depth:1 l:on.
   (* abs *)
   - pick fresh y and apply CON; eauto.
     autorewrite with subst_open_var; eauto 2 with lc.
     rewrite_subst_context; qauto l:on.
     simpl_env.
+    apply : H0.
+    sfirstorder use:CTyping_meet_ctx_l simp:simpl_env.
+    simpl_env.
+    done.
+  (* app *)
+  - inversion c; subst;
+    autorewrite with subst_open; hauto q:on db:lc.
+  (* Conv *)
+  - eapply CON with (psi:=psi); simpl_env; eauto 3.
+    + eapply H0; eauto using CTyping_meet_ctx_l.
+      simpl_env.
+      done.
+    + eapply H1; eauto using CTyping_meet_ctx_l.
+      simpl_env.
+      done.
+  (* E_CPi *)
+  - pick fresh y and apply CON; eauto;
+    autorewrite with subst_open_var; eauto 2 with lc;
+    rewrite_subst_context; qauto l:on.
+  (* CAbs *)
+  - pick fresh y and apply CON; eauto.
+    autorewrite with subst_open_var; eauto 2 with lc.
+    rewrite_subst_context; qauto l:on.
+    simpl_env.
+    apply : H0.
+    sfirstorder use:CTyping_meet_ctx_l simp:simpl_env.
+    simpl_env.
+    done.
+  (* CApp *)
+  - autorewrite with subst_open; eauto 2 with lc.
+    eapply CON with (phi := tm_subst_tm_constraint a x phi).
+    apply : H; eauto 3.
+    simpl_env.
+    hauto l: on use: CTyping_meet_ctx_l, map_app.
+  (* Fam *)
+  - (* eapply CON; eauto 3. *)
+    have h0: Typing nil psi0 a A  by eauto using toplevel_closed.
+    eapply E_Fam with (a:= tm_subst_tm_tm a0 x a); eauto.
+    apply typing_meet_ctx_l_C in h0.
+    simpl in h0.
+    erewrite (tm_subst_fresh_2 _ t0); eauto.
+    erewrite (tm_subst_fresh_1 _ h0); eauto.
+    erewrite (tm_subst_fresh_2 _ h0); auto.
+    hauto l:on use:typing_meet_ctx_l_C.
+  (* ImplWff *)
+  - pick fresh y and apply CON; eauto.
+    autorewrite with subst_open_var; eauto 2 with lc;
+      rewrite_subst_context; qauto l:on.
+  - apply CON; sfirstorder depth:1.
+  - eapply CON; sfirstorder depth:1.
+  - pick fresh y and apply CON; eauto 2.
+    autorewrite with subst_open_var; eauto 2 with lc;
+      rewrite_subst_context; qauto l:on.
+  - 
 
+    
 
-  Focus 22. destruct rho. Unfocus.
+  focus 22. destruct rho. Unfocus.
   all: try first [ E_pick_fresh y; autorewrite with subst_open_var; eauto 2 with lc;
                    try rewrite_subst_context; eauto 3 |
                    autorewrite with subst_open; eauto 2 with lc ].

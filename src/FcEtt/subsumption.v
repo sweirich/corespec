@@ -17,6 +17,14 @@ Proof.
   scrush use: Typing_Ctx, meet_ctx_l_ctx_sub.
 Qed.
 
+Lemma CTyping_meet_ctx_l : forall G psi b B q,
+    CTyping G psi b B ->
+    CTyping (meet_ctx_l q G) (q_C + psi) b B.
+Proof.
+  scrush use: CTyping_Ctx, meet_ctx_l_ctx_sub.
+Qed.
+
+
 Lemma PropWff_meet_ctx_l : forall G psi phi q,
     PropWff G psi phi ->
     PropWff (meet_ctx_l q G) psi phi.
