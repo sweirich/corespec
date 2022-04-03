@@ -13,6 +13,7 @@ Ltac fresh_apply_Grade x :=
       | [ |- Grade ?P ?psi (a_CPi ?psi2 ?a ?b) ] => pick fresh x and apply G_CPi
       | [ |- Grade ?P ?psi (a_UAbs ?psi2 ?b) ] => pick fresh x and apply G_Abs
       | [ |- Grade ?P ?psi (a_UCAbs ?psi2 ?b) ] => pick fresh x and apply G_CAbs
+      | [ |- CoGrade ?P ?psi (Impl ?phi1 ?phi2)] => pick fresh x and apply CoG_Impl
     end.
 
 Ltac fresh_apply_GEq x := 

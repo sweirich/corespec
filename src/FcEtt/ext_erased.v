@@ -47,6 +47,11 @@ Ltac erased_pick_fresh x :=
              | a_UCAbs _ _   => erased_a_CAbs
              end
     in pick fresh x and apply v
+  | [ |- erased_constraint ?phi ] =>
+    let v := match phi with
+             | Impl _ _ => erased_c_Impl
+             end
+    in pick fresh x and apply v
   end.
 
 Ltac erased_inversion :=

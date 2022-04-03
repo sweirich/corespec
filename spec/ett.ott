@@ -863,6 +863,7 @@ by
   --------------------- :: Leq 
    P |= psi psi0 a
 
+TODO: add erased_tm a?
    not (psi0 <= psi)
    |= P
   --------------------- :: Nleq 
@@ -1137,6 +1138,7 @@ P |- psi all c: psi0 phi. a => all c: psi0 phi'. a'
 
 % NOTE: toplevel is assumed to be locally closed
 psi0 <= psi
+[ empty |= CTime A  ]
 F ~ a : psi0 A in toplevel
 |= P
 -------------------------------- :: Axiom

@@ -29,74 +29,71 @@ Qed.
 
 Lemma Grade_uniq : forall P psi a, Grade P psi a -> uniq P.
 Proof. intros; induction H; eauto;
-       pick fresh x; repeat spec x;
-       match goal with [ H2 : uniq ([_] ++ _) |- _ ] => inversion H2; auto end.
+         pick fresh y; repeat spec y; sauto lq:on use:ECtx_uniq.
 Qed.
 
-Lemma CEq_GEq_CoGEq_uniq : 
+Lemma Grade_ECtx : forall P psi a, Grade P psi a -> ECtx P.
+Proof. intros; induction H; eauto;
+         pick fresh y; repeat spec y; sauto lq:on.
+Qed.
+
+Lemma CEq_GEq_CoGEq_ECtx : 
   (forall P psi psi0 a b,
-  CEq P psi psi0 a b -> uniq P) /\
+  CEq P psi psi0 a b -> ECtx P) /\
   (forall P psi a b,
-  GEq P psi a b -> uniq P) /\
+  GEq P psi a b -> ECtx P) /\
   (forall P psi phi1 phi2,
-  CoGEq P psi phi1 phi2 -> uniq P).
+  CoGEq P psi phi1 phi2 -> ECtx P).
 Proof. 
   eapply CEq_GEq_mutual.
   all: intros; eauto.
-  all: try (pick fresh x; spec x; solve_uniq).
+  all: try (pick fresh x; spec x; hauto lq:on inv:ECtx).
 Qed.
 
-Lemma CEq_uniq : forall P phi phi0 a b,
-  CEq P phi phi0 a b -> uniq P.
-Proof. eapply CEq_GEq_CoGEq_uniq. Qed.
-Lemma GEq_uniq :
+Lemma CEq_ECtx : forall P phi phi0 a b,
+  CEq P phi phi0 a b -> ECtx P.
+Proof. eapply CEq_GEq_CoGEq_ECtx. Qed.
+Lemma GEq_ECtx :
   (forall P phi a b,
-  GEq P phi a b -> uniq P).
-Proof. eapply CEq_GEq_CoGEq_uniq. Qed.
-Lemma CoGEq_uniq :
+  GEq P phi a b -> ECtx P).
+Proof. eapply CEq_GEq_CoGEq_ECtx. Qed.
+Lemma CoGEq_ECtx :
   (forall P psi phi1 phi2,
-  CoGEq P psi phi1 phi2 -> uniq P).
-Proof. eapply CEq_GEq_CoGEq_uniq. Qed.
+  CoGEq P psi phi1 phi2 -> ECtx P).
+Proof. eapply CEq_GEq_CoGEq_ECtx. Qed.
 
 
-Lemma Par_uniq_mutual : 
-  (forall P psi a b, Par P psi a b -> uniq P) /\ 
-    (forall P psi phi1 phi2, ParProp P psi phi1 phi2 -> uniq P) /\
-  (forall P psi psi0 a b, CPar P psi psi0 a b -> uniq P) /\ 
-  (forall P psi psi0 phi1 phi2, CParProp P psi psi0 phi1 phi2 -> uniq P).
-Proof. apply Par_tm_constraint_mutual; intros; eauto.
-       eapply Grade_uniq; eauto. 
-       pick fresh x; spec x; solve_uniq.
-
-       eapply Grade_uniq; eauto. 
-       pick fresh x; spec x; solve_uniq.
-
-       Unshelve.
-       auto.
+Lemma Par_ECtx_mutual : 
+  (forall P psi a b, Par P psi a b -> ECtx P) /\ 
+    (forall P psi phi1 phi2, ParProp P psi phi1 phi2 -> ECtx P) /\
+  (forall P psi psi0 a b, CPar P psi psi0 a b -> ECtx P) /\ 
+  (forall P psi psi0 phi1 phi2, CParProp P psi psi0 phi1 phi2 -> ECtx P).
+Proof. apply Par_tm_constraint_mutual; intros; eauto using Grade_ECtx.
+       all : solve [pick fresh x; spec x; hauto lq:on inv:ECtx].
 Qed.
 
-Lemma Par_uniq : forall P psi a b, Par P psi a b -> uniq P.
+Lemma Par_ECtx : forall P psi a b, Par P psi a b -> ECtx P.
 Proof.
-  sauto use : Par_uniq_mutual.
+  sfirstorder use : Par_ECtx_mutual.
 Qed.
 
-Lemma CPar_uniq : (forall P psi phi1 phi2, ParProp P psi phi1 phi2 -> uniq P).
+Lemma CPar_ECtx : (forall P psi phi1 phi2, ParProp P psi phi1 phi2 -> ECtx P).
 Proof.
-  sauto use : Par_uniq_mutual.
+  sfirstorder use : Par_ECtx_mutual.
 Qed.
 
-Lemma ParProp_uniq : (forall P psi psi0 a b, CPar P psi psi0 a b -> uniq P).
+Lemma ParProp_ECtx : (forall P psi psi0 a b, CPar P psi psi0 a b -> ECtx P).
 Proof.
-  sauto use : Par_uniq_mutual.
+  sfirstorder use : Par_ECtx_mutual.
 Qed.
 
 
-Lemma CParProp_uniq : (forall P psi psi0 phi1 phi2, CParProp P psi psi0 phi1 phi2 -> uniq P).
+Lemma CParProp_ECtx : (forall P psi psi0 phi1 phi2, CParProp P psi psi0 phi1 phi2 -> ECtx P).
 Proof.
-  sauto use : Par_uniq_mutual.
+  sfirstorder use : Par_ECtx_mutual.
 Qed.
 
-Lemma MultiPar_uniq : forall P psi a b, multipar P psi a b -> uniq P.
+Lemma MultiPar_ECtx : forall P psi a b, multipar P psi a b -> ECtx P.
 Proof. 
-  hauto lq: on use: Par_uniq inv: multipar.
+  hauto lq: on use: Par_ECtx inv: multipar.
 Qed.
