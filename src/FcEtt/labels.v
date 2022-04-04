@@ -106,6 +106,10 @@ Proof. intros. induction W. simpl. auto.
        destruct a. destruct p. simpl. f_equal. auto.
 Qed.
 
+Lemma dom_subst_ctx : forall {W} a x, dom (subst_ctx a x W) = dom W.
+Proof.
+  elim; by [sfirstorder |hauto lq:on].
+Qed.
 
 Lemma ctx_sub_meet_ctx_l :  forall {G1 G2},  ctx_sub G1 G2 -> ctx_sub (meet_ctx_l q_C G1) (meet_ctx_l q_C G2).
 Proof.

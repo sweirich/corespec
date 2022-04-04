@@ -186,6 +186,11 @@ Proof.
   hauto l: on use: ctx_wff_narrow_mutual.
 Qed.
 
+Lemma DefEq_narrowing : forall G0 psi phi,   DefEq G0 psi phi -> forall G1, ctx_sub G1 G0 -> DefEq G1 psi phi.
+Proof.
+  hauto l: on use: ctx_wff_narrow_mutual.
+Qed.
+
 (* TODO: put these hints in a database? *)
 Hint Resolve Typing_Ctx PropWff_Ctx Iso_Ctx DefEq_Ctx Ctx_Ctx CDefEq_Ctx.
 

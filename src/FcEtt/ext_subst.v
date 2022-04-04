@@ -172,10 +172,6 @@ Ltac eapply_E_subst :=
           eapply E_PiSnd    |
           eapply E_CPiSnd].
 
-
-(* TODO switch to CTyping G psi psi0 a A*)
-(* TODO define subst_ctx *)
-(* TODO define rewr_list rules *)
 Lemma tm_substitution_mutual :
   (forall G0 psi b B (H : Typing G0 psi b B),
       forall G a psi0 A (H0 : CTyping G psi0 a A),
@@ -371,129 +367,87 @@ Proof.
     hauto l: on use: CTyping_meet_ctx_l, map_app.
   (* CPiSnd *)
   - autorewrite with subst_open; eauto 2 with lc.
-    
-      
-      
-
-    
-
-  focus 22. destruct rho. Unfocus.
-  all: try first [ E_pick_fresh y; autorewrite with subst_open_var; eauto 2 with lc;
-                   try rewrite_subst_context; eauto 3 |
-                   autorewrite with subst_open; eauto 2 with lc ].
-  all: try solve [econstructor; simpl in *; eauto 2].
-  all: try eapply_E_subst.
-  all: try solve [eapply subst_rho; eauto 2].
-  all: try solve [eapply_first_hyp; eauto].
-  all: try solve [eapply DefEq_weaken_available; eauto].
-  - (* conversion *)
-    econstructor; try eapply DefEq_weaken_available; eauto.
-(*  - have h0: Typing nil A a_Star by eauto using toplevel_closed.
-    eapply tm_subst_fresh_2 with (x:=x )in h0; eauto.
-    erewrite h0. auto.
-  - have h0: Typing nil A a_Star.  eapply toplevel_to_const; eauto.
-    erewrite tm_subst_fresh_2; eauto. *)
-  -
-    have h0: Typing nil a A by eauto using toplevel_closed.
-    eapply E_Fam with (a:= tm_subst_tm_tm a0 x a); eauto.
-    erewrite (tm_subst_fresh_2 _ h0); auto.
-    erewrite (tm_subst_fresh_1 _ h0); auto.
-    erewrite (tm_subst_fresh_1 _ h0); auto.
-  - destruct (c == x).
-    + subst.
-      apply binds_mid_eq in b0; auto; try done.
-    + apply binds_remove_mid in b0; auto.
-      destruct (binds_app_1 _ _ _ _ _ b0).
-      * apply (E_Assn _ D _ _ _ c); auto.
-           by apply (H _ _ A0).
-           have:  binds c (Co (Eq (tm_subst_tm_tm a0 x a) (tm_subst_tm_tm a0 x b) (tm_subst_tm_tm a0 x A))) (map (tm_subst_tm_sort a0 x) F); auto.
-           apply bind_map_tm_subst_tm_sort; auto.
-       * apply (E_Assn _ D _ _ _ c); auto.
-           by apply (H _ _ A0).
-         have: Ctx ([(x, Tm A0)] ++ G0) by apply (Ctx_strengthen _ F); auto.
-         inversion 1; subst.
-         have: PropWff G0 (Eq a b A) by apply (binds_to_PropWff _ _ _ c); auto.
-         inversion 1; subst.
-         repeat rewrite tm_subst_tm_tm_fresh_eq; auto.
-         -- move: (Typing_context_fv H10) => ?. split_hyp. auto.
-         -- move: (Typing_context_fv H10) => ?. split_hyp. auto.
-         -- move: (Typing_context_fv H9) => ?. split_hyp. auto.
-  - eapply E_Beta; eauto.
-    eapply Beta_tm_subst; eauto with lc.
-  - eapply E_EqConv; eauto 2.
-    eapply DefEq_weaken_available; eauto.
-  - have h0: (y <> x) by eauto.
-    rewrite e; eauto.
-    simpl; destruct eq_dec; try done.
-  (* Left/Right.  Do not remove
-  - eapply E_LeftRel with (b := tm_subst_tm_tm a0 x b)
-                          (b':= tm_subst_tm_tm a0 x b'); eauto 2. eapply Path_tm_subst_tm_tm; eauto 2 with lc.
-    eapply Path_tm_subst_tm_tm; eauto 2 with lc.
-    autorewrite with open_subst; eauto 2 with lc.
-    autorewrite with open_subst; eauto 2 with lc.
-    eapply DefEq_weaken_available; eauto 2.
-
-  - eapply E_LeftIrrel with (b := tm_subst_tm_tm a0 x b)
-                          (b':= tm_subst_tm_tm a0 x b'); eauto 2. eapply Path_tm_subst_tm_tm; eauto 2 with lc.
-    eapply Path_tm_subst_tm_tm; eauto 2 with lc.
-    autorewrite with open_subst; eauto 2 with lc.
-    eapply H3; eauto.
-    autorewrite with open_subst; eauto 2 with lc.
-    eapply DefEq_weaken_available; eauto 2.
-  - eapply E_Right with (a := tm_subst_tm_tm a0 x a)
-                        (a':= tm_subst_tm_tm a0 x a'); eauto 2.
-    eapply Path_tm_subst_tm_tm; eauto 2 with lc.
-    eapply Path_tm_subst_tm_tm; eauto 2 with lc.
-    eapply H; eauto 2.
-    eapply H1; eauto 2.
-    autorewrite with open_subst; eauto 2 with lc.
-    autorewrite with open_subst; eauto 2 with lc.
-    eapply DefEq_weaken_available; eauto 2.
-  - eapply E_CLeft; eauto 2.
-    eapply Path_tm_subst_tm_tm; eauto 2 with lc.
-    eapply Path_tm_subst_tm_tm; eauto 2 with lc.
-    eapply H; eauto 2.
-    eapply H0; eauto 2.
-    eapply DefEq_weaken_available; eauto 2.
-    replace g_Triv with (tm_subst_tm_co a0 x g_Triv).
-    autorewrite with open_subst; eauto 2 with lc.
-    auto.
-
-  *)
-  - have h0: (y <> x) by eauto.
-    rewrite e; eauto.
-  - have h0: (y <> x) by eauto.
-    rewrite e; eauto.
-  - destruct  F; try done.
-  - induction F; try done.
-    simpl; simpl in H2.
-    inversion H2; subst; auto.
-    destruct a0.
-    destruct s.
-    + simpl.
-      apply E_ConsTm; auto.
-      * simpl in H2.
-        inversion H2.
-        apply (H _ _ _ H1); auto.
-      * simpl in H0.
-        inversion H2; subst; clear H2.
-        apply (H0 _ _ _ H1); auto.
-      * inversion H2; subst; clear H2; auto.
-    + inversion H2.
-  - inversion H2; subst; clear H2.
-    induction F; try done.
-    destruct a0.
-    destruct s.
-    + simpl; subst.
-      inversion H4.
-    + simpl; subst.
-      apply E_ConsCo; auto.
-      * apply (H _ _ _ H1); auto.
-         inversion H4; auto.
-      * inversion H4; subst; clear H4.
-        apply (H0 _ _ A); auto.
-      * inversion H4; subst; clear H4.
-        auto.
+    apply /CON.
+    + sfirstorder.
+    + simpl_env.
+      eapply H0.
+      sfirstorder use : CTyping_meet_ctx_l.
+      by simpl_env.
+    + simpl_env.
+      apply /H1.
+      apply /CTyping_meet_ctx_l; eauto.
+      by simpl_env.
+  (* EqConv *)
+  - apply /CON; first by sfirstorder.
+    simpl_env.
+    eapply H0.
+    sfirstorder use : CTyping_meet_ctx_l.
+    by simpl_env.
+  (* EtaRel *)
+  - pick fresh y and apply CON.
+    sfirstorder.
+    autorewrite with subst_open_var; eauto 2 using CTyping_lc1.
+    rewrite e; auto.
+    move => /=.
+    case (y == x) => // h0.
+    exfalso.
+    fsetdec.
+  (* EtaC *)
+  - pick fresh y and apply CON.
+    sfirstorder.
+    autorewrite with subst_open_var; eauto 2 using CTyping_lc1.
+    rewrite e; auto.
+  (* ImplApp *)
+  - rewrite tm_subst_tm_constraint_open_constraint_wrt_co; eauto 2 using CTyping_lc1.
+    hauto l:on.
+  (* ImplAbs *)
+  - pick fresh y and apply CON.
+    + rewrite tm_subst_tm_constraint_open_constraint_wrt_co_var;
+        eauto 2 using CTyping_lc1.
+      rewrite_subst_context; qauto l:on.
+    + simpl_env.
+      eapply H0.
+      sfirstorder use:CTyping_meet_ctx_l.
+      by simpl_env.
+  (* Ctx_Nil *)
+  - move : H.
+    by case F.
+  (* Ctx_Cons_tm *)
+  - destruct F.
+    + scongruence.
+    + inversion H2; subst.
+      simpl.
+      apply : CON.
+      by sfirstorder.
+      simpl_env.
+      apply : H0.
+      by sfirstorder use:CTyping_meet_ctx_l.
+      by simpl_env.
+      simpl_env.
+      rewrite dom_subst_ctx.
+      simpl_env in n.
+      fsetdec.
+  - destruct F.
+    + scongruence.
+    + inversion H2; subst.
+      simpl.
+      apply : CON.
+      by sfirstorder.
+      simpl_env.
+      apply : H0.
+      by sfirstorder use:CTyping_meet_ctx_l.
+      by simpl_env.
+      simpl_env.
+      rewrite dom_subst_ctx.
+      simpl_env in n.
+      fsetdec.
+  - apply CE_Top; last by assumption.
+    simpl_env.
+    apply : H.
+    apply CTyping_meet_ctx_l.
+    eassumption.
+    by simpl_env.
+    Unshelve. all:auto.
 Qed.
 
 Lemma Typing_tm_subst : forall G x A b B (H : Typing ((x ~ Tm A) ++ G) b B),
