@@ -79,12 +79,12 @@ Proof.
   qauto l: on use: tm_subst_tm_constraint_fresh_eq, ProfWff_context_fv inv: Ctx.
 Qed.
 
-Lemma bind_map_tm_subst_tm_sort: forall c F phi x a,
-    binds c (Co phi) F ->
-    binds c (Co (tm_subst_tm_constraint a x phi)) (map (tm_subst_tm_sort a x) F).
+Lemma bind_map_tm_subst_tm_sort: forall c psi F phi x a,
+    binds c (psi, (Co phi)) F ->
+    binds c (psi, (Co (tm_subst_tm_constraint a x phi))) (subst_ctx a x F).
 Proof.
   induction F; auto.
-  move : a => [? [? | ?]] /ltac:(sfirstorder).
+  move : a => [? [ ? [? | ?]]] /ltac:(sfirstorder).
 Qed.
 
 Lemma binds_map_4: forall x A F c0,
@@ -204,8 +204,8 @@ Lemma tm_substitution_mutual :
                  forall F x, G0 = (F ++ (x ~ (psi0, Tm A)) ++ G) ->
                         Ctx (subst_ctx a x F ++ G)) /\
     (forall G0 psi psi0 a b T (H : CDefEq G0 psi psi0 a b T),
-       forall G a0 psi0 A (H0 : CTyping G psi0 a0 A),
-                 forall F x, G0 = (F ++ (x ~ (psi0, Tm A)) ++ G) ->
+       forall G a0 psi1 A (H0 : CTyping G psi1 a0 A),
+                 forall F x, G0 = (F ++ (x ~ (psi1, Tm A)) ++ G) ->
                         CDefEq (subst_ctx a0 x F ++ G) psi psi0
                                (tm_subst_tm_tm a0 x a)
                                (tm_subst_tm_tm a0 x b)
@@ -222,6 +222,7 @@ Proof.
   (* 44 goals *)
   all : try solve [eapply CON; eauto 2].
   (* 35 goals *)
+  (* var *)
   - destruct (x == x0).
     + subst.
       have [HA HB]: Tm A = Tm A0 /\ psi0 = psi1 by hauto l:on use:binds_mid_eq.
@@ -253,7 +254,7 @@ Proof.
     sfirstorder use:CTyping_meet_ctx_l simp:simpl_env.
     simpl_env.
     done.
-  (* app *)
+  (* App *)
   - inversion c; subst;
     autorewrite with subst_open; hauto q:on db:lc.
   (* Conv *)
@@ -302,7 +303,77 @@ Proof.
   - pick fresh y and apply CON; eauto 2.
     autorewrite with subst_open_var; eauto 2 with lc;
       rewrite_subst_context; qauto l:on.
-  - 
+  (* E_Assn *)
+  - destruct (c == x).
+    + subst.
+      hauto l: on use: binds_mid_eq.
+    + apply CON with (psi := psi) (psi0 := psi0) (c := c); eauto.
+      apply binds_remove_mid in b; auto.
+      destruct (binds_app_1 _ _ _ _ _ b); auto.
+      * sfirstorder use:binds_app_1, binds_app_2, binds_app_3, bind_map_tm_subst_tm_sort.
+      * apply binds_app_3.
+        apply Ctx_strengthen in c0.
+        move : (Ctx_strengthen _ _ c0) => h1.
+        move : (binds_to_PropWff _ _ _ h1 H1) => h2.
+        erewrite co_subst_fresh; eauto.
+        apply Ctx_meet_l_C in c0.
+        apply c0.
+  (* Beta *)
+  - hauto q: on ctrs:- use: Beta_tm_subst db: lc.
+  (* PiCong *)
+  - pick fresh y and apply CON; eauto 2.
+    + sfirstorder.
+    + autorewrite with subst_open_var; eauto 2 with lc.
+      rewrite_subst_context.
+      eapply H0; eauto.
+  (* AbsCong *)
+  (* YL: automation overall seems very brittle here. *)
+  (* eauto works for Abs but fails for AbsCong *)
+  (* maybe hammer can generate more robust tactics? *)
+  - pick fresh y and apply CON; eauto 2.
+    autorewrite with subst_open_var; eauto 2 with lc.
+    rewrite_subst_context.
+    eapply H; eauto.
+    simpl_env.
+    apply : H0.
+    sfirstorder use:CTyping_meet_ctx_l simp:simpl_env.
+    simpl_env.
+    done.
+  (* AppCong *)
+  - inversion c; subst;
+      autorewrite with subst_open; eauto 2 with lc.
+    + hauto l:on.
+    + hfcrush.
+  (* PiFst *)
+  - eapply CON; sfirstorder.
+  (* PiSnd *)
+  - autorewrite with subst_open; eauto 2 with lc.
+    hauto l:on.
+  (* CPiCong *)
+  - pick fresh y and apply CON; eauto 2.
+    autorewrite with subst_open_var; eauto 2 with lc.
+    rewrite_subst_context. eapply H0; eauto 2.
+  (* CAbsCong *)
+  - pick fresh y and apply CON; eauto 2.
+    autorewrite with subst_open_var; eauto 2 with lc.
+    rewrite_subst_context.
+    eapply H; eauto.
+    simpl_env.
+    apply : H0.
+    sfirstorder use:CTyping_meet_ctx_l simp:simpl_env.
+    simpl_env.
+    done.
+  (* CAppCong *)
+  - autorewrite with subst_open; eauto 2 with lc.
+    eapply CON with (phi := tm_subst_tm_constraint a x phi).
+    apply : H; eauto 3.
+    simpl_env.
+    hauto l: on use: CTyping_meet_ctx_l, map_app.
+  (* CPiSnd *)
+  - autorewrite with subst_open; eauto 2 with lc.
+    
+      
+      
 
     
 
