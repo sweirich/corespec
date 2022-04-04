@@ -124,7 +124,9 @@ Lemma typing_weakening_mutual:
   (forall G0,         Ctx G0 ->
      True) /\
   (forall G0 psi psi0 A B T, CDefEq G0 psi psi0 A B T ->
-     forall E F G, (G0 = F ++ G) -> Ctx (F ++ E ++ G) -> CDefEq (F ++ E ++ G) psi psi0 A B T).
+     forall E F G, (G0 = F ++ G) -> Ctx (F ++ E ++ G) -> CDefEq (F ++ E ++ G) psi psi0 A B T) /\
+  (forall G0 psi a A,     CTyping G0 psi a A ->
+     forall E F G, (G0 = F ++ G) -> Ctx (F ++ E ++ G) -> CTyping (F ++ E ++ G) psi a A).
 Proof.
   ext_induction CON.
   all: intros; subst; try done.
@@ -162,6 +164,20 @@ Proof.
     constructor; auto 1.
     sfirstorder use:weakening_helper_propwff.
     sfirstorder use:weakening_helper_propwff.
+  (* WffImpl *)
+  - pick fresh y and apply CON; auto.
+    rewrite_env ((y ~ (psi, Co phi1) ++ F) ++ E ++ G0).
+    apply_first_hyp; auto.
+    simpl_env.
+    constructor; auto 1.
+    hauto lq: on use: propwff_meet_ctx_l_C.
+  - pick fresh y and apply CON; auto.
+    rewrite_env ((y ~ (q_Top, Co phi1) ++ F) ++ E ++ G0).
+    apply_first_hyp; auto.
+    simpl_env.
+    constructor; auto 1.
+    (* won't go through until implcong is fixed *)
+    admit.
   (* PiCong *)
   - pick fresh y and apply CON; auto.
     rewrite_env ((y ~ (psi, Tm A1) ++ F) ++ E ++ G0).
@@ -171,7 +187,7 @@ Proof.
     sfirstorder use:typing_meet_ctx_l_C.
   (* AbsCong *)
   - pick fresh y and apply CON; spec y ; auto.
-    rewrite_env ((y ~ (psi0 * psi, Tm A1) ++ F) ++ E ++ G0).
+    rewrite_env ((y ~ (psi0, Tm A1) ++ F) ++ E ++ G0).
     apply_first_hyp; auto.
     simpl_env.
     constructor; auto 1.
@@ -192,9 +208,14 @@ Proof.
     sfirstorder use:weakening_helper_propwff.
     sfirstorder use:weakening_helper_propwff.
   (* Impl: won't go through because Impl's introduction rule is existential *)
-  - admit.
-Admitted.    
-
+  - pick fresh y and apply CON; spec y ; auto.
+    rewrite_env ((y ~ (psi, Co phi1) ++ F) ++ E ++ G0).
+    apply_first_hyp; auto.
+    simpl_env.
+    constructor; auto 1.
+    sfirstorder use:weakening_helper_propwff.
+    sfirstorder use:weakening_helper_propwff.
+Admitted.
 
 
 Lemma Typing_weakening : ∀ (E F G: context) psi (a A : tm),  Typing (F ++ G) psi a A →  Ctx (F ++ E ++ G) ->

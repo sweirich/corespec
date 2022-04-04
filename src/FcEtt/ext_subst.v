@@ -450,25 +450,24 @@ Proof.
     Unshelve. all:auto.
 Qed.
 
-Lemma Typing_tm_subst : forall G x A b B (H : Typing ((x ~ Tm A) ++ G) b B),
-  forall a, Typing G a A ->
-       Typing G (tm_subst_tm_tm a x b) (tm_subst_tm_tm a x B).
+Lemma Typing_tm_subst : forall G psi x psi0 A b B (H : Typing ((x ~ (psi0, Tm A)) ++ G) psi b B),
+  forall a, CTyping G psi0 a A ->
+       Typing G psi (tm_subst_tm_tm a x b) (tm_subst_tm_tm a x B).
 Proof.
-  intros G x A b B H a H0.
-  pose K := @first _ _ _ _ _ tm_substitution_mutual _ b B H G a A H0 nil x.
-  clearbody K. simpl in K.
-  apply K. auto.
+  move => G psi x psi0 A b B.
+  rewrite -[_++_]app_nil_l.
+  qauto l: on ctrs: - use:tm_substitution_mutual.
 Qed.
 
-Lemma co_subst_rho: forall L x y a rho
-    (Neq: x <> y)
-    (Fr2: y `notin` L)
-    (K : (forall x, x `notin` L -> RhoCheck rho x (open_tm_wrt_tm a (a_Var_f x)))),
-    RhoCheck rho y  (co_subst_co_tm g_Triv x (open_tm_wrt_tm a (a_Var_f y))).
-Proof.
-  intros.
-  RhoCheck_inversion y; eauto with lngen lc.
-Qed.
+(* Lemma co_subst_rho: forall L x y a rho *)
+(*     (Neq: x <> y) *)
+(*     (Fr2: y `notin` L) *)
+(*     (K : (forall x, x `notin` L -> RhoCheck rho x (open_tm_wrt_tm a (a_Var_f x)))), *)
+(*     RhoCheck rho y  (co_subst_co_tm g_Triv x (open_tm_wrt_tm a (a_Var_f y))). *)
+(* Proof. *)
+(*   intros. *)
+(*   RhoCheck_inversion y; eauto with lngen lc. *)
+(* Qed. *)
 
 Lemma co_substitution_mutual :
     (forall G0 b B (H : Typing G0 b B),

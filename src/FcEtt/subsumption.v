@@ -126,3 +126,8 @@ Lemma Typing_subsumption : forall {G0 a A} psi , Typing G0 psi a A -> forall psi
 Proof.
   sfirstorder use:Typing_subsumption_mutual. 
 Qed.
+
+Lemma PropWff_subsumption : forall {G0 psi phi},   PropWff G0 psi phi -> forall psi', psi <= psi' -> psi' <= q_C -> PropWff G0 psi' phi.
+Proof.
+  sfirstorder use:Typing_subsumption_mutual. 
+Qed.
