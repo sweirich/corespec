@@ -1322,8 +1322,7 @@ with Iso : context -> grade -> constraint -> constraint -> Prop :=    (* defn Is
  | E_ImplCong : forall (L:vars) (G:context) (psi:grade) (phi1 phi3 phi2 phi4:constraint),
      Iso G psi phi1 phi2 ->
       ( forall c , c \notin  L  -> Iso  (( c ~ (  q_Top  , Co  phi1 )) ++  G )  psi  ( open_constraint_wrt_co phi3 (g_Var_f c) )   ( open_constraint_wrt_co phi4 (g_Var_f c) )  )  ->
-      ( PropWff G psi (Impl phi1 phi3) )  ->
-      ( PropWff G psi (Impl phi2 phi4) )  ->
+      ( PropWff G psi phi1 )  ->
      Iso G psi (Impl phi1 phi3) (Impl phi2 phi4)
 with CDefEq : context -> grade -> grade -> tm -> tm -> tm -> Prop :=    (* defn CDefEq *)
  | CDefEq_Leq : forall (G:context) (psi psi0:grade) (a b A:tm),

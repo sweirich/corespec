@@ -176,8 +176,7 @@ Proof.
     apply_first_hyp; auto.
     simpl_env.
     constructor; auto 1.
-    (* won't go through until implcong is fixed *)
-    admit.
+    hauto lq:on use:propwff_meet_ctx_l_C.
   (* PiCong *)
   - pick fresh y and apply CON; auto.
     rewrite_env ((y ~ (psi, Tm A1) ++ F) ++ E ++ G0).
@@ -215,7 +214,7 @@ Proof.
     constructor; auto 1.
     sfirstorder use:weakening_helper_propwff.
     sfirstorder use:weakening_helper_propwff.
-Admitted.
+Qed.
 
 
 Lemma Typing_weakening : ∀ (E F G: context) psi (a A : tm),  Typing (F ++ G) psi a A →  Ctx (F ++ E ++ G) ->
