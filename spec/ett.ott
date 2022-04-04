@@ -1470,8 +1470,7 @@ G |= psi phi1 == phi2
 % setting c to top is the only thing we can do
 G |= psi phi1 == phi2
 G , c : top phi1 |= psi phi3 == phi4
-[G |= psi all c : phi1 . phi3 ok]
-[G |= psi all c : phi2 . phi4 ok]
+[ G |= psi phi1 ok ]
 -------------------------------------- :: ImplCong
 G |= psi all c : phi1 . phi3 == all c : phi2 . phi4
 
