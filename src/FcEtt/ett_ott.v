@@ -62,10 +62,6 @@ with co : Set :=  (*r explicit coercions *)
  | g_Left (g:co) (g':co)
  | g_Right (g:co) (g':co).
 
-Inductive sig_sort : Set :=  (*r signature classifier *)
- | Cs (A:tm)
- | Ax (a:tm) (A:tm).
-
 Inductive sort : Set :=  (*r binding classifier *)
  | Tm (A:tm)
  | Co (phi:constraint).
@@ -73,6 +69,10 @@ Inductive sort : Set :=  (*r binding classifier *)
 Inductive esort : Set :=  (*r binding classifier *)
  | e_Tm : esort
  | e_Co : esort.
+
+Inductive sig_sort : Set :=  (*r signature classifier *)
+ | Cs (A:tm)
+ | Ax (a:tm) (A:tm).
 
 Definition sig : Set := list (atom * (grade * sig_sort)).
 
@@ -1167,6 +1167,7 @@ with Par : econtext -> grade -> tm -> tm -> Prop :=    (* defn Par *)
      Par P psi (a_CPi psi0 phi a) (a_CPi psi0 phi' a')
  | Par_Axiom : forall (P:econtext) (psi:grade) (F:tyfam) (a:tm) (psi0:grade) (A:tm),
       ( psi0  <=  psi )  ->
+      ( Grade  nil   q_C  A )  ->
       binds  F  ( psi0 , (Ax  a A ))   toplevel   ->
      ECtx P ->
      Par P psi (a_Fam F) a
@@ -1321,6 +1322,8 @@ with Iso : context -> grade -> constraint -> constraint -> Prop :=    (* defn Is
  | E_ImplCong : forall (L:vars) (G:context) (psi:grade) (phi1 phi3 phi2 phi4:constraint),
      Iso G psi phi1 phi2 ->
       ( forall c , c \notin  L  -> Iso  (( c ~ (  q_Top  , Co  phi1 )) ++  G )  psi  ( open_constraint_wrt_co phi3 (g_Var_f c) )   ( open_constraint_wrt_co phi4 (g_Var_f c) )  )  ->
+      ( PropWff G psi (Impl phi1 phi3) )  ->
+      ( PropWff G psi (Impl phi2 phi4) )  ->
      Iso G psi (Impl phi1 phi3) (Impl phi2 phi4)
 with CDefEq : context -> grade -> grade -> tm -> tm -> tm -> Prop :=    (* defn CDefEq *)
  | CDefEq_Leq : forall (G:context) (psi psi0:grade) (a b A:tm),
