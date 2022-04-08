@@ -220,7 +220,8 @@ Proof.
     move : H => /CTyping_meet_ctx_l => /(_ q_C).
     have : q_C + psi0 * psi <= q_C by apply leq_meet_l.
     move /CTyping_subsumption /ltac:(firstorder).
-  - move : H1 => /PropWff_Ctx => [h0 _].
+  - hauto l:on use:Ctx_meet_l_C, PropWff_Ctx, q_leb_refl.
+  - hauto l:on use:Ctx_meet_l_C, PropWff_Ctx, q_leb_refl.    
   - apply invert_a_Pi in IHTyping; eauto.
     destruct IHTyping1 as [h2 [[L h3] h4]].
     pick_fresh x.
