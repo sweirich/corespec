@@ -863,9 +863,10 @@ by
   --------------------- :: Leq 
    P |= psi psi0 a
 
-TODO: add erased_tm a?
+   erased_tm a
    not (psi0 <= psi)
-   |= P
+   % |= P
+   % P |= top a
   --------------------- :: Nleq 
    P |= psi psi0 a
 
@@ -1037,6 +1038,7 @@ P |- psi psi0 phi1 => phi2
 
 not (psi0 <= psi)
 |= P
+erased_constraint phi2
 -------------------------------- :: Nleq
 P |- psi psi0 phi1 => phi2
 
@@ -1054,6 +1056,7 @@ P |- psi psi0 a1 => a2
 
 not (psi0 <= psi)
 |= P
+erased_tm a2
 -------------------------------- :: Nleq
 P |- psi psi0 a1 => a2
 
@@ -1312,6 +1315,7 @@ defns
 Jett :: '' ::=
 
 
+% TODO: TPropWff
 defn
 G |= psi phi ok ::    :: PropWff :: 'E_'
 {{ tex [[G]] \vDash_{[[psi]]} [[phi]] ok }}
@@ -1333,7 +1337,7 @@ G |= psi all c : phi1 . phi2 ok
 
 
 defn
-
+% TODO change CTyping to TopTyping/TTyping
 G |=> psi a : A :: :: CTyping :: 'CE_'
 {{ tex [[G]] \Vdash [[a]]:^{[[psi]]} [[A]]}}
 by
@@ -1481,13 +1485,13 @@ G |= psi all c : phi1 . phi3 == all c : phi2 . phi4
 % make sure that the CDefEq case maps to a trivial
 % True statement
 defn
- G |= psi psi0 a ~ b : A :: :: CDefEq :: 'CDefEq_' {{ com Definitional Equality }}
- {{ tex [[ G ]] \vdash [[ a ]] \equiv_{[[ psi ]]} [[ b ]]  }}
+ G |= psi psi0 phi :: :: CDefEq :: 'CDefEq_' {{ com Definitional Equality }}
+ {{ tex [[ G ]] \vdash [[phi]]  }}
 by
    psi0 <= psi
-   G |= psi a ~ b : A
+   G |= psi phi
   --------------------- :: Leq 
-   G |= psi psi0 a ~ b : A
+   G |= psi psi0 phi
 
 
 % There are two cases because I inlined the |- a :top B relation
@@ -1498,12 +1502,24 @@ by
 % psi <= CTime (implied)
    not (psi0 <= psi)
    |= G
-   G |=> psi0 \/ psi a : A
-   G |=> psi0 \/ psi b : A
+   % G |= 
+   G |=> psi0 \/ psi phi ok
+   % G |=> psi0 \/ psi a : A
+   % G |=> psi0 \/ psi b : A
   --------------------- :: Nleq 
-   G |= psi psi0 a ~ b : A
+   G |= psi psi0 phi
 
+% G |= psi a : A
+% psi <= CTime
+% ------------------- :: Leq
+% G |=> psi a : A
 
+% CTime /\ G |= CTime a : A
+% CTime < psi
+% ------------------- :: Top
+% G |=> psi a : A
+
+% TODO: TDefEq, CDefEq
 
 defn
 

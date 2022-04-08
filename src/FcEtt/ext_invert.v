@@ -10,6 +10,8 @@ Require Import FcEtt.ext_wf.
 Require Import FcEtt.utils.
 Require Import FcEtt.ext_weak.
 Require Import FcEtt.ett_ind.
+Require Import FcEtt.ext_subst.
+Require Import FcEtt.ett_ind.
 
 (* Module ext_invert (subst : ext_subst_sig) <: ext_invert_sig. *)
 
@@ -183,13 +185,13 @@ Ltac un_subst_tm :=
      match goal with
      | [ |- Typing _ ?psi ?a ?A ] => expand (tm_subst_tm_tm g c) a; expand (tm_subst_tm_tm g c) A
      | [ |- DefEq _ _ ?a ?b ] => expand (tm_subst_tm_tm g c) a; expand (tm_subst_tm_tm g c) b
-     | [ |- PropWff ?phi ] => expand_constraint (tm_subst_tm_tm g c) (tm_subst_tm_constraint g c) phi
+     | [ |- PropWff ?psi ?phi ] => expand_constraint (tm_subst_tm_tm g c) (tm_subst_tm_constraint g c) phi
      end
    | [ |- context [co_subst_co_tm ?g ?c _] ] =>
      match goal with
-     | [ |- Typing _ ?a ?A ] => expand (co_subst_co_tm g c) a; expand (co_subst_co_tm g c) A
-     | [ |- DefEq _ _ ?a ?b ] => expand (co_subst_co_tm g c) a; expand (co_subst_co_tm g c) b
-     | [ |- PropWff ?phi ] => expand_constraint (co_subst_co_tm g c) (co_subst_co_constraint g c) phi
+     | [ |- Typing _ ?psi ?a ?A ] => expand (co_subst_co_tm g c) a; expand (co_subst_co_tm g c) A
+     | [ |- DefEq _ _ ?psi ?a ?b ] => expand (co_subst_co_tm g c) a; expand (co_subst_co_tm g c) b
+     | [ |- PropWff ?psi ?phi ] => expand_constraint (co_subst_co_tm g c) (co_subst_co_constraint g c) phi
      end
    end.
 
@@ -208,19 +210,25 @@ Proof.
     move : (H0 x Hx) => h0.
     simpl in h0.
     apply : Typing_pumping_self => /ltac:(sfirstorder use:leq_meet_l).
-  - apply invert_a_Pi in IHTyping1; eauto.
-    destruct IHTyping1 as [h2 [[L h3] h4]].
+  - apply invert_a_Pi in IHTyping; eauto.
+    destruct IHTyping as [h2 [[L h3] h4]].
     pick_fresh x; spec x.
     rewrite (tm_subst_tm_tm_intro x); auto.
     rewrite meet_ctx_l_meet_ctx_l in h2.
     un_subst_tm.
     eapply Typing_tm_subst; eauto.
-  - apply invert_a_Pi in IHTyping1; eauto.
+    move : H => /CTyping_meet_ctx_l => /(_ q_C).
+    have : q_C + psi0 * psi <= q_C by apply leq_meet_l.
+    move /CTyping_subsumption /ltac:(firstorder).
+  - move : H1 => /PropWff_Ctx => [h0 _].
+  - apply invert_a_Pi in IHTyping; eauto.
     destruct IHTyping1 as [h2 [[L h3] h4]].
     pick_fresh x.
-    rewrite (tm_subst_tm_tm_intro x); auto.
-    un_subst_tm.
-    eapply Typing_tm_subst; eauto.
+  (*   rewrite (tm_subst_tm_tm_intro x); auto. *)
+  (*   un_subst_tm. *)
+  (*   eapply Typing_tm_subst; eauto. *)
+  - admit.
+  (* CApp *)
   - apply invert_a_CPi in IHTyping; eauto using Typing_Ctx.
     destruct IHTyping as [h2 [[L h3] _]].
     pick_fresh c.
