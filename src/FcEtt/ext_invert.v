@@ -240,23 +240,69 @@ Admitted.
 
 (* --------------------------------------------------- *)
 
-(* G |= psi phi : Prop *)
-(* G |= psi phi == phi *)
-(* analogously with types *)
-(* G |= psi x == x : A *)
-(* G |= psi a : A *)
-(* G |=  *)
-
-Lemma DefEq_pumping_middle_self : forall {psi phi E x B psi0 F} (H : DefEq (E ++ [(x, (psi0, B))] ++  F) psi phi),
+Lemma DefEq_pumping_middle_self :  forall x B psi0 E F psi phi (H : DefEq (E ++ [(x, (psi0, B))] ++  F) psi phi),
     psi0 <= psi ->
     DefEq (E ++ [(x, (psi, B))] ++ F) psi phi.
 Proof.
-  move => psi phi E x B psi0 F H H0.
+  intros.
+  rewrite -{1}[psi](join_leq psi0) //.
   have h0 : psi <= psi by reflexivity.
-  suff : DefEq (E ++ x ~ (psi0 * psi, B) ++ F) psi phi by rewrite join_leq.
-  have := Typing_pumping_middle_mutual; by firstorder.
+  sfirstorder use:Typing_pumping_middle_mutual.
 Qed.
 
+Lemma Typing_pumping_middle_self :  forall x B psi0 E F psi a A (H : Typing (E ++ [(x, (psi0, B))] ++  F) psi a A),
+    psi0 <= psi ->
+    Typing (E ++ [(x, (psi, B))] ++ F) psi a A.
+Proof.
+  intros.
+  rewrite -{1}[psi](join_leq psi0) //.
+  have h0 : psi <= psi by reflexivity.
+  sfirstorder use:Typing_pumping_middle_mutual.
+Qed.
+
+Lemma DefEq_pumping_weakening : forall {psi phi E x B psi0 F} (H : DefEq (E ++ [(x, (psi0, B))] ++  F) psi phi),
+    psi0 <= psi ->
+    forall psi1, psi1 <= psi -> 
+    DefEq (E ++ [(x, (psi1, B))] ++ F) psi phi.
+Proof.
+  move => psi phi E x B psi0 F H H0.
+  have h0 : psi <= psi by reflexivity.
+  move => psi1 H1.
+  suff h1 : DefEq (E ++ x ~ (psi, B) ++ F) psi phi.
+  apply : DefEq_narrowing.
+  exact h1.
+  have h_uniq : uniq (E ++ x ~ (psi0, B) ++ F) by sauto lq: on use: DefEq_Ctx, Ctx_uniq.
+  apply ctx_sub_app.
+  apply ctx_sub_refl.
+  solve_uniq.
+  apply ctx_sub_app.
+  destruct B; constructor; auto.
+  apply ctx_sub_refl.
+  1,2,3:solve_uniq.
+  eauto using DefEq_pumping_middle_self.
+Qed.
+
+Lemma Typing_pumping_weakening : forall {psi a A E x B psi0 F} (H : Typing (E ++ [(x, (psi0, B))] ++  F) psi a A),
+    psi0 <= psi ->
+    forall psi1, psi1 <= psi -> 
+    Typing (E ++ [(x, (psi1, B))] ++ F) psi a A.
+Proof.
+  move => psi a A E x B psi0 F H H0.
+  have h0 : psi <= psi by reflexivity.
+  move => psi1 H1.
+  suff h1 : Typing (E ++ x ~ (psi, B) ++ F) psi a A.
+  apply : Typing_narrowing.
+  exact h1.
+  have h_uniq : uniq (E ++ x ~ (psi0, B) ++ F) by sauto lq: on use: Typing_Ctx, Ctx_uniq.
+  apply ctx_sub_app.
+  apply ctx_sub_refl.
+  solve_uniq.
+  apply ctx_sub_app.
+  destruct B; constructor; auto.
+  apply ctx_sub_refl.
+  1,2,3:solve_uniq.
+  eauto using Typing_pumping_middle_self.
+Qed.
 
 Lemma Typing_pumping_co_middle_mutual :
   (forall G psi b A (H : Typing G psi b A),
@@ -306,19 +352,11 @@ Proof.
       simpl_env in t1; sauto lq: on use: Typing_Ctx, Ctx_uniq.
     eapply CON; simpl_env; try rewrite meet_mult; eauto 2.
     simpl_env in d.
-    move : d => /DefEq_pumping_middle_self.
-    move /(_ ltac:(apply leq_meet_l)) => h1.
-    apply /DefEq_narrowing; first by eassumption.
-    apply ctx_sub_app.
-    apply ctx_sub_refl.
-    solve_uniq.
-    apply ctx_sub_app.
-    constructor; auto.
-    apply leq_meet_l.
-    apply ctx_sub_refl.
-    1,2,3:solve_uniq.
-    (* if psi0,psi1 <= q_C and psi0 works, then so should psi1 *)
-    admit.
+    apply : DefEq_pumping_weakening; eauto using leq_meet_l.
+    apply : Typing_pumping_weakening.
+    simpl_env in t1.
+    eassumption.
+    all : apply leq_meet_l.
   - pick fresh c' and apply CON; eauto 2.
     reassoc_env.
     qauto l:on depth:2.
@@ -327,7 +365,9 @@ Proof.
   - eapply CON; eauto 2.
     simpl_env.
     simpl_env in d.
-    admit.
+    apply : DefEq_pumping_weakening.
+    eassumption.
+    all : apply leq_meet_l.
   - qauto inv: list ctrs: -.
   - move : E H1.
     case => [ /ltac:(scongruence) | a E'].
@@ -350,9 +390,8 @@ Proof.
   - apply /CON => //.
     simpl_env.
     simpl_env in t0.
-    (* use the same lemma *)
-    admit.
-Admitted.
+    apply : Typing_pumping_weakening; eauto using leq_meet_l.
+Qed.
 
 
 
@@ -363,103 +402,116 @@ Proof.
   - sfirstorder use:Typing_regularity.
   - pick fresh c and apply E_ImplCong; spec c.
     + done.
+    (* add an admissible top rule? *)
     (* this can be "fixed" by changing the ImplWff to use top for the premise *)
-    (* or by prove a stronger version of pumping for coercions *)
-    (* I'll take the second approach here for now *)
+    (* or (THIS DOES NOT ACTUALLY WORK) by prove a stronger version of pumping for coercions *)
+
     (* what happens when we have relevant coercions? we should know
     whether a coercion ought to represent an equation or a potentially
     relevant term *)
     (* for the equations/props, we use top. Otherwise, we use psi *)
-    + admit. 
+    + admit.
     + done.
 Admitted.    
 
 
-Lemma sym_iso: forall G D phi1 phi2, Iso G D phi1 phi2 -> Iso G D phi2 phi1.
+Lemma sym_iso: forall G psi phi1 phi2, Iso G psi phi1 phi2 -> Iso G psi phi2 phi1.
 Proof.
-  intros G D phi1 phi2 H.
+  intros G psi phi1 phi2 H.
   induction H.
-  - assert (Ctx G). eauto.
+  - assert (Ctx G). sfirstorder use:DefEq_Ctx.
     apply E_PropCong; apply E_Sym; auto.
   - eapply E_IsoConv; eauto.
-  - apply (E_CPiFst _ _ _ _ B2 B1); auto.
-Qed.
+  - hfcrush.
+  - pick fresh c and apply E_ImplCong; eauto 2; spec c.
+    (* lemma about swapping ? if phi1 == phi2, then G, c : phi1 |- ... iff G, c : phi2 |- ... *)
+    admit.
+Admitted.
 
 (* --------------------------------------------------- *)
 
 
+(* TODO: inversion is unnecessarily weaker than it needs to be; *)
 Lemma invert_a_UAbs:
-  forall G rho A b0,
-   Typing G (a_UAbs rho b0) A
-    -> exists A1 B1, DefEq G (dom G) A (a_Pi rho A1 B1) a_Star
+  forall G psi psi0 A b0,
+   Typing G psi (a_UAbs psi0 b0) A
+    -> exists A1 B1, DefEq (meet_ctx_l q_C G) q_C (Eq A (a_Pi psi0 A1 B1) a_Star)
                /\ (exists L, forall x, x `notin` L ->
-                            Typing ([(x, Tm A1)] ++ G)
+                            Typing ([(x, (psi0 * psi, Tm A1))] ++ G) psi
                                    (open_tm_wrt_tm b0 (a_Var_f x))
                                    (open_tm_wrt_tm B1 (a_Var_f x))
-                            /\ Typing ([(x, Tm A1)] ++ G)
-                                     (open_tm_wrt_tm B1 (a_Var_f x)) a_Star
-                            /\ RhoCheck rho x (open_tm_wrt_tm b0 (a_Var_f x)))
-               /\ Typing G A1 a_Star.
+                            /\ Typing ([(x, (q_C + psi0 * psi, Tm A1))] ++ meet_ctx_l q_C G) q_C
+                                     (open_tm_wrt_tm B1 (a_Var_f x)) a_Star)
+               /\ Typing (meet_ctx_l q_C G) q_C A1 a_Star.
 Proof.
-  intros G rho A b0.
-  move e: (a_UAbs rho b0) => t1.
-  move => h0.
-  induction h0; auto; try done.
-  inversion e; subst.
+  move => G psi psi0 A b0.
+  remember (a_UAbs psi0 b0) as t1.
+  induction 1; inversion Heqt1; subst.
   - exists A, B.
     split.
     + apply (E_Refl _ _ _ a_Star); auto.
       apply (E_Pi (L \u (dom G))); auto.
       intros x HH.
-      apply (@Typing_regularity (open_tm_wrt_tm a (a_Var_f x))); auto.
+      spec x.
+      apply Typing_regularity in H.
+      simpl_env in H.
+      apply /Typing_pumping_self.
+      eassumption.
+      apply leq_meet_l.
     + split; auto.
       exists (L \u (dom G)).
-      inversion e; subst; clear e.
       intros x HH.
+      spec x.
       repeat split; auto.
-      apply (@Typing_regularity (open_tm_wrt_tm a (a_Var_f x))); auto.
-  -  destruct IHh0_1 as [A1 [B1 [h3 [L h2]]]]; auto.
-     subst.
+      apply Typing_regularity in H.
+      simpl_env in H.
+      auto.
+  -  destruct (IHTyping1 eq_refl) as [A1 [B1 ?]]; split_hyp; auto.
+     move : H4 => [L h2].
      exists A1, B1.
      split.
-     + apply (@E_Trans _ _ _ _ _ A); auto.
+     + qauto l: on use: E_Trans ctrs: -.
      + split; auto.
+       hauto l:on.
 Qed.
 
 
-Lemma invert_a_UCAbs: forall G A b0,
-    Typing G (a_UCAbs b0) A ->
-    exists a b T B1, PropWff G (Eq a b T) /\ DefEq G (dom G) A (a_CPi (Eq a b T) B1) a_Star
+Lemma invert_a_UCAbs: forall G psi psi0 A b0,
+    Typing G psi (a_UCAbs psi0 b0) A ->
+    exists phi B1, PropWff (meet_ctx_l q_C G) q_C phi /\ DefEq (meet_ctx_l q_C G) q_C (Eq A (a_CPi psi0 phi B1) a_Star)
                 /\ (exists L, forall c, c `notin` L ->
-                             Typing ([(c, Co (Eq a b T))] ++ G)
+                             Typing ([(c, (psi0 * psi, Co phi))] ++  G)
+                                    psi
                                     (open_tm_wrt_co b0 (g_Var_f c)) (open_tm_wrt_co B1 (g_Var_f c))
-                             /\ Typing ([(c, Co (Eq a b T))] ++ G) (open_tm_wrt_co B1 (g_Var_f c)) a_Star).
+                             /\ Typing ([(c, (q_C + psi0 * psi, (Co phi)))] ++ meet_ctx_l q_C G) q_C
+                                 (open_tm_wrt_co B1 (g_Var_f c)) a_Star).
 Proof.
-  intros G A b0.
-  move e: (a_UCAbs b0) => t1.
+  move => G psi psi0 A b0.
+  move e: (a_UCAbs psi0 b0) => t1.
   move => h0.
-  induction h0; auto; try done.
-  - destruct IHh0_1 as [a' [b' [T [B2 [h3 [h4 [L h5]]]]]]]; auto.
-    exists a', b', T, B2.
+  induction h0; subst; auto; try done.
+  - destruct (IHh0_1 eq_refl) as [phi [B2 [h3 [h4 [L h5]]]]]; auto.
+    exists phi, B2.
     split; auto.
-    split.
-    + apply (E_Trans _ _ _ _ _ A); auto.
-    + exists L; auto.
-  - induction phi.
-    exists a0, b, A, B.
-    split; auto.
-    split.
+    split; eauto using E_Trans.
+  - inversion e; subst; clear e.
+    exists phi, B.
+    repeat split.
+    + done.
     + apply (E_Refl _ _ _ a_Star); auto.
       apply (E_CPi (L \u (dom G))); auto.
       intros c H2.
-      apply (@Typing_regularity (open_tm_wrt_co a (g_Var_f c))); auto.
+      spec c.
+      apply Typing_regularity in H.
+      simpl_env in H.
+      sfirstorder use:Typing_pumping_self, leq_meet_l.
     + exists (L \u (dom G)).
-      inversion e; subst; clear e.
       intros c H2.
       split; auto.
-      apply (@Typing_regularity (open_tm_wrt_co a (g_Var_f c))); auto.
+      spec c.
+      apply Typing_regularity in H.
+      by simpl_env.
 Qed.
-
 
 Lemma invert_a_App_Rel : forall G a b C,
     Typing G (a_App a Rel b) C ->
