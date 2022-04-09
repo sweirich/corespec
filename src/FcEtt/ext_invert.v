@@ -221,38 +221,158 @@ Proof.
     have : q_C + psi0 * psi <= q_C by apply leq_meet_l.
     move /CTyping_subsumption /ltac:(firstorder).
   - hauto l:on use:Ctx_meet_l_C, PropWff_Ctx, q_leb_refl.
-  - hauto l:on use:Ctx_meet_l_C, PropWff_Ctx, q_leb_refl.    
-  - apply invert_a_Pi in IHTyping; eauto.
-    destruct IHTyping1 as [h2 [[L h3] h4]].
-    pick_fresh x.
-  (*   rewrite (tm_subst_tm_tm_intro x); auto. *)
-  (*   un_subst_tm. *)
-  (*   eapply Typing_tm_subst; eauto. *)
-  - admit.
+  - pick fresh c and apply E_CPi; spec c; last by done.
+    simpl_env in H0.
+    hauto lq:on use:Typing_pumping_self, leq_meet_l.
   (* CApp *)
   - apply invert_a_CPi in IHTyping; eauto using Typing_Ctx.
     destruct IHTyping as [h2 [[L h3] _]].
     pick_fresh c.
     rewrite (co_subst_co_tm_intro c); auto.
     un_subst_tm.
-    eapply Typing_co_subst; eauto.
+    (* DefEq meet_ctx_l is sufficient *)
+    admit.
+    (* eapply Typing_co_subst; eauto. *)
   - eapply Typing_weakening with (F:=nil)(G := nil) in H1.
-    simpl_env in H1. eauto. auto. simpl_env. auto.
-(*  - eapply Typing_weakening with (F:=nil)(G := nil) in H1.
-    simpl_env in H1. eauto. auto. simpl_env. auto. *)
-Qed.
+    simpl_env in H1. eauto. auto. simpl_env.
+    sfirstorder use:Ctx_meet_l_C.
+Admitted.
 
 (* --------------------------------------------------- *)
 
-Lemma refl_iso: forall G D phi, PropWff G phi -> Iso G D phi phi.
+(* G |= psi phi : Prop *)
+(* G |= psi phi == phi *)
+(* analogously with types *)
+(* G |= psi x == x : A *)
+(* G |= psi a : A *)
+(* G |=  *)
+
+Lemma DefEq_pumping_middle_self : forall {psi phi E x B psi0 F} (H : DefEq (E ++ [(x, (psi0, B))] ++  F) psi phi),
+    psi0 <= psi ->
+    DefEq (E ++ [(x, (psi, B))] ++ F) psi phi.
+Proof.
+  move => psi phi E x B psi0 F H H0.
+  have h0 : psi <= psi by reflexivity.
+  suff : DefEq (E ++ x ~ (psi0 * psi, B) ++ F) psi phi by rewrite join_leq.
+  have := Typing_pumping_middle_mutual; by firstorder.
+Qed.
+
+
+Lemma Typing_pumping_co_middle_mutual :
+  (forall G psi b A (H : Typing G psi b A),
+     forall c phi psi0 E F psi1, 
+         G = E ++ [(c, (psi0, (Co phi)))] ++  F -> 
+         Typing (E ++ [(c, (psi1, (Co phi)))] ++ F) psi b A) /\
+  (forall G psi phi (H : PropWff G psi phi),
+      forall c phi0 psi0 E F psi1, 
+         G = E ++ [(c, (psi0, (Co phi0)))] ++  F -> 
+         PropWff (E ++ [(c, (psi1, (Co phi0)))] ++ F) psi phi) /\
+  (forall G psi p1 p2 (H : Iso G psi p1 p2), True) /\
+  (forall G psi phi (H : DefEq G psi phi), True) /\
+  (forall G (H : Ctx G),
+    forall c phi psi0 E F psi1,
+      G = E ++ [(c, (psi0, (Co phi)))] ++  F ->
+      Ctx (E ++ [(c, (psi1, (Co phi)))] ++ F)) /\
+
+  (forall G psi psi2 a b T (H : CDefEq G psi psi2 a b T), True) /\
+  (forall G psi b A (H : CTyping G psi b A),
+     forall c phi psi0 E F psi1, 
+         G = E ++ [(c, (psi0, (Co phi)))] ++  F -> 
+         CTyping (E ++ [(c, (psi1, (Co phi)))] ++ F) psi b A).
+Proof.
+  Ltac reassoc_env := match goal with
+                       |  |- context[?A ++ ?B ++ ?C ++ ?D] => rewrite_env ((A ++ B) ++ C ++ D)
+                      end.
+  ext_induction CON; intros; subst; auto.
+  all : try solve [eapply CON; eauto 2].
+  all : try solve [pick fresh c' and apply CON; eauto 2;
+                   reassoc_env;
+                   qauto l:on depth:2].
+  - apply binds_cases in b; auto.
+    move : b => [h0 | [h1 | h2]]; split_hyp.
+    + apply E_Var with (psi0 := psi0);
+      sfirstorder use:q_leb_trans.
+    + inversion H1; subst.
+    + apply E_Var with (psi0 := psi0); sfirstorder use:q_leb_trans.
+  - pick fresh c' and apply CON; eauto 2.
+    reassoc_env.
+    qauto l:on depth:2.
+    simpl_env.
+    apply : H0; by simpl_env.
+  - have h0 : psi <= q_C by sfirstorder use: Typing_leq_C.
+    have h_uniq : uniq (E ++ c ~ (psi0, Co phi) ++ F) by
+      sauto lq: on use: Typing_Ctx, Ctx_uniq.
+    have h_uniq2 : uniq (meet_ctx_l q_C E ++ c ~ (q_C + psi0, Co phi) ++ meet_ctx_l q_C F) by 
+      simpl_env in t1; sauto lq: on use: Typing_Ctx, Ctx_uniq.
+    eapply CON; simpl_env; try rewrite meet_mult; eauto 2.
+    simpl_env in d.
+    move : d => /DefEq_pumping_middle_self.
+    move /(_ ltac:(apply leq_meet_l)) => h1.
+    apply /DefEq_narrowing; first by eassumption.
+    apply ctx_sub_app.
+    apply ctx_sub_refl.
+    solve_uniq.
+    apply ctx_sub_app.
+    constructor; auto.
+    apply leq_meet_l.
+    apply ctx_sub_refl.
+    1,2,3:solve_uniq.
+    (* if psi0,psi1 <= q_C and psi0 works, then so should psi1 *)
+    admit.
+  - pick fresh c' and apply CON; eauto 2.
+    reassoc_env.
+    qauto l:on depth:2.
+    simpl_env.
+    apply : H0; by simpl_env.
+  - eapply CON; eauto 2.
+    simpl_env.
+    simpl_env in d.
+    admit.
+  - qauto inv: list ctrs: -.
+  - move : E H1.
+    case => [ /ltac:(scongruence) | a E'].
+    inversion 1; subst.
+    simpl_env.
+    constructor; auto.
+    sfirstorder.
+    simpl_env in H0.
+    simpl_env.
+    hauto l:on.
+  - move : E H1.
+    case => [ | a E']; inversion 1; subst.
+    sauto lq: on rew: off.
+    simpl_env.
+    constructor; auto.
+    sfirstorder.
+    simpl_env.
+    simpl_env in H0.
+    sfirstorder.
+  - apply /CON => //.
+    simpl_env.
+    simpl_env in t0.
+    (* use the same lemma *)
+    admit.
+Admitted.
+
+
+
+Lemma refl_iso: forall G psi phi, PropWff G psi phi -> Iso G psi phi phi.
 Proof.
   intros G D phi H.
-  destruct phi.
-  inversion H.
-  assert (Ctx G). eauto.
-  assert (Typing G A a_Star). { eapply Typing_regularity; eauto. }
-  apply E_PropCong; eauto.
-Qed.
+  induction H.
+  - sfirstorder use:Typing_regularity.
+  - pick fresh c and apply E_ImplCong; spec c.
+    + done.
+    (* this can be "fixed" by changing the ImplWff to use top for the premise *)
+    (* or by prove a stronger version of pumping for coercions *)
+    (* I'll take the second approach here for now *)
+    (* what happens when we have relevant coercions? we should know
+    whether a coercion ought to represent an equation or a potentially
+    relevant term *)
+    (* for the equations/props, we use top. Otherwise, we use psi *)
+    + admit. 
+    + done.
+Admitted.    
 
 
 Lemma sym_iso: forall G D phi1 phi2, Iso G D phi1 phi2 -> Iso G D phi2 phi1.

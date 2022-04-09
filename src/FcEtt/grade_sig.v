@@ -2,6 +2,7 @@
 
 Require Import Metalib.Metatheory.
 
+(* Require Import FcEtt.Lattice. *)
 Require Import Coq.Structures.Orders.
 Require Import Coq.Bool.Sumbool.
 Require Import Coq.Program.Equality.
@@ -33,7 +34,6 @@ Instance equ  : @EqDec_eq grade := q_eq_dec.
 Parameter eqb_eq : forall (n m : grade), q_eqb n m = true <-> n = m.
 Definition eq_equiv : Equivalence (@Logic.eq grade) := eq_equivalence.
 Definition eq_dec := q_eq_dec.
-Include BackportEq.
 
 (* Order *)
 Definition leb  := q_leb.
@@ -70,16 +70,20 @@ Axiom absorb_join : forall a b, a + (a * b) = a.
 Axiom join_idem : forall a, a * a = a.
 Axiom meet_idem : forall psi, psi + psi = psi.
 
-(* bounded *)
-Axiom join_Top_r : forall a, a * q_Top = q_Top.
-Axiom meet_Bot_r : forall a, a + q_Bot = q_Bot.
+(* Instance grade_Lattice : Lattice grade := *)
+(*   { *)
+(*     meet := q_meet; *)
+(*     join := q_join; *)
+(*     meet_commutative := meet_comm; *)
+(*     meet_associative := ltac:(by have := meet_assoc); *)
+(*     meet_absorptive := absorb_join; *)
+(*     meet_idempotent := meet_idem; *)
 
-Axiom C_lt_Top : q_C < q_Top.
-
-Axiom R_lt_C : q_R < q_C.
-
-(* Everything is either below or above C, and you can tell which *)
-Axiom order_q_C_dec : forall q, { q <= q_C } + { q_C < q }.
+(*     join_commutative := join_comm; *)
+(*     join_associative := ltac:(by have := join_assoc); *)
+(*     join_absorptive := absorb_meet; *)
+(*     join_idempotent := join_idem; *)
+(*   } *)
 
 (* Pre order *)
 Axiom leb_leq  : forall (n m : grade), (n <=? m) = true <-> n <= m.
@@ -98,7 +102,39 @@ Proof. intros. apply leq_join. apply join_leq in H. apply join_leq in H0. rewrit
 rewrite join_assoc. rewrite -> H. auto. Qed.
 
 Instance le_preorder : PreOrder le.
-Proof. split. intro x. apply q_leb_refl. unfold Transitive. intros. eapply q_leb_trans; eauto. Qed.
+Proof. split. intro x. apply q_leb_refl. unfold Transitive. intros. eapply q_leb_trans; eauto. Defined.
+
+(* #[refine] Instance grade_Order : Order grade := {ord := le}. *)
+(* Proof. intros. apply join_leq in H. apply join_leq in H0. rewrite join_comm in H0. *)
+(* rewrite <- H. symmetry. auto. Defined. *)
+
+(* #[refine] Instance grade_LOSet : LOSet grade_Order grade_Lattice := { }. *)
+(* Proof. *)
+(*   - move => a b. *)
+(*     split. *)
+(*     + have := meet_leq; by firstorder. *)
+(*     + move => H. *)
+(*       apply leq_meet. *)
+(*       by rewrite {2}H. *)
+(*   - move => a b. *)
+(*     split. *)
+(*     + have := join_leq; by firstorder. *)
+(*     + move => H. *)
+(*       apply leq_join. *)
+(*       by rewrite {2}H. *)
+(* Defined. *)
+      
+
+(* bounded *)
+Axiom join_Top_r : forall a, a * q_Top = q_Top.
+Axiom meet_Bot_r : forall a, a + q_Bot = q_Bot.
+
+Axiom C_lt_Top : q_C < q_Top.
+
+Axiom R_lt_C : q_R < q_C.
+
+(* Everything is either below or above C, and you can tell which *)
+Axiom order_q_C_dec : forall q, { q <= q_C } + { q_C < q }.
 
 
 End GradeSig.
@@ -114,9 +150,19 @@ Section GradeFacts.
 
 Local Open Scope grade_scope.
 
+(* Example meet_lt_join : forall a b, a + b <= a * b. *)
+(* Proof. move => a b. *)
+(*        cut (meet a b ≤ join a b); first by done. *)
+(*        lattice. *)
+(* Qed.        *)
+       
+       
+
 Lemma q_leb_antisym : forall a b, a <= b -> b <= a -> a = b.
 Proof. intros. apply join_leq in H. apply join_leq in H0. rewrite join_comm in H0.
 rewrite <- H. symmetry. auto. Qed.
+
+
 
 Lemma leq_Top : forall a, a <= q_Top. 
 Proof. intros. apply leq_join. rewrite join_Top_r. auto. Qed.

@@ -17,11 +17,11 @@ Lemma Typing_leq_C :
      (forall G0 psi p1 p2 (H : Iso G0 psi p1 p2), psi <= q_C) /\
      (forall G0 psi phi (H : DefEq G0 psi phi), psi <= q_C) /\
       (forall G0 (H : Ctx G0), True) /\
-    (forall G0 psi psi0 A B T (H : CDefEq G0 psi psi0 A B T), psi <= q_C).
+    (forall G0 psi psi0 A B T (H : CDefEq G0 psi psi0 A B T), True) /\
+    (forall G psi b A, CTyping G psi b A -> True).
 Proof. 
-  apply typing_wff_iso_defeq_mutual; intros; subst; simpl; simpl_env; auto.
+  ext_induction CON; intros; subst; simpl; simpl_env; auto.
   all : try solve [pick fresh x; repeat spec x; auto].
-  - hauto lq: on db: lattice_props use: leq_join_r.
 Qed.
 
 Lemma join_ctx_r_ctx_sub : forall W q, uniq W ->  ctx_sub W (join_ctx_r q W).
@@ -45,6 +45,48 @@ From Coq Require Import ssreflect ssrfun ssrbool.
 Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
+
+(* we can pump a coercion to arbitrary levels *)
+(* NOTE: this theorem should break when relevant coercions are
+introduced. That is expected and the theorem need to be restricted
+ specifically for equations *)
+
+
+(* Lemma Typing_pumping_co : *)
+(*   forall G psi b A (H : Typing G psi b A), *)
+(*   forall E c psi0 phi F psi3,   G = (E ++ [(c, (psi0, Co phi))] ++ F) -> *)
+(*                            Typing (E ++ [(c, (psi3, Co phi))] ++ F) psi b A *)
+(* with Ctx_pumping_co : forall G  (H : Ctx G ), *)
+(*   forall E c psi0 phi F psi3, G = (E ++ [(c, (psi0, Co phi))] ++ F) -> Ctx (E ++ [(c, (psi3, Co phi))] ++ F). *)
+(* Proof. *)
+(* move => G psi b A H. *)
+(*     induction H; subst; *)
+(*     intros; eauto. *)
+(*   - move => G H. *)
+(*     induction H; subst; intros; eauto. *)
+(*     + move : E H2. *)
+(*       case => [ /ltac:(scongruence) | a E']. *)
+(*       inversion 1; subst. *)
+(*       simpl_env. *)
+(*       constructor; auto. *)
+(*       sfirstorder. *)
+(*       simpl_env in H0. *)
+(*       simpl_env. *)
+(*       hauto l:on. *)
+(*     + move : E H2. *)
+(*       case => [ | a E']; inversion 1; subst. *)
+(*       sauto lq: on rew: off. *)
+(*       simpl_env. *)
+(*       constructor; auto. *)
+(*       sfirstorder. *)
+(*       simpl_env. *)
+(*       simpl_env in H0. *)
+(*       Guarded. *)
+(*       best. *)
+
+(*       Unshelve. all : auto. *)
+(* Qed. *)
+      
 
 Lemma Typing_pumping_middle_mutual :
   (forall G psi b A (H : Typing G psi b A),
@@ -79,9 +121,6 @@ Lemma Typing_pumping_middle_mutual :
          psi1 <= psi -> 
          CDefEq (E ++ [(x, (psi0 * psi1, B))] ++ F) psi psi2 a b T).
 Proof.
-  Ltac reassoc_env := match goal with
-                       |  |- context[?A ++ ?B ++ ?C ++ ?D] => rewrite_env ((A ++ B) ++ C ++ D)
-                      end.
 
   ext_induction CON; intros; subst; eauto 3.
   all : try solve [eapply CON; eauto 3 using q_leb_trans].
@@ -313,3 +352,5 @@ Lemma Typing_pumping_middle :  forall G psi b A (H : Typing G psi b A),
     psi1 <= psi -> 
     Typing (E ++ [(x, (psi0 * psi1, B))] ++ F) psi b A.
 Proof. sfirstorder use:Typing_pumping_middle_mutual. Qed.
+
+
