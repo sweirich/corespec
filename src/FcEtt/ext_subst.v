@@ -148,7 +148,7 @@ Qed.
   (* (y ~ (psi, Tm (tm_subst_tm_tm a x A)) ++ subst_ctx a x F ++ G0) *)
 Ltac rewrite_subst_context :=
   match goal with
-  | [ |- context [([(?y, (?psi, ?C (_ _ _ ?T)))] ++ subst_ctx ?a ?x ?F ++ ?G0)] ] =>
+  | [ |- context [([(?y, (?psi, ?C (_ _ _ ?T)))] ++ ?subst_ctx ?a ?x ?F ++ ?G0)] ] =>
     rewrite_env (subst_ctx a x ((y ~ (psi, (C T))) ++ F) ++ G0)
   end.
 
@@ -217,7 +217,7 @@ Proof.
     intros; subst; simpl.
   (* 44 goals *)
   all : try solve [eapply CON; eauto 2].
-  (* 35 goals *)
+  (* 33 goals *)
   (* var *)
   - destruct (x == x0).
     + subst.
@@ -459,6 +459,13 @@ Proof.
   qauto l: on ctrs: - use:tm_substitution_mutual.
 Qed.
 
+Lemma DefEq_meet_ctx_l : forall G psi phi q,
+    DefEq G psi phi ->
+    DefEq (meet_ctx_l q G) psi phi.
+Proof.
+  sfirstorder use: DefEq_Ctx, meet_ctx_l_ctx_sub.
+Qed.
+
 (* Lemma co_subst_rho: forall L x y a rho *)
 (*     (Neq: x <> y) *)
 (*     (Fr2: y `notin` L) *)
@@ -469,39 +476,78 @@ Qed.
 (*   RhoCheck_inversion y; eauto with lngen lc. *)
 (* Qed. *)
 
-(* Lemma co_substitution_mutual : *)
-(*     (forall G0 b B (H : Typing G0 b B), *)
-(*         forall G psi0 phi F c , *)
-(*           G0 = (F ++ (c ~ (psi0, Co phi) ) ++ G) *)
-(*           (* CDefEq or TDefEq? *) *)
-(*           -> CDefEq G psi0 phi *)
-(*           -> Typing (map (co_subst_co_sort g_Triv c) F ++ G) (co_subst_co_tm g_Triv c b) (co_subst_co_tm g_Triv c B)) /\ *)
-(*     (forall G0 phi (H : PropWff G0 phi), *)
-(*         forall G D A1 A2 T F c, *)
-(*           G0 = (F ++ (c ~ Co (Eq A1 A2 T) ) ++ G) *)
-(*           -> DefEq G D A1 A2 T *)
-(*           -> PropWff (map (co_subst_co_sort g_Triv c) F ++ G) (co_subst_co_constraint g_Triv c phi)) /\ *)
-(*     (forall G0 D0 p1 p2 (H : Iso G0 D0 p1 p2), *)
-(*           forall G D A1 A2 T F c, *)
-(*             G0 = (F ++ (c ~ Co (Eq A1 A2 T) ) ++ G) *)
-(*             -> DefEq G D A1 A2 T *)
-(*             -> Iso (map (co_subst_co_sort g_Triv c) F ++ G) (union D (remove c D0)) *)
-(*                     (co_subst_co_constraint g_Triv c p1) *)
-(*                     (co_subst_co_constraint g_Triv c p2)) /\ *)
-(*     (forall G0 D0 A B T (H : DefEq G0 D0 A B T), *)
-(*         forall G D F c A1 A2 T1, *)
-(*           G0 = (F ++ (c ~ Co (Eq A1 A2 T1) ) ++ G) *)
-(*           -> DefEq G D A1 A2 T1 *)
-(*           -> DefEq (map (co_subst_co_sort g_Triv c) F ++ G) (union D (remove c D0)) *)
-(*                   (co_subst_co_tm g_Triv c A) (co_subst_co_tm g_Triv c B) *)
-(*                   (co_subst_co_tm g_Triv c T)) /\ *)
-(*     (forall G0 (H : Ctx G0), *)
-(*         forall G D F c A1 A2 T, *)
-(*           G0 = (F ++ (c ~ Co (Eq A1 A2 T) ) ++ G) *)
-(*           -> DefEq G D A1 A2 T *)
-(*           -> Ctx (map (co_subst_co_sort g_Triv c) F ++ G)). *)
-(* Proof. *)
-(*   apply typing_wff_iso_defeq_mutual; auto; intros; subst; simpl. *)
+Lemma co_substitution_mutual :
+    (forall G0 psi b B (H : Typing G0 psi b B),
+        forall G psi0 phi F c ,
+          G0 = (F ++ (c ~ (psi0, Co phi) ) ++ G)
+          (* CDefEq or TDefEq? *)
+          (* -> psi0 <= q_C *)
+          -> DefEq G psi0 phi
+          -> Typing (subst_ctx_co g_Triv c F ++ G) psi (co_subst_co_tm g_Triv c b) (co_subst_co_tm g_Triv c B)) /\
+    (forall G0 psi phi (H : PropWff G0 psi phi),
+        forall G psi0 phi0 F c,
+          G0 = (F ++ (c ~ (psi0, Co phi0) ) ++ G)
+          (* -> psi0 <= q_C *)
+          -> DefEq G psi0 phi0
+          -> PropWff (subst_ctx_co g_Triv c F ++ G) psi (co_subst_co_constraint g_Triv c phi)) /\
+    (forall G0 psi p1 p2 (H : Iso G0 psi p1 p2),
+          forall G psi0 phi F c,
+            G0 = (F ++ (c ~ (psi0, Co phi) ) ++ G)
+            (* -> psi0 <= q_C *)
+            -> DefEq G psi0 phi
+            -> Iso (subst_ctx_co g_Triv c F ++ G) psi
+                    (co_subst_co_constraint g_Triv c p1)
+                    (co_subst_co_constraint g_Triv c p2)) /\
+    (forall G0 psi phi (H : DefEq G0 psi phi),
+        forall G psi0 phi0 F c,
+          G0 = (F ++ (c ~ (psi0, Co phi0) ) ++ G)
+          -> DefEq G psi0 phi0
+          -> DefEq (subst_ctx_co g_Triv c F ++ G) psi
+                  (co_subst_co_constraint g_Triv c phi)) /\
+    (forall G0 (H : Ctx G0),
+        forall G psi0 phi F c,
+          G0 = (F ++ (c ~ (psi0, Co phi) ) ++ G)
+          -> DefEq G psi0 phi
+          -> Ctx ( subst_ctx_co g_Triv c F ++ G)) /\
+    (forall G0 psi psi1 a b T (H : CDefEq G0 psi psi1 a b T),
+        forall G psi0 phi F c,
+          G0 = (F ++ (c ~ (psi0, Co phi) ) ++ G)
+          -> DefEq G psi0 phi
+          -> CDefEq (subst_ctx_co g_Triv c F ++ G)
+                   psi psi1
+                   (co_subst_co_tm g_Triv c a)
+                   (co_subst_co_tm g_Triv c b)
+                   (co_subst_co_tm g_Triv c T)) /\
+    (forall G0 psi b B (H : CTyping G0 psi b B),
+        forall G psi0 phi F c ,
+          G0 = (F ++ (c ~ (psi0, Co phi) ) ++ G)
+          (* CDefEq or TDefEq? *)
+          -> psi0 <= q_C
+          -> DefEq G psi0 phi
+          -> CTyping (subst_ctx_co g_Triv c F ++ G) psi (co_subst_co_tm g_Triv c b) (co_subst_co_tm g_Triv c B)).
+Proof.
+  ext_induction CON; auto; intros; subst; simpl.
+  all : try solve [eapply CON; eauto 2].
+  (* 34 goals remaining *)
+  - eapply CON; eauto 2. admit.
+  - pick fresh y and apply CON; eauto.
+    autorewrite with subst_open_var; eauto 2 with lc.
+    rewrite_subst_context. qauto l:on.
+  - pick fresh y and apply CON; eauto.
+    autorewrite with subst_open_var; eauto 2 with lc.
+    rewrite_subst_context; qauto l:on.
+    simpl_env.
+    apply : H0.
+    simpl_env.
+    reflexivity.
+    apply DefEq_meet_ctx_l with (q := q_C) in H2.
+    rewrite meet_comm meet_leq //.
+    sfirstorder use:Typing_leq_C.
+  - inversion c; subst;
+      (* TODO: use subst_open for co *)
+      autorewrite with subst_open.
+    
+
 (*   Focus 22. destruct rho. Unfocus.  *)
 (*    all: try first [ E_pick_fresh y; autorewrite with subst_open_var; eauto 2 with lc; *)
 (*                     try rewrite_subst_context; eauto 3 *)

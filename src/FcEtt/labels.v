@@ -55,12 +55,18 @@ Qed.
 
 Lemma labels_subst_ctx : forall a x W1, labels (subst_ctx a x W1) = labels W1.
 Proof.
-  intros. induction W1; intros. auto. 
-  try destruct a0; try destruct p; try destruct s; subst. simpl. sfirstorder.
-  sfirstorder.
+  move => a x.
+  elim => [// | /ltac:(sauto lq: on inv: sort)].
 Qed.
 
+Lemma labels_subst_ctx_co : forall g c W1, labels (subst_ctx g c W1) = labels W1.
+Proof.
+  move => g c.
+  elim => [// | /ltac:(sauto lq: on inv: sort)].
+Qed.  
+
 Hint Rewrite labels_subst_ctx : rewr_list.
+Hint Rewrite labels_subst_ctx_co : rewr_list.
 Hint Rewrite labels_one : rewr_list.
 Hint Rewrite labels_app : rewr_list.
 Hint Rewrite labels_dom : rewr_dom.
@@ -110,6 +116,12 @@ Lemma dom_subst_ctx : forall {W} a x, dom (subst_ctx a x W) = dom W.
 Proof.
   elim; by [sfirstorder |hauto lq:on].
 Qed.
+
+Lemma dom_subst_ctx_co : forall {W} g c, dom (subst_ctx g c W) = dom W.
+Proof.
+  elim; by [sfirstorder |hauto lq:on].
+Qed.
+
 
 Lemma ctx_sub_meet_ctx_l :  forall {G1 G2},  ctx_sub G1 G2 -> ctx_sub (meet_ctx_l q_C G1) (meet_ctx_l q_C G2).
 Proof.
