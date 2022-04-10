@@ -466,6 +466,18 @@ Proof.
   sfirstorder use: DefEq_Ctx, meet_ctx_l_ctx_sub.
 Qed.
 
+(* YL: Maybe DefEq  *)
+Lemma DefEq_meet_l_C : forall G psi phi,
+    DefEq G psi phi ->
+    DefEq (meet_ctx_l q_C G) (q_C + psi) phi.
+Proof.
+  move => G psi phi H.
+  have h0 : psi <= q_C by sfirstorder use:Typing_leq_C.
+  rewrite meet_comm meet_leq //.
+  sfirstorder use:DefEq_meet_ctx_l.
+Qed.
+
+
 (* Lemma co_subst_rho: forall L x y a rho *)
 (*     (Neq: x <> y) *)
 (*     (Fr2: y `notin` L) *)
@@ -540,13 +552,119 @@ Proof.
     apply : H0.
     simpl_env.
     reflexivity.
-    apply DefEq_meet_ctx_l with (q := q_C) in H2.
-    rewrite meet_comm meet_leq //.
-    sfirstorder use:Typing_leq_C.
+    sfirstorder use:DefEq_meet_l_C.
   - inversion c; subst;
-      (* TODO: use subst_open for co *)
-      autorewrite with subst_open.
-    
+      autorewrite with subst_open; hauto l: on use:Typing_leq_C.
+  (* Conv *)
+  - admit.
+  - pick fresh y and apply CON; eauto.
+    autorewrite with subst_open_var; eauto 2 with lc.
+    rewrite_subst_context; qauto l:on.
+  - pick fresh y and apply CON; eauto.
+    autorewrite with subst_open_var; eauto 2 with lc.
+    rewrite_subst_context; qauto l:on.
+    simpl_env.
+    apply : H0.
+    simpl_env.
+    reflexivity.
+    sfirstorder use:DefEq_meet_l_C.
+  - autorewrite with subst_open; eauto 2 with lc.
+    apply : CON => //.
+    + sfirstorder.
+    + simpl_env.
+      apply : H0; first
+        by simpl_env.
+      sfirstorder use:DefEq_meet_l_C.
+  - have h0: Typing nil psi0 a A  by eauto using toplevel_closed.
+    have h1: c0 `notin` fv_co_co_tm A by
+      apply Typing_context_fv in h0; split_hyp; fsetdec.
+    rewrite co_subst_co_tm_fresh_eq //; by hauto l:on.
+  - pick fresh y and apply CON; eauto.
+    rewrite co_subst_co_constraint_open_constraint_wrt_co_var //; last by fsetdec.
+    by rewrite_subst_context; qauto l:on.
+  - qauto l: on depth:1.
+  - qauto l: on depth:1.
+  - pick fresh y and apply CON; eauto 2.
+    rewrite !co_subst_co_constraint_open_constraint_wrt_co_var //.
+    by rewrite_subst_context; qauto l:on.
+    all : by fsetdec.
+  (* EAssn *)
+  - admit.
+  - hfcrush ctrs: - use: Beta_co_subst db: lc.
+  - pick fresh y and apply CON; eauto 2.
+    + sfirstorder.
+    + autorewrite with subst_open_var; eauto 2 with lc.
+      rewrite_subst_context.
+      eapply H0.
+      by fsetdec.
+      by simpl_env.
+      by exact.
+  - pick fresh y and apply CON; eauto 2.
+    autorewrite with subst_open_var; eauto 2 with lc.
+    rewrite_subst_context.
+    eapply H; eauto.
+    by simpl_env.
+    simpl_env.
+    apply / H0 => //.
+    by simpl_env.
+    by apply DefEq_meet_l_C.
+  - inversion c; subst;
+      autorewrite with subst_open; eauto 2 with lc.
+    + hauto l:on.
+    + hauto l:on.
+  - hauto l:on.
+  - autorewrite with subst_open; eauto 2 with lc.
+    hauto l:on.
+  - pick fresh y and apply CON; eauto 2.
+    autorewrite with subst_open_var; eauto 2 with lc.
+    rewrite_subst_context. eapply H0.
+    + fsetdec.
+    + by simpl_env.
+    + exact.
+  - pick fresh y and apply CON; eauto 2.
+    autorewrite with subst_open_var; eauto 2 with lc.
+    rewrite_subst_context.
+    eapply H; eauto.
+    by simpl_env.
+    simpl_env.
+    apply : H0.
+    by simpl_env.
+    by apply DefEq_meet_l_C.
+  - autorewrite with subst_open; eauto 2 with lc.
+    eapply CON with (phi := co_subst_co_constraint g_Triv c phi).
+    apply : H; eauto 3.
+    simpl_env.
+    apply : H0.
+    by simpl_env.
+    by apply DefEq_meet_l_C.
+  - autorewrite with subst_open; eauto 2 with lc.
+    apply /CON.
+    + sfirstorder.
+    + simpl_env.
+      eapply H0.
+      by simpl_env.
+      by apply DefEq_meet_l_C.
+    + simpl_env.
+      eapply H1.
+      by simpl_env.
+      by apply DefEq_meet_l_C.
+  - apply /CON; first by sfirstorder.
+    simpl_env.
+    eapply H0.
+    by simpl_env.
+    by apply DefEq_meet_l_C.
+  - pick fresh y and apply CON.
+    sfirstorder.
+    autorewrite with subst_open_var; eauto 2 using CTyping_lc1.
+    rewrite e; fsetdec.
+  - pick fresh y and apply CON.
+    sfirstorder.
+    autorewrite with subst_open_var; eauto 2 using CTyping_lc1.
+    rewrite e; fsetdec.
+  - rewrite -!co_subst_co_constraint_open_constraint_wrt_co_var; eauto 2 using CTyping_lc1.
+    move : (H G0 psi0 phi0 F c0 eq_refl H2) => h0.
+
+
 
 (*   Focus 22. destruct rho. Unfocus.  *)
 (*    all: try first [ E_pick_fresh y; autorewrite with subst_open_var; eauto 2 with lc; *)
