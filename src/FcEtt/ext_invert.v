@@ -395,6 +395,8 @@ Qed.
 
 
 
+(* provable, but would take a lot more effort than I'd like to *)
+(* Ideally, we want to say the Iso on the RHS is diagonal (never looks at ) *)
 Lemma refl_iso: forall G psi phi, PropWff G psi phi -> Iso G psi phi phi.
 Proof.
   intros G D phi H.
@@ -424,7 +426,7 @@ Proof.
   - eapply E_IsoConv; eauto.
   - hfcrush.
   - pick fresh c and apply E_ImplCong; eauto 2; spec c.
-    (* lemma about swapping ? if phi1 == phi2, then G, c : phi1 |- ... iff G, c : phi2 |- ... *)
+    (* a lemma about swapping ? if phi1 == phi2, then G, c : phi1 |- ... iff G, c : phi2 |- ... *)
     admit.
 Admitted.
 
@@ -560,15 +562,11 @@ Proof.
     have CTX: Ctx G by hauto l:on use:Typing_Ctx.
     have TC: Typing (meet_ctx_l q_C G) q_C (a_CPi q_Top phi B1) a_Star. eapply Typing_regularity; eauto.
     destruct (invert_a_CPi TC) as [_ [[L h4] h5]].
-    pick fresh x.
-    move: (h4 x ltac:(auto)) => h6.
-    (* capped at q_C *)
-    admit.
-    (* eapply Typing_co_subst  in h6. simpl in h6. *)
-    (* rewrite (co_subst_co_tm_intro x); eauto. *)
-    (* simpl; eauto. *)
-Admitted.
-
+    pick fresh c0.
+    move: (h4 c0 ltac:(auto)) => h6.
+    apply Typing_co_subst  in h6; last by auto. simpl in h6.
+    rewrite (co_subst_co_tm_intro c0); eauto.
+Qed.
 
 (* --------------------------------------------------- *)
 
