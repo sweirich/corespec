@@ -553,6 +553,7 @@ Proof.
     simpl_env.
     reflexivity.
     sfirstorder use:DefEq_meet_l_C.
+  (* App *)
   - inversion c; subst;
       autorewrite with subst_open; hauto l: on use:Typing_leq_C.
   (* Conv *)
@@ -661,9 +662,13 @@ Proof.
     sfirstorder.
     autorewrite with subst_open_var; eauto 2 using CTyping_lc1.
     rewrite e; fsetdec.
-  - rewrite -!co_subst_co_constraint_open_constraint_wrt_co_var; eauto 2 using CTyping_lc1.
-    move : (H G0 psi0 phi0 F c0 eq_refl H2) => h0.
-
+  -                             (* from E_App *)
+    (* Typing (subst_ctx_co g_Triv c0 F ++ G0) psi ...  (co_subst_co_tm g_Triv c0 (open_tm_wrt_tm B a)) *)
+    (* shouldn't be opening wrt. var c. instead should open with g_Triv *)
+(* TODO: recompile ett.ott with the ImplAbs fix   *)
+    (* move : (H G0 psi0 phi0 F c0 eq_refl H2) => h0. *)
+    (* simpl in h0. *)
+    Admitted.
 
 
 (*   Focus 22. destruct rho. Unfocus.  *)
@@ -823,16 +828,15 @@ Proof.
 (*          apply (H0 G0 D A1 A2 T F c1); auto. *)
 (* Qed. *)
 
-(* Lemma Typing_co_subst: *)
-(*    forall G D c a1 a2 A b B (H : Typing (c ~ (Co (Eq a1 a2 A)) ++ G) b B), *)
-(*      DefEq G D a1 a2 A -> *)
-(*      Typing G (co_subst_co_tm g_Triv c b) (co_subst_co_tm g_Triv c B). *)
-(* Proof. *)
-(*   intros. *)
-(*   move: (first co_substitution_mutual) => ho. *)
-(*   eapply ho with (F := nil); eauto. *)
-(*   simpl; auto. *)
-(* Qed. *)
+Lemma Typing_co_subst:
+  forall G psi c psi0 phi b B (H : Typing (c ~ (psi0, (Co phi)) ++ G) psi b B),
+     DefEq G psi0 phi ->
+     Typing G psi (co_subst_co_tm g_Triv c b) (co_subst_co_tm g_Triv c B).
+Proof.
+  intros.
+  move: co_substitution_mutual => [ho _].
+  by eapply ho with (F := nil); eauto.
+Qed.
 
 (* -------------------- *)
 
