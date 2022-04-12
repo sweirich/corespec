@@ -1477,7 +1477,7 @@ G |= psi phi1 == phi2
 % There's no Assn rule for Iso anyway
 % see if consistency goes through with c : psi instead of c : top
 G |= psi phi1 == phi2
-G , c : psi phi1 |= psi phi3 == phi4
+G , c : top phi1 |= psi phi3 == phi4
 [ G |= psi phi1 ok ]
 -------------------------------------- :: ImplCong
 G |= psi all c : phi1 . phi3 == all c : phi2 . phi4
