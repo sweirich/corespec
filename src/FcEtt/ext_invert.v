@@ -230,13 +230,11 @@ Proof.
     pick_fresh c.
     rewrite (co_subst_co_tm_intro c); auto.
     un_subst_tm.
-    (* DefEq meet_ctx_l is sufficient *)
-    admit.
-    (* eapply Typing_co_subst; eauto. *)
+    eapply Typing_co_subst; eauto.
   - eapply Typing_weakening with (F:=nil)(G := nil) in H1.
     simpl_env in H1. eauto. auto. simpl_env.
     sfirstorder use:Ctx_meet_l_C.
-Admitted.
+Qed.
 
 (* --------------------------------------------------- *)
 
@@ -393,29 +391,26 @@ Proof.
     apply : Typing_pumping_weakening; eauto using leq_meet_l.
 Qed.
 
+Lemma PropWff_pumping_co_front :
+  forall {c phi0 psi0 F psi1 psi phi} (H : PropWff ([(c, (psi0, (Co phi0)))] ++  F) psi phi),
+    PropWff ([(c, (psi1, (Co phi0)))] ++ F) psi phi.
+Proof.
+  move =>>; rewrite -[_++_]app_nil_l.
+  qauto l: on use: Typing_pumping_co_middle_mutual.
+Qed.
 
-
-(* provable, but would take a lot more effort than I'd like to *)
-(* Ideally, we want to say the Iso on the RHS is diagonal (never looks at ) *)
 Lemma refl_iso: forall G psi phi, PropWff G psi phi -> Iso G psi phi phi.
 Proof.
-  intros G D phi H.
-  induction H.
-  - sfirstorder use:Typing_regularity.
-  - pick fresh c and apply E_ImplCong; spec c.
-    + done.
-    (* add an admissible top rule? *)
-    (* this can be "fixed" by changing the ImplWff to use top for the premise *)
-    (* or (THIS DOES NOT ACTUALLY WORK) by prove a stronger version of pumping for coercions *)
-
-    (* what happens when we have relevant coercions? we should know
-    whether a coercion ought to represent an equation or a potentially
-    relevant term *)
-    (* for the equations/props, we use top. Otherwise, we use psi *)
-    + admit.
-    + done.
-Admitted.    
-
+  suff : forall phi, lc_constraint phi -> forall G psi, PropWff G psi phi -> Iso G psi phi phi by sfirstorder use:PropWff_lc.
+  move => phi; elim.
+  - fcrush.
+  - move => phi1 phi2 lc_phi1 IH1 lc_phi2 IH2 G psi H.
+    inversion H; subst.
+    pick fresh c0 and apply E_ImplCong.
+    + sauto lq:on.
+    + qauto l: on use: PropWff_pumping_co_front.
+    + exact.
+Qed.
 
 Lemma sym_iso: forall G psi phi1 phi2, Iso G psi phi1 phi2 -> Iso G psi phi2 phi1.
 Proof.
