@@ -675,6 +675,12 @@ Proof.
   simpl. rewrite IHcontext_DefEq. auto.
 Qed.
 
+(* THIS DOES NOT ACTUALLY HOLD *)
+(* Lemma context_DefEq_meet_l_C : *)
+(*   forall psi G1 G2, context_DefEq psi G1 G2 -> context_DefEq q_C (meet_ctx_l q_C G1) (meet_ctx_l q_C G2). *)
+(* Proof. *)
+(*   induction 1; eauto 2. *)
+(*   -  *)
 
 (* Lemma context_DefEq_weaken_available : *)
 (*   forall D G1 G2, context_DefEq D G1 G2 -> context_DefEq (dom G1) G1 G2. *)
@@ -701,19 +707,18 @@ Qed.
 
 
 (* TODO: add sym_iso to the post condition of Iso? *)
-(* Lemma context_DefEq_mutual: *)
-(*   (forall G1  a A,   Typing G1 a A -> forall D G2, *)
-(*         Ctx G2 -> context_DefEq D G1 G2 -> Typing G2 a A) /\ *)
-(*   (forall G1  phi,   PropWff G1 phi -> forall D G2, *)
-(*         Ctx G2 -> context_DefEq D G1 G2 -> PropWff G2 phi) /\ *)
-(*   (forall G1 D p1 p2, Iso G1 D p1 p2 -> *)
-(*                   forall G2, Ctx G2 -> context_DefEq D G1 G2 -> Iso G2 D p1 p2) /\ *)
-
-(* TODO: PAY ATTENTION TO THIS LINE *)
-(*   (forall G1 D1 A B T,   DefEq G1 D1 A B T -> forall G2, Ctx G2 -> context_DefEq D1 G1 G2 -> *)
-(*                                           DefEq G2 D1 A B T) /\ *)
-(*   (forall G1 ,       Ctx G1 -> forall G2 D x A, Ctx G2 -> context_DefEq D G1 G2 *)
-(*                                    -> binds x (Tm A) G1 -> Typing G2 A a_Star). *)
+(* I'm worried that this may no longer hold *)
+Lemma context_DefEq_mutual:
+  (forall G1  a A,   Typing G1 a A -> forall D G2,
+        Ctx G2 -> context_DefEq D G1 G2 -> Typing G2 a A) /\
+  (forall G1  phi,   PropWff G1 phi -> forall D G2,
+        Ctx G2 -> context_DefEq D G1 G2 -> PropWff G2 phi) /\
+  (forall G1 D p1 p2, Iso G1 D p1 p2 ->
+                  forall G2, Ctx G2 -> context_DefEq D G1 G2 -> Iso G2 D p1 p2) /\
+  (forall G1 D1 A B T,   DefEq G1 D1 A B T -> forall G2, Ctx G2 -> context_DefEq D1 G1 G2 ->
+                                          DefEq G2 D1 A B T) /\
+  (forall G1 ,       Ctx G1 -> forall G2 D x A, Ctx G2 -> context_DefEq D G1 G2
+                                   -> binds x (Tm A) G1 -> Typing G2 A a_Star).
 (* Proof. *)
 (*   apply typing_wff_iso_defeq_mutual; eauto 3; try done. *)
 (*   - intros G1 x A c H b D G2 H0 H1. *)
