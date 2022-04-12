@@ -412,18 +412,18 @@ Proof.
     + exact.
 Qed.
 
-Lemma sym_iso: forall G psi phi1 phi2, Iso G psi phi1 phi2 -> Iso G psi phi2 phi1.
-Proof.
-  intros G psi phi1 phi2 H.
-  induction H.
-  - assert (Ctx G). sfirstorder use:DefEq_Ctx.
-    apply E_PropCong; apply E_Sym; auto.
-  - eapply E_IsoConv; eauto.
-  - hfcrush.
-  - pick fresh c and apply E_ImplCong; eauto 2; spec c.
-    (* a lemma about swapping ? if phi1 == phi2, then G, c : phi1 |- ... iff G, c : phi2 |- ... *)
-    admit.
-Admitted.
+(* Lemma sym_iso: forall G psi phi1 phi2, Iso G psi phi1 phi2 -> Iso G psi phi2 phi1. *)
+(* Proof. *)
+(*   intros G psi phi1 phi2 H. *)
+(*   induction H. *)
+(*   - assert (Ctx G). sfirstorder use:DefEq_Ctx. *)
+(*     apply E_PropCong; apply E_Sym; auto. *)
+(*   - eapply E_IsoConv; eauto. *)
+(*   - hfcrush. *)
+(*   - pick fresh c and apply E_ImplCong; eauto 2; spec c. *)
+(*     (* a lemma about swapping ? if Iso phi1 phi2, then G, c : phi1 |- ... iff G, c : phi2 |- ... *) *)
+(*     admit. *)
+(* Admitted. *)
 
 (* --------------------------------------------------- *)
 
@@ -565,95 +565,94 @@ Qed.
 
 (* --------------------------------------------------- *)
 
-(* Inductive context_DefEq : available_props -> context -> context -> Prop := *)
-(* | Nul_Eqcontext: forall D, context_DefEq D nil nil *)
-(* | Factor_Eqcontext_tm: forall G1 G2 D A A' x, *)
-(*     context_DefEq D G1 G2 -> *)
-(*     DefEq G1 D A A' a_Star -> *)
-(*     DefEq G2 D A A' a_Star -> *)
-(*     context_DefEq D ([(x, Tm A)] ++ G1) ([(x, Tm A')] ++ G2) *)
-(* | Factor_Eqcontext_co: forall D G1 G2 Phi1 Phi2 c, *)
-(*     context_DefEq D G1 G2 -> *)
-(*     Iso G1 D Phi1 Phi2 -> *)
-(*     Iso G2 D Phi1 Phi2 -> *)
-(*     context_DefEq D ([(c, Co Phi1)] ++ G1) ([(c, Co Phi2)] ++ G2). *)
+Inductive context_DefEq : grade -> context -> context -> Prop :=
+| Nul_Eqcontext: forall psi, context_DefEq psi nil nil
+| Factor_Eqcontext_tm: forall psi psi0 G1 G2 A A' x,
+    context_DefEq psi G1 G2 ->
+    DefEq G1 psi (Eq A A' a_Star) ->
+    DefEq G2 psi (Eq A A' a_Star) ->
+    context_DefEq psi ([(x, (psi0, Tm A))] ++ G1) ([(x, (psi0, Tm A'))] ++ G2)
+| Factor_Eqcontext_co: forall psi psi0 G1 G2 Phi1 Phi2 c,
+    context_DefEq psi G1 G2 ->
+    Iso G1 psi Phi1 Phi2 ->
+    Iso G2 psi Phi1 Phi2 ->
+    context_DefEq psi ([(c, (psi0, Co Phi1))] ++ G1) ([(c, (psi0, Co Phi2))] ++ G2).
 
-(* Hint Constructors context_DefEq. *)
+Hint Constructors context_DefEq.
 
-(* Lemma context_tm_binding_defeq: forall D (G1 G2: context) A x, *)
-(*     Ctx G1 -> Ctx G2 -> context_DefEq D G1 G2 -> *)
-(*     binds x (Tm A) G1 -> exists A', (binds x (Tm A') G2) /\ DefEq G2 D A A' a_Star. *)
-(* Proof. *)
-(*   intros D G1 G2 A x H1 h0 H H0. *)
-(*   induction H; try done. *)
-(*   - case H0; simpl. *)
-(*     + intros M4. *)
-(*       exists A'. *)
-(*       * split; auto. *)
-(*          -- left. *)
-(*             inversion M4; auto. *)
-(*          -- inversion M4; subst; clear M4. *)
-(*             rewrite_env (nil ++ [(x, Tm A')] ++ G2). *)
-(*             pose K := DefEq_weakening. *)
-(*             inversion h0; subst. *)
-(*             inversion H1; subst. *)
-(*             eapply K with (G0 := G2). *)
-(*             all: eauto. *)
-(*     + intros M4. *)
-(*       case IHcontext_DefEq; auto; try done. *)
-(*       * by inversion H1. *)
-(*       * by inversion h0. *)
-(*       * intros A2 [h1 h2]. *)
-(*          exists A2. *)
-(*          split; auto. *)
-(*          rewrite_env (nil ++ [(x0, Tm A')] ++ G2). *)
-(*          pose K := DefEq_weakening. *)
-(*          eapply K; eauto. *)
-(*   - case H0; try done; simpl. *)
-(*     move => h1. *)
-(*     case IHcontext_DefEq; auto. *)
-(*     + by inversion H1. *)
-(*     + by inversion h0. *)
-(*     + intros A2 [h2 h3]. *)
-(*        exists A2. *)
-(*        split; auto. *)
-(*        rewrite_env (nil ++ [(c, Co Phi2)] ++ G2). *)
-(*        pose K := DefEq_weakening. *)
-(*        eapply K; eauto. *)
-(* Qed. *)
+Lemma context_tm_binding_defeq: forall psi (G1 G2: context) A psi0 x,
+    Ctx G1 -> Ctx G2 -> context_DefEq psi G1 G2 ->
+    binds x (psi0, (Tm A)) G1 -> exists A', (binds x (psi0, (Tm A')) G2) /\ DefEq G2 psi (Eq A A' a_Star).
+Proof.
+  intros psi G1 G2 A psi0 x H1 h0 H H0.
+  induction H; try done.
+  - case H0; simpl.
+    + intros M4.
+      exists A'.
+      * split; auto.
+         -- left.
+            inversion M4; auto.
+         -- inversion M4; subst; clear M4.
+            rewrite_env (nil ++ [(x, (psi0, Tm A'))] ++ G2).
+            have K := DefEq_weakening.
+            inversion h0; subst.
+            inversion H1; subst.
+            eapply K with (G := G2).
+            all: eauto.
+    + intros M4.
+      case IHcontext_DefEq; auto; try done.
+      * by inversion H1.
+      * by inversion h0.
+      * intros A2 [h1 h2].
+         exists A2.
+         split; auto.
+         rewrite_env (nil ++ [(x0, (psi1, Tm A'))] ++ G2).
+         have K := DefEq_weakening.
+         eapply K; eauto.
+  - case H0; try done; simpl.
+    move => h1.
+    case IHcontext_DefEq; auto.
+    + by inversion H1.
+    + by inversion h0.
+    + intros A2 [h2 h3].
+       exists A2.
+       split; auto.
+       rewrite_env (nil ++ [(c, (psi1, Co Phi2))] ++ G2).
+       pose K := DefEq_weakening.
+       eapply K; eauto.
+Qed.
 
-(* Lemma context_co_binding_defeq: *)
-(*   forall D (G1 G2: context) phi1 c, *)
-(*     Ctx G1 -> *)
-(*     Ctx G2 -> context_DefEq D G1 G2 -> *)
-(*     binds c (Co phi1) G1 -> *)
-(*     exists phi2, (binds c (Co phi2) G2) /\ Iso G2 D phi1 phi2. *)
-(* Proof. *)
-(*   intros G1 G2 phi1 c m H Hip H0 H1. *)
-(*   induction H0; auto; try done. *)
-(*   - case H1; move => h0. *)
-(*     inversion h0. *)
-(*     destruct IHcontext_DefEq as [phi2 [h1 h2 ]]; auto. *)
-(*     + inversion H; auto. *)
-(*     + by inversion Hip. *)
-(*     + exists phi2. *)
-(*       split. *)
-(*       * right; auto. *)
-(*       * eapply Iso_weakening with (F := nil); eauto. *)
-(*   - case H1; move => h0. *)
-(*     + inversion h0; subst; clear h0. *)
-(*       exists Phi2. *)
-(*       split. *)
-(*       * auto. *)
-(*       * eapply Iso_weakening with (F:=nil) (G0 := G2); eauto. *)
-(*     + destruct IHcontext_DefEq as [phi2 [h1 h2]]; auto. *)
-(*       * inversion H; auto. *)
-(*       * by inversion Hip. *)
-(*       * exists phi2. *)
-(*         split; auto. *)
-(*         eapply Iso_weakening with (F:=nil); eauto. *)
-(* Qed. *)
-
+Lemma context_co_binding_defeq:
+  forall psi (G1 G2: context) phi1 psi0 c,
+    Ctx G1 ->
+    Ctx G2 -> context_DefEq psi G1 G2 ->
+    binds c (psi0, (Co phi1)) G1 ->
+    exists phi2, (binds c (psi0, (Co phi2)) G2) /\ Iso G2 psi phi1 phi2.
+Proof.
+  intros psi G1 G2 phi1 psi0 c H Hip H0 H1.
+  induction H0; auto; try done.
+  - case H1; move => h0.
+    inversion h0.
+    destruct IHcontext_DefEq as [phi2 [h1 h2 ]]; auto.
+    + inversion H; auto.
+    + by inversion Hip.
+    + exists phi2.
+      split.
+      * right; auto.
+      * eapply Iso_weakening with (F := nil); eauto.
+  - case H1; move => h0.
+    + inversion h0; subst; clear h0.
+      exists Phi2.
+      split.
+      * auto.
+      * eapply Iso_weakening with (F:=nil) (G := G2); eauto.
+    + destruct IHcontext_DefEq as [phi2 [h1 h2]]; auto.
+      * inversion H; auto.
+      * by inversion Hip.
+      * exists phi2.
+        split; auto.
+        eapply Iso_weakening with (F:=nil); eauto.
+Qed.
 
 (* Lemma context_DefEq_sub : *)
 (*   forall D G1 G2, context_DefEq D G1 G2 -> forall D', D [<=] D' -> context_DefEq D' G1 G2. *)
@@ -668,13 +667,13 @@ Qed.
 (*   eauto. *)
 (* Qed. *)
 
-(* Lemma same_dom : forall D (G1 : context) G2, *)
-(*     context_DefEq D G1 G2 -> (@dom ett_ott.sort G1) = (@dom ett_ott.sort G2). *)
-(* Proof. *)
-(*   induction 1; auto. *)
-(*   simpl. rewrite IHcontext_DefEq. auto. *)
-(*   simpl. rewrite IHcontext_DefEq. auto. *)
-(* Qed. *)
+Lemma same_dom : forall psi (G1 : context) G2,
+    context_DefEq psi G1 G2 -> (dom G1) = (dom G2).
+Proof.
+  induction 1; auto.
+  simpl. rewrite IHcontext_DefEq. auto.
+  simpl. rewrite IHcontext_DefEq. auto.
+Qed.
 
 
 (* Lemma context_DefEq_weaken_available : *)
@@ -701,6 +700,7 @@ Qed.
 (* Qed. *)
 
 
+(* TODO: add sym_iso to the post condition of Iso? *)
 (* Lemma context_DefEq_mutual: *)
 (*   (forall G1  a A,   Typing G1 a A -> forall D G2, *)
 (*         Ctx G2 -> context_DefEq D G1 G2 -> Typing G2 a A) /\ *)
@@ -708,6 +708,8 @@ Qed.
 (*         Ctx G2 -> context_DefEq D G1 G2 -> PropWff G2 phi) /\ *)
 (*   (forall G1 D p1 p2, Iso G1 D p1 p2 -> *)
 (*                   forall G2, Ctx G2 -> context_DefEq D G1 G2 -> Iso G2 D p1 p2) /\ *)
+
+(* TODO: PAY ATTENTION TO THIS LINE *)
 (*   (forall G1 D1 A B T,   DefEq G1 D1 A B T -> forall G2, Ctx G2 -> context_DefEq D1 G1 G2 -> *)
 (*                                           DefEq G2 D1 A B T) /\ *)
 (*   (forall G1 ,       Ctx G1 -> forall G2 D x A, Ctx G2 -> context_DefEq D G1 G2 *)

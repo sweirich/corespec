@@ -558,6 +558,7 @@ Proof.
       autorewrite with subst_open; hauto l: on use:Typing_leq_C.
   (* Conv *)
   - admit.
+  (* CPi *)
   - pick fresh y and apply CON; eauto.
     autorewrite with subst_open_var; eauto 2 with lc.
     rewrite_subst_context; qauto l:on.
@@ -616,6 +617,7 @@ Proof.
   - hauto l:on.
   - autorewrite with subst_open; eauto 2 with lc.
     hauto l:on.
+  (* CPiCong *)
   - pick fresh y and apply CON; eauto 2.
     autorewrite with subst_open_var; eauto 2 with lc.
     rewrite_subst_context. eapply H0.
