@@ -1373,7 +1373,8 @@ G |= psi x : A
 
 %% 2nd premise is redundant, but convenient for IH
 G, x:psi A |= psi B : TYPE
-[ G |= psi A : TYPE ]
+G |= psi A : TYPE
+% [ CTime /\ G |= CTime A : TYPE ]
 ------------------------------------ :: Pi
 G |= psi all x:psi0 A -> B : TYPE
 
@@ -1562,13 +1563,19 @@ G |= psi a1 ~ a2 : B
 
 %% Rules related to functions
 
-G |=  psi A1 ~ A2 : TYPE
+
+% G |= psi A2  : TYPE
+% G |=  psi A1 ~ A2 : TYPE
+% x:A -> B, x notin A?
+% CTime /\ G |= CTime A1 ~ A2 : TYPE
+G |= psi A1 ~ A2 : TYPE
 G, x: psi A1 |= psi B1 ~ B2 : TYPE
 %% this needed by weakening IH
-[G |= psi A1 : TYPE]
+% G |= psi A1 : TYPE
+% G |= psi A2 : TYPE
 %% these two needed by regularity
 [G |= psi all x: psi0 A1 -> B1 : TYPE]
-[G |= psi all x: psi0 A2 -> B2 : TYPE]
+G |= psi all x: psi0 A2 -> B2 : TYPE
 ---------------------------------------------------------- :: PiCong
 G |= psi (all x: psi0 A1 -> B1) ~ (all x: psi0 A2 -> B2) : TYPE
 
