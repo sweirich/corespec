@@ -79,6 +79,8 @@ Proof.
   qauto l: on use: tm_subst_tm_constraint_fresh_eq, ProfWff_context_fv inv: Ctx.
 Qed.
 
+Lemma co_subst_co_fresh
+
 Lemma bind_map_tm_subst_tm_sort: forall c psi F phi x a,
     binds c (psi, (Co phi)) F ->
     binds c (psi, (Co (tm_subst_tm_constraint a x phi))) (subst_ctx a x F).
@@ -572,7 +574,13 @@ Proof.
   - inversion c; subst;
       autorewrite with subst_open; hauto l: on use:Typing_leq_C.
   (* Conv *)
-  - admit.
+  - eapply CON with (psi:=psi); simpl_env; eauto 3.
+    + eapply H0.
+      by simpl_env.
+      sfirstorder use:DefEq_meet_l_C.
+    + eapply H1.
+      by simpl_env.
+      sfirstorder use:DefEq_meet_l_C.
   (* CPi *)
   - pick fresh y and apply CON; eauto.
     autorewrite with subst_open_var; eauto 2 with lc.
@@ -606,7 +614,25 @@ Proof.
     by rewrite_subst_context; qauto l:on.
     all : by fsetdec.
   (* EAssn *)
-  - admit.
+  - destruct (c == c1).
+    + subst.
+      apply binds_mid_eq in b.
+      inversion b; subst.
+      apply CON with (psi0 := psi1) (c := c1); auto 2.
+      sfirstorder.
+      
+      
+    + apply CON with (psi := psi) (psi0 := psi0) (c := c); eauto.
+      apply binds_remove_mid in b; auto.
+      destruct (binds_app_1 _ _ _ _ _ b); auto.
+      * sfirstorder use:binds_app_1, binds_app_2, binds_app_3, bind_map_tm_subst_tm_sort.
+      * apply binds_app_3.
+        apply Ctx_strengthen in c0.
+        move : (Ctx_strengthen _ _ c0) => h1.
+        move : (binds_to_PropWff _ _ _ h1 H1) => h2.
+        erewrite co_subst_fresh; eauto.
+        apply Ctx_meet_l_C in c0.
+        apply c0.
   - hfcrush ctrs: - use: Beta_co_subst db: lc.
   - pick fresh y and apply CON; eauto 2.
     + sfirstorder.
