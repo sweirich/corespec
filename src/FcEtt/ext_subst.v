@@ -610,6 +610,7 @@ Proof.
     apply / H0 => //.
     by simpl_env.
     by apply DefEq_meet_l_C.
+  (* EApp *)
   - inversion c; subst;
       autorewrite with subst_open; eauto 2 with lc.
     + hauto l:on.
@@ -667,7 +668,56 @@ Proof.
   (* ImplApp *)
   - autorewrite with subst_open;
       hauto l: on use: Typing_leq_C.
-  - 
+  (* ImplAbs *)
+  - pick fresh y and apply CON.
+    + rewrite co_subst_co_constraint_open_constraint_wrt_co_var;
+        eauto 2 using CTyping_lc1.
+      rewrite_subst_context; qauto l:on.
+    + simpl_env.
+      eapply H0.
+      by simpl_env.
+      sfirstorder use:DefEq_meet_l_C.
+  (* Ctx_Nil *)
+  - case : F H => //.
+  (* Ctx_Cons_tm *)
+  - destruct F.
+    + scongruence.
+    + inversion H1; subst.
+      simpl.
+      apply : CON.
+      by sfirstorder.
+      simpl_env.
+      apply : H0.
+      by simpl_env.
+      by sfirstorder use:DefEq_meet_l_C.
+      simpl_env.
+      rewrite dom_subst_ctx_co.
+      simpl_env in n.
+      fsetdec.
+  (* Ctx_Cons_co *)
+  - destruct F.
+    + scongruence.
+    + inversion H1; subst.
+      simpl.
+      apply : CON.
+      by sfirstorder.
+      simpl_env.
+      apply : H0.
+      by simpl_env.
+      by sfirstorder use:DefEq_meet_l_C.
+      simpl_env.
+      rewrite dom_subst_ctx_co.
+      simpl_env in n.
+      fsetdec.
+  (* CDefEq_Nleq *)
+  - apply : CDefEq_Nleq => //; first by sfirstorder.
+    all : hauto lq:on use:Typing_leq_C.
+  (* CE_Top *)
+  - apply CE_Top; last by assumption. (* solve the last subgoal by assumption *)
+    simpl_env.
+    apply : H.
+    by simpl_env.
+    by apply DefEq_meet_l_C.
 (*   Focus 22. destruct rho. Unfocus.  *)
 (*    all: try first [ E_pick_fresh y; autorewrite with subst_open_var; eauto 2 with lc; *)
 (*                     try rewrite_subst_context; eauto 3 *)

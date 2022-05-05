@@ -117,11 +117,10 @@ Proof.
   elim; by [sfirstorder |hauto lq:on].
 Qed.
 
-Lemma dom_subst_ctx_co : forall {W} g c, dom (subst_ctx g c W) = dom W.
+Lemma dom_subst_ctx_co : forall {W} g c, dom (subst_ctx_co g c W) = dom W.
 Proof.
   elim; by [sfirstorder |hauto lq:on].
 Qed.
-
 
 Lemma ctx_sub_meet_ctx_l :  forall {G1 G2},  ctx_sub G1 G2 -> ctx_sub (meet_ctx_l q_C G1) (meet_ctx_l q_C G2).
 Proof.
