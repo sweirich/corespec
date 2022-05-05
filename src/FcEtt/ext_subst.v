@@ -87,9 +87,9 @@ Proof.
   move : a => [? [ ? [? | ?]]] /ltac:(sfirstorder).
 Qed.
 
-Lemma binds_map_4: forall x A F c0,
-    binds x (Tm A) F ->
-    binds x (Tm (co_subst_co_tm g_Triv c0 A)) (map (co_subst_co_sort g_Triv c0) F).
+Lemma binds_map_4: forall x (psi0 : grade) A F c0,
+    binds x (psi0, (Tm A)) F ->
+    binds x (psi0, (Tm (co_subst_co_tm g_Triv c0 A))) (subst_ctx_co g_Triv c0 F).
 Proof.
   induction F; try done.
   intros c0 H.
@@ -541,7 +541,22 @@ Proof.
   ext_induction CON; auto; intros; subst; simpl.
   all : try solve [eapply CON; eauto 2].
   (* 34 goals remaining *)
-  - eapply CON; eauto 2. admit.
+  (* E_Var *)
+  - eapply CON; eauto 2.
+    apply binds_app_1 in b.
+    destruct b.
+    + sfirstorder use: binds_app_2, binds_map_4.
+    + apply binds_app_1 in H0.
+      destruct H0.
+      * case H0 => //.
+      * apply binds_app_3.
+        erewrite tm_subst_co_fresh_1; first by done.
+        2 : {  apply Ctx_strengthen in c. eassumption.  }
+        apply CON with (psi0 := psi0).
+        ** by do 2 apply Ctx_strengthen in c.
+        ** transitivity psi; sfirstorder.
+        ** reflexivity.
+        ** eassumption.
   - pick fresh y and apply CON; eauto.
     autorewrite with subst_open_var; eauto 2 with lc.
     rewrite_subst_context. qauto l:on.
