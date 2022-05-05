@@ -664,15 +664,10 @@ Proof.
     sfirstorder.
     autorewrite with subst_open_var; eauto 2 using CTyping_lc1.
     rewrite e; fsetdec.
-  -                             (* from E_App *)
-    (* Typing (subst_ctx_co g_Triv c0 F ++ G0) psi ...  (co_subst_co_tm g_Triv c0 (open_tm_wrt_tm B a)) *)
-    (* shouldn't be opening wrt. var c. instead should open with g_Triv *)
-(* TODO: recompile ett.ott with the ImplAbs fix   *)
-    (* move : (H G0 psi0 phi0 F c0 eq_refl H2) => h0. *)
-    (* simpl in h0. *)
-    Admitted.
-
-
+  (* ImplApp *)
+  - autorewrite with subst_open;
+      hauto l: on use: Typing_leq_C.
+  - 
 (*   Focus 22. destruct rho. Unfocus.  *)
 (*    all: try first [ E_pick_fresh y; autorewrite with subst_open_var; eauto 2 with lc; *)
 (*                     try rewrite_subst_context; eauto 3 *)

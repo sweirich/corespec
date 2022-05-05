@@ -72,6 +72,7 @@ Hint Rewrite co_subst_co_co_open_co_wrt_co : subst_open.
 Hint Rewrite co_subst_co_co_open_co_wrt_tm : subst_open.
 Hint Rewrite co_subst_co_tm_open_tm_wrt_co : subst_open.
 Hint Rewrite co_subst_co_tm_open_tm_wrt_tm : subst_open.
+Hint Rewrite co_subst_co_constraint_open_constraint_wrt_co : subst_open.
 
 Hint Rewrite <- tm_subst_tm_tm_open_tm_wrt_tm : open_subst.
 Hint Rewrite <- tm_subst_tm_tm_open_tm_wrt_co : open_subst.
