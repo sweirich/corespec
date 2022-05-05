@@ -1000,9 +1000,8 @@ with CGrade : econtext -> grade -> grade -> tm -> Prop :=    (* defn CGrade *)
      Grade P psi a ->
      CGrade P psi psi0 a
  | CG_Nleq : forall (P:econtext) (psi psi0:grade) (a:tm),
-     lc_tm a ->
+     erased_tm a ->
       not (  (  ( psi0  <=  psi )  )  )  ->
-     ECtx P ->
      CGrade P psi psi0 a
 with Grade : econtext -> grade -> tm -> Prop :=    (* defn Grade *)
  | G_Var : forall (P:econtext) (psi:grade) (x:tmvar) (psi0:grade),
@@ -1108,9 +1107,9 @@ Inductive CParProp : econtext -> grade -> grade -> constraint -> constraint -> P
      CParProp P psi psi0 phi1 phi2
  | CParProp_Nleq : forall (P:econtext) (psi psi0:grade) (phi1 phi2:constraint),
      lc_constraint phi1 ->
-     lc_constraint phi2 ->
       not (  (  ( psi0  <=  psi )  )  )  ->
      ECtx P ->
+     erased_constraint phi2 ->
      CParProp P psi psi0 phi1 phi2
 with CPar : econtext -> grade -> grade -> tm -> tm -> Prop :=    (* defn CPar *)
  | CPar_Leq : forall (P:econtext) (psi psi0:grade) (a1 a2:tm),
@@ -1119,9 +1118,9 @@ with CPar : econtext -> grade -> grade -> tm -> tm -> Prop :=    (* defn CPar *)
      CPar P psi psi0 a1 a2
  | CPar_Nleq : forall (P:econtext) (psi psi0:grade) (a1 a2:tm),
      lc_tm a1 ->
-     lc_tm a2 ->
       not (  (  ( psi0  <=  psi )  )  )  ->
      ECtx P ->
+     erased_tm a2 ->
      CPar P psi psi0 a1 a2
 with ParProp : econtext -> grade -> constraint -> constraint -> Prop :=    (* defn ParProp *)
  | ParProp_Eq : forall (P:econtext) (psi:grade) (a b A a' b' A':tm),
@@ -1272,7 +1271,7 @@ with Typing : context -> grade -> tm -> tm -> Prop :=    (* defn Typing *)
      Typing G psi (a_Var_f x) A
  | E_Pi : forall (L:vars) (G:context) (psi psi0:grade) (A B:tm),
       ( forall x , x \notin  L  -> Typing  (( x ~ ( psi , Tm  A )) ++  G )  psi  ( open_tm_wrt_tm B (a_Var_f x) )  a_Star )  ->
-      ( Typing G psi A a_Star )  ->
+     Typing G psi A a_Star ->
      Typing G psi (a_Pi psi0 A B) a_Star
  | E_Abs : forall (L:vars) (G:context) (psi psi0:grade) (a A B:tm),
       ( forall x , x \notin  L  -> Typing  (( x ~ (  (q_join  psi0   psi )  , Tm  A )) ++  G )  psi  ( open_tm_wrt_tm a (a_Var_f x) )   ( open_tm_wrt_tm B (a_Var_f x) )  )  ->
@@ -1360,9 +1359,8 @@ with DefEq : context -> grade -> constraint -> Prop :=    (* defn DefEq *)
  | E_PiCong : forall (L:vars) (G:context) (psi psi0:grade) (A1 B1 A2 B2:tm),
      DefEq G psi (Eq A1 A2 a_Star) ->
       ( forall x , x \notin  L  -> DefEq  (( x ~ ( psi , Tm  A1 )) ++  G )  psi (Eq  ( open_tm_wrt_tm B1 (a_Var_f x) )   ( open_tm_wrt_tm B2 (a_Var_f x) )  a_Star) )  ->
-      ( Typing G psi A1 a_Star )  ->
       ( Typing G psi (a_Pi psi0 A1 B1) a_Star )  ->
-      ( Typing G psi (a_Pi psi0 A2 B2) a_Star )  ->
+     Typing G psi (a_Pi psi0 A2 B2) a_Star ->
      DefEq G psi (Eq  ( (a_Pi psi0 A1 B1) )   ( (a_Pi psi0 A2 B2) )  a_Star)
  | E_AbsCong : forall (L:vars) (G:context) (psi psi0:grade) (b1 b2 A1 B:tm),
       ( forall x , x \notin  L  -> DefEq  (( x ~ ( psi0 , Tm  A1 )) ++  G )  psi (Eq  ( open_tm_wrt_tm b1 (a_Var_f x) )   ( open_tm_wrt_tm b2 (a_Var_f x) )   ( open_tm_wrt_tm B (a_Var_f x) ) ) )  ->
@@ -1393,7 +1391,7 @@ with DefEq : context -> grade -> constraint -> Prop :=    (* defn DefEq *)
  | E_CAppCong : forall (G:context) (psi:grade) (a1 b1 B:tm) (phi:constraint),
      DefEq G psi (Eq a1 b1 (a_CPi  q_Top  phi B)) ->
      DefEq  (meet_ctx_l   q_C    G )   q_C  phi ->
-     DefEq G psi (Eq (a_CApp a1 g_Triv) (a_CApp b1 g_Triv)  (open_tm_wrt_co  B   g_Triv ) )
+     DefEq G psi (Eq (a_CApp a1 g_Triv) (a_CApp b1 g_Triv)  (  (open_tm_wrt_co  B   g_Triv )  ) )
  | E_CPiSnd : forall (G:context) (psi:grade) (B1 B2:tm) (psi0:grade) (phi1 phi2:constraint),
      DefEq G psi (Eq (a_CPi psi0 phi1 B1) (a_CPi psi0 phi2 B2) a_Star) ->
      DefEq  (meet_ctx_l   q_C    G )   q_C  phi1 ->
@@ -1418,10 +1416,10 @@ with DefEq : context -> grade -> constraint -> Prop :=    (* defn DefEq *)
      Typing G psi b (a_CPi  q_Top  phi B) ->
       ( forall c , c \notin  L  ->  (  ( open_tm_wrt_co a (g_Var_f c) )   =  (a_CApp b g_Triv) )  )  ->
      DefEq G psi (Eq (a_UCAbs  q_Top  a) b (a_CPi  q_Top  phi B))
- | E_ImplApp : forall (L:vars) (G:context) (psi:grade) (phi2 phi1:constraint),
+ | E_ImplApp : forall (G:context) (psi:grade) (phi2 phi1:constraint),
      DefEq G psi (Impl phi1 phi2) ->
      DefEq G psi phi1 ->
-      ( forall c , c \notin  L  -> DefEq G psi  ( open_constraint_wrt_co phi2 (g_Var_f c) )  ) 
+     DefEq G psi  (open_constraint_wrt_co  phi2   g_Triv ) 
  | E_ImplAbs : forall (L:vars) (G:context) (psi:grade) (phi1 phi2:constraint),
       ( forall c , c \notin  L  -> DefEq  (( c ~ ( psi , Co  phi1 )) ++  G )  psi  ( open_constraint_wrt_co phi2 (g_Var_f c) )  )  ->
       ( PropWff  (meet_ctx_l   q_C    G )   q_C  phi1 )  ->
