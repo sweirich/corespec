@@ -59,7 +59,9 @@ constraint, phi {{ tex \phi }} :: '' ::= {{ com props }}
    | ( phi )          :: S :: Paren
      {{ coq ([[phi]]) }}
    | phi { b / x }    :: S :: Subst
-     {{ coq (open_constraint_wrt_tm [[x b]] [[phi]]) }}
+     {{ coq (open_constraint_wrt_tm [[x phi]] [[b]]) }}
+   | phi { g / c }    :: S :: SubstC
+     {{ coq (open_constraint_wrt_co [[c phi]] [[g]]) }}
    | | phi |          :: S :: Erase
      {{ coq (erase_constraint [[phi]]) }}
    | all c : phi1 . phi2 :: :: Impl (+ bind c in phi2 +)
@@ -1337,7 +1339,6 @@ G |= psi all c : phi1 . phi2 ok
 
 
 defn
-% TODO change CTyping to TopTyping/TTyping
 G |=> psi a : A :: :: CTyping :: 'CE_'
 {{ tex [[G]] \Vdash [[a]]:^{[[psi]]} [[A]]}}
 by
@@ -1490,39 +1491,21 @@ G |= psi all c : phi1 . phi3 == all c : phi2 . phi4
 % make sure that the CDefEq case maps to a trivial
 % True statement
 defn
- G |= psi psi0 phi :: :: CDefEq :: 'CDefEq_' {{ com Definitional Equality }}
- {{ tex [[ G ]] \vdash [[phi]]  }}
+ G |= psi psi0 a ~ b : A :: :: CDefEq :: 'CDefEq_' {{ com Definitional Equality }}
+ {{ tex [[ G ]] \vdash [[ a ]] \equiv_{[[ psi ]]} [[ b ]]  }}
 by
    psi0 <= psi
-   G |= psi phi
+   G |= psi a ~ b : A
   --------------------- :: Leq 
-   G |= psi psi0 phi
+   G |= psi psi0 a ~ b : A
 
 
-% There are two cases because I inlined the |- a :top B relation
-% the same way it is inlined into App, producing two rules: App and AppIrrel
-
-% psi0 not observable from psi
-% psi0 <= CTime
-% psi <= CTime (implied)
    not (psi0 <= psi)
    |= G
-   % G |= 
-   G |=> psi0 \/ psi phi ok
-   % G |=> psi0 \/ psi a : A
-   % G |=> psi0 \/ psi b : A
+   G |=> psi0 \/ psi a : A
+   G |=> psi0 \/ psi b : A
   --------------------- :: Nleq 
-   G |= psi psi0 phi
-
-% G |= psi a : A
-% psi <= CTime
-% ------------------- :: Leq
-% G |=> psi a : A
-
-% CTime /\ G |= CTime a : A
-% CTime < psi
-% ------------------- :: Top
-% G |=> psi a : A
+   G |= psi psi0 a ~ b : A
 
 % TODO: TDefEq, CDefEq
 
@@ -1622,7 +1605,7 @@ G |= psi (/\top c . a) ~ (/\ top c . b) : all c:top phi1. B
 G |= psi a1 ~ b1 : all c: top phi. B
 CTime /\ G |= CTime phi
 -------------------------------------- :: CAppCong
-G |= psi a1 [o] ~ b1 [o] : B { o / c }
+G |= psi a1 [o] ~ b1 [o] : ( B { o / c } )
 
 G |= psi all c: psi0 phi1. B1 ~ all c:psi0 phi2. B2 : TYPE
 CTime /\ G |= CTime phi1
