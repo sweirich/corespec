@@ -627,6 +627,9 @@ Proof.
       erewrite co_subst_co_fresh with (G := G0) (psi := q_C) (s := (psi1, Co phi0)); last eauto using Ctx_strengthen.
     (* not provable because DefEq G0 psi1 phi0 cannot be promoted to  *)
       * admit.
+      (* DefEq: with an extra parameter *)
+      (* DefEq: equality at psi vs can be used at psi *)
+      (* need an extra psi? *)
       * move : c0 => /Ctx_strengthen.
         inversion 1; subst.
         (* use PropWff_subsumption? *)
@@ -923,6 +926,7 @@ Proof.
 (*       * inversion H4; subst; clear H4. *)
 (*          apply (H0 G0 D A1 A2 T F c1); auto. *)
 (* Qed. *)
+Admitted.
 
 Lemma Typing_co_subst:
   forall G psi c psi0 phi b B (H : Typing (c ~ (psi0, (Co phi)) ++ G) psi b B),
