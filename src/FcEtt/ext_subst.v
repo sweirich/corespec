@@ -79,7 +79,12 @@ Proof.
   qauto l: on use: tm_subst_tm_constraint_fresh_eq, ProfWff_context_fv inv: Ctx.
 Qed.
 
-Lemma co_subst_co_fresh
+Lemma co_subst_co_fresh :
+  forall G psi phi g c s,
+  PropWff G psi phi -> Ctx ((c ~ s) ++ G) -> co_subst_co_constraint g c phi = phi.
+Proof.
+  qauto l:on use: co_subst_co_constraint_fresh_eq, ProfWff_context_fv inv: Ctx.
+Qed.
 
 Lemma bind_map_tm_subst_tm_sort: forall c psi F phi x a,
     binds c (psi, (Co phi)) F ->
@@ -616,12 +621,15 @@ Proof.
   (* EAssn *)
   - destruct (c == c1).
     + subst.
-      apply binds_mid_eq in b.
+      apply binds_mid_eq in b; last eauto using Ctx_uniq.
       inversion b; subst.
-      apply CON with (psi0 := psi1) (c := c1); auto 2.
-      sfirstorder.
-      
-      
+      (* this is wrong; psi shouldn't be psi1 *)
+      erewrite co_subst_co_fresh with (G := G0) (psi := q_C) (s := (psi1, Co phi0)); last eauto using Ctx_strengthen.
+    (* not provable because DefEq G0 psi1 phi0 cannot be promoted to  *)
+      * admit.
+      * move : c0 => /Ctx_strengthen.
+        inversion 1; subst.
+        (* use PropWff_subsumption? *)
     + apply CON with (psi := psi) (psi0 := psi0) (c := c); eauto.
       apply binds_remove_mid in b; auto.
       destruct (binds_app_1 _ _ _ _ _ b); auto.

@@ -17,7 +17,7 @@ Require Import FcEtt.ett_ind.
 
 (*   Include subst. *)
 
-
+revert to 02973d2
 Set Bullet Behavior "Strict Subproofs".
 Set Implicit Arguments.
 
@@ -241,6 +241,9 @@ Proof.
 (*  - eapply Typing_weakening with (F:=nil)(G := nil) in H1.
     simpl_env in H1. eauto. auto. simpl_env. auto. *)
 Qed.
+
+TODO: why was 19dbab6: typing_pumping_co_middle_mutual removed?
+
 
 (* --------------------------------------------------- *)
 
