@@ -624,15 +624,16 @@ Proof.
       apply binds_mid_eq in b; last eauto using Ctx_uniq.
       inversion b; subst.
       (* this is wrong; psi shouldn't be psi1 *)
-      erewrite co_subst_co_fresh with (G := G0) (psi := q_C) (s := (psi1, Co phi0)); last eauto using Ctx_strengthen.
+      erewrite co_subst_co_fresh with (G := meet_ctx_l q_C G0) (psi := q_C) (s := (psi1, Co phi0)); last eauto using Ctx_strengthen.
     (* not provable because DefEq G0 psi1 phi0 cannot be promoted to  *)
       * admit.
       (* DefEq: with an extra parameter *)
       (* DefEq: equality at psi vs can be used at psi *)
       (* need an extra psi? *)
       * move : c0 => /Ctx_strengthen.
-        inversion 1; subst.
-        (* use PropWff_subsumption? *)
+        by inversion 1; subst.
+      * apply Ctx_strengthen in c0.
+        sauto lq: on rew: off use: meet_ctx_l_meet_ctx_l, Ctx_meet_l_C inv: Ctx.
     + apply CON with (psi := psi) (psi0 := psi0) (c := c); eauto.
       apply binds_remove_mid in b; auto.
       destruct (binds_app_1 _ _ _ _ _ b); auto.
