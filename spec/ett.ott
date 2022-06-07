@@ -53,6 +53,7 @@ grade, psi {{ tex \ell }} :: 'q_' ::=   {{ coq grade }}
 %    | +             ::   :: Rel
 %    | -             ::   :: Irrel
 
+# a ~ psi b necessary for assn rule
 constraint, phi {{ tex \phi }} :: '' ::= {{ com props }}
    | a ~ psi b : A    ::   :: Eq
      {{ tex [[a]] [[~]]_{[[A]]} [[b]] }}
@@ -1483,9 +1484,12 @@ by
 
 % TODO: TDefEq, CDefEq
 
+% fully explicit g?
+% share everything between the two systems with a different cast rule
+% erasure should only erase (x `cast` co) but not (capp x g)
 defn
 
-G |= psi phi ::     :: DefEq :: 'E_'
+G |= psi g : phi ::     :: DefEq :: 'E_'
 {{ tex [[G]] \vDash_{[[psi]]} [[phi]] }}
 {{ com definitional equality }}
 by
@@ -1550,7 +1554,10 @@ G |= psi all x: psi0 A1 -> B1 ~ psi1 all x: psi0 A2 -> B2 : TYPE
 ------------------------------------------------- :: PiFst
 G |=  psi A1 ~ psi1 A2 : TYPE
 
+% Check the rule from DDC
 G |= psi all x: psi0 A1 -> B1 ~ psi1 all x: psi0 A2 -> B2 : TYPE
+% G |= psi a1 : A1
+% G |= psi a2 : A1
 G |= psi a1 ~ psi1 a2 : A1
 ------------------------------------------- :: PiSnd
 G |=  psi B1 {a1 /x}  ~ psi1 B2 {a2/x} : TYPE
@@ -1577,8 +1584,8 @@ CTime /\ G |= CTime phi
 G |= psi a1 [o] ~ psi1 b1 [o] : ( B { o / c } )
 
 G |= psi all c: psi0 phi1. B1 ~ psi1 all c:psi0 phi2. B2 : TYPE
-CTime /\ G |= CTime phi1
-CTime /\ G |= CTime phi2
+G |= psi g1: phi1
+G |= psi g2: phi2
 ---------------------------------------------- :: CPiSnd
 G |=  psi B1 { o / c} ~ psi1 B2 { o / c } : TYPE
 
