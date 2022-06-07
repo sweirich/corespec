@@ -54,7 +54,7 @@ grade, psi {{ tex \ell }} :: 'q_' ::=   {{ coq grade }}
 %    | -             ::   :: Irrel
 
 constraint, phi {{ tex \phi }} :: '' ::= {{ com props }}
-   | a ~ b : A        ::   :: Eq
+   | a ~ psi b : A    ::   :: Eq
      {{ tex [[a]] [[~]]_{[[A]]} [[b]] }}
    | ( phi )          :: S :: Paren
      {{ coq ([[phi]]) }}
@@ -689,7 +689,7 @@ erased_tm a
 erased_tm b
 erased_tm A
 --------- :: Eq
-erased_constraint a ~ b : A
+erased_constraint a ~ psi b : A
 
 
 erased_constraint phi1
@@ -845,7 +845,7 @@ P |= psi a
 P |= psi b
 P |= psi A
 --------------------- :: Eq
-P |= psi a ~ b : A
+P |= psi a ~ psi0 b : A
 
 
 P |= psi phi1
@@ -938,89 +938,87 @@ defns
 % TODO: add CoCEq in the future
 
 defn
- P |= psi phi1 ~~ phi2 :: :: CoGEq :: 'CoGEq_' {{ com Syntactic Graded Equality for coercions }}
- {{ tex [[ P ]] \vDash [[ phi1 ]] \sim_{[[ psi ]]} [[ phi2 ]]  }}
+ P |= psi phi1 ~~ psi0 phi2 :: :: CoGEq :: 'CoGEq_' {{ com Syntactic Graded Equality for coercions }}
+ {{ tex [[ P ]] \vDash [[ phi1 ]] \sim^{[[ psi ]]}{[[psi0]]} [[ phi2 ]]  }}
 by
 
-P |= psi a ~~ a'
-P |= psi b ~~ b'
-P |= psi A ~~ A'
+P |= psi a ~~ psi0 a'
+P |= psi b ~~ psi0 b'
+P |= psi A ~~ psi0 A'
 --------------------- :: Eq
-P |= psi a ~ b : A ~~ a' ~ b' : A'
+P |= psi a ~ psi1 b : A ~~ psi0 a' ~ psi1 b' : A'
 
 
-P |= psi phi1 ~~ phi2
-P, c : psi |= psi phi3 ~~ phi4
+P |= psi phi1 ~~ psi0 phi2
+P, c : psi |= psi phi3 ~~ psi0 phi4
 --------------------- :: Impl
-P |= psi all c : phi1 . phi3 ~~ all c : phi2 . phi4
+P |= psi all c : phi1 . phi3 ~~ psi0 all c : phi2 . phi4
 
 
 defn
-P |= psi psi0 a ~~ b ::  :: CEq :: 'CEq_' {{ com Syntactic equality at [[psi]] is guarded by [[psi0]] }}
- {{ tex [[ P ]] \vDash^{[[psi0]]}_{[[psi]]} [[ a ]] \sim [[ b ]]  }}
+P |= psi psi0 a ~~ psi1 b ::  :: CEq :: 'CEq_' {{ com Syntactic equality at [[psi]] is guarded by [[psi0]] }}
+ {{ tex [[ P ]] \vDash^{[[psi0]]}_{[[psi]]} [[ a ]] \sim_{[[psi1]]} [[ b ]]  }}
 
 by
 
-psi0 <= psi
-P |= psi a1 ~~ a2
+psi0 <= psi1
+P |= psi a1 ~~ psi1 a2
 ---------------------- :: Leq
-P |= psi psi0 a1 ~~ a2
+P |= psi psi0 a1 ~~ psi1 a2
 
-not (psi0 <= psi)
+not (psi0 <= psi1)
 |= P
 -------------------------------- :: Nleq
-P |= psi psi0 a1 ~~ a2
+P |= psi psi0 a1 ~~ psi1 a2
 
 defn
- P |= psi a ~~ b :: :: GEq :: 'GEq_' {{ com Syntactic Graded Equality }}
- {{ tex [[ P ]] \vDash [[ a ]] \sim_{[[ psi ]]} [[ b ]]  }}
+ P |= psi a ~~ psi0 b :: :: GEq :: 'GEq_' {{ com Syntactic Graded Equality }}
+ {{ tex [[ P ]] \vDash_{[[ psi ]]} [[ a ]] \sim_{[[psi0]]} [[ b ]]  }}
 
 by
 |= P
 x : psi0 in P
 psi0 <= psi
 ------------------------------------------ :: Var
-P |= psi x ~~ x
+P |= psi x ~~ psi1 x
 
 |= P
 ---------------------------- :: Type
-P |= psi TYPE ~~ TYPE
+P |= psi TYPE ~~ psi0 TYPE
 
-P |= psi A1 ~~ A2
-P , x : psi |= psi B1 ~~ B2
+P |= psi A1 ~~ psi1 A2
+P , x : psi |= psi B1 ~~ psi1 B2
 ------------------------------------------------- :: Pi
-P |= psi all x :psi0 A1 -> B1 ~~ all x :psi0 A2 -> B2
+P |= psi all x :psi0 A1 -> B1 ~~ psi1 all x :psi0 A2 -> B2
 
-P , x : psi0 |= psi b1 ~~ b2
+P , x : psi0 |= psi b1 ~~ psi1 b2
 ------------------------------------- :: Abs
-P |= psi \ psi0 x  . b1 ~~ \ psi0 x . b2
+P |= psi \ psi0 x  . b1 ~~ psi1 \ psi0 x . b2
 
-P |= psi b1 ~~ b2
-P |= psi psi0 a1 ~~ a2
+P |= psi b1 ~~ psi1 b2
+P |= psi psi0 a1 ~~ psi1 a2
 -------------------------------- :: App
-P |= psi b1 psi0 a1 ~~ b2 psi0 a2
+P |= psi b1 psi0 a1 ~~ psi1 b2 psi0 a2
 
-P |= psi phi1 ~~ phi2
-P , c : psi |= psi B1 ~~ B2
+P |= psi phi1 ~~ psi1 phi2
+P , c : psi |= psi B1 ~~ psi1 B2
 ------------------------------------------------- :: CPi
-P |= psi all c :psi0 phi1 . B1 ~~ all c :psi0 phi2 . B2
+P |= psi all c :psi0 phi1 . B1 ~~ psi1 all c :psi0 phi2 . B2
 
-P , c : psi0 |= psi b1 ~~ b2
+P , c : psi0 |= psi b1 ~~ psi1 b2
 ------------------------------------- :: CAbs
-P |= psi /\ psi0 c . b1 ~~ /\ psi0 c . b2
+P |= psi /\ psi0 c . b1 ~~ psi1 /\ psi0 c . b2
 
-P |= psi b1 ~~ b2
+P |= psi b1 ~~ psi0 b2
 -------------------------------- :: CApp
-P |= psi b1 [ o ] ~~ b2 [ o ]
+P |= psi b1 [ o ] ~~ psi0 b2 [ o ]
 
 F ~ a : psi0 A in toplevel
 psi0 <= psi
 [empty |= CTime A]
 |= P
 -------------------------------- :: Fam
-P |= psi F ~~ a
-
-
+P |= psi F ~~ psi1 a
 
 
 defns
@@ -1028,118 +1026,108 @@ defns
 
 
 defn
-P |- psi psi0 phi1 => phi2 :: :: CParProp :: 'CParProp_'
+P |- psi psi0 phi1 => psi1 phi2 :: :: CParProp :: 'CParProp_'
 {{ tex [[P]] \vDash_{[[psi]]}^{[[psi0]]} [[phi1]] [[=>]] [[phi2]] }}
 {{ com guarded parallel reduction for props (implicit language) }}
 by
 
-psi0 <= psi
-P |- psi phi1 => phi2
+psi0 <= psi1
+P |- psi phi1 => psi1 phi2
 ----------------------- :: Leq
-P |- psi psi0 phi1 => phi2
+P |- psi psi0 phi1 => psi1 phi2
 
-not (psi0 <= psi)
+not (psi0 <= psi1)
 |= P
 erased_constraint phi2
 -------------------------------- :: Nleq
-P |- psi psi0 phi1 => phi2
+P |- psi psi0 phi1 => psi1 phi2
 
 
 defn
-P |- psi psi0 a => b :: :: CPar :: 'CPar_'
+P |- psi psi0 a => psi1 b :: :: CPar :: 'CPar_'
 {{ tex [[P]] \vDash_{[[psi]]}^{[[psi0]]} [[a]] [[=>]] [[b]] }}
 {{ com guarded parallel reduction (implicit language) }}
 by
 
-psi0 <= psi
-P |- psi a1 => a2
+psi0 <= psi1
+P |- psi a1 => psi1 a2
 ----------------------- :: Leq
-P |- psi psi0 a1 => a2
+P |- psi psi0 a1 => psi1 a2
 
-not (psi0 <= psi)
+not (psi0 <= psi1)
 |= P
 erased_tm a2
 -------------------------------- :: Nleq
-P |- psi psi0 a1 => a2
+P |- psi psi0 a1 => psi1 a2
 
 
 defn
-P |- psi phi1 => phi2 :: :: ParProp :: 'ParProp_'
-{{ tex [[P]] \vDash_{[[psi]]} [[phi1]] [[=>]] [[phi2]] }}
+P |- psi phi1 => psi0 phi2 :: :: ParProp :: 'ParProp_'
+{{ tex [[P]] \vDash_{[[psi]]} [[phi1]] [[=>]]_{[[psi0]]} [[phi2]] }}
 {{ com parallel reduction for props (implicit language) }}
 by
 
-P |- psi a => a'
-P |- psi b => b'
-P |- psi A => A'
+P |- psi a => psi0 a'
+P |- psi b => psi0 b'
+P |- psi A => psi0 A'
 ----------------------- :: Eq
-P |- psi a ~ b : A => a' ~ b' : A'
+P |- psi a ~ psi1 b : A => psi0 a' ~ psi1 b' : A'
 
-P |- psi phi1 => phi1'
-P , c : psi |- psi phi2 => phi2'
+P |- psi phi1 => psi0 phi1'
+P , c : psi |- psi phi2 => psi0 phi2'
 ----------------------- :: Impl
-P |- psi all c : phi1 . phi2 => all c : phi1' . phi2'
+P |- psi all c : phi1 . phi2 => psi0 all c : phi1' . phi2'
 
 
 defn
-P |- psi a => b ::  :: Par :: 'Par_'
+P |- psi a => psi0 b ::  :: Par :: 'Par_'
 {{ tex [[P]] \vDash_{[[psi]]} [[a]] [[=>]] [[b]] }}
 {{ com parallel reduction (implicit language) }}
 by
 
 P |= psi a
 ----------------------- :: Refl
-P |- psi a => a
+P |- psi a => psi0 a
 
 
-P |- psi a => (\psi0 x.a')
-P |- psi psi0 b => b'
+P |- psi a => psi1 (\psi0 x.a')
+P |- psi psi0 b => psi1 b'
 ---------------------------- :: Beta
-P |- psi a psi0 b => a' { b' / x }
+P |- psi a psi0 b => psi1 a' { b' / x }
 
-% G |- a => (\- x.a')
-% ---------------------------- :: BetaIrrel
-% G |- a - [] => a' { [] / x }
-
-P |- psi a => a'
-P |- psi psi0 b => b'
+P |- psi a => psi1 a'
+P |- psi psi0 b => psi1 b'
 -------------------------- :: App
-P |- psi a psi0 b => a' psi0 b'
-
-% YL: Do we need to keep this?
-% G |- a => a'
-% -------------------------- :: AppIrrel
-% G |- a - [] => a' - []
-
+P |- psi a psi0 b => psi1 a' psi0 b'
 
 % What to do with the psi here?
-P |- psi a => (/\psi0 c .a')
+P |- psi a => psi1 (/\psi0 c .a')
 ----------------------- :: CBeta
-P |- psi a [o] => a' { o / c }
+P |- psi a [o] => psi1 a' { o / c }
 
-P |- psi a => a'
+P |- psi a => psi0 a'
 ----------------------- :: CApp
-P |- psi a [o] => a' [o]
+P |- psi a [o] => psi0 a' [o]
 
 % TODO
-P , x : psi0 |- psi a => a'
+P , x : psi0 |- psi a => psi1 a'
 -------------------------------- :: Abs
-P |- psi \ psi0 x. a => \ psi0 x. a'
+P |- psi \ psi0 x. a => psi1 \ psi0 x. a'
 
-P |- psi A => A'
-P , x:psi |- psi B => B'
+P |- psi A => psi1 A'
+P , x:psi |- psi B => psi1 B'
 -------------------------------------------- :: Pi
-P |- psi all x: psi0 A -> B => all x:psi0 A' -> B'
+P |- psi all x: psi0 A -> B => psi1 all x:psi0 A' -> B'
 
-P , c : psi0 |- psi a => a'
+P , c : psi0 |- psi a => psi1 a'
 --------------------------- :: CAbs
-P |- psi /\ psi0 c . a => /\ psi0 c . a'
+P |- psi /\ psi0 c . a => psi1 /\ psi0 c . a'
 
 
-P , c:psi |- psi a => a'
-P |- psi phi => phi'
+P , c:psi |- psi a => psi1 a'
+P |- psi phi => psi1 phi'
 ----------------------------------------- :: CPi
-P |- psi all c: psi0 phi. a => all c: psi0 phi'. a'
+P |- psi all c: psi0 phi. a => psi1 all c: psi0 phi'. a'
 
 % NOTE: toplevel is assumed to be locally closed
 psi0 <= psi
@@ -1147,12 +1135,12 @@ psi0 <= psi
 F ~ a : psi0 A in toplevel
 |= P
 -------------------------------- :: Axiom
-P |- psi F => a
+P |- psi F => psi1 a
 
-P |- psi b => b'
+P |- psi b => psi1 b'
 a = b psi0 x
 ----------------------------- :: Eta
-P |- psi \psi0 x. a => b'
+P |- psi \psi0 x. a => psi1 b'
 
 
 % G |- b => b'
@@ -1160,44 +1148,44 @@ P |- psi \psi0 x. a => b'
 % ----------------------------- :: EtaIrrel
 % G |- \- x. a => b'
 
-P |- psi b => b'
+P |- psi b => psi1 b'
 a = b [o]
 ----------------------------- :: EtaC
-P |- psi /\psi0 c. a => b'
+P |- psi /\psi0 c. a => psi1 b'
 
 
 defns
   Jmultipar :: '' ::=
 
 defn
-P |- psi a =>* b ::   :: multipar :: 'mp_'
+P |- psi a =>* psi0 b ::   :: multipar :: 'mp_'
 {{ tex [[P]] [[|-]]_{[[psi]]} [[a]] [[=>*]] [[b]] }}
 {{ com multistep parallel reduction }}
 by
 
 |= P
 ------------------ :: refl
-P |- psi a =>* a
+P |- psi a =>* psi0 a
 
-P |- psi a => b
-P |- psi b =>* a'
+P |- psi a => psi0 b
+P |- psi b =>* psi0 a'
 --------------------- :: step
-P |- psi a =>* a'
+P |- psi a =>* psi0 a'
 
 defn
-P |- psi phi =>* phi' ::   :: multipar_prop :: 'mpprop_'
+P |- psi phi =>* psi0 phi' ::   :: multipar_prop :: 'mpprop_'
 {{ tex [[P]] [[|-]]_{[[psi]]} [[phi]] [[=>*]] [[phi']] }}
 {{ com multistep parallel reduction for constraints }}
 by
 
 |= P
 ------------------ :: refl
-P |- psi phi =>* phi
+P |- psi phi =>* psi0 phi
 
-P |- psi phi1 => phi2
-P |- psi phi2 =>* phi3
+P |- psi phi1 => psi0 phi2
+P |- psi phi2 =>* psi0 phi3
 --------------------- :: step
-P |- psi phi1 =>* phi3
+P |- psi phi1 =>* psi0 phi3
 
 
 % defns
@@ -1330,7 +1318,7 @@ G |= psi b : A
 % will matter more if we had typecase
 [ G |= psi A : TYPE ]
 ---------------------------  :: WffEq
-G |= psi a ~ b : A  ok
+G |= psi a ~ psi0 b : A  ok
 
 G |= psi phi1 ok
 G , c : psi phi1 |= psi phi2 ok
@@ -1385,30 +1373,13 @@ G, x:psi0 \/ psi A |= psi a : B
 G |= psi \ psi0 x . a : all x:psi0 A -> B
 
 
-% Split into 2
-% define the syntax sugar
 G |= psi b : all x : psi0 A -> B
 G |=> psi0 \/ psi a : A
-% psi0 <= CTime
 ------------------------------------- :: App
 G |= psi b psi0 a : B { a / x }
 
-% G |= psi b : all x : psi0 A -> B
-% CTime /\ G |= CTime a : A
-% CTime < psi0
-% ------------------------------------- :: AppIrrel
-% G |= psi b psi0 a : B { a / x }
-
-
-% YL: replaced by AppIrrel?
-% G |= b : all x : psi A -> B
-% G |= a : A
-% ------------------------------------- :: IApp
-% G |= b - [] : B { a / x }
-
-
 G |= psi a : A
-CTime /\ G |= CTime A ~ B : TYPE
+CTime /\ G |= CTime A ~ CTime B : TYPE
 [ CTime /\ G |= CTime B : TYPE ]
 ----------------------------- :: Conv
 G |= psi a : B
@@ -1441,33 +1412,36 @@ F ~ a : psi0 A in toplevel
 G |= psi F : A
 
 
-% there is an implicit phi1 == phi2 : Prop
+% NOTE: Why don't we label this judgment?
+% It is unnecessary at this point, because we don't
+% have coercion-level box/app
+% if we had a form like phi psi phi0, then it would
+% make sense to label the judgment with some psi1
 defn
-G |= psi phi1 == phi2  ::    :: Iso :: 'E_'
-{{ tex [[G]] \vDash [[phi1]] \equiv ^{[[psi]]} [[phi2]] }}
+G |= psi phi1 == psi0 phi2  ::    :: Iso :: 'E_'
+{{ tex [[G]] \vDash [[phi1]] \equiv ^{[[psi]]}_{[[psi0]]} [[phi2]] }}
 {{ com prop equality }}
 by
 
-% combine PropCong and IsoConv?
-G |= psi A1 ~ A2 : A
-G |= psi B1 ~ B2 : A
+G |= psi A1 ~ psi1 A2 : A
+G |= psi B1 ~ psi1 B2 : A
 ---------------------------------------- :: PropCong
-G |= psi A1 ~ B1 : A == A2 ~ B2 : A
+G |= psi A1 ~ psi0 B1 : A == psi1 A2 ~ psi0 B2 : A
 
 % phi1 == phi2 should imply phi1,phi2 : Prop
 % at the same grade
 % this should mirror rules like refl
 % psi a == a, psi a : A
 % psi phi == phi, psi phi : Prop
-G |= psi A ~ B : TYPE
-G |= psi A1 ~ A2 : A ok
-G |= psi A1 ~ A2 : B ok
+G |= psi A ~ psi1 B : TYPE
+G |= psi A1 ~ psi1 A2 : A ok
+G |= psi A1 ~ psi1 A2 : B ok
 ----------------------------------------- :: IsoConv
-G |= psi A1 ~ A2 : A == A1 ~ A2 : B
+G |= psi A1 ~ psi0 A2 : A == psi1 A1 ~ psi0 A2 : B
 
-G |= psi all c:psi0 phi1. B1 ~ all c:psi0 phi2. B2 : TYPE
+G |= psi all c:psi0 phi1. B1 ~ psi1 all c:psi0 phi2. B2 : TYPE
 ------------------------------------------------- :: CPiFst
-G |= psi phi1 == phi2
+G |= psi phi1 == psi1 phi2
 
 % top or psi?
 % rule of thumb: if phi is an equation and we are in a Cong rule
@@ -1478,11 +1452,11 @@ G |= psi phi1 == phi2
 % actually, maybe it's okay to use psi?
 % There's no Assn rule for Iso anyway
 % see if consistency goes through with c : psi instead of c : top
-G |= psi phi1 == phi2
-G , c : top phi1 |= psi phi3 == phi4
+G |= psi phi1 == psi1 phi2
+G , c : top phi1 |= psi phi3 == psi1 phi4
 [ G |= psi phi1 ok ]
 -------------------------------------- :: ImplCong
-G |= psi all c : phi1 . phi3 == all c : phi2 . phi4
+G |= psi all c : phi1 . phi3 == psi1 all c : phi2 . phi4
 
 
 % NOTE: it is possible to have G |= top psi0 a ~ b : A
@@ -1491,21 +1465,21 @@ G |= psi all c : phi1 . phi3 == all c : phi2 . phi4
 % make sure that the CDefEq case maps to a trivial
 % True statement
 defn
- G |= psi psi0 a ~ b : A :: :: CDefEq :: 'CDefEq_' {{ com Definitional Equality }}
- {{ tex [[ G ]] \vdash [[ a ]] \equiv_{[[ psi ]]} [[ b ]]  }}
+ G |= psi psi0 a ~ psi1 b : A :: :: CDefEq :: 'CDefEq_' {{ com Definitional Equality }}
+ {{ tex [[ G ]] \vdash^{[[psi0]]}_{[[ psi ]]} [[ a ]] \equiv_{[[psi1]]} [[ b ]]  }}
 by
-   psi0 <= psi
-   G |= psi a ~ b : A
+   psi0 <= psi1
+   G |= psi a ~ psi1 b : A
   --------------------- :: Leq
-   G |= psi psi0 a ~ b : A
+   G |= psi psi0 a ~ psi1 b : A
 
 
-   not (psi0 <= psi)
+   not (psi0 <= psi1)
    |= G
    G |=> psi0 \/ psi a : A
    G |=> psi0 \/ psi b : A
   --------------------- :: Nleq
-   G |= psi psi0 a ~ b : A
+   G |= psi psi0 a ~ psi1 b : A
 
 % TODO: TDefEq, CDefEq
 
@@ -1526,113 +1500,109 @@ G |= psi phi
 
 G |= psi a : A
 -------------------- :: Refl
-G |= psi a ~ a : A
+G |= psi a ~ psi0 a : A
 
-G |= psi b ~ a : A
+G |= psi b ~ psi0 a : A
 -------------------- :: Sym
-G |= psi a ~ b : A
+G |= psi a ~ psi0 b : A
 
-G |= psi a ~ a1 : A
-G |= psi a1 ~ b : A
+G |= psi a ~ psi0 a1 : A
+G |= psi a1 ~ psi0 b : A
 ------------------------------------- :: Trans
-G |= psi a ~ b : A
+G |= psi a ~ psi0 b : A
 
 
 G |= psi a1 : B
 [G |= psi a2 : B]
 |= a1 > a2
 --------------------------------  :: Beta
-G |= psi a1 ~ a2 : B
+G |= psi a1 ~ psi0 a2 : B
 
 %% Rules related to functions
 
 
-% G |= psi A2  : TYPE
-% G |=  psi A1 ~ A2 : TYPE
-% x:A -> B, x notin A?
-% CTime /\ G |= CTime A1 ~ A2 : TYPE
-G |= psi A1 ~ A2 : TYPE
-G, x: psi A1 |= psi B1 ~ B2 : TYPE
+G |= psi A1 ~ CTime A2 : TYPE
+G, x: psi A1 |= psi B1 ~ psi1 B2 : TYPE
 %% this needed by weakening IH
-% G |= psi A1 : TYPE
-% G |= psi A2 : TYPE
+[G |= psi A1 : TYPE]
 %% these two needed by regularity
 [G |= psi all x: psi0 A1 -> B1 : TYPE]
-G |= psi all x: psi0 A2 -> B2 : TYPE
+[G |= psi all x: psi0 A2 -> B2 : TYPE]
 ---------------------------------------------------------- :: PiCong
-G |= psi (all x: psi0 A1 -> B1) ~ (all x: psi0 A2 -> B2) : TYPE
+G |= psi (all x: psi0 A1 -> B1) ~ psi1 (all x: psi0 A2 -> B2) : TYPE
 
 % TODO add ctyping
 % TODO remove \/ psi?
 % TODO DDC : remove abs to use psi0
-G, x: psi0 A1 |= psi b1 ~ b2 : B
+G, x: psi0 A1 |= psi b1 ~ psi1 b2 : B
 [ CTime /\ G |= CTime A1 : TYPE ]
 -------------------------------------------------------------- :: AbsCong
-G |= psi (\psi0 x. b1) ~ (\psi0 x. b2) : all x: psi0 A1 -> B
+G |= psi (\psi0 x. b1) ~ psi1 (\psi0 x. b2) : all x: psi0 A1 -> B
 
 % YL: AppIrrel is handled in the guarded version of defeq
-G |= psi a1 ~ b1 : all x: psi0 A -> B
-G |= psi psi0 a2 ~ b2 : A
+G |= psi a1 ~ psi1 b1 : all x: psi0 A -> B
+G |= psi psi0 a2 ~ psi1 b2 : A
 -------------------------------------- :: AppCong
-G |= psi a1 psi0 a2 ~ b1 psi0 b2 : ( B { a2 / x } )
+G |= psi a1 psi0 a2 ~ psi1 b1 psi0 b2 : ( B { a2 / x } )
 
 
-G |= psi all x: psi0 A1 -> B1 ~ all x: psi0 A2 -> B2 : TYPE
+G |= psi all x: psi0 A1 -> B1 ~ psi1 all x: psi0 A2 -> B2 : TYPE
 ------------------------------------------------- :: PiFst
-G |=  psi A1 ~ A2 : TYPE
+G |=  psi A1 ~ psi1 A2 : TYPE
 
-G |= psi all x: psi0 A1 -> B1 ~ all x: psi0 A2 -> B2 : TYPE
-G |= psi a1 ~ a2 : A1
+G |= psi all x: psi0 A1 -> B1 ~ psi1 all x: psi0 A2 -> B2 : TYPE
+G |= psi a1 ~ psi1 a2 : A1
 ------------------------------------------- :: PiSnd
-G |=  psi B1 {a1 /x}  ~ B2 {a2/x} : TYPE
+G |=  psi B1 {a1 /x}  ~ psi1 B2 {a2/x} : TYPE
 
 %% Rules related to Coercion Abstraction
 
-G |= psi phi1 == phi2
-G, c: top phi1 |= psi A ~ B : TYPE
+G |= psi phi1 == psi1 phi2
+G, c: top phi1 |= psi A ~ psi1 B : TYPE
 [G |= psi phi1 ok]
 [G |= psi all c:top phi1. A : TYPE]
 [G |= psi all c:top phi2. B : TYPE]
 --------------------------------------------------------- :: CPiCong
-G |= psi all c:top phi1. A  ~ all c:top phi2. B : TYPE
+G |= psi all c:top phi1. A  ~ psi1 all c:top phi2. B : TYPE
 
-G, c: top phi1 |= psi a ~ b : B
+G, c: top phi1 |= psi a ~ psi1 b : B
 [ CTime /\ G |= CTime phi1 ok ]
 ------------------------------------------------------------ :: CAbsCong
-G |= psi (/\top c . a) ~ (/\ top c . b) : all c:top phi1. B
+G |= psi (/\top c . a) ~ psi1 (/\ top c . b) : all c:top phi1. B
 
 % YL: hardwired psi0 to top
-G |= psi a1 ~ b1 : all c: top phi. B
+G |= psi a1 ~ psi1 b1 : all c: top phi. B
 CTime /\ G |= CTime phi
 -------------------------------------- :: CAppCong
-G |= psi a1 [o] ~ b1 [o] : ( B { o / c } )
+G |= psi a1 [o] ~ psi1 b1 [o] : ( B { o / c } )
 
-G |= psi all c: psi0 phi1. B1 ~ all c:psi0 phi2. B2 : TYPE
+G |= psi all c: psi0 phi1. B1 ~ psi1 all c:psi0 phi2. B2 : TYPE
 CTime /\ G |= CTime phi1
 CTime /\ G |= CTime phi2
 ---------------------------------------------- :: CPiSnd
-G |=  psi B1 { o / c} ~ B2 { o / c } : TYPE
+G |=  psi B1 { o / c} ~ psi1 B2 { o / c } : TYPE
 
 %% Other rules
 
 G |= psi phi1
-G |= psi phi1 == phi2
+% Extend to CTime /\ G???
+G |= psi phi1 == CTime phi2
 -------------------------------------- :: Cast
 G |= psi phi2
 
-G |= psi a ~ b : A
-CTime /\ G |= psi A ~ B : TYPE
+G |= psi a ~ psi0 b : A
+CTime /\ G |= CTime A ~ CTime B : TYPE
 -------------------------------------- :: EqConv
-G |= psi a ~ b : B
+G |= psi a ~ psi0 b : B
 
-G |= psi a ~ b : A == a' ~ b' : A'
+G |= psi a ~ psi0 b : A == psi1 a' ~ psi0 b' : A'
 -------------------------------------- :: IsoSnd
-G |= psi A ~ A' : TYPE
+G |= psi A ~ psi1 A' : TYPE
 
 G |= psi b : all x:psi0 A -> B
 a = b psi0 x
 ------------------------------------------ :: EtaRel
-G |= psi \psi0 x. a ~ b : all x: psi0 A -> B
+G |= psi \psi0 x. a ~ psi1 b : all x: psi0 A -> B
 
 % G |= b : all - x:A -> B
 % a = b - []
@@ -1642,7 +1612,7 @@ G |= psi \psi0 x. a ~ b : all x: psi0 A -> B
 G |= psi b : all c:top phi. B
 a = b [o]
 ------------------------------------------ :: EtaC
-G |= psi /\top c. a ~ b : all c:top phi. B
+G |= psi /\top c. a ~ psi1 b : all c:top phi. B
 
 G |= psi all c : phi1 . phi2
 G |= psi phi1
@@ -1741,406 +1711,406 @@ F notin dom S
 
 
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Annotated language semantics
-%
-
-% TODO: add grades to DC
-
-defns
-Jann :: '' ::=
-
-defn
-G |- psi phi ok ::   :: AnnPropWff :: 'An_'
-{{ com prop wellformedness }}
-by
-
-G |- psi a : A
-G |- psi b : B
-|A| = |B|
-------------------------- :: Wff
-G |- psi a ~ b : A  ok
-
-defn
-G |- psi a : A ::  :: AnnTyping :: 'An_'
-{{ com typing }}
-by
-
-|- G
-------------  :: Star
-G |- psi TYPE : TYPE
-
-|- G
-x : psi0 A in G
-psi0 <= psi
------------ :: Var
-G |- psi x : A
-
-G, x: psi A |- psi B : TYPE
-[ G |- psi A : TYPE ]
------------------------------------- :: Pi
-G |- psi all x: psi0 A -> B : TYPE
-
-[ CTime /\ G |- CTime A : TYPE ]
-G, x:psi0 \/ psi A |- psi a : B
----------------------------------- :: Abs
-G |- psi \ psi0 x : A. a : all x: psi0 A -> B
-
-G |- psi b : all x:psi0 A -> B
-G |- psi0 \/ psi a : A
-psi0 <= CTime
-------------------------------------- :: App
-G |- psi b psi0 a : B { a / x }
-
-G |- psi b : all x:psi0 A -> B
-CTime /\ G |- CTime a : A
-CTime < psi0
-------------------------------------- :: AppIrrel
-G |- psi b psi0 a : B { a / x }
-
-
-G |- psi a : A
-CTime /\ G |- CTime g : A ~ B
-CTime /\ G |- CTime B : TYPE
------------------------------ :: Conv
-G |- psi a |> g : B
-
-[ G |- psi phi ok ]
-G, c : psi phi |- psi B : TYPE
--------------------------------- :: CPi
-G |- psi all c:psi0 phi. B : TYPE
-
-[ CTime /\ G |- CTime phi ok ]
-G, c : psi0 \/ psi phi |- psi a : B
-------------------------------------------------- :: CAbs
-G |- psi /\ psi0 c: phi. a : all c: psi0 phi. B
-
-G |- psi a1 : all c : top a ~ b : A1. B
-CTime /\ G |- CTime g : a ~ b
-------------------------------------- :: CApp
-G |- psi a1 [ g ] : B { g / c }
-
-|- G
-psi0 <= psi
-psi <= CTime
-F ~ a : psi0 A in an_toplevel
-[ empty |- CTime A : TYPE ]
------------------------ :: Fam
-G |- psi F : A
-
-defn
-G |- psi g : phi1 == phi2 ::  :: AnnIso :: 'An_'
-{{ tex [[G]][[|-]] [[g]] :_{[[psi]]} [[phi1]] \sim [[phi2]] }}
-{{ com coercion between props }}
-by
-
-G |- psi g1 : A1 ~ A2
-G |- psi g2 : B1 ~ B2
-G |- psi A1 ~ B1 : A ok
-G |- psi A2 ~ B2 : A ok
----------------------------------------------------------- :: PropCong
-G |- psi (g1 ~A g2) : (A1 ~ B1 : A) == (A2 ~ B2 : A)
-
-G |- psi g : all c:psi0 phi1. A2 ~ all c:psi0 phi2. B2
---------------------------------------- :: CPiFst
-G |- psi cpiFst g : phi1 == phi2
-
-G |- psi g : phi1 == phi2
----------------------------- :: IsoSym
-G |- psi sym g : phi2 == phi1
-
-G |- psi g : A ~ B
-CTime /\ G |- CTime a1 ~ a2 : A ok
-CTime /\ G |- CTime a1' ~ a2' : B ok
-|a1| = |a1'|
-|a2| = |a2'|
--------------------------------------- :: IsoConv
-G |- psi conv (a1 ~ a2 : A) (a1' ~ a2' : B) g : (a1 ~ a2 : A) == (a1' ~ a2' : B)
-
-
-defn
-G |- psi psi0 g : A ~ B :: :: AnnDefCEq :: 'An_'
-{{ com guarded coercion between types }}
-by
-% TODO
-
-
-defn
-G |- psi g : A ~ B ::  :: AnnDefEq :: 'An_'
-{{ com coercion between types }}
-by
-
-|- G
-psi0 <= psi
-c: psi0 a ~ b : A in G
-------------------- :: Assn
-G |- psi c : a ~ b
-
-G |- psi a : A
------------------------------ :: Refl
-G |- psi refl a : a ~ a
-
-G |- psi a : A
-G |- psi b : B
-|a| = |b|
-CTime /\ G |- CTime g : A ~ B
------------------------------ :: EraseEq
-G |- psi refl2 a b g : a ~ b
-
-
-G |- psi b : B
-G |- psi a : A
-[ CTime /\ G |- CTime g1 : B ~ A ]
-G |- psi g : b ~ a
--------------------------- :: Sym
-G |- psi sym g : a ~ b
-
-G |- psi g1 : a ~ a1
-G |- psi g2 : a1 ~ b
-[ G |- psi a : A ]
-[ G |- psi a1 : A1 ]
-[ CTime /\ G |- CTime g3 : A ~ A1 ]
-------------------------------------- :: Trans
-G |- psi (g1 ; g2) : a ~ b
-
-G |- psi a1 : B0
-G |- psi a2 : B1
-|B0| = |B1|
-|= |a1| > |a2|
---------------------------------  :: Beta
-G |- psi red a1 a2 : a1 ~ a2
-
-
-%% Note: need to include {x/x} to emphasize that x is free in B2 for
-%% the locally nameless backend.
-G |- psi g1 : A1 ~ A2
-G, x : psi A1 |- psi g2 : B1 ~ (# B2 {{{ x / x }}} #)
-B3 = B2 { x |> sym g1 / x }
-G |- psi all x:psi0 A1 -> B1 : TYPE
-G |- psi all x:psi0 A2 -> B3 : TYPE
-G |- psi (all x:psi0 A1 -> B2) : TYPE
----------------------------------------------------------- :: PiCong
-G |- psi all x:psi0 g1 -> g2 : (all x:psi0 A1 -> B1) ~ (all x:psi0 A2 -> B3)
-
-CTime /\ G |- CTime g1 : A1 ~ A2
-G, x : psi0 A1 |- psi g2 : b1 ~ (# b2 {{{x / x}}} #)
-b3 = b2 { x |> sym g1 / x }
-[ CTime /\ G |- CTime A1 : TYPE ]
-CTime /\ G |- CTime A2 : TYPE
-% rho => check x in | b1 |
-% rho => check x in | b3 |
-[G |- psi \ psi0 x :A1. b2 : B]
------------------------------------------------------------------- :: AbsCong
-G |- psi (\psi0 x:g1. g2) : (\psi0 x: A1. b1) ~ (\psi0 x: A2. b3)
- % TODO: fix gamma
-
-
-
-% really want heterogenous equality here.
-%% NOTE: we know that G |- g3 : A ~ B  must hold (b/c reg), but adding it as
-%% an extra assumption for the erasure proof.
-G |- psi g1 : a1 ~ b1
-G |- psi psi0 g2 : a2 ~ b2
-G |- psi a1 psi0 a2 : A
-G |- psi b1 psi0 b2 : B
-[ CTime /\ G |- CTime g3 : A ~ B ]
--------------------------------------- :: AppCong
-G |- psi g1 psi0 g2 : a1 psi0 a2 ~ b1 psi0 b2
-
-
-G |- psi g : all x:psi0 A1 -> B1 ~ all x:psi0 A2 -> B2
---------------------------------------- :: PiFst
-G |- psi piFst g : A1 ~ A2
-
-G |- psi g1 : all x:psi0 A1 -> B1  ~ all x:psi0 A2 -> B2
-G |- psi g2 : a1 ~ a2
-G |- psi a1 : A1
-G |- psi a2 : A2
---------------------------------------- :: PiSnd
-G |- psi g1 @ g2 : (# B1 {a1 /x} #) ~ (# B2 {a2/x} #)
-
-
-G |- psi g1 : phi1 == phi2
-G, c:psi phi1 |- psi g3 : B1 ~ (# B2 {{{c/c}}} #)
-B3 = B2 { c |> sym g1 / c }
-G |- psi all c: psi0 phi1 . B1 : TYPE
-[G |- psi all c:psi0 phi2 . B3 : TYPE]
-G |- psi all c:psi0 phi1 . B2 : TYPE
------------------------------------------------------ :: CPiCong
-G |- psi (all c: g1. g3) : (all c:psi0 phi1. B1) ~ (all c:psi0 phi2. B3)
-
-
-G |- psi g1 : phi1 == phi2
-G, c:psi0 \/ psi phi1 |- psi g3 : a1 ~ (# a2{{{c/c}}} #)
-a3 = a2 { c |> sym g1 / c }
-%% To know that the two types are equal, we need to know
-%% that the range types can be shown identical without using
-%% the assumption c:phi1. This is a stronger property than
-%% regularity implies.
-G |- psi (/\ psi0 c:phi1. a1) : all c:psi0 phi1. B1
-G |- psi (/\ psi0 c:phi2. a3) : all c:psi0 phi2. B2
-G |- psi (/\ psi0 c:phi1. a2) : B
-CTime /\ G |- psi g4 : all c:psi0 phi1. B1 ~ all c:psi0 phi2. B2
----------------------------------------------------------------- :: CAbsCong
-G |- psi (\ psi0 c: g1. g3 @ g4) : (/\ psi0 c:phi1. a1) ~ (/\ psi0 c:phi2. a3)
-
-
-G |- psi g1 : a1 ~ b1
-CTime /\ G |- CTime g2 : a2 ~ b2
-CTime /\ G |- CTime g3 : a3 ~ b3
-G |- psi a1 [g2] : A
-G |- psi b1 [g3] : B
-[ CTime /\ G |- CTime g4 : A ~ B ]
--------------------------------------- :: CAppCong
-G |- psi g1 (g2, g3) : a1 [ g2 ]  ~ b1 [ g3 ]
-
-
-G |- psi g1 : (all c1:psi0 a~a':A. B1) ~ (all c2:psi0 b~b':B. B2)
-CTime /\ G |- CTime g2 : a~a'
-CTime /\ G |- CTime g3 : b~b'
--------------------------------------------------- :: CPiSnd
-G |- psi g1 @ (g2, g3) : B1 { g2 / c1 } ~ B2 { g3 / c2 }
-
-
-G |- psi g1 : a~a'
-G |- psi g2 : a~a' :A == b~b' : B
---------------------------------------- :: Cast
-G |- psi g1 |> g2 : b~b'
-
-
-G |- psi g : (a~a' : A) == (b~b' : B)
----------------------------------- :: IsoSnd
-G |- psi isoSnd g : A ~ B
-
-
-G |- psi b : all x:psi0 A -> B
-a = b psi0 x
---------------------------------------------------- :: Eta
-G |- psi eta b : (\psi0 x:A. a) ~ b
-
-
-G |- psi b : all c:psi0 phi. B
-a = b [c]
---------------------------------------------------- :: EtaC
-G |- psi eta b : (/\ psi0 c:phi. a) ~ b
-
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-
-defn
-|- G ::      :: AnnCtx :: 'An_'
-{{ com context wellformedness }}
-by
-
-
----------- :: Empty
-|- empty
-
-|- G
-CTime /\ G |- CTime A : TYPE
-x notin dom G
---------------------- :: ConsTm
-|- G, x : psi0 A
-
-|- G
-CTime /\ G |- CTime phi ok
-c notin dom G
--------------------- :: ConsCo
-|- G, c: psi0 phi
-
-defn
-|- S ::    :: AnnSig :: 'An_Sig_'
-{{ com signature wellformedness }}
-by
-
------------- :: Empty
-|- emptyS
-
-|- S
-empty |- CTime A : TYPE
-empty |- psi0 a : A
-F notin dom S
----------------- :: ConsAx
-|- S, F ~ a  : psi0 A
-
-
-defns
-  Jred :: '' ::=
-
-defn
-G |- a ~>h b ::   :: head_reduction :: 'An_'
-{{ com single-step, weak head reduction to values for annotated language }}
-% NOTE: this reduction needs a context for the the
-% two push rules. We need to read the coercion proofs
-% to know what type annotations to use after the push.
-by
-
-G |- a ~>h a'
--------------------------  :: AppLeft
-G |- a psi0 b ~>h a' psi0 b
-
-Value (\psi0 x:A.w)
------------------------------------------  :: AppAbs
-G |- (\psi0 x:A.w) psi0 a ~>h w { a / x}
-
-
-G |- a  ~>h a'
------------------------------   :: CAppLeft
-G |- a [g]  ~>h a' [g]
-
-
-------------------------------------  :: CAppCAbs
-G |- (/\psi0 c:phi.b) [g] ~>h b { g / c}
-
-% no longer needed?
-% G |- A : TYPE
-% G, x : A |- b ~>h b'
-% ------------------------------------------- :: AbsTerm
-% G |- (\- x:A. b) ~>h (\- x:A. b')
-
-
-F ~ a : psi0 A in an_toplevel
-------------------------- :: Axiom
-G |- F ~>h a
-
-
-G |- a ~>h a'
----------------------------- :: ConvTerm
- G |- a |> g ~>h a' |> g
-
-
-Value v
-------------------------------------- :: Combine
-G |- (v |> g1) |> g2 ~>h v |> (g1 ; g2)
-
-% Not used (or needed)
-
-%   G ; dom G |- g : all rho x1:A1 -> B1 ~ all rho x2:A2 -> B2
-%   a1 = a { x2 |> sym (piFst g) / x1 }
-%   g2 = g @ refl2 (# x2 |> sym (piFst g) #) x2 (# piFst g #)
-% ------------------------------------------------------------------------- :: Push
-%   G |- ( (\rho x1:A1.a) |> g ) rho b ~>h (\rho x2:A2. (a1 |> g2)) rho b
-
-%   G ; dom G |- g : all c1:phi1. A1 ~ all c2:phi2. A2
-%   a1 = a { c2 |> sym (cpiFst g)  / c1 }
-%   g2 = g @ (c2 |> sym (cpiFst g), c2)
-% ------------------------------------------------------------------ :: CPush
-%   G |- ( (/\c1:phi1.a) |> g ) [g1] ~>h (/\c2:phi2. (a1 |> g2)) [g1]
-
-
-
-Value v
-CTime /\ G |- psi g : all x1: psi0 A1 -> B1 ~ all x2: psi0 A2 -> B2
-b' = b |> sym (piFst g)
-g' = g @ refl2 b' b (piFst g)
----------------------------------------------------------- :: Push
-G |- (v |> g) psi0 b ~>h (v psi0 b') |> g'
-
-
-Value v
-CTime /\ G |- psi g : all c1:psi0 phi1. A1 ~ all c2:psi0 phi2. A2
-g1' = g1 |> sym (cpiFst g)
-g' = g @ ( g1' , g1 )
--------------------------------------------------------- :: CPush
-G |- (v |> g) [g1] ~>h (v [g1']) |> g'
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% % Annotated language semantics
+% %
+
+% % TODO: add grades to DC
+
+% defns
+% Jann :: '' ::=
+
+% defn
+% G |- psi phi ok ::   :: AnnPropWff :: 'An_'
+% {{ com prop wellformedness }}
+% by
+
+% G |- psi a : A
+% G |- psi b : B
+% |A| = |B|
+% ------------------------- :: Wff
+% G |- psi a ~ b : A  ok
+
+% defn
+% G |- psi a : A ::  :: AnnTyping :: 'An_'
+% {{ com typing }}
+% by
+
+% |- G
+% ------------  :: Star
+% G |- psi TYPE : TYPE
+
+% |- G
+% x : psi0 A in G
+% psi0 <= psi
+% ----------- :: Var
+% G |- psi x : A
+
+% G, x: psi A |- psi B : TYPE
+% [ G |- psi A : TYPE ]
+% ------------------------------------ :: Pi
+% G |- psi all x: psi0 A -> B : TYPE
+
+% [ CTime /\ G |- CTime A : TYPE ]
+% G, x:psi0 \/ psi A |- psi a : B
+% ---------------------------------- :: Abs
+% G |- psi \ psi0 x : A. a : all x: psi0 A -> B
+
+% G |- psi b : all x:psi0 A -> B
+% G |- psi0 \/ psi a : A
+% psi0 <= CTime
+% ------------------------------------- :: App
+% G |- psi b psi0 a : B { a / x }
+
+% G |- psi b : all x:psi0 A -> B
+% CTime /\ G |- CTime a : A
+% CTime < psi0
+% ------------------------------------- :: AppIrrel
+% G |- psi b psi0 a : B { a / x }
+
+
+% G |- psi a : A
+% CTime /\ G |- CTime g : A ~ B
+% CTime /\ G |- CTime B : TYPE
+% ----------------------------- :: Conv
+% G |- psi a |> g : B
+
+% [ G |- psi phi ok ]
+% G, c : psi phi |- psi B : TYPE
+% -------------------------------- :: CPi
+% G |- psi all c:psi0 phi. B : TYPE
+
+% [ CTime /\ G |- CTime phi ok ]
+% G, c : psi0 \/ psi phi |- psi a : B
+% ------------------------------------------------- :: CAbs
+% G |- psi /\ psi0 c: phi. a : all c: psi0 phi. B
+
+% G |- psi a1 : all c : top a ~ b : A1. B
+% CTime /\ G |- CTime g : a ~ b
+% ------------------------------------- :: CApp
+% G |- psi a1 [ g ] : B { g / c }
+
+% |- G
+% psi0 <= psi
+% psi <= CTime
+% F ~ a : psi0 A in an_toplevel
+% [ empty |- CTime A : TYPE ]
+% ----------------------- :: Fam
+% G |- psi F : A
+
+% defn
+% G |- psi g : phi1 == phi2 ::  :: AnnIso :: 'An_'
+% {{ tex [[G]][[|-]] [[g]] :_{[[psi]]} [[phi1]] \sim [[phi2]] }}
+% {{ com coercion between props }}
+% by
+
+% G |- psi g1 : A1 ~ A2
+% G |- psi g2 : B1 ~ B2
+% G |- psi A1 ~ B1 : A ok
+% G |- psi A2 ~ B2 : A ok
+% ---------------------------------------------------------- :: PropCong
+% G |- psi (g1 ~A g2) : (A1 ~ B1 : A) == (A2 ~ B2 : A)
+
+% G |- psi g : all c:psi0 phi1. A2 ~ all c:psi0 phi2. B2
+% --------------------------------------- :: CPiFst
+% G |- psi cpiFst g : phi1 == phi2
+
+% G |- psi g : phi1 == phi2
+% ---------------------------- :: IsoSym
+% G |- psi sym g : phi2 == phi1
+
+% G |- psi g : A ~ B
+% CTime /\ G |- CTime a1 ~ a2 : A ok
+% CTime /\ G |- CTime a1' ~ a2' : B ok
+% |a1| = |a1'|
+% |a2| = |a2'|
+% -------------------------------------- :: IsoConv
+% G |- psi conv (a1 ~ a2 : A) (a1' ~ a2' : B) g : (a1 ~ a2 : A) == (a1' ~ a2' : B)
+
+
+% defn
+% G |- psi psi0 g : A ~ B :: :: AnnDefCEq :: 'An_'
+% {{ com guarded coercion between types }}
+% by
+% % TODO
+
+
+% defn
+% G |- psi g : A ~ B ::  :: AnnDefEq :: 'An_'
+% {{ com coercion between types }}
+% by
+
+% |- G
+% psi0 <= psi
+% c: psi0 a ~ b : A in G
+% ------------------- :: Assn
+% G |- psi c : a ~ b
+
+% G |- psi a : A
+% ----------------------------- :: Refl
+% G |- psi refl a : a ~ a
+
+% G |- psi a : A
+% G |- psi b : B
+% |a| = |b|
+% CTime /\ G |- CTime g : A ~ B
+% ----------------------------- :: EraseEq
+% G |- psi refl2 a b g : a ~ b
+
+
+% G |- psi b : B
+% G |- psi a : A
+% [ CTime /\ G |- CTime g1 : B ~ A ]
+% G |- psi g : b ~ a
+% -------------------------- :: Sym
+% G |- psi sym g : a ~ b
+
+% G |- psi g1 : a ~ a1
+% G |- psi g2 : a1 ~ b
+% [ G |- psi a : A ]
+% [ G |- psi a1 : A1 ]
+% [ CTime /\ G |- CTime g3 : A ~ A1 ]
+% ------------------------------------- :: Trans
+% G |- psi (g1 ; g2) : a ~ b
+
+% G |- psi a1 : B0
+% G |- psi a2 : B1
+% |B0| = |B1|
+% |= |a1| > |a2|
+% --------------------------------  :: Beta
+% G |- psi red a1 a2 : a1 ~ a2
+
+
+% %% Note: need to include {x/x} to emphasize that x is free in B2 for
+% %% the locally nameless backend.
+% G |- psi g1 : A1 ~ A2
+% G, x : psi A1 |- psi g2 : B1 ~ (# B2 {{{ x / x }}} #)
+% B3 = B2 { x |> sym g1 / x }
+% G |- psi all x:psi0 A1 -> B1 : TYPE
+% G |- psi all x:psi0 A2 -> B3 : TYPE
+% G |- psi (all x:psi0 A1 -> B2) : TYPE
+% ---------------------------------------------------------- :: PiCong
+% G |- psi all x:psi0 g1 -> g2 : (all x:psi0 A1 -> B1) ~ (all x:psi0 A2 -> B3)
+
+% CTime /\ G |- CTime g1 : A1 ~ A2
+% G, x : psi0 A1 |- psi g2 : b1 ~ (# b2 {{{x / x}}} #)
+% b3 = b2 { x |> sym g1 / x }
+% [ CTime /\ G |- CTime A1 : TYPE ]
+% CTime /\ G |- CTime A2 : TYPE
+% % rho => check x in | b1 |
+% % rho => check x in | b3 |
+% [G |- psi \ psi0 x :A1. b2 : B]
+% ------------------------------------------------------------------ :: AbsCong
+% G |- psi (\psi0 x:g1. g2) : (\psi0 x: A1. b1) ~ (\psi0 x: A2. b3)
+%  % TODO: fix gamma
+
+
+
+% % really want heterogenous equality here.
+% %% NOTE: we know that G |- g3 : A ~ B  must hold (b/c reg), but adding it as
+% %% an extra assumption for the erasure proof.
+% G |- psi g1 : a1 ~ b1
+% G |- psi psi0 g2 : a2 ~ b2
+% G |- psi a1 psi0 a2 : A
+% G |- psi b1 psi0 b2 : B
+% [ CTime /\ G |- CTime g3 : A ~ B ]
+% -------------------------------------- :: AppCong
+% G |- psi g1 psi0 g2 : a1 psi0 a2 ~ b1 psi0 b2
+
+
+% G |- psi g : all x:psi0 A1 -> B1 ~ all x:psi0 A2 -> B2
+% --------------------------------------- :: PiFst
+% G |- psi piFst g : A1 ~ A2
+
+% G |- psi g1 : all x:psi0 A1 -> B1  ~ all x:psi0 A2 -> B2
+% G |- psi g2 : a1 ~ a2
+% G |- psi a1 : A1
+% G |- psi a2 : A2
+% --------------------------------------- :: PiSnd
+% G |- psi g1 @ g2 : (# B1 {a1 /x} #) ~ (# B2 {a2/x} #)
+
+
+% G |- psi g1 : phi1 == phi2
+% G, c:psi phi1 |- psi g3 : B1 ~ (# B2 {{{c/c}}} #)
+% B3 = B2 { c |> sym g1 / c }
+% G |- psi all c: psi0 phi1 . B1 : TYPE
+% [G |- psi all c:psi0 phi2 . B3 : TYPE]
+% G |- psi all c:psi0 phi1 . B2 : TYPE
+% ----------------------------------------------------- :: CPiCong
+% G |- psi (all c: g1. g3) : (all c:psi0 phi1. B1) ~ (all c:psi0 phi2. B3)
+
+
+% G |- psi g1 : phi1 == phi2
+% G, c:psi0 \/ psi phi1 |- psi g3 : a1 ~ (# a2{{{c/c}}} #)
+% a3 = a2 { c |> sym g1 / c }
+% %% To know that the two types are equal, we need to know
+% %% that the range types can be shown identical without using
+% %% the assumption c:phi1. This is a stronger property than
+% %% regularity implies.
+% G |- psi (/\ psi0 c:phi1. a1) : all c:psi0 phi1. B1
+% G |- psi (/\ psi0 c:phi2. a3) : all c:psi0 phi2. B2
+% G |- psi (/\ psi0 c:phi1. a2) : B
+% CTime /\ G |- psi g4 : all c:psi0 phi1. B1 ~ all c:psi0 phi2. B2
+% ---------------------------------------------------------------- :: CAbsCong
+% G |- psi (\ psi0 c: g1. g3 @ g4) : (/\ psi0 c:phi1. a1) ~ (/\ psi0 c:phi2. a3)
+
+
+% G |- psi g1 : a1 ~ b1
+% CTime /\ G |- CTime g2 : a2 ~ b2
+% CTime /\ G |- CTime g3 : a3 ~ b3
+% G |- psi a1 [g2] : A
+% G |- psi b1 [g3] : B
+% [ CTime /\ G |- CTime g4 : A ~ B ]
+% -------------------------------------- :: CAppCong
+% G |- psi g1 (g2, g3) : a1 [ g2 ]  ~ b1 [ g3 ]
+
+
+% G |- psi g1 : (all c1:psi0 a~a':A. B1) ~ (all c2:psi0 b~b':B. B2)
+% CTime /\ G |- CTime g2 : a~a'
+% CTime /\ G |- CTime g3 : b~b'
+% -------------------------------------------------- :: CPiSnd
+% G |- psi g1 @ (g2, g3) : B1 { g2 / c1 } ~ B2 { g3 / c2 }
+
+
+% G |- psi g1 : a~a'
+% G |- psi g2 : a~a' :A == b~b' : B
+% --------------------------------------- :: Cast
+% G |- psi g1 |> g2 : b~b'
+
+
+% G |- psi g : (a~a' : A) == (b~b' : B)
+% ---------------------------------- :: IsoSnd
+% G |- psi isoSnd g : A ~ B
+
+
+% G |- psi b : all x:psi0 A -> B
+% a = b psi0 x
+% --------------------------------------------------- :: Eta
+% G |- psi eta b : (\psi0 x:A. a) ~ b
+
+
+% G |- psi b : all c:psi0 phi. B
+% a = b [c]
+% --------------------------------------------------- :: EtaC
+% G |- psi eta b : (/\ psi0 c:phi. a) ~ b
+
+
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+% defn
+% |- G ::      :: AnnCtx :: 'An_'
+% {{ com context wellformedness }}
+% by
+
+
+% ---------- :: Empty
+% |- empty
+
+% |- G
+% CTime /\ G |- CTime A : TYPE
+% x notin dom G
+% --------------------- :: ConsTm
+% |- G, x : psi0 A
+
+% |- G
+% CTime /\ G |- CTime phi ok
+% c notin dom G
+% -------------------- :: ConsCo
+% |- G, c: psi0 phi
+
+% defn
+% |- S ::    :: AnnSig :: 'An_Sig_'
+% {{ com signature wellformedness }}
+% by
+
+% ------------ :: Empty
+% |- emptyS
+
+% |- S
+% empty |- CTime A : TYPE
+% empty |- psi0 a : A
+% F notin dom S
+% ---------------- :: ConsAx
+% |- S, F ~ a  : psi0 A
+
+
+% defns
+%   Jred :: '' ::=
+
+% defn
+% G |- a ~>h b ::   :: head_reduction :: 'An_'
+% {{ com single-step, weak head reduction to values for annotated language }}
+% % NOTE: this reduction needs a context for the the
+% % two push rules. We need to read the coercion proofs
+% % to know what type annotations to use after the push.
+% by
+
+% G |- a ~>h a'
+% -------------------------  :: AppLeft
+% G |- a psi0 b ~>h a' psi0 b
+
+% Value (\psi0 x:A.w)
+% -----------------------------------------  :: AppAbs
+% G |- (\psi0 x:A.w) psi0 a ~>h w { a / x}
+
+
+% G |- a  ~>h a'
+% -----------------------------   :: CAppLeft
+% G |- a [g]  ~>h a' [g]
+
+
+% ------------------------------------  :: CAppCAbs
+% G |- (/\psi0 c:phi.b) [g] ~>h b { g / c}
+
+% % no longer needed?
+% % G |- A : TYPE
+% % G, x : A |- b ~>h b'
+% % ------------------------------------------- :: AbsTerm
+% % G |- (\- x:A. b) ~>h (\- x:A. b')
+
+
+% F ~ a : psi0 A in an_toplevel
+% ------------------------- :: Axiom
+% G |- F ~>h a
+
+
+% G |- a ~>h a'
+% ---------------------------- :: ConvTerm
+%  G |- a |> g ~>h a' |> g
+
+
+% Value v
+% ------------------------------------- :: Combine
+% G |- (v |> g1) |> g2 ~>h v |> (g1 ; g2)
+
+% % Not used (or needed)
+
+% %   G ; dom G |- g : all rho x1:A1 -> B1 ~ all rho x2:A2 -> B2
+% %   a1 = a { x2 |> sym (piFst g) / x1 }
+% %   g2 = g @ refl2 (# x2 |> sym (piFst g) #) x2 (# piFst g #)
+% % ------------------------------------------------------------------------- :: Push
+% %   G |- ( (\rho x1:A1.a) |> g ) rho b ~>h (\rho x2:A2. (a1 |> g2)) rho b
+
+% %   G ; dom G |- g : all c1:phi1. A1 ~ all c2:phi2. A2
+% %   a1 = a { c2 |> sym (cpiFst g)  / c1 }
+% %   g2 = g @ (c2 |> sym (cpiFst g), c2)
+% % ------------------------------------------------------------------ :: CPush
+% %   G |- ( (/\c1:phi1.a) |> g ) [g1] ~>h (/\c2:phi2. (a1 |> g2)) [g1]
+
+
+
+% Value v
+% CTime /\ G |- psi g : all x1: psi0 A1 -> B1 ~ all x2: psi0 A2 -> B2
+% b' = b |> sym (piFst g)
+% g' = g @ refl2 b' b (piFst g)
+% ---------------------------------------------------------- :: Push
+% G |- (v |> g) psi0 b ~>h (v psi0 b') |> g'
+
+
+% Value v
+% CTime /\ G |- psi g : all c1:psi0 phi1. A1 ~ all c2:psi0 phi2. A2
+% g1' = g1 |> sym (cpiFst g)
+% g' = g @ ( g1' , g1 )
+% -------------------------------------------------------- :: CPush
+% G |- (v |> g) [g1] ~>h (v [g1']) |> g'
