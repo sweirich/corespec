@@ -38,22 +38,22 @@ grammar
 grade, psi {{ tex \ell }} :: 'q_' ::=   {{ coq grade }}
   | RTime                         :: M :: R  {{ tex { \color{black}{R} } }} {{ coq q_R }}
   | CTime                         :: M :: C  {{ tex { \color{black}{C} } }} {{ coq q_C }}
-  | High                          :: M :: H  {{ tex { \color{black}{H} } }} {{ coq q_H }}
-  | Middle                        :: M :: M  {{ tex { \color{black}{M} } }} {{ coq q_M }}
-  | Low                           :: M :: L  {{ tex { \color{black}{L} } }} {{ coq q_L }}
+  | L                             :: M :: L  {{ tex { \color{black}{L} } }} {{ coq q_L }}
+  | D                             :: M :: P  {{ tex { \color{black}{P} } }} {{ coq q_P }}
   | top                           :: M :: Top {{ tex { \color{black}{\top} } }} {{ coq q_Top }}
   | bot                           :: M :: Bot {{ tex { \color{black}{\bot} } }} {{ coq q_Bot }}
   | psi1 \/ psi2                  :: M :: Join {{ tex [[psi1]] \vee [[psi2]] }} {{ coq (q_join [[psi1]] [[psi2]]) }}
   | psi1 /\ psi2                  :: M :: Meet {{ tex [[psi1]] \wedge [[psi2]] }} {{ coq (q_meet [[psi1]] [[psi2]]) }}
   | ( psi )                       :: M :: paren {{ tex [[ psi ]] }}
                                                 {{ coq ([[psi]]) }}
+  | ( psi1 , psi2 )               :: M :: pair {{ tex ([[ psi1 ]], [[ psi2 ]]) }}
 
 
 % relflag, rho {{ tex \rho }} :: '' ::= {{ com relevance flag }}
 %    | +             ::   :: Rel
 %    | -             ::   :: Irrel
 
-# a ~ psi b necessary for assn rule
+% a ~ psi b necessary for assn rule
 constraint, phi {{ tex \phi }} :: '' ::= {{ com props }}
    | a ~ psi b : A    ::   :: Eq
      {{ tex [[a]] [[~]]_{[[A]]} [[b]] }}
@@ -80,6 +80,9 @@ tm, a, b, v, w, A, B :: 'a_' ::= {{ com types and kinds }}
      {{ tex \mathrm{\lambda}[[x]]^{[[psi]]}.[[b]] }}
    | a psi b            ::   :: App
      {{ tex [[a]]\ [[b]]^{[[psi]]}  }}
+   | a ~~~ psi b : A    ::   :: Id
+   | refl               ::   :: Refl
+   | case psi1 a of ( c . b )  ::   :: ReflElim (+ bind c in b +)
    | F                  ::   :: Fam
    | T                  ::   :: Const
    | all x : psi A -> B ::   :: Pi (+ bind x in B +)
@@ -366,6 +369,7 @@ terminals :: 'terminals_' ::=
   | dom               ::   :: dom        {{ tex \mathsf{dom} }}
   | ~                 ::   :: twiddle    {{ tex \sim }}
   | ~~                ::   :: compatible {{ tex \asymp }}
+  | ~~~               ::   :: peq        {{ tex \asymp }}
   | '|'               ::   :: bar        {{ tex | }}
   | o                 ::   :: bullet     {{ tex \bullet }}
   | fst               ::   :: fst
@@ -1413,6 +1417,17 @@ F ~ a : psi0 A in toplevel
 G |= psi F : A
 
 
+|= G
+----------------------- :: Refl
+G |= psi refl : a ~~~ psi0 a : A
+
+G |= (psi, psi0) a1 : a0 ~~~ psi2 b0 : A
+G, c: top a0 ~ psi2 b0 : A |=> (psi \/ psi1, L) b1 : B
+----------------------- :: ReflElim
+G |= (psi, psi0) case psi1 a1 of (c . b1) : B
+
+
+
 % NOTE: Why don't we label this judgment?
 % It is unnecessary at this point, because we don't
 % have coercion-level box/app
@@ -1489,12 +1504,11 @@ by
 % erasure should only erase (x `cast` co) but not (capp x g)
 defn
 
-G |= psi g : phi ::     :: DefEq :: 'E_'
+G |= psi phi ::     :: DefEq :: 'E_'
 {{ tex [[G]] \vDash_{[[psi]]} [[phi]] }}
 {{ com definitional equality }}
 by
 
-% labeled well-formedness judgment?
 |= G
 psi0 <= psi
 psi <= CTime
@@ -1584,8 +1598,8 @@ CTime /\ G |= CTime phi
 G |= psi a1 [o] ~ psi1 b1 [o] : ( B { o / c } )
 
 G |= psi all c: psi0 phi1. B1 ~ psi1 all c:psi0 phi2. B2 : TYPE
-G |= psi g1: phi1
-G |= psi g2: phi2
+G |= psi phi1
+G |= psi phi2
 ---------------------------------------------- :: CPiSnd
 G |=  psi B1 { o / c} ~ psi1 B2 { o / c } : TYPE
 
