@@ -1,6 +1,6 @@
-This repository must be built with Coq 8.6.
+This repository must be built with Coq 8.13.
 
-It requires MathComp (v1.6), and the 8.6 branch of
+It requires MathComp (v1.12), and the 8.10 branch of
 [metalib](https://github.com/plclub/metalib) to
 install.  The former comes from opam, the latter from Github.  For full
 installation instructions, see LIBRARIES.md.

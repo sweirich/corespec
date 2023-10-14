@@ -15,6 +15,7 @@ Require Import FcEtt.toplevel.
 Require Import FcEtt.fc_get.
 Require Import FcEtt.fc_context_fv.
 
+Import FcEtt.ett_ind.
 
 Module fc_dec_fun (wf : fc_wf_sig) (weak : fc_weak_sig) (subst : fc_subst_sig) (unique: fc_unique_sig).
 
@@ -1143,7 +1144,7 @@ Next Obligation.
   clear dependent filtered_var0.
   clear dependent filtered_var2.
   clear dependent filtered_var4.
-  clear dependent filtered_var3. subst. clear dependent fuel.
+  clear dependent filtered_var3. subst. (* clear dependent fuel. *)
   clean_fun. clearbodies'.
 
   autoreg.
@@ -1480,7 +1481,7 @@ Next Obligation.
   clear dependent filtered_var1.
   clear dependent filtered_var0.
   clear dependent filtered_var4.
-  clear dependent filtered_var3. subst. clear dependent fuel.
+  clear dependent filtered_var3. subst. (* clear dependent fuel. *)
   clean_fun. clearbodies'.
 
   autoreg.
@@ -1627,6 +1628,103 @@ Defined.
 
 
 Solve Obligations of AnnDefEq_dec with discr_pat_match.
+Next Obligation.
+  hacky.
+Defined.
+Next Obligation.
+  hacky.
+Defined.
+Next Obligation.
+  hacky.
+Defined.
+Next Obligation.
+  hacky.
+Defined.
+Next Obligation.
+  hacky.
+Defined.
+Next Obligation.
+  hacky.
+Defined.
+Next Obligation.
+  hacky.
+Defined.
+Next Obligation.
+  hacky.
+Defined.
+Next Obligation.
+  hacky.
+Defined.
+Next Obligation.
+  hacky.
+Defined.
+Next Obligation.
+  hacky.
+Defined.
+Next Obligation.
+  hacky.
+Defined.
+Next Obligation.
+  hacky.
+Defined.
+Next Obligation.
+  hacky.
+Defined.
+Next Obligation.
+  hacky.
+Defined.
+Next Obligation.
+  hacky.
+Defined.
+Next Obligation.
+  hacky.
+Defined.
+Next Obligation.
+  hacky.
+Defined.
+Next Obligation.
+  hacky.
+Defined.
+Next Obligation.
+  hacky.
+Defined.
+Next Obligation.
+  hacky.
+Defined.
+Next Obligation.
+  hacky.
+Defined.
+Next Obligation.
+  hacky.
+Defined.
+Next Obligation.
+  hacky.
+Defined.
+Next Obligation.
+  hacky.
+Defined.
+Next Obligation.
+  hacky.
+Defined.
+Next Obligation.
+  hacky.
+Defined.
+Next Obligation.
+  hacky.
+Defined.
+Next Obligation.
+  hacky.
+Defined.
+Next Obligation.
+  hacky.
+Defined.
+Next Obligation.
+  hacky.
+Defined.
+Next Obligation.
+  hacky.
+Defined.
+
 
 (* An_IsoSnd *)
 Next Obligation.
@@ -1678,7 +1776,7 @@ Next Obligation.
   simpl. destruct eq_dec; try done.
   rewrite tm_subst_tm_tm_fresh_eq. auto.
   auto.
-Defined. 
+Defined.
 Next Obligation.
   eapply An_Eta with (L := dom G)(B := B).
   subst. auto.
@@ -1688,7 +1786,7 @@ Next Obligation.
   rewrite tm_subst_tm_tm_fresh_eq. auto.
   auto.
 Defined.
-Next Obligation. 
+Next Obligation.
   eapply An_EtaC with (L := dom G).
   subst. eapply wildcard'.
   intros.
@@ -1697,7 +1795,7 @@ Next Obligation.
   rewrite co_subst_co_tm_fresh_eq. auto.
   move: (AnnTyping_context_fv wildcard') => h0.
   fsetdec.
-Defined. 
+Defined.
 Next Obligation.
   cleanup. inversion 1; subst;
   inversion H0; clear H0;
@@ -1712,70 +1810,69 @@ Next Obligation.
   move: (H0 phi) => h0.
   edestruct h0.
   eapply AnnTyping_unique. eauto. eauto.
-Defined. 
-
-Next Obligation.
-  unfold wildcard'.
-  repeat split; intros; discriminate.
-Defined.
-Next Obligation.
-  unfold wildcard'.
-  repeat split; intros; discriminate.
-Defined.
-Next Obligation.
-  unfold wildcard'.
-  repeat split; intros; discriminate.
-Defined.
-Next Obligation.
-  unfold wildcard'.
-  repeat split; intros; discriminate.
-Defined.
-Next Obligation.
-  unfold wildcard'.
-  repeat split; intros; discriminate.
-Defined.
-Next Obligation.
-  unfold wildcard'.
-  repeat split; intros; discriminate.
-Defined.
-Next Obligation.
-  unfold wildcard'.
-  repeat split; intros; discriminate.
-Defined.
-Next Obligation.
-  unfold wildcard'.
-  repeat split; intros; discriminate.
-Defined.
-Next Obligation.
-  unfold wildcard'.
-  repeat split; intros; discriminate.
-Defined.
-Next Obligation.
-  unfold wildcard'.
-  repeat split; intros; discriminate.
-Defined.
-Next Obligation.
-  unfold wildcard'.
-  repeat split; intros; discriminate.
-Defined.
-Next Obligation.
-  unfold wildcard'.
-  repeat split; intros; discriminate.
-Defined.
-Next Obligation.
-  unfold wildcard'.
-  repeat split; intros; discriminate.
-Defined.
-Next Obligation.
-  unfold wildcard'.
-  repeat split; intros; discriminate.
-Defined.
-Next Obligation.
-  unfold wildcard'.
-  repeat split; intros; discriminate.
 Defined.
 
-
+Next Obligation.
+  unfold wildcard'.
+  repeat split; intros; discriminate.
+Defined.
+Next Obligation.
+  unfold wildcard'.
+  repeat split; intros; discriminate.
+Defined.
+Next Obligation.
+  unfold wildcard'.
+  repeat split; intros; discriminate.
+Defined.
+Next Obligation.
+  unfold wildcard'.
+  repeat split; intros; discriminate.
+Defined.
+Next Obligation.
+  unfold wildcard'.
+  repeat split; intros; discriminate.
+Defined.
+Next Obligation.
+  unfold wildcard'.
+  repeat split; intros; discriminate.
+Defined.
+Next Obligation.
+  unfold wildcard'.
+  repeat split; intros; discriminate.
+Defined.
+Next Obligation.
+  unfold wildcard'.
+  repeat split; intros; discriminate.
+Defined.
+Next Obligation.
+  unfold wildcard'.
+  repeat split; intros; discriminate.
+Defined.
+Next Obligation.
+  unfold wildcard'.
+  repeat split; intros; discriminate.
+Defined.
+Next Obligation.
+  unfold wildcard'.
+  repeat split; intros; discriminate.
+Defined.
+Next Obligation.
+  unfold wildcard'.
+  repeat split; intros; discriminate.
+Defined.
+Next Obligation.
+  unfold wildcard'.
+  repeat split; intros; discriminate.
+Defined.
+Next Obligation.
+  unfold wildcard'.
+  repeat split; intros; discriminate.
+Defined.
+Next Obligation.
+  unfold wildcard'.
+  repeat split; intros; discriminate.
+Defined.
+  
  (* cleanup'.
   subst.
   move=> h0.
@@ -2026,11 +2123,13 @@ Next Obligation. (* Ctx Wf *)
   econstructor; eauto.
 Defined.
 Next Obligation.
+  clear dependent fuel.
   move /An_Pi_inversion => [_ [_] ].
   have xG: x `notin` dom G by fsetdec.
   move /(_ x xG).
   ok.
 Defined.
+
 Next Obligation.
   move /An_Pi_inversion => [? ?].
   cleanup.
@@ -2039,9 +2138,8 @@ Next Obligation.
   ok.
 Defined.
 Next Obligation.
-  apply An_Pi_exists2 with (x := x); ok.
+  clear dependent fuel; subst; apply An_Pi_exists2 with (x := x); ok.
 Defined.
-
 
 (* An_Abs *)
 Next Obligation.
@@ -2077,6 +2175,7 @@ Next Obligation.
   by apply wildcard'.
 Defined.
 Next Obligation.
+  clear dependent fuel.
   move: ann_context_fv_mutual => [h'' [_ [_ [_ _] ] ] ]; move: h'' => /(_ _ _ _ wildcard'2) /= [? [? [? ?] ] ].
   eapply An_Abs_exists with (x := x); try done.
   - autorewrite with lngen. fsetdec.
@@ -2108,6 +2207,54 @@ Defined.
 
 Solve All Obligations with discr_pat_match.
 
+Next Obligation.
+  hacky.
+Defined.
+Next Obligation.
+  hacky.
+Defined.
+Next Obligation.
+  hacky.
+Defined.
+Next Obligation.
+  hacky.
+Defined.
+Next Obligation.
+  hacky.
+Defined.
+Next Obligation.
+  hacky.
+Defined.
+Next Obligation.
+  hacky.
+Defined.
+Next Obligation.
+  hacky.
+Defined.
+Next Obligation.
+  hacky.
+Defined.
+Next Obligation.
+  hacky.
+Defined.
+Next Obligation.
+  hacky.
+Defined.
+Next Obligation.
+  hacky.
+Defined.
+Next Obligation.
+  hacky.
+Defined.
+Next Obligation.
+  hacky.
+Defined.
+Next Obligation.
+  hacky.
+Defined.
+Next Obligation.
+  hacky.
+Defined.
 
 (* An_Cast *)
 Next Obligation.
@@ -2131,8 +2278,8 @@ Next Obligation.
   cleanup'.
   autoreg.
   clearget.
-  subst.
-  apply: An_Conv; eassumption.
+  clear dependent fuel;
+    ok.
 Defined.
 
 
@@ -2187,20 +2334,78 @@ Defined. *)
 Next Obligation.
   hacky.
 Defined.
-Next Obligation. (* Fuel: aux *)
-  fsetdec.
+Next Obligation.
+  hacky.
 Defined.
 Next Obligation.
-  cleanup'.
-  econstructor; try eassumption.
-  fsetdec.
+  hacky.
 Defined.
 Next Obligation.
+  hacky.
+Defined.
+Next Obligation.
+  hacky.
+Defined.
+Next Obligation.
+  hacky.
+Defined.
+Next Obligation.
+  hacky.
+Defined.
+Next Obligation.
+  hacky.
+Defined.
+Next Obligation.
+  hacky.
+Defined.
+Next Obligation.
+  hacky.
+Defined.
+Next Obligation.
+  hacky.
+Defined.
+Next Obligation.
+  hacky.
+Defined.
+Next Obligation.
+  hacky.
+Defined.
+Next Obligation.
+  hacky.
+Defined.
+Next Obligation.
+  hacky.
+Defined.
+Next Obligation.
+  hacky.
+Defined.
+Next Obligation.
+  hacky.
+Defined.
+Next Obligation.
+  hacky.
+Defined.
+Next Obligation.
+  hacky.
+Defined.
+
+(* Next Obligation. (* Fuel: aux *) *)
+(*   clear dependent fuel. *)
+(*   fsetdec. *)
+(* Defined. *)
+(* Next Obligation. *)
+(*   cleanup'. *)
+(*   econstructor; try eassumption. *)
+(*   fsetdec. *)
+(* Defined. *)
+Next Obligation.
+  clear dependent fuel.
   move /An_CPi_inversion => [_ [_] ].
   have cG: c `notin` dom G by fsetdec.
   move /(_ c cG).
   ok.
 Defined.
+
 Next Obligation.
   move /An_CPi_inversion => [_ [_] ].
   have cG: c `notin` dom G by fsetdec.
@@ -2210,6 +2415,7 @@ Next Obligation.
   by move: (u0 _ wildcard'1) => ->.
 Defined.
 Next Obligation.
+  clear dependent fuel; subst.
   apply An_CPi_exists with (c := c);
   ok.
 Defined.

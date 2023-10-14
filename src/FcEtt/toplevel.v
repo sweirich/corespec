@@ -24,8 +24,8 @@ Qed.
 
 
 (* ------------------------------------------ *)
-Lemma toplevel_closed : forall F a A, binds F (Ax a A) toplevel ->
-                                 Typing nil a A.
+Lemma toplevel_closed : forall F psi a A, binds F (psi, (Ax a A)) toplevel ->
+                                 Typing nil psi a A.
 Proof.
   have st: Sig toplevel by apply Sig_toplevel.
   induction st.
@@ -47,8 +47,8 @@ Proof.
 Qed. *)
 
 
-Lemma an_toplevel_closed : forall F a A, binds F (Ax a A) an_toplevel ->
-                                    AnnTyping nil a A.
+Lemma an_toplevel_closed : forall F psi a A, binds F (psi, (Ax a A)) an_toplevel ->
+                                    AnnTyping nil psi a A.
 Proof.
   have st: AnnSig an_toplevel by apply AnnSig_an_toplevel.
   induction st.

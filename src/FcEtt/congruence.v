@@ -47,19 +47,19 @@ Lemma congruence :
            forall G1 G2 x A1 a1 a2 D,
              G = G2 ++ [(x, Tm A1)] ++ G1 ->
              Typing G1 a1 A1 ->
-             DefEq G1 D a1 a2 A1 ->
+             DefEq G1 D (Eq a1 a2 A1) ->
              DefEq (map (tm_subst_tm_sort a1 x) G2 ++ G1)
-                   D (tm_subst_tm_tm a1 x a) (tm_subst_tm_tm a2 x a)
-                    (tm_subst_tm_tm a1 x A)) /\
+                   D (Eq (tm_subst_tm_tm a1 x a) (tm_subst_tm_tm a2 x a)
+                    (tm_subst_tm_tm a1 x A))) /\
   (forall G phi,     PropWff G phi       ->
            forall G1 G2 x A1 a1 a2 D,
              G = G2 ++ [(x, Tm A1)] ++ G1 ->
              Typing G1 a1 A1 ->
-             DefEq G1 D a1 a2 A1 ->
+             DefEq G1 D (Eq a1 a2 A1) ->
              Iso (map (tm_subst_tm_sort a1 x) G2 ++ G1)
                     D (tm_subst_tm_constraint a1 x phi) (tm_subst_tm_constraint a2 x phi) ) /\
   (forall G D p1 p2, Iso G D p1 p2      -> True) /\
-  (forall G D A B T,   DefEq G D A B T  -> True) /\
+  (forall G D phi,   DefEq G D phi  -> True) /\
   (forall G,           Ctx G            -> True).
 Proof.
   apply typing_wff_iso_defeq_mutual; try done.
@@ -157,7 +157,8 @@ Proof.
     subst. simpl.
     rewrite tm_subst_tm_tm_open_tm_wrt_tm.
     eapply E_AppCong; eauto 2.
-    eapply K1; eauto 2.
+
+    (* eapply K1; eauto 2. *)
     eapply (Typing_lc H2).
   - (* app irrel case *)
     intros G b B a A K0 K1 K2 K3 G1 G2 x A1 a1 a2 D H2 H3 H4. subst.

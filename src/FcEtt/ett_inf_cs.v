@@ -144,20 +144,20 @@ End Test.
 
 (* TODO: could be nicer with some more canonical structures *)
 Module Rew.
-  Definition r_erase_tm         : forall x, erase_tm x = erase x         := fun _ => eq_refl.
-  Definition r_erase_co         : forall x, erase_co x = erase x         := fun _ => eq_refl.
-  Definition r_erase_brs        : forall x, erase_brs x = erase x        := fun _ => eq_refl.
-  Definition r_erase_constraint : forall x, erase_constraint x = erase x := fun _ => eq_refl.
+  Definition r_erase_tm         : forall x, erase_tm x = erase x         := ltac:(reflexivity).
+  Definition r_erase_co         : forall x, erase_co x = erase x         := ltac:(reflexivity).
+  Definition r_erase_brs        : forall x, erase_brs x = erase x        := ltac:(reflexivity).
+  Definition r_erase_constraint : forall x, erase_constraint x = erase x := ltac:(reflexivity).
 
-  Definition r_close_tm_tm         : forall x t, close_tm_wrt_tm x t = close_tm x t         := fun _ _ => eq_refl.
-  Definition r_close_tm_co         : forall x t, close_co_wrt_tm x t = close_tm x t         := fun _ _ => eq_refl.
-  Definition r_close_tm_brs        : forall x t, close_brs_wrt_tm x t = close_tm x t        := fun _ _ => eq_refl.
-  Definition r_close_tm_constraint : forall x t, close_constraint_wrt_tm x t = close_tm x t := fun _ _ => eq_refl.
+  Definition r_close_tm_tm         : forall x t, close_tm_wrt_tm x t = close_tm x t         := ltac:(reflexivity).
+  Definition r_close_tm_co         : forall x t, close_co_wrt_tm x t = close_tm x t         := ltac:(reflexivity).
+  Definition r_close_tm_brs        : forall x t, close_brs_wrt_tm x t = close_tm x t        := ltac:(reflexivity).
+  Definition r_close_tm_constraint : forall x t, close_constraint_wrt_tm x t = close_tm x t := ltac:(reflexivity).
 
-  Definition r_close_co_tm         : forall x t, close_tm_wrt_co x t = close_co x t         := fun _ _ => eq_refl.
-  Definition r_close_co_co         : forall x t, close_co_wrt_co x t = close_co x t         := fun _ _ => eq_refl.
-  Definition r_close_co_brs        : forall x t, close_brs_wrt_co x t = close_co x t        := fun _ _ => eq_refl.
-  Definition r_close_co_constraint : forall x t, close_constraint_wrt_co x t = close_co x t := fun _ _ => eq_refl.
+  Definition r_close_co_tm         : forall x t, close_tm_wrt_co x t = close_co x t         := ltac:(reflexivity).
+  Definition r_close_co_co         : forall x t, close_co_wrt_co x t = close_co x t         := ltac:(reflexivity).
+  Definition r_close_co_brs        : forall x t, close_brs_wrt_co x t = close_co x t        := ltac:(reflexivity).
+  Definition r_close_co_constraint : forall x t, close_constraint_wrt_co x t = close_co x t := ltac:(reflexivity).
 
 
   (* Proper/canonical name for this module? *)

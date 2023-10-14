@@ -55,7 +55,9 @@ Hint Rewrite co_subst_co_co_open_co_wrt_co_var : subst_open_var.
 Hint Rewrite co_subst_co_co_open_co_wrt_tm_var : subst_open_var.
 Hint Rewrite co_subst_co_tm_open_tm_wrt_co_var : subst_open_var.
 Hint Rewrite co_subst_co_tm_open_tm_wrt_tm_var : subst_open_var.
+Hint Rewrite tm_subst_tm_constraint_open_constraint_wrt_co_var : subst_open_var.
 
+Hint Rewrite <- tm_subst_tm_constraint_open_constraint_wrt_co_var : open_subst_var.
 Hint Rewrite <- tm_subst_tm_tm_open_tm_wrt_tm_var : open_subst_var.
 Hint Rewrite <- co_subst_co_tm_open_tm_wrt_tm_var : open_subst_var.
 Hint Rewrite <- tm_subst_tm_tm_open_tm_wrt_co_var : open_subst_var.
@@ -70,6 +72,7 @@ Hint Rewrite co_subst_co_co_open_co_wrt_co : subst_open.
 Hint Rewrite co_subst_co_co_open_co_wrt_tm : subst_open.
 Hint Rewrite co_subst_co_tm_open_tm_wrt_co : subst_open.
 Hint Rewrite co_subst_co_tm_open_tm_wrt_tm : subst_open.
+Hint Rewrite co_subst_co_constraint_open_constraint_wrt_co : subst_open.
 
 Hint Rewrite <- tm_subst_tm_tm_open_tm_wrt_tm : open_subst.
 Hint Rewrite <- tm_subst_tm_tm_open_tm_wrt_co : open_subst.
@@ -119,7 +122,7 @@ Ltac lc_solve_binds :=
   (* binds nil case *)
   | [ H : binds ?x ?s nil |- _ ] => inversion H; clear H
   (* binds cons case *)
-  | [ H : binds _ ?s ([(_,_)] ++ _) |- _ ?s] =>
+  | [ H : binds _ (_, ?s) ([(_,_)] ++ _) |- _ ?s] =>
       destruct (binds_cons_1 _ _ _ _ _ _ H); basic_solve
   (* variable cases *)
   | [ b : binds ?x _ ?G, H : ∀ (x' : atom) _, binds x' _ ?G → _ |- _] =>
@@ -139,6 +142,8 @@ Ltac lc_inversion c :=
     (* inversion for binders *)
   | [ H : forall x, (x `in` ?L -> False) -> lc_tm _ /\ _ |- _ ] =>
     destruct (H c ltac:(auto)); split_hyp; clear H
+  | [ H : forall x, (x `in` ?L -> False) -> lc_constraint _ |- _ ] =>
+    move : (H c ltac:(auto)); inversion 1; split_hyp; clear H
   (* simple inversions *)
   | [ H : lc_constraint (_ _) |- _ ] =>
     inversion H; clear H
@@ -152,11 +157,11 @@ Ltac lc_inversion c :=
     inversion H; clear H
   | [ H : lc_tm (a_Conv _ _) |- _ ] =>
     inversion H; clear H
-  | [ H : lc_tm (a_CPi _ _) |- _ ] =>
+  | [ H : lc_tm (a_CPi _ _ _) |- _ ] =>
     inversion H; clear H
-  | [ H : lc_tm (a_CAbs _ _) |- _ ] =>
+  | [ H : lc_tm (a_CAbs _ _ _) |- _ ] =>
     inversion H; clear H
-  | [ H : lc_tm (a_UCAbs _) |- _ ] =>
+  | [ H : lc_tm (a_UCAbs _ _) |- _ ] =>
     inversion H; clear H
   | [ H : lc_tm (a_CApp _ _) |- _ ] =>
     inversion H; clear H
@@ -242,27 +247,29 @@ Ltac invert_syntactic_equality :=
     inversion H; subst; clear H
   | [ H : a_Conv _ _ = a_Conv _ _ |- _ ] =>
     inversion H; subst; clear H
-  | [ H : a_UCAbs _ = a_UCAbs _ |- _ ] =>
+  | [ H : a_UCAbs _ _ = a_UCAbs _ _ |- _ ] =>
     inversion H; subst; clear H
   | [ H : a_CAbs + _ = a_CAbs _ _ |- _ ] =>
     inversion H; subst; clear H
   | [ H : a_CApp _ _  = a_CApp _ _ |- _ ] =>
     inversion H; subst; clear H
-  | [ H : a_CPi _ _ = a_CPi _ _ |- _ ] =>
+  | [ H : a_CPi _ _ _ = a_CPi _ _ _ |- _ ] =>
     inversion H; subst; clear H
   | [ H : Eq _ _ _ = Eq _ _ _ |- _ ] =>
+    inversion H; subst; clear H
+  | [ H : Impl _ _ = Impl _ _ |- _] =>
     inversion H; subst; clear H
   end.
 
 (* Invert an "interesting" assumption in the typing context *)
 Ltac ann_invert_clear :=
   match goal with
-  | H : AnnTyping _ a_Star _ |- _ => inversion H; subst; clear H
-  | H : AnnTyping _ (_ _) _ |- _ =>  inversion H; subst; clear H
-  | H : AnnPropWff _ _ |- _ => inversion H; subst; clear H
-  | H : AnnIso _ _ (_ _) _ _ |- _ => inversion H; subst; clear H
-  | H : AnnDefEq _ _ (_ _) _ _  |- _ => inversion H; subst; clear H
-  | H : AnnCtx ([(_,_)] ++ _) |- _ => inversion H; subst; clear H
+  | H : AnnTyping _ _ a_Star _ |- _ => inversion H; subst; clear H
+  | H : AnnTyping _ _ (_ _) _ |- _ =>  inversion H; subst; clear H
+  | H : AnnPropWff _ _ _ |- _ => inversion H; subst; clear H
+  | H : AnnIso _ _ _ (_ _) _ _ |- _ => inversion H; subst; clear H
+  | H : AnnDefEq _ _ _ (_ _) _ _  |- _ => inversion H; subst; clear H
+  | H : AnnCtx  ([(_,_)] ++ _)  |- _ => inversion H; subst; clear H
   | H : AnnCtx (_ :: _) |- _ => inversion H; subst; clear H
   end.
 
@@ -299,13 +306,24 @@ Qed.
 
 (* Induction schemes *)
 
+
+
+Scheme GEq_ind' := Induction for GEq Sort Prop
+    with CEq_ind'   := Induction for CEq Sort Prop
+    with CoGEq_ind' := Induction for CoGEq Sort Prop.
+
+Combined Scheme CEq_GEq_mutual
+  from CEq_ind', GEq_ind', CoGEq_ind'.
+
 Scheme typing_ind' := Induction for Typing Sort Prop
    with wff_ind'   := Induction for PropWff Sort Prop
    with iso_ind'   := Induction for Iso Sort Prop
    with defeq_ind' := Induction for DefEq Sort Prop
-   with ctx_ind'   := Induction for Ctx Sort Prop.
+   with ctx_ind'   := Induction for Ctx Sort Prop
+   with cdefeq_ind' := Induction for CDefEq Sort Prop
+   with ctyping_ind' := Induction for CTyping Sort Prop.
 
-Combined Scheme typing_wff_iso_defeq_mutual from typing_ind', wff_ind', iso_ind', defeq_ind', ctx_ind'.
+Combined Scheme typing_wff_iso_defeq_mutual from typing_ind', wff_ind', iso_ind', defeq_ind', ctx_ind', cdefeq_ind', ctyping_ind'.
 
 Scheme ann_typing_ind' := Induction for AnnTyping Sort Prop
    with ann_wff_ind'   := Induction for AnnPropWff Sort Prop
@@ -317,9 +335,33 @@ Combined Scheme ann_typing_wff_iso_defeq_mutual
 from ann_typing_ind', ann_wff_ind', ann_iso_ind',
      ann_defeq_ind', ann_ctx_ind'.
 
-Scheme CoercedValue_ind' := Induction for CoercedValue Sort Prop
-                            with Value_ind' := Induction for Value Sort Prop.
-Combined Scheme CoercedValue_Value_mutual from CoercedValue_ind', Value_ind'.
+Scheme Par_ind' := Induction for Par Sort Prop
+    with ParProp_ind' := Induction for ParProp Sort Prop
+    with CPar_ind' := Induction for CPar Sort Prop
+    with CParProp_ind' := Induction for CParProp Sort Prop.
+
+
+Combined Scheme Par_tm_constraint_mutual from Par_ind', ParProp_ind', CPar_ind', CParProp_ind'.
+
+
+Scheme erased_tm_ind' := Induction for erased_tm Sort Prop
+   with erased_constraint_ind' := Induction for erased_constraint Sort Prop.
+
+Combined Scheme erased_tm_constraint_mutual from erased_tm_ind', erased_constraint_ind'.
+
+Scheme Grade_ind' := Induction for Grade Sort Prop
+    with CGrade_ind'   := Induction for CGrade Sort Prop
+    with CoGrade_ind' := Induction for CoGrade Sort Prop
+    with ECtx_ind' := Induction for ECtx Sort Prop.
+
+Combined Scheme CGrade_Grade_mutual
+  from Grade_ind', CGrade_ind', CoGrade_ind', ECtx_ind'.
+
+
+(* unnecessary because they are not actually mutually recursive *)
+(* Scheme CoercedValue_ind' := Induction for CoercedValue Sort Prop *)
+(*                             with Value_ind' := Induction for Value Sort Prop. *)
+(* Combined Scheme CoercedValue_Value_mutual from CoercedValue_ind', Value_ind'. *)
 
 (* --------------------------------------------------- *)
 
@@ -334,17 +376,19 @@ Ltac ext_induction CON :=
       pose CON :=  E_Pi         |
       pose CON :=  E_Abs        |
       pose CON :=  E_App        |
-      pose CON :=  E_IApp       |
+      (* pose CON :=  E_AppIrrel   | *)
       pose CON :=  E_Conv       |
       pose CON :=  E_CPi        |
       pose CON :=  E_CAbs       |
       pose CON :=  E_CApp       |
 (*      pose CON :=  E_Const      | *)
       pose CON :=  E_Fam        |
-      pose CON :=  E_Wff        |
+      pose CON :=  E_WffEq      |
+      pose CON :=  E_WffImpl    |
       pose CON :=  E_PropCong   |
       pose CON :=  E_IsoConv    |
       pose CON :=  E_CPiFst     |
+      pose CON :=  E_ImplCong |
       pose CON :=  E_Assn       |
       pose CON :=  E_Refl       |
       pose CON :=  E_Sym        |
@@ -353,7 +397,7 @@ Ltac ext_induction CON :=
       pose CON :=  E_PiCong     |
       pose CON :=  E_AbsCong    |
       pose CON :=  E_AppCong    |
-      pose CON :=  E_IAppCong   |
+      (* pose CON :=  E_IAppCong   | *)
       pose CON :=  E_PiFst      |
       pose CON :=  E_PiSnd      |
       pose CON :=  E_CPiCong    |
@@ -364,15 +408,24 @@ Ltac ext_induction CON :=
       pose CON :=  E_EqConv     |
       pose CON :=  E_IsoSnd     |
       pose CON :=  E_EtaRel     |
-      pose CON :=  E_EtaIrrel   |
+      (* pose CON :=  E_EtaIrrel   | *)
       pose CON :=  E_EtaC       |
+      pose CON :=  E_ImplApp    |
+      pose CON :=  E_ImplAbs    |
 (*      pose CON :=  E_LeftRel    |
       pose CON :=  E_LeftIrrel  |
       pose CON :=  E_Right      |
       pose CON :=  E_CLeft      | *)
       pose CON :=  E_Empty      |
       pose CON :=  E_ConsTm     |
-      pose CON :=  E_ConsCo     ].
+      pose CON :=  E_ConsCo     | 
+      pose CON :=  CDefEq_Leq   |
+      pose CON :=  CDefEq_Nleq  |
+      (* pose CON :=  CDefEq_NleqIrrel  *)
+
+      pose CON :=  CE_Leq       |
+      pose CON :=  CE_Top
+     ].
 
 
 Ltac ann_induction CON :=
@@ -443,7 +496,8 @@ Ltac gather_atoms ::=
   let D8 := gather_atoms_with (fun x => fv_co_co_constraint x) in
   let D9 := gather_atoms_with (fun x => fv_co_co_sort x) in
   let D10 := gather_atoms_with (fun x => fv_co_co_brs x) in
-  constr:(A \u B \u C1 \u D1 \u D2 \u D3 \u D4 \u D5 \u D6 \u D7 \u D8 \u D9 \u D10).
+  let D11 := gather_atoms_with (fun x : econtext => dom x) in
+  constr:(A \u B \u C1 \u D1 \u D2 \u D3 \u D4 \u D5 \u D6 \u D7 \u D8 \u D9 \u D10 \u D11).
 
 
 (* ----------------------------------------------------- *)
@@ -455,6 +509,7 @@ Ltac gather_atoms ::=
 
 Ltac rewrite_body :=
   match goal with
+
   | [ e : ∀ x : atom, (x `in` ?L → False)
       → open_tm_wrt_tm _ (a_Var_f x) = open_tm_wrt_tm _ (_ (a_Var_f x) _) |- _ ] =>
      rewrite e; auto
@@ -467,12 +522,12 @@ Ltac rewrite_body :=
     rewrite e; auto
   | [ e : ∀ x : atom, (x `in` ?L → False) →  _ _ (a_Var_f x) = _ _ _ (a_Var_f x) |- _ ] =>
     rewrite e; auto
-  | [ e : ∀ x : atom, (x `in` ?L → False) →  _ _ (a_Var_f x) = _ _ _ (a_Bullet) |- _ ] =>
-    rewrite e; auto
+  (* | [ e : ∀ x : atom, (x `in` ?L → False) →  _ _ (a_Var_f x) = _ _ _ (a_Bullet) |- _ ] => *)
+  (*   rewrite e; auto *)
   | [ e : ∀ x : atom, (x `notin` ?L) →  _ _ (a_Var_f x) = _ _ _ (a_Var_f x) |- _ ] =>
     rewrite e; auto
-  | [ e : ∀ x : atom, (x `notin` ?L) →  _ _ (a_Var_f x) = _ _ _ (a_Bullet) |- _ ] =>
-    rewrite e; auto
+  (* | [ e : ∀ x : atom, (x `notin` ?L) →  _ _ (a_Var_f x) = _ _ _ (a_Bullet) |- _ ] => *)
+  (*   rewrite e; auto *)
   | [ e: ∀ c : atom,
     (c `in` ?L → False) → _ _ (g_Var_f c) = a_CApp _ _ |- _ ] =>
     rewrite e; auto
@@ -592,42 +647,44 @@ Ltac des_bind_cons :=
 
 (* ----------------------------- *)
 
-Lemma rho_swap : forall rho x x0 a,
-    x `notin` fv_tm_tm_tm a ->
-    x0 `notin` fv_tm_tm_tm a ->
-    RhoCheck rho x (open_tm_wrt_tm a (a_Var_f x)) ->
-    RhoCheck rho x0 (open_tm_wrt_tm a (a_Var_f x0)).
-Proof.
-  intros rho x x0 a F1 F2 H0.
-  inversion H0; subst; constructor.
-  +  auto. (* eapply lc_swap with (x0 := x0) (x:= x); auto. *)
-  +  eapply fv_swap with (x:=x); eauto.
-Qed.
+(* TODO: this should now be a property about the well-gradedness *)
+(* Lemma rho_swap : forall rho x x0 a, *)
+(*     x `notin` fv_tm_tm_tm a -> *)
+(*     x0 `notin` fv_tm_tm_tm a -> *)
+(*     RhoCheck rho x (open_tm_wrt_tm a (a_Var_f x)) -> *)
+(*     RhoCheck rho x0 (open_tm_wrt_tm a (a_Var_f x0)). *)
+(* Proof. *)
+(*   intros rho x x0 a F1 F2 H0. *)
+(*   inversion H0; subst; constructor. *)
+(*   +  auto. (* eapply lc_swap with (x0 := x0) (x:= x); auto. *) *)
+(*   +  eapply fv_swap with (x:=x); eauto. *)
+(* Qed. *)
 
-Lemma eta_swap: forall x y a' b rho,
+Lemma eta_swap: forall x y a' b psi0,
     x `notin` fv_tm_tm_tm a' \u fv_tm_tm_tm b ->
-    open_tm_wrt_tm a' (a_Var_f x) = a_App b rho (a_Var_f x) ->
-    open_tm_wrt_tm a' (a_Var_f y) = a_App b rho (a_Var_f y).
+    open_tm_wrt_tm a' (a_Var_f x) = a_App b psi0 (a_Var_f x) ->
+    open_tm_wrt_tm a' (a_Var_f y) = a_App b psi0 (a_Var_f y).
 Proof.
   intros.
   rewrite (tm_subst_tm_tm_intro x); auto.
   rewrite H0.
   simpl.
   rewrite tm_subst_tm_tm_fresh_eq; auto.
-  destruct eq_dec. auto. done.
+  (* Why can't I use destruct (x == x)? *)
+  rewrite eq_dec_refl. reflexivity.
 Qed.
 
-Lemma eta_swap_irrel: forall x y a' b,
-    x `notin` fv_tm_tm_tm a' \u fv_tm_tm_tm b ->
-    open_tm_wrt_tm a' (a_Var_f x) = a_App b Irrel a_Bullet ->
-    open_tm_wrt_tm a' (a_Var_f y) = a_App b Irrel a_Bullet.
-Proof.
-  intros.
-  rewrite (tm_subst_tm_tm_intro x); auto.
-  rewrite H0.
-  simpl.
-  rewrite tm_subst_tm_tm_fresh_eq; auto.
-Qed.
+(* Lemma eta_swap_irrel: forall x y a' b, *)
+(*     x `notin` fv_tm_tm_tm a' \u fv_tm_tm_tm b -> *)
+(*     open_tm_wrt_tm a' (a_Var_f x) = a_App b Irrel a_Bullet -> *)
+(*     open_tm_wrt_tm a' (a_Var_f y) = a_App b Irrel a_Bullet. *)
+(* Proof. *)
+(*   intros. *)
+(*   rewrite (tm_subst_tm_tm_intro x); auto. *)
+(*   rewrite H0. *)
+(*   simpl. *)
+(*   rewrite tm_subst_tm_tm_fresh_eq; auto. *)
+(* Qed. *)
 
 Lemma eta_swap_c: forall x y a' b,
     x `notin` fv_co_co_tm a' \u fv_co_co_tm b ->
@@ -676,39 +733,39 @@ Ltac auto_rew_env :=
     | [ |- context [([(?x, ?T)] ++ ?G1 ++ ?G2 ++ ?G3)] ] => rewrite_env (((x ~ (T)) ++ G1) ++ G2 ++ G3)
   end.
 
-
 (* -------------- Pick fresh and apply for judgements with binding ----- *)
-
 Ltac E_pick_fresh x :=
   match goal with
-    | [ |- Typing _ ?shape _ ] =>
+    | [ |- Typing _ _ ?shape _ ] =>
       let v := match shape with
             | a_Pi _ _ _ => E_Pi
             | a_UAbs _ _ => E_Abs
-            | a_CPi _ _  => E_CPi
-            | a_CAbs _ _ => E_CAbs
-            | a_UCAbs _  => E_CAbs
+            | a_CPi _ _ _  => E_CPi
+            | a_CAbs _ _ _ => E_CAbs
+            | a_UCAbs _ _  => E_CAbs
            end
       in pick fresh x and apply v
-    | [ |- DefEq _ _ ?shape ?s2 _ ] =>
+    | [ |- DefEq _ _ (Eq ?shape ?s2 _)] =>
       let v := match shape with
                | a_Pi _ _ _ => E_PiCong
-               | a_UAbs Rel _ => match s2 with
+               | a_UAbs _ _ => match s2 with
                                 | a_UAbs _ _ => E_AbsCong
                                 | _ => E_EtaRel
                                 end
-               | a_UAbs Irrel _ => match s2 with 
-                                | a_UAbs _ _ =>  E_AbsCong
-                                | _ => E_EtaIrrel
-                                end
-               | a_CPi _ _  => E_CPiCong
-               | a_CAbs _ _ => E_CAbsCong
-               | a_UCAbs _  => match s2 with 
-                                | a_UCAbs _ =>  E_CAbsCong
+               (* | a_UAbs Irrel _ => match s2 with  *)
+               (*                  | a_UAbs _ _ =>  E_AbsCong *)
+               (*                  | _ => E_EtaIrrel *)
+               (*                  end *)
+               | a_CPi _ _ _  => E_CPiCong
+               | a_CAbs _ _ _ => E_CAbsCong
+               | a_UCAbs _ _  => match s2 with 
+                                | a_UCAbs _ _ =>  E_CAbsCong
                                 | _ => E_EtaC
                                 end
                end
       in pick fresh x and apply v
+  | [ |- DefEq _ _ (Impl ?phi1 ?phi2)] =>
+      pick fresh x and apply E_ImplAbs
   end.
 
 Ltac Par_pick_fresh x :=
@@ -716,14 +773,14 @@ Ltac Par_pick_fresh x :=
     | [ |- Par _ _ ?shape ?s2 ] =>
       let v := match shape with
             | a_Pi _ _ _ => Par_Pi
-            | a_UAbs Rel _ =>  match s2 with
+            | a_UAbs _ _ =>  match s2 with
                                 | a_UAbs _ _ => Par_Abs
                                 | _ => Par_Eta
                                 end
-            | a_UAbs Irrel _ =>  match s2 with
-                                | a_UAbs _ _ => Par_Abs
-                                | _ => Par_EtaIrrel
-                                end
+            (* | a_UAbs Irrel _ =>  match s2 with *)
+            (*                     | a_UAbs _ _ => Par_Abs *)
+            (*                     | _ => Par_EtaIrrel *)
+            (*                     end *)
             | a_UAbs _ _ =>  Par_Abs
             | a_CPi _ _  => Par_CPi
             | a_CAbs _ _ => Par_CAbs
@@ -758,13 +815,14 @@ Ltac An_pick_fresh x :=
 
 (* --------------------------------------------------------- *)
 
-Ltac RhoCheck_inversion y :=
-  match goal with
-  | [ K : ∀ x : atom, x `notin` ?L → RhoCheck ?rho x ?b |- _ ] =>
-    move: (K y ltac:(auto)); inversion 1; subst; clear K
-  | [ K : ∀ x : atom, (x `in` ?L -> False) → RhoCheck ?rho x ?b |- _ ] =>
-    move: (K y ltac:(auto)); inversion 1; subst; clear K
-  end.
+(* TODO: rhochecks are now replaced by grades *)
+(* Ltac RhoCheck_inversion y := *)
+(*   match goal with *)
+(*   | [ K : ∀ x : atom, x `notin` ?L → RhoCheck ?rho x ?b |- _ ] => *)
+(*     move: (K y ltac:(auto)); inversion 1; subst; clear K *)
+(*   | [ K : ∀ x : atom, (x `in` ?L -> False) → RhoCheck ?rho x ?b |- _ ] => *)
+(*     move: (K y ltac:(auto)); inversion 1; subst; clear K *)
+(*   end. *)
 
 (* --------------------------------------------------------- *)
 

@@ -1,0 +1,3 @@
+[submodule "src/FcEtt/coq-lattice"]
+	path = src/FcEtt/coq-lattice
+	url = git@github.com:yiyunliu/coq-lattice

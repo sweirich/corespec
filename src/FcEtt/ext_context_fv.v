@@ -59,31 +59,32 @@ Hint Resolve binds_In AtomSetImpl.singleton_1 in_singleton_subset.
 *)
 
 Theorem context_fv_mutual :
-  (forall G (a : tm) A (H: Typing G a A),
+  (forall G psi (a : tm) A (H: Typing G psi a A),
       fv_tm_tm_tm a [<=] dom G /\ fv_co_co_tm a [<=] dom G /\
       fv_tm_tm_tm A [<=] dom G /\ fv_co_co_tm A [<=] dom G)
   /\
-  (forall G phi (H : PropWff G phi),
+  (forall G psi phi (H : PropWff G psi phi),
       fv_tm_tm_constraint phi [<=] dom G /\ fv_co_co_constraint phi [<=] dom G)
   /\
-  (forall G D p1 p2 (H : Iso G D p1 p2),
+  (forall G psi p1 p2 (H : Iso G psi p1 p2),
       fv_tm_tm_constraint p1 [<=] dom G /\ fv_co_co_constraint p1 [<=] dom G /\
       fv_tm_tm_constraint p2 [<=] dom G /\ fv_co_co_constraint p2 [<=] dom G)
   /\
-  (forall G D A B T (H : DefEq G D A B T),
-      (fv_tm_tm_tm A [<=] dom G /\ fv_co_co_tm A [<=] dom G /\
-      fv_tm_tm_tm B [<=] dom G /\ fv_co_co_tm B [<=] dom G /\
-      fv_tm_tm_tm T [<=] dom G /\ fv_co_co_tm T [<=] dom G))
+  (forall G psi phi (H : DefEq G psi phi),
+      fv_tm_tm_constraint phi [<=] dom G /\ fv_co_co_constraint phi [<=] dom G)
 
   /\
   (forall G (H : Ctx G),
-      (forall x A,
-          binds x (Tm A)   G ->
+      (forall x psi0 A,
+          binds x (psi0, (Tm A))   G ->
           fv_tm_tm_tm         A   [<=] dom G /\ fv_co_co_tm         A   [<=] dom G) /\
-      (forall c phi,
-          binds c (Co phi) G ->
-          fv_tm_tm_constraint phi [<=] dom G /\ fv_co_co_constraint phi [<=] dom G)).
-
+      (forall c psi0 phi,
+          binds c (psi0, (Co phi)) G ->
+          fv_tm_tm_constraint phi [<=] dom G /\ fv_co_co_constraint phi [<=] dom G)) /\
+  (forall G psi psi0 A B T (H : CDefEq G psi psi0 A B T),
+      fv_tm_tm_tm A [<=] dom G /\ fv_co_co_tm A [<=] dom G /\
+      fv_tm_tm_tm B [<=] dom G /\ fv_co_co_tm B [<=] dom G /\
+      fv_tm_tm_tm T [<=] dom G /\ fv_co_co_tm T [<=] dom G).
 Proof.
   eapply typing_wff_iso_defeq_mutual.
   all: autounfold.

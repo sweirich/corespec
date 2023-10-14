@@ -1,6 +1,6 @@
 
 Require Import FcEtt.fc_invert.
-Require Import Omega.
+Require Import Lia.
 Require Import Coq.Arith.Wf_nat.
 Require Import FcEtt.toplevel.
 
@@ -20,6 +20,7 @@ Import wf weak subst.
 Module invert := fc_invert wf weak subst.
 Import invert.
 
+Import ett_ind.
 (* -------------------------------------------------------------------------------------- *)
 
 (* This function looks at an annotated term and returns its type.
@@ -228,19 +229,19 @@ Proof.
       destruct (atom_fresh (dom G)).
       f_equal.
       move: (HB1 x n0) => [R1 TB1]. clear HB1.
-      move: (H n ltac:(omega)) => [h0 _].
+      move: (H n ltac:(lia)) => [h0 _].
       assert (size_tm (open_tm_wrt_tm a2 (a_Var_f x)) = size_tm a2). eauto with lngen.
       move: (h0 ((x, Tm a1) :: G) (open_tm_wrt_tm a2 (a_Var_f x)) (open_tm_wrt_tm B1 (a_Var_f x))
                 (get_tpg_n n ((x, Tm a1) :: G) (open_tm_wrt_tm a2 (a_Var_f x)))
-            ltac:(omega) TB1 ltac:(auto))
+            ltac:(lia) TB1 ltac:(auto))
       => h1.
       rewrite <- h1.
       rewrite close_tm_wrt_tm_open_tm_wrt_tm; eauto.
       move: (AnnTyping_context_fv HT) => [_ [_ [f1 _]]]. simpl in f1.
       fsetdec.
     - inversion HT. subst. simpl.
-      move: (H n ltac:(omega)) => [h0 _].
-      move: (@h0 G a1 (a_Pi rho A0 B0) (get_tpg_n n G a1) ltac:(omega) H5 eq_refl) => h1.
+      move: (H n ltac:(lia)) => [h0 _].
+      move: (@h0 G a1 (a_Pi rho A0 B0) (get_tpg_n n G a1) ltac:(lia) H5 eq_refl) => h1.
       rewrite <- h1.
       auto.
     - inversion HT. subst.
@@ -258,23 +259,23 @@ Proof.
       eapply NB in H2. done. *)
     - inversion HT. subst. simpl.
       remember (get_deq_n n G g) as GD. destruct GD as [A' B'].
-      move: (H n ltac:(omega)) => [_ [h0 _]].
-      destruct (h0 _ _ g _ _ A' B' ltac:(omega) H4).
+      move: (H n ltac:(lia)) => [_ [h0 _]].
+      destruct (h0 _ _ g _ _ A' B' ltac:(lia) H4).
       auto. subst. auto.
     - destruct (An_CAbs_inversion HT) as (B1 & EQ & HT1). subst. simpl.
       destruct (atom_fresh (dom G)). f_equal. simpl_env.
       move: (HT1 x n0) => [R1 TB1]. clear HT1.
-      move: (H n ltac:(omega)) => [h0 _].
+      move: (H n ltac:(lia)) => [h0 _].
       assert (size_tm (open_tm_wrt_co a (g_Var_f x)) = size_tm a). eauto with lngen.
-      move: (h0 _ (open_tm_wrt_co a (g_Var_f x)) _ _  ltac:(omega) TB1 eq_refl) => h1.
+      move: (h0 _ (open_tm_wrt_co a (g_Var_f x)) _ _  ltac:(lia) TB1 eq_refl) => h1.
       rewrite <- h1.
       rewrite close_tm_wrt_co_open_tm_wrt_co; eauto.
       move: (AnnTyping_context_fv HT) => [_ [_ [_ f1]]]. simpl in f1.
       fsetdec.
    - inversion HT. subst. simpl.
-     move: (H n ltac:(omega)) => [h0 _].
+     move: (H n ltac:(lia)) => [h0 _].
      move: (@h0 G a (a_CPi (Eq a0 b A1) B0) (get_tpg_n n G a)
-                 ltac:(omega) H3 eq_refl) => h1.
+                 ltac:(lia) H3 eq_refl) => h1.
      rewrite <- h1.
      auto.
   } split. {
@@ -292,16 +293,16 @@ Proof.
     - inversion DE. subst. simpl in GET.
       remember (get_deq_n n G g) as GG.
       destruct GG. inversion GET. subst. clear GET.
-      move: (H n ltac:(omega)) => [_ [h0 _]].
-      move: (h0 G D g _ _ B' A' ltac:(omega) H6 ltac:(auto)) => [h1 h2]. subst.
+      move: (H n ltac:(lia)) => [_ [h0 _]].
+      move: (h0 G D g _ _ B' A' ltac:(lia) H6 ltac:(auto)) => [h1 h2]. subst.
       auto.
     - inversion DE. subst. simpl in GET.
       remember (get_deq_n n G g1) as GG1. destruct GG1.
       remember (get_deq_n n G g2) as GG2. destruct GG2.
       inversion GET. subst.
-      move: (H n ltac:(omega)) => [_ [h0 _]].
-      move: (h0 G D g1 _ _ A' t0 ltac:(omega) H2 ltac:(auto)) => [h1 h2]. subst.
-      move: (h0 G D g2 _ _ t1 B' ltac:(omega) H3 ltac:(auto)) => [h1 h2]. subst.
+      move: (H n ltac:(lia)) => [_ [h0 _]].
+      move: (h0 G D g1 _ _ A' t0 ltac:(lia) H2 ltac:(auto)) => [h1 h2]. subst.
+      move: (h0 G D g2 _ _ t1 B' ltac:(lia) H3 ltac:(auto)) => [h1 h2]. subst.
       auto.
     - destruct (An_PiCong_inversion DE) as (A1 & B1 & A2 & B2 & B3 &
                                              E1 & E2 & T1 & T2 & T3 & DE1 & DE2).
@@ -312,8 +313,8 @@ Proof.
       remember (get_deq_n n ((x, Tm A1') :: G) (open_co_wrt_tm g2 (a_Var_f x))) as GET2.
       destruct GET2 as [B1' B2'].
       inversion GET. subst. clear GET.
-      move: (H n ltac:(omega)) => [_ [h1 _]].
-      move: (h1 G D g1 A1 A2 A1' A2' ltac:(omega) DE1 ltac:(auto)) => [E1 E2].
+      move: (H n ltac:(lia)) => [_ [h1 _]].
+      move: (h1 G D g1 A1 A2 A1' A2' ltac:(lia) DE1 ltac:(auto)) => [E1 E2].
       subst.
       assert (SS : size_co (open_co_wrt_tm g2 (a_Var_f x)) = size_co g2).
       auto with lngen.
@@ -322,7 +323,7 @@ Proof.
                 (open_co_wrt_tm g2 (a_Var_f x))
                 (open_tm_wrt_tm B1 (a_Var_f x))
                 (open_tm_wrt_tm B2 (a_Var_f x))
-                B1' B2' ltac:(omega) ltac:(auto) ltac:(auto)) => [E1 E2].
+                B1' B2' ltac:(lia) ltac:(auto) ltac:(auto)) => [E1 E2].
       subst.
       move: (AnnTyping_context_fv T1) => [f1 [_ _]]. simpl in f1.
       move: (AnnTyping_context_fv T2) => [f2 [_ _]]. simpl in f2.
@@ -347,15 +348,15 @@ Proof.
       remember (get_deq_n n ((x, Tm A1') :: G) (open_co_wrt_tm g2 (a_Var_f x))) as GET2.
       destruct GET2 as [b1' b2'].
       inversion GET. subst. clear GET.
-      move: (H n ltac:(omega)) => [_ [h1 _]].
-      move: (h1 G D g1 A1 A2 A1' A2' ltac:(omega) DE1 ltac:(auto)) => [E1 E2]. subst.
+      move: (H n ltac:(lia)) => [_ [h1 _]].
+      move: (h1 G D g1 A1 A2 A1' A2' ltac:(lia) DE1 ltac:(auto)) => [E1 E2]. subst.
       assert (SS : size_co (open_co_wrt_tm g2 (a_Var_f x)) = size_co g2). auto with lngen.
       move: (DE2 x ltac:(auto)) => [DEx [E3 [RC1 RC2]]].
       move: (h1 ([(x, Tm A1')] ++ G) D
                 (open_co_wrt_tm g2 (a_Var_f x))
                 (open_tm_wrt_tm b1 (a_Var_f x))
                 (open_tm_wrt_tm b2 (a_Var_f x))
-                b1' b2' ltac:(omega) ltac:(auto) ltac:(auto)) => [E1 E2].
+                b1' b2' ltac:(lia) ltac:(auto) ltac:(auto)) => [E1 E2].
       subst.
       move: (AnnDefEq_context_fv DE) => [_ [_ [f1 [_ [f2 _]]]]]. simpl in f1. simpl in f2.
       move: (AnnTyping_context_fv T3) => [f3 [_ _]]. simpl in f3.
@@ -375,26 +376,26 @@ Proof.
       remember (get_deq_n n G g1) as GG1. destruct GG1.
       remember (get_deq_n n G g2) as GG2. destruct GG2.
       inversion GET.
-      move: (H n ltac:(omega)) => [_ [h0 _]].
-      move: (h0 _ _ g1 _ _ t t0 ltac:(omega) H3 ltac:(auto)) => [E1 E2]. subst.
-      move: (h0 _ _ g2 _ _ t1 t2 ltac:(omega) H4 ltac:(auto)) => [E1 E2]. subst.
+      move: (H n ltac:(lia)) => [_ [h0 _]].
+      move: (h0 _ _ g1 _ _ t t0 ltac:(lia) H3 ltac:(auto)) => [E1 E2]. subst.
+      move: (h0 _ _ g2 _ _ t1 t2 ltac:(lia) H4 ltac:(auto)) => [E1 E2]. subst.
       auto.
     - inversion DE. simpl in *. subst.
       remember (get_deq_n n G g) as GG. destruct GG.
-      move: (H n ltac:(omega)) => [_ [h0 _]].
-      move: (h0 _ _ g _ _ t t0 ltac:(omega) H3 ltac:(auto)) => [E1 E2]. subst.
+      move: (H n ltac:(lia)) => [_ [h0 _]].
+      move: (h0 _ _ g _ _ t t0 ltac:(lia) H3 ltac:(auto)) => [E1 E2]. subst.
       inversion GET. auto.
     - inversion DE. simpl in *. subst.
       remember (get_iso_n n G g) as GG. destruct GG.
-      move: (H n ltac:(omega)) => [_ [_ h0]].
-      move: (h0 _ _ g _ _ c c0 ltac:(omega) H3 ltac:(auto)) => [E1 E2]. subst.
+      move: (H n ltac:(lia)) => [_ [_ h0]].
+      move: (h0 _ _ g _ _ c c0 ltac:(lia) H3 ltac:(auto)) => [E1 E2]. subst.
       inversion GET. auto.
     - inversion DE. simpl in *. subst.
       remember (get_deq_n n G g1) as GG1. destruct GG1.
       remember (get_deq_n n G g2) as GG2. destruct GG2.
-      move: (H n ltac:(omega)) => [_ [h0 _]].
-      move: (h0 _ _ g1 _ _ t t0 ltac:(omega) H2 ltac:(auto)) => [E1 E2]. subst.
-      move: (h0 _ _ g2 _ _ t1 t2 ltac:(omega) H3 ltac:(auto)) => [E1 E2]. subst.
+      move: (H n ltac:(lia)) => [_ [h0 _]].
+      move: (h0 _ _ g1 _ _ t t0 ltac:(lia) H2 ltac:(auto)) => [E1 E2]. subst.
+      move: (h0 _ _ g2 _ _ t1 t2 ltac:(lia) H3 ltac:(auto)) => [E1 E2]. subst.
       inversion GET. auto.
     - destruct (An_CPiCong_inversion DE) as (phi1 & phi2 & b1 & b2 & b3 &
                                              E1 & E2 & I1 & T1 & T2 & T3 & DE2).
@@ -402,12 +403,12 @@ Proof.
       remember (get_iso_n n G g1) as GG1. destruct GG1 as [phi1' phi2'].
       destruct (atom_fresh (dom G)) as [x Fr].
       remember (get_deq_n n ((x, Co phi1') :: G) (open_co_wrt_co g2 (g_Var_f x))) as GG2. destruct GG2.
-      move: (H n ltac:(omega)) => [_ [h0 h1]].
-      move: (h1 _ _ g1 _ _ phi1' phi2' ltac:(omega) I1 ltac:(auto)) => [E1' E2']. subst.
+      move: (H n ltac:(lia)) => [_ [h0 h1]].
+      move: (h1 _ _ g1 _ _ phi1' phi2' ltac:(lia) I1 ltac:(auto)) => [E1' E2']. subst.
       assert (SS : size_co (open_co_wrt_co g2 (g_Var_f x)) = size_co g2). auto with lngen.
       move: (DE2 x Fr) => [DE2' EQ].
       inversion GET. clear GET.
-      move: (h0 _ _ (open_co_wrt_co g2 (g_Var_f x)) _ _ t t0 ltac:(omega) DE2' ltac:(auto)) => [E1' E2']. subst.
+      move: (h0 _ _ (open_co_wrt_co g2 (g_Var_f x)) _ _ t t0 ltac:(lia) DE2' ltac:(auto)) => [E1' E2']. subst.
       move: (AnnDefEq_context_fv DE) => [_ [_ [f1' [f1 [f2' f2]]]]]. simpl in *.
       move: (AnnTyping_context_fv T3) => [f3' [f3 _]]. simpl in *.
       split.
@@ -430,12 +431,12 @@ Proof.
             remember (get_iso_n n G g1) as GG1. destruct GG1 as [phi1' phi2'].
       destruct (atom_fresh (dom G)) as [x Fr].
       remember (get_deq_n n ((x, Co phi1') :: G) (open_co_wrt_co g2 (g_Var_f x))) as GG2. destruct GG2.
-      move: (H n ltac:(omega)) => [_ [h0 h1]].
-      move: (h1 _ _ g1 _ _ phi1' phi2' ltac:(omega) I1 ltac:(auto)) => [E1' E2']. subst.
+      move: (H n ltac:(lia)) => [_ [h0 h1]].
+      move: (h1 _ _ g1 _ _ phi1' phi2' ltac:(lia) I1 ltac:(auto)) => [E1' E2']. subst.
       assert (SS : size_co (open_co_wrt_co g2 (g_Var_f x)) = size_co g2). auto with lngen.
       move: (DE2 x Fr) => [DE2' EQ].
       inversion GET. clear GET.
-      move: (h0 _ _ (open_co_wrt_co g2 (g_Var_f x)) _ _ t t0 ltac:(omega) DE2' ltac:(auto)) => [E1' E2']. subst.
+      move: (h0 _ _ (open_co_wrt_co g2 (g_Var_f x)) _ _ t t0 ltac:(lia) DE2' ltac:(auto)) => [E1' E2']. subst.
       move: (AnnDefEq_context_fv DE) => [_ [_ [f1' [f1 [f2' f2]]]]]. simpl in *.
       move: (AnnTyping_context_fv T3) => [f3' [f3 _]]. simpl in *.
       split.
@@ -452,24 +453,24 @@ Proof.
     - inversion DE. simpl in *. subst.
       remember (get_deq_n n G g1) as GG1. destruct GG1.
       remember (get_deq_n n G g2) as GG2. destruct GG2.
-      move: (H n ltac:(omega)) => [_ [h0 _]].
-      move: (h0 _ _ g1 _ _ t t0 ltac:(omega) H3 ltac:(auto)) => [E1 E2]. subst.
+      move: (H n ltac:(lia)) => [_ [h0 _]].
+      move: (h0 _ _ g1 _ _ t t0 ltac:(lia) H3 ltac:(auto)) => [E1 E2]. subst.
       inversion GET. auto.
     - inversion DE. simpl in *. subst.
       remember (get_deq_n n G g1) as GG1. destruct GG1.
-      move: (H n ltac:(omega)) => [_ [h0 _]].
-      move: (h0 _ _ g1 _ _ t t0 ltac:(omega) H5 ltac:(auto)) => [E1 E2]. subst.
+      move: (H n ltac:(lia)) => [_ [h0 _]].
+      move: (h0 _ _ g1 _ _ t t0 ltac:(lia) H5 ltac:(auto)) => [E1 E2]. subst.
       inversion GET. auto.
     - inversion DE. simpl in *. subst.
       remember (get_deq_n n G g1) as GG1. destruct GG1.
       remember (get_iso_n n G g2) as GG2. destruct GG2.
-      move: (H n ltac:(omega)) => [_ [h0 h1]].
-      move: (h0 _ _ g1 _ _ t t0 ltac:(omega) H4 ltac:(auto)) => [E1 E2]. subst.
-      move: (h1 _ _ g2 _ _ c c0 ltac:(omega) H7 ltac:(auto)) => [E1 E2]. subst.
+      move: (H n ltac:(lia)) => [_ [h0 h1]].
+      move: (h0 _ _ g1 _ _ t t0 ltac:(lia) H4 ltac:(auto)) => [E1 E2]. subst.
+      move: (h1 _ _ g2 _ _ c c0 ltac:(lia) H7 ltac:(auto)) => [E1 E2]. subst.
       inversion GET. auto.
     - inversion DE. simpl in *. subst.
-      move: (H n ltac:(omega)) => [h0 _].
-      move: (h0  _ B _ _ ltac:(omega) H1 eq_refl) => EQ.
+      move: (H n ltac:(lia)) => [h0 _].
+      move: (h0  _ B _ _ ltac:(lia) H1 eq_refl) => EQ.
       remember (get_tpg_n n G B) as pi. destruct pi; inversion EQ. subst.
       destruct (atom_fresh (dom G)) as [x Fr].
       inversion GET. subst.
@@ -492,14 +493,14 @@ Proof.
       rewrite tm_subst_tm_tm_fresh_eq; auto.
       destruct (AnnDefEq_context_fv DE) as (_ & _ & _ & _ & h4 & _).
       fsetdec.
-      assert (K: (if y == y then a_Var_b 0 else a_Var_f y) = a_Var_b 0).
-      destruct (y == y); auto. contradiction.
-      assert (K': (if x == x then a_Var_b 0 else a_Var_f x) = a_Var_b 0).
-      destruct (x == x); auto. contradiction. rewrite K. rewrite K'. auto.
+      (* assert (K: (if y == y then a_Var_b 0 else a_Var_f y) = a_Var_b 0). *)
+      (* destruct (y == y); auto. contradiction. *)
+      (* assert (K': (if x == x then a_Var_b 0 else a_Var_f x) = a_Var_b 0). *)
+      (* destruct (x == x); auto. contradiction. rewrite K. rewrite K'. auto. *)
       
       simpl in *. subst.
-      move: (H n ltac:(omega)) => [h0 _].
-      assert (EQ: size_tm B <= n). omega. 
+      move: (H n ltac:(lia)) => [h0 _].
+      assert (EQ: size_tm B <= n). lia. 
       eapply h0 with (G:= G) (A:= (a_CPi phi B0)) in EQ; auto.
       remember (get_tpg_n n G B) as pi. destruct pi; inversion EQ. subst.
       destruct (atom_fresh (dom G)) as [x Fr].
@@ -522,25 +523,25 @@ Proof.
       rewrite co_subst_co_tm_fresh_eq; auto.
       destruct (AnnDefEq_context_fv DE) as (_ & _ & _ & _ & _ & h4).
       fsetdec.
-      assert (K: (if y == y then g_Var_b 0 else g_Var_f y) = g_Var_b 0).
-      destruct (y == y); auto. contradiction.
-      assert (K': (if x == x then g_Var_b 0 else g_Var_f x) = g_Var_b 0).
-      destruct (x == x); auto. contradiction. rewrite K. rewrite K'. auto.
+      (* assert (K: (if y == y then g_Var_b 0 else g_Var_f y) = g_Var_b 0). *)
+      (* destruct (y == y); auto. contradiction. *)
+      (* assert (K': (if x == x then g_Var_b 0 else g_Var_f x) = g_Var_b 0). *)
+      (* destruct (x == x); auto. contradiction. rewrite K. rewrite K'. auto. *)
    (* - inversion DE; simpl in *; subst.
-      + move: (H n ltac:(omega)) => [h0 [h1 h2]].
+      + move: (H n ltac:(lia)) => [h0 [h1 h2]].
         remember (get_deq_n n G g1) as GG1. destruct GG1.
-        move: (h1  _ _ g1 _ _ _ _ ltac:(omega) H8 ltac:(eauto)) => [ EQ1 EQ2 ].
+        move: (h1  _ _ g1 _ _ _ _ ltac:(lia) H8 ltac:(eauto)) => [ EQ1 EQ2 ].
         subst.
         inversion GET. auto.
-      + move: (H n ltac:(omega)) => [h0 [h1 h2]].
+      + move: (H n ltac:(lia)) => [h0 [h1 h2]].
       remember (get_deq_n n G g1) as GG1. destruct GG1.
-      move: (h1  _ _ g1 _ _ _ _ ltac:(omega) H8 ltac:(eauto)) => [ EQ1 EQ2 ].
+      move: (h1  _ _ g1 _ _ _ _ ltac:(lia) H8 ltac:(eauto)) => [ EQ1 EQ2 ].
       subst.
       inversion GET. auto.
     - inversion DE; simpl in *; subst.
-      move: (H n ltac:(omega)) => [h0 [h1 h2]].
+      move: (H n ltac:(lia)) => [h0 [h1 h2]].
       remember (get_deq_n n G g1) as GG1. destruct GG1.
-      move: (h1  _ _ g1 _ _ _ _ ltac:(omega) H8 ltac:(eauto)) => [ EQ1 EQ2 ].
+      move: (h1  _ _ g1 _ _ _ _ ltac:(lia) H8 ltac:(eauto)) => [ EQ1 EQ2 ].
       subst.
       inversion GET. auto. *)
      }
@@ -548,19 +549,19 @@ Proof.
       destruct g; (destruct n; [inversion SZ|idtac]); inversion H1;
         simpl in *; subst.
       -  remember (get_iso_n n G g) as GG. destruct GG.
-         move: (H n ltac:(omega)) => [_ [h0 h1]].
-         move: (h1 _ _ g _ _ c c0 ltac:(omega) H4 ltac:(auto)) => [E1 E2]. subst.
+         move: (H n ltac:(lia)) => [_ [h0 h1]].
+         move: (h1 _ _ g _ _ c c0 ltac:(lia) H4 ltac:(auto)) => [E1 E2]. subst.
          inversion GET. subst. auto.
       -  remember (get_deq_n n G g) as GG. destruct GG.
-         move: (H n ltac:(omega)) => [_ [h0 h1]].
-         move: (h0 _ _ g _ _ t t0 ltac:(omega) H4 ltac:(auto)) => [E1 E2]. subst.
+         move: (H n ltac:(lia)) => [_ [h0 h1]].
+         move: (h0 _ _ g _ _ t t0 ltac:(lia) H4 ltac:(auto)) => [E1 E2]. subst.
          inversion GET. subst. auto.
       - remember (get_deq_n n G g1) as GG. destruct GG.
         remember (get_deq_n n G g2) as GG. destruct GG.
-        move: (H n ltac:(omega)) => [_ [h0 h1]].
-        move: (h0 _ _ g1 _ _ t t0 ltac:(omega) H4 ltac:(auto)) => [E1 E2]. subst.              move: (h0 _ _ g2 _ _ t1 t2 ltac:(omega) H7 ltac:(auto)) => [E1 E2]. subst.             inversion GET. auto.
+        move: (H n ltac:(lia)) => [_ [h0 h1]].
+        move: (h0 _ _ g1 _ _ t t0 ltac:(lia) H4 ltac:(auto)) => [E1 E2]. subst.              move: (h0 _ _ g2 _ _ t1 t2 ltac:(lia) H7 ltac:(auto)) => [E1 E2]. subst.             inversion GET. auto.
       - inversion GET. auto.
-    } Unshelve. auto. auto. auto. auto.
+    } (* Unshelve. auto. auto. auto. auto. *)
 Qed.
 
 

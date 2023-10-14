@@ -146,7 +146,7 @@
 
 
 \usepackage{amsmath}
-\usepackage{amssymb}
+% \usepackage{amssymb}
 \usepackage{supertabular}
 \usepackage{stmaryrd}
 \usepackage{color}
@@ -682,7 +682,7 @@ runtime behavior of the program.
 \hline
 \emph{Typing} & $[[G |= a : A]]$ & $[[G |- a : A]]$ \\
 \emph{Proposition well-formedness} & $[[G |= phi ok]]$ & $[[G |- phi ok]]$ \\
-\emph{Definitional equality (terms)}\qquad\qquad & $[[G ; D |= a == b : A]]$ \qquad\qquad & $[[G ; D|- g : a ~ b]]$ \\
+\emph{Definitional equality (terms)}\qquad\qquad & $[[G ; D |= a ~ b : A]]$ \qquad\qquad & $[[G ; D|- g : a ~ b]]$ \\
 \emph{Definitional equality (props)}  & $[[G ; D |= phi1 == phi2]]$ &
                         $[[G ; D |- g : phi1 == phi2]]$
 \\
@@ -784,8 +784,10 @@ definitions.
   \ottdruleEXXAxiom{} \\  \\
   \ottdruleEXXAbsTerm{} \qquad
   \ottdruleEXXAppLeft{} \qquad
-  \ottdruleEXXCAppLeft{} \\  \\
-
+  \ottdruleEXXCAppLeft{} \qquad
+  \ottdruleEXXSucc{}  \\ \\
+  \ottdruleEXXCaseZero{} \qquad
+  \ottdruleEXXCaseSucc{} \\ \\
 \end{array}
 \]
 
@@ -824,7 +826,8 @@ Section~\ref{sec:erase-irrelevant}.
 \ottdruleEXXCAbs{} \qquad
 \drule[width=3in]{E-CApp} \\ \\
 \fbox{$[[G|= phi ok]]$} \hfill \fbox{$[[|=S]]$} \hspace{2.5in} \hfill \vspace{6pt} \\
-\ottdruleEXXWff{} \qquad\
+  \ottdruleEXXWffEq{} \qquad\
+  \ottdruleEXXWffImpl{} \\
 \ottdruleSigXXEmpty{} \qquad
 \drule[width=5in]{Sig-ConsAx} \\ \\
 \fbox{$[[|= G]]$} \hfill \vspace{-10pt} \\ \\
@@ -858,7 +861,7 @@ ICC~\cite{Miquel:ICC}.  Irrelevant applications mark missing arguments with
 $\Box$. This is the only place where the typing rules allow the $\Box$ term.
 
 The next rule, \rref{E-Conv}, is conversion. This type system assigns types up
-to definitional equality, defined by the judgment $[[G ; D |= a == b : A ]]$
+to definitional equality, defined by the judgment $[[G ; D |= a ~ b : A ]]$
 shown in Figure~\ref{fig:defeq}. This judgment is indexed by $[[D]]$, a set of
 \emph{available variables}. For technical reasons that we return to in
 Section~\ref{sec:ext_consist}, we must restrict the coercion assumptions that
@@ -916,8 +919,8 @@ the context (as in in \rref{E-Pi,E-Abs,E-CPi,E-CAbs}).
 
 \subsection{Definitional Equality}
 \begin{figure}
-\drules[E]{$[[G;D|= a == b :A]]$}{Definitional equality}
-{Beta,Refl,Sym,Trans,PiCong,AbsCong,AppCong,IAppCong,CPiCong,CAbsCong,CAppCong,Assn,PiFst,PiSnd,CPiSnd,IsoSnd}
+\drules[E]{$[[G;D|= phi]]$}{Definitional equality}
+{Beta,Refl,Sym,Trans,PiCong,AbsCong,AppCong,IAppCong,CPiCong,CAbsCong,CAppCong,Assn,PiFst,PiSnd,CPiSnd,IsoSnd,ImplApp,ImplAbs}
 \begin{tabular}{c}
 {\drule[width=1in]{E-Cast}} \qquad
 \drule[width=3in]{E-EqConv}
@@ -927,14 +930,14 @@ the context (as in in \rref{E-Pi,E-Abs,E-CPi,E-CAbs}).
 \end{figure}
 \begin{figure}
 \drules[E]{$[[G;D|=phi1 == phi2]]$}{Definitional prop equality}
-{PropCong,IsoConv,CPiFst}
+{PropCong,IsoConv,CPiFst,ImplCong}
 \caption{Definitional prop equality}
 \label{fig:iso}
 \end{figure}
 
 The most delicate part in the design of a dependently-typed language is the
 definition of the equality used in the conversion rule. This relation,
-$[[G ; D |= a == b : A]]$ defines when two terms $[[a]]$ and $[[b]]$ are
+$[[G ; D |= a ~ b : A]]$ defines when two terms $[[a]]$ and $[[b]]$ are
 indistinguishable.  The rules in Figure~\ref{fig:defeq} define this relation
 for \fimp.
 
@@ -953,7 +956,7 @@ particular type $[[A]]$ (and at all types equal to $[[A]]$, via
 \begin{lemma}[DefEq
   regularity\ifsource\footnote{\url{ext_invert.v:DefEq_regularity}}\fi]
 \label{lem:regularity}
-If $[[G ; D |= a == b : A]]$ then $[[ G |= a : A ]]$ and $[[ G |= b : A]]$.
+If $[[G ; D |= a ~ b : A]]$ then $[[ G |= a : A ]]$ and $[[ G |= b : A]]$.
 \end{lemma}
 
 % We need to include the type $[[A]]$ in the definitional equality judgment
@@ -1072,7 +1075,7 @@ example, the inversion rule for term abstractions reads
 \begin{lemma}[Inversion for abstraction\ifsource\footnote{\url{ext_invert.v:invert_a_Pi}}\fi]
 \label{lem:invert_a_Pi}
 If $[[G |= \rho x:A0. b0 : A]]$ then there exists some $[[A1]]$ and $[[B1]]$ such
-that $[[G ; dom G |= A == all rho x:A1 -> B1 : TYPE]]$ and $[[G, x:A1 |- b0 : B1]]$
+that $[[G ; dom G |= A ~ all rho x:A1 -> B1 : TYPE]]$ and $[[G, x:A1 |- b0 : B1]]$
 and $[[G, x:A1 |- B1 : TYPE]]$ and $[[G |- A1 : TYPE]]$.
 \end{lemma}
 
@@ -1119,7 +1122,7 @@ for equality derivations with no available coercion assumptions.
 \begin{theorem}[Equality implies
   Joinability\ifsource\footnote{\url{ext_consist.v:consistent_defeq}}\fi]
 \label{lem:consistent_defeq}
-If $[[G ; emptyD |= a == b : A]]$ then $[[G ; emptyD |- a <=> b]]$
+If $[[G ; emptyD |= a ~ b : A]]$ then $[[G ; emptyD |- a <=> b]]$
 \end{theorem}
 
 This restriction in the lemma is necessary because the type system does not
@@ -1145,7 +1148,7 @@ If $[[G ; D  |- A <=> B]]$ then $[[consistent A B]]$.
 
 \begin{corollary}[Consistency for \fimp]
 \label{lem:consistency}
-If $[[G ; emptyD |= a == b : A]]$ then $[[consistent A B]]$.
+If $[[G ; emptyD |= a ~ b : A]]$ then $[[consistent A B]]$.
 \end{corollary}
 
 A consequence of our joinability-based proof of consistency is that there
@@ -1153,7 +1156,7 @@ are some equalities that may be safe but we cannot allow the type system to
 derive. For example, we cannot allow the congruence rule for
 coercion abstraction types (\rref{E-CPiCong}) to derive this equality.
 \[
-[[ empty ; emptyD |= all c: (Int ~ Bool : TYPE). Int == all c:(Int ~ Bool : TYPE). Bool : TYPE]]
+[[ empty ; emptyD |= all c: (Int ~ Bool : TYPE). Int ~ all c:(Int ~ Bool : TYPE). Bool : TYPE]]
 \]
 The problem is that we don't know how to show that this equality is
 consistent---these two terms are not joinable.
@@ -1174,8 +1177,8 @@ states that in any context (i.e. a term with a free variable) we can lift an
 equality through that context.
 \begin{lemma}[Substitutivity\ifsource\footnote{\url{congruence.v: congruence}}\fi]
 \label{lemma:congruence}
-If $[[G1, x : A ++ G2 |= b : B]]$ and $[[G1 ; D |= a1 == a2 : A]]$ then
-$[[G1 ++ (G2 {a1/x}) ; D  |= b {a1 /x} == b {a2 / x} : B {a1 /x}]]$.
+If $[[G1, x : A ++ G2 |= b : B]]$ and $[[G1 ; D |= a1 ~ a2 : A]]$ then
+$[[G1 ++ (G2 {a1/x}) ; D  |= b {a1 /x} ~ b {a2 / x} : B {a1 /x}]]$.
 \end{lemma}
 
 \citet{eisenberg:phd} could not prove this property about his language
@@ -1312,6 +1315,9 @@ $[[|A0|]] = [[A]]$.
 \drule{Fam}
 \drule{CPi}
 \drule{CAbs}
+\drule{Zero}
+\drule{Succ}
+\drule{Case}
 \drule[width=3in]{CApp}
 \end{drulepar}
 \caption{Typing rules for DC}
@@ -1366,7 +1372,7 @@ satisfied. All other rules of the typing judgment are the same as \fimp.
 %%   combines E_AppCong & E_IAppCong together, drops EqConv
 %%   adds EraseEq, IsoSym
 \begin{figure}
-\begin{drulepar}[An]{$[[G;D|- g : a ~ b]]$}{Type equality}
+\begin{drulepar}[An]{$[[G;D|- g : phi]]$}{Type equality}
 \drule{Refl}
 \drule{Sym}
 \drule{Trans}
@@ -1382,8 +1388,15 @@ satisfied. All other rules of the typing judgment are the same as \fimp.
 \label{fig:fc-defeq}
 \end{figure}
 \begin{figure}[t]
-\begin{drulepar}[An]{$[[G;D|- g : a ~ b]]$}{Type equality (cont'd)}
+\begin{drulepar}[An]{$[[G;D|- g : phi]]$}{Type equality (cont'd)}
 \drule{PiFst}
+\drule[width=\textwidth]{LApp}
+\drule[width=\textwidth]{LAbs}
+\drule[width=\textwidth]{ImplApp}
+\drule[width=\textwidth]{ImplAbs}
+\drule[width=\textwidth]{Ind}
+\drule[width=\textwidth]{SuccCong}
+\drule[width=\textwidth]{CaseCong}
 \drule[width=0.45\textwidth]{PiSnd}\drule{CPiFst}
 \drule[width=0.55\textwidth]{CPiSnd}
 \drule{Cast}\drule{IsoSnd}\drule{EraseEq}
@@ -1407,7 +1420,7 @@ Indeed, these proof terms merely record information found in the rules
 of the analogous \fimp judgments for type and prop equality.
 In other words, $[[g]]$ in the coercion judgment $[[G;D|-g : a ~ b]]$ records the
 information contained in a derivation of a type equality
-$[[G ; D |= a == b : A]]$.
+$[[G ; D |= a ~ b : A]]$.
 
 However, there is some flexibility in the design of the judgment $[[G;D|-g : a ~ b]]$.  First,
 observe that the syntax of the judgment does not include a

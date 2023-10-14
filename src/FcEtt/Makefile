@@ -28,6 +28,13 @@ COQMKFILENAME=CoqSrc.mk
 VFILES   = $(foreach i, $(FILES), $(i).v)
 VOFILES  = $(foreach i, $(FILES), $(i).vo)
 INCFLAGS = $(foreach i, $(INCDIRS), -I $(i))
+SPEC = $(OTT_LOC)/spec.mng
+SPECFILE = $(OTT_LOC)/spec.tex
+OTTFILES   = $(foreach i, $(OTT_SOURCE), $(OTT_LOC)/$(i).ott)
+OTTIFLAGS  = $(foreach i, $(OTT_SOURCE), -i $(OTT_LOC)/$(i).ott) -merge true
+RULESFILE = $(OTT_LOC)/ett-rules.tex 
+
+
 
 .SECONDARY: $(VFILES)
 
@@ -35,13 +42,32 @@ METALIBFILES= $(METALIBLOCATION)/*.v  $(METALIBLOCATION)/Makefile  $(METALIBLOCA
 
 all: coq
 
+
+spec.pdf: $(OTT_LOC)/$(OTT_SOURCE).ott $(SPEC) $(SPECFILE) $(RULESFILE)
+	ott $(OTTIFLAGS) \
+	    -tex_wrap false -tex_show_meta false -tex_filter $(SPEC) $(SPECFILE)
+	(cd $(OTT_LOC); pdflatex -interaction nonstopmode spec.tex)
+
+
+$(RULESFILE) : $(OTTFILES)
+	ott $(OTTIFLAGS) -o $(RULESFILE) \
+	          -tex_wrap false \
+		  -tex_show_meta false
+
+
 quick:  $(COQMKFILENAME)
 	@$(MAKE) -f CoqSrc.mk quick
 
+# quick has been deprecated
+# use vos to compile without checking proofs
+vos: $(COQMKFILENAME)
+	@$(MAKE) -f CoqSrc.mk vos
 
 coq: $(COQMKFILENAME)
 	@$(MAKE) -f CoqSrc.mk
 
+%.vos: %.v
+	@$(MAKE) -f CoqSrc.mk $*.vos
 
 %.vo: %.v
 	@$(MAKE) -f CoqSrc.mk $*.vo
@@ -62,8 +88,10 @@ $(COQMKFILENAME): Makefile $(shell ls *.v | grep -v _ott.v | grep -v _inf.v)
 # Target to be called with some filename appended to it
 # It is a quick hack to fix the imports to metalib
 METALIB.FIX_%:
-	sed -i -e 's/Metatheory/Metalib.Metatheory/g' $*.v
-	sed -i -e 's/LibLNgen/Metalib.LibLNgen/g' $*.v
+	# sed -i -e 's/Metatheory/Metalib.Metatheory/g' $*.v
+	# sed -i -e 's/LibLNgen/Metalib.LibLNgen/g' $*.v
+	sed -i -e '/ott_list_core/d' $*.v
+	sed -i -e '/Require Import List/d' $*.v
 	sed '1d' $*.v > __TMP__; mv __TMP__ $*.v
 
 coqclean:
